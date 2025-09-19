@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowRight, CheckCircle, Users, TrendingUp, DollarSign, Calendar, Briefcase, GraduationCap, Settings, ShoppingCart, Building, LogIn, UserCheck, Shield, Clock } from "lucide-react";
+import { ArrowRight, CheckCircle, Users, TrendingUp, DollarSign, Calendar, Briefcase, GraduationCap, Settings, ShoppingCart, LogIn, UserCheck, Shield, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
 import heroImage from "@/assets/hero-construction.jpg";
+import constructeamLogo from "@/assets/constructeam-logo.png";
 
 export function LandingPage() {
   return (
@@ -11,9 +12,9 @@ export function LandingPage() {
       <header className="bg-white border-b border-construction shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <div className="flex items-center space-x-3">
-            <Building className="h-8 w-8 text-primary" />
-            <h1 className="text-2xl font-bold text-steel">ContractorScale</h1>
-            <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">Professional</span>
+            <img src={constructeamLogo} alt="CONSTRUCTEAM CT1" className="h-10 w-10" />
+            <h1 className="text-2xl font-bold text-foreground">CONSTRUCTEAM</h1>
+            <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded font-semibold">CT1</span>
           </div>
           <nav className="hidden md:flex items-center space-x-8">
             <Link to="#solutions" className="text-steel-light hover:text-primary transition-colors font-medium">Solutions</Link>
@@ -37,7 +38,7 @@ export function LandingPage() {
         
         <div className="relative z-10 container mx-auto px-4 text-center">
           <div className="mb-6 inline-flex items-center bg-white/10 backdrop-blur-sm rounded-full px-6 py-3 border border-white/20">
-            <UserCheck className="h-5 w-5 text-primary mr-3" />
+            <img src={constructeamLogo} alt="CONSTRUCTEAM CT1" className="h-6 w-6 mr-3" />
             <span className="text-white/90 font-medium">Trusted by 15,000+ contractors nationwide</span>
           </div>
           <h1 className="text-5xl md:text-7xl font-black text-white mb-6 tracking-tight">
