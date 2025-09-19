@@ -223,14 +223,18 @@ export const CourseBuilder = ({ courseId, onClose }: CourseBuilderProps) => {
 
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
+      // Use createSignedUrl for private buckets
+      const { data, error: signedUrlError } = await supabase.storage
         .from(bucket)
-        .getPublicUrl(filePath);
+        .createSignedUrl(filePath, 60 * 60 * 24 * 365); // 1 year expiry
 
-      return publicUrl;
+      if (signedUrlError) throw signedUrlError;
+
+      toast.success(`${type === 'video' ? 'Video' : 'PDF'} uploaded successfully`);
+      return data.signedUrl;
     } catch (error) {
       console.error('Upload error:', error);
-      toast.error('Failed to upload file');
+      toast.error(`Failed to upload ${type === 'video' ? 'video' : 'PDF'}`);
       return null;
     } finally {
       setUploading(false);
