@@ -1,13 +1,32 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowRight, CheckCircle, Users, TrendingUp, DollarSign, Calendar, Briefcase, GraduationCap, Settings, ShoppingCart } from "lucide-react";
+import { ArrowRight, CheckCircle, Users, TrendingUp, DollarSign, Calendar, Briefcase, GraduationCap, Settings, ShoppingCart, Building, LogIn, UserCheck, Shield, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
 import heroImage from "@/assets/hero-construction.jpg";
 
 export function LandingPage() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-concrete-gray">
+      {/* Professional Header */}
+      <header className="bg-white border-b border-construction shadow-sm sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+          <div className="flex items-center space-x-3">
+            <Building className="h-8 w-8 text-construction-orange" />
+            <h1 className="text-2xl font-bold text-steel">ContractorScale</h1>
+            <span className="text-xs bg-construction-orange/10 text-construction-orange px-2 py-1 rounded">Professional</span>
+          </div>
+          <nav className="hidden md:flex items-center space-x-8">
+            <Link to="#solutions" className="text-steel-light hover:text-construction-orange transition-colors font-medium">Solutions</Link>
+            <Link to="#pricing" className="text-steel-light hover:text-construction-orange transition-colors font-medium">Pricing</Link>
+            <Link to="#marketplace" className="text-steel-light hover:text-construction-orange transition-colors font-medium">Marketplace</Link>
+            <Link to="/subscribe" className="flex items-center space-x-2 bg-construction-orange hover:bg-construction-orange/90 text-white px-6 py-2.5 rounded-lg font-semibold transition-all shadow-md">
+              <LogIn className="h-4 w-4" />
+              <span>Contractor Portal</span>
+            </Link>
+          </nav>
+        </div>
+      </header>
+
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         <div 
@@ -17,15 +36,37 @@ export function LandingPage() {
         <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/50 to-primary/30" />
         
         <div className="relative z-10 container mx-auto px-4 text-center">
+          <div className="mb-6 inline-flex items-center bg-white/10 backdrop-blur-sm rounded-full px-6 py-3 border border-white/20">
+            <UserCheck className="h-5 w-5 text-construction-orange mr-3" />
+            <span className="text-white/90 font-medium">Trusted by 15,000+ contractors nationwide</span>
+          </div>
           <h1 className="text-5xl md:text-7xl font-black text-white mb-6 tracking-tight">
-            Scale Your
-            <span className="block bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Construction Business
+            Professional Tools for
+            <span className="block bg-gradient-to-r from-construction-orange to-primary bg-clip-text text-transparent">
+              Smart Contractors
             </span>
           </h1>
           <p className="text-xl md:text-2xl text-gray-200 mb-8 max-w-3xl mx-auto font-medium">
-            Back-office solutions, training, and marketplace access designed specifically for contractors who want to grow beyond the job site.
+            Complete business management platform with CRM, project tracking, financial tools, and exclusive contractor marketplace access.
           </p>
+          
+          <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto mb-12 text-left">
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-white/20">
+              <Shield className="h-8 w-8 text-construction-orange mb-3" />
+              <h3 className="font-semibold text-white mb-2">Enterprise Security</h3>
+              <p className="text-white/80 text-sm">Bank-grade encryption & SOC 2 compliance</p>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-white/20">
+              <Clock className="h-8 w-8 text-construction-orange mb-3" />
+              <h3 className="font-semibold text-white mb-2">24/7 Support</h3>
+              <p className="text-white/80 text-sm">Dedicated success team & priority support</p>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-white/20">
+              <TrendingUp className="h-8 w-8 text-construction-orange mb-3" />
+              <h3 className="font-semibold text-white mb-2">Proven Results</h3>
+              <p className="text-white/80 text-sm">Average 40% revenue increase in 6 months</p>
+            </div>
+          </div>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button 
@@ -34,11 +75,11 @@ export function LandingPage() {
               asChild
             >
               <Link to="/subscribe">
-                Get Started Today <ArrowRight className="ml-2" />
+                Access Portal Now <ArrowRight className="ml-2" />
               </Link>
             </Button>
             <Button variant="outline" size="lg" className="text-white border-white hover:bg-white hover:text-foreground">
-              Watch Demo
+              View Platform Demo
             </Button>
           </div>
         </div>
