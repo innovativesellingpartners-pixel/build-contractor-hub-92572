@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { useToast } from "@/hooks/use-toast";
 
 interface Lead {
@@ -46,6 +47,7 @@ interface Job {
 
 export function Dashboard() {
   const { user, profile, signOut } = useAuth();
+  const { isAdmin } = useAdminAuth();
   const { toast } = useToast();
   
   const [leads] = useState<Lead[]>([
@@ -293,6 +295,14 @@ export function Dashboard() {
                     <span className="text-sm">Profile</span>
                   </Link>
                 </Button>
+                {isAdmin && (
+                  <Button variant="destructive" className="h-auto flex-col p-4" asChild>
+                    <Link to="/admin">
+                      <Settings className="h-6 w-6 mb-2" />
+                      <span className="text-sm">Admin Panel</span>
+                    </Link>
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>

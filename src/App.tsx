@@ -11,6 +11,11 @@ import Subscribe from "./pages/Subscribe";
 import NotFound from "./pages/NotFound";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { AdminLayout } from "@/components/admin/AdminLayout";
+import { AdminDashboard } from "@/components/admin/AdminDashboard";
+import { UserManagement } from "@/components/admin/UserManagement";
+import { TrainingManagement } from "@/components/admin/TrainingManagement";
+import { MarketplaceManagement } from "@/components/admin/MarketplaceManagement";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +44,15 @@ const App = () => (
                 <TrainingHub />
               </ProtectedRoute>
             } />
+            {/* Admin Routes */}
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<AdminDashboard />} />
+              <Route path="users" element={<UserManagement />} />
+              <Route path="training" element={<TrainingManagement />} />
+              <Route path="marketplace" element={<MarketplaceManagement />} />
+              <Route path="analytics" element={<div>Analytics coming soon...</div>} />
+              <Route path="settings" element={<div>Settings coming soon...</div>} />
+            </Route>
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
