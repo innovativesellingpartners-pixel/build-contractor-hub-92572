@@ -18,26 +18,39 @@ import {
   BookOpen
 } from 'lucide-react';
 import { useTrainingCourses, useUserEnrollments, useEnrollInCourse, useUpdateLessonProgress, useLessonProgress } from '@/hooks/useTrainingData';
-
-// Helper functions for YouTube URL handling
+import { useSignedUrl } from '@/hooks/useSignedUrl';
+// YouTube helpers
 const isYouTubeUrl = (url: string): boolean => {
   if (!url) return false;
-  const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/;
-  return youtubeRegex.test(url);
+  try {
+    const u = new URL(url);
+    return u.hostname.includes('youtube.com') || u.hostname.includes('youtu.be');
+  } catch {
+    return /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\//.test(url);
+  }
 };
 
 const getYouTubeEmbedUrl = (url: string): string => {
   if (!isYouTubeUrl(url)) return url;
-  
-  // Extract video ID from various YouTube URL formats
-  const videoIdMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/);
-  const videoId = videoIdMatch ? videoIdMatch[1] : null;
-  
-  if (videoId) {
-    return `https://www.youtube.com/embed/${videoId}`;
+  let id: string | null = null;
+  try {
+    const u = new URL(url);
+    if (u.hostname.includes('youtu.be')) {
+      id = u.pathname.slice(1);
+    } else if (u.pathname.startsWith('/shorts/')) {
+      id = u.pathname.split('/')[2] || null;
+    } else if (u.pathname.startsWith('/embed/')) {
+      id = u.pathname.split('/')[2] || null;
+    } else {
+      id = u.searchParams.get('v');
+    }
+  } catch {
+    const m = url.match(/(?:watch\?v=|youtu\.be\/|embed\/|shorts\/)([A-Za-z0-9_-]{6,})/);
+    id = m ? m[1] : null;
   }
-  
-  return url;
+  if (!id) return url;
+  const params = 'modestbranding=1&rel=0';
+  return `https://www.youtube-nocookie.com/embed/${id}?${params}`;
 };
 
 export const CoursePlayer = () => {
@@ -51,6 +64,8 @@ export const CoursePlayer = () => {
   const [currentModuleIndex, setCurrentModuleIndex] = useState(0);
   const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [videoError, setVideoError] = useState<string | null>(null);
+  const [pdfError, setPdfError] = useState<string | null>(null);
 
   const course = courses?.find(c => c.id === courseId);
   const enrollment = enrollments?.find(e => e.course_id === courseId);
@@ -58,6 +73,9 @@ export const CoursePlayer = () => {
   
   const currentModule = course?.course_modules?.[currentModuleIndex];
   const currentLesson = currentModule?.course_lessons?.[currentLessonIndex];
+
+  const { url: signedVideoUrl } = useSignedUrl(currentLesson?.video_url || null);
+  const { url: signedPdfUrl } = useSignedUrl(currentLesson?.pdf_url || null);
 
   const totalLessons = course?.course_modules?.reduce((total, module) => 
     total + module.course_lessons.length, 0) || 0;
@@ -91,6 +109,12 @@ export const CoursePlayer = () => {
       }
     }
   }, [course, lessonProgress]);
+
+  // Reset media errors when lesson changes
+  useEffect(() => {
+    setVideoError(null);
+    setPdfError(null);
+  }, [currentLesson?.id]);
 
   const handleEnroll = () => {
     if (courseId) {
@@ -265,22 +289,26 @@ export const CoursePlayer = () => {
                   {currentLesson?.video_url && (
                     <div className="aspect-video bg-black rounded-lg flex items-center justify-center">
                       {isYouTubeUrl(currentLesson.video_url) ? (
-                        <iframe 
-                          src={getYouTubeEmbedUrl(currentLesson.video_url)}
-                          className="w-full h-full rounded-lg"
-                          title={currentLesson.title}
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                        />
+                          <iframe
+                            key={currentLesson.id}
+                            src={getYouTubeEmbedUrl(currentLesson.video_url)}
+                            className="w-full h-full rounded-lg"
+                            title={currentLesson.title}
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            referrerPolicy="strict-origin-when-cross-origin"
+                            allowFullScreen
+                          />
                       ) : (
-                        <video 
-                          controls 
-                          className="w-full h-full rounded-lg"
-                          src={currentLesson.video_url}
-                          poster="/placeholder.svg"
-                        >
-                          Your browser does not support the video tag.
-                        </video>
+                            <video
+                              key={currentLesson.id}
+                              controls
+                              className="w-full h-full rounded-lg"
+                              src={signedVideoUrl || currentLesson.video_url}
+                              poster="/placeholder.svg"
+                              onError={() => setVideoError('Failed to load video. You can try downloading it below.')}
+                            >
+                              Your browser does not support the video tag.
+                            </video>
                       )}
                     </div>
                   )}
@@ -297,16 +325,24 @@ export const CoursePlayer = () => {
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <h3 className="text-lg font-semibold">Course Material</h3>
-                        <Button variant="outline" size="sm" asChild>
-                          <a href={currentLesson.pdf_url} download>
-                            <Download className="h-4 w-4 mr-2" />
-                            Download PDF
-                          </a>
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          <Button variant="outline" size="sm" asChild>
+                            <a href={signedPdfUrl || currentLesson.pdf_url} target="_blank" rel="noopener noreferrer">
+                              Open in new tab
+                            </a>
+                          </Button>
+                          <Button variant="outline" size="sm" asChild>
+                            <a href={signedPdfUrl || currentLesson.pdf_url} download>
+                              <Download className="h-4 w-4 mr-2" />
+                              Download PDF
+                            </a>
+                          </Button>
+                        </div>
                       </div>
                       <div className="aspect-[3/4] bg-muted rounded-lg flex items-center justify-center">
                         <iframe 
-                          src={currentLesson.pdf_url} 
+                          key={currentLesson.id}
+                          src={signedPdfUrl || currentLesson.pdf_url}
                           className="w-full h-full rounded-lg"
                           title={currentLesson.title}
                         />
