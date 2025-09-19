@@ -7,6 +7,7 @@ import { LandingPage } from "@/components/LandingPage";
 import { Dashboard } from "@/components/Dashboard";
 import { Marketplace } from "@/components/Marketplace";
 import { TrainingHub } from "@/components/TrainingHub";
+import { CoursePlayer } from "@/components/CoursePlayer";
 import Subscribe from "./pages/Subscribe";
 import NotFound from "./pages/NotFound";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -39,11 +40,16 @@ const App = () => (
                 <Marketplace />
               </ProtectedRoute>
             } />
-            <Route path="/dashboard/training" element={
-              <ProtectedRoute>
-                <TrainingHub />
-              </ProtectedRoute>
-            } />
+              <Route path="/dashboard/training" element={
+                <ProtectedRoute>
+                  <TrainingHub />
+                </ProtectedRoute>
+              } />
+              <Route path="/dashboard/training/course/:courseId" element={
+                <ProtectedRoute>
+                  <CoursePlayer />
+                </ProtectedRoute>
+              } />
             {/* Admin Routes */}
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<AdminDashboard />} />
