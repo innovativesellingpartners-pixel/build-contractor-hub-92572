@@ -290,17 +290,27 @@ export const CourseBuilder = ({ courseId, onClose }: CourseBuilderProps) => {
       title: lesson?.title || '',
       description: lesson?.description || '',
       content: lesson?.content || '',
-      lesson_type: lesson?.lesson_type || 'text',
-      duration_minutes: lesson?.duration_minutes || 0,
+      lesson_type: 'mixed', // Always mixed to allow both video and PDF
       order_index: lesson?.order_index || (lessons?.length || 0),
       video_url: lesson?.video_url || '',
       pdf_url: lesson?.pdf_url || '',
       is_required: lesson?.is_required ?? true,
     });
+    const [videoInputType, setVideoInputType] = useState<'upload' | 'url'>('upload');
 
     const handleSubmit = (e: React.FormEvent) => {
       e.preventDefault();
-      onSubmit(formData);
+      // Determine lesson type based on what content exists
+      let lessonType = 'text';
+      if (formData.video_url && formData.pdf_url) {
+        lessonType = 'mixed';
+      } else if (formData.video_url) {
+        lessonType = 'video';
+      } else if (formData.pdf_url) {
+        lessonType = 'pdf';
+      }
+      
+      onSubmit({ ...formData, lesson_type: lessonType });
     };
 
     const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -308,7 +318,7 @@ export const CourseBuilder = ({ courseId, onClose }: CourseBuilderProps) => {
       if (file) {
         const url = await handleFileUpload(file, 'video');
         if (url) {
-          setFormData({ ...formData, video_url: url, lesson_type: 'video' });
+          setFormData({ ...formData, video_url: url });
         }
       }
     };
@@ -318,13 +328,17 @@ export const CourseBuilder = ({ courseId, onClose }: CourseBuilderProps) => {
       if (file) {
         const url = await handleFileUpload(file, 'pdf');
         if (url) {
-          setFormData({ ...formData, pdf_url: url, lesson_type: 'pdf' });
+          setFormData({ ...formData, pdf_url: url });
         }
       }
     };
 
+    const isYouTubeUrl = (url: string) => {
+      return url.includes('youtube.com/watch') || url.includes('youtu.be/') || url.includes('youtube.com/embed/');
+    };
+
     return (
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <Label htmlFor="title">Lesson Title</Label>
           <Input
@@ -334,6 +348,7 @@ export const CourseBuilder = ({ courseId, onClose }: CourseBuilderProps) => {
             required
           />
         </div>
+        
         <div>
           <Label htmlFor="description">Description</Label>
           <Textarea
@@ -343,117 +358,96 @@ export const CourseBuilder = ({ courseId, onClose }: CourseBuilderProps) => {
             rows={2}
           />
         </div>
+
         <div>
-          <Label htmlFor="type">Lesson Type</Label>
-          <Select
-            value={formData.lesson_type}
-            onValueChange={(value) => setFormData({ ...formData, lesson_type: value })}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="text">Text Content</SelectItem>
-              <SelectItem value="video">Video</SelectItem>
-              <SelectItem value="pdf">PDF Document</SelectItem>
-            </SelectContent>
-          </Select>
+          <Label htmlFor="content">Text Content (Optional)</Label>
+          <Textarea
+            id="content"
+            value={formData.content}
+            onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+            rows={4}
+            placeholder="Enter lesson content, instructions, or notes..."
+          />
         </div>
 
-        {formData.lesson_type === 'text' && (
-          <div>
-            <Label htmlFor="content">Content</Label>
-            <Textarea
-              id="content"
-              value={formData.content}
-              onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-              rows={8}
-              placeholder="Enter the lesson content here..."
-            />
-          </div>
-        )}
-
-        {formData.lesson_type === 'video' && (
-          <div className="space-y-2">
-            <Label>Video Upload</Label>
-            <div className="flex items-center gap-2">
-              <input
-                type="file"
-                accept="video/*"
-                onChange={handleVideoUpload}
-                className="hidden"
-                id="video-upload"
-              />
-              <label htmlFor="video-upload">
-                <Button type="button" variant="outline" className="flex items-center gap-2" disabled={uploading}>
-                  <Video className="h-4 w-4" />
-                  {uploading ? 'Uploading...' : 'Upload Video'}
-                </Button>
-              </label>
-              {formData.video_url && (
-                <Badge variant="secondary">Video uploaded</Badge>
-              )}
-            </div>
-            {formData.video_url && (
+        {/* Video Section */}
+        <div className="space-y-3">
+          <Label className="text-base font-medium">Video Content (Optional)</Label>
+          <Tabs value={videoInputType} onValueChange={(value) => setVideoInputType(value as 'upload' | 'url')}>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="upload">Upload File</TabsTrigger>
+              <TabsTrigger value="url">YouTube URL</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="upload" className="space-y-2">
+              <div className="flex items-center gap-2">
+                <input
+                  type="file"
+                  accept="video/*"
+                  onChange={handleVideoUpload}
+                  className="hidden"
+                  id="video-upload"
+                />
+                <label htmlFor="video-upload">
+                  <Button type="button" variant="outline" className="flex items-center gap-2" disabled={uploading}>
+                    <Upload className="h-4 w-4" />
+                    {uploading ? 'Uploading...' : 'Choose Video File'}
+                  </Button>
+                </label>
+                {formData.video_url && !isYouTubeUrl(formData.video_url) && (
+                  <Badge variant="secondary">Video uploaded</Badge>
+                )}
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="url" className="space-y-2">
               <Input
-                placeholder="Video URL"
-                value={formData.video_url}
+                placeholder="https://www.youtube.com/watch?v=..."
+                value={isYouTubeUrl(formData.video_url) ? formData.video_url : ''}
                 onChange={(e) => setFormData({ ...formData, video_url: e.target.value })}
               />
-            )}
-          </div>
-        )}
-
-        {formData.lesson_type === 'pdf' && (
-          <div className="space-y-2">
-            <Label>PDF Upload</Label>
-            <div className="flex items-center gap-2">
-              <input
-                type="file"
-                accept=".pdf"
-                onChange={handlePdfUpload}
-                className="hidden"
-                id="pdf-upload"
-              />
-              <label htmlFor="pdf-upload">
-                <Button type="button" variant="outline" className="flex items-center gap-2" disabled={uploading}>
-                  <FileText className="h-4 w-4" />
-                  {uploading ? 'Uploading...' : 'Upload PDF'}
-                </Button>
-              </label>
-              {formData.pdf_url && (
-                <Badge variant="secondary">PDF uploaded</Badge>
+              {formData.video_url && isYouTubeUrl(formData.video_url) && (
+                <Badge variant="secondary">YouTube URL added</Badge>
               )}
-            </div>
+            </TabsContent>
+          </Tabs>
+        </div>
+
+        {/* PDF Section */}
+        <div className="space-y-3">
+          <Label className="text-base font-medium">PDF Document (Optional)</Label>
+          <div className="flex items-center gap-2">
+            <input
+              type="file"
+              accept=".pdf"
+              onChange={handlePdfUpload}
+              className="hidden"
+              id="pdf-upload"
+            />
+            <label htmlFor="pdf-upload">
+              <Button type="button" variant="outline" className="flex items-center gap-2" disabled={uploading}>
+                <Upload className="h-4 w-4" />
+                {uploading ? 'Uploading...' : 'Choose PDF File'}
+              </Button>
+            </label>
             {formData.pdf_url && (
-              <Input
-                placeholder="PDF URL"
-                value={formData.pdf_url}
-                onChange={(e) => setFormData({ ...formData, pdf_url: e.target.value })}
-              />
+              <Badge variant="secondary">PDF uploaded</Badge>
             )}
           </div>
-        )}
+        </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="duration">Duration (minutes)</Label>
-            <Input
-              id="duration"
-              type="number"
-              value={formData.duration_minutes}
-              onChange={(e) => setFormData({ ...formData, duration_minutes: parseInt(e.target.value) })}
-            />
-          </div>
-          <div>
-            <Label htmlFor="order">Order</Label>
-            <Input
-              id="order"
-              type="number"
-              value={formData.order_index}
-              onChange={(e) => setFormData({ ...formData, order_index: parseInt(e.target.value) })}
-            />
-          </div>
+        <div>
+          <Label htmlFor="order">Lesson Order</Label>
+          <Input
+            id="order"
+            type="number"
+            value={formData.order_index}
+            onChange={(e) => setFormData({ ...formData, order_index: parseInt(e.target.value) })}
+            placeholder="Order in module (1, 2, 3...)"
+          />
+          <p className="text-xs text-muted-foreground mt-1">
+            Determines the sequence of lessons within the module
+          </p>
         </div>
 
         <Button type="submit" className="w-full">
@@ -594,28 +588,30 @@ export const CourseBuilder = ({ courseId, onClose }: CourseBuilderProps) => {
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
                               <h4 className="font-medium">{lesson.title}</h4>
-                              <Badge variant="outline">
-                                {lesson.lesson_type}
-                              </Badge>
-                              <Badge variant="secondary">
-                                {lesson.duration_minutes}min
-                              </Badge>
+                              <div className="flex gap-1">
+                                {lesson.video_url && (
+                                  <Badge variant="outline" className="flex items-center gap-1">
+                                    <Video className="h-3 w-3" />
+                                    Video
+                                  </Badge>
+                                )}
+                                {lesson.pdf_url && (
+                                  <Badge variant="outline" className="flex items-center gap-1">
+                                    <FileText className="h-3 w-3" />
+                                    PDF
+                                  </Badge>
+                                )}
+                                {lesson.content && (
+                                  <Badge variant="outline" className="flex items-center gap-1">
+                                    <FileText className="h-3 w-3" />
+                                    Text
+                                  </Badge>
+                                )}
+                              </div>
                             </div>
                             <p className="text-sm text-muted-foreground mb-2">{lesson.description}</p>
-                            {lesson.lesson_type === 'text' && lesson.content && (
+                            {lesson.content && (
                               <p className="text-xs text-muted-foreground line-clamp-2">{lesson.content}</p>
-                            )}
-                            {lesson.lesson_type === 'video' && lesson.video_url && (
-                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                <Video className="h-3 w-3" />
-                                Video uploaded
-                              </div>
-                            )}
-                            {lesson.lesson_type === 'pdf' && lesson.pdf_url && (
-                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                <FileText className="h-3 w-3" />
-                                PDF uploaded
-                              </div>
                             )}
                           </div>
                           <div className="flex items-center gap-2">
