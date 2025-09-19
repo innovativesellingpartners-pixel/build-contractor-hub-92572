@@ -42,14 +42,12 @@
     --ring: 0 73% 41%;
 
     /* Construction-specific colors */
-    --construction-orange: 25 95% 53%;
     --steel-gray: 220 9% 25%;
     --concrete-gray: 0 0% 94%;
     --steel-dark: 220 12% 18%;
-    --construction-accent: 25 85% 60%;
     
     /* Gradients */
-    --gradient-hero: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--construction-orange)));
+    --gradient-hero: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
     --gradient-card: linear-gradient(180deg, hsl(var(--card)), hsl(0 0% 96%));
     --gradient-industrial: linear-gradient(90deg, hsl(var(--steel-gray)), hsl(var(--steel-dark)));
     --gradient-section: linear-gradient(180deg, hsl(var(--concrete-gray)), hsl(0 0% 91%));
@@ -137,15 +135,15 @@
 @layer components {
   /* Industrial button variants */
   .btn-hero {
-    @apply bg-gradient-to-r from-primary to-construction-orange text-primary-foreground font-bold px-8 py-4 rounded-lg shadow-lg hover:shadow-xl;
+    @apply bg-gradient-to-r from-primary to-accent text-primary-foreground font-bold px-8 py-4 rounded-lg shadow-lg hover:shadow-xl;
     box-shadow: var(--shadow-hero);
     transition: var(--transition-smooth);
-    border: 2px solid hsl(var(--construction-orange) / 0.3);
+    border: 2px solid hsl(var(--primary) / 0.3);
   }
   
   .btn-hero:hover {
     transform: translateY(-2px);
-    box-shadow: var(--shadow-hero), 0 0 20px hsl(var(--construction-orange) / 0.4);
+    box-shadow: var(--shadow-hero), 0 0 20px hsl(var(--primary) / 0.4);
   }
   
   .card-industrial {
@@ -161,18 +159,18 @@
   
   .section-contractor {
     background: var(--gradient-section);
-    border-top: 3px solid hsl(var(--construction-orange));
+    border-top: 3px solid hsl(var(--primary));
   }
   
   .section-steel {
     background: linear-gradient(180deg, hsl(var(--steel-gray)), hsl(var(--steel-dark)));
   }
   
-  .accent-orange {
-    @apply text-construction-orange;
+  .accent-red {
+    @apply text-primary;
   }
   
   .border-construction {
-    border-left: 4px solid hsl(var(--construction-orange));
+    border-left: 4px solid hsl(var(--primary));
   }
 }

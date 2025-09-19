@@ -60,7 +60,6 @@ export default {
         },
         // Construction-specific colors
         construction: {
-          orange: "hsl(var(--construction-orange))",
           steel: "hsl(var(--steel-gray))",
           concrete: "hsl(var(--concrete-gray))",
         },

@@ -11,15 +11,15 @@ export function LandingPage() {
       <header className="bg-white border-b border-construction shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <div className="flex items-center space-x-3">
-            <Building className="h-8 w-8 text-construction-orange" />
+            <Building className="h-8 w-8 text-primary" />
             <h1 className="text-2xl font-bold text-steel">ContractorScale</h1>
-            <span className="text-xs bg-construction-orange/10 text-construction-orange px-2 py-1 rounded">Professional</span>
+            <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">Professional</span>
           </div>
           <nav className="hidden md:flex items-center space-x-8">
-            <Link to="#solutions" className="text-steel-light hover:text-construction-orange transition-colors font-medium">Solutions</Link>
-            <Link to="#pricing" className="text-steel-light hover:text-construction-orange transition-colors font-medium">Pricing</Link>
-            <Link to="#marketplace" className="text-steel-light hover:text-construction-orange transition-colors font-medium">Marketplace</Link>
-            <Link to="/subscribe" className="flex items-center space-x-2 bg-construction-orange hover:bg-construction-orange/90 text-white px-6 py-2.5 rounded-lg font-semibold transition-all shadow-md">
+            <Link to="#solutions" className="text-steel-light hover:text-primary transition-colors font-medium">Solutions</Link>
+            <Link to="#pricing" className="text-steel-light hover:text-primary transition-colors font-medium">Pricing</Link>
+            <Link to="#marketplace" className="text-steel-light hover:text-primary transition-colors font-medium">Marketplace</Link>
+            <Link to="/subscribe" className="flex items-center space-x-2 bg-primary hover:bg-primary/90 text-white px-6 py-2.5 rounded-lg font-semibold transition-all shadow-md">
               <LogIn className="h-4 w-4" />
               <span>Contractor Portal</span>
             </Link>
@@ -37,12 +37,12 @@ export function LandingPage() {
         
         <div className="relative z-10 container mx-auto px-4 text-center">
           <div className="mb-6 inline-flex items-center bg-white/10 backdrop-blur-sm rounded-full px-6 py-3 border border-white/20">
-            <UserCheck className="h-5 w-5 text-construction-orange mr-3" />
+            <UserCheck className="h-5 w-5 text-primary mr-3" />
             <span className="text-white/90 font-medium">Trusted by 15,000+ contractors nationwide</span>
           </div>
           <h1 className="text-5xl md:text-7xl font-black text-white mb-6 tracking-tight">
             Professional Tools for
-            <span className="block bg-gradient-to-r from-construction-orange to-primary bg-clip-text text-transparent">
+            <span className="block bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               Smart Contractors
             </span>
           </h1>
@@ -52,17 +52,17 @@ export function LandingPage() {
           
           <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto mb-12 text-left">
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-white/20">
-              <Shield className="h-8 w-8 text-construction-orange mb-3" />
+              <Shield className="h-8 w-8 text-primary mb-3" />
               <h3 className="font-semibold text-white mb-2">Enterprise Security</h3>
               <p className="text-white/80 text-sm">Bank-grade encryption & SOC 2 compliance</p>
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-white/20">
-              <Clock className="h-8 w-8 text-construction-orange mb-3" />
+              <Clock className="h-8 w-8 text-primary mb-3" />
               <h3 className="font-semibold text-white mb-2">24/7 Support</h3>
               <p className="text-white/80 text-sm">Dedicated success team & priority support</p>
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-white/20">
-              <TrendingUp className="h-8 w-8 text-construction-orange mb-3" />
+              <TrendingUp className="h-8 w-8 text-primary mb-3" />
               <h3 className="font-semibold text-white mb-2">Proven Results</h3>
               <p className="text-white/80 text-sm">Average 40% revenue increase in 6 months</p>
             </div>
@@ -90,7 +90,7 @@ export function LandingPage() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground border-construction pl-4">
-              Learn & <span className="accent-orange">Train</span>
+              Learn & <span className="accent-red">Train</span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               Master the business side of construction with our comprehensive training programs designed by industry experts.
@@ -100,7 +100,7 @@ export function LandingPage() {
           <div className="grid md:grid-cols-3 gap-8">
             <Card className="card-industrial">
               <CardHeader>
-                <GraduationCap className="h-12 w-12 text-construction-orange mb-4" />
+                <GraduationCap className="h-12 w-12 text-primary mb-4" />
                 <CardTitle className="text-xl">Business Fundamentals</CardTitle>
                 <CardDescription>
                   Essential skills every contractor needs to run a profitable business
@@ -126,7 +126,7 @@ export function LandingPage() {
 
             <Card className="card-industrial">
               <CardHeader>
-                <TrendingUp className="h-12 w-12 text-construction-orange mb-4" />
+                <TrendingUp className="h-12 w-12 text-primary mb-4" />
                 <CardTitle className="text-xl">Growth Strategies</CardTitle>
                 <CardDescription>
                   Proven methods to scale your operations and increase revenue
@@ -152,7 +152,7 @@ export function LandingPage() {
 
             <Card className="card-industrial">
               <CardHeader>
-                <Settings className="h-12 w-12 text-construction-orange mb-4" />
+                <Settings className="h-12 w-12 text-primary mb-4" />
                 <CardTitle className="text-xl">Tech Integration</CardTitle>
                 <CardDescription>
                   Modern tools and systems to streamline your business operations
@@ -184,7 +184,7 @@ export function LandingPage() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white border-construction pl-4">
-              Back-Office <span className="accent-orange">Support</span>
+              Back-Office <span className="accent-red">Support</span>
             </h2>
             <p className="text-xl text-gray-300 max-w-3xl mx-auto">
               Focus on what you do best while our team handles the administrative work that keeps your business running smoothly.
@@ -194,7 +194,7 @@ export function LandingPage() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             <Card className="card-industrial">
               <CardHeader>
-                <Users className="h-12 w-12 text-construction-orange mb-4" />
+                <Users className="h-12 w-12 text-primary mb-4" />
                 <CardTitle className="text-xl">Administrative Support</CardTitle>
                 <CardDescription>
                   Dedicated admins to handle paperwork, scheduling, and coordination
@@ -260,7 +260,7 @@ export function LandingPage() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground border-construction pl-4">
-              Contractor <span className="accent-orange">Marketplace</span>
+              Contractor <span className="accent-red">Marketplace</span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               Everything you need to run and grow your business in one place. From legal setup to marketing tools.
