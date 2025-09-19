@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-// Detect if a URL points to Supabase Storage
+// Detect if a URL points to Supabase Storage or is a relative path
 export const isSupabaseStorageUrl = (url: string) => {
   if (!url) return false;
-  return /supabase\.co\/storage\/v1\/object\//.test(url) || /^(training-videos|training-pdfs)\//.test(url);
+  // Check for signed URLs that have expired or are invalid
+  if (/supabase\.co\/storage\/v1\/object\//.test(url)) return true;
+  // Check for relative storage paths like "training-videos/folder/file.mp4"
+  return /^(training-videos|training-pdfs)\//.test(url);
 };
 
 // Parse bucket and path from a Supabase storage URL or relative path

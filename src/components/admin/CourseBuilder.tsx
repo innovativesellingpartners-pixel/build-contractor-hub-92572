@@ -209,35 +209,33 @@ export const CourseBuilder = ({ courseId, onClose }: CourseBuilderProps) => {
     },
   });
 
-  const handleFileUpload = async (file: File, type: 'video' | 'pdf') => {
-    setUploading(true);
+  const handleFileUpload = async (file: File, type: 'video' | 'pdf'): Promise<string | null> => {
     try {
       const bucket = type === 'video' ? 'training-videos' : 'training-pdfs';
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}.${fileExt}`;
       const filePath = `${courseId}/${fileName}`;
 
+      console.log(`Starting ${type} upload:`, { bucket, filePath, fileSize: file.size });
+
       const { error: uploadError } = await supabase.storage
         .from(bucket)
         .upload(filePath, file);
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw uploadError;
+      }
 
-      // Use createSignedUrl for private buckets
-      const { data, error: signedUrlError } = await supabase.storage
-        .from(bucket)
-        .createSignedUrl(filePath, 60 * 60 * 24 * 365); // 1 year expiry
-
-      if (signedUrlError) throw signedUrlError;
-
+      console.log(`${type} upload successful:`, filePath);
       toast.success(`${type === 'video' ? 'Video' : 'PDF'} uploaded successfully`);
-      return data.signedUrl;
+      
+      // Return relative path instead of signed URL - this allows dynamic URL generation
+      return `${bucket}/${filePath}`;
     } catch (error) {
       console.error('Upload error:', error);
-      toast.error(`Failed to upload ${type === 'video' ? 'video' : 'PDF'}`);
+      toast.error(`Failed to upload ${type === 'video' ? 'video' : 'PDF'}: ${error.message}`);
       return null;
-    } finally {
-      setUploading(false);
     }
   };
 
@@ -322,20 +320,26 @@ export const CourseBuilder = ({ courseId, onClose }: CourseBuilderProps) => {
     const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (file) {
+        setUploading(true);
+        toast.info('Uploading video...', { duration: 2000 });
         const url = await handleFileUpload(file, 'video');
         if (url) {
           setFormData({ ...formData, video_url: url });
         }
+        setUploading(false);
       }
     };
 
     const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (file) {
+        setUploading(true);
+        toast.info('Uploading PDF...', { duration: 2000 });
         const url = await handleFileUpload(file, 'pdf');
         if (url) {
           setFormData({ ...formData, pdf_url: url });
         }
+        setUploading(false);
       }
     };
 

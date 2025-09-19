@@ -405,6 +405,36 @@ export type Database = {
           },
         ]
       }
+      user_lesson_notes: {
+        Row: {
+          content: string
+          created_at: string
+          enrollment_id: string
+          id: string
+          lesson_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          enrollment_id: string
+          id?: string
+          lesson_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          enrollment_id?: string
+          id?: string
+          lesson_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_lesson_progress: {
         Row: {
           completed_at: string | null

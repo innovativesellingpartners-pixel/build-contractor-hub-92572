@@ -15,10 +15,19 @@ import {
   Clock, 
   FileText,
   Download,
-  BookOpen
+  BookOpen,
+  ChevronDown, 
+  StickyNote, 
+  Save, 
+  Trash2
 } from 'lucide-react';
 import { useTrainingCourses, useUserEnrollments, useEnrollInCourse, useUpdateLessonProgress, useLessonProgress } from '@/hooks/useTrainingData';
 import { useSignedUrl } from '@/hooks/useSignedUrl';
+import { useUserNotes, useAutoSaveNote, useDeleteNote } from '@/hooks/useNotes';
+import { Textarea } from '@/components/ui/textarea';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 // YouTube helpers
 const isYouTubeUrl = (url: string): boolean => {
   if (!url) return false;
@@ -66,6 +75,8 @@ export const CoursePlayer = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [videoError, setVideoError] = useState<string | null>(null);
   const [pdfError, setPdfError] = useState<string | null>(null);
+  const [isNotesOpen, setIsNotesOpen] = useState(false);
+  const [noteContent, setNoteContent] = useState('');
 
   const course = courses?.find(c => c.id === courseId);
   const enrollment = enrollments?.find(e => e.course_id === courseId);
@@ -73,7 +84,15 @@ export const CoursePlayer = () => {
   
   const currentModule = course?.course_modules?.[currentModuleIndex];
   const currentLesson = currentModule?.course_lessons?.[currentLessonIndex];
-
+  
+  // Notes functionality
+  const { data: existingNote } = useUserNotes(currentLesson?.id || '', enrollment?.id || '');
+  const { mutate: deleteNote } = useDeleteNote();
+  const { content, setContent, isSaving, saveNote } = useAutoSaveNote(
+    currentLesson?.id || '', 
+    enrollment?.id || ''
+  );
+  
   const { url: signedVideoUrl } = useSignedUrl(currentLesson?.video_url || null);
   const { url: signedPdfUrl } = useSignedUrl(currentLesson?.pdf_url || null);
 
@@ -110,11 +129,18 @@ export const CoursePlayer = () => {
     }
   }, [course, lessonProgress]);
 
-  // Reset media errors when lesson changes
+  // Reset media errors when lesson changes and load existing note
   useEffect(() => {
     setVideoError(null);
     setPdfError(null);
-  }, [currentLesson?.id]);
+    if (existingNote?.content) {
+      setContent(existingNote.content);
+      setNoteContent(existingNote.content);
+    } else {
+      setContent('');
+      setNoteContent('');
+    }
+  }, [currentLesson?.id, existingNote, setContent]);
 
   const handleEnroll = () => {
     if (courseId) {
@@ -350,35 +376,145 @@ export const CoursePlayer = () => {
                     </div>
                   )}
 
-                  {/* Lesson Navigation */}
-                  <div className="flex justify-between items-center pt-6 border-t">
-                    <Button 
-                      variant="outline" 
-                      onClick={goToPreviousLesson}
-                      disabled={currentModuleIndex === 0 && currentLessonIndex === 0}
-                    >
-                      <ChevronLeft className="h-4 w-4 mr-2" />
-                      Previous
-                    </Button>
+                   {/* Notes Section */}
+                   {enrollment && currentLesson && (
+                     <div className="pt-6 border-t">
+                       <Collapsible open={isNotesOpen} onOpenChange={setIsNotesOpen}>
+                         <CollapsibleTrigger asChild>
+                           <Button variant="outline" className="w-full justify-between">
+                             <div className="flex items-center gap-2">
+                               <StickyNote className="h-4 w-4" />
+                               Lesson Notes
+                               {existingNote && <Badge variant="secondary" className="text-xs">Saved</Badge>}
+                             </div>
+                             <ChevronDown className="h-4 w-4" />
+                           </Button>
+                         </CollapsibleTrigger>
+                         <CollapsibleContent className="mt-4 space-y-3">
+                           <Textarea
+                             placeholder="Take notes about this lesson..."
+                             value={content}
+                             onChange={(e) => {
+                               const newContent = e.target.value;
+                               setContent(newContent);
+                               setNoteContent(newContent);
+                               // Auto-save after 2 seconds of no typing
+                               setTimeout(() => {
+                                 if (newContent.trim() && newContent === content) {
+                                   saveNote(newContent);
+                                 }
+                               }, 2000);
+                             }}
+                             rows={6}
+                             className="resize-none"
+                           />
+                           <div className="flex items-center justify-between">
+                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                               {isSaving && (
+                                 <>
+                                   <Save className="h-3 w-3 animate-spin" />
+                                   Saving...
+                                 </>
+                               )}
+                               {existingNote && !isSaving && (
+                                 <span>Last saved: {new Date(existingNote.updated_at).toLocaleString()}</span>
+                               )}
+                             </div>
+                             <div className="flex gap-2">
+                               <Button
+                                 size="sm"
+                                 variant="outline"
+                                 onClick={async () => {
+                                   try {
+                                     const { data, error } = await supabase.functions.invoke('export-notes', {
+                                       body: { enrollmentId: enrollment.id, format: 'text' }
+                                     });
+                                     if (error) throw error;
+                                     
+                                     // Create and download the file
+                                     const blob = new Blob([data], { type: 'text/plain' });
+                                     const url = URL.createObjectURL(blob);
+                                     const a = document.createElement('a');
+                                     a.href = url;
+                                     a.download = `${course?.title || 'course'}-notes.txt`;
+                                     document.body.appendChild(a);
+                                     a.click();
+                                     document.body.removeChild(a);
+                                     URL.revokeObjectURL(url);
+                                     toast.success('Notes exported successfully!');
+                                   } catch (error) {
+                                     console.error('Export error:', error);
+                                     toast.error('Failed to export notes');
+                                   }
+                                 }}
+                               >
+                                 <Download className="h-3 w-3 mr-1" />
+                                 Export
+                               </Button>
+                               {content.trim() && (
+                                 <Button
+                                   size="sm"
+                                   variant="outline"
+                                   onClick={() => saveNote(content)}
+                                   disabled={isSaving}
+                                 >
+                                   <Save className="h-3 w-3 mr-1" />
+                                   Save Now
+                                 </Button>
+                               )}
+                               {existingNote && (
+                                 <Button
+                                   size="sm"
+                                   variant="outline"
+                                   onClick={() => {
+                                     deleteNote({ 
+                                       lessonId: currentLesson.id, 
+                                       enrollmentId: enrollment.id 
+                                     });
+                                     setContent('');
+                                     setNoteContent('');
+                                   }}
+                                 >
+                                   <Trash2 className="h-3 w-3 mr-1" />
+                                   Delete
+                                 </Button>
+                               )}
+                             </div>
+                           </div>
+                         </CollapsibleContent>
+                       </Collapsible>
+                     </div>
+                   )}
 
-                    {!isLessonCompleted && (
-                      <Button onClick={handleMarkComplete}>
-                        <CheckCircle className="h-4 w-4 mr-2" />
-                        Mark Complete
-                      </Button>
-                    )}
+                   {/* Lesson Navigation */}
+                   <div className="flex justify-between items-center pt-6 border-t">
+                     <Button 
+                       variant="outline" 
+                       onClick={goToPreviousLesson}
+                       disabled={currentModuleIndex === 0 && currentLessonIndex === 0}
+                     >
+                       <ChevronLeft className="h-4 w-4 mr-2" />
+                       Previous
+                     </Button>
 
-                    <Button 
-                      onClick={goToNextLesson}
-                      disabled={
-                        currentModuleIndex === (course?.course_modules?.length || 0) - 1 &&
-                        currentLessonIndex === (currentModule?.course_lessons.length || 0) - 1
-                      }
-                    >
-                      Next
-                      <ChevronRight className="h-4 w-4 ml-2" />
-                    </Button>
-                  </div>
+                     {!isLessonCompleted && (
+                       <Button onClick={handleMarkComplete}>
+                         <CheckCircle className="h-4 w-4 mr-2" />
+                         Mark Complete
+                       </Button>
+                     )}
+
+                     <Button 
+                       onClick={goToNextLesson}
+                       disabled={
+                         currentModuleIndex === (course?.course_modules?.length || 0) - 1 &&
+                         currentLessonIndex === (currentModule?.course_lessons.length || 0) - 1
+                       }
+                     >
+                       Next
+                       <ChevronRight className="h-4 w-4 ml-2" />
+                     </Button>
+                   </div>
                 </div>
               </CardContent>
             </Card>
