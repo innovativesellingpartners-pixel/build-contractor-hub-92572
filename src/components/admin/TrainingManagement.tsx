@@ -54,7 +54,19 @@ const CourseBuilderDialog = ({ courseId }: { courseId: string }) => {
 export const TrainingManagement = () => {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
+  const [isEditOpen, setIsEditOpen] = useState(false);
   const queryClient = useQueryClient();
+
+  const handleCreateClick = () => {
+    console.log('Create course button clicked');
+    setIsCreateOpen(true);
+  };
+
+  const handleEditClick = (course: Course) => {
+    console.log('Edit course button clicked for:', course.title);
+    setEditingCourse(course);
+    setIsEditOpen(true);
+  };
 
   const { data: courses, isLoading: coursesLoading } = useQuery({
     queryKey: ['adminCourses'],
@@ -135,6 +147,7 @@ export const TrainingManagement = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminCourses'] });
       setEditingCourse(null);
+      setIsEditOpen(false);
       toast.success('Course updated successfully');
     },
     onError: (error) => {
@@ -287,12 +300,15 @@ export const TrainingManagement = () => {
         </div>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
-            <Button className="flex items-center gap-2">
+            <Button 
+              className="flex items-center gap-2" 
+              onClick={handleCreateClick}
+            >
               <Plus className="h-4 w-4" />
               Create Course
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="z-50">
             <DialogHeader>
               <DialogTitle>Create New Course</DialogTitle>
             </DialogHeader>
@@ -345,17 +361,17 @@ export const TrainingManagement = () => {
                   <TableCell>
                      <div className="flex gap-2">
                       <CourseBuilderDialog courseId={course.id} />
-                      <Dialog>
+                      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
                         <DialogTrigger asChild>
                           <Button 
                             variant="outline" 
                             size="sm"
-                            onClick={() => setEditingCourse(course)}
+                            onClick={() => handleEditClick(course)}
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
                         </DialogTrigger>
-                        <DialogContent>
+                        <DialogContent className="z-50">
                           <DialogHeader>
                             <DialogTitle>Edit Course</DialogTitle>
                           </DialogHeader>
