@@ -11,8 +11,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { BookOpen, Plus, Edit, Trash2, Eye } from 'lucide-react';
+import { BookOpen, Plus, Edit, Trash2, Eye, Settings } from 'lucide-react';
 import { toast } from 'sonner';
+import { CourseBuilder } from './CourseBuilder';
 
 type Course = {
   id: string;
@@ -30,6 +31,24 @@ type Category = {
   id: string;
   name: string;
   description?: string;
+};
+
+const CourseBuilderDialog = ({ courseId }: { courseId: string }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm" className="flex items-center gap-2">
+          <Settings className="h-4 w-4" />
+          Build
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-7xl h-[90vh] p-0">
+        <CourseBuilder courseId={courseId} onClose={() => setIsOpen(false)} />
+      </DialogContent>
+    </Dialog>
+  );
 };
 
 export const TrainingManagement = () => {
@@ -306,10 +325,8 @@ export const TrainingManagement = () => {
                     {new Date(course.created_at).toLocaleDateString()}
                   </TableCell>
                   <TableCell>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm">
-                        <Eye className="h-4 w-4" />
-                      </Button>
+                     <div className="flex gap-2">
+                      <CourseBuilderDialog courseId={course.id} />
                       <Dialog>
                         <DialogTrigger asChild>
                           <Button 
