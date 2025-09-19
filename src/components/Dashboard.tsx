@@ -18,9 +18,13 @@ import {
   Star,
   Clock,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  LogOut,
+  User
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 interface Lead {
   id: string;
@@ -41,12 +45,23 @@ interface Job {
 }
 
 export function Dashboard() {
+  const { user, profile, signOut } = useAuth();
+  const { toast } = useToast();
+  
   const [leads] = useState<Lead[]>([
     { id: '1', name: 'Sarah Johnson', project: 'Kitchen Remodel', value: 25000, status: 'new', date: '2024-01-15' },
     { id: '2', name: 'Mike Chen', project: 'Bathroom Addition', value: 18000, status: 'contacted', date: '2024-01-14' },
     { id: '3', name: 'Lisa Rodriguez', project: 'Deck Installation', value: 12000, status: 'quoted', date: '2024-01-13' },
     { id: '4', name: 'John Smith', project: 'Basement Finish', value: 35000, status: 'won', date: '2024-01-12' },
   ]);
+
+  const handleLogout = async () => {
+    await signOut();
+    toast({
+      title: "Logged out",
+      description: "You have been successfully logged out.",
+    });
+  };
 
   const [jobs] = useState<Job[]>([
     { id: '1', client: 'Johnson Residence', project: 'Kitchen Remodel', status: 'in-progress', progress: 65, dueDate: '2024-02-15' },
@@ -85,14 +100,23 @@ export function Dashboard() {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl md:text-4xl font-bold text-foreground border-construction pl-4">Business <span className="accent-orange">Overview</span></h1>
-            <p className="text-muted-foreground mt-2 pl-4">Welcome back! Here's your business snapshot.</p>
+            <p className="text-muted-foreground mt-2 pl-4">
+              Welcome back, {profile?.company_name || user?.email}! Here's your business snapshot.
+            </p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-3 items-center">
+            <div className="flex items-center gap-2 mr-4">
+              <User className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">{user?.email}</span>
+            </div>
             <Button variant="outline" size="icon">
               <Bell className="h-4 w-4" />
             </Button>
             <Button variant="outline" size="icon">
               <Settings className="h-4 w-4" />
+            </Button>
+            <Button variant="outline" size="icon" onClick={handleLogout}>
+              <LogOut className="h-4 w-4" />
             </Button>
           </div>
         </div>

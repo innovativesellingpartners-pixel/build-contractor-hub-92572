@@ -2,11 +2,107 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CheckCircle, Lock, ArrowLeft, UserCheck, Shield, Clock, Users } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 import constructeamLogo from "@/assets/constructeam-logo.png";
 
 export function Subscribe() {
+  const { user, signIn, signUp, resetPassword, loading } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [companyName, setCompanyName] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [forgotPassword, setForgotPassword] = useState(false);
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user && !loading) {
+      navigate('/dashboard');
+    }
+  }, [user, loading, navigate]);
+
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    const { error } = await signIn(email, password);
+
+    if (error) {
+      toast({
+        title: "Login Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Welcome back!",
+        description: "You have successfully logged in.",
+      });
+      navigate('/dashboard');
+    }
+
+    setIsLoading(false);
+  };
+
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    const { error } = await signUp(email, password, companyName);
+
+    if (error) {
+      toast({
+        title: "Registration Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Registration Successful!",
+        description: "Please check your email to confirm your account.",
+      });
+    }
+
+    setIsLoading(false);
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    const { error } = await resetPassword(email);
+
+    if (error) {
+      toast({
+        title: "Reset Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Reset Link Sent",
+        description: "Check your email for password reset instructions.",
+      });
+      setForgotPassword(false);
+    }
+
+    setIsLoading(false);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
   return (
     <div className="min-h-screen bg-concrete-gray">
       {/* Professional Header */}
@@ -42,35 +138,144 @@ export function Subscribe() {
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8 mb-12">
-          {/* Login Section */}
+          {/* Authentication Section */}
           <Card className="lg:col-span-1 bg-white border-construction shadow-lg">
             <CardHeader className="text-center pb-6 border-b border-gray-100">
               <CardTitle className="text-2xl mb-2 text-foreground flex items-center justify-center">
                 <Lock className="h-5 w-5 mr-2 text-primary" />
-                Member Portal
+                Access Portal
               </CardTitle>
-              <CardDescription className="text-steel-light">Access your contractor dashboard</CardDescription>
+              <CardDescription className="text-steel-light">Login or create your account</CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="email" className="text-steel font-medium">Business Email</Label>
-                  <Input id="email" type="email" placeholder="your@company.com" className="mt-1" />
-                </div>
-                <div>
-                  <Label htmlFor="password" className="text-steel font-medium">Password</Label>
-                  <Input id="password" type="password" placeholder="••••••••" className="mt-1" />
-                </div>
-                <Button className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-3">
-                  Sign In to Dashboard
-                </Button>
-                <div className="text-center space-y-2">
-                  <a href="#" className="text-sm text-primary hover:underline block">Forgot your password?</a>
-                  <div className="text-xs text-steel-light">
-                    Need help? Call <span className="font-medium">(555) 123-4567</span>
+              {forgotPassword ? (
+                <form onSubmit={handleResetPassword} className="space-y-4">
+                  <div>
+                    <Label htmlFor="reset-email" className="text-steel font-medium">Email Address</Label>
+                    <Input
+                      id="reset-email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="your@company.com"
+                      className="mt-1"
+                      required
+                    />
                   </div>
-                </div>
-              </div>
+                  <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-3" disabled={isLoading}>
+                    {isLoading ? "Sending..." : "Send Reset Link"}
+                  </Button>
+                  <div className="text-center">
+                    <button
+                      type="button"
+                      onClick={() => setForgotPassword(false)}
+                      className="text-sm text-primary hover:underline"
+                    >
+                      Back to login
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <Tabs defaultValue="login" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2 mb-4">
+                    <TabsTrigger value="login">Login</TabsTrigger>
+                    <TabsTrigger value="signup">Sign Up</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="login">
+                    <form onSubmit={handleSignIn} className="space-y-4">
+                      <div>
+                        <Label htmlFor="login-email" className="text-steel font-medium">Business Email</Label>
+                        <Input
+                          id="login-email"
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          placeholder="your@company.com"
+                          className="mt-1"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="login-password" className="text-steel font-medium">Password</Label>
+                        <Input
+                          id="login-password"
+                          type="password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          placeholder="••••••••"
+                          className="mt-1"
+                          required
+                        />
+                      </div>
+                      <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-3" disabled={isLoading}>
+                        {isLoading ? "Signing in..." : "Sign In to Dashboard"}
+                      </Button>
+                      <div className="text-center space-y-2">
+                        <button
+                          type="button"
+                          onClick={() => setForgotPassword(true)}
+                          className="text-sm text-primary hover:underline block"
+                        >
+                          Forgot your password?
+                        </button>
+                        <div className="text-xs text-steel-light">
+                          Need help? Call <span className="font-medium">(555) 123-4567</span>
+                        </div>
+                      </div>
+                    </form>
+                  </TabsContent>
+                  
+                  <TabsContent value="signup">
+                    <form onSubmit={handleSignUp} className="space-y-4">
+                      <div>
+                        <Label htmlFor="signup-email" className="text-steel font-medium">Business Email</Label>
+                        <Input
+                          id="signup-email"
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          placeholder="your@company.com"
+                          className="mt-1"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="signup-password" className="text-steel font-medium">Password</Label>
+                        <Input
+                          id="signup-password"
+                          type="password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          placeholder="Create a password"
+                          className="mt-1"
+                          required
+                          minLength={6}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="company-name" className="text-steel font-medium">Company Name (Optional)</Label>
+                        <Input
+                          id="company-name"
+                          type="text"
+                          value={companyName}
+                          onChange={(e) => setCompanyName(e.target.value)}
+                          placeholder="Your company name"
+                          className="mt-1"
+                        />
+                      </div>
+                      <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-3" disabled={isLoading}>
+                        {isLoading ? "Creating account..." : "Create Account"}
+                      </Button>
+                      <div className="text-center">
+                        <div className="text-xs text-steel-light">
+                          Need help? Call <span className="font-medium">(555) 123-4567</span>
+                        </div>
+                      </div>
+                    </form>
+                  </TabsContent>
+                </Tabs>
+              )}
             </CardContent>
           </Card>
 
@@ -209,10 +414,10 @@ export function Subscribe() {
               <span className="text-sm text-steel-light">Cancel anytime</span>
             </div>
           </div>
-          <Link to="/">
+          <Link to="/subscribe">
             <Button variant="outline" className="border-construction text-steel hover:bg-primary hover:text-white">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Homepage
+              Back to Login
             </Button>
           </Link>
         </div>
