@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -301,6 +301,8 @@ export const CourseBuilder = ({ courseId, onClose }: CourseBuilderProps) => {
       is_required: lesson?.is_required ?? true,
     });
     const [videoInputType, setVideoInputType] = useState<'upload' | 'url'>('upload');
+    const videoInputRef = useRef<HTMLInputElement>(null);
+    const pdfInputRef = useRef<HTMLInputElement>(null);
 
     const handleSubmit = (e: React.FormEvent) => {
       e.preventDefault();
@@ -386,18 +388,22 @@ export const CourseBuilder = ({ courseId, onClose }: CourseBuilderProps) => {
             <TabsContent value="upload" className="space-y-2">
               <div className="flex items-center gap-2">
                 <input
+                  ref={videoInputRef}
                   type="file"
                   accept="video/*"
                   onChange={handleVideoUpload}
                   className="hidden"
-                  id="video-upload"
                 />
-                <label htmlFor="video-upload">
-                  <Button type="button" variant="outline" className="flex items-center gap-2" disabled={uploading}>
-                    <Upload className="h-4 w-4" />
-                    {uploading ? 'Uploading...' : 'Choose Video File'}
-                  </Button>
-                </label>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  className="flex items-center gap-2" 
+                  disabled={uploading}
+                  onClick={() => videoInputRef.current?.click()}
+                >
+                  <Upload className="h-4 w-4" />
+                  {uploading ? 'Uploading...' : 'Choose Video File'}
+                </Button>
                 {formData.video_url && !isYouTubeUrl(formData.video_url) && (
                   <Badge variant="secondary">Video uploaded</Badge>
                 )}
@@ -407,7 +413,7 @@ export const CourseBuilder = ({ courseId, onClose }: CourseBuilderProps) => {
             <TabsContent value="url" className="space-y-2">
               <Input
                 placeholder="https://www.youtube.com/watch?v=..."
-                value={isYouTubeUrl(formData.video_url) ? formData.video_url : ''}
+                value={formData.video_url}
                 onChange={(e) => setFormData({ ...formData, video_url: e.target.value })}
               />
               {formData.video_url && isYouTubeUrl(formData.video_url) && (
@@ -422,18 +428,22 @@ export const CourseBuilder = ({ courseId, onClose }: CourseBuilderProps) => {
           <Label className="text-base font-medium">PDF Document (Optional)</Label>
           <div className="flex items-center gap-2">
             <input
+              ref={pdfInputRef}
               type="file"
               accept=".pdf"
               onChange={handlePdfUpload}
               className="hidden"
-              id="pdf-upload"
             />
-            <label htmlFor="pdf-upload">
-              <Button type="button" variant="outline" className="flex items-center gap-2" disabled={uploading}>
-                <Upload className="h-4 w-4" />
-                {uploading ? 'Uploading...' : 'Choose PDF File'}
-              </Button>
-            </label>
+            <Button 
+              type="button" 
+              variant="outline" 
+              className="flex items-center gap-2" 
+              disabled={uploading}
+              onClick={() => pdfInputRef.current?.click()}
+            >
+              <Upload className="h-4 w-4" />
+              {uploading ? 'Uploading...' : 'Choose PDF File'}
+            </Button>
             {formData.pdf_url && (
               <Badge variant="secondary">PDF uploaded</Badge>
             )}
