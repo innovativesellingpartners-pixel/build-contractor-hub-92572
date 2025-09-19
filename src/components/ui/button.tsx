@@ -15,6 +15,10 @@ const buttonVariants = cva(
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
+        // Industrial contractor variants
+        hero: "bg-gradient-hero text-primary-foreground font-bold px-8 py-4 rounded-lg shadow-hero hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300",
+        industrial: "bg-gradient-to-r from-construction-steel to-foreground text-white font-semibold border-2 border-primary hover:border-primary-hover hover:shadow-industrial",
+        contractor: "bg-primary hover:bg-primary-hover text-primary-foreground font-semibold border border-primary/20 shadow-lg hover:shadow-xl transition-all",
       },
       size: {
         default: "h-10 px-4 py-2",
