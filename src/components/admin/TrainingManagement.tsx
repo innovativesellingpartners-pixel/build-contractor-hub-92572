@@ -90,9 +90,17 @@ export const TrainingManagement = () => {
 
   const createCourseMutation = useMutation({
     mutationFn: async (courseData: any) => {
+      // Clean up empty strings to null for optional fields
+      const cleanData = {
+        ...courseData,
+        category_id: courseData.category_id || null,
+        difficulty_level: courseData.difficulty_level || null,
+        duration_minutes: courseData.duration_minutes || null,
+      };
+      
       const { error } = await supabase
         .from('training_courses')
-        .insert(courseData);
+        .insert(cleanData);
 
       if (error) throw error;
     },
@@ -109,9 +117,17 @@ export const TrainingManagement = () => {
 
   const updateCourseMutation = useMutation({
     mutationFn: async ({ id, ...courseData }: any) => {
+      // Clean up empty strings to null for optional fields
+      const cleanData = {
+        ...courseData,
+        category_id: courseData.category_id || null,
+        difficulty_level: courseData.difficulty_level || null,
+        duration_minutes: courseData.duration_minutes || null,
+      };
+      
       const { error } = await supabase
         .from('training_courses')
-        .update(courseData)
+        .update(cleanData)
         .eq('id', id);
 
       if (error) throw error;
@@ -151,7 +167,7 @@ export const TrainingManagement = () => {
       title: course?.title || '',
       description: course?.description || '',
       category_id: course?.category_id || '',
-      difficulty_level: course?.difficulty_level || 'beginner',
+      difficulty_level: course?.difficulty_level || '',
       duration_minutes: course?.duration_minutes || 0,
       is_published: course?.is_published || false,
       content: '',
@@ -187,15 +203,16 @@ export const TrainingManagement = () => {
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="category">Category</Label>
+            <Label htmlFor="category">Category (Optional)</Label>
             <Select
               value={formData.category_id}
               onValueChange={(value) => setFormData({ ...formData, category_id: value })}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select category" />
+                <SelectValue placeholder="Select category (optional)" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="">No Category</SelectItem>
                 {categories?.map((category) => (
                   <SelectItem key={category.id} value={category.id}>
                     {category.name}
@@ -206,15 +223,16 @@ export const TrainingManagement = () => {
           </div>
 
           <div>
-            <Label htmlFor="difficulty">Difficulty</Label>
+            <Label htmlFor="difficulty">Difficulty (Optional)</Label>
             <Select
               value={formData.difficulty_level}
               onValueChange={(value) => setFormData({ ...formData, difficulty_level: value })}
             >
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue placeholder="Select difficulty (optional)" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="">No Difficulty Set</SelectItem>
                 <SelectItem value="beginner">Beginner</SelectItem>
                 <SelectItem value="intermediate">Intermediate</SelectItem>
                 <SelectItem value="advanced">Advanced</SelectItem>
