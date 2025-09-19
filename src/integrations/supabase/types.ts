@@ -98,6 +98,13 @@ export type Database = {
             referencedRelation: "course_modules"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_course_lessons_module_id"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "course_modules"
+            referencedColumns: ["id"]
+          },
         ]
       }
       course_modules: {
@@ -131,6 +138,13 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "course_modules_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "training_courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_course_modules_course_id"
             columns: ["course_id"]
             isOneToOne: false
             referencedRelation: "training_courses"
@@ -433,7 +447,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_user_lesson_notes_lesson_id"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "course_lessons"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_lesson_progress: {
         Row: {
@@ -470,6 +492,13 @@ export type Database = {
           video_progress_seconds?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_user_lesson_progress_lesson_id"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "course_lessons"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "user_lesson_progress_enrollment_id_fkey"
             columns: ["enrollment_id"]
@@ -515,6 +544,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_course_completion_percentage: {
+        Args: { _enrollment_id: string }
+        Returns: number
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
