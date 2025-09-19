@@ -19,6 +19,27 @@ import {
 } from 'lucide-react';
 import { useTrainingCourses, useUserEnrollments, useEnrollInCourse, useUpdateLessonProgress, useLessonProgress } from '@/hooks/useTrainingData';
 
+// Helper functions for YouTube URL handling
+const isYouTubeUrl = (url: string): boolean => {
+  if (!url) return false;
+  const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/;
+  return youtubeRegex.test(url);
+};
+
+const getYouTubeEmbedUrl = (url: string): string => {
+  if (!isYouTubeUrl(url)) return url;
+  
+  // Extract video ID from various YouTube URL formats
+  const videoIdMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/);
+  const videoId = videoIdMatch ? videoIdMatch[1] : null;
+  
+  if (videoId) {
+    return `https://www.youtube.com/embed/${videoId}`;
+  }
+  
+  return url;
+};
+
 export const CoursePlayer = () => {
   const { courseId } = useParams();
   const navigate = useNavigate();
@@ -241,28 +262,38 @@ export const CoursePlayer = () => {
               <CardContent>
                 <div className="space-y-6">
                   {/* Video Player */}
-                  {currentLesson?.lesson_type === 'video' && currentLesson.video_url && (
+                  {currentLesson?.video_url && (
                     <div className="aspect-video bg-black rounded-lg flex items-center justify-center">
-                      <video 
-                        controls 
-                        className="w-full h-full rounded-lg"
-                        src={currentLesson.video_url}
-                        poster="/placeholder.svg"
-                      >
-                        Your browser does not support the video tag.
-                      </video>
+                      {isYouTubeUrl(currentLesson.video_url) ? (
+                        <iframe 
+                          src={getYouTubeEmbedUrl(currentLesson.video_url)}
+                          className="w-full h-full rounded-lg"
+                          title={currentLesson.title}
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      ) : (
+                        <video 
+                          controls 
+                          className="w-full h-full rounded-lg"
+                          src={currentLesson.video_url}
+                          poster="/placeholder.svg"
+                        >
+                          Your browser does not support the video tag.
+                        </video>
+                      )}
                     </div>
                   )}
 
                   {/* Text Content */}
-                  {currentLesson?.lesson_type === 'text' && currentLesson.content && (
+                  {currentLesson?.content && (
                     <div className="prose max-w-none">
                       <div dangerouslySetInnerHTML={{ __html: currentLesson.content }} />
                     </div>
                   )}
 
                   {/* PDF Viewer */}
-                  {currentLesson?.lesson_type === 'pdf' && currentLesson.pdf_url && (
+                  {currentLesson?.pdf_url && (
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <h3 className="text-lg font-semibold">Course Material</h3>
