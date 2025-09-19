@@ -84,8 +84,8 @@ export function Dashboard() {
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-foreground">Business Overview</h1>
-            <p className="text-muted-foreground mt-2">Welcome back! Here's your business snapshot.</p>
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground border-construction pl-4">Business <span className="accent-orange">Overview</span></h1>
+            <p className="text-muted-foreground mt-2 pl-4">Welcome back! Here's your business snapshot.</p>
           </div>
           <div className="flex gap-3">
             <Button variant="outline" size="icon">
@@ -102,7 +102,7 @@ export function Dashboard() {
           <Card className="card-industrial">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-              <DollarSign className="h-4 w-4 text-primary" />
+              <DollarSign className="h-4 w-4 text-construction-orange" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">${totalRevenue.toLocaleString()}</div>
@@ -115,7 +115,7 @@ export function Dashboard() {
           <Card className="card-industrial">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Active Jobs</CardTitle>
-              <Calendar className="h-4 w-4 text-primary" />
+              <Calendar className="h-4 w-4 text-construction-orange" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{activeJobs}</div>
@@ -128,7 +128,7 @@ export function Dashboard() {
           <Card className="card-industrial">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Leads</CardTitle>
-              <Users className="h-4 w-4 text-primary" />
+              <Users className="h-4 w-4 text-construction-orange" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{totalLeads}</div>
@@ -141,7 +141,7 @@ export function Dashboard() {
           <Card className="card-industrial">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Conversion Rate</CardTitle>
-              <TrendingUp className="h-4 w-4 text-primary" />
+              <TrendingUp className="h-4 w-4 text-construction-orange" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{conversionRate}%</div>
@@ -157,7 +157,7 @@ export function Dashboard() {
           <Card className="card-industrial">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle className="text-xl">Lead Tracker</CardTitle>
+                <CardTitle className="text-xl border-construction pl-4">Lead <span className="accent-orange">Tracker</span></CardTitle>
                 <Button variant="outline" size="sm">
                   <ChevronRight className="h-4 w-4 ml-1" />
                   View All

@@ -45,11 +45,11 @@ export function LandingPage() {
       </section>
 
       {/* Learn & Train Section */}
-      <section className="py-20 bg-background">
+      <section className="py-20 section-contractor">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
-              Learn & Train
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground border-construction pl-4">
+              Learn & <span className="accent-orange">Train</span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               Master the business side of construction with our comprehensive training programs designed by industry experts.
@@ -59,7 +59,7 @@ export function LandingPage() {
           <div className="grid md:grid-cols-3 gap-8">
             <Card className="card-industrial">
               <CardHeader>
-                <GraduationCap className="h-12 w-12 text-primary mb-4" />
+                <GraduationCap className="h-12 w-12 text-construction-orange mb-4" />
                 <CardTitle className="text-xl">Business Fundamentals</CardTitle>
                 <CardDescription>
                   Essential skills every contractor needs to run a profitable business
@@ -85,7 +85,7 @@ export function LandingPage() {
 
             <Card className="card-industrial">
               <CardHeader>
-                <TrendingUp className="h-12 w-12 text-primary mb-4" />
+                <TrendingUp className="h-12 w-12 text-construction-orange mb-4" />
                 <CardTitle className="text-xl">Growth Strategies</CardTitle>
                 <CardDescription>
                   Proven methods to scale your operations and increase revenue
@@ -111,7 +111,7 @@ export function LandingPage() {
 
             <Card className="card-industrial">
               <CardHeader>
-                <Settings className="h-12 w-12 text-primary mb-4" />
+                <Settings className="h-12 w-12 text-construction-orange mb-4" />
                 <CardTitle className="text-xl">Tech Integration</CardTitle>
                 <CardDescription>
                   Modern tools and systems to streamline your business operations
@@ -139,13 +139,13 @@ export function LandingPage() {
       </section>
 
       {/* Back-Office Support Section */}
-      <section className="py-20 bg-muted/50">
+      <section className="py-20 section-steel text-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
-              Back-Office Support
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white border-construction pl-4">
+              Back-Office <span className="accent-orange">Support</span>
             </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
               Focus on what you do best while our team handles the administrative work that keeps your business running smoothly.
             </p>
           </div>
@@ -153,7 +153,7 @@ export function LandingPage() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             <Card className="card-industrial">
               <CardHeader>
-                <Users className="h-12 w-12 text-primary mb-4" />
+                <Users className="h-12 w-12 text-construction-orange mb-4" />
                 <CardTitle className="text-xl">Administrative Support</CardTitle>
                 <CardDescription>
                   Dedicated admins to handle paperwork, scheduling, and coordination
@@ -215,11 +215,11 @@ export function LandingPage() {
       </section>
 
       {/* Marketplace Preview Section */}
-      <section className="py-20 bg-background">
+      <section className="py-20 section-contractor">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
-              Contractor Marketplace
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground border-construction pl-4">
+              Contractor <span className="accent-orange">Marketplace</span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               Everything you need to run and grow your business in one place. From legal setup to marketing tools.

@@ -9,10 +9,10 @@
 @layer base {
   :root {
     /* Core contractor brand colors */
-    --background: 0 0% 100%;
+    --background: 0 0% 94%;
     --foreground: 0 0% 9%;
 
-    --card: 0 0% 100%;
+    --card: 0 0% 98%;
     --card-foreground: 0 0% 9%;
 
     --popover: 0 0% 100%;
@@ -44,17 +44,21 @@
     /* Construction-specific colors */
     --construction-orange: 25 95% 53%;
     --steel-gray: 220 9% 25%;
-    --concrete-gray: 0 0% 85%;
+    --concrete-gray: 0 0% 94%;
+    --steel-dark: 220 12% 18%;
+    --construction-accent: 25 85% 60%;
     
     /* Gradients */
-    --gradient-hero: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
-    --gradient-card: linear-gradient(180deg, hsl(var(--background)), hsl(var(--muted)));
-    --gradient-industrial: linear-gradient(90deg, hsl(var(--steel-gray)), hsl(0 0% 15%));
+    --gradient-hero: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--construction-orange)));
+    --gradient-card: linear-gradient(180deg, hsl(var(--card)), hsl(0 0% 96%));
+    --gradient-industrial: linear-gradient(90deg, hsl(var(--steel-gray)), hsl(var(--steel-dark)));
+    --gradient-section: linear-gradient(180deg, hsl(var(--concrete-gray)), hsl(0 0% 91%));
 
     /* Shadows */
-    --shadow-industrial: 0 4px 20px -4px hsl(var(--primary) / 0.15);
-    --shadow-card: 0 2px 10px -2px hsl(0 0% 0% / 0.1);
-    --shadow-hero: 0 10px 40px -10px hsl(var(--primary) / 0.3);
+    --shadow-industrial: 0 6px 25px -5px hsl(var(--steel-gray) / 0.25);
+    --shadow-card: 0 4px 15px -3px hsl(var(--steel-gray) / 0.15);
+    --shadow-hero: 0 15px 50px -15px hsl(var(--primary) / 0.4);
+    --shadow-steel: 0 2px 8px -1px hsl(var(--steel-gray) / 0.2);
 
     
     /* Animations & Transitions */
@@ -133,22 +137,42 @@
 @layer components {
   /* Industrial button variants */
   .btn-hero {
-    @apply bg-gradient-to-r from-primary to-accent text-primary-foreground font-semibold px-8 py-4 rounded-lg shadow-lg hover:shadow-xl;
+    @apply bg-gradient-to-r from-primary to-construction-orange text-primary-foreground font-bold px-8 py-4 rounded-lg shadow-lg hover:shadow-xl;
     box-shadow: var(--shadow-hero);
     transition: var(--transition-smooth);
+    border: 2px solid hsl(var(--construction-orange) / 0.3);
   }
   
   .btn-hero:hover {
     transform: translateY(-2px);
+    box-shadow: var(--shadow-hero), 0 0 20px hsl(var(--construction-orange) / 0.4);
   }
   
   .card-industrial {
-    @apply bg-card border border-border rounded-lg;
+    @apply bg-card border-2 border-border rounded-lg;
     background: var(--gradient-card);
-    box-shadow: var(--shadow-card);
+    box-shadow: var(--shadow-industrial);
+    border-color: hsl(var(--steel-gray) / 0.2);
   }
   
   .section-hero {
     background: var(--gradient-industrial);
+  }
+  
+  .section-contractor {
+    background: var(--gradient-section);
+    border-top: 3px solid hsl(var(--construction-orange));
+  }
+  
+  .section-steel {
+    background: linear-gradient(180deg, hsl(var(--steel-gray)), hsl(var(--steel-dark)));
+  }
+  
+  .accent-orange {
+    @apply text-construction-orange;
+  }
+  
+  .border-construction {
+    border-left: 4px solid hsl(var(--construction-orange));
   }
 }
