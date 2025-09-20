@@ -52,12 +52,12 @@ export const useTrainingCourses = () => {
         .select(`
           *,
           training_categories(name),
-          course_modules(
+          course_modules!course_modules_course_id_fkey(
             id,
             title,
             description,
             order_index,
-            course_lessons(
+            course_lessons!course_lessons_module_id_fkey(
               id,
               title,
               description,

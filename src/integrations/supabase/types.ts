@@ -98,13 +98,6 @@ export type Database = {
             referencedRelation: "course_modules"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "fk_course_lessons_module_id"
-            columns: ["module_id"]
-            isOneToOne: false
-            referencedRelation: "course_modules"
-            referencedColumns: ["id"]
-          },
         ]
       }
       course_modules: {
@@ -138,13 +131,6 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "course_modules_course_id_fkey"
-            columns: ["course_id"]
-            isOneToOne: false
-            referencedRelation: "training_courses"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_course_modules_course_id"
             columns: ["course_id"]
             isOneToOne: false
             referencedRelation: "training_courses"
