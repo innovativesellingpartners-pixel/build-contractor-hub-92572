@@ -57,10 +57,6 @@ export const TrainingManagement = () => {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const queryClient = useQueryClient();
 
-  const handleCreateClick = () => {
-    console.log('Create course button clicked');
-    setIsCreateOpen(true);
-  };
 
   const handleEditClick = (course: Course) => {
     console.log('Edit course button clicked for:', course.title);
@@ -298,12 +294,9 @@ export const TrainingManagement = () => {
           <h2 className="text-3xl font-bold text-foreground">Training Management</h2>
           <p className="text-muted-foreground">Manage training courses and content</p>
         </div>
-        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+        <Dialog open={isCreateOpen} onOpenChange={(open) => { console.log('Create dialog open:', open); setIsCreateOpen(open); }}>
           <DialogTrigger asChild>
-            <Button 
-              className="flex items-center gap-2" 
-              onClick={handleCreateClick}
-            >
+            <Button className="flex items-center gap-2">
               <Plus className="h-4 w-4" />
               Create Course
             </Button>
