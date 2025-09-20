@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Plus, Edit, Trash2, Upload, Video, FileText, BookOpen, GripVertical, Save } from 'lucide-react';
 import { toast } from 'sonner';
+import { useSignedUrl } from '@/hooks/useSignedUrl';
 
 type Course = {
   id: string;
@@ -51,6 +52,17 @@ type Lesson = {
   created_at: string;
 };
 
+type LessonDraft = {
+  title: string;
+  description: string;
+  content: string;
+  lesson_type: string;
+  order_index: number;
+  video_url: string;
+  pdf_url: string;
+  is_required: boolean;
+};
+
 interface CourseBuilderProps {
   courseId: string;
   onClose: () => void;
@@ -62,8 +74,18 @@ export const CourseBuilder = ({ courseId, onClose }: CourseBuilderProps) => {
   const [isAddingLesson, setIsAddingLesson] = useState(false);
   const [editingModule, setEditingModule] = useState<Module | null>(null);
   const [editingLesson, setEditingLesson] = useState<Lesson | null>(null);
-  const [uploading, setUploading] = useState(false);
-  const queryClient = useQueryClient();
+const emptyLessonDraft: LessonDraft = {
+  title: '',
+  description: '',
+  content: '',
+  lesson_type: 'mixed',
+  order_index: 0,
+  video_url: '',
+  pdf_url: '',
+  is_required: true,
+};
+const [lessonDraft, setLessonDraft] = useState<LessonDraft>(emptyLessonDraft);
+const queryClient = useQueryClient();
 
   const { data: course } = useQuery({
     queryKey: ['course', courseId],
@@ -174,6 +196,7 @@ export const CourseBuilder = ({ courseId, onClose }: CourseBuilderProps) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['course-lessons', selectedModule] });
       setIsAddingLesson(false);
+      setLessonDraft(emptyLessonDraft);
       toast.success('Lesson created successfully');
     },
   });
@@ -190,6 +213,7 @@ export const CourseBuilder = ({ courseId, onClose }: CourseBuilderProps) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['course-lessons', selectedModule] });
       setEditingLesson(null);
+      setLessonDraft(emptyLessonDraft);
       toast.success('Lesson updated successfully');
     },
   });
@@ -329,18 +353,12 @@ export const CourseBuilder = ({ courseId, onClose }: CourseBuilderProps) => {
       const file = e.target.files?.[0];
       if (file) {
         setIsUploading(true);
-        setUploading(true);
         toast.info('Uploading video...', { duration: 2000 });
         const url = await handleFileUpload(file, 'video');
         if (url) {
-          // Use functional update to avoid stale state
-          setFormData(prevData => ({ ...prevData, video_url: url }));
-          // Clear the file input
-          if (videoInputRef.current) {
-            videoInputRef.current.value = '';
-          }
+          setFormData((prev) => ({ ...prev, video_url: url }));
+          if (videoInputRef.current) videoInputRef.current.value = '';
         }
-        setUploading(false);
         setIsUploading(false);
       }
     };
@@ -349,18 +367,12 @@ export const CourseBuilder = ({ courseId, onClose }: CourseBuilderProps) => {
       const file = e.target.files?.[0];
       if (file) {
         setIsUploading(true);
-        setUploading(true);
         toast.info('Uploading PDF...', { duration: 2000 });
         const url = await handleFileUpload(file, 'pdf');
         if (url) {
-          // Use functional update to avoid stale state
-          setFormData(prevData => ({ ...prevData, pdf_url: url }));
-          // Clear the file input
-          if (pdfInputRef.current) {
-            pdfInputRef.current.value = '';
-          }
+          setFormData((prev) => ({ ...prev, pdf_url: url }));
+          if (pdfInputRef.current) pdfInputRef.current.value = '';
         }
-        setUploading(false);
         setIsUploading(false);
       }
     };
@@ -482,7 +494,7 @@ export const CourseBuilder = ({ courseId, onClose }: CourseBuilderProps) => {
             id="order"
             type="number"
             value={formData.order_index}
-            onChange={(e) => setFormData({ ...formData, order_index: parseInt(e.target.value) })}
+            onChange={(e) => setFormData((prev) => ({ ...prev, order_index: parseInt(e.target.value) }))}
             placeholder="Order in module (1, 2, 3...)"
           />
           <p className="text-xs text-muted-foreground mt-1">
@@ -491,7 +503,7 @@ export const CourseBuilder = ({ courseId, onClose }: CourseBuilderProps) => {
         </div>
 
         <Button type="submit" className="w-full" disabled={isUploading}>
-          {isUploading ? 'Uploading files...' : (lesson ? 'Update Lesson' : 'Create Lesson')}
+          {isUploading ? 'Uploading files...' : (isEdit ? 'Update Lesson' : 'Create Lesson')}
         </Button>
       </form>
     );
@@ -603,7 +615,14 @@ export const CourseBuilder = ({ courseId, onClose }: CourseBuilderProps) => {
               <div className="p-4 border-b bg-background">
                 <div className="flex items-center justify-between">
                   <h3 className="font-semibold">Lessons</h3>
-                  <Dialog open={isAddingLesson} onOpenChange={setIsAddingLesson}>
+                  <Dialog open={isAddingLesson} onOpenChange={(open) => {
+                    setIsAddingLesson(open);
+                    if (open) {
+                      setLessonDraft({ ...emptyLessonDraft, order_index: (lessons?.length || 0) });
+                    } else {
+                      setLessonDraft(emptyLessonDraft);
+                    }
+                  }}>
                     <DialogTrigger asChild>
                       <Button size="sm">
                         <Plus className="h-4 w-4 mr-2" />
@@ -614,7 +633,12 @@ export const CourseBuilder = ({ courseId, onClose }: CourseBuilderProps) => {
                       <DialogHeader>
                         <DialogTitle>Add Lesson</DialogTitle>
                       </DialogHeader>
-                      <LessonForm onSubmit={(data) => createLessonMutation.mutate(data)} />
+                      <LessonForm 
+                        formData={lessonDraft}
+                        setFormData={setLessonDraft}
+                        onSubmit={(data) => createLessonMutation.mutate(data)}
+                        isEdit={false}
+                      />
                     </DialogContent>
                   </Dialog>
                 </div>
@@ -655,12 +679,29 @@ export const CourseBuilder = ({ courseId, onClose }: CourseBuilderProps) => {
                             )}
                           </div>
                           <div className="flex items-center gap-2">
-                            <Dialog>
+                            <Dialog onOpenChange={(open) => {
+                              if (!open) {
+                                setEditingLesson(null);
+                                setLessonDraft(emptyLessonDraft);
+                              }
+                            }}>
                               <DialogTrigger asChild>
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  onClick={() => setEditingLesson(lesson)}
+                                  onClick={() => {
+                                    setEditingLesson(lesson);
+                                    setLessonDraft({
+                                      title: lesson.title || '',
+                                      description: lesson.description || '',
+                                      content: lesson.content || '',
+                                      lesson_type: lesson.lesson_type || 'mixed',
+                                      order_index: lesson.order_index || 0,
+                                      video_url: lesson.video_url || '',
+                                      pdf_url: lesson.pdf_url || '',
+                                      is_required: lesson.is_required ?? true,
+                                    });
+                                  }}
                                 >
                                   <Edit className="h-4 w-4" />
                                 </Button>
@@ -670,8 +711,10 @@ export const CourseBuilder = ({ courseId, onClose }: CourseBuilderProps) => {
                                   <DialogTitle>Edit Lesson</DialogTitle>
                                 </DialogHeader>
                                 <LessonForm
-                                  lesson={editingLesson}
-                                  onSubmit={(data) => updateLessonMutation.mutate({ id: editingLesson?.id, ...data })}
+                                  formData={lessonDraft}
+                                  setFormData={setLessonDraft}
+                                  onSubmit={(data) => updateLessonMutation.mutate({ id: lesson.id, ...data })}
+                                  isEdit
                                 />
                               </DialogContent>
                             </Dialog>
