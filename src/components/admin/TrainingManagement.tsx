@@ -101,8 +101,8 @@ export const TrainingManagement = () => {
       // Clean up empty strings to null for optional fields
       const cleanData = {
         ...courseData,
-        category_id: courseData.category_id || null,
-        difficulty_level: courseData.difficulty_level || null,
+        category_id: courseData.category_id === 'none' ? null : courseData.category_id || null,
+        difficulty_level: courseData.difficulty_level === 'none' ? null : courseData.difficulty_level || null,
         duration_minutes: courseData.duration_minutes || null,
       };
       
@@ -128,8 +128,8 @@ export const TrainingManagement = () => {
       // Clean up empty strings to null for optional fields
       const cleanData = {
         ...courseData,
-        category_id: courseData.category_id || null,
-        difficulty_level: courseData.difficulty_level || null,
+        category_id: courseData.category_id === 'none' ? null : courseData.category_id || null,
+        difficulty_level: courseData.difficulty_level === 'none' ? null : courseData.difficulty_level || null,
         duration_minutes: courseData.duration_minutes || null,
       };
       
@@ -221,7 +221,7 @@ export const TrainingManagement = () => {
                 <SelectValue placeholder="Select category (optional)" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">No Category</SelectItem>
+                <SelectItem value="none">No Category</SelectItem>
                 {categories?.map((category) => (
                   <SelectItem key={category.id} value={category.id}>
                     {category.name}
@@ -241,7 +241,7 @@ export const TrainingManagement = () => {
                 <SelectValue placeholder="Select difficulty (optional)" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">No Difficulty Set</SelectItem>
+                <SelectItem value="none">No Difficulty Set</SelectItem>
                 <SelectItem value="beginner">Beginner</SelectItem>
                 <SelectItem value="intermediate">Intermediate</SelectItem>
                 <SelectItem value="advanced">Advanced</SelectItem>
