@@ -308,7 +308,7 @@ export const TrainingManagement = () => {
               Create Course
             </Button>
           </DialogTrigger>
-          <DialogContent className="z-50">
+          <DialogContent className="z-[60] max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Create New Course</DialogTitle>
             </DialogHeader>
