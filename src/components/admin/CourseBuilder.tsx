@@ -74,18 +74,19 @@ export const CourseBuilder = ({ courseId, onClose }: CourseBuilderProps) => {
   const [isAddingLesson, setIsAddingLesson] = useState(false);
   const [editingModule, setEditingModule] = useState<Module | null>(null);
   const [editingLesson, setEditingLesson] = useState<Lesson | null>(null);
-const emptyLessonDraft: LessonDraft = {
-  title: '',
-  description: '',
-  content: '',
-  lesson_type: 'mixed',
-  order_index: 0,
-  video_url: '',
-  pdf_url: '',
-  is_required: true,
-};
-const [lessonDraft, setLessonDraft] = useState<LessonDraft>(emptyLessonDraft);
-const queryClient = useQueryClient();
+  
+  const emptyLessonDraft: LessonDraft = {
+    title: '',
+    description: '',
+    content: '',
+    lesson_type: 'mixed',
+    order_index: 0,
+    video_url: '',
+    pdf_url: '',
+    is_required: true,
+  };
+  const [lessonDraft, setLessonDraft] = useState<LessonDraft>(emptyLessonDraft);
+  const queryClient = useQueryClient();
 
   const { data: course } = useQuery({
     queryKey: ['course', courseId],
@@ -311,32 +312,33 @@ const queryClient = useQueryClient();
     );
   };
 
-  const LessonForm = ({ lesson, onSubmit }: { lesson?: Lesson | null; onSubmit: (data: any) => void }) => {
-    const [formData, setFormData] = useState({
-      title: lesson?.title || '',
-      description: lesson?.description || '',
-      content: lesson?.content || '',
-      lesson_type: 'mixed', // Always mixed to allow both video and PDF
-      order_index: lesson?.order_index || (lessons?.length || 0),
-      video_url: lesson?.video_url || '',
-      pdf_url: lesson?.pdf_url || '',
-      is_required: lesson?.is_required ?? true,
-    });
+  const LessonForm = ({
+    formData,
+    setFormData,
+    onSubmit,
+    isEdit = false,
+  }: {
+    formData: LessonDraft;
+    setFormData: React.Dispatch<React.SetStateAction<LessonDraft>>;
+    onSubmit: (data: any) => void;
+    isEdit?: boolean;
+  }) => {
     const [videoInputType, setVideoInputType] = useState<'upload' | 'url'>('upload');
     const [isUploading, setIsUploading] = useState(false);
     const videoInputRef = useRef<HTMLInputElement>(null);
     const pdfInputRef = useRef<HTMLInputElement>(null);
 
+    const { url: signedVideoUrl } = useSignedUrl(formData.video_url || null);
+    const { url: signedPdfUrl } = useSignedUrl(formData.pdf_url || null);
+
     const handleSubmit = (e: React.FormEvent) => {
       e.preventDefault();
-      
-      // Prevent submission during uploads
+
       if (isUploading) {
         toast.warning('Please wait for uploads to complete');
         return;
       }
-      
-      // Determine lesson type based on what content exists
+
       let lessonType = 'text';
       if (formData.video_url && formData.pdf_url) {
         lessonType = 'mixed';
@@ -345,7 +347,7 @@ const queryClient = useQueryClient();
       } else if (formData.pdf_url) {
         lessonType = 'pdf';
       }
-      
+
       onSubmit({ ...formData, lesson_type: lessonType });
     };
 
@@ -381,6 +383,15 @@ const queryClient = useQueryClient();
       return url.includes('youtube.com/watch') || url.includes('youtu.be/') || url.includes('youtube.com/embed/');
     };
 
+    const getFileName = (url: string) => {
+      try {
+        const parts = url.split('/');
+        return parts[parts.length - 1] || 'file';
+      } catch {
+        return 'file';
+      }
+    };
+
     return (
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
@@ -388,17 +399,17 @@ const queryClient = useQueryClient();
           <Input
             id="title"
             value={formData.title}
-            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+            onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
             required
           />
         </div>
-        
+
         <div>
           <Label htmlFor="description">Description</Label>
           <Textarea
             id="description"
             value={formData.description}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
             rows={2}
           />
         </div>
@@ -408,7 +419,7 @@ const queryClient = useQueryClient();
           <Textarea
             id="content"
             value={formData.content}
-            onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+            onChange={(e) => setFormData((prev) => ({ ...prev, content: e.target.value }))}
             rows={4}
             placeholder="Enter lesson content, instructions, or notes..."
           />
@@ -422,7 +433,7 @@ const queryClient = useQueryClient();
               <TabsTrigger value="upload">Upload File</TabsTrigger>
               <TabsTrigger value="url">YouTube URL</TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="upload" className="space-y-2">
               <div className="flex items-center gap-2">
                 <input
@@ -432,10 +443,10 @@ const queryClient = useQueryClient();
                   onChange={handleVideoUpload}
                   className="hidden"
                 />
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  className="flex items-center gap-2" 
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex items-center gap-2"
                   disabled={isUploading}
                   onClick={() => videoInputRef.current?.click()}
                 >
@@ -447,18 +458,40 @@ const queryClient = useQueryClient();
                 )}
               </div>
             </TabsContent>
-            
+
             <TabsContent value="url" className="space-y-2">
               <Input
                 placeholder="https://www.youtube.com/watch?v=..."
                 value={formData.video_url}
-                onChange={(e) => setFormData({ ...formData, video_url: e.target.value })}
+                onChange={(e) => setFormData((prev) => ({ ...prev, video_url: e.target.value }))}
               />
               {formData.video_url && isYouTubeUrl(formData.video_url) && (
                 <Badge variant="secondary">YouTube URL added</Badge>
               )}
             </TabsContent>
           </Tabs>
+
+          {formData.video_url && (
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="max-w-[220px] truncate">{getFileName(formData.video_url)}</Badge>
+              <a
+                href={isYouTubeUrl(formData.video_url) ? formData.video_url : (signedVideoUrl || '#')}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary text-sm underline"
+              >
+                View
+              </a>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={() => setFormData((prev) => ({ ...prev, video_url: '' }))}
+              >
+                Remove
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* PDF Section */}
@@ -472,10 +505,10 @@ const queryClient = useQueryClient();
               onChange={handlePdfUpload}
               className="hidden"
             />
-            <Button 
-              type="button" 
-              variant="outline" 
-              className="flex items-center gap-2" 
+            <Button
+              type="button"
+              variant="outline"
+              className="flex items-center gap-2"
               disabled={isUploading}
               onClick={() => pdfInputRef.current?.click()}
             >
@@ -486,6 +519,28 @@ const queryClient = useQueryClient();
               <Badge variant="secondary">PDF uploaded</Badge>
             )}
           </div>
+
+          {formData.pdf_url && (
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="max-w-[220px] truncate">{getFileName(formData.pdf_url)}</Badge>
+              <a
+                href={signedPdfUrl || '#'}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary text-sm underline"
+              >
+                View
+              </a>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={() => setFormData((prev) => ({ ...prev, pdf_url: '' }))}
+              >
+                Remove
+              </Button>
+            </div>
+          )}
         </div>
 
         <div>
@@ -497,9 +552,7 @@ const queryClient = useQueryClient();
             onChange={(e) => setFormData((prev) => ({ ...prev, order_index: parseInt(e.target.value) }))}
             placeholder="Order in module (1, 2, 3...)"
           />
-          <p className="text-xs text-muted-foreground mt-1">
-            Determines the sequence of lessons within the module
-          </p>
+          <p className="text-xs text-muted-foreground mt-1">Determines the sequence of lessons within the module</p>
         </div>
 
         <Button type="submit" className="w-full" disabled={isUploading}>
