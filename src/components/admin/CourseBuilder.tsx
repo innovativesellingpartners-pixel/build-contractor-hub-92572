@@ -299,11 +299,19 @@ export const CourseBuilder = ({ courseId, onClose }: CourseBuilderProps) => {
       is_required: lesson?.is_required ?? true,
     });
     const [videoInputType, setVideoInputType] = useState<'upload' | 'url'>('upload');
+    const [isUploading, setIsUploading] = useState(false);
     const videoInputRef = useRef<HTMLInputElement>(null);
     const pdfInputRef = useRef<HTMLInputElement>(null);
 
     const handleSubmit = (e: React.FormEvent) => {
       e.preventDefault();
+      
+      // Prevent submission during uploads
+      if (isUploading) {
+        toast.warning('Please wait for uploads to complete');
+        return;
+      }
+      
       // Determine lesson type based on what content exists
       let lessonType = 'text';
       if (formData.video_url && formData.pdf_url) {
@@ -320,26 +328,40 @@ export const CourseBuilder = ({ courseId, onClose }: CourseBuilderProps) => {
     const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (file) {
+        setIsUploading(true);
         setUploading(true);
         toast.info('Uploading video...', { duration: 2000 });
         const url = await handleFileUpload(file, 'video');
         if (url) {
-          setFormData({ ...formData, video_url: url });
+          // Use functional update to avoid stale state
+          setFormData(prevData => ({ ...prevData, video_url: url }));
+          // Clear the file input
+          if (videoInputRef.current) {
+            videoInputRef.current.value = '';
+          }
         }
         setUploading(false);
+        setIsUploading(false);
       }
     };
 
     const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (file) {
+        setIsUploading(true);
         setUploading(true);
         toast.info('Uploading PDF...', { duration: 2000 });
         const url = await handleFileUpload(file, 'pdf');
         if (url) {
-          setFormData({ ...formData, pdf_url: url });
+          // Use functional update to avoid stale state
+          setFormData(prevData => ({ ...prevData, pdf_url: url }));
+          // Clear the file input
+          if (pdfInputRef.current) {
+            pdfInputRef.current.value = '';
+          }
         }
         setUploading(false);
+        setIsUploading(false);
       }
     };
 
@@ -402,11 +424,11 @@ export const CourseBuilder = ({ courseId, onClose }: CourseBuilderProps) => {
                   type="button" 
                   variant="outline" 
                   className="flex items-center gap-2" 
-                  disabled={uploading}
+                  disabled={isUploading}
                   onClick={() => videoInputRef.current?.click()}
                 >
                   <Upload className="h-4 w-4" />
-                  {uploading ? 'Uploading...' : 'Choose Video File'}
+                  {isUploading ? 'Uploading...' : 'Choose Video File'}
                 </Button>
                 {formData.video_url && !isYouTubeUrl(formData.video_url) && (
                   <Badge variant="secondary">Video uploaded</Badge>
@@ -442,11 +464,11 @@ export const CourseBuilder = ({ courseId, onClose }: CourseBuilderProps) => {
               type="button" 
               variant="outline" 
               className="flex items-center gap-2" 
-              disabled={uploading}
+              disabled={isUploading}
               onClick={() => pdfInputRef.current?.click()}
             >
               <Upload className="h-4 w-4" />
-              {uploading ? 'Uploading...' : 'Choose PDF File'}
+              {isUploading ? 'Uploading...' : 'Choose PDF File'}
             </Button>
             {formData.pdf_url && (
               <Badge variant="secondary">PDF uploaded</Badge>
@@ -468,8 +490,8 @@ export const CourseBuilder = ({ courseId, onClose }: CourseBuilderProps) => {
           </p>
         </div>
 
-        <Button type="submit" className="w-full">
-          {lesson ? 'Update Lesson' : 'Create Lesson'}
+        <Button type="submit" className="w-full" disabled={isUploading}>
+          {isUploading ? 'Uploading files...' : (lesson ? 'Update Lesson' : 'Create Lesson')}
         </Button>
       </form>
     );
