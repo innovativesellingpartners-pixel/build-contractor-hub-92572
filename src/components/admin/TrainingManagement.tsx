@@ -214,7 +214,7 @@ export const TrainingManagement = () => {
           <div>
             <Label htmlFor="category">Category (Optional)</Label>
             <Select
-              value={formData.category_id}
+              value={formData.category_id || undefined}
               onValueChange={(value) => setFormData({ ...formData, category_id: value })}
             >
               <SelectTrigger>
@@ -222,7 +222,7 @@ export const TrainingManagement = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">No Category</SelectItem>
-                {categories?.map((category) => (
+                {categories?.filter((category) => !!category.id).map((category) => (
                   <SelectItem key={category.id} value={category.id}>
                     {category.name}
                   </SelectItem>
@@ -234,7 +234,7 @@ export const TrainingManagement = () => {
           <div>
             <Label htmlFor="difficulty">Difficulty (Optional)</Label>
             <Select
-              value={formData.difficulty_level}
+              value={formData.difficulty_level || undefined}
               onValueChange={(value) => setFormData({ ...formData, difficulty_level: value })}
             >
               <SelectTrigger>
