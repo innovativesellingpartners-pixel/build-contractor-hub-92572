@@ -8,7 +8,7 @@
 
 @layer base {
   :root {
-    /* CT1 Brand Colors - Soft reds, black, white theme */
+    /* CT1 Brand Colors - Neutral whites and grays with red accent */
     --background: 0 0% 100%;
     --foreground: 0 0% 0%;                /* Pure black */
     --card: 0 0% 100%;
@@ -16,45 +16,44 @@
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 0%;
 
-    /* Primary: Soft CT1 Red */
-    --primary: 0 70% 55%;                 /* Softer CT1 red */
+    /* Primary: CT1 Red */
+    --primary: 0 70% 50%;                 /* CT1 red */
     --primary-foreground: 0 0% 100%;      /* White text on red */
-    --primary-hover: 0 70% 50%;           /* Slightly darker red on hover */
+    --primary-hover: 0 70% 45%;           /* Darker red on hover */
 
-    /* Secondary: Soft Gray */
-    --secondary: 0 0% 96%;                /* Light gray */
+    /* Secondary: Neutral Gray */
+    --secondary: 0 0% 96%;                /* Light neutral gray */
     --secondary-foreground: 0 0% 15%;     /* Dark text on light */
     
-    --muted: 0 0% 97%;                    /* Very light gray */
+    --muted: 0 0% 98%;                    /* Very light neutral */
     --muted-foreground: 0 0% 35%;         /* Medium gray text */
     
-    /* Accent: Soft Red */
-    --accent: 0 70% 55%;                  /* Soft red accent */
+    /* Accent: CT1 Red */
+    --accent: 0 70% 50%;                  /* CT1 red accent */
     --accent-foreground: 0 0% 100%;       /* White on red */
     
     --destructive: 0 62.8% 40.6%;
     --destructive-foreground: 0 0% 100%;
     
-    --border: 0 0% 92%;                   /* Light border */
-    --input: 0 0% 97%;                    /* Light input bg */
-    --ring: 0 70% 55%;                    /* Soft red focus ring */
+    --border: 0 0% 92%;                   /* Light neutral border */
+    --input: 0 0% 98%;                    /* Light neutral input bg */
+    --ring: 0 70% 50%;                    /* Red focus ring */
 
-    /* CT1 specific brand colors - softer palette */
-    --ct1-red: 0 70% 55%;                 /* Main brand red - softer */
-    --ct1-soft-red: 0 70% 85%;            /* Very soft red for backgrounds */
+    /* CT1 specific brand colors - neutral palette */
+    --ct1-red: 0 70% 50%;                 /* Main brand red */
     --ct1-black: 0 0% 0%;                 /* Pure black */
     --ct1-white: 0 0% 100%;               /* Pure white */
-    --ct1-dark-red: 0 70% 45%;            /* Darker red variant */
-    --ct1-light-red: 0 70% 65%;           /* Lighter red variant */
+    --ct1-dark-red: 0 70% 40%;            /* Darker red variant */
+    --ct1-light-red: 0 70% 60%;           /* Lighter red variant */
 
-    /* Soft gradients with CT1 colors */
-    --gradient-hero: linear-gradient(135deg, hsl(var(--ct1-soft-red)), hsl(var(--background)));
+    /* Neutral gradients */
+    --gradient-hero: linear-gradient(135deg, hsl(0 0% 0% / 0.6), hsl(0 0% 0% / 0.4)); /* Dark overlay for hero */
     --gradient-card: linear-gradient(180deg, hsl(var(--background)), hsl(var(--muted)));
-    --gradient-red: linear-gradient(45deg, hsl(var(--ct1-red) / 0.1), hsl(var(--ct1-soft-red) / 0.2));
+    --gradient-red: linear-gradient(45deg, hsl(var(--ct1-red) / 0.1), hsl(var(--ct1-light-red) / 0.1));
     --gradient-black: linear-gradient(135deg, hsl(var(--ct1-black)), hsl(0 0% 15%));
 
-    /* Soft shadows for refined design */
-    --shadow-soft: 0 4px 20px -4px hsl(var(--ct1-red) / 0.15);
+    /* Soft shadows */
+    --shadow-soft: 0 4px 20px -4px hsl(0 0% 0% / 0.15);
     --shadow-card: 0 2px 12px -2px hsl(var(--foreground) / 0.08);
     --shadow-red-glow: 0 0 30px hsl(var(--ct1-red) / 0.2);
 
@@ -166,12 +165,15 @@
   }
 
   .section-hero {
-    background: var(--gradient-hero);
+    background-image: url('/src/assets/hero-construction.jpg'), var(--gradient-hero);
+    background-size: cover;
+    background-position: center;
+    background-blend-mode: overlay;
     @apply relative overflow-hidden;
   }
 
   .section-features {
-    @apply bg-gradient-to-b from-background to-ct1-soft-red/30;
+    @apply bg-gradient-to-b from-background to-muted;
   }
 
   .section-cta {

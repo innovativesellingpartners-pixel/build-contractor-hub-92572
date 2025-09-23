@@ -51,21 +51,21 @@ export function LandingPage() {
       </header>
 
       {/* Hero Section */}
-      <section className="section-hero py-24 relative overflow-hidden">
-        <div className="absolute inset-0 bg-ct1-pattern opacity-10"></div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+      <section className="section-hero py-24 relative overflow-hidden min-h-[80vh] flex items-center">
+        <div className="absolute inset-0 bg-black/40"></div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="text-center lg:text-left">
+            <div className="text-center lg:text-left text-white">
               <div className="mb-8 flex justify-center lg:justify-start">
-                <img src={ct1Logo} alt="CT1" className="h-20 w-20" />
+                <img src={ct1Logo} alt="CT1" className="h-20 w-20 drop-shadow-lg" />
               </div>
               
-              <h1 className="text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight">
+              <h1 className="text-5xl lg:text-6xl font-bold mb-6 leading-tight drop-shadow-lg">
                 Join the CT1 Network
                 <span className="text-primary block mt-2 arrow-up">Start, Build, Scale Your Business</span>
               </h1>
               
-              <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
+              <p className="text-xl mb-8 leading-relaxed drop-shadow-md opacity-90">
                 The complete contractor business suite with AI-powered tools, proven training, 
                 and professional websites. Join thousands of contractors already growing with CT1.
               </p>
@@ -75,7 +75,7 @@ export function LandingPage() {
                   Join the CT1 Network Today
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
-                <Button variant="outline" size="lg" className="border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground">
+                <Button variant="outline" size="lg" className="border-2 border-white text-white hover:bg-white hover:text-foreground">
                   See How It Works
                 </Button>
               </div>
@@ -83,21 +83,12 @@ export function LandingPage() {
               <div className="mt-8 flex items-center justify-center lg:justify-start gap-6">
                 <div className="flex items-center gap-2">
                   <Star className="h-5 w-5 text-primary fill-current" />
-                  <span className="font-semibold text-foreground">Trusted by 15,000+ contractors</span>
+                  <span className="font-semibold text-white">Trusted by 15,000+ contractors</span>
                 </div>
               </div>
             </div>
             
-            <div className="relative">
-              <img 
-                src={heroImage} 
-                alt="CT1 Contractor Business Suite" 
-                className="rounded-2xl shadow-bold border-4 border-primary/20"
-              />
-              <div className="absolute -bottom-6 -right-6 bg-primary text-primary-foreground p-4 rounded-xl shadow-red-glow">
-                <TrendingUp className="h-8 w-8" />
-              </div>
-            </div>
+            {/* Remove the separate image since it's now the background */}
           </div>
         </div>
       </section>
