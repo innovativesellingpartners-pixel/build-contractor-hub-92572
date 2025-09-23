@@ -8,7 +8,7 @@
 
 @layer base {
   :root {
-    /* CT1 Brand Colors - Bold red, black, white theme */
+    /* CT1 Brand Colors - Soft reds, black, white theme */
     --background: 0 0% 100%;
     --foreground: 0 0% 0%;                /* Pure black */
     --card: 0 0% 100%;
@@ -16,46 +16,47 @@
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 0%;
 
-    /* Primary: CT1 Bold Red */
-    --primary: 0 84% 50%;                 /* Bold CT1 red */
+    /* Primary: Soft CT1 Red */
+    --primary: 0 70% 55%;                 /* Softer CT1 red */
     --primary-foreground: 0 0% 100%;      /* White text on red */
-    --primary-hover: 0 84% 40%;           /* Darker red on hover */
+    --primary-hover: 0 70% 50%;           /* Slightly darker red on hover */
 
-    /* Secondary: Near Black */
-    --secondary: 0 0% 10%;                /* Near black */
-    --secondary-foreground: 0 0% 100%;    /* White on dark */
+    /* Secondary: Soft Gray */
+    --secondary: 0 0% 96%;                /* Light gray */
+    --secondary-foreground: 0 0% 15%;     /* Dark text on light */
     
-    --muted: 0 0% 95%;                    /* Light gray */
-    --muted-foreground: 0 0% 25%;         /* Dark gray text */
+    --muted: 0 0% 97%;                    /* Very light gray */
+    --muted-foreground: 0 0% 35%;         /* Medium gray text */
     
-    /* Accent: CT1 Red */
-    --accent: 0 84% 50%;                  /* CT1 red accent */
+    /* Accent: Soft Red */
+    --accent: 0 70% 55%;                  /* Soft red accent */
     --accent-foreground: 0 0% 100%;       /* White on red */
     
     --destructive: 0 62.8% 40.6%;
     --destructive-foreground: 0 0% 100%;
     
-    --border: 0 0% 90%;                   /* Light border */
-    --input: 0 0% 95%;                    /* Light input bg */
-    --ring: 0 84% 50%;                    /* Red focus ring */
+    --border: 0 0% 92%;                   /* Light border */
+    --input: 0 0% 97%;                    /* Light input bg */
+    --ring: 0 70% 55%;                    /* Soft red focus ring */
 
-    /* CT1 specific brand colors */
-    --ct1-red: 0 84% 50%;                 /* Main brand red */
+    /* CT1 specific brand colors - softer palette */
+    --ct1-red: 0 70% 55%;                 /* Main brand red - softer */
+    --ct1-soft-red: 0 70% 85%;            /* Very soft red for backgrounds */
     --ct1-black: 0 0% 0%;                 /* Pure black */
     --ct1-white: 0 0% 100%;               /* Pure white */
-    --ct1-dark-red: 0 84% 40%;            /* Darker red variant */
-    --ct1-light-red: 0 84% 60%;           /* Lighter red variant */
+    --ct1-dark-red: 0 70% 45%;            /* Darker red variant */
+    --ct1-light-red: 0 70% 65%;           /* Lighter red variant */
 
-    /* Bold gradients with CT1 colors */
-    --gradient-hero: linear-gradient(135deg, hsl(var(--ct1-red)), hsl(var(--ct1-dark-red)));
+    /* Soft gradients with CT1 colors */
+    --gradient-hero: linear-gradient(135deg, hsl(var(--ct1-soft-red)), hsl(var(--background)));
     --gradient-card: linear-gradient(180deg, hsl(var(--background)), hsl(var(--muted)));
-    --gradient-red: linear-gradient(45deg, hsl(var(--ct1-red)), hsl(var(--ct1-light-red)));
+    --gradient-red: linear-gradient(45deg, hsl(var(--ct1-red) / 0.1), hsl(var(--ct1-soft-red) / 0.2));
     --gradient-black: linear-gradient(135deg, hsl(var(--ct1-black)), hsl(0 0% 15%));
 
-    /* Strong shadows for bold design */
-    --shadow-bold: 0 10px 30px -10px hsl(var(--ct1-red) / 0.4);
-    --shadow-card: 0 4px 16px -4px hsl(var(--foreground) / 0.15);
-    --shadow-red-glow: 0 0 40px hsl(var(--ct1-red) / 0.3);
+    /* Soft shadows for refined design */
+    --shadow-soft: 0 4px 20px -4px hsl(var(--ct1-red) / 0.15);
+    --shadow-card: 0 2px 12px -2px hsl(var(--foreground) / 0.08);
+    --shadow-red-glow: 0 0 30px hsl(var(--ct1-red) / 0.2);
 
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
@@ -73,7 +74,7 @@
   }
 
   .dark {
-    /* Dark mode: CT1 red with dark backgrounds */
+    /* Dark mode: CT1 soft red with dark backgrounds */
     --background: 0 0% 5%;                /* Very dark background */
     --foreground: 0 0% 100%;              /* White text */
     --card: 0 0% 8%;
@@ -81,9 +82,9 @@
     --popover: 0 0% 8%;
     --popover-foreground: 0 0% 100%;
 
-    --primary: 0 84% 55%;                 /* Slightly brighter red for dark mode */
+    --primary: 0 70% 60%;                 /* Soft red for dark mode */
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 0 84% 45%;
+    --primary-hover: 0 70% 55%;
 
     --secondary: 0 0% 15%;                /* Dark gray */
     --secondary-foreground: 0 0% 100%;
@@ -91,7 +92,7 @@
     --muted: 0 0% 12%;                    /* Darker muted */
     --muted-foreground: 0 0% 70%;         /* Light gray text */
 
-    --accent: 0 84% 55%;                  /* Red accent */
+    --accent: 0 70% 60%;                  /* Soft red accent */
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 62.8% 50%;
@@ -99,28 +100,29 @@
 
     --border: 0 0% 20%;                   /* Dark border */
     --input: 0 0% 15%;                    /* Dark input bg */
-    --ring: 0 84% 55%;                    /* Red focus ring */
+    --ring: 0 70% 60%;                    /* Soft red focus ring */
 
-    /* CT1 dark mode colors */
-    --ct1-red: 0 84% 55%;                 /* Brighter red for dark mode */
+    /* CT1 dark mode colors - softer */
+    --ct1-red: 0 70% 60%;                 /* Softer red for dark mode */
+    --ct1-soft-red: 0 70% 25%;            /* Very soft red for dark backgrounds */
     --ct1-black: 0 0% 5%;                 /* Very dark */
     --ct1-white: 0 0% 100%;               /* Pure white */
-    --ct1-dark-red: 0 84% 45%;            /* Darker red variant */
-    --ct1-light-red: 0 84% 65%;           /* Lighter red variant */
+    --ct1-dark-red: 0 70% 50%;            /* Darker red variant */
+    --ct1-light-red: 0 70% 70%;           /* Lighter red variant */
 
-    /* Enhanced shadows for dark mode */
-    --shadow-bold: 0 10px 30px -10px hsl(var(--ct1-red) / 0.6);
-    --shadow-card: 0 4px 16px -4px hsl(0 0% 0% / 0.4);
-    --shadow-red-glow: 0 0 40px hsl(var(--ct1-red) / 0.4);
+    /* Soft shadows for dark mode */
+    --shadow-soft: 0 4px 20px -4px hsl(var(--ct1-red) / 0.3);
+    --shadow-card: 0 2px 12px -2px hsl(0 0% 0% / 0.3);
+    --shadow-red-glow: 0 0 30px hsl(var(--ct1-red) / 0.3);
 
     --sidebar-background: 0 0% 8%;
     --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 0 84% 55%;
+    --sidebar-primary: 0 70% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 0 0% 15%;
     --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 0 0% 20%;
-    --sidebar-ring: 0 84% 55%;
+    --sidebar-ring: 0 70% 60%;
   }
 }
 
@@ -140,50 +142,51 @@
 }
 
 @layer components {
-  /* CT1 Custom component styles using the design system */
+  /* CT1 Custom component styles - refined and soft */
   .btn-hero {
     @apply bg-gradient-to-r from-primary to-primary-hover text-primary-foreground px-8 py-4 rounded-lg font-bold text-lg shadow-lg hover:shadow-xl;
-    box-shadow: var(--shadow-bold);
+    box-shadow: var(--shadow-soft);
     transition: var(--transition-smooth);
     border: 2px solid transparent;
   }
   
   .btn-hero:hover {
-    transform: translateY(-2px) scale(1.05);
+    transform: translateY(-1px) scale(1.02);
     box-shadow: var(--shadow-red-glow);
-    border-color: hsl(var(--ct1-white) / 0.2);
+    border-color: hsl(var(--ct1-white) / 0.1);
   }
 
   .btn-ct1 {
-    @apply bg-primary text-primary-foreground px-6 py-3 rounded-lg font-bold shadow-lg hover:bg-primary-hover transition-all duration-200 hover:scale-105;
+    @apply bg-primary text-primary-foreground px-6 py-3 rounded-lg font-semibold shadow-lg hover:bg-primary-hover transition-all duration-200 hover:scale-102;
   }
 
   .card-ct1 {
-    @apply bg-gradient-to-br from-background to-muted border-2 border-primary/20 shadow-lg backdrop-blur-sm hover:border-primary/40 transition-all duration-300;
+    @apply bg-gradient-to-br from-background to-muted border border-primary/10 shadow-lg backdrop-blur-sm hover:border-primary/20 transition-all duration-300;
     box-shadow: var(--shadow-card);
   }
 
   .section-hero {
-    @apply bg-gradient-to-br from-primary/5 to-secondary/5 relative overflow-hidden;
     background: var(--gradient-hero);
+    @apply relative overflow-hidden;
   }
 
   .section-features {
-    @apply bg-gradient-to-b from-background to-muted/50;
+    @apply bg-gradient-to-b from-background to-ct1-soft-red/30;
   }
 
   .section-cta {
-    @apply bg-gradient-to-r from-secondary to-primary text-primary-foreground;
+    background: var(--gradient-black);
+    @apply text-primary-foreground;
   }
 
-  /* Arrow motif utility classes */
+  /* Arrow motif utility classes - softer */
   .arrow-up {
     @apply relative;
   }
 
   .arrow-up::before {
     content: '';
-    @apply absolute -top-2 -right-2 w-4 h-4 border-t-2 border-r-2 border-primary rotate-45 opacity-30;
+    @apply absolute -top-2 -right-2 w-3 h-3 border-t-2 border-r-2 border-primary/50 rotate-45 opacity-20;
   }
 
   /* Utility classes */
@@ -193,9 +196,9 @@
 
   .bg-ct1-pattern {
     background-image: 
-      linear-gradient(45deg, transparent 40%, hsl(var(--primary) / 0.05) 50%, transparent 60%),
-      linear-gradient(-45deg, transparent 40%, hsl(var(--primary) / 0.05) 50%, transparent 60%);
-    background-size: 60px 60px;
+      linear-gradient(45deg, transparent 50%, hsl(var(--primary) / 0.03) 55%, transparent 60%),
+      linear-gradient(-45deg, transparent 50%, hsl(var(--primary) / 0.03) 55%, transparent 60%);
+    background-size: 80px 80px;
   }
 
   .accent-red {
@@ -203,6 +206,6 @@
   }
   
   .border-construction {
-    border-left: 4px solid hsl(var(--primary));
+    border-left: 3px solid hsl(var(--primary) / 0.5);
   }
 }

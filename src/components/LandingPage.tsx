@@ -61,22 +61,22 @@ export function LandingPage() {
               </div>
               
               <h1 className="text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight">
-                The Contractor Business Suite That Helps You
-                <span className="text-primary block mt-2 arrow-up">One-Up the Competition</span>
+                Join the CT1 Network
+                <span className="text-primary block mt-2 arrow-up">Start, Build, Scale Your Business</span>
               </h1>
               
               <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
-                Stop losing bids. Stop wasting time. Stop being left behind. 
-                CT1 helps you lead with AI-powered tools, proven training, and professional websites.
+                The complete contractor business suite with AI-powered tools, proven training, 
+                and professional websites. Join thousands of contractors already growing with CT1.
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Button className="btn-hero text-lg px-8 py-4">
-                  Start Winning More Jobs Today
+                  Join the CT1 Network Today
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
                 <Button variant="outline" size="lg" className="border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground">
-                  See Demo
+                  See How It Works
                 </Button>
               </div>
 
@@ -111,10 +111,11 @@ export function LandingPage() {
               CT1 PocketBots
             </Badge>
             <h2 className="text-4xl font-bold text-foreground mb-6">
-              AI-Powered Tools That Work <span className="text-primary">24/7</span>
+              AI-Powered Tools for <span className="text-primary">Your Business Growth</span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Stop doing busy work. Let our AI PocketBots handle the details while you focus on what matters most.
+              Focus on what you do best while our AI PocketBots handle the administrative work, 
+              client communication, and business operations.
             </p>
           </div>
 
@@ -126,7 +127,7 @@ export function LandingPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground mb-4">
-                  Automate follow-ups, qualify leads, and close more deals while you sleep.
+                  Streamline client communication and grow your sales pipeline with intelligent automation.
                 </p>
                 <ul className="space-y-2 text-sm">
                   <li className="flex items-center gap-2">
@@ -194,17 +195,17 @@ export function LandingPage() {
           <div className="mb-8">
             <img src={ct1Logo} alt="CT1" className="h-16 w-16 mx-auto mb-6" />
             <h2 className="text-5xl font-bold mb-6 text-primary-foreground">
-              Ready to <span className="text-primary-foreground">One-Up the Competition?</span>
+              Ready to <span className="text-primary-foreground">Build Your Future?</span>
             </h2>
             <p className="text-xl opacity-90 mb-8 max-w-2xl mx-auto text-primary-foreground">
-              Join thousands of contractors already winning more jobs with CT1.
+              Join the CT1 network and start building the contracting business you've always wanted.
             </p>
           </div>
           
           <div className="flex flex-col sm:flex-row gap-6 justify-center">
             <Link to="/subscribe">
               <Button size="lg" className="bg-background text-primary hover:bg-background/90 text-xl px-12 py-6 font-bold">
-                Start Your Subscription
+                Start Building Today
                 <ChevronUp className="ml-2 h-6 w-6" />
               </Button>
             </Link>
