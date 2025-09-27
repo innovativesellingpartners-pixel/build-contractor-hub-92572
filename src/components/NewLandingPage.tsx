@@ -232,7 +232,7 @@ export function NewLandingPage() {
                     <p className="text-white/80 text-sm">Automated workflows</p>
                   </div>
                 </div>
-                <div className="space-y-4 mt-8">
+                <div className="space-y-4">
                   <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
                     <Users className="h-8 w-8 text-primary mb-2" />
                     <h4 className="font-semibold text-white">Nationwide Network</h4>
