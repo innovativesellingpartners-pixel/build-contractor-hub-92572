@@ -218,8 +218,8 @@ export function NewLandingPage() {
                 <div className="space-y-4">
                   <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
                     <TrendingUp className="h-8 w-8 text-primary mb-2" />
-                    <h4 className="font-semibold text-white">40% Revenue Growth</h4>
-                    <p className="text-white/80 text-sm">Average increase with CT1</p>
+                    <h4 className="font-semibold text-white">Increase Your Revenue</h4>
+                    <p className="text-white/80 text-sm">By saving time, money, and energy. "Work on your business, not in your business"</p>
                   </div>
                   <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
                     <Clock className="h-8 w-8 text-primary mb-2" />
