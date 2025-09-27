@@ -32,7 +32,8 @@ import {
   GraduationCap,
   DollarSign,
   Clock,
-  Gauge
+  Gauge,
+  FileText
 } from "lucide-react";
 
 export function NewLandingPage() {
@@ -64,34 +65,34 @@ export function NewLandingPage() {
 
   const features = [
     {
-      icon: Bot,
-      title: "AI PocketBots",
-      description: "Automated sales, estimating, and project management bots"
+      icon: FileText,
+      title: "Proposals & Estimates",
+      description: "Create professional proposals quickly with templates and line items"
+    },
+    {
+      icon: Calendar,
+      title: "Job Management",
+      description: "Track projects from lead to completion with phases and tasks"
+    },
+    {
+      icon: DollarSign,
+      title: "Billing & Payments",
+      description: "Automate invoicing, track payments, and manage financial reporting"
     },
     {
       icon: Users,
-      title: "CRM Integration",
-      description: "Complete customer relationship management with Canam Systems PSA"
+      title: "Client Portal",
+      description: "Secure client access to proposals, project status, and updates"
     },
     {
-      icon: Target,
-      title: "Lead Generation",
-      description: "Qualified leads delivered directly to your dashboard"
+      icon: TrendingUp,
+      title: "Reporting & Analytics",
+      description: "Monitor cost, revenue, margins with performance metrics"
     },
     {
-      icon: GraduationCap,
-      title: "Training Hub",
-      description: "Professional certifications and continuing education"
-    },
-    {
-      icon: Building,
-      title: "Marketplace",
-      description: "Access to tools, supplies, and technology solutions"
-    },
-    {
-      icon: Shield,
-      title: "Compliance Tracking",
-      description: "Manage licenses, insurance, and certifications"
+      icon: Bot,
+      title: "AI Automation",
+      description: "PocketBots handle routine tasks and client communication"
     }
   ];
 
@@ -110,10 +111,10 @@ export function NewLandingPage() {
             </div>
             
             <nav className="hidden md:flex items-center space-x-6">
-              <a href="#features" className="text-foreground hover:text-primary transition-colors font-medium">Features</a>
+              <a href="#features" className="text-foreground hover:text-primary transition-colors font-medium">Business Suite</a>
               <a href="#for-contractors" className="text-foreground hover:text-primary transition-colors font-medium">For Contractors</a>
-              <a href="#find-contractor" className="text-foreground hover:text-primary transition-colors font-medium">Find Contractors</a>
-              <a href="#testimonials" className="text-foreground hover:text-primary transition-colors font-medium">Success Stories</a>
+              <a href="#modules" className="text-foreground hover:text-primary transition-colors font-medium">Key Modules</a>
+              <a href="#testimonials" className="text-foreground hover:text-primary transition-colors font-medium">Case Studies</a>
               <Link to="/pricing" className="text-foreground hover:text-primary transition-colors font-medium">Pricing</Link>
               
               <Dialog open={activeContactForm === "contact-sales"} onOpenChange={(open) => setActiveContactForm(open ? "contact-sales" : null)}>
@@ -153,13 +154,13 @@ export function NewLandingPage() {
               </div>
               
               <h1 className="text-6xl lg:text-7xl font-bold mb-6 leading-tight drop-shadow-lg">
-                One-Up Your Business
-                <span className="text-primary block mt-2">With CT1</span>
+                Unified Business Suite
+                <span className="text-primary block mt-2">For Contractors</span>
               </h1>
               
               <p className="text-xl mb-8 leading-relaxed drop-shadow-md opacity-90 max-w-2xl">
-                The complete contractor platform that empowers you to grow, manage, and scale your business. 
-                Join 15,000+ contractors already succeeding with CT1.
+                Complete contractor management combining proposals, job tracking, billing, client communication, 
+                scheduling, and team coordination. Everything connected. Nothing missing.
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8">
@@ -249,14 +250,15 @@ export function NewLandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <Badge className="mb-4 bg-primary text-primary-foreground px-4 py-2 text-lg">
-              <Zap className="h-5 w-5 mr-2" />
-              Complete Business Solution
+              <Target className="h-5 w-5 mr-2" />
+              Unified Business Suite
             </Badge>
             <h2 className="text-4xl font-bold text-foreground mb-6">
-              How CT1 Helps <span className="text-primary">Contractors Succeed</span>
+              Everything Connected, <span className="text-primary">Nothing Missing</span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              From lead generation to project completion, CT1 provides everything you need to run and grow your contracting business.
+              Stop juggling multiple tools. CT1 combines all contractor business functions 
+              in one professional, no-nonsense platform.
             </p>
           </div>
 
@@ -298,29 +300,29 @@ export function NewLandingPage() {
                 <div className="flex items-start gap-3">
                   <CheckCircle className="h-6 w-6 text-primary mt-1 flex-shrink-0" />
                   <div>
-                    <h4 className="font-semibold text-foreground">Complete CRM & PSA Integration</h4>
-                    <p className="text-muted-foreground">Manage clients, jobs, and leads with Canam Systems integration</p>
+                <h4 className="font-semibold text-foreground">Proposals to Payment</h4>
+                    <p className="text-muted-foreground">Complete workflow from estimates through invoicing and payment tracking</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <CheckCircle className="h-6 w-6 text-primary mt-1 flex-shrink-0" />
                   <div>
-                    <h4 className="font-semibold text-foreground">AI-Powered Automation</h4>
-                    <p className="text-muted-foreground">Sales Bot, Estimating Bot, and Project Bot handle routine tasks</p>
+                <h4 className="font-semibold text-foreground">Job Management</h4>
+                    <p className="text-muted-foreground">Track projects through phases, manage tasks, and coordinate field and office teams</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <CheckCircle className="h-6 w-6 text-primary mt-1 flex-shrink-0" />
                   <div>
-                    <h4 className="font-semibold text-foreground">Professional Training</h4>
-                    <p className="text-muted-foreground">Certifications, best practices, and continuing education</p>
+                <h4 className="font-semibold text-foreground">Client Portal</h4>
+                    <p className="text-muted-foreground">Secure branded portals for clients to review proposals and track project status</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <CheckCircle className="h-6 w-6 text-primary mt-1 flex-shrink-0" />
                   <div>
-                    <h4 className="font-semibold text-foreground">Marketplace Access</h4>
-                    <p className="text-muted-foreground">Tools, supplies, and technology solutions at contractor prices</p>
+                <h4 className="font-semibold text-foreground">Reporting & Analytics</h4>
+                    <p className="text-muted-foreground">Monitor performance with cost analysis, revenue tracking, and margin reporting</p>
                   </div>
                 </div>
               </div>

@@ -18,7 +18,9 @@ import {
   Star,
   Zap,
   Award,
-  ChevronUp
+  ChevronUp,
+  FileText,
+  DollarSign
 } from "lucide-react";
 
 export function LandingPage() {
@@ -37,15 +39,15 @@ export function LandingPage() {
             </div>
             
             <nav className="hidden md:flex items-center space-x-8">
-              <a href="#pocketbots" className="text-foreground hover:text-primary transition-colors font-medium">PocketBots</a>
-              <a href="#training" className="text-foreground hover:text-primary transition-colors font-medium">Training</a>
-              <a href="#websites" className="text-foreground hover:text-primary transition-colors font-medium">Websites</a>
+              <a href="#business-suite" className="text-foreground hover:text-primary transition-colors font-medium">Business Suite</a>
+              <a href="#modules" className="text-foreground hover:text-primary transition-colors font-medium">Modules</a>
+              <a href="#integration" className="text-foreground hover:text-primary transition-colors font-medium">Integration</a>
               <Link to="/pricing" className="text-foreground hover:text-primary transition-colors font-medium">Pricing</Link>
               <Link 
                 to="/auth" 
                 className="bg-primary text-primary-foreground px-6 py-2 rounded-lg font-bold hover:bg-primary-hover transition-colors"
               >
-                Contractor Portal
+                Contractor Login
               </Link>
             </nav>
           </div>
@@ -63,22 +65,22 @@ export function LandingPage() {
               </div>
               
               <h1 className="text-5xl lg:text-6xl font-bold mb-6 leading-tight drop-shadow-lg">
-                Join the CT1 Network
-                <span className="text-primary block mt-2 arrow-up">Start, Build, Scale Your Business</span>
+                CT1 Unified Business Suite
+                <span className="text-primary block mt-2 arrow-up">Everything You Need to Run Your Business</span>
               </h1>
               
               <p className="text-xl mb-8 leading-relaxed drop-shadow-md opacity-90">
-                The complete contractor business suite with AI-powered tools, proven training, 
-                and professional websites. Join thousands of contractors already growing with CT1.
+                Complete contractor management platform combining proposals, job tracking, billing, 
+                client communication, scheduling, and team coordination in one unified system.
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Button className="btn-hero text-lg px-8 py-4">
-                  Join the CT1 Network Today
+                  Start Your Free Trial
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
                 <Button variant="outline" size="lg" className="border-2 border-white text-white hover:bg-white hover:text-foreground">
-                  See How It Works
+                  View Demo
                 </Button>
               </div>
 
@@ -95,63 +97,41 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* PocketBots Features */}
-      <section id="pocketbots" className="py-20 bg-muted/30">
+      {/* Business Suite Modules */}
+      <section id="business-suite" className="py-20 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <Badge className="mb-4 bg-primary text-primary-foreground px-4 py-2 text-lg">
-              <Bot className="h-5 w-5 mr-2" />
-              CT1 PocketBots
+              <Target className="h-5 w-5 mr-2" />
+              Unified Business Suite
             </Badge>
             <h2 className="text-4xl font-bold text-foreground mb-6">
-              AI-Powered Tools for <span className="text-primary">Your Business Growth</span>
+              Everything Connected, <span className="text-primary">Nothing Missing</span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Focus on what you do best while our AI PocketBots handle the administrative work, 
-              client communication, and business operations.
+              Stop juggling multiple tools. CT1 combines all contractor business functions 
+              in one professional, no-nonsense platform.
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             <Card className="card-ct1 p-6 hover:shadow-red-glow transition-all">
               <CardHeader className="pb-4">
-                <Users className="h-12 w-12 text-primary mb-4" />
-                <CardTitle className="text-xl font-bold">Sales Bot</CardTitle>
+                <FileText className="h-12 w-12 text-primary mb-4" />
+                <CardTitle className="text-xl font-bold">Proposals & Estimates</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground mb-4">
-                  Streamline client communication and grow your sales pipeline with intelligent automation.
+                  Create professional proposals quickly with templates and accurate pricing.
                 </p>
                 <ul className="space-y-2 text-sm">
                   <li className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-primary" />
-                    Lead qualification
+                    Template library
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-primary" />
-                    Automated follow-ups
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-
-            <Card className="card-ct1 p-6 hover:shadow-red-glow transition-all">
-              <CardHeader className="pb-4">
-                <Calculator className="h-12 w-12 text-primary mb-4" />
-                <CardTitle className="text-xl font-bold">Estimating Bot</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground mb-4">
-                  Generate accurate estimates faster with AI-powered calculations.
-                </p>
-                <ul className="space-y-2 text-sm">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-primary" />
-                    Instant estimates
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-primary" />
-                    Profit optimization
+                    Digital approvals
                   </li>
                 </ul>
               </CardContent>
@@ -160,20 +140,108 @@ export function LandingPage() {
             <Card className="card-ct1 p-6 hover:shadow-red-glow transition-all">
               <CardHeader className="pb-4">
                 <Calendar className="h-12 w-12 text-primary mb-4" />
-                <CardTitle className="text-xl font-bold">Project Bot</CardTitle>
+                <CardTitle className="text-xl font-bold">Job Management</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground mb-4">
-                  Keep projects on track with automated scheduling and progress tracking.
+                  Track projects from lead to completion with phases, tasks, and milestones.
                 </p>
                 <ul className="space-y-2 text-sm">
                   <li className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-primary" />
-                    Smart scheduling
+                    Progress tracking
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-primary" />
-                    Client updates
+                    Team coordination
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            <Card className="card-ct1 p-6 hover:shadow-red-glow transition-all">
+              <CardHeader className="pb-4">
+                <DollarSign className="h-12 w-12 text-primary mb-4" />
+                <CardTitle className="text-xl font-bold">Billing & Payments</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground mb-4">
+                  Automate invoicing, track payments, and manage financial reporting.
+                </p>
+                <ul className="space-y-2 text-sm">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-primary" />
+                    Automated invoicing
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-primary" />
+                    Payment tracking
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            <Card className="card-ct1 p-6 hover:shadow-red-glow transition-all">
+              <CardHeader className="pb-4">
+                <Users className="h-12 w-12 text-primary mb-4" />
+                <CardTitle className="text-xl font-bold">Client Portal</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground mb-4">
+                  Secure client access to proposals, project status, and communications.
+                </p>
+                <ul className="space-y-2 text-sm">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-primary" />
+                    Real-time updates
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-primary" />
+                    Document sharing
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            <Card className="card-ct1 p-6 hover:shadow-red-glow transition-all">
+              <CardHeader className="pb-4">
+                <TrendingUp className="h-12 w-12 text-primary mb-4" />
+                <CardTitle className="text-xl font-bold">Reporting & Analytics</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground mb-4">
+                  Monitor performance with cost analysis, revenue tracking, and margins.
+                </p>
+                <ul className="space-y-2 text-sm">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-primary" />
+                    Performance metrics
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-primary" />
+                    Financial insights
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            <Card className="card-ct1 p-6 hover:shadow-red-glow transition-all">
+              <CardHeader className="pb-4">
+                <Bot className="h-12 w-12 text-primary mb-4" />
+                <CardTitle className="text-xl font-bold">AI Automation</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground mb-4">
+                  AI-powered PocketBots handle routine tasks and client communication.
+                </p>
+                <ul className="space-y-2 text-sm">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-primary" />
+                    Automated workflows
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-primary" />
+                    Smart scheduling
                   </li>
                 </ul>
               </CardContent>
@@ -188,10 +256,10 @@ export function LandingPage() {
           <div className="mb-8">
             <img src={ct1Logo} alt="CT1" className="h-16 w-16 mx-auto mb-6" />
             <h2 className="text-5xl font-bold mb-6 text-primary-foreground">
-              Ready to <span className="text-primary-foreground">Build Your Future?</span>
+              Ready to <span className="text-primary-foreground">Unify Your Business?</span>
             </h2>
             <p className="text-xl opacity-90 mb-8 max-w-2xl mx-auto text-primary-foreground">
-              Join the CT1 network and start building the contracting business you've always wanted.
+              Start your free trial and experience how CT1's unified platform transforms contractor operations.
             </p>
           </div>
           
