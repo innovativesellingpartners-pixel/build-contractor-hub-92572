@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import heroImage from "@/assets/hero-construction.jpg";
 import ct1Logo from "@/assets/ct1-logo.png";
+import constructeamLogo from "@/assets/constructeam-logo-circle.png";
 import { 
   ArrowRight, 
   Bot, 
@@ -57,7 +58,7 @@ export function LandingPage() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="text-center lg:text-left text-white">
               <div className="mb-8 flex justify-center lg:justify-start">
-                <img src={ct1Logo} alt="CT1" className="h-20 w-20 drop-shadow-lg" />
+                <img src={constructeamLogo} alt="CONSTRUCTEAM CT1" className="h-20 w-20 drop-shadow-lg" />
               </div>
               
               <h1 className="text-5xl lg:text-6xl font-bold mb-6 leading-tight drop-shadow-lg">

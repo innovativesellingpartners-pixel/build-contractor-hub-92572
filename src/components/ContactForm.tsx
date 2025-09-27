@@ -11,10 +11,11 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, Mail, Phone, User, Building, MessageSquare } from "lucide-react";
 
 const contactFormSchema = z.object({
-  name: z.string().trim().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
+  firstName: z.string().trim().min(1, "First name is required").max(50, "First name must be less than 50 characters"),
+  lastName: z.string().trim().min(1, "Last name is required").max(50, "Last name must be less than 50 characters"),
+  companyName: z.string().trim().min(1, "Company name is required").max(100, "Company name must be less than 100 characters"),
   phone: z.string().trim().min(1, "Phone number is required").max(20, "Phone number must be less than 20 characters"),
   email: z.string().trim().email("Invalid email address").max(255, "Email must be less than 255 characters"),
-  companyName: z.string().trim().max(100, "Company name must be less than 100 characters").optional(),
   reason: z.string().trim().max(1000, "Reason must be less than 1000 characters").optional(),
 });
 
@@ -41,10 +42,11 @@ export function ContactForm({
   const form = useForm<ContactFormData>({
     resolver: zodResolver(contactFormSchema),
     defaultValues: {
-      name: "",
+      firstName: "",
+      lastName: "",
+      companyName: "",
       phone: "",
       email: "",
-      companyName: "",
       reason: "",
     },
   });
@@ -95,19 +97,53 @@ export function ContactForm({
       </CardHeader>
       <CardContent>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="firstName" className="text-sm font-medium flex items-center gap-2">
+                <User className="h-4 w-4" />
+                First Name *
+              </Label>
+              <Input
+                id="firstName"
+                {...form.register("firstName")}
+                placeholder="Enter your first name"
+                className="w-full"
+              />
+              {form.formState.errors.firstName && (
+                <p className="text-destructive text-sm">{form.formState.errors.firstName.message}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="lastName" className="text-sm font-medium flex items-center gap-2">
+                <User className="h-4 w-4" />
+                Last Name *
+              </Label>
+              <Input
+                id="lastName"
+                {...form.register("lastName")}
+                placeholder="Enter your last name"
+                className="w-full"
+              />
+              {form.formState.errors.lastName && (
+                <p className="text-destructive text-sm">{form.formState.errors.lastName.message}</p>
+              )}
+            </div>
+          </div>
+
           <div className="space-y-2">
-            <Label htmlFor="name" className="text-sm font-medium flex items-center gap-2">
-              <User className="h-4 w-4" />
-              Name *
+            <Label htmlFor="companyName" className="text-sm font-medium flex items-center gap-2">
+              <Building className="h-4 w-4" />
+              Company Name *
             </Label>
             <Input
-              id="name"
-              {...form.register("name")}
-              placeholder="Enter your full name"
+              id="companyName"
+              {...form.register("companyName")}
+              placeholder="Enter your company name"
               className="w-full"
             />
-            {form.formState.errors.name && (
-              <p className="text-destructive text-sm">{form.formState.errors.name.message}</p>
+            {form.formState.errors.companyName && (
+              <p className="text-destructive text-sm">{form.formState.errors.companyName.message}</p>
             )}
           </div>
 
@@ -141,22 +177,6 @@ export function ContactForm({
             />
             {form.formState.errors.email && (
               <p className="text-destructive text-sm">{form.formState.errors.email.message}</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="companyName" className="text-sm font-medium flex items-center gap-2">
-              <Building className="h-4 w-4" />
-              Company Name
-            </Label>
-            <Input
-              id="companyName"
-              {...form.register("companyName")}
-              placeholder="Enter your company name (optional)"
-              className="w-full"
-            />
-            {form.formState.errors.companyName && (
-              <p className="text-destructive text-sm">{form.formState.errors.companyName.message}</p>
             )}
           </div>
 

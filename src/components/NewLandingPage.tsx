@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { ContactForm } from "@/components/ContactForm";
 import heroImage from "@/assets/hero-construction.jpg";
 import ct1Logo from "@/assets/ct1-logo.png";
+import constructeamLogo from "@/assets/constructeam-logo-circle.png";
 import { 
   ArrowRight, 
   Bot, 
@@ -147,7 +148,7 @@ export function NewLandingPage() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="text-center lg:text-left text-white">
               <div className="mb-8 flex justify-center lg:justify-start">
-                <img src={ct1Logo} alt="CT1" className="h-24 w-24 drop-shadow-lg" />
+                <img src={constructeamLogo} alt="CONSTRUCTEAM CT1" className="h-24 w-24 drop-shadow-lg" />
               </div>
               
               <h1 className="text-6xl lg:text-7xl font-bold mb-6 leading-tight drop-shadow-lg">
@@ -567,7 +568,7 @@ export function NewLandingPage() {
           <div className="grid md:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center space-x-3 mb-4">
-                <img src={ct1Logo} alt="CT1 Logo" className="h-10 w-10" />
+                <img src={constructeamLogo} alt="CONSTRUCTEAM Logo" className="h-10 w-10" />
                 <div>
                   <h3 className="text-xl font-bold text-background">CT1</h3>
                   <p className="text-xs text-muted">One-Up Your Business</p>
