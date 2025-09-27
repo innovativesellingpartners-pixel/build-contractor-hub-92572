@@ -41,7 +41,7 @@ export function About() {
 
   const stats = [
     { number: "15,000+", label: "Active Contractors" },
-    { number: "40%", label: "Average Revenue Growth" },
+    { number: "98%", label: "Faster Operations" },
     { number: "50+", label: "States Served" },
     { number: "98%", label: "Customer Satisfaction" }
   ];
