@@ -189,7 +189,7 @@ export function NewLandingPage() {
                 
                 <Dialog open={activeContactForm === "one-up-today"} onOpenChange={(open) => setActiveContactForm(open ? "one-up-today" : null)}>
                   <DialogTrigger asChild>
-                    <Button variant="outline" size="lg" className="border-2 border-white text-white hover:bg-white hover:text-foreground">
+                    <Button variant="outline" size="lg" className="border-2 border-white text-white hover:bg-white hover:text-black">
                       One-Up Today
                     </Button>
                   </DialogTrigger>
@@ -210,7 +210,7 @@ export function NewLandingPage() {
                 <h3 className="text-lg font-semibold mb-3 text-white">Already a CT1 Contractor?</h3>
                 <p className="text-white/80 mb-4 text-sm">Access your dashboard, manage leads, and grow your business.</p>
                 <Link to="/auth">
-                  <Button variant="outline" className="border-white text-white hover:bg-white hover:text-foreground">
+                  <Button variant="outline" className="border-white text-white hover:bg-white hover:text-black">
                     <Briefcase className="mr-2 h-4 w-4" />
                     Contractor Portal
                   </Button>
