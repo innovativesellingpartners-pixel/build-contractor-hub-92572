@@ -218,34 +218,37 @@ export function NewLandingPage() {
               </div>
             </div>
             
-            <div className="hidden lg:block">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-4">
-                  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
-                    <TrendingUp className="h-8 w-8 text-primary mb-2" />
-                    <h4 className="font-semibold text-white">Increase Your Revenue</h4>
-                    <p className="text-white/80 text-sm">By saving time, money, and energy. "Work on your business, not in your business"</p>
-                  </div>
-                  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
-                    <Clock className="h-8 w-8 text-primary mb-2" />
-                    <h4 className="font-semibold text-white">Save 20+ Hours/Week</h4>
-                    <p className="text-white/80 text-sm">Automated workflows</p>
-                  </div>
-                </div>
-                <div className="space-y-4 mt-8">
-                  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
-                    <Users className="h-8 w-8 text-primary mb-2" />
-                    <h4 className="font-semibold text-white">Nationwide Network</h4>
-                    <p className="text-white/80 text-sm">Trusted and elite contractors, "Powered by CT1"</p>
-                  </div>
-                  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
-                    <Award className="h-8 w-8 text-primary mb-2" />
-                    <h4 className="font-semibold text-white">Industry Leading</h4>
-                    <p className="text-white/80 text-sm">Contractor platform</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Key Features Section */}
+      <section className="py-16 bg-background">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Card className="p-6 card-ct1 hover:shadow-red-glow transition-all">
+              <TrendingUp className="h-10 w-10 text-primary mb-4" />
+              <h3 className="text-xl font-bold text-foreground mb-3">Increase Your Revenue</h3>
+              <p className="text-muted-foreground">By saving time, money, and energy. "Work on your business, not in your business"</p>
+            </Card>
+            
+            <Card className="p-6 card-ct1 hover:shadow-red-glow transition-all">
+              <Users className="h-10 w-10 text-primary mb-4" />
+              <h3 className="text-xl font-bold text-foreground mb-3">Nationwide Network</h3>
+              <p className="text-muted-foreground">Trusted and elite contractors, "Powered by CT1"</p>
+            </Card>
+            
+            <Card className="p-6 card-ct1 hover:shadow-red-glow transition-all">
+              <Clock className="h-10 w-10 text-primary mb-4" />
+              <h3 className="text-xl font-bold text-foreground mb-3">Save 20+ Hours/Week</h3>
+              <p className="text-muted-foreground">Automated workflows</p>
+            </Card>
+            
+            <Card className="p-6 card-ct1 hover:shadow-red-glow transition-all">
+              <Award className="h-10 w-10 text-primary mb-4" />
+              <h3 className="text-xl font-bold text-foreground mb-3">Industry Leading</h3>
+              <p className="text-muted-foreground">Contractor platform</p>
+            </Card>
           </div>
         </div>
       </section>
