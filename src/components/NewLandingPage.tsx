@@ -230,8 +230,8 @@ export function NewLandingPage() {
                 <div className="space-y-4 mt-8">
                   <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
                     <Users className="h-8 w-8 text-primary mb-2" />
-                    <h4 className="font-semibold text-white">15,000+ Contractors</h4>
-                    <p className="text-white/80 text-sm">Trust CT1 platform</p>
+                    <h4 className="font-semibold text-white">Nationwide Network</h4>
+                    <p className="text-white/80 text-sm">Trusted and elite contractors, "Powered by CT1"</p>
                   </div>
                   <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
                     <Award className="h-8 w-8 text-primary mb-2" />
@@ -522,7 +522,7 @@ export function NewLandingPage() {
               Ready to <span className="text-primary-foreground">Build Your Future?</span>
             </h2>
             <p className="text-xl opacity-90 mb-8 max-w-2xl mx-auto text-primary-foreground">
-              Join 15,000+ contractors who are already growing their business with CT1's comprehensive platform.
+              Join a nationwide network of trusted and elite contractors, "Powered by CT1" comprehensive platform.
             </p>
           </div>
           

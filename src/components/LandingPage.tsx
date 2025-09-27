@@ -87,7 +87,7 @@ export function LandingPage() {
               <div className="mt-8 flex items-center justify-center lg:justify-start gap-6">
                 <div className="flex items-center gap-2">
                   <Star className="h-5 w-5 text-primary fill-current" />
-                  <span className="font-semibold text-white">Trusted by 15,000+ contractors</span>
+                  <span className="font-semibold text-white">A nationwide network of trusted and elite contractors, "Powered by CT1"</span>
                 </div>
               </div>
             </div>
