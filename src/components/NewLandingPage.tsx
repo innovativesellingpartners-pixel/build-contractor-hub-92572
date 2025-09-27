@@ -153,10 +153,15 @@ export function NewLandingPage() {
                 <img src={constructeamLogo} alt="CONSTRUCTEAM CT1" className="h-24 w-24 drop-shadow-lg" />
               </div>
               
-              <h1 className="text-6xl lg:text-7xl font-bold mb-6 leading-tight drop-shadow-lg">
-                Unified Business Suite
-                <span className="text-primary block mt-2">For Contractors</span>
+              <h1 className="text-7xl lg:text-8xl font-bold mb-4 leading-tight drop-shadow-lg">
+                A nationwide network of contractors,
+                <span className="text-primary block mt-2">Powered by CT1</span>
               </h1>
+              
+              <h2 className="text-3xl lg:text-4xl font-semibold mb-6 leading-tight drop-shadow-lg opacity-90">
+                Unified Business Suite
+                <span className="text-white block mt-1">For Contractors</span>
+              </h2>
               
               <p className="text-xl mb-8 leading-relaxed drop-shadow-md opacity-90 max-w-2xl">
                 Complete contractor management combining proposals, job tracking, billing, client communication, 
