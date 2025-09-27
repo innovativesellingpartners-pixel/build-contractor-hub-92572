@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { ContactForm } from "@/components/ContactForm";
 import heroImage from "@/assets/hero-construction.jpg";
 import ct1Logo from "@/assets/ct1-logo.png";
-import constructeamLogo from "@/assets/constructeam-ct1-logo.png";
+import constructeamLogo from "@/assets/ct1-logo-circle.png";
 import { 
   ArrowRight, 
   Bot, 
