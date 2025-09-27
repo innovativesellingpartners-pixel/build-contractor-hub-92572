@@ -206,7 +206,7 @@ export function NewLandingPage() {
               </div>
 
               {/* Contractor Login Section */}
-              <div className="bg-black/30 backdrop-blur-sm rounded-lg p-6 border border-white/20">
+              <div className="bg-black/30 backdrop-blur-sm rounded-lg p-6 border border-white/20 mb-8">
                 <h3 className="text-lg font-semibold mb-3 text-white">Already a CT1 Contractor?</h3>
                 <p className="text-white/80 mb-4 text-sm">Access your dashboard, manage leads, and grow your business.</p>
                 <Link to="/auth">
