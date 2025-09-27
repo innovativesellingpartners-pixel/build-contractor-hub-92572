@@ -40,8 +40,9 @@ export function LandingPage() {
               <a href="#pocketbots" className="text-foreground hover:text-primary transition-colors font-medium">PocketBots</a>
               <a href="#training" className="text-foreground hover:text-primary transition-colors font-medium">Training</a>
               <a href="#websites" className="text-foreground hover:text-primary transition-colors font-medium">Websites</a>
+              <Link to="/pricing" className="text-foreground hover:text-primary transition-colors font-medium">Pricing</Link>
               <Link 
-                to="/subscribe" 
+                to="/auth" 
                 className="bg-primary text-primary-foreground px-6 py-2 rounded-lg font-bold hover:bg-primary-hover transition-colors"
               >
                 Contractor Portal

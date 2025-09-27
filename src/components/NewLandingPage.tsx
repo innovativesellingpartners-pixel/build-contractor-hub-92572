@@ -114,6 +114,7 @@ export function NewLandingPage() {
               <a href="#for-contractors" className="text-foreground hover:text-primary transition-colors font-medium">For Contractors</a>
               <a href="#find-contractor" className="text-foreground hover:text-primary transition-colors font-medium">Find Contractors</a>
               <a href="#testimonials" className="text-foreground hover:text-primary transition-colors font-medium">Success Stories</a>
+              <Link to="/pricing" className="text-foreground hover:text-primary transition-colors font-medium">Pricing</Link>
               
               <Dialog open={activeContactForm === "contact-sales"} onOpenChange={(open) => setActiveContactForm(open ? "contact-sales" : null)}>
                 <DialogTrigger asChild>
@@ -131,7 +132,7 @@ export function NewLandingPage() {
               </Dialog>
               
               <Link 
-                to="/subscribe" 
+                to="/auth" 
                 className="bg-primary text-primary-foreground px-6 py-2 rounded-lg font-bold hover:bg-primary-hover transition-colors"
               >
                 Contractor Login
@@ -202,7 +203,7 @@ export function NewLandingPage() {
               <div className="bg-black/30 backdrop-blur-sm rounded-lg p-6 border border-white/20">
                 <h3 className="text-lg font-semibold mb-3 text-white">Already a CT1 Contractor?</h3>
                 <p className="text-white/80 mb-4 text-sm">Access your dashboard, manage leads, and grow your business.</p>
-                <Link to="/subscribe">
+                <Link to="/auth">
                   <Button variant="outline" className="border-white text-white hover:bg-white hover:text-foreground">
                     <Briefcase className="mr-2 h-4 w-4" />
                     Contractor Portal
