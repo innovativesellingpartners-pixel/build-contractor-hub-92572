@@ -7,6 +7,13 @@ interface Profile {
   user_id: string;
   company_name?: string;
   phone?: string;
+  business_address?: string;
+  city?: string;
+  state?: string;
+  zip_code?: string;
+  tax_id?: string;
+  logo_url?: string;
+  subscription_tier?: string;
   created_at: string;
   updated_at: string;
 }
