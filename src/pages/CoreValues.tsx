@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Heart, Shield, Target, Users, Lightbulb, Trophy } from 'lucide-react';
 import ct1Logo from '@/assets/ct1-logo.png';
+import joeCipriano from '@/assets/joe-cipriano.png';
 
 export const CoreValues = () => {
   const values = [
@@ -68,14 +69,35 @@ export const CoreValues = () => {
         </div>
       </header>
 
-      {/* Hero Section */}
+      {/* Hero Section with Founder Quote */}
       <section className="py-20 bg-gradient-to-br from-primary/5 to-primary/10">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="text-5xl md:text-6xl font-bold mb-6">Our Core Values</h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            These principles guide everything we do at CT1. They shape how we serve contractors, 
-            develop our tools, and build our community.
-          </p>
+        <div className="container mx-auto px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="flex flex-col md:flex-row items-center gap-12 mb-12">
+              <div className="flex-shrink-0">
+                <img 
+                  src={joeCipriano} 
+                  alt="Joe Cipriano, Founder of CT1" 
+                  className="w-64 h-64 rounded-full object-cover shadow-2xl"
+                />
+              </div>
+              <div className="flex-1 text-center md:text-left">
+                <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
+                  "Do what you say you are going to do, Always, Even if it hurts."
+                </h1>
+                <p className="text-xl text-muted-foreground">
+                  — Joe Cipriano, Founder of CT1
+                </p>
+              </div>
+            </div>
+            <div className="text-center">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">Our Core Values</h2>
+              <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+                These principles guide everything we do at CT1. They shape how we serve contractors, 
+                develop our tools, and build our community.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
