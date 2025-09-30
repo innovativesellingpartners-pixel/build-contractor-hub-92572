@@ -11,15 +11,15 @@ export function Pricing() {
       id: "launch",
       name: "LAUNCH Growth Starter",
       subtitle: "Tier 1",
-      price: 40,
-      originalPrice: 50,
-      description: "Perfect for new or small contractors looking to get organized, start generating leads, and build a professional sales process.",
+      price: 50,
+      originalPrice: null,
+      description: "Build your foundation with our training and management system",
       icon: <Star className="h-8 w-8" />,
       popular: false,
       features: [
-        "CT1's 5-Star Contractor Business & Sales Training",
+        "CT1 5-Star Contractor Business & Sales Training",
         "Full Customer & Jobs Management system",
-        "1 personal, monthly business training session",
+        "1 personal monthly business training session",
         "Marketplace access to vetted tech vendors"
       ]
     },
@@ -27,40 +27,37 @@ export function Pricing() {
       id: "growth",
       name: "Growth Business Builder", 
       subtitle: "Tier 2",
-      price: 100,
-      originalPrice: 200,
-      description: "Designed for growing contractors ready for warmer leads, more sales support, and deeper strategy coaching.",
+      price: 200,
+      originalPrice: null,
+      description: "Scale faster with AI tools and qualified leads",
       icon: <Zap className="h-8 w-8" />,
       popular: true,
       features: [
-        "CT1's 5-Star Contractor Business & Sales Training",
+        "CT1 5-Star Contractor Business & Sales Training",
         "Full Customer & Jobs Management system", 
         "AI Phone Assistant for call answering and screening",
-        "2 personal, monthly business training sessions",
+        "2 personal monthly business training sessions",
         "5 qualified leads per month",
-        "Complete AI toolset with Pocket Bot, Sales Bot, Project Manager Bot, and Admin Bot",
+        "Complete AI toolset (Pocket Bot, Sales Bot, Project Manager Bot, Admin Bot)",
         "Marketplace access to vetted vendors"
       ]
     },
     {
       id: "accel",
-      name: "Market Dominator",
-      subtitle: "Tier 3: Accel! Coming Soon",
+      name: "Accel! Market Dominator",
+      subtitle: "Tier 3 - Coming Soon",
       price: null,
-      originalPrice: 3500,
-      description: "Our premium tier for established contractors aiming for high-intent leads, weekly coaching, and maximum operational efficiency.",
+      originalPrice: null,
+      description: "Premium lead generation and weekly coaching for market leaders",
       icon: <Crown className="h-8 w-8" />,
       popular: false,
       comingSoon: true,
       features: [
-        "Premium Lead Generation",
-        "High-intent or \"closed job\" leads delivered weekly with an 80/20 Split",
-        "Comprehensive AI Toolset", 
-        "Full access to Project Manager Bot, Sales Bot, and Admin Bot",
-        "Advanced Support",
-        "Weekly one-on-one training focused on growth, profitability, and leadership",
-        "Enhanced AI Phone Assistant",
-        "Fully integrated with lead qualification and scheduling capabilities"
+        "Premium lead generation",
+        "High-intent or closed job leads weekly (80/20 split)",
+        "Full AI toolset (Project Manager Bot, Sales Bot, Admin Bot)",
+        "Weekly one-on-one growth & leadership coaching",
+        "Enhanced AI Phone Assistant with qualification & scheduling"
       ]
     }
   ];
@@ -141,11 +138,6 @@ export function Pricing() {
                           </span>
                           <span className="text-muted-foreground">/month</span>
                         </div>
-                        {tier.originalPrice !== tier.price && (
-                          <p className="text-sm text-muted-foreground line-through">
-                            ${tier.originalPrice}/month
-                          </p>
-                        )}
                       </div>
                     )}
                   </div>

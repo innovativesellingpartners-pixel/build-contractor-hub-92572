@@ -81,7 +81,7 @@ export function ContactForm({
       console.error("Error sending contact form:", error);
       toast({
         title: "Error",
-        description: "Failed to send message. Please try again or contact us directly at sales@myct1.com",
+        description: "Failed to send message. Please contact us directly at sales@myct1.com",
         variant: "destructive",
       });
     } finally {

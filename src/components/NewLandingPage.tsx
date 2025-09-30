@@ -111,11 +111,11 @@ export function NewLandingPage() {
             </div>
             
             <nav className="hidden md:flex items-center space-x-6">
-              <a href="#features" className="text-foreground hover:text-primary transition-colors font-medium">Business Suite</a>
-              <a href="#for-contractors" className="text-foreground hover:text-primary transition-colors font-medium">For Contractors</a>
-              <a href="#modules" className="text-foreground hover:text-primary transition-colors font-medium">Key Modules</a>
-              <a href="#testimonials" className="text-foreground hover:text-primary transition-colors font-medium">Case Studies</a>
+              <Link to="/what-we-do" className="text-foreground hover:text-primary transition-colors font-medium">What We Do</Link>
+              <Link to="/core-values" className="text-foreground hover:text-primary transition-colors font-medium">Core Values</Link>
+              <Link to="/trades-we-serve" className="text-foreground hover:text-primary transition-colors font-medium">Trades We Serve</Link>
               <Link to="/pricing" className="text-foreground hover:text-primary transition-colors font-medium">Pricing</Link>
+              <Link to="/blog-podcast" className="text-foreground hover:text-primary transition-colors font-medium">Blog & Podcast</Link>
               
               <Dialog open={activeContactForm === "contact-sales"} onOpenChange={(open) => setActiveContactForm(open ? "contact-sales" : null)}>
                 <DialogTrigger asChild>
@@ -627,10 +627,10 @@ export function NewLandingPage() {
           </div>
           
           <div className="border-t border-muted mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-            <p className="text-sm text-muted">© 2024 CT1. All rights reserved.</p>
+            <p className="text-sm text-muted">© 2025 CT1. All rights reserved.</p>
             <div className="flex space-x-6 mt-4 md:mt-0">
-              <Link to="/privacy" className="text-sm text-muted hover:text-primary transition-colors">Privacy Policy</Link>
-              <Link to="/terms" className="text-sm text-muted hover:text-primary transition-colors">Terms of Service</Link>
+              <Link to="/legal/privacy" className="text-sm text-muted hover:text-primary transition-colors">Privacy Policy</Link>
+              <Link to="/legal/terms" className="text-sm text-muted hover:text-primary transition-colors">Terms of Service</Link>
               <Link to="/contact" className="text-sm text-muted hover:text-primary transition-colors">Support</Link>
             </div>
           </div>

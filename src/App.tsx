@@ -8,6 +8,12 @@ import { About } from "@/pages/About";
 import { Contact } from "@/pages/Contact";
 import { Auth } from "@/pages/Auth";
 import { Pricing } from "@/pages/Pricing";
+import { WhatWeDo } from "@/pages/WhatWeDo";
+import { CoreValues } from "@/pages/CoreValues";
+import { TradesWeServe } from "@/pages/TradesWeServe";
+import { BlogPodcast } from "@/pages/BlogPodcast";
+import { Privacy } from "@/pages/Privacy";
+import { Terms } from "@/pages/Terms";
 import { Dashboard } from "@/components/Dashboard";
 import { Marketplace } from "@/components/Marketplace";
 import { TrainingHub } from "@/components/TrainingHub";
@@ -34,6 +40,12 @@ const App = () => (
           <Routes>
             <Route path="/" element={<NewLandingPage />} />
             <Route path="/about" element={<About />} />
+            <Route path="/what-we-do" element={<WhatWeDo />} />
+            <Route path="/core-values" element={<CoreValues />} />
+            <Route path="/trades-we-serve" element={<TradesWeServe />} />
+            <Route path="/blog-podcast" element={<BlogPodcast />} />
+            <Route path="/legal/terms" element={<Terms />} />
+            <Route path="/legal/privacy" element={<Privacy />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/pricing" element={<Pricing />} />
