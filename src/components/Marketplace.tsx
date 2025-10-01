@@ -273,13 +273,17 @@ export function Marketplace() {
                     Our team will help you implement {selectedPartner.name} for your contracting business.
                   </p>
                   <div className="space-y-3">
-                    <Button className="w-full" variant="hero">
-                      <Mail className="h-4 w-4 mr-2" />
-                      Email Sales Team
+                    <Button className="w-full" variant="hero" asChild>
+                      <a href="mailto:sales@myct1.com">
+                        <Mail className="h-4 w-4 mr-2" />
+                        Email Sales Team
+                      </a>
                     </Button>
-                    <Button className="w-full" variant="outline">
-                      <Phone className="h-4 w-4 mr-2" />
-                      (248) 752-7308
+                    <Button className="w-full" variant="outline" asChild>
+                      <a href="tel:+12487527308">
+                        <Phone className="h-4 w-4 mr-2" />
+                        (248) 752-7308
+                      </a>
                     </Button>
                   </div>
                   <div className="pt-4 border-t text-sm text-muted-foreground">
