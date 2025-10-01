@@ -1,19 +1,19 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { 
   BookOpen,
   Store,
-  Calendar as CalendarIcon,
   Building2,
   LogOut,
   HelpCircle,
-  User,
   MapPin,
   Phone,
   Mail,
-  Shield
+  Shield,
+  Users,
+  FileText,
+  Briefcase
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
@@ -22,8 +22,12 @@ import { TrainingHub } from "@/components/TrainingHub";
 import { ContractorCRM } from "@/components/contractor/ContractorCRM";
 import { ScheduleCall } from "@/components/contractor/ScheduleCall";
 import { Marketplace } from "@/components/Marketplace";
+import { Leads } from "@/components/contractor/Leads";
+import { Insurance } from "@/components/contractor/Insurance";
+import { ProfileEditDialog } from "@/components/contractor/ProfileEditDialog";
+import { StarRating } from "@/components/contractor/StarRating";
 
-type ActiveSection = 'training' | 'crm' | 'schedule' | 'marketplace';
+type ActiveSection = 'training' | 'crm' | 'schedule' | 'marketplace' | 'leads' | 'insurance';
 
 export function Dashboard() {
   const { user, profile, signOut } = useAuth();
@@ -60,69 +64,107 @@ export function Dashboard() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Top Business Info Bar */}
-      <div className="bg-card border-b">
+      <div className="bg-card border-b shadow-sm">
         <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between gap-6">
             {/* Left: Logo and Company Info */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-start gap-4 flex-1">
               {profile?.logo_url ? (
                 <img 
                   src={profile.logo_url} 
                   alt="Company Logo" 
-                  className="h-16 w-16 rounded-lg object-cover"
+                  className="h-20 w-20 rounded-lg object-cover border-2 border-primary/20"
                 />
               ) : (
-                <div className="h-16 w-16 bg-primary/10 rounded-lg flex items-center justify-center">
-                  <Building2 className="h-8 w-8 text-primary" />
+                <div className="h-20 w-20 bg-primary/10 rounded-lg flex items-center justify-center border-2 border-primary/20">
+                  <Building2 className="h-10 w-10 text-primary" />
                 </div>
               )}
-              <div>
-                <h2 className="text-xl font-bold">{profile?.company_name || 'Your Company'}</h2>
-                <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
-                  {profile?.business_address && (
-                    <div className="flex items-center gap-1">
-                      <MapPin className="h-3 w-3" />
-                      <span>{profile.business_address}</span>
-                      {profile.city && profile.state && (
-                        <span>, {profile.city}, {profile.state} {profile.zip_code}</span>
-                      )}
+              <div className="space-y-2 flex-1">
+                <div className="flex items-center gap-3">
+                  <h2 className="text-2xl font-bold">{profile?.company_name || 'Your Company'}</h2>
+                  {profile?.ct1_contractor_number && (
+                    <Badge variant="outline" className="text-xs">
+                      CT1 #{profile.ct1_contractor_number}
+                    </Badge>
+                  )}
+                </div>
+                
+                <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-sm">
+                  {profile?.contact_name && (
+                    <div className="flex items-center gap-2">
+                      <Mail className="h-3 w-3 text-muted-foreground" />
+                      <span className="text-muted-foreground">Contact:</span>
+                      <span className="font-medium">{profile.contact_name}</span>
                     </div>
                   )}
                   {profile?.phone && (
-                    <div className="flex items-center gap-1">
-                      <Phone className="h-3 w-3" />
-                      <span>{profile.phone}</span>
+                    <div className="flex items-center gap-2">
+                      <Phone className="h-3 w-3 text-muted-foreground" />
+                      <span className="font-medium">{profile.phone}</span>
                     </div>
                   )}
+                  {profile?.business_address && (
+                    <div className="flex items-center gap-2 col-span-2">
+                      <MapPin className="h-3 w-3 text-muted-foreground" />
+                      <span className="text-muted-foreground">
+                        {profile.business_address}
+                        {profile.city && profile.state && (
+                          <>, {profile.city}, {profile.state} {profile.zip_code}</>
+                        )}
+                      </span>
+                    </div>
+                  )}
+                  {profile?.tax_id && (
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-3 w-3 text-muted-foreground" />
+                      <span className="text-muted-foreground">Tax ID:</span>
+                      <span className="font-medium">{profile.tax_id}</span>
+                    </div>
+                  )}
+                  {user?.email && (
+                    <div className="flex items-center gap-2">
+                      <Mail className="h-3 w-3 text-muted-foreground" />
+                      <span className="font-medium">{user.email}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-3 pt-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium">5-Star Training:</span>
+                    <StarRating level={profile?.training_level || 0} />
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Right: Tier Info and Actions */}
-            <div className="flex items-center gap-4">
-              <div className="text-right">
-                <Badge className={`${getTierBadgeColor(profile?.subscription_tier)} text-white mb-1`}>
+            <div className="flex flex-col items-end gap-3">
+              <div className="flex items-center gap-2">
+                <Badge className={`${getTierBadgeColor(profile?.subscription_tier)} text-white`}>
                   {getTierLabel(profile?.subscription_tier)}
                 </Badge>
-                {profile?.tax_id && (
-                  <p className="text-xs text-muted-foreground">Tax ID: {profile.tax_id}</p>
-                )}
               </div>
-              <Button variant="outline" size="sm">
-                <HelpCircle className="h-4 w-4 mr-2" />
-                Support
-              </Button>
-              {isAdmin && (
-                <Button variant="outline" size="sm" asChild>
-                  <a href="/admin">
-                    <Shield className="h-4 w-4 mr-2" />
-                    Admin
-                  </a>
+              
+              <div className="flex items-center gap-2">
+                <ProfileEditDialog />
+                <Button variant="outline" size="sm">
+                  <HelpCircle className="h-4 w-4 mr-2" />
+                  Support
                 </Button>
-              )}
-              <Button variant="ghost" size="icon" onClick={handleLogout}>
-                <LogOut className="h-4 w-4" />
-              </Button>
+                {isAdmin && (
+                  <Button variant="outline" size="sm" asChild>
+                    <a href="/admin">
+                      <Shield className="h-4 w-4 mr-2" />
+                      Admin
+                    </a>
+                  </Button>
+                )}
+                <Button variant="ghost" size="icon" onClick={handleLogout}>
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -147,17 +189,26 @@ export function Dashboard() {
               className="w-full justify-start"
               onClick={() => setActiveSection('crm')}
             >
-              <Building2 className="h-5 w-5 mr-3" />
-              CT1 ZCRM
+              <Briefcase className="h-5 w-5 mr-3" />
+              CT1 - CRM/Jobs
             </Button>
             
             <Button
-              variant={activeSection === 'schedule' ? 'default' : 'ghost'}
+              variant={activeSection === 'leads' ? 'default' : 'ghost'}
               className="w-full justify-start"
-              onClick={() => setActiveSection('schedule')}
+              onClick={() => setActiveSection('leads')}
             >
-              <CalendarIcon className="h-5 w-5 mr-3" />
-              Schedule Call
+              <Users className="h-5 w-5 mr-3" />
+              Leads
+            </Button>
+            
+            <Button
+              variant={activeSection === 'insurance' ? 'default' : 'ghost'}
+              className="w-full justify-start"
+              onClick={() => setActiveSection('insurance')}
+            >
+              <Shield className="h-5 w-5 mr-3" />
+              Insurance
             </Button>
             
             <Button
@@ -166,30 +217,17 @@ export function Dashboard() {
               onClick={() => setActiveSection('marketplace')}
             >
               <Store className="h-5 w-5 mr-3" />
-              Solutions Marketplace
+              Marketplace
             </Button>
           </nav>
-
-          <div className="mt-6 pt-6 border-t">
-            <p className="text-xs text-muted-foreground mb-2">Quick Links</p>
-            <div className="space-y-1">
-              <Button variant="ghost" size="sm" className="w-full justify-start text-xs">
-                <User className="h-3 w-3 mr-2" />
-                My Profile
-              </Button>
-              <Button variant="ghost" size="sm" className="w-full justify-start text-xs">
-                <Mail className="h-3 w-3 mr-2" />
-                Contact Support
-              </Button>
-            </div>
-          </div>
         </div>
 
         {/* Main Content Panel */}
         <div className="flex-1 p-6 overflow-auto">
           {activeSection === 'training' && <TrainingHub />}
           {activeSection === 'crm' && <ContractorCRM />}
-          {activeSection === 'schedule' && <ScheduleCall />}
+          {activeSection === 'leads' && <Leads />}
+          {activeSection === 'insurance' && <Insurance />}
           {activeSection === 'marketplace' && <Marketplace />}
         </div>
       </div>

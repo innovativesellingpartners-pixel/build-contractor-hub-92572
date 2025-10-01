@@ -223,13 +223,16 @@ export type Database = {
           business_address: string | null
           city: string | null
           company_name: string | null
+          contact_name: string | null
           created_at: string
+          ct1_contractor_number: string | null
           id: string
           logo_url: string | null
           phone: string | null
           state: string | null
           subscription_tier: string | null
           tax_id: string | null
+          training_level: number | null
           updated_at: string
           user_id: string
           zip_code: string | null
@@ -238,13 +241,16 @@ export type Database = {
           business_address?: string | null
           city?: string | null
           company_name?: string | null
+          contact_name?: string | null
           created_at?: string
+          ct1_contractor_number?: string | null
           id?: string
           logo_url?: string | null
           phone?: string | null
           state?: string | null
           subscription_tier?: string | null
           tax_id?: string | null
+          training_level?: number | null
           updated_at?: string
           user_id: string
           zip_code?: string | null
@@ -253,13 +259,16 @@ export type Database = {
           business_address?: string | null
           city?: string | null
           company_name?: string | null
+          contact_name?: string | null
           created_at?: string
+          ct1_contractor_number?: string | null
           id?: string
           logo_url?: string | null
           phone?: string | null
           state?: string | null
           subscription_tier?: string | null
           tax_id?: string | null
+          training_level?: number | null
           updated_at?: string
           user_id?: string
           zip_code?: string | null

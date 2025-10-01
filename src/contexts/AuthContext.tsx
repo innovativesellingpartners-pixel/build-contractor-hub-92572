@@ -6,14 +6,17 @@ interface Profile {
   id: string;
   user_id: string;
   company_name?: string;
+  contact_name?: string;
   phone?: string;
   business_address?: string;
   city?: string;
   state?: string;
   zip_code?: string;
   tax_id?: string;
+  ct1_contractor_number?: string;
   logo_url?: string;
   subscription_tier?: string;
+  training_level?: number;
   created_at: string;
   updated_at: string;
 }
