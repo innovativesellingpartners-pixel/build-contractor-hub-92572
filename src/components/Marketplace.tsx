@@ -15,7 +15,7 @@ import {
   Mail,
   Phone
 } from "lucide-react";
-import ct1Logo from "@/assets/ct1-logo-bordered.png";
+import ct1Logo from "@/assets/ct1-logo-circle.png";
 
 interface TechnologyPartner {
   id: string;

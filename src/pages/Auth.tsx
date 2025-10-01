@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ArrowLeft, Mail, Lock, User } from "lucide-react";
-import ct1Logo from "@/assets/ct1-logo-bordered.png";
+import ct1Logo from "@/assets/ct1-logo-circle.png";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect } from "react";
 
