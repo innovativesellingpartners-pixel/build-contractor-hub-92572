@@ -149,28 +149,29 @@ export function NewLandingPage() {
       </header>
 
       {/* CT1 Pocketbot - Floating Button (Enlarged) */}
-      <div className="fixed top-20 right-6 z-50">
+      <div className="fixed bottom-6 right-4 md:top-20 md:bottom-auto md:right-6 z-50">
         <div
           onClick={() => setShowPocketbot(true)}
           className="group relative cursor-pointer"
         >
           {/* Main Button */}
-          <div className="flex items-center gap-4 bg-foreground/95 backdrop-blur-md text-background px-8 py-5 rounded-full shadow-2xl hover:shadow-primary/50 transition-all duration-300 hover:scale-105 border-2 border-primary/30">
+          <div className="flex items-center gap-2 md:gap-4 bg-foreground/95 backdrop-blur-md text-background px-4 py-3 md:px-8 md:py-5 rounded-full shadow-2xl hover:shadow-primary/50 transition-all duration-300 hover:scale-105 border-2 border-primary/30">
             <div className="relative">
-              <div className="h-14 w-14 bg-primary/20 rounded-full flex items-center justify-center">
-                <Bot className="h-8 w-8 text-primary" />
+              <div className="h-10 w-10 md:h-14 md:w-14 bg-primary/20 rounded-full flex items-center justify-center">
+                <Bot className="h-6 w-6 md:h-8 md:w-8 text-primary" />
               </div>
-              <div className="absolute -top-1 -right-1 h-4 w-4 bg-primary rounded-full animate-pulse"></div>
+              <div className="absolute -top-1 -right-1 h-3 w-3 md:h-4 md:w-4 bg-primary rounded-full animate-pulse"></div>
             </div>
-            <div className="flex flex-col">
+            <div className="flex flex-col hidden md:flex">
               <span className="font-bold text-lg whitespace-nowrap">Try CT1 Pocketbot</span>
               <span className="text-sm text-background/70 whitespace-nowrap">Get instant answers</span>
             </div>
-            <ArrowRight className="h-6 w-6 text-primary group-hover:translate-x-1 transition-transform" />
+            <span className="font-bold text-sm md:hidden">CT1 Bot</span>
+            <ArrowRight className="h-5 w-5 md:h-6 md:w-6 text-primary group-hover:translate-x-1 transition-transform" />
           </div>
           
           {/* Tooltip */}
-          <div className="absolute bottom-full right-0 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+          <div className="absolute bottom-full right-0 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none hidden md:block">
             <div className="bg-foreground text-background text-sm px-4 py-2 rounded-lg shadow-lg whitespace-nowrap">
               <div className="flex items-center gap-2">
                 <Zap className="h-4 w-4 text-primary" />

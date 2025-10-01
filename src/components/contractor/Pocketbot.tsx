@@ -192,23 +192,23 @@ export function Pocketbot() {
   return (
     <div className="h-full flex flex-col bg-gradient-to-br from-background via-background to-primary/5">
       {/* Header with Logo */}
-      <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-b border-primary/20 p-6 backdrop-blur-sm">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+      <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-b border-primary/20 p-4 md:p-6 backdrop-blur-sm">
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center gap-2 md:gap-4">
             <div className="relative">
               <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl"></div>
-              <div className="relative bg-gradient-to-br from-primary/20 to-primary/10 p-3 rounded-2xl border-2 border-primary/30">
-                <img src={ct1Logo} alt="CT1" className="h-12 w-12" />
+              <div className="relative bg-gradient-to-br from-primary/20 to-primary/10 p-2 md:p-3 rounded-2xl border-2 border-primary/30">
+                <img src={ct1Logo} alt="CT1" className="h-8 w-8 md:h-12 md:w-12" />
               </div>
             </div>
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <h2 className="text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                <h2 className="text-xl md:text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
                   CT1 Pocketbot
                 </h2>
-                <Sparkles className="h-5 w-5 text-primary animate-pulse" />
+                <Sparkles className="h-4 w-4 md:h-5 md:w-5 text-primary animate-pulse" />
               </div>
-              <p className="text-sm text-muted-foreground font-medium">
+              <p className="text-xs md:text-sm text-muted-foreground font-medium hidden sm:block">
                 Your AI-powered assistant for trades, business, sales training, project management, and estimating
               </p>
             </div>
@@ -216,9 +216,9 @@ export function Pocketbot() {
           <div className="text-right">
             <Badge 
               variant={promptCount >= MAX_FREE_PROMPTS ? "destructive" : "secondary"}
-              className="text-sm px-4 py-2"
+              className="text-xs md:text-sm px-2 md:px-4 py-1 md:py-2"
             >
-              {promptCount}/{MAX_FREE_PROMPTS} Free Prompts
+              {promptCount}/{MAX_FREE_PROMPTS} Free
             </Badge>
           </div>
         </div>
@@ -264,38 +264,38 @@ export function Pocketbot() {
                 {messages.map((message, index) => (
                   <div
                     key={index}
-                    className={`flex gap-3 ${
+                    className={`flex gap-2 md:gap-3 ${
                       message.role === "user" ? "justify-end" : "justify-start"
                     } animate-in fade-in slide-in-from-bottom-2 duration-500`}
                   >
                     {message.role === "assistant" && (
-                      <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center border border-primary/30">
-                        <img src={ct1Logo} alt="CT1" className="h-6 w-6" />
+                      <div className="flex-shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center border border-primary/30">
+                        <img src={ct1Logo} alt="CT1" className="h-5 w-5 md:h-6 md:w-6" />
                       </div>
                     )}
                     <div
-                      className={`max-w-[75%] rounded-2xl p-4 shadow-md ${
+                      className={`max-w-[80%] md:max-w-[75%] rounded-2xl p-3 md:p-4 shadow-md ${
                         message.role === "user"
                           ? "bg-gradient-to-br from-primary to-primary/90 text-primary-foreground border border-primary/20"
                           : "bg-gradient-to-br from-muted/50 to-muted border border-border"
                       }`}
                     >
-                      <p className="whitespace-pre-wrap leading-relaxed text-[15px]">{message.content}</p>
+                      <p className="whitespace-pre-wrap leading-relaxed text-sm md:text-[15px]">{message.content}</p>
                     </div>
                     {message.role === "user" && (
-                      <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-primary/30 to-primary/20 flex items-center justify-center border border-primary/40">
-                        <span className="text-primary-foreground font-bold text-sm">You</span>
+                      <div className="flex-shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-xl bg-gradient-to-br from-primary/30 to-primary/20 flex items-center justify-center border border-primary/40">
+                        <span className="text-primary-foreground font-bold text-xs md:text-sm">You</span>
                       </div>
                     )}
                   </div>
                 ))}
                 {isLoading && messages[messages.length - 1]?.role === "user" && (
-                  <div className="flex gap-3 justify-start animate-in fade-in slide-in-from-bottom-2">
-                    <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center border border-primary/30">
-                      <img src={ct1Logo} alt="CT1" className="h-6 w-6" />
+                  <div className="flex gap-2 md:gap-3 justify-start animate-in fade-in slide-in-from-bottom-2">
+                    <div className="flex-shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center border border-primary/30">
+                      <img src={ct1Logo} alt="CT1" className="h-5 w-5 md:h-6 md:w-6" />
                     </div>
-                    <div className="bg-gradient-to-br from-muted/50 to-muted border border-border rounded-2xl p-4 shadow-md">
-                      <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                    <div className="bg-gradient-to-br from-muted/50 to-muted border border-border rounded-2xl p-3 md:p-4 shadow-md">
+                      <Loader2 className="h-4 w-4 md:h-5 md:w-5 animate-spin text-primary" />
                     </div>
                   </div>
                 )}
