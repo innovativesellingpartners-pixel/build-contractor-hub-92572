@@ -14,7 +14,9 @@ import {
   Users,
   FileText,
   Briefcase,
-  User
+  User,
+  CreditCard,
+  ArrowUpCircle
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
@@ -246,6 +248,38 @@ export function Dashboard() {
           {activeSection === 'account' && (
             <div className="max-w-4xl mx-auto space-y-6">
               <h2 className="text-3xl font-bold">My Account</h2>
+              
+              {/* Billing & Upgrade Section */}
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="bg-card border-2 border-primary rounded-lg p-6 space-y-4">
+                  <div className="flex items-center gap-3 mb-2">
+                    <CreditCard className="h-6 w-6 text-primary" />
+                    <h3 className="text-xl font-semibold">Pay My CT1 Bill</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Keep your subscription active by paying your monthly bill.
+                  </p>
+                  <Button className="w-full" size="lg">
+                    <CreditCard className="h-4 w-4 mr-2" />
+                    Pay Bill
+                  </Button>
+                </div>
+                
+                <div className="bg-card border-2 border-primary/50 rounded-lg p-6 space-y-4">
+                  <div className="flex items-center gap-3 mb-2">
+                    <ArrowUpCircle className="h-6 w-6 text-primary" />
+                    <h3 className="text-xl font-semibold">Upgrade Plan</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Unlock more features and grow your business faster.
+                  </p>
+                  <Button variant="outline" className="w-full" size="lg">
+                    <ArrowUpCircle className="h-4 w-4 mr-2" />
+                    View Plans
+                  </Button>
+                </div>
+              </div>
+              
               <div className="grid gap-6">
                 <div className="bg-card border rounded-lg p-6 space-y-4">
                   <h3 className="text-xl font-semibold">Account Information</h3>
