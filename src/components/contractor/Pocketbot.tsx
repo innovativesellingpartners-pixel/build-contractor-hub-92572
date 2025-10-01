@@ -3,9 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bot, Send, Loader2, Lock } from "lucide-react";
+import { Bot, Send, Loader2, Lock, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import ct1Logo from "@/assets/ct1-logo-main.png";
 
 interface Message {
   role: "user" | "assistant";
@@ -189,102 +190,144 @@ export function Pocketbot() {
   };
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="mb-6">
+    <div className="h-full flex flex-col bg-gradient-to-br from-background via-background to-primary/5">
+      {/* Header with Logo */}
+      <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-b border-primary/20 p-6 backdrop-blur-sm">
         <div className="flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <Bot className="h-8 w-8 text-primary" />
-              <h2 className="text-3xl font-bold">CT1 Pocketbot</h2>
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl"></div>
+              <div className="relative bg-gradient-to-br from-primary/20 to-primary/10 p-3 rounded-2xl border-2 border-primary/30">
+                <img src={ct1Logo} alt="CT1" className="h-12 w-12" />
+              </div>
             </div>
-            <p className="text-muted-foreground">
-              Your AI-powered assistant for trades, business, sales training, project management, and estimating
-            </p>
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <h2 className="text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                  CT1 Pocketbot
+                </h2>
+                <Sparkles className="h-5 w-5 text-primary animate-pulse" />
+              </div>
+              <p className="text-sm text-muted-foreground font-medium">
+                Your AI-powered assistant for trades, business, sales training, project management, and estimating
+              </p>
+            </div>
           </div>
           <div className="text-right">
-            <Badge variant={promptCount >= MAX_FREE_PROMPTS ? "destructive" : "secondary"}>
-              {promptCount}/{MAX_FREE_PROMPTS} Free Prompts Used
+            <Badge 
+              variant={promptCount >= MAX_FREE_PROMPTS ? "destructive" : "secondary"}
+              className="text-sm px-4 py-2"
+            >
+              {promptCount}/{MAX_FREE_PROMPTS} Free Prompts
             </Badge>
           </div>
         </div>
       </div>
 
       {showPaywall ? (
-        <Card className="flex-1 flex items-center justify-center">
-          <CardContent className="text-center max-w-md space-y-6 p-8">
-            <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-              <Lock className="h-8 w-8 text-primary" />
-            </div>
-            <div>
-              <h3 className="text-2xl font-bold mb-2">Unlock Unlimited Access</h3>
-              <p className="text-muted-foreground mb-4">
-                You've used all {MAX_FREE_PROMPTS} free prompts. Subscribe to continue getting expert guidance for your contracting business.
+        <div className="flex-1 flex items-center justify-center p-6">
+          <Card className="max-w-md w-full border-2 border-primary/20 shadow-2xl">
+            <CardContent className="text-center space-y-6 p-8">
+              <div className="mx-auto w-20 h-20 bg-gradient-to-br from-primary/20 to-primary/10 rounded-full flex items-center justify-center border-2 border-primary/30 shadow-lg">
+                <Lock className="h-10 w-10 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-3xl font-bold mb-3 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                  Unlock Unlimited Access
+                </h3>
+                <p className="text-muted-foreground text-base">
+                  You've used all {MAX_FREE_PROMPTS} free prompts. Subscribe to continue getting expert guidance for your contracting business.
+                </p>
+              </div>
+              <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-8 rounded-xl border border-primary/20">
+                <p className="text-4xl font-bold mb-2">
+                  ${SUBSCRIPTION_PRICE}
+                  <span className="text-lg font-normal text-muted-foreground">/month</span>
+                </p>
+                <p className="text-sm text-muted-foreground font-medium">Unlimited prompts & expert advice</p>
+              </div>
+              <Button onClick={handleSubscribe} size="lg" className="w-full text-base py-6">
+                <Sparkles className="mr-2 h-5 w-5" />
+                Subscribe Now
+              </Button>
+              <p className="text-xs text-muted-foreground">
+                Cancel anytime. Questions? Contact our support team.
               </p>
-            </div>
-            <div className="bg-muted/50 p-6 rounded-lg">
-              <p className="text-3xl font-bold mb-1">${SUBSCRIPTION_PRICE}<span className="text-lg font-normal text-muted-foreground">/month</span></p>
-              <p className="text-sm text-muted-foreground">Unlimited prompts & expert advice</p>
-            </div>
-            <Button onClick={handleSubscribe} size="lg" className="w-full">
-              Subscribe Now
-            </Button>
-            <p className="text-xs text-muted-foreground">
-              Cancel anytime. Questions? Contact our support team.
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card className="flex-1 flex flex-col overflow-hidden">
-        <ScrollArea className="flex-1 p-4" ref={scrollRef}>
-          <div className="space-y-4">
-            {messages.map((message, index) => (
-              <div
-                key={index}
-                className={`flex ${
-                  message.role === "user" ? "justify-end" : "justify-start"
-                }`}
-              >
-                <div
-                  className={`max-w-[80%] rounded-lg p-3 ${
-                    message.role === "user"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted"
-                  }`}
-                >
-                  <p className="whitespace-pre-wrap">{message.content}</p>
-                </div>
-              </div>
-            ))}
-            {isLoading && messages[messages.length - 1]?.role === "user" && (
-              <div className="flex justify-start">
-                <div className="bg-muted rounded-lg p-3">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                </div>
-              </div>
-            )}
-          </div>
-        </ScrollArea>
-
-        <div className="border-t p-4">
-          <div className="flex gap-2">
-            <Input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Ask me anything about your contracting business..."
-              disabled={isLoading}
-              className="flex-1"
-            />
-            <Button onClick={handleSend} disabled={isLoading || !input.trim()}>
-              {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Send className="h-4 w-4" />
-              )}
-            </Button>
-          </div>
+            </CardContent>
+          </Card>
         </div>
-      </Card>
+      ) : (
+        <div className="flex-1 flex flex-col overflow-hidden m-4">
+          <Card className="flex-1 flex flex-col overflow-hidden border-2 border-primary/10 shadow-xl">
+            <ScrollArea className="flex-1 p-6" ref={scrollRef}>
+              <div className="space-y-6 max-w-4xl mx-auto">
+                {messages.map((message, index) => (
+                  <div
+                    key={index}
+                    className={`flex gap-3 ${
+                      message.role === "user" ? "justify-end" : "justify-start"
+                    } animate-in fade-in slide-in-from-bottom-2 duration-500`}
+                  >
+                    {message.role === "assistant" && (
+                      <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center border border-primary/30">
+                        <img src={ct1Logo} alt="CT1" className="h-6 w-6" />
+                      </div>
+                    )}
+                    <div
+                      className={`max-w-[75%] rounded-2xl p-4 shadow-md ${
+                        message.role === "user"
+                          ? "bg-gradient-to-br from-primary to-primary/90 text-primary-foreground border border-primary/20"
+                          : "bg-gradient-to-br from-muted/50 to-muted border border-border"
+                      }`}
+                    >
+                      <p className="whitespace-pre-wrap leading-relaxed text-[15px]">{message.content}</p>
+                    </div>
+                    {message.role === "user" && (
+                      <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-primary/30 to-primary/20 flex items-center justify-center border border-primary/40">
+                        <span className="text-primary-foreground font-bold text-sm">You</span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+                {isLoading && messages[messages.length - 1]?.role === "user" && (
+                  <div className="flex gap-3 justify-start animate-in fade-in slide-in-from-bottom-2">
+                    <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center border border-primary/30">
+                      <img src={ct1Logo} alt="CT1" className="h-6 w-6" />
+                    </div>
+                    <div className="bg-gradient-to-br from-muted/50 to-muted border border-border rounded-2xl p-4 shadow-md">
+                      <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
+
+            <div className="border-t border-primary/10 p-4 bg-gradient-to-r from-background via-primary/5 to-background backdrop-blur-sm">
+              <div className="flex gap-3 max-w-4xl mx-auto">
+                <Input
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder="Ask me anything about your contracting business..."
+                  disabled={isLoading}
+                  className="flex-1 text-base py-6 rounded-xl border-primary/20 focus:border-primary/40"
+                />
+                <Button 
+                  onClick={handleSend} 
+                  disabled={isLoading || !input.trim()}
+                  size="lg"
+                  className="px-6 rounded-xl"
+                >
+                  {isLoading ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <Send className="h-5 w-5" />
+                  )}
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </div>
       )}
     </div>
   );
