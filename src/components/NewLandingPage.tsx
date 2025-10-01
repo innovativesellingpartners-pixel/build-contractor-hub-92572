@@ -149,7 +149,7 @@ export function NewLandingPage() {
       </header>
 
       {/* CT1 Pocketbot - Floating Button */}
-      <div className="fixed bottom-6 right-6 z-50">
+      <div className="fixed top-20 right-6 z-50">
         <div
           onClick={() => setShowPocketbot(true)}
           className="group relative cursor-pointer"
