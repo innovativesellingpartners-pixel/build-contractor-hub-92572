@@ -151,7 +151,7 @@ export const TrainingHub = () => {
             <CardContent className="p-0">
               <div className="aspect-video w-full">
                 <iframe
-                  src="https://drive.google.com/file/d/1YIwwe3zaeu9Mcj4ftMuw3Kwu6PGdov2M/preview?t=781s"
+                  src="https://drive.google.com/file/d/1eMBOcQ776JFxqniVIZ7g78DQxn5GzwbY/preview"
                   className="w-full h-full"
                   allow="autoplay"
                   title="Welcome to CT1's 5-Star Training"
