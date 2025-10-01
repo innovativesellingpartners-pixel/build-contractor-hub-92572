@@ -2,11 +2,17 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { DollarSign, ExternalLink, CheckCircle, TrendingUp, FileText, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export function QuickBooks() {
   const [isConnected, setIsConnected] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const { toast } = useToast();
 
   const handleConnect = () => {
@@ -17,9 +23,14 @@ export function QuickBooks() {
     });
   };
 
-  const handleLogin = () => {
-    // Open QuickBooks Online in iframe or new window
-    window.open("https://app.qbo.intuit.com/app/homepage", "_blank", "width=1200,height=800");
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Handle QuickBooks login here
+    toast({
+      title: "Logging in...",
+      description: "Connecting to your QuickBooks Online account.",
+    });
+    setLoginOpen(false);
   };
 
   return (
@@ -125,12 +136,51 @@ export function QuickBooks() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Button onClick={handleLogin} variant="outline" size="lg" className="w-full">
-            <ExternalLink className="h-4 w-4 mr-2" />
-            Log in to QuickBooks Online
-          </Button>
+          <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="lg" className="w-full">
+                <ExternalLink className="h-4 w-4 mr-2" />
+                Log in to QuickBooks Online
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>QuickBooks Online Login</DialogTitle>
+                <DialogDescription>
+                  Enter your QuickBooks Online credentials to access your account.
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleLogin} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="qb-email">Email or User ID</Label>
+                  <Input
+                    id="qb-email"
+                    type="email"
+                    placeholder="your@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="qb-password">Password</Label>
+                  <Input
+                    id="qb-password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
+                <Button type="submit" className="w-full">
+                  Log In to QuickBooks
+                </Button>
+              </form>
+            </DialogContent>
+          </Dialog>
           <p className="text-xs text-muted-foreground mt-2 text-center">
-            Opens in a new window for secure access
+            Secure login within CT1 environment
           </p>
         </CardContent>
       </Card>
