@@ -6,15 +6,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { ArrowLeft, Mail, Lock, User } from "lucide-react";
+import { ArrowLeft, Mail, Lock, User, Phone, ChevronDown, ChevronUp } from "lucide-react";
 import ct1Logo from "@/assets/ct1-logo-main.png";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect } from "react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 export function Auth() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [showJoinOptions, setShowJoinOptions] = useState(false);
   const navigate = useNavigate();
   const { signIn, signUp, user } = useAuth();
 
@@ -224,6 +226,84 @@ export function Auth() {
                 New to CT1? <Link to="/pricing" className="text-primary hover:underline font-medium">View our pricing plans</Link>
               </p>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Join CT1 Network Section */}
+        <Card className="border-primary/30 bg-gradient-to-br from-card to-primary/5">
+          <CardContent className="pt-6">
+            <Collapsible open={showJoinOptions} onOpenChange={setShowJoinOptions}>
+              <CollapsibleTrigger className="w-full">
+                <div className="flex items-center justify-between p-4 rounded-lg hover:bg-primary/10 transition-colors cursor-pointer">
+                  <div className="text-left">
+                    <p className="font-semibold text-lg">Not currently in the CT1 Contractor Network?</p>
+                    <p className="text-sm text-muted-foreground">Click here to join and grow your business</p>
+                  </div>
+                  {showJoinOptions ? (
+                    <ChevronUp className="h-5 w-5 text-primary flex-shrink-0" />
+                  ) : (
+                    <ChevronDown className="h-5 w-5 text-primary flex-shrink-0" />
+                  )}
+                </div>
+              </CollapsibleTrigger>
+              
+              <CollapsibleContent>
+                <div className="mt-4 space-y-4 p-4 bg-card/50 rounded-lg border border-border/50">
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {/* Sign Up Now */}
+                    <div className="group p-6 bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl border-2 border-primary/30 hover:border-primary/50 hover:shadow-lg transition-all">
+                      <div className="h-12 w-12 rounded-lg bg-primary/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <User className="h-6 w-6 text-primary" />
+                      </div>
+                      <h3 className="text-lg font-semibold mb-2">Sign Up Now</h3>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Join the CT1 network and start accessing powerful business tools today.
+                      </p>
+                      <Button 
+                        className="w-full shadow-md hover:shadow-lg transition-shadow"
+                        onClick={() => {
+                          // Switch to signup tab
+                          const signupTab = document.querySelector('[value="signup"]') as HTMLButtonElement;
+                          signupTab?.click();
+                          setShowJoinOptions(false);
+                          // Scroll to top
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                      >
+                        Create Account
+                      </Button>
+                    </div>
+
+                    {/* Contact Sales */}
+                    <div className="group p-6 bg-gradient-to-br from-muted/30 to-muted/10 rounded-xl border-2 border-border hover:border-primary/30 hover:shadow-lg transition-all">
+                      <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <Phone className="h-6 w-6 text-primary" />
+                      </div>
+                      <h3 className="text-lg font-semibold mb-2">Contact Sales</h3>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Have questions? Our sales team is here to help you get started.
+                      </p>
+                      <div className="space-y-3">
+                        <a 
+                          href="mailto:sales@myct1.com"
+                          className="flex items-center gap-2 text-sm hover:text-primary transition-colors"
+                        >
+                          <Mail className="h-4 w-4" />
+                          <span className="font-medium">sales@myct1.com</span>
+                        </a>
+                        <a 
+                          href="tel:+12487527308"
+                          className="flex items-center gap-2 text-sm hover:text-primary transition-colors"
+                        >
+                          <Phone className="h-4 w-4" />
+                          <span className="font-medium">(248) 752-7308</span>
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
           </CardContent>
         </Card>
       </div>
