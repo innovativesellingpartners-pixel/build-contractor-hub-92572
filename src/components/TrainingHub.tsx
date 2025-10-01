@@ -5,7 +5,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { 
   BookOpen, 
   Clock, 
@@ -30,19 +29,10 @@ import { useTrainingCourses, useUserEnrollments, useUserCertificates } from '@/h
 export const TrainingHub = () => {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [selectedModuleVideo, setSelectedModuleVideo] = useState<{ title: string; videoUrl: string } | null>(null);
   
   const { data: courses, isLoading: coursesLoading } = useTrainingCourses();
   const { data: enrollments, isLoading: enrollmentsLoading } = useUserEnrollments();
   const { data: certificates } = useUserCertificates();
-
-  const moduleVideos = {
-    communication: 'https://drive.google.com/file/d/19FEPOjjvZIxW4yoECNyTGo8DvdMNo33n/preview',
-    leadership: 'https://drive.google.com/file/d/1A8BvqRgsL7nZZAxcH7Sfy_zxZB3OKj-h/preview',
-    performance: 'https://drive.google.com/file/d/10GxFb62dfLRodA5Scbg30joL2xFBvL52/preview',
-    process: 'https://drive.google.com/file/d/10sSL_A96eAuuEGWhd7UL-oM1fl3iJqMQ/preview',
-    sales: 'https://drive.google.com/file/d/1R2bv-qZN3kUckO03uiSXsgvT_OIFjgF-/preview'
-  };
 
   // Extract categories from courses
   const categories = ['All', ...(courses?.reduce((cats, course) => {
@@ -183,7 +173,7 @@ export const TrainingHub = () => {
             {/* Module 1: Communication */}
             <Card 
               className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border-2 hover:border-primary"
-              onClick={() => setSelectedModuleVideo({ title: 'Communication', videoUrl: moduleVideos.communication })}
+              onClick={() => navigate('/dashboard/training/module/communication')}
             >
               <CardContent className="p-6 text-center">
                 <div className="mb-4 flex justify-center">
@@ -208,7 +198,7 @@ export const TrainingHub = () => {
             {/* Module 2: Leadership */}
             <Card 
               className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border-2 hover:border-primary"
-              onClick={() => setSelectedModuleVideo({ title: 'Leadership', videoUrl: moduleVideos.leadership })}
+              onClick={() => navigate('/dashboard/training/module/leadership')}
             >
               <CardContent className="p-6 text-center">
                 <div className="mb-4 flex justify-center">
@@ -233,7 +223,7 @@ export const TrainingHub = () => {
             {/* Module 3: Performance */}
             <Card 
               className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border-2 hover:border-primary"
-              onClick={() => setSelectedModuleVideo({ title: 'Performance', videoUrl: moduleVideos.performance })}
+              onClick={() => navigate('/dashboard/training/module/performance')}
             >
               <CardContent className="p-6 text-center">
                 <div className="mb-4 flex justify-center">
@@ -258,7 +248,7 @@ export const TrainingHub = () => {
             {/* Module 4: Process - Systems That Scale */}
             <Card 
               className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border-2 hover:border-primary"
-              onClick={() => setSelectedModuleVideo({ title: 'Process - Systems That Scale', videoUrl: moduleVideos.process })}
+              onClick={() => navigate('/dashboard/training/module/process')}
             >
               <CardContent className="p-6 text-center">
                 <div className="mb-4 flex justify-center">
@@ -283,7 +273,7 @@ export const TrainingHub = () => {
             {/* Module 5: Super Effective Sales Methodology */}
             <Card 
               className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border-2 hover:border-primary"
-              onClick={() => setSelectedModuleVideo({ title: 'Super Effective Sales Methodology', videoUrl: moduleVideos.sales })}
+              onClick={() => navigate('/dashboard/training/module/sales')}
             >
               <CardContent className="p-6 text-center">
                 <div className="mb-4 flex justify-center">
@@ -306,23 +296,6 @@ export const TrainingHub = () => {
             </Card>
           </div>
         </div>
-
-        {/* Video Dialog */}
-        <Dialog open={!!selectedModuleVideo} onOpenChange={() => setSelectedModuleVideo(null)}>
-          <DialogContent className="max-w-4xl">
-            <DialogHeader>
-              <DialogTitle>{selectedModuleVideo?.title}</DialogTitle>
-            </DialogHeader>
-            <div className="aspect-video w-full">
-              <iframe
-                src={selectedModuleVideo?.videoUrl}
-                className="w-full h-full rounded-lg"
-                allow="autoplay"
-                title={selectedModuleVideo?.title}
-              />
-            </div>
-          </DialogContent>
-        </Dialog>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Sidebar */}

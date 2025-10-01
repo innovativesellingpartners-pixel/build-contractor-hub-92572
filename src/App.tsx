@@ -17,6 +17,7 @@ import { Terms } from "@/pages/Terms";
 import { Dashboard } from "@/components/Dashboard";
 import { Marketplace } from "@/components/Marketplace";
 import { TrainingHub } from "@/components/TrainingHub";
+import { TrainingModulePage } from "@/components/TrainingModulePage";
 import { CoursePlayer } from "@/components/CoursePlayer";
 import Subscribe from "./pages/Subscribe";
 import NotFound from "./pages/NotFound";
@@ -63,6 +64,11 @@ const App = () => (
               <Route path="/dashboard/training" element={
                 <ProtectedRoute>
                   <TrainingHub />
+                </ProtectedRoute>
+              } />
+              <Route path="/dashboard/training/module/:moduleId" element={
+                <ProtectedRoute>
+                  <TrainingModulePage />
                 </ProtectedRoute>
               } />
               <Route path="/dashboard/training/course/:courseId" element={
