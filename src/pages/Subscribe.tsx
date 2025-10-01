@@ -281,34 +281,30 @@ export function Subscribe() {
 
           {/* Plans Section */}
           <div className="lg:col-span-2 grid md:grid-cols-2 gap-6">
-            {/* Professional Plan */}
+            {/* LAUNCH Growth Starter */}
             <Card className="card-industrial relative bg-white border-construction shadow-lg">
               <CardHeader className="text-center pb-6">
-                <CardTitle className="text-2xl mb-2 text-steel">Professional</CardTitle>
-                <CardDescription className="text-lg text-steel-light">Complete contractor toolkit</CardDescription>
+                <CardTitle className="text-2xl mb-2 text-steel">LAUNCH Growth Starter</CardTitle>
+                <CardDescription className="text-lg text-steel-light">Perfect for getting started</CardDescription>
                 <div className="mt-4">
-                  <span className="text-4xl font-bold text-steel">$199</span>
+                  <span className="text-4xl font-bold text-steel">$99</span>
                   <span className="text-steel-light ml-2">/month</span>
                 </div>
-                <div className="text-xs text-primary font-medium mt-2">Most Popular Choice</div>
+                <div className="text-xs text-primary font-medium mt-2">Best for New Contractors</div>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-3 mb-8">
                   <li className="flex items-center">
                     <CheckCircle className="h-4 w-4 text-primary mr-3" />
-                    <span className="text-steel-light">Advanced CRM & Lead Management</span>
+                    <span className="text-steel-light">Basic CRM & Lead Management</span>
                   </li>
                   <li className="flex items-center">
                     <CheckCircle className="h-4 w-4 text-primary mr-3" />
-                    <span className="text-steel-light">Project Tracking & Scheduling</span>
+                    <span className="text-steel-light">Project Tracking Tools</span>
                   </li>
                   <li className="flex items-center">
                     <CheckCircle className="h-4 w-4 text-primary mr-3" />
-                    <span className="text-steel-light">Financial Management Suite</span>
-                  </li>
-                  <li className="flex items-center">
-                    <CheckCircle className="h-4 w-4 text-primary mr-3" />
-                    <span className="text-steel-light">Training Library Access</span>
+                    <span className="text-steel-light">5-Star Training Access</span>
                   </li>
                   <li className="flex items-center">
                     <CheckCircle className="h-4 w-4 text-primary mr-3" />
@@ -316,61 +312,149 @@ export function Subscribe() {
                   </li>
                   <li className="flex items-center">
                     <CheckCircle className="h-4 w-4 text-primary mr-3" />
-                    <span className="text-steel-light">Priority Support</span>
+                    <span className="text-steel-light">Email Support</span>
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="h-4 w-4 text-primary mr-3" />
+                    <span className="text-steel-light">CT1 Pocketbot AI Assistant</span>
                   </li>
                 </ul>
                 <Button className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-3">
-                  Start 30-Day Free Trial
+                  Start Free Trial
                 </Button>
               </CardContent>
             </Card>
 
-            {/* Enterprise Plan */}
+            {/* Growth Business Builder */}
             <Card className="card-industrial relative border-2 border-primary bg-white shadow-xl">
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                 <span className="bg-primary text-white px-4 py-2 rounded-full text-sm font-semibold">
-                  ENTERPRISE
+                  MOST POPULAR
                 </span>
               </div>
               <CardHeader className="text-center pb-6">
-                <CardTitle className="text-2xl mb-2 text-steel">Enterprise</CardTitle>
-                <CardDescription className="text-lg text-steel-light">Full-service business solution</CardDescription>
+                <CardTitle className="text-2xl mb-2 text-steel">Growth Business Builder</CardTitle>
+                <CardDescription className="text-lg text-steel-light">Accelerate your growth</CardDescription>
                 <div className="mt-4">
-                  <span className="text-4xl font-bold text-steel">$399</span>
+                  <span className="text-4xl font-bold text-steel">$199</span>
                   <span className="text-steel-light ml-2">/month</span>
                 </div>
-                <div className="text-xs text-primary font-medium mt-2">White-Glove Service</div>
+                <div className="text-xs text-primary font-medium mt-2">Complete Business Solution</div>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-3 mb-8">
                   <li className="flex items-center">
                     <CheckCircle className="h-4 w-4 text-primary mr-3" />
-                    <span className="text-steel-light">Everything in Professional</span>
+                    <span className="text-steel-light">Everything in LAUNCH</span>
                   </li>
                   <li className="flex items-center">
                     <CheckCircle className="h-4 w-4 text-primary mr-3" />
-                    <span className="text-steel-light">Dedicated Sales Team</span>
+                    <span className="text-steel-light">Advanced CRM & Analytics</span>
                   </li>
                   <li className="flex items-center">
                     <CheckCircle className="h-4 w-4 text-primary mr-3" />
-                    <span className="text-steel-light">24/7 Concierge Support</span>
+                    <span className="text-steel-light">Financial Management Suite</span>
                   </li>
                   <li className="flex items-center">
                     <CheckCircle className="h-4 w-4 text-primary mr-3" />
-                    <span className="text-steel-light">Custom Integrations</span>
+                    <span className="text-steel-light">Priority Training & Certifications</span>
                   </li>
                   <li className="flex items-center">
                     <CheckCircle className="h-4 w-4 text-primary mr-3" />
-                    <span className="text-steel-light">White-label Platform</span>
+                    <span className="text-steel-light">Premium Marketplace Access</span>
                   </li>
                   <li className="flex items-center">
                     <CheckCircle className="h-4 w-4 text-primary mr-3" />
-                    <span className="text-steel-light">Dedicated Account Manager</span>
+                    <span className="text-steel-light">Priority Phone & Email Support</span>
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="h-4 w-4 text-primary mr-3" />
+                    <span className="text-steel-light">Enhanced AI Features</span>
                   </li>
                 </ul>
                 <Button className="w-full bg-steel hover:bg-steel/90 text-white font-semibold py-3">
-                  Contact Enterprise Sales
+                  Get Started Now
                 </Button>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Accel! Market Dominator - Full Width Below */}
+          <div className="lg:col-span-3 mt-6">
+            <Card className="card-industrial relative bg-gradient-to-br from-primary/5 to-primary/10 border-2 border-primary shadow-xl">
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                <span className="bg-gradient-to-r from-primary to-steel text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg">
+                  🚀 ACCEL! MARKET DOMINATOR
+                </span>
+              </div>
+              <CardHeader className="text-center pb-6 pt-8">
+                <CardTitle className="text-3xl mb-2 text-steel">Accel! Market Dominator</CardTitle>
+                <CardDescription className="text-xl text-steel-light">The ultimate contractor success platform</CardDescription>
+                <div className="mt-4">
+                  <span className="text-5xl font-bold text-steel">$399</span>
+                  <span className="text-steel-light ml-2 text-lg">/month</span>
+                </div>
+                <div className="text-sm text-primary font-medium mt-2">White-Glove Service + Market Domination Tools</div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-3 gap-6 mb-8">
+                  <div>
+                    <h4 className="font-semibold text-steel mb-3">Everything in Growth, Plus:</h4>
+                    <ul className="space-y-2">
+                      <li className="flex items-center">
+                        <CheckCircle className="h-4 w-4 text-primary mr-2 flex-shrink-0" />
+                        <span className="text-steel-light text-sm">Dedicated Sales Team</span>
+                      </li>
+                      <li className="flex items-center">
+                        <CheckCircle className="h-4 w-4 text-primary mr-2 flex-shrink-0" />
+                        <span className="text-steel-light text-sm">24/7 Concierge Support</span>
+                      </li>
+                      <li className="flex items-center">
+                        <CheckCircle className="h-4 w-4 text-primary mr-2 flex-shrink-0" />
+                        <span className="text-steel-light text-sm">Dedicated Account Manager</span>
+                      </li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-steel mb-3">Advanced Features:</h4>
+                    <ul className="space-y-2">
+                      <li className="flex items-center">
+                        <CheckCircle className="h-4 w-4 text-primary mr-2 flex-shrink-0" />
+                        <span className="text-steel-light text-sm">Custom Integrations</span>
+                      </li>
+                      <li className="flex items-center">
+                        <CheckCircle className="h-4 w-4 text-primary mr-2 flex-shrink-0" />
+                        <span className="text-steel-light text-sm">White-Label Platform Options</span>
+                      </li>
+                      <li className="flex items-center">
+                        <CheckCircle className="h-4 w-4 text-primary mr-2 flex-shrink-0" />
+                        <span className="text-steel-light text-sm">API Access & Webhooks</span>
+                      </li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-steel mb-3">Domination Tools:</h4>
+                    <ul className="space-y-2">
+                      <li className="flex items-center">
+                        <CheckCircle className="h-4 w-4 text-primary mr-2 flex-shrink-0" />
+                        <span className="text-steel-light text-sm">Market Analysis & Insights</span>
+                      </li>
+                      <li className="flex items-center">
+                        <CheckCircle className="h-4 w-4 text-primary mr-2 flex-shrink-0" />
+                        <span className="text-steel-light text-sm">Competitive Intelligence</span>
+                      </li>
+                      <li className="flex items-center">
+                        <CheckCircle className="h-4 w-4 text-primary mr-2 flex-shrink-0" />
+                        <span className="text-steel-light text-sm">Unlimited Users & Locations</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div className="flex justify-center">
+                  <Button className="bg-gradient-to-r from-primary to-steel hover:from-primary/90 hover:to-steel/90 text-white font-bold py-4 px-12 text-lg shadow-lg">
+                    Contact Enterprise Sales
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </div>
