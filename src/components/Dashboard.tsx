@@ -16,7 +16,8 @@ import {
   Briefcase,
   User,
   CreditCard,
-  ArrowUpCircle
+  ArrowUpCircle,
+  Bot
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
@@ -29,9 +30,10 @@ import { Leads } from "@/components/contractor/Leads";
 import { Insurance } from "@/components/contractor/Insurance";
 import { ProfileEditDialog } from "@/components/contractor/ProfileEditDialog";
 import { StarRating } from "@/components/contractor/StarRating";
+import { Pocketbot } from "@/components/contractor/Pocketbot";
 import ct1Logo from "@/assets/ct1-logo-main.png";
 
-type ActiveSection = 'training' | 'crm' | 'schedule' | 'marketplace' | 'leads' | 'insurance' | 'account';
+type ActiveSection = 'training' | 'pocketbot' | 'crm' | 'schedule' | 'marketplace' | 'leads' | 'insurance' | 'account';
 
 export function Dashboard() {
   const { user, profile, signOut } = useAuth();
@@ -192,6 +194,15 @@ export function Dashboard() {
             </Button>
             
             <Button
+              variant={activeSection === 'pocketbot' ? 'default' : 'ghost'}
+              className="w-full justify-start"
+              onClick={() => setActiveSection('pocketbot')}
+            >
+              <Bot className="h-5 w-5 mr-3" />
+              CT1 Pocketbot
+            </Button>
+            
+            <Button
               variant={activeSection === 'crm' ? 'default' : 'ghost'}
               className="w-full justify-start"
               onClick={() => setActiveSection('crm')}
@@ -241,6 +252,7 @@ export function Dashboard() {
         {/* Main Content Panel */}
         <div className="flex-1 p-6 overflow-auto">
           {activeSection === 'training' && <TrainingHub />}
+          {activeSection === 'pocketbot' && <Pocketbot />}
           {activeSection === 'crm' && <ContractorCRM />}
           {activeSection === 'leads' && <Leads />}
           {activeSection === 'insurance' && <Insurance />}
