@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,7 +6,10 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Pencil, Upload, Loader2 } from "lucide-react";
+import { Pencil, Upload, Loader2, Check, X } from "lucide-react";
+
+type EditingField = 'company_name' | 'contact_name' | 'phone' | 'business_address' | 
+  'city' | 'state' | 'zip_code' | 'tax_id' | 'ct1_contractor_number' | null;
 
 export function ProfileEditDialog() {
   const { profile, user } = useAuth();
@@ -14,18 +17,38 @@ export function ProfileEditDialog() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [editingField, setEditingField] = useState<EditingField>(null);
   const [formData, setFormData] = useState({
-    company_name: profile?.company_name || '',
-    contact_name: profile?.contact_name || '',
-    phone: profile?.phone || '',
-    business_address: profile?.business_address || '',
-    city: profile?.city || '',
-    state: profile?.state || '',
-    zip_code: profile?.zip_code || '',
-    tax_id: profile?.tax_id || '',
-    ct1_contractor_number: profile?.ct1_contractor_number || '',
-    logo_url: profile?.logo_url || '',
+    company_name: '',
+    contact_name: '',
+    phone: '',
+    business_address: '',
+    city: '',
+    state: '',
+    zip_code: '',
+    tax_id: '',
+    ct1_contractor_number: '',
+    logo_url: '',
   });
+
+  // Sync form data when dialog opens or profile changes
+  useEffect(() => {
+    if (open && profile) {
+      setFormData({
+        company_name: profile.company_name || '',
+        contact_name: profile.contact_name || '',
+        phone: profile.phone || '',
+        business_address: profile.business_address || '',
+        city: profile.city || '',
+        state: profile.state || '',
+        zip_code: profile.zip_code || '',
+        tax_id: profile.tax_id || '',
+        ct1_contractor_number: profile.ct1_contractor_number || '',
+        logo_url: profile.logo_url || '',
+      });
+      setEditingField(null);
+    }
+  }, [open, profile]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -69,35 +92,108 @@ export function ProfileEditDialog() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user) return;
+  const handleSaveField = async (field: EditingField) => {
+    if (!user || !field) return;
 
     setLoading(true);
     try {
       const { error } = await supabase
         .from('profiles')
-        .update(formData)
+        .update({ [field]: formData[field] })
         .eq('user_id', user.id);
 
       if (error) throw error;
 
       toast({
-        title: "Profile updated",
-        description: "Your profile has been updated successfully.",
+        title: "Field updated",
+        description: "Your information has been updated successfully.",
       });
-      setOpen(false);
+      setEditingField(null);
       window.location.reload();
     } catch (error) {
       console.error('Error updating profile:', error);
       toast({
         title: "Update failed",
-        description: "Failed to update profile. Please try again.",
+        description: "Failed to update. Please try again.",
         variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
+  };
+
+  const renderField = (
+    field: EditingField,
+    label: string,
+    type: string = "text"
+  ) => {
+    const isEditing = editingField === field;
+    const value = formData[field as keyof typeof formData];
+
+    return (
+      <div>
+        <Label htmlFor={field!}>{label}</Label>
+        <div className="flex items-center gap-2 mt-2">
+          {isEditing ? (
+            <>
+              <Input
+                id={field!}
+                name={field!}
+                type={type}
+                value={value}
+                onChange={handleChange}
+                className="flex-1"
+                autoFocus
+              />
+              <Button
+                type="button"
+                size="icon"
+                variant="ghost"
+                onClick={() => handleSaveField(field)}
+                disabled={loading}
+              >
+                {loading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Check className="h-4 w-4 text-green-600" />
+                )}
+              </Button>
+              <Button
+                type="button"
+                size="icon"
+                variant="ghost"
+                onClick={() => {
+                  setEditingField(null);
+                  // Reset to original value
+                  if (profile) {
+                    setFormData(prev => ({
+                      ...prev,
+                      [field!]: profile[field as keyof typeof profile] || ''
+                    }));
+                  }
+                }}
+              >
+                <X className="h-4 w-4 text-red-600" />
+              </Button>
+            </>
+          ) : (
+            <>
+              <div className="flex-1 px-3 py-2 border rounded-md bg-muted/30">
+                {value || <span className="text-muted-foreground">Not set</span>}
+              </div>
+              <Button
+                type="button"
+                size="icon"
+                variant="ghost"
+                onClick={() => setEditingField(field)}
+              >
+                <Pencil className="h-4 w-4" />
+              </Button>
+            </>
+          )}
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -112,140 +208,72 @@ export function ProfileEditDialog() {
         <DialogHeader>
           <DialogTitle>Edit Contractor Profile</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2">
-              <Label htmlFor="logo">Company Logo</Label>
-              <div className="flex items-center gap-4 mt-2">
-                {formData.logo_url && (
-                  <img src={formData.logo_url} alt="Logo" className="h-20 w-20 object-cover rounded" />
-                )}
-                <div>
-                  <Input
-                    id="logo"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleLogoUpload}
-                    disabled={uploading}
-                    className="hidden"
-                  />
-                  <Label htmlFor="logo" className="cursor-pointer">
-                    <div className="flex items-center gap-2 px-4 py-2 border rounded-md hover:bg-accent">
-                      {uploading ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Upload className="h-4 w-4" />
-                      )}
-                      {uploading ? 'Uploading...' : 'Upload Logo'}
-                    </div>
-                  </Label>
-                </div>
+        <div className="space-y-6">
+          {/* User Email (Read-only) */}
+          <div>
+            <Label>Email (Username)</Label>
+            <div className="px-3 py-2 border rounded-md bg-muted/50 text-muted-foreground mt-2">
+              {user?.email}
+            </div>
+          </div>
+
+          {/* Logo Upload */}
+          <div>
+            <Label htmlFor="logo">Company Logo</Label>
+            <div className="flex items-center gap-4 mt-2">
+              {formData.logo_url && (
+                <img src={formData.logo_url} alt="Logo" className="h-20 w-20 object-cover rounded border" />
+              )}
+              <div>
+                <Input
+                  id="logo"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleLogoUpload}
+                  disabled={uploading}
+                  className="hidden"
+                />
+                <Label htmlFor="logo" className="cursor-pointer">
+                  <div className="flex items-center gap-2 px-4 py-2 border rounded-md hover:bg-accent transition-colors">
+                    {uploading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Upload className="h-4 w-4" />
+                    )}
+                    {uploading ? 'Uploading...' : 'Upload New Logo'}
+                  </div>
+                </Label>
               </div>
             </div>
-
-            <div>
-              <Label htmlFor="company_name">Company Name</Label>
-              <Input
-                id="company_name"
-                name="company_name"
-                value={formData.company_name}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="contact_name">Contact Name</Label>
-              <Input
-                id="contact_name"
-                name="contact_name"
-                value={formData.contact_name}
-                onChange={handleChange}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="phone">Phone Number</Label>
-              <Input
-                id="phone"
-                name="phone"
-                type="tel"
-                value={formData.phone}
-                onChange={handleChange}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="ct1_contractor_number">CT1 Contractor Number</Label>
-              <Input
-                id="ct1_contractor_number"
-                name="ct1_contractor_number"
-                value={formData.ct1_contractor_number}
-                onChange={handleChange}
-              />
-            </div>
-
-            <div className="col-span-2">
-              <Label htmlFor="business_address">Business Address</Label>
-              <Input
-                id="business_address"
-                name="business_address"
-                value={formData.business_address}
-                onChange={handleChange}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="city">City</Label>
-              <Input
-                id="city"
-                name="city"
-                value={formData.city}
-                onChange={handleChange}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="state">State</Label>
-              <Input
-                id="state"
-                name="state"
-                value={formData.state}
-                onChange={handleChange}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="zip_code">ZIP Code</Label>
-              <Input
-                id="zip_code"
-                name="zip_code"
-                value={formData.zip_code}
-                onChange={handleChange}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="tax_id">Tax ID</Label>
-              <Input
-                id="tax_id"
-                name="tax_id"
-                value={formData.tax_id}
-                onChange={handleChange}
-              />
-            </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={loading}>
-              {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              Save Changes
+          <div className="grid grid-cols-2 gap-4">
+            {renderField('company_name', 'Company Name')}
+            {renderField('contact_name', 'Contact Name')}
+            {renderField('phone', 'Phone Number', 'tel')}
+            {renderField('ct1_contractor_number', 'CT1 Contractor Number')}
+          </div>
+
+          <div className="space-y-4">
+            {renderField('business_address', 'Business Address')}
+          </div>
+
+          <div className="grid grid-cols-3 gap-4">
+            {renderField('city', 'City')}
+            {renderField('state', 'State')}
+            {renderField('zip_code', 'ZIP Code')}
+          </div>
+
+          <div>
+            {renderField('tax_id', 'Tax ID')}
+          </div>
+
+          <div className="flex justify-end pt-4 border-t">
+            <Button type="button" onClick={() => setOpen(false)}>
+              Close
             </Button>
           </div>
-        </form>
+        </div>
       </DialogContent>
     </Dialog>
   );
