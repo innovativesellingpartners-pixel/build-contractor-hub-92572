@@ -4,22 +4,23 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Shield, FileText, Calendar, AlertCircle, CheckCircle } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 
 export function Insurance() {
   const [open, setOpen] = useState(false);
-  const [email, setEmail] = useState("");
+  const [emailOrUsername, setEmailOrUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   const { toast } = useToast();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle insurance account login here
     toast({
       title: "Logging in...",
-      description: "Connecting to your insurance account.",
+      description: "Connecting to your World Insurance account.",
     });
     setOpen(false);
   };
@@ -35,39 +36,60 @@ export function Insurance() {
                 Log in to Insurance Account
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="sm:max-w-[480px]">
               <DialogHeader>
-                <DialogTitle>Insurance Account Login</DialogTitle>
-                <DialogDescription>
-                  Enter your insurance account credentials to access your policies and documents.
-                </DialogDescription>
+                <DialogTitle className="text-2xl">Login to your account</DialogTitle>
               </DialogHeader>
-              <form onSubmit={handleLogin} className="space-y-4">
+              <form onSubmit={handleLogin} className="space-y-4 mt-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="emailOrUsername" className="text-sm font-medium">
+                    Email or username <span className="text-destructive">*</span>
+                  </Label>
                   <Input
-                    id="email"
-                    type="email"
-                    placeholder="your@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    id="emailOrUsername"
+                    type="text"
+                    placeholder="Email or username"
+                    value={emailOrUsername}
+                    onChange={(e) => setEmailOrUsername(e.target.value)}
                     required
+                    className="h-11"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password" className="text-sm font-medium">
+                    Password <span className="text-destructive">*</span>
+                  </Label>
                   <Input
                     id="password"
                     type="password"
-                    placeholder="••••••••"
+                    placeholder="Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
+                    className="h-11"
                   />
                 </div>
-                <Button type="submit" className="w-full">
-                  Log In
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="remember" 
+                    checked={rememberMe}
+                    onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                  />
+                  <label
+                    htmlFor="remember"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    Remember me next time
+                  </label>
+                </div>
+                <Button type="submit" className="w-full h-11 bg-green-600 hover:bg-green-700 text-white">
+                  Sign in
                 </Button>
+                <div className="text-center">
+                  <Button type="button" variant="link" className="text-sm text-primary">
+                    Forgot password
+                  </Button>
+                </div>
               </form>
             </DialogContent>
           </Dialog>
