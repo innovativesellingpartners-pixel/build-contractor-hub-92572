@@ -320,6 +320,17 @@ export function Dashboard() {
                 <User className="h-4 w-4 mr-3" />
                 My Account
               </Button>
+              
+              <Button
+                variant="ghost"
+                className="w-full justify-start transition-all hover:bg-muted/80 hover:translate-x-1"
+                asChild
+              >
+                <a href="/">
+                  <Building2 className="h-4 w-4 mr-3" />
+                  CT1 Home
+                </a>
+              </Button>
             </nav>
           </div>
         </div>
