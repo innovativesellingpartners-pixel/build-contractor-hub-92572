@@ -148,40 +148,37 @@ export function NewLandingPage() {
         </div>
       </header>
 
-      {/* CT1 Pocketbot Card - Floating Top Right */}
-      <div className="fixed top-20 right-4 z-40 max-w-sm hidden lg:block">
-        <Card 
-          className="card-ct1 overflow-hidden cursor-pointer transition-all hover:shadow-2xl hover:shadow-primary/20 hover:scale-[1.02] border-2 border-primary/20 bg-background/95 backdrop-blur-sm"
+      {/* CT1 Pocketbot - Floating Button */}
+      <div className="fixed bottom-6 right-6 z-50">
+        <div
           onClick={() => setShowPocketbot(true)}
+          className="group relative cursor-pointer"
         >
-          <div className="relative bg-gradient-to-br from-primary/10 to-primary/5 p-4">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="h-12 w-12 bg-primary/20 rounded-xl flex items-center justify-center border border-primary/30">
-                <img src={ct1Logo} alt="CT1 Bot" className="h-8 w-8" />
+          {/* Main Button */}
+          <div className="flex items-center gap-3 bg-foreground/95 backdrop-blur-md text-background px-6 py-4 rounded-full shadow-2xl hover:shadow-primary/50 transition-all duration-300 hover:scale-105 border border-primary/20">
+            <div className="relative">
+              <div className="h-10 w-10 bg-primary/20 rounded-full flex items-center justify-center">
+                <Bot className="h-6 w-6 text-primary" />
               </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <Bot className="h-4 w-4 text-primary" />
-                  <h3 className="text-lg font-bold text-foreground">
-                    CT1 <span className="text-primary">Pocketbot</span>
-                  </h3>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Your AI business assistant
-                </p>
-              </div>
+              <div className="absolute -top-1 -right-1 h-3 w-3 bg-primary rounded-full animate-pulse"></div>
             </div>
-            <div className="flex items-center gap-2 justify-between">
-              <div className="flex gap-2">
-                <Badge className="bg-primary text-primary-foreground text-xs">
-                  <Zap className="h-3 w-3 mr-1" />
-                  3 Free Prompts
-                </Badge>
+            <div className="flex flex-col">
+              <span className="font-bold text-sm whitespace-nowrap">Try CT1 Pocketbot</span>
+              <span className="text-xs text-background/70 whitespace-nowrap">Get instant answers</span>
+            </div>
+            <ArrowRight className="h-5 w-5 text-primary group-hover:translate-x-1 transition-transform" />
+          </div>
+          
+          {/* Tooltip */}
+          <div className="absolute bottom-full right-0 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+            <div className="bg-foreground text-background text-xs px-3 py-2 rounded-lg shadow-lg whitespace-nowrap">
+              <div className="flex items-center gap-2">
+                <Zap className="h-3 w-3 text-primary" />
+                <span>3 Free Prompts • $10/month after</span>
               </div>
-              <ArrowRight className="h-5 w-5 text-primary animate-pulse" />
             </div>
           </div>
-        </Card>
+        </div>
       </div>
 
       {/* Hero Section */}
