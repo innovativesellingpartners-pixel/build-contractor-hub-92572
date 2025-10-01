@@ -8,7 +8,15 @@ export function Insurance() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Insurance & Compliance</h1>
-        <Button>Upload Documents</Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => window.open('https://insurance-login.example.com', '_blank')}>
+            Log in to Insurance Account
+          </Button>
+          <Button onClick={() => window.location.href = 'mailto:sales@myct1.com?subject=Insurance Options - Lower My Bill'}>
+            Contact Sales for Better Rates
+          </Button>
+          <Button variant="secondary">Upload Documents</Button>
+        </div>
       </div>
 
       {/* Insurance Status Cards */}
