@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Checkbox } from "@/components/ui/checkbox";
 import { CheckCircle, Lock, ArrowLeft, UserCheck, Shield, Clock, Users } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -20,6 +21,8 @@ export function Subscribe() {
   const [companyName, setCompanyName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [forgotPassword, setForgotPassword] = useState(false);
+  const [billingFrequency, setBillingFrequency] = useState<'monthly' | 'quarterly' | 'yearly'>('monthly');
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   // Redirect if already logged in
   useEffect(() => {
@@ -53,6 +56,16 @@ export function Subscribe() {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!agreedToTerms) {
+      toast({
+        title: "Agreement Required",
+        description: "Please agree to the Service Agreement to continue.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsLoading(true);
 
     const { error } = await signUp(email, password, companyName);
@@ -264,7 +277,65 @@ export function Subscribe() {
                           className="mt-1"
                         />
                       </div>
-                      <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-3" disabled={isLoading}>
+                      
+                      <div>
+                        <Label className="text-steel font-medium mb-2 block">Billing Frequency</Label>
+                        <div className="grid grid-cols-3 gap-2">
+                          <Button
+                            type="button"
+                            variant={billingFrequency === 'monthly' ? 'default' : 'outline'}
+                            className="w-full"
+                            onClick={() => setBillingFrequency('monthly')}
+                          >
+                            Monthly
+                          </Button>
+                          <Button
+                            type="button"
+                            variant={billingFrequency === 'quarterly' ? 'default' : 'outline'}
+                            className="w-full"
+                            onClick={() => setBillingFrequency('quarterly')}
+                          >
+                            Quarterly
+                          </Button>
+                          <Button
+                            type="button"
+                            variant={billingFrequency === 'yearly' ? 'default' : 'outline'}
+                            className="w-full"
+                            onClick={() => setBillingFrequency('yearly')}
+                          >
+                            Yearly
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-start space-x-2 p-3 border rounded-lg bg-muted/30">
+                        <Checkbox 
+                          id="terms" 
+                          checked={agreedToTerms}
+                          onCheckedChange={(checked) => setAgreedToTerms(checked as boolean)}
+                          className="mt-1"
+                        />
+                        <div className="grid gap-1.5 leading-none">
+                          <label
+                            htmlFor="terms"
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                          >
+                            I agree to the Service Agreement
+                          </label>
+                          <p className="text-xs text-muted-foreground">
+                            By checking this box, you agree to our{' '}
+                            <Link to="/legal/terms" target="_blank" className="text-primary hover:underline">
+                              Service Agreement and Terms of Service
+                            </Link>
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <Button 
+                        type="submit" 
+                        className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-3" 
+                        disabled={isLoading || !agreedToTerms}
+                      >
                         {isLoading ? "Creating account..." : "Create Account"}
                       </Button>
                       <div className="text-center">
@@ -289,6 +360,9 @@ export function Subscribe() {
                 <div className="mt-4">
                   <span className="text-4xl font-bold text-steel">$50</span>
                   <span className="text-steel-light ml-2">/month</span>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    $135/quarter or $540/year
+                  </div>
                 </div>
                 <div className="text-xs text-primary font-medium mt-2">Tier 1</div>
               </CardHeader>
@@ -330,6 +404,9 @@ export function Subscribe() {
                 <div className="mt-4">
                   <span className="text-4xl font-bold text-steel">$200</span>
                   <span className="text-steel-light ml-2">/month</span>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    $540/quarter or $2,160/year
+                  </div>
                 </div>
                 <div className="text-xs text-primary font-medium mt-2">Tier 2</div>
               </CardHeader>

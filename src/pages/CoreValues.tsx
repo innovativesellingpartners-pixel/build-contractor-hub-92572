@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Heart, Shield, Target, Users, Lightbulb, Trophy } from 'lucide-react';
+import { Heart, Shield, Target, Users, Lightbulb, Trophy, Download } from 'lucide-react';
 import ct1Logo from '@/assets/ct1-logo-main.png';
 import joeCipriano from '@/assets/joe-cipriano.png';
 
@@ -139,6 +139,34 @@ export const CoreValues = () => {
               </p>
               <p className="text-sm font-semibold mt-4">— The CT1 Team</p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Service Agreement Section */}
+      <section className="py-20 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-4xl font-bold mb-6">CT1 Service Agreement</h2>
+            <p className="text-xl text-muted-foreground mb-8">
+              Our service agreement outlines the commitment and standards we uphold for every contractor partner.
+            </p>
+            <Card className="border-2 border-primary/20">
+              <CardContent className="p-8">
+                <Shield className="h-16 w-16 text-primary mx-auto mb-6" />
+                <h3 className="text-2xl font-bold mb-4">Download Our Service Agreement</h3>
+                <p className="text-muted-foreground mb-6">
+                  Review our complete service agreement that details our commitments, your benefits, 
+                  and the standards we maintain for all CT1 contractors.
+                </p>
+                <Link to="/legal/terms" target="_blank">
+                  <Button size="lg" className="gap-2">
+                    <Download className="h-5 w-5" />
+                    View Service Agreement
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>

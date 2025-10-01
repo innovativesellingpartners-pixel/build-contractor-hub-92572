@@ -17,7 +17,9 @@ import {
   User,
   CreditCard,
   ArrowUpCircle,
-  Bot
+  Bot,
+  Mic,
+  Award
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
@@ -265,6 +267,28 @@ export function Dashboard() {
               >
                 <Store className="h-4 w-4 mr-3" />
                 Marketplace
+              </Button>
+              
+              <Button
+                variant="ghost"
+                className="w-full justify-start transition-all hover:bg-muted/80 hover:translate-x-1"
+                asChild
+              >
+                <a href="https://lovable.dev/projects/eb889344-3c18-4b7f-b049-eddbd3665869" target="_blank" rel="noopener noreferrer">
+                  <Mic className="h-4 w-4 mr-3" />
+                  Podcast
+                </a>
+              </Button>
+              
+              <Button
+                variant="ghost"
+                className="w-full justify-start transition-all hover:bg-muted/80 hover:translate-x-1"
+                asChild
+              >
+                <a href="/core-values">
+                  <Award className="h-4 w-4 mr-3" />
+                  CT1 Contractor Standards
+                </a>
               </Button>
               
               <div className="my-2 border-t border-border/50" />
