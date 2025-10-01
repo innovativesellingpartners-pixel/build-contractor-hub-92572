@@ -106,6 +106,22 @@ export const BlogPodcast = () => {
             Episodes will be linked from our YouTube channel.
           </p>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {/* Featured Video */}
+            <Card className="overflow-hidden hover:shadow-lg transition-shadow md:col-span-2 lg:col-span-3">
+              <div className="aspect-video">
+                <iframe
+                  src="https://drive.google.com/file/d/1YIwwe3zaeu9Mcj4ftMuw3Kwu6PGdov2M/preview"
+                  className="w-full h-full"
+                  allow="autoplay"
+                  title="CT1 Featured Episode"
+                />
+              </div>
+              <CardHeader>
+                <CardTitle className="text-lg">Featured Episode</CardTitle>
+              </CardHeader>
+            </Card>
+            
+            {/* Upcoming Episodes */}
             {podcastEpisodes.map((episode, index) => (
               <Card key={index} className="overflow-hidden hover:shadow-lg transition-shadow">
                 <div className="aspect-video bg-muted flex items-center justify-center">
