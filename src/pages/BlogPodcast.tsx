@@ -110,7 +110,7 @@ export const BlogPodcast = () => {
             <Card className="overflow-hidden hover:shadow-lg transition-shadow md:col-span-2 lg:col-span-3">
               <div className="aspect-video">
                 <iframe
-                  src="https://drive.google.com/file/d/1YIwwe3zaeu9Mcj4ftMuw3Kwu6PGdov2M/preview"
+                  src="https://drive.google.com/file/d/1YIwwe3zaeu9Mcj4ftMuw3Kwu6PGdov2M/preview?t=784s"
                   className="w-full h-full"
                   allow="autoplay"
                   title="CT1 Featured Episode"
