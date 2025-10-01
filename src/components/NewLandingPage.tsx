@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { ContactForm } from "@/components/ContactForm";
+import { MobileNav } from "@/components/MobileNav";
 import heroImage from "@/assets/hero-construction.jpg";
 import ct1Logo from "@/assets/ct1-logo-main.png";
 import constructeamLogo from "@/assets/ct1-logo-main.png";
@@ -102,11 +103,11 @@ export function NewLandingPage() {
       <header className="border-b border-border sticky top-0 bg-background/95 backdrop-blur-sm z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-3">
-              <img src={ct1Logo} alt="CT1 Logo" className="h-12 w-12" />
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <img src={ct1Logo} alt="CT1 Logo" className="h-10 w-10 sm:h-12 sm:w-12" />
               <div>
-                <h1 className="text-2xl font-bold text-foreground">CT1</h1>
-                <p className="text-xs text-muted-foreground font-medium">One-Up Your Business</p>
+                <h1 className="text-xl sm:text-2xl font-bold text-foreground">CT1</h1>
+                <p className="text-[10px] sm:text-xs text-muted-foreground font-medium">One-Up Your Business</p>
               </div>
             </div>
             
@@ -139,44 +140,46 @@ export function NewLandingPage() {
                 Contractor Login
               </Link>
             </nav>
+
+            <MobileNav onContactClick={() => setActiveContactForm("contact-sales")} />
           </div>
         </div>
       </header>
 
       {/* Hero Section */}
-      <section className="section-hero py-24 relative overflow-hidden min-h-[90vh] flex items-center">
+      <section className="section-hero py-12 sm:py-16 md:py-24 relative overflow-hidden min-h-[80vh] sm:min-h-[85vh] md:min-h-[90vh] flex items-center">
         <div className="absolute inset-0 bg-black/50"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 items-center">
             <div className="text-center lg:text-left text-white">
-              <div className="mb-8 flex justify-center lg:justify-start">
-                <img src={constructeamLogo} alt="CONSTRUCTEAM CT1" className="h-24 w-24 drop-shadow-lg" />
+              <div className="mb-6 sm:mb-8 flex justify-center lg:justify-start">
+                <img src={constructeamLogo} alt="CONSTRUCTEAM CT1" className="h-16 w-16 sm:h-20 sm:w-20 md:h-24 md:w-24 drop-shadow-lg" />
               </div>
               
-              <h1 className="text-7xl lg:text-8xl font-bold mb-4 leading-tight drop-shadow-lg">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl xl:text-8xl font-bold mb-4 leading-tight drop-shadow-lg">
                 A nationwide network of contractors,
                 <span className="text-primary block mt-2">Powered by CT1</span>
               </h1>
               
-              <h2 className="text-3xl lg:text-4xl font-semibold mb-6 leading-tight drop-shadow-lg opacity-90">
+              <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold mb-4 sm:mb-6 leading-tight drop-shadow-lg opacity-90">
                 Unified Business Suite
                 <span className="text-white block mt-1">For Contractors</span>
               </h2>
               
-              <p className="text-xl mb-8 leading-relaxed drop-shadow-md opacity-90 max-w-2xl">
+              <p className="text-base sm:text-lg md:text-xl mb-6 sm:mb-8 leading-relaxed drop-shadow-md opacity-90 max-w-2xl mx-auto lg:mx-0">
                 Complete contractor management combining proposals, job tracking, billing, client communication, 
                 scheduling, and team coordination. Everything connected. Nothing missing.
               </p>
               
-              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start mb-6 sm:mb-8">
                 <Dialog open={activeContactForm === "join-network"} onOpenChange={(open) => setActiveContactForm(open ? "join-network" : null)}>
                   <DialogTrigger asChild>
-                    <Button className="btn-hero text-lg px-8 py-4">
+                    <Button className="btn-hero text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 w-full sm:w-auto">
                       Join the CT1 Network
-                      <ArrowRight className="ml-2 h-5 w-5" />
+                      <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-2xl">
+                  <DialogContent className="max-w-2xl mx-4">
                     <ContactForm
                       title="Join the CT1 Network"
                       description="Start building your future with CT1's powerful contractor platform"
@@ -189,11 +192,11 @@ export function NewLandingPage() {
                 
                 <Dialog open={activeContactForm === "one-up-today"} onOpenChange={(open) => setActiveContactForm(open ? "one-up-today" : null)}>
                   <DialogTrigger asChild>
-                    <Button variant="outline" size="lg" className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-foreground">
+                    <Button variant="outline" size="lg" className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-foreground w-full sm:w-auto px-6 py-3 sm:py-4">
                       One-Up Today
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-2xl">
+                  <DialogContent className="max-w-2xl mx-4">
                     <ContactForm
                       title="One-Up Your Business Today"
                       description="Get started with CT1 and transform your contracting business"
@@ -206,11 +209,11 @@ export function NewLandingPage() {
               </div>
 
               {/* Contractor Login Section */}
-              <div className="bg-black/30 backdrop-blur-sm rounded-lg p-6 border border-white/20 mb-8">
-                <h3 className="text-lg font-semibold mb-3 text-white">Already a CT1 Contractor?</h3>
-                <p className="text-white/80 mb-4 text-sm">Access your dashboard, manage leads, and grow your business.</p>
+              <div className="bg-black/30 backdrop-blur-sm rounded-lg p-4 sm:p-6 border border-white/20 mb-6 sm:mb-8">
+                <h3 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-white">Already a CT1 Contractor?</h3>
+                <p className="text-white/80 mb-3 sm:mb-4 text-xs sm:text-sm">Access your dashboard, manage leads, and grow your business.</p>
                 <Link to="/auth">
-                  <Button variant="outline" className="bg-transparent border-white text-white hover:bg-white hover:text-foreground">
+                  <Button variant="outline" className="bg-transparent border-white text-white hover:bg-white hover:text-foreground w-full sm:w-auto">
                     <Briefcase className="mr-2 h-4 w-4" />
                     Contractor Portal
                   </Button>
@@ -218,30 +221,30 @@ export function NewLandingPage() {
               </div>
             </div>
             
-            <div className="hidden lg:block">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-4">
-                  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
-                    <TrendingUp className="h-8 w-8 text-primary mb-2" />
-                    <h4 className="font-semibold text-white">Increase Your Revenue</h4>
-                    <p className="text-white/80 text-sm">By saving time, money, and energy. "Work on your business, not in your business"</p>
+            <div className="hidden md:block">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                <div className="space-y-3 sm:space-y-4">
+                  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 sm:p-4 border border-white/20">
+                    <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-primary mb-2" />
+                    <h4 className="font-semibold text-white text-sm sm:text-base">Increase Your Revenue</h4>
+                    <p className="text-white/80 text-xs sm:text-sm">By saving time, money, and energy. "Work on your business, not in your business"</p>
                   </div>
-                  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
-                    <Clock className="h-8 w-8 text-primary mb-2" />
-                    <h4 className="font-semibold text-white">Save 20+ Hours/Week</h4>
-                    <p className="text-white/80 text-sm">Automated workflows</p>
+                  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 sm:p-4 border border-white/20">
+                    <Clock className="h-6 w-6 sm:h-8 sm:w-8 text-primary mb-2" />
+                    <h4 className="font-semibold text-white text-sm sm:text-base">Save 20+ Hours/Week</h4>
+                    <p className="text-white/80 text-xs sm:text-sm">Automated workflows</p>
                   </div>
                 </div>
-                <div className="space-y-4">
-                  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
-                    <Users className="h-8 w-8 text-primary mb-2" />
-                    <h4 className="font-semibold text-white">Nationwide Network</h4>
-                    <p className="text-white/80 text-sm">Trusted and elite contractors, "Powered by CT1"</p>
+                <div className="space-y-3 sm:space-y-4">
+                  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 sm:p-4 border border-white/20">
+                    <Users className="h-6 w-6 sm:h-8 sm:w-8 text-primary mb-2" />
+                    <h4 className="font-semibold text-white text-sm sm:text-base">Nationwide Network</h4>
+                    <p className="text-white/80 text-xs sm:text-sm">Trusted and elite contractors, "Powered by CT1"</p>
                   </div>
-                  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
-                    <Award className="h-8 w-8 text-primary mb-2" />
-                    <h4 className="font-semibold text-white">Industry Leading</h4>
-                    <p className="text-white/80 text-sm">Contractor platform</p>
+                  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 sm:p-4 border border-white/20">
+                    <Award className="h-6 w-6 sm:h-8 sm:w-8 text-primary mb-2" />
+                    <h4 className="font-semibold text-white text-sm sm:text-base">Industry Leading</h4>
+                    <p className="text-white/80 text-xs sm:text-sm">Contractor platform</p>
                   </div>
                 </div>
               </div>
@@ -251,23 +254,23 @@ export function NewLandingPage() {
       </section>
 
       {/* How CT1 Helps Contractors */}
-      <section id="features" className="py-20 bg-muted/30">
+      <section id="features" className="py-12 sm:py-16 md:py-20 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <Badge className="mb-4 bg-primary text-primary-foreground px-4 py-2 text-lg">
-              <Target className="h-5 w-5 mr-2" />
+          <div className="text-center mb-10 sm:mb-12 md:mb-16">
+            <Badge className="mb-3 sm:mb-4 bg-primary text-primary-foreground px-3 sm:px-4 py-1.5 sm:py-2 text-sm sm:text-base md:text-lg">
+              <Target className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
               Unified Business Suite
             </Badge>
-            <h2 className="text-4xl font-bold text-foreground mb-6">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-4 sm:mb-6 px-4">
               Everything Connected, <span className="text-primary">Nothing Missing</span>
             </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto px-4">
               Stop juggling multiple tools. CT1 combines all contractor business functions 
               in one professional, no-nonsense platform.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
             {features.map((feature, index) => (
               <Card key={index} className="card-ct1 p-6 hover:shadow-red-glow transition-all">
                 <CardHeader className="pb-4">
@@ -286,9 +289,9 @@ export function NewLandingPage() {
       </section>
 
       {/* For Contractors Section */}
-      <section id="for-contractors" className="py-20 bg-background">
+      <section id="for-contractors" className="py-12 sm:py-16 md:py-20 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="grid lg:grid-cols-2 gap-8 sm:gap-10 md:gap-12 items-center">
             <div>
               <Badge className="mb-4 bg-primary text-primary-foreground px-4 py-2">
                 <Building className="h-4 w-4 mr-2" />

@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { MobileNav } from "@/components/MobileNav";
 import heroImage from "@/assets/hero-construction.jpg";
 import ct1Logo from "@/assets/ct1-logo-main.png";
 import constructeamLogo from "@/assets/ct1-logo-main.png";
@@ -30,11 +31,11 @@ export function LandingPage() {
       <header className="border-b border-border sticky top-0 bg-background/95 backdrop-blur-sm z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-3">
-              <img src={ct1Logo} alt="CT1 Logo" className="h-12 w-12" />
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <img src={ct1Logo} alt="CT1 Logo" className="h-10 w-10 sm:h-12 sm:w-12" />
               <div>
-                <h1 className="text-2xl font-bold text-foreground">CT1</h1>
-                <p className="text-xs text-muted-foreground font-medium">One-Up the Competition</p>
+                <h1 className="text-xl sm:text-2xl font-bold text-foreground">CT1</h1>
+                <p className="text-[10px] sm:text-xs text-muted-foreground font-medium">One-Up the Competition</p>
               </div>
             </div>
             
@@ -50,44 +51,46 @@ export function LandingPage() {
                 Contractor Login
               </Link>
             </nav>
+
+            <MobileNav />
           </div>
         </div>
       </header>
 
       {/* Hero Section */}
-      <section className="section-hero py-24 relative overflow-hidden min-h-[80vh] flex items-center">
+      <section className="section-hero py-12 sm:py-16 md:py-24 relative overflow-hidden min-h-[70vh] sm:min-h-[75vh] md:min-h-[80vh] flex items-center">
         <div className="absolute inset-0 bg-black/40"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 items-center">
             <div className="text-center lg:text-left text-white">
-              <div className="mb-8 flex justify-center lg:justify-start">
-                <img src={constructeamLogo} alt="CONSTRUCTEAM CT1" className="h-20 w-20 drop-shadow-lg" />
+              <div className="mb-6 sm:mb-8 flex justify-center lg:justify-start">
+                <img src={constructeamLogo} alt="CONSTRUCTEAM CT1" className="h-16 w-16 sm:h-20 sm:w-20 drop-shadow-lg" />
               </div>
               
-              <h1 className="text-5xl lg:text-6xl font-bold mb-6 leading-tight drop-shadow-lg">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 leading-tight drop-shadow-lg">
                 CT1 Unified Business Suite
                 <span className="text-primary block mt-2 arrow-up">Everything You Need to Run Your Business</span>
               </h1>
               
-              <p className="text-xl mb-8 leading-relaxed drop-shadow-md opacity-90">
+              <p className="text-base sm:text-lg md:text-xl mb-6 sm:mb-8 leading-relaxed drop-shadow-md opacity-90">
                 Complete contractor management platform combining proposals, job tracking, billing, 
                 client communication, scheduling, and team coordination in one unified system.
               </p>
               
-              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <Button className="btn-hero text-lg px-8 py-4">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start">
+                <Button className="btn-hero text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 w-full sm:w-auto">
                   Start Your Free Trial
-                  <ArrowRight className="ml-2 h-5 w-5" />
+                  <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
                 </Button>
-                <Button variant="outline" size="lg" className="border-2 border-white text-white hover:bg-white hover:text-foreground">
+                <Button variant="outline" size="lg" className="border-2 border-white text-white hover:bg-white hover:text-foreground w-full sm:w-auto">
                   View Demo
                 </Button>
               </div>
 
-              <div className="mt-8 flex items-center justify-center lg:justify-start gap-6">
+              <div className="mt-6 sm:mt-8 flex items-center justify-center lg:justify-start gap-4 sm:gap-6">
                 <div className="flex items-center gap-2">
-                  <Star className="h-5 w-5 text-primary fill-current" />
-                  <span className="font-semibold text-white">A nationwide network of trusted and elite contractors, "Powered by CT1"</span>
+                  <Star className="h-4 w-4 sm:h-5 sm:w-5 text-primary fill-current flex-shrink-0" />
+                  <span className="font-semibold text-white text-xs sm:text-sm md:text-base">A nationwide network of trusted and elite contractors, "Powered by CT1"</span>
                 </div>
               </div>
             </div>
