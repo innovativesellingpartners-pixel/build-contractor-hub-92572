@@ -68,66 +68,98 @@ export function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Top Business Info Bar */}
-      <div className="bg-card border-b shadow-sm">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between mb-4">
-            <img src={ct1Logo} alt="CT1 Logo" className="h-12 w-12" />
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex flex-col">
+      {/* Top Navigation Bar */}
+      <div className="bg-card/80 backdrop-blur-sm border-b shadow-sm sticky top-0 z-10">
+        <div className="container mx-auto px-6 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <img src={ct1Logo} alt="CT1 Logo" className="h-10 w-10" />
+              <div className="hidden md:block">
+                <h1 className="text-lg font-bold">Contractor Portal</h1>
+                <p className="text-xs text-muted-foreground">Welcome back, {profile?.contact_name || 'Contractor'}</p>
+              </div>
+            </div>
             <div className="flex items-center gap-3">
               {isAdmin && (
-                <Button variant="outline" size="sm" asChild>
+                <Button variant="outline" size="sm" asChild className="hover:bg-primary/10 transition-colors">
                   <a href="/admin">Admin Dashboard</a>
                 </Button>
               )}
-              <Button variant="ghost" size="sm" onClick={handleLogout}>
+              <Button variant="ghost" size="sm" onClick={handleLogout} className="hover:bg-destructive/10 hover:text-destructive transition-colors">
                 <LogOut className="h-4 w-4 mr-2" />
                 Logout
               </Button>
             </div>
           </div>
-          <div className="flex items-start justify-between gap-6">
-            {/* Left: Logo and Company Info */}
-            <div className="flex items-start gap-4 flex-1">
-              {profile?.logo_url ? (
-                <img 
-                  src={profile.logo_url} 
-                  alt="Company Logo" 
-                  className="h-20 w-20 rounded-lg object-cover border-2 border-primary/20"
-                />
-              ) : (
-                <div className="h-20 w-20 bg-primary/10 rounded-lg flex items-center justify-center border-2 border-primary/20">
-                  <Building2 className="h-10 w-10 text-primary" />
-                </div>
-              )}
-              <div className="space-y-2 flex-1">
-                <div className="flex items-center gap-3">
-                  <h2 className="text-2xl font-bold">{profile?.company_name || 'Your Company'}</h2>
-                  {profile?.ct1_contractor_number && (
-                    <Badge variant="outline" className="text-xs">
-                      CT1 #{profile.ct1_contractor_number}
-                    </Badge>
-                  )}
+        </div>
+      </div>
+
+      {/* Company Info Card */}
+      <div className="container mx-auto px-6 py-6">
+        <div className="bg-card border border-border/50 rounded-xl shadow-lg overflow-hidden transition-all hover:shadow-xl">
+          <div className="p-6">
+            <div className="flex items-start gap-6">
+              {/* Logo Section */}
+              <div className="relative group">
+                {profile?.logo_url ? (
+                  <img 
+                    src={profile.logo_url} 
+                    alt="Company Logo" 
+                    className="h-24 w-24 rounded-xl object-cover border border-border shadow-md group-hover:shadow-lg transition-shadow"
+                  />
+                ) : (
+                  <div className="h-24 w-24 bg-gradient-to-br from-primary/20 to-primary/10 rounded-xl flex items-center justify-center border border-border shadow-md group-hover:shadow-lg transition-shadow">
+                    <Building2 className="h-12 w-12 text-primary" />
+                  </div>
+                )}
+                <Badge className={`${getTierBadgeColor(profile?.subscription_tier)} text-white absolute -bottom-2 left-1/2 -translate-x-1/2 shadow-md`}>
+                  {getTierLabel(profile?.subscription_tier).split(' ')[0]}
+                </Badge>
+              </div>
+
+              {/* Company Details */}
+              <div className="flex-1 space-y-4">
+                <div>
+                  <div className="flex items-center gap-3 mb-2">
+                    <h2 className="text-2xl font-bold">{profile?.company_name || 'Your Company'}</h2>
+                    {profile?.ct1_contractor_number && (
+                      <Badge variant="outline" className="text-xs font-mono">
+                        CT1 #{profile.ct1_contractor_number}
+                      </Badge>
+                    )}
+                  </div>
+                  
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-sm text-muted-foreground">5-Star Training:</span>
+                    <StarRating level={profile?.training_level || 0} />
+                  </div>
                 </div>
                 
-                <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-sm">
+                <div className="grid md:grid-cols-2 gap-x-8 gap-y-2 text-sm">
                   {profile?.contact_name && (
-                    <div className="flex items-center gap-2">
-                      <Mail className="h-3 w-3 text-muted-foreground" />
+                    <div className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                      <User className="h-4 w-4 text-primary" />
                       <span className="text-muted-foreground">Contact:</span>
                       <span className="font-medium">{profile.contact_name}</span>
                     </div>
                   )}
                   {profile?.phone && (
-                    <div className="flex items-center gap-2">
-                      <Phone className="h-3 w-3 text-muted-foreground" />
+                    <div className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                      <Phone className="h-4 w-4 text-primary" />
                       <span className="font-medium">{profile.phone}</span>
                     </div>
                   )}
+                  {user?.email && (
+                    <div className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                      <Mail className="h-4 w-4 text-primary" />
+                      <span className="font-medium">{user.email}</span>
+                    </div>
+                  )}
                   {profile?.business_address && (
-                    <div className="flex items-center gap-2 col-span-2">
-                      <MapPin className="h-3 w-3 text-muted-foreground" />
-                      <span className="text-muted-foreground">
+                    <div className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                      <MapPin className="h-4 w-4 text-primary" />
+                      <span className="text-sm">
                         {profile.business_address}
                         {profile.city && profile.state && (
                           <>, {profile.city}, {profile.state} {profile.zip_code}</>
@@ -135,41 +167,13 @@ export function Dashboard() {
                       </span>
                     </div>
                   )}
-                  {profile?.tax_id && (
-                    <div className="flex items-center gap-2">
-                      <FileText className="h-3 w-3 text-muted-foreground" />
-                      <span className="text-muted-foreground">Tax ID:</span>
-                      <span className="font-medium">{profile.tax_id}</span>
-                    </div>
-                  )}
-                  {user?.email && (
-                    <div className="flex items-center gap-2">
-                      <Mail className="h-3 w-3 text-muted-foreground" />
-                      <span className="font-medium">{user.email}</span>
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex items-center gap-3 pt-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium">5-Star Training:</span>
-                    <StarRating level={profile?.training_level || 0} />
-                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Right: Tier Info and Actions */}
-            <div className="flex flex-col items-end gap-3">
-              <div className="flex items-center gap-2">
-                <Badge className={`${getTierBadgeColor(profile?.subscription_tier)} text-white`}>
-                  {getTierLabel(profile?.subscription_tier)}
-                </Badge>
-              </div>
-              
-              <div className="flex items-center gap-2">
+              {/* Action Buttons */}
+              <div className="flex flex-col gap-2">
                 <ProfileEditDialog />
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="hover:bg-primary/10 transition-colors">
                   <HelpCircle className="h-4 w-4 mr-2" />
                   Support
                 </Button>
@@ -180,195 +184,259 @@ export function Dashboard() {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex flex-1">
+      <div className="container mx-auto px-6 pb-6 flex-1 flex gap-6">
         {/* Left Sidebar Navigation */}
-        <div className="w-64 bg-card border-r p-4">
-          <nav className="space-y-2">
-            <Button
-              variant={activeSection === 'training' ? 'default' : 'ghost'}
-              className="w-full justify-start"
-              onClick={() => setActiveSection('training')}
-            >
-              <BookOpen className="h-5 w-5 mr-3" />
-              5-Star Training
-            </Button>
-            
-            <Button
-              variant={activeSection === 'pocketbot' ? 'default' : 'ghost'}
-              className="w-full justify-start"
-              onClick={() => setActiveSection('pocketbot')}
-            >
-              <Bot className="h-5 w-5 mr-3" />
-              CT1 Pocketbot
-            </Button>
-            
-            <Button
-              variant={activeSection === 'crm' ? 'default' : 'ghost'}
-              className="w-full justify-start"
-              onClick={() => setActiveSection('crm')}
-            >
-              <Briefcase className="h-5 w-5 mr-3" />
-              CT1 - CRM/Jobs
-            </Button>
-            
-            <Button
-              variant={activeSection === 'leads' ? 'default' : 'ghost'}
-              className="w-full justify-start"
-              onClick={() => setActiveSection('leads')}
-            >
-              <Users className="h-5 w-5 mr-3" />
-              Leads
-            </Button>
-            
-            <Button
-              variant={activeSection === 'insurance' ? 'default' : 'ghost'}
-              className="w-full justify-start"
-              onClick={() => setActiveSection('insurance')}
-            >
-              <Shield className="h-5 w-5 mr-3" />
-              Insurance
-            </Button>
-            
-            <Button
-              variant={activeSection === 'marketplace' ? 'default' : 'ghost'}
-              className="w-full justify-start"
-              onClick={() => setActiveSection('marketplace')}
-            >
-              <Store className="h-5 w-5 mr-3" />
-              Marketplace
-            </Button>
-            
-            <Button
-              variant={activeSection === 'account' ? 'default' : 'ghost'}
-              className="w-full justify-start"
-              onClick={() => setActiveSection('account')}
-            >
-              <User className="h-5 w-5 mr-3" />
-              My Account
-            </Button>
-          </nav>
+        <div className="w-64 flex-shrink-0">
+          <div className="bg-card border border-border/50 rounded-xl shadow-md p-3 sticky top-24">
+            <nav className="space-y-1">
+              <Button
+                variant={activeSection === 'training' ? 'default' : 'ghost'}
+                className={`w-full justify-start transition-all ${
+                  activeSection === 'training' 
+                    ? 'shadow-md' 
+                    : 'hover:bg-muted/80 hover:translate-x-1'
+                }`}
+                onClick={() => setActiveSection('training')}
+              >
+                <BookOpen className="h-4 w-4 mr-3" />
+                5-Star Training
+              </Button>
+              
+              <Button
+                variant={activeSection === 'pocketbot' ? 'default' : 'ghost'}
+                className={`w-full justify-start transition-all ${
+                  activeSection === 'pocketbot' 
+                    ? 'shadow-md' 
+                    : 'hover:bg-muted/80 hover:translate-x-1'
+                }`}
+                onClick={() => setActiveSection('pocketbot')}
+              >
+                <Bot className="h-4 w-4 mr-3" />
+                CT1 Pocketbot
+              </Button>
+              
+              <Button
+                variant={activeSection === 'crm' ? 'default' : 'ghost'}
+                className={`w-full justify-start transition-all ${
+                  activeSection === 'crm' 
+                    ? 'shadow-md' 
+                    : 'hover:bg-muted/80 hover:translate-x-1'
+                }`}
+                onClick={() => setActiveSection('crm')}
+              >
+                <Briefcase className="h-4 w-4 mr-3" />
+                CRM/Jobs
+              </Button>
+              
+              <Button
+                variant={activeSection === 'leads' ? 'default' : 'ghost'}
+                className={`w-full justify-start transition-all ${
+                  activeSection === 'leads' 
+                    ? 'shadow-md' 
+                    : 'hover:bg-muted/80 hover:translate-x-1'
+                }`}
+                onClick={() => setActiveSection('leads')}
+              >
+                <Users className="h-4 w-4 mr-3" />
+                Leads
+              </Button>
+              
+              <Button
+                variant={activeSection === 'insurance' ? 'default' : 'ghost'}
+                className={`w-full justify-start transition-all ${
+                  activeSection === 'insurance' 
+                    ? 'shadow-md' 
+                    : 'hover:bg-muted/80 hover:translate-x-1'
+                }`}
+                onClick={() => setActiveSection('insurance')}
+              >
+                <Shield className="h-4 w-4 mr-3" />
+                Insurance
+              </Button>
+              
+              <Button
+                variant={activeSection === 'marketplace' ? 'default' : 'ghost'}
+                className={`w-full justify-start transition-all ${
+                  activeSection === 'marketplace' 
+                    ? 'shadow-md' 
+                    : 'hover:bg-muted/80 hover:translate-x-1'
+                }`}
+                onClick={() => setActiveSection('marketplace')}
+              >
+                <Store className="h-4 w-4 mr-3" />
+                Marketplace
+              </Button>
+              
+              <div className="my-2 border-t border-border/50" />
+              
+              <Button
+                variant={activeSection === 'account' ? 'default' : 'ghost'}
+                className={`w-full justify-start transition-all ${
+                  activeSection === 'account' 
+                    ? 'shadow-md' 
+                    : 'hover:bg-muted/80 hover:translate-x-1'
+                }`}
+                onClick={() => setActiveSection('account')}
+              >
+                <User className="h-4 w-4 mr-3" />
+                My Account
+              </Button>
+            </nav>
+          </div>
         </div>
 
         {/* Main Content Panel */}
-        <div className="flex-1 p-6 overflow-auto">
-          {activeSection === 'training' && <TrainingHub />}
-          {activeSection === 'pocketbot' && <Pocketbot />}
-          {activeSection === 'crm' && <ContractorCRM />}
-          {activeSection === 'leads' && <Leads />}
-          {activeSection === 'insurance' && <Insurance />}
-          {activeSection === 'marketplace' && <Marketplace />}
-          {activeSection === 'account' && (
-            <div className="max-w-4xl mx-auto space-y-6">
-              <h2 className="text-3xl font-bold">My Account</h2>
-              
-              {/* Billing & Upgrade Section */}
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="bg-card border-2 border-primary rounded-lg p-6 space-y-4">
-                  <div className="flex items-center gap-3 mb-2">
-                    <CreditCard className="h-6 w-6 text-primary" />
-                    <h3 className="text-xl font-semibold">Pay My CT1 Bill</h3>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Keep your subscription active by paying your monthly bill.
-                  </p>
-                  <Button className="w-full" size="lg">
-                    <CreditCard className="h-4 w-4 mr-2" />
-                    Pay Bill
-                  </Button>
+        <div className="flex-1 overflow-auto">
+          <div className="bg-card border border-border/50 rounded-xl shadow-md p-6 min-h-[600px]">
+            {activeSection === 'training' && <TrainingHub />}
+            {activeSection === 'pocketbot' && <Pocketbot />}
+            {activeSection === 'crm' && <ContractorCRM />}
+            {activeSection === 'leads' && <Leads />}
+            {activeSection === 'insurance' && <Insurance />}
+            {activeSection === 'marketplace' && <Marketplace />}
+            {activeSection === 'account' && (
+              <div className="max-w-5xl mx-auto space-y-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-3xl font-bold">My Account</h2>
+                  <Badge variant="outline" className="text-sm">
+                    Account ID: {user?.id?.substring(0, 8)}
+                  </Badge>
                 </div>
                 
-                <div className="bg-card border-2 border-primary/50 rounded-lg p-6 space-y-4">
-                  <div className="flex items-center gap-3 mb-2">
-                    <ArrowUpCircle className="h-6 w-6 text-primary" />
-                    <h3 className="text-xl font-semibold">Upgrade Plan</h3>
+                {/* Billing & Upgrade Section */}
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="group bg-gradient-to-br from-primary/5 to-primary/10 border-2 border-primary/30 rounded-xl p-6 space-y-4 hover:shadow-lg hover:border-primary/50 transition-all">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="h-12 w-12 rounded-lg bg-primary/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <CreditCard className="h-6 w-6 text-primary" />
+                      </div>
+                      <h3 className="text-xl font-semibold">Pay My CT1 Bill</h3>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Keep your subscription active by paying your monthly bill securely.
+                    </p>
+                    <Button className="w-full shadow-md hover:shadow-lg transition-shadow" size="lg">
+                      <CreditCard className="h-4 w-4 mr-2" />
+                      Pay Bill
+                    </Button>
                   </div>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Unlock more features and grow your business faster.
-                  </p>
-                  <Button variant="outline" className="w-full" size="lg">
-                    <ArrowUpCircle className="h-4 w-4 mr-2" />
-                    View Plans
-                  </Button>
-                </div>
-              </div>
-              
-              <div className="grid gap-6">
-                <div className="bg-card border rounded-lg p-6 space-y-4">
-                  <h3 className="text-xl font-semibold">Account Information</h3>
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <Mail className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Email</p>
-                        <p className="font-medium">{user?.email}</p>
+                  
+                  <div className="group bg-gradient-to-br from-muted/30 to-muted/50 border-2 border-border rounded-xl p-6 space-y-4 hover:shadow-lg hover:border-primary/30 transition-all">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <ArrowUpCircle className="h-6 w-6 text-primary" />
                       </div>
+                      <h3 className="text-xl font-semibold">Upgrade Plan</h3>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <User className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Contact Name</p>
-                        <p className="font-medium">{profile?.contact_name || 'Not set'}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Phone className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Phone</p>
-                        <p className="font-medium">{profile?.phone || 'Not set'}</p>
-                      </div>
-                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Unlock more features and grow your business faster.
+                    </p>
+                    <Button variant="outline" className="w-full hover:bg-primary/10 transition-colors" size="lg">
+                      <ArrowUpCircle className="h-4 w-4 mr-2" />
+                      View Plans
+                    </Button>
                   </div>
                 </div>
                 
-                <div className="bg-card border rounded-lg p-6 space-y-4">
-                  <h3 className="text-xl font-semibold">Business Information</h3>
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <Building2 className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Company Name</p>
-                        <p className="font-medium">{profile?.company_name || 'Not set'}</p>
+                <div className="grid md:grid-cols-2 gap-6">
+                  {/* Account Information Card */}
+                  <div className="bg-gradient-to-br from-card to-muted/20 border border-border/50 rounded-xl shadow-md overflow-hidden">
+                    <div className="bg-primary/5 px-6 py-4 border-b border-border/50">
+                      <h3 className="text-lg font-semibold flex items-center gap-2">
+                        <User className="h-5 w-5 text-primary" />
+                        Account Information
+                      </h3>
+                    </div>
+                    <div className="p-6 space-y-4">
+                      <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                        <Mail className="h-5 w-5 text-primary mt-0.5" />
+                        <div className="flex-1">
+                          <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Email</p>
+                          <p className="font-medium">{user?.email}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                        <User className="h-5 w-5 text-primary mt-0.5" />
+                        <div className="flex-1">
+                          <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Contact Name</p>
+                          <p className="font-medium">{profile?.contact_name || 'Not set'}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                        <Phone className="h-5 w-5 text-primary mt-0.5" />
+                        <div className="flex-1">
+                          <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Phone</p>
+                          <p className="font-medium">{profile?.phone || 'Not set'}</p>
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <MapPin className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Business Address</p>
-                        <p className="font-medium">
-                          {profile?.business_address || 'Not set'}
-                          {profile?.city && profile?.state && (
-                            <>, {profile.city}, {profile.state} {profile.zip_code}</>
-                          )}
-                        </p>
-                      </div>
+                  </div>
+                  
+                  {/* Business Information Card */}
+                  <div className="bg-gradient-to-br from-card to-muted/20 border border-border/50 rounded-xl shadow-md overflow-hidden">
+                    <div className="bg-primary/5 px-6 py-4 border-b border-border/50">
+                      <h3 className="text-lg font-semibold flex items-center gap-2">
+                        <Building2 className="h-5 w-5 text-primary" />
+                        Business Information
+                      </h3>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <FileText className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Tax ID</p>
-                        <p className="font-medium">{profile?.tax_id || 'Not set'}</p>
+                    <div className="p-6 space-y-4">
+                      <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                        <Building2 className="h-5 w-5 text-primary mt-0.5" />
+                        <div className="flex-1">
+                          <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Company Name</p>
+                          <p className="font-medium">{profile?.company_name || 'Not set'}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                        <MapPin className="h-5 w-5 text-primary mt-0.5" />
+                        <div className="flex-1">
+                          <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Business Address</p>
+                          <p className="font-medium text-sm">
+                            {profile?.business_address || 'Not set'}
+                            {profile?.city && profile?.state && (
+                              <>, {profile.city}, {profile.state} {profile.zip_code}</>
+                            )}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                        <FileText className="h-5 w-5 text-primary mt-0.5" />
+                        <div className="flex-1">
+                          <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Tax ID</p>
+                          <p className="font-medium">{profile?.tax_id || 'Not set'}</p>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-card border rounded-lg p-6 space-y-4">
-                  <h3 className="text-xl font-semibold">Subscription</h3>
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <Badge className={`${getTierBadgeColor(profile?.subscription_tier)} text-white`}>
-                        {getTierLabel(profile?.subscription_tier)}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm text-muted-foreground">CT1 Contractor Number:</span>
-                      <span className="font-medium">#{profile?.ct1_contractor_number || 'Not assigned'}</span>
+                {/* Subscription Card */}
+                <div className="bg-gradient-to-br from-card to-muted/20 border border-border/50 rounded-xl shadow-md overflow-hidden">
+                  <div className="bg-primary/5 px-6 py-4 border-b border-border/50">
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      <Shield className="h-5 w-5 text-primary" />
+                      Subscription & Status
+                    </h3>
+                  </div>
+                  <div className="p-6">
+                    <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
+                      <div className="space-y-1">
+                        <p className="text-sm text-muted-foreground">Current Plan</p>
+                        <Badge className={`${getTierBadgeColor(profile?.subscription_tier)} text-white shadow-md`}>
+                          {getTierLabel(profile?.subscription_tier)}
+                        </Badge>
+                      </div>
+                      <div className="text-right space-y-1">
+                        <p className="text-sm text-muted-foreground">CT1 Contractor Number</p>
+                        <p className="font-mono font-bold text-lg">#{profile?.ct1_contractor_number || 'Not assigned'}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </div>
