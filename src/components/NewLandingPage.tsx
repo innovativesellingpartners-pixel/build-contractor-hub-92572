@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { ContactForm } from "@/components/ContactForm";
 import { MobileNav } from "@/components/MobileNav";
+import { Pocketbot } from "@/components/contractor/Pocketbot";
 import heroImage from "@/assets/hero-construction.jpg";
 import ct1Logo from "@/assets/ct1-logo-main.png";
 import constructeamLogo from "@/assets/ct1-logo-main.png";
@@ -39,6 +40,7 @@ import {
 
 export function NewLandingPage() {
   const [activeContactForm, setActiveContactForm] = useState<string | null>(null);
+  const [showPocketbot, setShowPocketbot] = useState(false);
 
   const testimonials = [
     {
@@ -132,13 +134,6 @@ export function NewLandingPage() {
                   />
                 </DialogContent>
               </Dialog>
-              
-              <Link to="/auth?tab=pocketbot">
-                <Button variant="outline" className="font-semibold">
-                  <Bot className="h-4 w-4 mr-2" />
-                  Try CT1 Bot Free
-                </Button>
-              </Link>
               
               <Link 
                 to="/auth" 
@@ -489,6 +484,64 @@ export function NewLandingPage() {
           </div>
         </div>
       </section>
+
+      {/* CT1 Pocketbot Card */}
+      <section className="py-20 bg-gradient-to-br from-primary/5 via-background to-primary/10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto">
+            <Card 
+              className="card-ct1 overflow-hidden cursor-pointer transition-all hover:shadow-2xl hover:shadow-primary/20 hover:scale-[1.02] border-2 border-primary/20"
+              onClick={() => setShowPocketbot(true)}
+            >
+              <div className="relative bg-gradient-to-br from-primary/10 to-primary/5 p-8">
+                <div className="flex flex-col md:flex-row items-center gap-8">
+                  <div className="flex-shrink-0">
+                    <div className="h-24 w-24 md:h-32 md:w-32 bg-primary/20 rounded-2xl flex items-center justify-center shadow-xl border-2 border-primary/30">
+                      <img src={ct1Logo} alt="CT1 Bot" className="h-16 w-16 md:h-20 md:w-20" />
+                    </div>
+                  </div>
+                  
+                  <div className="flex-1 text-center md:text-left">
+                    <div className="flex items-center justify-center md:justify-start gap-3 mb-3">
+                      <Bot className="h-8 w-8 text-primary" />
+                      <h3 className="text-3xl md:text-4xl font-bold text-foreground">
+                        Try CT1 <span className="text-primary">Pocketbot</span>
+                      </h3>
+                    </div>
+                    <p className="text-lg text-muted-foreground mb-4">
+                      Get instant answers about trades, estimating, sales, and construction. Your AI-powered business assistant.
+                    </p>
+                    <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
+                      <Badge className="bg-primary text-primary-foreground">
+                        <Zap className="h-3 w-3 mr-1" />
+                        3 Free Prompts
+                      </Badge>
+                      <Badge variant="outline" className="border-primary text-primary">
+                        $10/month after trial
+                      </Badge>
+                    </div>
+                  </div>
+                  
+                  <div className="flex-shrink-0">
+                    <div className="bg-primary/20 rounded-full p-4 animate-pulse">
+                      <ArrowRight className="h-8 w-8 text-primary" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* CT1 Pocketbot Modal */}
+      <Dialog open={showPocketbot} onOpenChange={setShowPocketbot}>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden p-0">
+          <div className="h-[85vh]">
+            <Pocketbot />
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Testimonials */}
       <section id="testimonials" className="py-20 bg-background">
