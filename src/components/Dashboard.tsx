@@ -13,7 +13,8 @@ import {
   Shield,
   Users,
   FileText,
-  Briefcase
+  Briefcase,
+  User
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
@@ -28,7 +29,7 @@ import { ProfileEditDialog } from "@/components/contractor/ProfileEditDialog";
 import { StarRating } from "@/components/contractor/StarRating";
 import ct1Logo from "@/assets/ct1-logo-circle.png";
 
-type ActiveSection = 'training' | 'crm' | 'schedule' | 'marketplace' | 'leads' | 'insurance';
+type ActiveSection = 'training' | 'crm' | 'schedule' | 'marketplace' | 'leads' | 'insurance' | 'account';
 
 export function Dashboard() {
   const { user, profile, signOut } = useAuth();
@@ -223,6 +224,15 @@ export function Dashboard() {
               <Store className="h-5 w-5 mr-3" />
               Marketplace
             </Button>
+            
+            <Button
+              variant={activeSection === 'account' ? 'default' : 'ghost'}
+              className="w-full justify-start"
+              onClick={() => setActiveSection('account')}
+            >
+              <User className="h-5 w-5 mr-3" />
+              My Account
+            </Button>
           </nav>
         </div>
 
@@ -233,6 +243,86 @@ export function Dashboard() {
           {activeSection === 'leads' && <Leads />}
           {activeSection === 'insurance' && <Insurance />}
           {activeSection === 'marketplace' && <Marketplace />}
+          {activeSection === 'account' && (
+            <div className="max-w-4xl mx-auto space-y-6">
+              <h2 className="text-3xl font-bold">My Account</h2>
+              <div className="grid gap-6">
+                <div className="bg-card border rounded-lg p-6 space-y-4">
+                  <h3 className="text-xl font-semibold">Account Information</h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <Mail className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm text-muted-foreground">Email</p>
+                        <p className="font-medium">{user?.email}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <User className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm text-muted-foreground">Contact Name</p>
+                        <p className="font-medium">{profile?.contact_name || 'Not set'}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Phone className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm text-muted-foreground">Phone</p>
+                        <p className="font-medium">{profile?.phone || 'Not set'}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-card border rounded-lg p-6 space-y-4">
+                  <h3 className="text-xl font-semibold">Business Information</h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <Building2 className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm text-muted-foreground">Company Name</p>
+                        <p className="font-medium">{profile?.company_name || 'Not set'}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <MapPin className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm text-muted-foreground">Business Address</p>
+                        <p className="font-medium">
+                          {profile?.business_address || 'Not set'}
+                          {profile?.city && profile?.state && (
+                            <>, {profile.city}, {profile.state} {profile.zip_code}</>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <FileText className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm text-muted-foreground">Tax ID</p>
+                        <p className="font-medium">{profile?.tax_id || 'Not set'}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-card border rounded-lg p-6 space-y-4">
+                  <h3 className="text-xl font-semibold">Subscription</h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <Badge className={`${getTierBadgeColor(profile?.subscription_tier)} text-white`}>
+                        {getTierLabel(profile?.subscription_tier)}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm text-muted-foreground">CT1 Contractor Number:</span>
+                      <span className="font-medium">#{profile?.ct1_contractor_number || 'Not assigned'}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
