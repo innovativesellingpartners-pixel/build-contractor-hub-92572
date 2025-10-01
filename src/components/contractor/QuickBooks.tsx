@@ -5,14 +5,17 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { DollarSign, ExternalLink, CheckCircle, TrendingUp, FileText, Users } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DollarSign, ExternalLink, CheckCircle, TrendingUp, FileText, Users, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export function QuickBooks() {
   const [isConnected, setIsConnected] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [emailOrUserId, setEmailOrUserId] = useState("");
+  const [phone, setPhone] = useState("");
+  const [rememberMe, setRememberMe] = useState(true);
   const { toast } = useToast();
 
   const handleConnect = () => {
@@ -25,9 +28,8 @@ export function QuickBooks() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle QuickBooks login here
     toast({
-      title: "Logging in...",
+      title: "Signing in...",
       description: "Connecting to your QuickBooks Online account.",
     });
     setLoginOpen(false);
@@ -143,40 +145,79 @@ export function QuickBooks() {
                 Log in to QuickBooks Online
               </Button>
             </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>QuickBooks Online Login</DialogTitle>
-                <DialogDescription>
-                  Enter your QuickBooks Online credentials to access your account.
-                </DialogDescription>
-              </DialogHeader>
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="qb-email">Email or User ID</Label>
-                  <Input
-                    id="qb-email"
-                    type="email"
-                    placeholder="your@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
+            <DialogContent className="sm:max-w-[450px]">
+              <div className="flex flex-col items-center space-y-4">
+                <div className="text-center space-y-2">
+                  <h2 className="text-2xl font-bold text-blue-600">INTUIT</h2>
+                  <p className="text-lg font-medium">Let's get you in to QuickBooks</p>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="qb-password">Password</Label>
-                  <Input
-                    id="qb-password"
-                    type="password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                </div>
-                <Button type="submit" className="w-full">
-                  Log In to QuickBooks
-                </Button>
-              </form>
+                
+                <form onSubmit={handleLogin} className="w-full space-y-4">
+                  <Tabs defaultValue="email" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2">
+                      <TabsTrigger value="email">Email or user ID</TabsTrigger>
+                      <TabsTrigger value="phone">Phone</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="email" className="space-y-4 mt-4">
+                      <Input
+                        id="emailOrUserId"
+                        type="text"
+                        placeholder="Email or user ID"
+                        value={emailOrUserId}
+                        onChange={(e) => setEmailOrUserId(e.target.value)}
+                        required
+                        className="h-11"
+                      />
+                    </TabsContent>
+                    <TabsContent value="phone" className="space-y-4 mt-4">
+                      <Input
+                        id="phone"
+                        type="tel"
+                        placeholder="Phone number"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        className="h-11"
+                      />
+                    </TabsContent>
+                  </Tabs>
+
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="qb-remember" 
+                      checked={rememberMe}
+                      onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                      className="data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600"
+                    />
+                    <label
+                      htmlFor="qb-remember"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      Remember me
+                    </label>
+                  </div>
+
+                  <Button type="submit" className="w-full h-11 bg-green-700 hover:bg-green-800 text-white">
+                    <Lock className="h-4 w-4 mr-2" />
+                    Sign in
+                  </Button>
+
+                  <div className="text-xs text-center text-muted-foreground">
+                    By selecting Sign in, you agree to Intuit Terms and Mailchimp Terms. Our Privacy Policy applies to your personal data.
+                  </div>
+
+                  <div className="text-center space-y-2">
+                    <Button type="button" variant="link" className="text-sm text-green-700 hover:text-green-800">
+                      Try something else
+                    </Button>
+                    <p className="text-sm">
+                      New to Intuit?{" "}
+                      <Button type="button" variant="link" className="text-sm text-primary p-0 h-auto">
+                        Create an account
+                      </Button>
+                    </p>
+                  </div>
+                </form>
+              </div>
             </DialogContent>
           </Dialog>
           <p className="text-xs text-muted-foreground mt-2 text-center">
