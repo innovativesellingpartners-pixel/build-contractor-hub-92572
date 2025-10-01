@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { 
   BookOpen, 
   Clock, 
@@ -29,10 +30,19 @@ import { useTrainingCourses, useUserEnrollments, useUserCertificates } from '@/h
 export const TrainingHub = () => {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedModuleVideo, setSelectedModuleVideo] = useState<{ title: string; videoUrl: string } | null>(null);
   
   const { data: courses, isLoading: coursesLoading } = useTrainingCourses();
   const { data: enrollments, isLoading: enrollmentsLoading } = useUserEnrollments();
   const { data: certificates } = useUserCertificates();
+
+  const moduleVideos = {
+    communication: 'https://drive.google.com/file/d/19FEPOjjvZIxW4yoECNyTGo8DvdMNo33n/preview',
+    leadership: 'https://drive.google.com/file/d/1A8BvqRgsL7nZZAxcH7Sfy_zxZB3OKj-h/preview',
+    performance: 'https://drive.google.com/file/d/10GxFb62dfLRodA5Scbg30joL2xFBvL52/preview',
+    process: 'https://drive.google.com/file/d/10sSL_A96eAuuEGWhd7UL-oM1fl3iJqMQ/preview',
+    sales: 'https://drive.google.com/file/d/1R2bv-qZN3kUckO03uiSXsgvT_OIFjgF-/preview'
+  };
 
   // Extract categories from courses
   const categories = ['All', ...(courses?.reduce((cats, course) => {
@@ -171,7 +181,10 @@ export const TrainingHub = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             {/* Module 1: Communication */}
-            <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border-2 hover:border-primary">
+            <Card 
+              className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border-2 hover:border-primary"
+              onClick={() => setSelectedModuleVideo({ title: 'Communication', videoUrl: moduleVideos.communication })}
+            >
               <CardContent className="p-6 text-center">
                 <div className="mb-4 flex justify-center">
                   <div className="h-16 w-16 rounded-full bg-blue-100 flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -185,12 +198,18 @@ export const TrainingHub = () => {
                     <Star key={star} className="h-4 w-4 text-yellow-500 fill-yellow-500" />
                   ))}
                 </div>
-                <Badge variant="outline" className="w-full justify-center">Coming Soon</Badge>
+                <Button variant="default" size="sm" className="w-full">
+                  <Play className="h-4 w-4 mr-2" />
+                  Watch Now
+                </Button>
               </CardContent>
             </Card>
 
             {/* Module 2: Leadership */}
-            <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border-2 hover:border-primary">
+            <Card 
+              className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border-2 hover:border-primary"
+              onClick={() => setSelectedModuleVideo({ title: 'Leadership', videoUrl: moduleVideos.leadership })}
+            >
               <CardContent className="p-6 text-center">
                 <div className="mb-4 flex justify-center">
                   <div className="h-16 w-16 rounded-full bg-purple-100 flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -204,12 +223,18 @@ export const TrainingHub = () => {
                     <Star key={star} className="h-4 w-4 text-yellow-500 fill-yellow-500" />
                   ))}
                 </div>
-                <Badge variant="outline" className="w-full justify-center">Coming Soon</Badge>
+                <Button variant="default" size="sm" className="w-full">
+                  <Play className="h-4 w-4 mr-2" />
+                  Watch Now
+                </Button>
               </CardContent>
             </Card>
 
             {/* Module 3: Performance */}
-            <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border-2 hover:border-primary">
+            <Card 
+              className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border-2 hover:border-primary"
+              onClick={() => setSelectedModuleVideo({ title: 'Performance', videoUrl: moduleVideos.performance })}
+            >
               <CardContent className="p-6 text-center">
                 <div className="mb-4 flex justify-center">
                   <div className="h-16 w-16 rounded-full bg-green-100 flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -223,12 +248,18 @@ export const TrainingHub = () => {
                     <Star key={star} className="h-4 w-4 text-yellow-500 fill-yellow-500" />
                   ))}
                 </div>
-                <Badge variant="outline" className="w-full justify-center">Coming Soon</Badge>
+                <Button variant="default" size="sm" className="w-full">
+                  <Play className="h-4 w-4 mr-2" />
+                  Watch Now
+                </Button>
               </CardContent>
             </Card>
 
             {/* Module 4: Process - Systems That Scale */}
-            <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border-2 hover:border-primary">
+            <Card 
+              className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border-2 hover:border-primary"
+              onClick={() => setSelectedModuleVideo({ title: 'Process - Systems That Scale', videoUrl: moduleVideos.process })}
+            >
               <CardContent className="p-6 text-center">
                 <div className="mb-4 flex justify-center">
                   <div className="h-16 w-16 rounded-full bg-orange-100 flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -242,12 +273,18 @@ export const TrainingHub = () => {
                     <Star key={star} className="h-4 w-4 text-yellow-500 fill-yellow-500" />
                   ))}
                 </div>
-                <Badge variant="outline" className="w-full justify-center">Coming Soon</Badge>
+                <Button variant="default" size="sm" className="w-full">
+                  <Play className="h-4 w-4 mr-2" />
+                  Watch Now
+                </Button>
               </CardContent>
             </Card>
 
             {/* Module 5: Super Effective Sales Methodology */}
-            <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border-2 hover:border-primary">
+            <Card 
+              className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border-2 hover:border-primary"
+              onClick={() => setSelectedModuleVideo({ title: 'Super Effective Sales Methodology', videoUrl: moduleVideos.sales })}
+            >
               <CardContent className="p-6 text-center">
                 <div className="mb-4 flex justify-center">
                   <div className="h-16 w-16 rounded-full bg-red-100 flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -261,11 +298,31 @@ export const TrainingHub = () => {
                     <Star key={star} className="h-4 w-4 text-yellow-500 fill-yellow-500" />
                   ))}
                 </div>
-                <Badge variant="outline" className="w-full justify-center">Coming Soon</Badge>
+                <Button variant="default" size="sm" className="w-full">
+                  <Play className="h-4 w-4 mr-2" />
+                  Watch Now
+                </Button>
               </CardContent>
             </Card>
           </div>
         </div>
+
+        {/* Video Dialog */}
+        <Dialog open={!!selectedModuleVideo} onOpenChange={() => setSelectedModuleVideo(null)}>
+          <DialogContent className="max-w-4xl">
+            <DialogHeader>
+              <DialogTitle>{selectedModuleVideo?.title}</DialogTitle>
+            </DialogHeader>
+            <div className="aspect-video w-full">
+              <iframe
+                src={selectedModuleVideo?.videoUrl}
+                className="w-full h-full rounded-lg"
+                allow="autoplay"
+                title={selectedModuleVideo?.title}
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Sidebar */}
