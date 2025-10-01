@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Wrench, Users, TrendingUp, Award, Phone, Bot } from 'lucide-react';
-import ct1Logo from '@/assets/ct1-logo-circle.png';
+import ct1Logo from '@/assets/ct1-logo-main.png';
 
 export const WhatWeDo = () => {
   const services = [

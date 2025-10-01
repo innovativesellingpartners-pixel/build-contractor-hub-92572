@@ -29,7 +29,7 @@ import { Leads } from "@/components/contractor/Leads";
 import { Insurance } from "@/components/contractor/Insurance";
 import { ProfileEditDialog } from "@/components/contractor/ProfileEditDialog";
 import { StarRating } from "@/components/contractor/StarRating";
-import ct1Logo from "@/assets/ct1-logo-circle.png";
+import ct1Logo from "@/assets/ct1-logo-main.png";
 
 type ActiveSection = 'training' | 'crm' | 'schedule' | 'marketplace' | 'leads' | 'insurance' | 'account';
 

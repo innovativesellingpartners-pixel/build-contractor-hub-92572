@@ -6,8 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { ContactForm } from "@/components/ContactForm";
 import heroImage from "@/assets/hero-construction.jpg";
-import ct1Logo from "@/assets/ct1-logo-circle.png";
-import constructeamLogo from "@/assets/ct1-logo-circle.png";
+import ct1Logo from "@/assets/ct1-logo-main.png";
+import constructeamLogo from "@/assets/ct1-logo-main.png";
 import { 
   ArrowRight, 
   Bot, 

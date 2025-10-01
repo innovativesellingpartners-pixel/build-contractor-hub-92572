@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import ct1Logo from "@/assets/ct1-logo-circle.png";
+import ct1Logo from "@/assets/ct1-logo-main.png";
 import { 
   ArrowRight, 
   Users, 

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, ArrowLeft, Star, Zap, Crown } from "lucide-react";
-import ct1Logo from "@/assets/ct1-logo-circle.png";
+import ct1Logo from "@/assets/ct1-logo-main.png";
 
 export function Pricing() {
   const tiers = [
