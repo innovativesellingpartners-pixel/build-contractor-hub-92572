@@ -174,7 +174,7 @@ export function ScheduleCall() {
                 </div>
                 <div className="flex items-center gap-1">
                   <Phone className="h-3 w-3" />
-                  <span>(555) 123-4567</span>
+                  <span>(248) 752-7308</span>
                 </div>
               </div>
             </div>

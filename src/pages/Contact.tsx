@@ -20,7 +20,7 @@ export function Contact() {
       icon: Phone,
       title: "Phone Support",
       description: "Speak directly with our sales team",
-      contact: "(555) 123-4567",
+      contact: "(248) 752-7308",
       hours: "Mon-Fri 8AM-6PM EST"
     },
     {
@@ -50,19 +50,19 @@ export function Contact() {
     {
       city: "Dallas, TX",
       address: "1234 Main Street, Suite 100",
-      phone: "(555) 123-4567",
+      phone: "(248) 752-7308",
       region: "Southwest Region"
     },
     {
       city: "Atlanta, GA",
       address: "5678 Peachtree Ave, Floor 5",
-      phone: "(555) 234-5678",
+      phone: "(248) 752-7308",
       region: "Southeast Region"
     },
     {
       city: "Chicago, IL",
       address: "9012 Michigan Ave, Suite 300",
-      phone: "(555) 345-6789",
+      phone: "(248) 752-7308",
       region: "Midwest Region"
     }
   ];
@@ -276,7 +276,7 @@ export function Contact() {
             <div>
               <h4 className="font-semibold text-background mb-4">Support</h4>
               <ul className="space-y-2 text-sm text-muted">
-                <li><a href="tel:(555)123-4567" className="hover:text-primary transition-colors">Phone Support</a></li>
+                <li><a href="tel:(248)752-7308" className="hover:text-primary transition-colors">Phone Support</a></li>
                 <li><a href="mailto:support@myct1.com" className="hover:text-primary transition-colors">Email Support</a></li>
                 <li><a href="#" className="hover:text-primary transition-colors">Help Center</a></li>
                 <li><a href="#" className="hover:text-primary transition-colors">Training Resources</a></li>
@@ -288,7 +288,7 @@ export function Contact() {
               <div className="space-y-2 text-sm text-muted">
                 <div className="flex items-center gap-2">
                   <Phone className="h-4 w-4" />
-                  <span>(555) 123-4567</span>
+                  <span>(248) 752-7308</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4" />
