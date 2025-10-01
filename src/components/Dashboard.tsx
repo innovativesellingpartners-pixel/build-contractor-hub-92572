@@ -178,7 +178,12 @@ export function Dashboard() {
               {/* Action Buttons */}
               <div className="flex flex-col gap-2">
                 <ProfileEditDialog />
-                <Button variant="outline" size="sm" className="hover:bg-primary/10 transition-colors">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="hover:bg-primary/10 transition-colors"
+                  onClick={() => window.location.href = 'mailto:support@myct1.com'}
+                >
                   <HelpCircle className="h-4 w-4 mr-2" />
                   Support
                 </Button>
