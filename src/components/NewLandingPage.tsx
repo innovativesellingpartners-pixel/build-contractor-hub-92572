@@ -157,8 +157,8 @@ export function NewLandingPage() {
           {/* Main Button */}
           <div className="flex items-center gap-2 md:gap-4 bg-foreground/95 backdrop-blur-md text-background px-4 py-3 md:px-8 md:py-5 rounded-full shadow-2xl hover:shadow-primary/50 transition-all duration-300 hover:scale-105 border-2 border-primary/30">
             <div className="relative">
-              <div className="h-10 w-10 md:h-14 md:w-14 bg-primary/20 rounded-full flex items-center justify-center">
-                <Bot className="h-6 w-6 md:h-8 md:w-8 text-primary" />
+              <div className="h-10 w-10 md:h-14 md:w-14 bg-primary/20 rounded-full flex items-center justify-center border border-primary/30">
+                <img src={ct1Logo} alt="CT1" className="h-6 w-6 md:h-8 md:w-8" />
               </div>
               <div className="absolute -top-1 -right-1 h-3 w-3 md:h-4 md:w-4 bg-primary rounded-full animate-pulse"></div>
             </div>
