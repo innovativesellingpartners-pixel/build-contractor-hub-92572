@@ -148,32 +148,32 @@ export function NewLandingPage() {
         </div>
       </header>
 
-      {/* CT1 Pocketbot - Floating Button */}
+      {/* CT1 Pocketbot - Floating Button (Enlarged) */}
       <div className="fixed top-20 right-6 z-50">
         <div
           onClick={() => setShowPocketbot(true)}
           className="group relative cursor-pointer"
         >
           {/* Main Button */}
-          <div className="flex items-center gap-3 bg-foreground/95 backdrop-blur-md text-background px-6 py-4 rounded-full shadow-2xl hover:shadow-primary/50 transition-all duration-300 hover:scale-105 border border-primary/20">
+          <div className="flex items-center gap-4 bg-foreground/95 backdrop-blur-md text-background px-8 py-5 rounded-full shadow-2xl hover:shadow-primary/50 transition-all duration-300 hover:scale-105 border-2 border-primary/30">
             <div className="relative">
-              <div className="h-10 w-10 bg-primary/20 rounded-full flex items-center justify-center">
-                <Bot className="h-6 w-6 text-primary" />
+              <div className="h-14 w-14 bg-primary/20 rounded-full flex items-center justify-center">
+                <Bot className="h-8 w-8 text-primary" />
               </div>
-              <div className="absolute -top-1 -right-1 h-3 w-3 bg-primary rounded-full animate-pulse"></div>
+              <div className="absolute -top-1 -right-1 h-4 w-4 bg-primary rounded-full animate-pulse"></div>
             </div>
             <div className="flex flex-col">
-              <span className="font-bold text-sm whitespace-nowrap">Try CT1 Pocketbot</span>
-              <span className="text-xs text-background/70 whitespace-nowrap">Get instant answers</span>
+              <span className="font-bold text-lg whitespace-nowrap">Try CT1 Pocketbot</span>
+              <span className="text-sm text-background/70 whitespace-nowrap">Get instant answers</span>
             </div>
-            <ArrowRight className="h-5 w-5 text-primary group-hover:translate-x-1 transition-transform" />
+            <ArrowRight className="h-6 w-6 text-primary group-hover:translate-x-1 transition-transform" />
           </div>
           
           {/* Tooltip */}
           <div className="absolute bottom-full right-0 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-            <div className="bg-foreground text-background text-xs px-3 py-2 rounded-lg shadow-lg whitespace-nowrap">
+            <div className="bg-foreground text-background text-sm px-4 py-2 rounded-lg shadow-lg whitespace-nowrap">
               <div className="flex items-center gap-2">
-                <Zap className="h-3 w-3 text-primary" />
+                <Zap className="h-4 w-4 text-primary" />
                 <span>3 Free Prompts • $10/month after</span>
               </div>
             </div>
@@ -182,108 +182,100 @@ export function NewLandingPage() {
       </div>
 
       {/* Hero Section */}
-      <section className="section-hero py-12 sm:py-16 md:py-24 relative overflow-hidden min-h-[80vh] sm:min-h-[85vh] md:min-h-[90vh] flex items-center">
+      <section className="section-hero py-12 sm:py-16 md:py-20 relative overflow-hidden min-h-[85vh] flex items-center">
         <div className="absolute inset-0 bg-black/50"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 items-center">
-            <div className="text-center lg:text-left text-white">
-              <div className="mb-6 sm:mb-8 flex justify-center lg:justify-start">
-                <img src={constructeamLogo} alt="CONSTRUCTEAM CT1" className="h-16 w-16 sm:h-20 sm:w-20 md:h-24 md:w-24 drop-shadow-lg" />
-              </div>
-              
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl xl:text-8xl font-bold mb-4 leading-tight drop-shadow-lg">
-                A nationwide network of contractors,
-                <span className="text-primary block mt-2">Powered by CT1</span>
-              </h1>
-              
-              <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold mb-4 sm:mb-6 leading-tight drop-shadow-lg opacity-90">
-                Unified Business Suite
-                <span className="text-white block mt-1">For Contractors</span>
-              </h2>
-              
-              <p className="text-base sm:text-lg md:text-xl mb-6 sm:mb-8 leading-relaxed drop-shadow-md opacity-90 max-w-2xl mx-auto lg:mx-0">
-                Complete contractor management combining proposals, job tracking, billing, client communication, 
-                scheduling, and team coordination. Everything connected. Nothing missing.
-              </p>
-              
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start mb-6 sm:mb-8">
-                <Dialog open={activeContactForm === "join-network"} onOpenChange={(open) => setActiveContactForm(open ? "join-network" : null)}>
-                  <DialogTrigger asChild>
-                    <Button className="btn-hero text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 w-full sm:w-auto">
-                      Join the CT1 Network
-                      <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-2xl mx-4">
-                    <ContactForm
-                      title="Join the CT1 Network"
-                      description="Start building your future with CT1's powerful contractor platform"
-                      ctaText="Join Network"
-                      formType="network-signup"
-                      onClose={() => setActiveContactForm(null)}
-                    />
-                  </DialogContent>
-                </Dialog>
-                
-                <Dialog open={activeContactForm === "one-up-today"} onOpenChange={(open) => setActiveContactForm(open ? "one-up-today" : null)}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" size="lg" className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-foreground w-full sm:w-auto px-6 py-3 sm:py-4">
-                      One-Up Today
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-2xl mx-4">
-                    <ContactForm
-                      title="One-Up Your Business Today"
-                      description="Get started with CT1 and transform your contracting business"
-                      ctaText="Get Started"
-                      formType="get-started"
-                      onClose={() => setActiveContactForm(null)}
-                    />
-                  </DialogContent>
-                </Dialog>
-              </div>
-
-              {/* Contractor Login Section */}
-              <div className="bg-black/30 backdrop-blur-sm rounded-lg p-4 sm:p-6 border border-white/20 mb-6 sm:mb-8">
-                <h3 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-white">Already a CT1 Contractor?</h3>
-                <p className="text-white/80 mb-3 sm:mb-4 text-xs sm:text-sm">Access your dashboard, manage leads, and grow your business.</p>
-                <Link to="/auth">
-                  <Button variant="outline" className="bg-transparent border-white text-white hover:bg-white hover:text-foreground w-full sm:w-auto">
-                    <Briefcase className="mr-2 h-4 w-4" />
-                    Contractor Portal
-                  </Button>
-                </Link>
-              </div>
+          <div className="text-center text-white mb-12">
+            <div className="mb-8 flex justify-center">
+              <img src={constructeamLogo} alt="CONSTRUCTEAM CT1" className="h-20 w-20 sm:h-24 sm:w-24 drop-shadow-lg" />
             </div>
             
-            <div className="hidden md:block">
-              <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                <div className="space-y-3 sm:space-y-4">
-                  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 sm:p-4 border border-white/20">
-                    <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-primary mb-2" />
-                    <h4 className="font-semibold text-white text-sm sm:text-base">Increase Your Revenue</h4>
-                    <p className="text-white/80 text-xs sm:text-sm">By saving time, money, and energy. "Work on your business, not in your business"</p>
-                  </div>
-                  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 sm:p-4 border border-white/20">
-                    <Clock className="h-6 w-6 sm:h-8 sm:w-8 text-primary mb-2" />
-                    <h4 className="font-semibold text-white text-sm sm:text-base">Save 20+ Hours/Week</h4>
-                    <p className="text-white/80 text-xs sm:text-sm">Automated workflows</p>
-                  </div>
-                </div>
-                <div className="space-y-3 sm:space-y-4">
-                  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 sm:p-4 border border-white/20">
-                    <Users className="h-6 w-6 sm:h-8 sm:w-8 text-primary mb-2" />
-                    <h4 className="font-semibold text-white text-sm sm:text-base">Nationwide Network</h4>
-                    <p className="text-white/80 text-xs sm:text-sm">Trusted and elite contractors, "Powered by CT1"</p>
-                  </div>
-                  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 sm:p-4 border border-white/20">
-                    <Award className="h-6 w-6 sm:h-8 sm:w-8 text-primary mb-2" />
-                    <h4 className="font-semibold text-white text-sm sm:text-base">Industry Leading</h4>
-                    <p className="text-white/80 text-xs sm:text-sm">Contractor platform</p>
-                  </div>
-                </div>
-              </div>
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4 leading-tight drop-shadow-lg">
+              A nationwide network of contractors,
+            </h1>
+            
+            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-12 leading-tight drop-shadow-lg">
+              <span className="text-primary">Powered by CT1</span>
+            </h2>
+            
+            <p className="text-lg sm:text-xl md:text-2xl mb-10 leading-relaxed drop-shadow-md opacity-90 max-w-4xl mx-auto">
+              Complete contractor management combining proposals, job tracking, billing, client communication, 
+              scheduling, and team coordination. Everything connected. Nothing missing.
+            </p>
+          </div>
+
+          {/* Feature Cards - Moved Higher */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-12 max-w-6xl mx-auto">
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-5 border border-white/20 hover:bg-white/20 transition-all">
+              <TrendingUp className="h-10 w-10 text-primary mb-3" />
+              <h4 className="font-semibold text-white text-lg mb-2">Increase Your Revenue</h4>
+              <p className="text-white/80 text-sm">By saving time, money, and energy. "Work on your business, not in your business"</p>
             </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-5 border border-white/20 hover:bg-white/20 transition-all">
+              <Users className="h-10 w-10 text-primary mb-3" />
+              <h4 className="font-semibold text-white text-lg mb-2">Nationwide Network</h4>
+              <p className="text-white/80 text-sm">Trusted and elite contractors, "Powered by CT1"</p>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-5 border border-white/20 hover:bg-white/20 transition-all">
+              <Clock className="h-10 w-10 text-primary mb-3" />
+              <h4 className="font-semibold text-white text-lg mb-2">Save 20+ Hours/Week</h4>
+              <p className="text-white/80 text-sm">Automated workflows</p>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-5 border border-white/20 hover:bg-white/20 transition-all">
+              <Award className="h-10 w-10 text-primary mb-3" />
+              <h4 className="font-semibold text-white text-lg mb-2">Industry Leading</h4>
+              <p className="text-white/80 text-sm">Contractor platform</p>
+            </div>
+          </div>
+
+          {/* CTA Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+            <Dialog open={activeContactForm === "join-network"} onOpenChange={(open) => setActiveContactForm(open ? "join-network" : null)}>
+              <DialogTrigger asChild>
+                <Button className="btn-hero text-lg px-8 py-4">
+                  Join the CT1 Network
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl mx-4">
+                <ContactForm
+                  title="Join the CT1 Network"
+                  description="Start building your future with CT1's powerful contractor platform"
+                  ctaText="Join Network"
+                  formType="network-signup"
+                  onClose={() => setActiveContactForm(null)}
+                />
+              </DialogContent>
+            </Dialog>
+            
+            <Dialog open={activeContactForm === "one-up-today"} onOpenChange={(open) => setActiveContactForm(open ? "one-up-today" : null)}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="lg" className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-foreground px-8 py-4">
+                  One-Up Today
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl mx-4">
+                <ContactForm
+                  title="One-Up Your Business Today"
+                  description="Get started with CT1 and transform your contracting business"
+                  ctaText="Get Started"
+                  formType="get-started"
+                  onClose={() => setActiveContactForm(null)}
+                />
+              </DialogContent>
+            </Dialog>
+          </div>
+
+          {/* Contractor Login Section */}
+          <div className="max-w-md mx-auto bg-black/30 backdrop-blur-sm rounded-lg p-6 border border-white/20">
+            <h3 className="text-lg font-semibold mb-3 text-white">Already a CT1 Contractor?</h3>
+            <p className="text-white/80 mb-4 text-sm">Access your dashboard, manage leads, and grow your business.</p>
+            <Link to="/auth">
+              <Button variant="outline" className="bg-transparent border-white text-white hover:bg-white hover:text-foreground w-full">
+                <Briefcase className="mr-2 h-4 w-4" />
+                Contractor Portal
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
