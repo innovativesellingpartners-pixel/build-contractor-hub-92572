@@ -156,68 +156,46 @@ export function Auth() {
               </TabsContent>
 
               <TabsContent value="signup" className="space-y-4">
-                <form onSubmit={handleSignUp} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-email">Email</Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="signup-email"
-                        name="email"
-                        type="email"
-                        placeholder="Enter your email"
-                        className="pl-10"
-                        required
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-password">Password</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="signup-password"
-                        name="password"
-                        type="password"
-                        placeholder="Create a password"
-                        className="pl-10"
-                        required
-                      />
-                    </div>
+                <div className="space-y-6 py-4">
+                  <div className="text-center space-y-2">
+                    <h3 className="text-xl font-semibold">Join CT1 Network</h3>
+                    <p className="text-muted-foreground">
+                      To create an account, please choose a subscription tier or contact our sales team.
+                    </p>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="confirm-password">Confirm Password</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="confirm-password"
-                        name="confirmPassword"
-                        type="password"
-                        placeholder="Confirm your password"
-                        className="pl-10"
-                        required
-                      />
+                  <Alert>
+                    <AlertDescription>
+                      Account creation is available after selecting a subscription plan. Our team will set up your account once payment is processed.
+                    </AlertDescription>
+                  </Alert>
+
+                  <div className="space-y-3">
+                    <Button 
+                      className="w-full" 
+                      onClick={() => navigate("/pricing")}
+                    >
+                      View Pricing & Subscribe
+                    </Button>
+                    
+                    <Button 
+                      variant="outline" 
+                      className="w-full"
+                      onClick={() => navigate("/contact")}
+                    >
+                      Contact Sales Team
+                    </Button>
+
+                    <div className="text-center pt-2">
+                      <a 
+                        href="tel:+12487527308"
+                        className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                      >
+                        Or call us: <span className="font-medium">(248) 752-7308</span>
+                      </a>
                     </div>
                   </div>
-
-                  {error && (
-                    <Alert variant="destructive">
-                      <AlertDescription>{error}</AlertDescription>
-                    </Alert>
-                  )}
-
-                  {message && (
-                    <Alert>
-                      <AlertDescription>{message}</AlertDescription>
-                    </Alert>
-                  )}
-
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? "Creating account..." : "Create Account"}
-                  </Button>
-                </form>
+                </div>
               </TabsContent>
             </Tabs>
 
@@ -261,16 +239,9 @@ export function Auth() {
                       </p>
                       <Button 
                         className="w-full shadow-md hover:shadow-lg transition-shadow"
-                        onClick={() => {
-                          // Switch to signup tab
-                          const signupTab = document.querySelector('[value="signup"]') as HTMLButtonElement;
-                          signupTab?.click();
-                          setShowJoinOptions(false);
-                          // Scroll to top
-                          window.scrollTo({ top: 0, behavior: 'smooth' });
-                        }}
+                        onClick={() => navigate("/pricing")}
                       >
-                        Create Account
+                        View Plans & Subscribe
                       </Button>
                     </div>
 
