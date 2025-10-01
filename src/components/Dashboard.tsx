@@ -19,7 +19,8 @@ import {
   ArrowUpCircle,
   Bot,
   Mic,
-  Award
+  Award,
+  DollarSign
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
@@ -34,8 +35,9 @@ import { ProfileEditDialog } from "@/components/contractor/ProfileEditDialog";
 import { StarRating } from "@/components/contractor/StarRating";
 import { Pocketbot } from "@/components/contractor/Pocketbot";
 import ct1Logo from "@/assets/ct1-logo-main.png";
+import { QuickBooks } from "@/components/contractor/QuickBooks";
 
-type ActiveSection = 'training' | 'pocketbot' | 'crm' | 'schedule' | 'marketplace' | 'leads' | 'insurance' | 'account';
+type ActiveSection = 'training' | 'pocketbot' | 'crm' | 'schedule' | 'marketplace' | 'leads' | 'quickbooks' | 'insurance' | 'account';
 
 export function Dashboard() {
   const { user, profile, signOut } = useAuth();
@@ -244,6 +246,19 @@ export function Dashboard() {
               </Button>
               
               <Button
+                variant={activeSection === 'quickbooks' ? 'default' : 'ghost'}
+                className={`w-full justify-start transition-all ${
+                  activeSection === 'quickbooks' 
+                    ? 'shadow-md' 
+                    : 'hover:bg-muted/80 hover:translate-x-1'
+                }`}
+                onClick={() => setActiveSection('quickbooks')}
+              >
+                <DollarSign className="h-4 w-4 mr-3" />
+                QuickBooks
+              </Button>
+              
+              <Button
                 variant={activeSection === 'insurance' ? 'default' : 'ghost'}
                 className={`w-full justify-start transition-all ${
                   activeSection === 'insurance' 
@@ -316,6 +331,7 @@ export function Dashboard() {
             {activeSection === 'pocketbot' && <Pocketbot />}
             {activeSection === 'crm' && <ContractorCRM />}
             {activeSection === 'leads' && <Leads />}
+            {activeSection === 'quickbooks' && <QuickBooks />}
             {activeSection === 'insurance' && <Insurance />}
             {activeSection === 'marketplace' && <Marketplace />}
             {activeSection === 'account' && (

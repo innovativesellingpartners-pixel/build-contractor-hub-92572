@@ -133,6 +133,13 @@ export function NewLandingPage() {
                 </DialogContent>
               </Dialog>
               
+              <Link to="/auth?tab=pocketbot">
+                <Button variant="outline" className="font-semibold">
+                  <Bot className="h-4 w-4 mr-2" />
+                  Try CT1 Bot Free
+                </Button>
+              </Link>
+              
               <Link 
                 to="/auth" 
                 className="bg-primary text-primary-foreground px-6 py-2 rounded-lg font-bold hover:bg-primary-hover transition-colors"
