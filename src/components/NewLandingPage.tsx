@@ -105,13 +105,13 @@ export function NewLandingPage() {
       <header className="border-b border-border sticky top-0 bg-background/95 backdrop-blur-sm z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-2 sm:space-x-3">
+            <Link to="/" className="flex items-center space-x-2 sm:space-x-3 hover:opacity-80 transition-opacity">
               <img src={ct1Logo} alt="CT1 Logo" className="h-10 w-10 sm:h-12 sm:w-12" />
               <div>
                 <h1 className="text-xl sm:text-2xl font-bold text-foreground">CT1</h1>
                 <p className="text-[10px] sm:text-xs text-muted-foreground font-medium">One-Up Your Business</p>
               </div>
-            </div>
+            </Link>
             
             <nav className="hidden md:flex items-center space-x-6">
               <Link to="/what-we-do" className="text-foreground hover:text-primary transition-colors font-medium">What We Do</Link>

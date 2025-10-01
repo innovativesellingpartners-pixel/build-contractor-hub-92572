@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -77,13 +78,13 @@ export function Dashboard() {
       <div className="bg-card/80 backdrop-blur-sm border-b shadow-sm sticky top-0 z-10">
         <div className="container mx-auto px-6 py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+            <Link to="/" className="flex items-center gap-4 hover:opacity-80 transition-opacity">
               <img src={ct1Logo} alt="CT1 Logo" className="h-10 w-10" />
               <div className="hidden md:block">
                 <h1 className="text-lg font-bold">Contractor Portal</h1>
                 <p className="text-xs text-muted-foreground">Welcome back, {profile?.contact_name || 'Contractor'}</p>
               </div>
-            </div>
+            </Link>
             <div className="flex items-center gap-3">
               {isAdmin && (
                 <Button variant="outline" size="sm" asChild className="hover:bg-primary/10 transition-colors">
