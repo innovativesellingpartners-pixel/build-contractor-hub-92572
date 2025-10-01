@@ -3,8 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import heroImage from "@/assets/hero-construction.jpg";
-import ct1Logo from "@/assets/ct1-logo.png";
-import constructeamLogo from "@/assets/constructeam-logo-circle.png";
+import ct1Logo from "@/assets/ct1-logo-bordered.png";
+import constructeamLogo from "@/assets/ct1-logo-bordered.png";
 import { 
   ArrowRight, 
   Bot, 

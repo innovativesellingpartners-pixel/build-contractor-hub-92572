@@ -26,6 +26,7 @@ import { Leads } from "@/components/contractor/Leads";
 import { Insurance } from "@/components/contractor/Insurance";
 import { ProfileEditDialog } from "@/components/contractor/ProfileEditDialog";
 import { StarRating } from "@/components/contractor/StarRating";
+import ct1Logo from "@/assets/ct1-logo-bordered.png";
 
 type ActiveSection = 'training' | 'crm' | 'schedule' | 'marketplace' | 'leads' | 'insurance';
 
@@ -66,6 +67,20 @@ export function Dashboard() {
       {/* Top Business Info Bar */}
       <div className="bg-card border-b shadow-sm">
         <div className="container mx-auto px-6 py-4">
+          <div className="flex items-center justify-between mb-4">
+            <img src={ct1Logo} alt="CT1 Logo" className="h-12 w-12" />
+            <div className="flex items-center gap-3">
+              {isAdmin && (
+                <Button variant="outline" size="sm" asChild>
+                  <a href="/admin">Admin Dashboard</a>
+                </Button>
+              )}
+              <Button variant="ghost" size="sm" onClick={handleLogout}>
+                <LogOut className="h-4 w-4 mr-2" />
+                Logout
+              </Button>
+            </div>
+          </div>
           <div className="flex items-start justify-between gap-6">
             {/* Left: Logo and Company Info */}
             <div className="flex items-start gap-4 flex-1">
@@ -152,17 +167,6 @@ export function Dashboard() {
                 <Button variant="outline" size="sm">
                   <HelpCircle className="h-4 w-4 mr-2" />
                   Support
-                </Button>
-                {isAdmin && (
-                  <Button variant="outline" size="sm" asChild>
-                    <a href="/admin">
-                      <Shield className="h-4 w-4 mr-2" />
-                      Admin
-                    </a>
-                  </Button>
-                )}
-                <Button variant="ghost" size="icon" onClick={handleLogout}>
-                  <LogOut className="h-4 w-4" />
                 </Button>
               </div>
             </div>

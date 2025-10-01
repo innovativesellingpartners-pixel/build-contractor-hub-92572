@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Youtube, FileText, Mic } from 'lucide-react';
-import ct1Logo from '@/assets/ct1-logo.png';
+import ct1Logo from '@/assets/ct1-logo-bordered.png';
 
 export const BlogPodcast = () => {
   // Placeholder data - will be replaced with actual content

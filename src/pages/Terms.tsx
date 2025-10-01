@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import ct1Logo from '@/assets/ct1-logo.png';
+import ct1Logo from '@/assets/ct1-logo-bordered.png';
 
 export const Terms = () => {
   return (

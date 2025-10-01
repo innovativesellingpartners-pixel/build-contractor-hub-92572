@@ -15,6 +15,7 @@ import {
   Mail,
   Phone
 } from "lucide-react";
+import ct1Logo from "@/assets/ct1-logo-bordered.png";
 
 interface TechnologyPartner {
   id: string;
@@ -186,13 +187,15 @@ export function Marketplace() {
     return (
       <div className="min-h-screen bg-background">
         <div className="container mx-auto max-w-7xl p-6">
-          <Button 
-            variant="ghost" 
-            onClick={() => setSelectedPartner(null)}
-            className="mb-6"
-          >
-            ← Back to Marketplace
-          </Button>
+          <div className="flex items-center justify-between mb-6">
+            <Button 
+              variant="ghost" 
+              onClick={() => setSelectedPartner(null)}
+            >
+              ← Back to Marketplace
+            </Button>
+            <img src={ct1Logo} alt="CT1 Logo" className="h-12 w-12" />
+          </div>
 
           <div className="grid md:grid-cols-3 gap-8">
             <div className="md:col-span-2 space-y-6">
@@ -276,7 +279,7 @@ export function Marketplace() {
                     </Button>
                     <Button className="w-full" variant="outline">
                       <Phone className="h-4 w-4 mr-2" />
-                      (248) 957-1866
+                      (248) 752-7308
                     </Button>
                   </div>
                   <div className="pt-4 border-t text-sm text-muted-foreground">
@@ -300,9 +303,12 @@ export function Marketplace() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto max-w-7xl p-6">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">CT1 Technology Marketplace</h1>
-          <p className="text-xl text-muted-foreground">Transform your contracting business with cutting-edge solutions to save time and money</p>
+        <div className="flex items-center gap-4 mb-8">
+          <img src={ct1Logo} alt="CT1 Logo" className="h-16 w-16" />
+          <div>
+            <h1 className="text-4xl font-bold mb-2">CT1 Technology Marketplace</h1>
+            <p className="text-xl text-muted-foreground">Transform your contracting business with cutting-edge solutions to save time and money</p>
+          </div>
         </div>
 
         <div className="grid lg:grid-cols-4 gap-8">

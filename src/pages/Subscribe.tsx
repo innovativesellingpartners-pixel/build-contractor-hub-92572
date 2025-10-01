@@ -8,7 +8,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import constructeamLogo from "@/assets/constructeam-logo.png";
+import constructeamLogo from "@/assets/ct1-logo-bordered.png";
 
 export function Subscribe() {
   const { user, signIn, signUp, resetPassword, loading } = useAuth();

@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Heart, Shield, Target, Users, Lightbulb, Trophy } from 'lucide-react';
-import ct1Logo from '@/assets/ct1-logo.png';
+import ct1Logo from '@/assets/ct1-logo-bordered.png';
 import joeCipriano from '@/assets/joe-cipriano.png';
 
 export const CoreValues = () => {
