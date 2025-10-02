@@ -207,11 +207,11 @@ export function NewLandingPage() {
 
           {/* Feature Cards - Moved Higher */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-12 max-w-6xl mx-auto">
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-5 border border-white/20 hover:bg-white/20 transition-all">
-              <TrendingUp className="h-10 w-10 text-primary mb-3" />
-              <h4 className="font-semibold text-white text-lg mb-2">Increase Your Revenue</h4>
-              <p className="text-white/80 text-sm">By saving time, money, and energy. "Work on your business, not in your business"</p>
-            </div>
+            <Link to="/business-suite" className="bg-white/10 backdrop-blur-sm rounded-lg p-5 border border-white/20 hover:bg-white/20 hover:border-primary/50 transition-all cursor-pointer group">
+              <TrendingUp className="h-10 w-10 text-primary mb-3 group-hover:scale-110 transition-transform" />
+              <h4 className="font-semibold text-white text-lg mb-2 group-hover:text-primary transition-colors">Complete Business Suite</h4>
+              <p className="text-white/80 text-sm">A complete suite of innovative tools to manage your business</p>
+            </Link>
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-5 border border-white/20 hover:bg-white/20 transition-all">
               <Users className="h-10 w-10 text-primary mb-3" />
               <h4 className="font-semibold text-white text-lg mb-2">Nationwide Network</h4>

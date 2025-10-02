@@ -28,6 +28,7 @@ import { AdminDashboard } from "@/components/admin/AdminDashboard";
 import { UserManagement } from "@/components/admin/UserManagement";
 import { TrainingManagement } from "@/components/admin/TrainingManagement";
 import { MarketplaceManagement } from "@/components/admin/MarketplaceManagement";
+import { BusinessSuite } from "@/pages/BusinessSuite";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<NewLandingPage />} />
+            <Route path="/business-suite" element={<BusinessSuite />} />
             <Route path="/about" element={<About />} />
             <Route path="/what-we-do" element={<WhatWeDo />} />
             <Route path="/core-values" element={<CoreValues />} />
