@@ -104,8 +104,8 @@ export function Dashboard() {
               <Link to="/" className="flex items-center gap-2 md:gap-4 hover:opacity-80 transition-opacity">
                 <img src={ct1Logo} alt="CT1 Logo" className="h-8 w-8 md:h-10 md:w-10" />
                 <div className="hidden sm:block">
-                  <h1 className="text-base md:text-lg font-bold">Contractor Portal</h1>
-                  <p className="text-xs text-muted-foreground">Welcome back, {profile?.contact_name || 'Contractor'}</p>
+                  <h1 className="text-base md:text-lg font-bold">Welcome to the CT1 Contractor Hub</h1>
+                  <p className="text-xs text-muted-foreground">Hello, {profile?.contact_name || 'Contractor'}</p>
                 </div>
               </Link>
             </div>

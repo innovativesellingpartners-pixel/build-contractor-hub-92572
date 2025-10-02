@@ -57,18 +57,18 @@ export const TrainingHub = () => {
         </div>
 
         {/* Welcome Video Section */}
-        <div className="mb-8">
+        <div className="mb-8 max-w-3xl mx-auto">
           <Card className="overflow-hidden">
-            <div className="bg-gradient-to-r from-primary to-primary/80 p-6 text-center">
-              <h2 className="text-3xl font-bold text-primary-foreground">
+            <div className="bg-gradient-to-r from-primary to-primary/80 p-4 text-center">
+              <h2 className="text-2xl font-bold text-primary-foreground">
                 Welcome to CT1&apos;s 5-Star Training
               </h2>
             </div>
-            <CardContent className="p-0">
+            <CardContent className="p-4">
               <div className="aspect-video w-full">
                 <iframe
                   src="https://drive.google.com/file/d/1eMBOcQ776JFxqniVIZ7g78DQxn5GzwbY/preview"
-                  className="w-full h-full"
+                  className="w-full h-full rounded-lg"
                   allow="autoplay"
                   title="Welcome to CT1's 5-Star Training"
                 />
