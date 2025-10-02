@@ -36,11 +36,11 @@ import { Leads } from "@/components/contractor/Leads";
 import { Insurance } from "@/components/contractor/Insurance";
 import { ProfileEditDialog } from "@/components/contractor/ProfileEditDialog";
 import { StarRating } from "@/components/contractor/StarRating";
-import { Pocketbot } from "@/components/contractor/Pocketbot";
+import { FloatingPocketbot } from "@/components/contractor/FloatingPocketbot";
 import ct1Logo from "@/assets/ct1-logo-main.png";
 import { QuickBooks } from "@/components/contractor/QuickBooks";
 
-type ActiveSection = 'training' | 'pocketbot' | 'crm' | 'schedule' | 'marketplace' | 'leads' | 'quickbooks' | 'insurance' | 'account';
+type ActiveSection = 'training' | 'crm' | 'schedule' | 'marketplace' | 'leads' | 'quickbooks' | 'insurance' | 'account';
 
 export function Dashboard() {
   const { user, profile, signOut } = useAuth();
@@ -48,6 +48,7 @@ export function Dashboard() {
   const { toast } = useToast();
   const [activeSection, setActiveSection] = useState<ActiveSection>('training');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [pocketbotOpen, setPocketbotOpen] = useState(false);
 
   const handleLogout = async () => {
     await signOut();
@@ -228,7 +229,6 @@ export function Dashboard() {
         <div className="flex-1 overflow-auto min-w-0">
           <div className="bg-card border border-border/50 rounded-xl shadow-md p-4 md:p-6 min-h-[600px]">
             {activeSection === 'training' && <TrainingHub />}
-            {activeSection === 'pocketbot' && <Pocketbot />}
             {activeSection === 'crm' && <ContractorCRM />}
             {activeSection === 'leads' && <Leads />}
             {activeSection === 'quickbooks' && <QuickBooks />}
@@ -415,6 +415,22 @@ export function Dashboard() {
           </div>
         </div>
       </div>
+
+      {/* Floating Pocketbot Widget */}
+      {pocketbotOpen && (
+        <div className="fixed bottom-20 right-4 md:bottom-24 md:right-6 w-[calc(100vw-2rem)] md:w-[450px] h-[600px] z-50 animate-in slide-in-from-bottom-4 duration-300">
+          <FloatingPocketbot onClose={() => setPocketbotOpen(false)} />
+        </div>
+      )}
+      
+      {/* Floating Chat Button */}
+      <Button
+        onClick={() => setPocketbotOpen(!pocketbotOpen)}
+        size="lg"
+        className="fixed bottom-4 right-4 md:bottom-6 md:right-6 h-14 w-14 md:h-16 md:w-16 rounded-full shadow-2xl z-50 hover:scale-110 transition-all duration-300 bg-primary hover:bg-primary/90"
+      >
+        <Bot className="h-6 w-6 md:h-7 md:w-7" />
+      </Button>
     </div>
   );
 }
@@ -439,19 +455,6 @@ function SidebarNav({ activeSection, setActiveSection }: SidebarNavProps) {
       >
         <BookOpen className="h-4 w-4 mr-3" />
         5-Star Training
-      </Button>
-      
-      <Button
-        variant={activeSection === 'pocketbot' ? 'default' : 'ghost'}
-        className={`w-full justify-start transition-all ${
-          activeSection === 'pocketbot' 
-            ? 'shadow-md' 
-            : 'hover:bg-muted/80 hover:translate-x-1'
-        }`}
-        onClick={() => setActiveSection('pocketbot')}
-      >
-        <Bot className="h-4 w-4 mr-3" />
-        CT1 Pocketbot
       </Button>
       
       <Button
