@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { 
   BookOpen,
   Store,
@@ -21,7 +22,8 @@ import {
   Bot,
   Mic,
   Award,
-  DollarSign
+  DollarSign,
+  Menu
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
@@ -45,6 +47,7 @@ export function Dashboard() {
   const { isAdmin } = useAdminAuth();
   const { toast } = useToast();
   const [activeSection, setActiveSection] = useState<ActiveSection>('training');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLogout = async () => {
     await signOut();
@@ -76,24 +79,41 @@ export function Dashboard() {
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex flex-col">
       {/* Top Navigation Bar */}
       <div className="bg-card/80 backdrop-blur-sm border-b shadow-sm sticky top-0 z-10">
-        <div className="container mx-auto px-6 py-3">
+        <div className="container mx-auto px-4 md:px-6 py-3">
           <div className="flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-4 hover:opacity-80 transition-opacity">
-              <img src={ct1Logo} alt="CT1 Logo" className="h-10 w-10" />
-              <div className="hidden md:block">
-                <h1 className="text-lg font-bold">Contractor Portal</h1>
-                <p className="text-xs text-muted-foreground">Welcome back, {profile?.contact_name || 'Contractor'}</p>
-              </div>
-            </Link>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 md:gap-4">
+              {/* Mobile Menu Button */}
+              <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon" className="lg:hidden">
+                    <Menu className="h-5 w-5" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-72 p-0">
+                  <SidebarNav activeSection={activeSection} setActiveSection={(section) => {
+                    setActiveSection(section);
+                    setMobileMenuOpen(false);
+                  }} />
+                </SheetContent>
+              </Sheet>
+              
+              <Link to="/" className="flex items-center gap-2 md:gap-4 hover:opacity-80 transition-opacity">
+                <img src={ct1Logo} alt="CT1 Logo" className="h-8 w-8 md:h-10 md:w-10" />
+                <div className="hidden sm:block">
+                  <h1 className="text-base md:text-lg font-bold">Contractor Portal</h1>
+                  <p className="text-xs text-muted-foreground">Welcome back, {profile?.contact_name || 'Contractor'}</p>
+                </div>
+              </Link>
+            </div>
+            <div className="flex items-center gap-2 md:gap-3">
               {isAdmin && (
-                <Button variant="outline" size="sm" asChild className="hover:bg-primary/10 transition-colors">
+                <Button variant="outline" size="sm" asChild className="hover:bg-primary/10 transition-colors hidden sm:flex">
                   <a href="/admin">Admin Dashboard</a>
                 </Button>
               )}
               <Button variant="ghost" size="sm" onClick={handleLogout} className="hover:bg-destructive/10 hover:text-destructive transition-colors">
-                <LogOut className="h-4 w-4 mr-2" />
-                Logout
+                <LogOut className="h-4 w-4 md:mr-2" />
+                <span className="hidden md:inline">Logout</span>
               </Button>
             </div>
           </div>
@@ -101,33 +121,33 @@ export function Dashboard() {
       </div>
 
       {/* Company Info Card */}
-      <div className="container mx-auto px-6 py-6">
+      <div className="container mx-auto px-4 md:px-6 py-4 md:py-6">
         <div className="bg-card border border-border/50 rounded-xl shadow-lg overflow-hidden transition-all hover:shadow-xl">
-          <div className="p-6">
-            <div className="flex items-start gap-6">
+          <div className="p-4 md:p-6">
+            <div className="flex flex-col md:flex-row items-start gap-4 md:gap-6">
               {/* Logo Section */}
-              <div className="relative group">
+              <div className="relative group mx-auto md:mx-0">
                 {profile?.logo_url ? (
                   <img 
                     src={profile.logo_url} 
                     alt="Company Logo" 
-                    className="h-24 w-24 rounded-xl object-cover border border-border shadow-md group-hover:shadow-lg transition-shadow"
+                    className="h-20 w-20 md:h-24 md:w-24 rounded-xl object-cover border border-border shadow-md group-hover:shadow-lg transition-shadow"
                   />
                 ) : (
-                  <div className="h-24 w-24 bg-gradient-to-br from-primary/20 to-primary/10 rounded-xl flex items-center justify-center border border-border shadow-md group-hover:shadow-lg transition-shadow">
-                    <Building2 className="h-12 w-12 text-primary" />
+                  <div className="h-20 w-20 md:h-24 md:w-24 bg-gradient-to-br from-primary/20 to-primary/10 rounded-xl flex items-center justify-center border border-border shadow-md group-hover:shadow-lg transition-shadow">
+                    <Building2 className="h-10 w-10 md:h-12 md:w-12 text-primary" />
                   </div>
                 )}
-                <Badge className={`${getTierBadgeColor(profile?.subscription_tier)} text-white absolute -bottom-2 left-1/2 -translate-x-1/2 shadow-md`}>
+                <Badge className={`${getTierBadgeColor(profile?.subscription_tier)} text-white absolute -bottom-2 left-1/2 -translate-x-1/2 shadow-md text-xs`}>
                   {getTierLabel(profile?.subscription_tier).split(' ')[0]}
                 </Badge>
               </div>
 
               {/* Company Details */}
-              <div className="flex-1 space-y-4">
+              <div className="flex-1 space-y-3 md:space-y-4 text-center md:text-left">
                 <div>
-                  <div className="flex items-center gap-3 mb-2">
-                    <h2 className="text-2xl font-bold">{profile?.company_name || 'Your Company'}</h2>
+                  <div className="flex flex-col md:flex-row items-center md:items-center gap-2 md:gap-3 mb-2">
+                    <h2 className="text-xl md:text-2xl font-bold">{profile?.company_name || 'Your Company'}</h2>
                     {profile?.ct1_contractor_number && (
                       <Badge variant="outline" className="text-xs font-mono">
                         CT1 #{profile.ct1_contractor_number}
@@ -135,13 +155,13 @@ export function Dashboard() {
                     )}
                   </div>
                   
-                  <div className="flex items-center gap-2 mb-3">
+                  <div className="flex items-center justify-center md:justify-start gap-2 mb-3">
                     <span className="text-sm text-muted-foreground">5-Star Training:</span>
                     <StarRating level={profile?.training_level || 0} />
                   </div>
                 </div>
                 
-                <div className="grid md:grid-cols-2 gap-x-8 gap-y-2 text-sm">
+                <div className="grid sm:grid-cols-2 gap-x-4 md:gap-x-8 gap-y-2 text-sm">
                   {profile?.contact_name && (
                     <div className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50 transition-colors">
                       <User className="h-4 w-4 text-primary" />
@@ -176,12 +196,12 @@ export function Dashboard() {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-row md:flex-col gap-2 w-full md:w-auto">
                 <ProfileEditDialog />
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="hover:bg-primary/10 transition-colors"
+                  className="hover:bg-primary/10 transition-colors flex-1 md:flex-none"
                   onClick={() => window.location.href = 'mailto:support@myct1.com'}
                 >
                   <HelpCircle className="h-4 w-4 mr-2" />
@@ -194,156 +214,17 @@ export function Dashboard() {
       </div>
 
       {/* Main Content Area */}
-      <div className="container mx-auto px-6 pb-6 flex-1 flex gap-6">
-        {/* Left Sidebar Navigation */}
-        <div className="w-64 flex-shrink-0">
+      <div className="container mx-auto px-4 md:px-6 pb-6 flex-1 flex gap-6">
+        {/* Left Sidebar Navigation - Hidden on mobile */}
+        <div className="hidden lg:block w-64 flex-shrink-0">
           <div className="bg-card border border-border/50 rounded-xl shadow-md p-3 sticky top-24">
-            <nav className="space-y-1">
-              <Button
-                variant={activeSection === 'training' ? 'default' : 'ghost'}
-                className={`w-full justify-start transition-all ${
-                  activeSection === 'training' 
-                    ? 'shadow-md' 
-                    : 'hover:bg-muted/80 hover:translate-x-1'
-                }`}
-                onClick={() => setActiveSection('training')}
-              >
-                <BookOpen className="h-4 w-4 mr-3" />
-                5-Star Training
-              </Button>
-              
-              <Button
-                variant={activeSection === 'pocketbot' ? 'default' : 'ghost'}
-                className={`w-full justify-start transition-all ${
-                  activeSection === 'pocketbot' 
-                    ? 'shadow-md' 
-                    : 'hover:bg-muted/80 hover:translate-x-1'
-                }`}
-                onClick={() => setActiveSection('pocketbot')}
-              >
-                <Bot className="h-4 w-4 mr-3" />
-                CT1 Pocketbot
-              </Button>
-              
-              <Button
-                variant={activeSection === 'crm' ? 'default' : 'ghost'}
-                className={`w-full justify-start transition-all ${
-                  activeSection === 'crm' 
-                    ? 'shadow-md' 
-                    : 'hover:bg-muted/80 hover:translate-x-1'
-                }`}
-                onClick={() => setActiveSection('crm')}
-              >
-                <Briefcase className="h-4 w-4 mr-3" />
-                CRM/Jobs
-              </Button>
-              
-              <Button
-                variant={activeSection === 'leads' ? 'default' : 'ghost'}
-                className={`w-full justify-start transition-all ${
-                  activeSection === 'leads' 
-                    ? 'shadow-md' 
-                    : 'hover:bg-muted/80 hover:translate-x-1'
-                }`}
-                onClick={() => setActiveSection('leads')}
-              >
-                <Users className="h-4 w-4 mr-3" />
-                Leads
-              </Button>
-              
-              <Button
-                variant={activeSection === 'quickbooks' ? 'default' : 'ghost'}
-                className={`w-full justify-start transition-all ${
-                  activeSection === 'quickbooks' 
-                    ? 'shadow-md' 
-                    : 'hover:bg-muted/80 hover:translate-x-1'
-                }`}
-                onClick={() => setActiveSection('quickbooks')}
-              >
-                <DollarSign className="h-4 w-4 mr-3" />
-                QuickBooks
-              </Button>
-              
-              <Button
-                variant={activeSection === 'insurance' ? 'default' : 'ghost'}
-                className={`w-full justify-start transition-all ${
-                  activeSection === 'insurance' 
-                    ? 'shadow-md' 
-                    : 'hover:bg-muted/80 hover:translate-x-1'
-                }`}
-                onClick={() => setActiveSection('insurance')}
-              >
-                <Shield className="h-4 w-4 mr-3" />
-                Insurance
-              </Button>
-              
-              <Button
-                variant={activeSection === 'marketplace' ? 'default' : 'ghost'}
-                className={`w-full justify-start transition-all ${
-                  activeSection === 'marketplace' 
-                    ? 'shadow-md' 
-                    : 'hover:bg-muted/80 hover:translate-x-1'
-                }`}
-                onClick={() => setActiveSection('marketplace')}
-              >
-                <Store className="h-4 w-4 mr-3" />
-                Marketplace
-              </Button>
-              
-              <Button
-                variant="ghost"
-                className="w-full justify-start transition-all hover:bg-muted/80 hover:translate-x-1"
-                asChild
-              >
-                <a href="https://lovable.dev/projects/eb889344-3c18-4b7f-b049-eddbd3665869" target="_blank" rel="noopener noreferrer">
-                  <Mic className="h-4 w-4 mr-3" />
-                  Podcast
-                </a>
-              </Button>
-              
-              <Button
-                variant="ghost"
-                className="w-full justify-start transition-all hover:bg-muted/80 hover:translate-x-1"
-                asChild
-              >
-                <a href="/core-values">
-                  <Award className="h-4 w-4 mr-3" />
-                  CT1 Contractor Standards
-                </a>
-              </Button>
-              
-              <div className="my-2 border-t border-border/50" />
-              
-              <Button
-                variant={activeSection === 'account' ? 'default' : 'ghost'}
-                className={`w-full justify-start transition-all ${
-                  activeSection === 'account' 
-                    ? 'shadow-md' 
-                    : 'hover:bg-muted/80 hover:translate-x-1'
-                }`}
-                onClick={() => setActiveSection('account')}
-              >
-                <User className="h-4 w-4 mr-3" />
-                My Account
-              </Button>
-              
-              <Button
-                variant="ghost"
-                className="w-full justify-start transition-all hover:bg-muted/80 hover:translate-x-1"
-                asChild
-              >
-                <a href="/">
-                  <Building2 className="h-4 w-4 mr-3" />
-                  CT1 Home
-                </a>
-              </Button>
-            </nav>
+            <SidebarNav activeSection={activeSection} setActiveSection={setActiveSection} />
           </div>
         </div>
 
         {/* Main Content Panel */}
-        <div className="flex-1 overflow-auto">
-          <div className="bg-card border border-border/50 rounded-xl shadow-md p-6 min-h-[600px]">
+        <div className="flex-1 overflow-auto min-w-0">
+          <div className="bg-card border border-border/50 rounded-xl shadow-md p-4 md:p-6 min-h-[600px]">
             {activeSection === 'training' && <TrainingHub />}
             {activeSection === 'pocketbot' && <Pocketbot />}
             {activeSection === 'crm' && <ContractorCRM />}
@@ -533,5 +414,156 @@ export function Dashboard() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Sidebar Navigation Component
+interface SidebarNavProps {
+  activeSection: ActiveSection;
+  setActiveSection: (section: ActiveSection) => void;
+}
+
+function SidebarNav({ activeSection, setActiveSection }: SidebarNavProps) {
+  return (
+    <nav className="space-y-1 p-3">
+      <Button
+        variant={activeSection === 'training' ? 'default' : 'ghost'}
+        className={`w-full justify-start transition-all ${
+          activeSection === 'training' 
+            ? 'shadow-md' 
+            : 'hover:bg-muted/80 hover:translate-x-1'
+        }`}
+        onClick={() => setActiveSection('training')}
+      >
+        <BookOpen className="h-4 w-4 mr-3" />
+        5-Star Training
+      </Button>
+      
+      <Button
+        variant={activeSection === 'pocketbot' ? 'default' : 'ghost'}
+        className={`w-full justify-start transition-all ${
+          activeSection === 'pocketbot' 
+            ? 'shadow-md' 
+            : 'hover:bg-muted/80 hover:translate-x-1'
+        }`}
+        onClick={() => setActiveSection('pocketbot')}
+      >
+        <Bot className="h-4 w-4 mr-3" />
+        CT1 Pocketbot
+      </Button>
+      
+      <Button
+        variant={activeSection === 'crm' ? 'default' : 'ghost'}
+        className={`w-full justify-start transition-all ${
+          activeSection === 'crm' 
+            ? 'shadow-md' 
+            : 'hover:bg-muted/80 hover:translate-x-1'
+        }`}
+        onClick={() => setActiveSection('crm')}
+      >
+        <Briefcase className="h-4 w-4 mr-3" />
+        CRM/Jobs
+      </Button>
+      
+      <Button
+        variant={activeSection === 'leads' ? 'default' : 'ghost'}
+        className={`w-full justify-start transition-all ${
+          activeSection === 'leads' 
+            ? 'shadow-md' 
+            : 'hover:bg-muted/80 hover:translate-x-1'
+        }`}
+        onClick={() => setActiveSection('leads')}
+      >
+        <Users className="h-4 w-4 mr-3" />
+        Leads
+      </Button>
+      
+      <Button
+        variant={activeSection === 'quickbooks' ? 'default' : 'ghost'}
+        className={`w-full justify-start transition-all ${
+          activeSection === 'quickbooks' 
+            ? 'shadow-md' 
+            : 'hover:bg-muted/80 hover:translate-x-1'
+        }`}
+        onClick={() => setActiveSection('quickbooks')}
+      >
+        <DollarSign className="h-4 w-4 mr-3" />
+        QuickBooks
+      </Button>
+      
+      <Button
+        variant={activeSection === 'insurance' ? 'default' : 'ghost'}
+        className={`w-full justify-start transition-all ${
+          activeSection === 'insurance' 
+            ? 'shadow-md' 
+            : 'hover:bg-muted/80 hover:translate-x-1'
+        }`}
+        onClick={() => setActiveSection('insurance')}
+      >
+        <Shield className="h-4 w-4 mr-3" />
+        Insurance
+      </Button>
+      
+      <Button
+        variant={activeSection === 'marketplace' ? 'default' : 'ghost'}
+        className={`w-full justify-start transition-all ${
+          activeSection === 'marketplace' 
+            ? 'shadow-md' 
+            : 'hover:bg-muted/80 hover:translate-x-1'
+        }`}
+        onClick={() => setActiveSection('marketplace')}
+      >
+        <Store className="h-4 w-4 mr-3" />
+        Marketplace
+      </Button>
+      
+      <Button
+        variant="ghost"
+        className="w-full justify-start transition-all hover:bg-muted/80 hover:translate-x-1"
+        asChild
+      >
+        <a href="https://lovable.dev/projects/eb889344-3c18-4b7f-b049-eddbd3665869" target="_blank" rel="noopener noreferrer">
+          <Mic className="h-4 w-4 mr-3" />
+          Podcast
+        </a>
+      </Button>
+      
+      <Button
+        variant="ghost"
+        className="w-full justify-start transition-all hover:bg-muted/80 hover:translate-x-1"
+        asChild
+      >
+        <a href="/core-values">
+          <Award className="h-4 w-4 mr-3" />
+          CT1 Contractor Standards
+        </a>
+      </Button>
+      
+      <div className="my-2 border-t border-border/50" />
+      
+      <Button
+        variant={activeSection === 'account' ? 'default' : 'ghost'}
+        className={`w-full justify-start transition-all ${
+          activeSection === 'account' 
+            ? 'shadow-md' 
+            : 'hover:bg-muted/80 hover:translate-x-1'
+        }`}
+        onClick={() => setActiveSection('account')}
+      >
+        <User className="h-4 w-4 mr-3" />
+        My Account
+      </Button>
+      
+      <Button
+        variant="ghost"
+        className="w-full justify-start transition-all hover:bg-muted/80 hover:translate-x-1"
+        asChild
+      >
+        <a href="/">
+          <Building2 className="h-4 w-4 mr-3" />
+          CT1 Home
+        </a>
+      </Button>
+    </nav>
   );
 }

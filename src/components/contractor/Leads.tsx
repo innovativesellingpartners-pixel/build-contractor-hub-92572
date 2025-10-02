@@ -47,7 +47,7 @@ export function Leads() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-medium">New Leads</CardTitle>
@@ -88,8 +88,8 @@ export function Leads() {
           <div className="space-y-4">
             {leads.map((lead) => (
               <div key={lead.id} className="border rounded-lg p-4 hover:bg-accent/50 transition-colors">
-                <div className="flex items-start justify-between">
-                  <div className="space-y-2 flex-1">
+                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                  <div className="space-y-2 flex-1 min-w-0">
                     <div className="flex items-center gap-3">
                       <h3 className="font-semibold text-lg">{lead.name}</h3>
                       <Badge className={getStatusColor(lead.status)}>
@@ -97,17 +97,17 @@ export function Leads() {
                       </Badge>
                     </div>
                     
-                    <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                    <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2 sm:gap-4 text-sm text-muted-foreground">
                       <div className="flex items-center gap-1">
-                        <Mail className="h-4 w-4" />
-                        <span>{lead.email}</span>
+                        <Mail className="h-4 w-4 flex-shrink-0" />
+                        <span className="break-all">{lead.email}</span>
                       </div>
                       <div className="flex items-center gap-1">
-                        <Phone className="h-4 w-4" />
+                        <Phone className="h-4 w-4 flex-shrink-0" />
                         <span>{lead.phone}</span>
                       </div>
                       <div className="flex items-center gap-1">
-                        <MapPin className="h-4 w-4" />
+                        <MapPin className="h-4 w-4 flex-shrink-0" />
                         <span>{lead.location}</span>
                       </div>
                     </div>
@@ -121,16 +121,16 @@ export function Leads() {
                     </div>
                   </div>
 
-                  <div className="flex gap-2">
-                    <Button size="sm" variant="outline">
-                      <Phone className="h-4 w-4 mr-2" />
-                      Call
+                  <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+                    <Button size="sm" variant="outline" className="flex-1 md:flex-none">
+                      <Phone className="h-4 w-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Call</span>
                     </Button>
-                    <Button size="sm" variant="outline">
-                      <Mail className="h-4 w-4 mr-2" />
-                      Email
+                    <Button size="sm" variant="outline" className="flex-1 md:flex-none">
+                      <Mail className="h-4 w-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Email</span>
                     </Button>
-                    <Button size="sm">View Details</Button>
+                    <Button size="sm" className="flex-1 md:flex-none">View Details</Button>
                   </div>
                 </div>
               </div>

@@ -27,9 +27,9 @@ export function Insurance() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Insurance & Compliance</h1>
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <h1 className="text-2xl md:text-3xl font-bold">Insurance & Compliance</h1>
+        <div className="flex flex-col sm:flex-row gap-2">
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button variant="outline">
@@ -93,15 +93,19 @@ export function Insurance() {
               </form>
             </DialogContent>
           </Dialog>
-          <Button onClick={() => window.location.href = 'mailto:sales@myct1.com?subject=Insurance Options - Lower My Bill'}>
-            Contact Sales for Better Rates
+          <Button 
+            onClick={() => window.location.href = 'mailto:sales@myct1.com?subject=Insurance Options - Lower My Bill'}
+            className="w-full sm:w-auto text-sm"
+            size="sm"
+          >
+            Contact Sales
           </Button>
-          <Button variant="secondary">Upload Documents</Button>
+          <Button variant="secondary" className="w-full sm:w-auto" size="sm">Upload Documents</Button>
         </div>
       </div>
 
       {/* Insurance Status Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-medium">General Liability</CardTitle>

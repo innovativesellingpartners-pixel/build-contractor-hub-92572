@@ -50,7 +50,7 @@ export function ScheduleCall() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         <Card className="hover:shadow-lg transition-shadow cursor-pointer">
           <CardContent className="pt-6">
             <div className="flex flex-col items-center text-center space-y-3">
@@ -107,8 +107,8 @@ export function ScheduleCall() {
           {upcomingCalls.length > 0 ? (
             <div className="space-y-4">
               {upcomingCalls.map((call) => (
-                <div key={call.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex items-center gap-4">
+                <div key={call.id} className="flex flex-col md:flex-row md:items-center md:justify-between p-4 border rounded-lg gap-4">
+                  <div className="flex items-start gap-4">
                     <div className="p-3 bg-primary/10 rounded-full">
                       <Video className="h-6 w-6 text-primary" />
                     </div>
@@ -135,9 +135,9 @@ export function ScheduleCall() {
                       </div>
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm">Reschedule</Button>
-                    <Button size="sm">Join Call</Button>
+                  <div className="flex gap-2 w-full md:w-auto">
+                    <Button variant="outline" size="sm" className="flex-1 md:flex-none">Reschedule</Button>
+                    <Button size="sm" className="flex-1 md:flex-none">Join Call</Button>
                   </div>
                 </div>
               ))}
@@ -160,30 +160,30 @@ export function ScheduleCall() {
           <CardDescription>Direct contact for support</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center gap-4">
-            <div className="h-16 w-16 bg-primary/10 rounded-full flex items-center justify-center">
+          <div className="flex flex-col md:flex-row md:items-center gap-4">
+            <div className="h-16 w-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto md:mx-0">
               <User className="h-8 w-8 text-primary" />
             </div>
-            <div className="flex-1">
+            <div className="flex-1 text-center md:text-left">
               <h4 className="font-semibold text-lg">John Smith</h4>
               <p className="text-sm text-muted-foreground mb-2">Senior Account Manager</p>
-              <div className="flex items-center gap-4 text-sm">
-                <div className="flex items-center gap-1">
-                  <Mail className="h-3 w-3" />
-                  <span>support@myct1.com</span>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-center md:justify-start gap-2 sm:gap-4 text-sm">
+                <div className="flex items-center justify-center md:justify-start gap-1">
+                  <Mail className="h-3 w-3 flex-shrink-0" />
+                  <span className="break-all">support@myct1.com</span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <Phone className="h-3 w-3" />
+                <div className="flex items-center justify-center md:justify-start gap-1">
+                  <Phone className="h-3 w-3 flex-shrink-0" />
                   <span>(248) 752-7308</span>
                 </div>
               </div>
             </div>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm">
+            <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+              <Button variant="outline" size="sm" className="flex-1 md:flex-none">
                 <Mail className="h-4 w-4 mr-2" />
                 Email
               </Button>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="flex-1 md:flex-none">
                 <Phone className="h-4 w-4 mr-2" />
                 Call
               </Button>

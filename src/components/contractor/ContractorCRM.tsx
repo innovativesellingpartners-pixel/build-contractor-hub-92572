@@ -143,7 +143,7 @@ export function ContractorCRM() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
@@ -190,23 +190,23 @@ export function ContractorCRM() {
         <CardContent>
           <div className="space-y-4">
             {leads.map((lead) => (
-              <div key={lead.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
+              <div key={lead.id} className="flex flex-col md:flex-row md:items-center md:justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors gap-4">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-3 mb-2 flex-wrap">
                     <h4 className="font-semibold">{lead.name}</h4>
                     <Badge className={`${getStatusColor(lead.status)} text-white`}>
                       {lead.status.toUpperCase()}
                     </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground mb-2">{lead.project}</p>
-                  <div className="flex items-center gap-4 text-sm">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm">
                     <div className="flex items-center gap-1">
                       <Phone className="h-3 w-3" />
-                      <span>{lead.phone}</span>
+                      <span className="break-all">{lead.phone}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <Mail className="h-3 w-3" />
-                      <span>{lead.email}</span>
+                      <span className="break-all">{lead.email}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
@@ -214,8 +214,8 @@ export function ContractorCRM() {
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
+                <div className="flex items-center justify-between md:justify-end gap-4">
+                  <div className="text-left md:text-right">
                     <p className="text-sm text-muted-foreground">Value</p>
                     <p className="font-bold text-lg">${lead.value.toLocaleString()}</p>
                   </div>
