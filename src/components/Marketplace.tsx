@@ -13,9 +13,15 @@ import {
   MessageSquare,
   Building2,
   Mail,
-  Phone
+  Phone,
+  FileText,
+  Calendar,
+  DollarSign,
+  Bot,
+  BarChart3
 } from "lucide-react";
 import ct1Logo from "@/assets/ct1-logo-main.png";
+import heroImage from "@/assets/hero-construction.jpg";
 
 interface TechnologyPartner {
   id: string;
@@ -33,6 +39,39 @@ export function Marketplace() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedPartner, setSelectedPartner] = useState<TechnologyPartner | null>(null);
   
+  const contractorModules = [
+    {
+      icon: FileText,
+      title: "Proposals & Estimates",
+      description: "Create professional proposals quickly with templates and line items"
+    },
+    {
+      icon: Calendar,
+      title: "Job Management",
+      description: "Track projects from lead to completion with phases and tasks"
+    },
+    {
+      icon: DollarSign,
+      title: "Billing & Payments",
+      description: "Automate invoicing, track payments, and manage financial reporting"
+    },
+    {
+      icon: Users,
+      title: "Client Portal",
+      description: "Secure client access to proposals, project status, and updates"
+    },
+    {
+      icon: BarChart3,
+      title: "Reporting & Analytics",
+      description: "Monitor cost, revenue, margins with performance metrics"
+    },
+    {
+      icon: Bot,
+      title: "AI Automation",
+      description: "PocketBots handle routine tasks and client communication"
+    }
+  ];
+
   const technologyPartners: TechnologyPartner[] = [
     {
       id: 'hubspot',
@@ -306,76 +345,133 @@ export function Marketplace() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto max-w-7xl p-6">
-        <div className="flex items-center gap-4 mb-8">
-          <img src={ct1Logo} alt="CT1 Logo" className="h-16 w-16" />
-          <div>
-            <h1 className="text-4xl font-bold mb-2">CT1 Technology Marketplace</h1>
-            <p className="text-xl text-muted-foreground">Transform your contracting business with cutting-edge solutions to save time and money</p>
-          </div>
+      {/* Hero Section */}
+      <section className="relative h-[60vh] min-h-[500px] flex items-center justify-center overflow-hidden">
+        <div className="absolute inset-0">
+          <img 
+            src={heroImage} 
+            alt="Construction Site" 
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-black/80"></div>
         </div>
+        
+        <div className="relative z-10 text-center px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
+          <img src={ct1Logo} alt="CT1 Logo" className="h-24 w-24 mx-auto mb-8 drop-shadow-2xl" />
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 drop-shadow-lg">
+            CT1 Technology Marketplace
+          </h1>
+          <p className="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto drop-shadow-lg">
+            Transform your contracting business with cutting-edge solutions to save time and money
+          </p>
+        </div>
+      </section>
 
-        <div className="grid lg:grid-cols-4 gap-8">
-          <div className="lg:col-span-1">
-            <Card>
-              <CardHeader>
-                <CardTitle>Categories</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {categories.map((category) => {
-                  const IconComponent = category.icon;
-                  return (
-                    <button
-                      key={category.id}
-                      onClick={() => setSelectedCategory(category.id)}
-                      className={`w-full flex items-center justify-between p-3 rounded-lg transition-colors ${
-                        selectedCategory === category.id 
-                          ? 'bg-primary text-primary-foreground' 
-                          : 'hover:bg-muted'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <IconComponent className="h-4 w-4" />
-                        <span className="text-sm font-medium">{category.name}</span>
-                      </div>
-                      <Badge variant="secondary" className="text-xs">
-                        {category.count}
-                      </Badge>
-                    </button>
-                  );
-                })}
-              </CardContent>
-            </Card>
+      {/* Contractor Portal Modules Section */}
+      <section className="py-20 bg-background">
+        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+              Your Complete <span className="text-primary">Contractor Portal</span>
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              Everything you need to run your contracting business efficiently, all in one integrated platform
+            </p>
           </div>
 
-          <div className="lg:col-span-3">
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {filteredPartners.map((partner) => (
-                <Card 
-                  key={partner.id} 
-                  className="cursor-pointer hover:shadow-lg transition-all hover:scale-105"
-                  onClick={() => setSelectedPartner(partner)}
-                >
-                  <CardContent className="p-6 flex flex-col items-center text-center">
-                    <div className="h-24 w-full flex items-center justify-center mb-4 bg-white rounded-lg p-4">
-                      <img 
-                        src={partner.logo} 
-                        alt={partner.name}
-                        className="max-h-16 w-auto object-contain"
-                        onError={(e) => {
-                          e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2NjYyIvPjwvc3ZnPg==';
-                        }}
-                      />
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+            {contractorModules.map((module, idx) => {
+              const Icon = module.icon;
+              return (
+                <Card key={idx} className="group hover:shadow-2xl hover:shadow-primary/20 transition-all duration-300 border-2 hover:border-primary/50">
+                  <CardContent className="p-8">
+                    <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors">
+                      <Icon className="h-8 w-8 text-primary" />
                     </div>
-                    <h3 className="font-semibold mb-2">{partner.name}</h3>
-                    <p className="text-xs text-muted-foreground line-clamp-2">{partner.description}</p>
+                    <h3 className="text-2xl font-bold text-foreground mb-3">{module.title}</h3>
+                    <p className="text-muted-foreground">{module.description}</p>
                   </CardContent>
                 </Card>
-              ))}
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Technology Partners Section */}
+      <section className="py-20 bg-muted/30">
+        <div className="container mx-auto max-w-7xl p-6">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+              Technology <span className="text-primary">Partners</span>
+            </h2>
+            <p className="text-xl text-muted-foreground">
+              Best-in-class integrations to extend your capabilities
+            </p>
+          </div>
+
+          <div className="grid lg:grid-cols-4 gap-8">
+            <div className="lg:col-span-1">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Categories</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {categories.map((category) => {
+                    const IconComponent = category.icon;
+                    return (
+                      <button
+                        key={category.id}
+                        onClick={() => setSelectedCategory(category.id)}
+                        className={`w-full flex items-center justify-between p-3 rounded-lg transition-colors ${
+                          selectedCategory === category.id 
+                            ? 'bg-primary text-primary-foreground' 
+                            : 'hover:bg-muted'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <IconComponent className="h-4 w-4" />
+                          <span className="text-sm font-medium">{category.name}</span>
+                        </div>
+                        <Badge variant="secondary" className="text-xs">
+                          {category.count}
+                        </Badge>
+                      </button>
+                    );
+                  })}
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="lg:col-span-3">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {filteredPartners.map((partner) => (
+                  <Card 
+                    key={partner.id} 
+                    className="cursor-pointer hover:shadow-lg transition-all hover:scale-105"
+                    onClick={() => setSelectedPartner(partner)}
+                  >
+                    <CardContent className="p-6 flex flex-col items-center text-center">
+                      <div className="h-24 w-full flex items-center justify-center mb-4 bg-white rounded-lg p-4">
+                        <img 
+                          src={partner.logo} 
+                          alt={partner.name}
+                          className="max-h-16 w-auto object-contain"
+                          onError={(e) => {
+                            e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2NjYyIvPjwvc3ZnPg==';
+                          }}
+                        />
+                      </div>
+                      <h3 className="font-semibold mb-2">{partner.name}</h3>
+                      <p className="text-xs text-muted-foreground line-clamp-2">{partner.description}</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 }
