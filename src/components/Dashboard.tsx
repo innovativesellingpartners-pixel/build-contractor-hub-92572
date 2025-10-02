@@ -85,15 +85,17 @@ export function Dashboard() {
               {/* Mobile Menu Button */}
               <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="lg:hidden">
+                  <Button variant="outline" size="icon" className="lg:hidden border-border">
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="left" className="w-72 p-0">
-                  <SidebarNav activeSection={activeSection} setActiveSection={(section) => {
-                    setActiveSection(section);
-                    setMobileMenuOpen(false);
-                  }} />
+                <SheetContent side="left" className="w-72 p-0 overflow-y-auto">
+                  <div className="py-4">
+                    <SidebarNav activeSection={activeSection} setActiveSection={(section) => {
+                      setActiveSection(section);
+                      setMobileMenuOpen(false);
+                    }} />
+                  </div>
                 </SheetContent>
               </Sheet>
               
