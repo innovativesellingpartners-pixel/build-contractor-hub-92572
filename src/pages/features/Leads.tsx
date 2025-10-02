@@ -20,9 +20,14 @@ import {
 export function Leads() {
   const features = [
     {
+      icon: Target,
+      title: "Trade-Specific Leads",
+      description: "Get pre-qualified leads matched to your exact trade and service area—ready to sell into immediately"
+    },
+    {
       icon: Zap,
-      title: "Instant Lead Capture",
-      description: "Automatically capture leads from your website, phone calls, social media, and more"
+      title: "Instant Lead Delivery",
+      description: "Receive hot leads in real-time via text, email, and app notifications the moment they're available"
     },
     {
       icon: Bot,
@@ -30,9 +35,9 @@ export function Leads() {
       description: "Our AI voice assistant qualifies leads 24/7, answers questions, and books appointments automatically"
     },
     {
-      icon: Target,
-      title: "Smart Lead Scoring",
-      description: "Prioritize your best opportunities with intelligent lead scoring based on likelihood to convert"
+      icon: CheckCircle2,
+      title: "Pre-Qualified & Verified",
+      description: "Every lead is screened for project fit, budget, and timeline before it reaches you"
     },
     {
       icon: MessageSquare,
@@ -40,14 +45,9 @@ export function Leads() {
       description: "Never miss a follow-up with automated text, email, and voice message sequences"
     },
     {
-      icon: Phone,
-      title: "Call Tracking",
-      description: "Track which marketing channels generate calls and measure ROI on your advertising spend"
-    },
-    {
       icon: TrendingUp,
-      title: "Conversion Analytics",
-      description: "See exactly where leads come from and which campaigns deliver the best results"
+      title: "High-Intent Projects",
+      description: "Only homeowners actively looking for contractors in your trade—no tire-kickers"
     }
   ];
 
@@ -107,9 +107,124 @@ export function Leads() {
             </h1>
             
             <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-              Capture more leads, respond faster, and let AI handle qualification while you focus on closing deals
+              Get trade-specific, pre-qualified leads delivered instantly—ready for you to bid on and win
             </p>
           </div>
+        </div>
+      </section>
+
+      {/* Trade-Specific Leads Section */}
+      <section className="py-20 bg-gradient-to-br from-purple-500/10 to-background">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+              Leads Matched to <span className="text-primary">Your Trade</span>
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              Stop wasting time on unqualified prospects. Get actionable leads specific to your expertise that you can start selling into immediately.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 mb-12">
+            <Card className="border-2 border-primary/30">
+              <CardContent className="p-8 text-center">
+                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Target className="h-8 w-8 text-primary" />
+                </div>
+                <h3 className="text-2xl font-bold mb-3">Your Trade Only</h3>
+                <p className="text-muted-foreground mb-4">
+                  Plumber? HVAC? Electrician? Roofing? Get leads exclusively for your specific trade and services.
+                </p>
+                <div className="inline-flex px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-semibold">
+                  100% Relevant
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-2 border-primary/30">
+              <CardContent className="p-8 text-center">
+                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <DollarSign className="h-8 w-8 text-primary" />
+                </div>
+                <h3 className="text-2xl font-bold mb-3">Ready to Buy</h3>
+                <p className="text-muted-foreground mb-4">
+                  These aren't research inquiries—they're homeowners with real projects, budgets, and timelines ready to hire.
+                </p>
+                <div className="inline-flex px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-semibold">
+                  High Intent
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-2 border-primary/30">
+              <CardContent className="p-8 text-center">
+                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Clock className="h-8 w-8 text-primary" />
+                </div>
+                <h3 className="text-2xl font-bold mb-3">Instant Delivery</h3>
+                <p className="text-muted-foreground mb-4">
+                  Be the first to respond. Leads are delivered to you in real-time via text and email the second they're qualified.
+                </p>
+                <div className="inline-flex px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-semibold">
+                  Real-Time
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card className="border-2 border-primary/50 bg-gradient-to-br from-primary/10 to-background">
+            <CardContent className="p-12">
+              <h3 className="text-3xl font-bold mb-6 text-center">What Makes Our Leads Different</h3>
+              <div className="grid md:grid-cols-2 gap-8">
+                <div className="space-y-4">
+                  <div className="flex items-start gap-4">
+                    <CheckCircle2 className="h-6 w-6 text-primary mt-1 flex-shrink-0" />
+                    <div>
+                      <h4 className="font-bold text-lg mb-1">Pre-Screened Projects</h4>
+                      <p className="text-muted-foreground">Every lead is verified for project scope, budget range, and decision-maker contact before delivery</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-4">
+                    <CheckCircle2 className="h-6 w-6 text-primary mt-1 flex-shrink-0" />
+                    <div>
+                      <h4 className="font-bold text-lg mb-1">Service Area Match</h4>
+                      <p className="text-muted-foreground">Leads are geographically matched to your service area—no wasted time on out-of-range projects</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-4">
+                    <CheckCircle2 className="h-6 w-6 text-primary mt-1 flex-shrink-0" />
+                    <div>
+                      <h4 className="font-bold text-lg mb-1">Project Details Included</h4>
+                      <p className="text-muted-foreground">Get complete project specs, timeline requirements, and homeowner contact info upfront</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div className="flex items-start gap-4">
+                    <CheckCircle2 className="h-6 w-6 text-primary mt-1 flex-shrink-0" />
+                    <div>
+                      <h4 className="font-bold text-lg mb-1">Exclusive Opportunities</h4>
+                      <p className="text-muted-foreground">Many leads are sent to limited contractors, giving you less competition and higher win rates</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-4">
+                    <CheckCircle2 className="h-6 w-6 text-primary mt-1 flex-shrink-0" />
+                    <div>
+                      <h4 className="font-bold text-lg mb-1">No Long-Term Contracts</h4>
+                      <p className="text-muted-foreground">Pay only for leads you want, pause anytime—no commitments or hidden fees</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-4">
+                    <CheckCircle2 className="h-6 w-6 text-primary mt-1 flex-shrink-0" />
+                    <div>
+                      <h4 className="font-bold text-lg mb-1">AI-Assisted Follow-Up</h4>
+                      <p className="text-muted-foreground">Our AI voice assistant can contact leads on your behalf to schedule estimates automatically</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </section>
 
