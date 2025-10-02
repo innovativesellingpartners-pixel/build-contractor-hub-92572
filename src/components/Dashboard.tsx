@@ -23,7 +23,8 @@ import {
   Mic,
   Award,
   DollarSign,
-  Menu
+  Menu,
+  X
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
@@ -77,7 +78,7 @@ export function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex flex-col">
+    <div className="relative min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex flex-col">
       {/* Top Navigation Bar */}
       <div className="bg-card/80 backdrop-blur-sm border-b shadow-sm sticky top-0 z-10">
         <div className="container mx-auto px-4 md:px-6 py-3">
@@ -418,7 +419,7 @@ export function Dashboard() {
 
       {/* Floating Pocketbot Widget */}
       {pocketbotOpen && (
-        <div className="fixed bottom-20 right-4 md:bottom-24 md:right-6 w-[calc(100vw-2rem)] md:w-[450px] h-[600px] z-50 animate-in slide-in-from-bottom-4 duration-300">
+        <div className="fixed bottom-20 right-4 md:bottom-24 md:right-6 w-[calc(100vw-2rem)] md:w-[450px] h-[600px] z-[99] animate-in slide-in-from-bottom-4 duration-300">
           <FloatingPocketbot onClose={() => setPocketbotOpen(false)} />
         </div>
       )}
@@ -427,9 +428,14 @@ export function Dashboard() {
       <Button
         onClick={() => setPocketbotOpen(!pocketbotOpen)}
         size="lg"
-        className="fixed bottom-4 right-4 md:bottom-6 md:right-6 h-14 w-14 md:h-16 md:w-16 rounded-full shadow-2xl z-50 hover:scale-110 transition-all duration-300 bg-primary hover:bg-primary/90"
+        className="fixed bottom-4 right-4 md:bottom-6 md:right-6 h-14 w-14 md:h-16 md:w-16 rounded-full shadow-2xl z-[100] hover:scale-110 transition-all duration-300 bg-primary hover:bg-primary/90 animate-pulse"
+        aria-label="Open CT1 Pocketbot"
       >
-        <Bot className="h-6 w-6 md:h-7 md:w-7" />
+        {pocketbotOpen ? (
+          <X className="h-6 w-6 md:h-7 md:w-7" />
+        ) : (
+          <Bot className="h-6 w-6 md:h-7 md:w-7" />
+        )}
       </Button>
     </div>
   );
