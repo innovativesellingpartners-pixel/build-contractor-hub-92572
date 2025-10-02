@@ -29,6 +29,11 @@ import { UserManagement } from "@/components/admin/UserManagement";
 import { TrainingManagement } from "@/components/admin/TrainingManagement";
 import { MarketplaceManagement } from "@/components/admin/MarketplaceManagement";
 import { BusinessSuite } from "@/pages/BusinessSuite";
+import { Training } from "@/pages/features/Training";
+import { CRM } from "@/pages/features/CRM";
+import { Leads } from "@/pages/features/Leads";
+import { QuickBooks } from "@/pages/features/QuickBooks";
+import { Insurance } from "@/pages/features/Insurance";
 
 const queryClient = new QueryClient();
 
@@ -41,7 +46,12 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<NewLandingPage />} />
-            <Route path="/business-suite" element={<BusinessSuite />} />
+          <Route path="/business-suite" element={<BusinessSuite />} />
+          <Route path="/business-suite/training" element={<Training />} />
+          <Route path="/business-suite/crm" element={<CRM />} />
+          <Route path="/business-suite/leads" element={<Leads />} />
+          <Route path="/business-suite/quickbooks" element={<QuickBooks />} />
+          <Route path="/business-suite/insurance" element={<Insurance />} />
             <Route path="/about" element={<About />} />
             <Route path="/what-we-do" element={<WhatWeDo />} />
             <Route path="/core-values" element={<CoreValues />} />

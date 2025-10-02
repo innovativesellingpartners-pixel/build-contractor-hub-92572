@@ -15,7 +15,8 @@ import {
   Headset,
   ArrowRight,
   Sparkles,
-  Zap
+  Zap,
+  Star
 } from "lucide-react";
 import { useState } from "react";
 
@@ -174,18 +175,31 @@ export function BusinessSuite() {
                 >
                   <div className={`absolute inset-0 bg-gradient-to-br ${module.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`}></div>
                   
-                  <CardContent className="p-8 relative">
+                   <CardContent className="p-8 relative">
                     <div className="mb-6 relative">
-                      <div className={`inline-flex p-4 rounded-2xl bg-gradient-to-br ${module.color} transition-transform duration-300 ${isHovered ? 'scale-110' : 'scale-100'}`}>
-                        <Icon className="h-8 w-8 text-white" />
-                      </div>
+                      {module.id === 'quickbooks' ? (
+                        <div className={`inline-flex px-6 py-4 rounded-2xl bg-gradient-to-r from-green-600 to-green-500 transition-transform duration-300 ${isHovered ? 'scale-110' : 'scale-100'}`}>
+                          <span className="text-white font-bold text-2xl">QuickBooks</span>
+                        </div>
+                      ) : (
+                        <div className={`inline-flex p-4 rounded-2xl bg-gradient-to-br ${module.color} transition-transform duration-300 ${isHovered ? 'scale-110' : 'scale-100'}`}>
+                          <Icon className="h-8 w-8 text-white" />
+                        </div>
+                      )}
                       {isHovered && (
                         <Sparkles className="absolute -top-2 -right-2 h-6 w-6 text-primary animate-pulse" />
                       )}
                     </div>
                     
-                    <h3 className="text-2xl font-bold text-foreground mb-3 group-hover:text-primary transition-colors">
+                    <h3 className="text-2xl font-bold text-foreground mb-3 group-hover:text-primary transition-colors flex items-center gap-2">
                       {module.title}
+                      {module.id === 'training' && (
+                        <span className="flex gap-0.5">
+                          {[...Array(5)].map((_, i) => (
+                            <Star key={i} className="h-4 w-4 fill-yellow-500 text-yellow-500" />
+                          ))}
+                        </span>
+                      )}
                     </h3>
                     
                     <p className="text-muted-foreground mb-6">
@@ -201,12 +215,14 @@ export function BusinessSuite() {
                       ))}
                     </div>
 
-                    <Button 
-                      variant="ghost" 
-                      className="mt-6 w-full group-hover:bg-primary group-hover:text-primary-foreground transition-all"
-                    >
-                      Learn More <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
+                    <Link to={module.id === 'marketplace' ? '/marketplace' : `/business-suite/${module.id}`}>
+                      <Button 
+                        variant="ghost" 
+                        className="mt-6 w-full group-hover:bg-primary group-hover:text-primary-foreground transition-all"
+                      >
+                        Learn More <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </Link>
                   </CardContent>
                 </Card>
               );
