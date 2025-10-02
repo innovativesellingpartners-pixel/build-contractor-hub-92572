@@ -425,18 +425,20 @@ export function Dashboard() {
       )}
       
       {/* Floating Chat Button */}
-      <Button
+      <button
         onClick={() => setPocketbotOpen(!pocketbotOpen)}
-        size="lg"
-        className="fixed bottom-4 right-4 md:bottom-6 md:right-6 h-14 w-14 md:h-16 md:w-16 rounded-full shadow-2xl z-[100] hover:scale-110 transition-all duration-300 bg-primary hover:bg-primary/90 animate-pulse"
+        className="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-[100] group cursor-pointer"
         aria-label="Open CT1 Pocketbot"
       >
-        {pocketbotOpen ? (
-          <X className="h-6 w-6 md:h-7 md:w-7" />
-        ) : (
-          <Bot className="h-6 w-6 md:h-7 md:w-7" />
-        )}
-      </Button>
+        <div className="bg-foreground/95 backdrop-blur-md text-background p-3 md:p-4 rounded-full shadow-2xl hover:shadow-primary/50 transition-all duration-300 hover:scale-105 border-2 border-primary/30">
+          <div className="relative">
+            <div className="h-10 w-10 md:h-12 md:w-12 bg-primary/20 rounded-full flex items-center justify-center border border-primary/30">
+              <img src={ct1Logo} alt="CT1" className="h-6 w-6 md:h-7 md:w-7" />
+            </div>
+            <div className="absolute -top-1 -right-1 h-3 w-3 md:h-3.5 md:w-3.5 bg-primary rounded-full animate-pulse"></div>
+          </div>
+        </div>
+      </button>
     </div>
   );
 }
