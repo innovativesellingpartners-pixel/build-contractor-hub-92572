@@ -44,25 +44,58 @@ const statePaths: Record<string, string> = {
   AZ: "M197 282l0-19-1-19-1-22-2-29-3-31-4-38-5-31-32 6-32 7-33 7-33 7-33 7-1 3 0 4 1 9 2 17 3 20 5 28 6 31 7 32 8 32 8 30 21-4 20-4 20-4 20-4 19-4 20-4 20-4Z",
   AR: "M586 313l1-6 2-7 2-7 3-7 3-5 3-5 3-3 6-5-1-2-2-3-2-2-2-2-23-4-22-4-15-3-15-2-12-2-6-1-4 0-1 6-1 12-1 13-1 13-1 10-1 4-1 2-1 1-2 1-3 0-3 1-1 1-1 3-1 4 0 13 0 13 1 13 1 12 1 13 1 13 1 13 26 3 27 4 26 4 26 3 1-10 1-12 2-17 2-18 1-10 1-10 0-11-1-11-1-10-2-11Z",
   CA: "M96 68l-3 18-4 20-5 23-7 29-8 32-9 35-10 39-11 42-12 45-12 47-8 30 3 3 4 1 5 0 8 1 6 2 5 3 4 4 2 3 2 4 2 5 3 8 4 12 5 16 7 20 7 21 4 10 4 7 5 5 6 3 7 2 16 2 12 1 3-4 2-5 2-8 1-10 1-13 1-17 1-22 1-27 0-32 0-30 0-24 1-19 1-14 2-11 3-6 20-4 20-5 21-4 20-4 20-4 20-4 20-5 21-4 20-4 20-5-27-43-24-37-11-18-4-7-4-8-4-10-4-13-3-14-3-16-2-18-1-20-1-22 0-25 0-26 1-28 2-27-8-3-9-1-10 1-9 2-8 4-7 5-8 9-9 11-6 8-4 6-7 10-8 13-5 9Z",
+  CO: "M297 190l0-42-1-43-1-43-1-43-43 7-43 7-43 8-43 8-43 7-1 28 0 28 0 29 0 28 0 29 43-7 43-8 43-7 43-8 43-7 1-29 1-29Z",
+  CT: "M891 157l-3 9-3 9-3 9-3 8-11-2-11-3-11-3-11-3 1-3 1-4 2-6 2-6 13 3 13 3 13 3 13 3Z",
+  DE: "M863 205l-2 8-2 9-3 9-2 9-3 10-2 9-8-1-8-2-8-2-8-1 1-5 1-4 2-6 2-6 2-5 2-5 2-6 2-5 2-4 1-2 8 2 8 2 8 2 8 1Z",
+  FL: "M784 467l3-13 4-17 5-19 5-20 6-21 6-21 7-21 7-22 7-22 8-22 8-23-9-2-9-2-9-2-9-2-9-2-9-2-9-2-9-2-9-2-5 16-6 18-7 21-7 22-8 24-8 25-9 26-9 27-9 27-9 27-7 16 1 3 2 3 2 2 3 1 3 0 3-1 3-3 5-7 6-11 7-14 8-17 9-19 9-21 10-22 10-23 11-24 11-24 1 1 2 4 3 6 3 7 4 9 4 10 4 11 5 12 5 12 5 13 5 13 6 13 6 13 6 13 6 12 6 12 5 9 2 4 3 2 4 1 4 0 4-1 3-3 3-4 2-6 1-7 1-9 0-10-1-12-1-13-2-14-3-15-3-16-4-16-4-16-5-16-5-15-3-9Z",
+  GA: "M766 332l-2 11-2 12-3 13-3 13-3 14-4 15-4 15-5 16-5 17-5 18-5 18-6 19-6 20-6 20-1 2 9 2 9 2 9 2 9 2 9 2 9 2 9 2 9 2 9 2 7-1 8-1 8-1 7-1 8-1 7-1 8-1 8-1-1-7-1-7 0-8 0-8 1-8 1-8 2-9 2-9 3-9 3-9 4-10 4-10 5-10 5-11 6-11 6-11 7-12 7-12 8-12 8-13 9-13 9-13 10-14 1-2-1-3-3-4-3-3-4-3-4-2-5-1-5 0-5 1-5 2-5 3-11 8-4 1-4 0-4 0-4-1-11-3-11-3-11-4-11-4-4-2-2-2-2-3-1-3 0-4 0-4 1-5Z",
+  HI: "M285 458l3-1 3 0 2 1 1 2 1 3 0 3-1 2-2 2-3 1-3 0-2-1-2-2-1-3 0-3 1-2 2-2Zm-25-8l3-1 4 0 2 1 2 2 0 3 0 3-2 2-3 1-3 0-2-1-2-2-1-3 0-3 2-2Zm-30-12l4-1 3 1 2 2 1 3-1 3-2 2-3 1-4 0-2-1-1-2-1-3 1-3 2-2Z",
+  ID: "M166 34l1-11 2-11 2-12 2-11 2-12 2-11-7-2-8-2-7-2-8-2-7-2-8-2-8-2-7-2-8-2-8-2-7-1-8-2 1-7 1-8 2-8 2-9 2-8 2-9 3-9 2-9-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-3-5 20-5 20-5 20-6 21-5 20-6 21-5 20-6 21-5 21-6 20-6 21-1 4 7 2 8 2 7 2 7 2 8 2 7 2 7 2 8 2 7 2 8 2 7 2 8 2 4 1 1-3 1-3 1-2 1-3 1-2 1-3 1-2 1-3 1-3 1-2 1-3 1-2 1-3 1-3 1-2 1-3 1-3 1-2 1-3 1-3 1-2 1-3 1-3 1-2 1-3 1-3 8 2 7 2 8 2 7 2 8 2 7 2 8 2 7 2 1-5 1-5 1-5 1-5 1-6 1-5 1-5 1-6 1-5 1-5 1-6 1-5Z",
+  IL: "M667 184l-2 9-2 9-3 9-2 9-3 9-2 9-3 10-2 9-3 10-2 9-3 10-3 10-2 9-3 10-3 10-2 10-3 10-3 10-3 10-3 11-3 10-3 11-3 11-3 10-1 5 11 2 11 3 11 2 11 3 11 2 11 3 4 1 4 2 4 3 3 4 3 5 2 5 2 6 1 6 1 7 1 7 0 8 0 7 11 1 11 2 11 1 11 2 11 1 11 2 6-23 6-23 7-23 0-9-1-9-1-9-1-9-1-9-1-10-1-9-1-10-1-9-1-10-1-10-1-10 0-10-1-10-1-10-1-10-1-11-1-10-1-11-1-11-1-11-1-11-1-12-1-11-1-12-1-12-1-12-1-12-1-12-1-13-1-12Z",
+  IN: "M713 209l-11-2-11-2-11-2-11-2-11-1-11-2-11-1-11-2-11-1-11-2-1 12-1 13-1 12-1 13-1 12-1 13-1 12-1 13-1 12-1 13-1 12-1 13-1 12-1 13-1 12-1 13-1 12-1 4 11 2 11 2 11 2 11 2 11 2 11 2 11 2 11 2 1-3 2-7 2-7 2-7 3-7 2-7 3-8 2-7 3-8 3-7 3-8 3-8 3-8 3-8 3-8 4-8 3-9 4-8 4-9 4-9 4-9 4-9 4-9 5-9 4-10 5-10Z",
+  IA: "M579 155l0-9-1-9-1-9 0-9-1-9-1-9-1-9-1-9-1-9-1-10-1-9-43 6-43 7-43 7-43 7-43 7-43 7 1 9 1 9 1 9 1 10 1 9 1 9 1 10 1 9 1 9 1 10 1 9 1 10 1 9 1 10 43-7 43-7 43-7 43-7 43-7 43-7Z",
+  KS: "M426 252l0-29 0-29 0-29 0-28 0-28-43 7-43 7-43 8-43 7-43 8-43 7-43 8-43 7 3 28 3 29 3 28 43-7 43-7 43-7 43-7 43-7 43-7 43-8 43-7Z",
+  KY: "M753 276l-2 4-2 5-3 6-2 5-3 6-2 5-3 6-2 5-3 6-3 6-3 6-11-2-11-3-11-2-11-3-11-2-11-3-11-3-11-3-11-3-11-3-11-3-11-3-11-3-11-4-11-3-11-4-11-4-11-4-6-2 1-3 1-3 2-3 1-3 2-4 1-3 2-3 2-3 2-4 1-3 2-3 2-4 2-3 2-4 2-3 2-4 2-3 2-4 2-4 2-3 2-4 2-4 2-4 2-4 2-4 3-4 2-4 2-5 3-4 2-5 2-4 3-5 2-5 3-5 2-5 3-5 3-5 3-6 3-5 3-6 3-5 3-6-11-2-11-2-11-2-11-2-11-2-11-2-11-2-11-2 1-3 1-4 2-4 1-4 2-4 1-4 2-4 2-5 4 1 4 1 5 1 4 1 5 1 4 1 5 2 4 1 5 1 5 2 4 1 5 2 5 1 4 2 5 1 5 2 5 2 4 2 5 2 5 2 5 2 4 2 5 2 5 2 5 2 5 3 5 2 5 2 5 3 5 2 5 3 5 3 5 3 5 3 5 3 5 3 5 3 5 3 5 4 5 3 5 4 5 3Z",
+  LA: "M586 401l-3 11-3 11-3 11-4 11-3 12-4 11-4 12-4 11 11 4 11 4 11 4 11 4 11 3 11 4 11 4 11 3 11 4 11 3 10 3 2-1 3-2 4-3 3-4 3-5 3-5 2-6 2-7 2-7 1-8 1-8 0-9 0-9-1-9-1-10-2-10-2-11-3-11-3-12-4-12-4-13-5-13-26-3-26-3-26-4-27-4-1 13-1 13-1 13 0 13 1 13 1 13 1 13 1 13 1 13 0 13 26 4 26 3 27 4 26 3Z",
+  ME: "M897 62l-2 7-2 7-2 7-2 7-3 7-2 7-3 8-2 7-3 8-2 7-3 8-3 8-3 8-3 8-3 8-3 8-4 9-1 2 8 3 9 3 8 3 9 3 3-7 4-8 4-9 4-9 5-9 5-10 5-10 5-10 6-11 6-11 6-12 6-12 7-12 7-13 7-13 8-13 8-14 8-14 9-15 9-15-8-2-8-3-8-2-8-3-7-2-8-3-8-2-8-3-8-2-8-3-8-2-8-3-8-2-8-3-8-2Z",
+  MD: "M851 221l-8-2-8-2-8-2-8-2-8-2-8-2-8-1-8-2-1 5-2 5-2 6-2 5-2 5-2 6-2 5-1 4-1 2 8 1 8 2 8 2 8 1 3-9 2-9 3-10 2-9 2-8Zm-3 24l-8-1-8-2-8-2-8-1-3 10-2 9-3 9-2 9-8-2-8-2-8-1-8-2 2 4 2 4 2 4 2 4 2 4 2 4 11 3 11 3 11 2 11 3 11 3 11 3 11 2 11 3 11 2-3-6-3-6-3-6-4-7-4-7-4-7-4-7-4-7-4-8-5-7-5-8-5-8-5-8-6-8-2-3Z",
+  MA: "M888 141l-3 8-3 8-3 8-3 9-3 8-3 9-3 9-3 9 11 2 11 3 11 3 11 3 11 3 11 2 11 3 11 3 3-8 3-9 3-9 3-9-4-1-4-1-4-2-4-1-4-2-4-1-4-2-4-1-4-2-4-2-4-2-4-1-4-2-4-2-4-2-4-2-4-2-4-2Z",
+  MI: "M713 92l-8 2-8 2-8 2-8 1-8 2-8 2-8 1-8 2-2 9-2 9-2 9-2 9-2 9-2 9-2 10-2 9-2 9-2 9-2 9-2 10-2 9-2 9-2 10-2 9-2 9-2 10-2 9 11 2 11 2 11 2 11 1 11 2 11 2 11 1 11 2 2-10 2-10 2-10 2-10 3-10 2-10 2-10 3-11 2-10 3-10 2-11 3-10 3-11 2-10 3-11 3-11 3-11 3-11 3-11 3-11 3-12Zm66-31l-3 11-3 11-3 11-3 11-3 11-3 11-3 11-3 11-3 12-3 11-3 12-3 11-3 12-3 11-3 12-3 12-3 12 8 2 8 2 8 2 8 2 8 1 8 2 8 2 8 2 3-12 3-12 3-12 3-13 3-12 3-13 3-12 3-13 3-13 3-13 3-13 3-14 3-13 3-14 3-13-8-2-8-2-8-2-8-2-8-2-8-2-8-2Z",
+  MN: "M534 27l0-9 0-9 0-9 0-9 0-10-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-7-2-8-2-8-2 0 10 0 10 1 10 0 10 1 10 1 10 0 10 1 10 1 11 1 10 1 11 1 10 1 11 1 11 1 11 1 11 1 11 1 11 1 12 1 11 1 12 1 12 1 12 8 2 8 2 8 2 8 2 8 2 8 2 8 2 8 2 8 2 8 2 8 2 8 2 8 2 8 2 8 2 8 2 8 2 8 2 8 2 8 2 0-9 1-9 0-9 0-9 1-9 0-9 1-10 0-9 1-9 0-10 1-9 0-10 1-9 0-10 1-9 0-10 1-9 0-10 1-10 0-9Z",
+  MS: "M647 333l-1-13-1-13-1-13-1-12-1-13-1-13 0-13 0-13 1-4 1-3 1-1 3-1 3 0 3-1 2-1 1-1 1-2 1-4 1-10 1-13 1-13 1-12 1-6-26-3-26-4-26-4-27-4-26-3-1 11 0 11 1 11 2 11 1 10 1 11 1 11 0 11-1 10-1 10-2 18-2 17-1 12-1 10 5 16 6 17 6 18 7 19 7 19 8 20 8 21 8 21 9 22 9 23 10 23 10 24 26 3 27 4 26 4 26 3-1-13-1-13 0-13-1-13 0-13-1-13-1-13Z",
+  MO: "M579 251l-43 7-43 7-43 7-43 7-43 7-43 7 1 9 1 10 1 9 1 10 1 9 1 10 1 10 1 10 1 10 1 10 0 10 1 10 1 10 1 11 1 11 1 11 1 11 1 11 1 12 11 2 11 2 11 2 11 2 11 2 11 2 11 2 11 2-3 5-2 5-3 6-3 5-3 6-3 5-3 6-3 5-3 5-2 5-3 5-2 5-3 5-2 4-3 5-2 5-2 4-3 5-2 4-2 4-2 4-2 4-2 4-2 4-2 3-2 4-2 4-2 3-2 4-2 3-1 4-2 3-2 4-1 3-2 3-2 3-1 3-2 3-2 3-1 3 6 2 11 4 11 4 11 4 11 3 11 4 11 3 11 3 11 3 11 3 11 3 11 3 11 3 11 2 11 3 11 2 11 3 3-6 3-6 3-6 2-5 3-6 2-5 3-6 2-4 7-23 6-23 6-23-11-1-11-2-11-1-11-2-11-1-11-2-11-1-11-2 0-7 0-8-1-7-1-7-1-6-2-6-2-5-3-5-3-4-4-3-4-2-4-1-11-3-11-2-11-3-11-2-11-3-11-2-11-2 1-5 3-11 3-10 3-11 3-10 3-11 3-10 3-10 2-10 3-10 3-10 2-10 3-9 2-10 3-10 2-9 3-10 2-9 3-10 2-9 3-9 2-9 3-9 2-9 2-9Z",
+  MT: "M297 55l-1-28-1-28-1-28-43 7-43 8-43 7-43 8-43 7-43 8-43 7-8 2 1 7 1 8 2 8 2 9 2 8 2 9 3 9 2 9 8 2 8 2 8 2 8 2 8 2 8 2 8 2 8 3 1-7 2-11 2-12 2-11 2-12 2-11 2-12 2-11 8 2 8 2 7 2 8 2 7 2 8 2 8 2 7 2 8 2 8 2 7 2 8 2 5-20 6-21 5-20 6-21 5-21 6-20 5-21 6-21 5-20 6-21 5-20 8 2 8 2 8 2 8 2 8 2 8 2 8 2 8 2 0-10-1-10 0-10-1-10 0-10-1-10 0-10-1-11Z",
+  NE: "M426 164l0-28 0-29 0-28 0-29 0-28-43 7-43 7-43 8-43 7-43 8-43 7-43 8-43 7-43 7 2 29 3 28 3 29 2 28 3 29 43-7 43-8 43-7 43-8 43-7 43-8 43-7 43-8Z",
+  NV: "M140 114l-5 21-6 20-5 21-6 21-5 20-6 21-5 21-6 20-6 21-5 21-6 20-6 21-1 4-1 4-1 4-1 4-1 4-1 4-1 4-1 4-1 4-1 4-1 4-1 4 8 2 7 2 8 2 7 2 8 2 7 2 8 2 8 2 7 2 8 2 7 2 8 2 20-4 21-4 20-4 20-5 21-4 20-4 20-4 20-5 20-4 20-4 5-31 4-38 3-31 2-29 1-22 1-19 0-19-8-2-7-2-8-2-7-2-8-2-7-2-8-2-7-2-8-2-7-2-8-2-7-1Z",
+  NH: "M884 82l-8-3-8-2-8-3-8-2-8-3-8-2-8-3-8-2 1-2 4-9 3-8 3-8 3-8 3-8 2-7 3-8 2-7 3-8 2-7 2-7 2-7 2-7-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2 2-7 2-7 2-7 2-7 2-7 2-7 3-7 2-7-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-2 7-2 7-2 7-2 8-2 7-2 8-2 7-2 8-2 7-2 8-2 8-2 7-2 8-2 8-2 8-2 8-2 8-2 8-2 9-2 8-2 9-2 8-2 9-2 9-2 9-2 9-2 9-2 9-2 9-2 10-2 9-2 10-2 10-2 10-2 10 8 2 8 3 8 2 8 3 8 2 8 3 8 2 8 3 8 2 8 3 8 2 8 3-9 15-9 15-8 14-8 14-8 13-7 13-7 13-7 12-6 12-6 12-6 11-5 11-5 10-5 10-5 10-5 9-4 9-4 9-4 8-3 7Z",
+  NJ: "M863 205l-8-1-8-2-8-2-8-2-8-2-8-2-8-2-8-2-2 9-3 10-2 9-3 9 8 1 8 2 8 2 8 1 8 2 8 2 8 1 8 2-2 9-2 9-3 9-2 9 8 2 8 2 8 1 8 2 3-9 2-9 3-9 2-9 2-9 3-9 2-9 3-10 2-9 2-9-8-1-8-2-8-2-8-1Z",
+  NM: "M340 252l-43 7-43 8-43 7-43 8-43 7-3 28-3 29-3 28-3 29-3 28-3 29-3 28-3 29-3 29 43-7 43-8 43-7 43-8 43-7 43-8 43-7 43-8 1-29 1-29 0-29 0-28 1-29 0-28 1-28 0-29Z",
+  NY: "M779 128l-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-3 12-3 11-3 12-3 11-3 11-3 11-3 11-3 11-3 11-3 11-3 10-3 11-3 10-3 11-2 10-3 11-2 10-3 10-2 10-3 10-2 10-2 10 8 1 8 2 8 1 8 2 8 2 8 1 8 2 8 2 8 2 8 2 8 2 8 2 8 1 8 2 8 2 8 2 11 2 11 3 11 2 11 3 11 3 11 2 11 3 1-2 2-4 2-5 2-4 2-5 2-4 3-5 2-5 2-4 3-5 2-5 3-5 2-5 3-5 3-5 3-5 3-6 3-5 3-6 3-5 3-6 2-5 3-6 2-5 3-5 2-5 3-5 2-5 2-4 3-5 2-4 2-4 2-4 2-4 2-4 2-4 2-3 2-4 2-4 1-4 2-4 2-4 1-4 2-4 1-4 2-5 1-4 2-4 1-4 2-5 1-4 2-4 1-5 1-4 2-5 1-4 1-5 1-4 1-5 1-4 1-5 1-5 1-5Z",
+  NC: "M819 290l-5-3-5-3-5-3-5-3-5-2-5-3-5-2-5-2-5-2-5-2-5-2-5-2-4-2-5-2-5-1-5-2-4-1-5-1-5-1-4-1-5-1-4-1-5-1-4-1-5-1-4-1-5-1-4-1-5-1-4-1-5 0-4-1-5 0-4-1-5 0-4 0-11 2-11 3-11 2-11 3-11 3-11 3-11 3-11 3-11 3 3 6 4 7 4 8 5 8 5 8 5 8 6 8 6 8 5 7 5 8 4 7 4 7 4 7 4 7 3 6 3 6 3 6 11 2 11 3 11 2 11 3 11 3 11 2 11 3 11 3 11 3 11 3 11 3 10 3 4 1 4 1 4 0 4 0 11-8 5-3 5-2 5-1 5 0 5 1 4 2 4 3 3 3 3 4 1 3-1 2-10 14-9 13-9 13-8 13-8 12-7 12-7 12-6 11-6 11-5 11-5 10-4 10-4 10-3 9-3 9-2 9-2 9-1 8-1 8 0 8 0 8 1 7 1 7 8 1 8 1 7 1 8 1 7 1 8 1 8 1 9-2 6-20 6-20 6-19 5-18 5-18 5-17 5-16 4-15 4-15 3-14 3-13 3-13 2-12 2-11-11-3-11-3-11-3-11-3-11-2-11-3-11-3-11-3Z",
+  ND: "M426 27l0-10 0-10 0-10 0-10 0-10 0-10-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2 0 11 1 10 0 10 1 10 0 10 1 10 0 10 1 11 1 10 1 11 1 10 1 11 1 11 1 11 1 11 1 11 1 11 1 12 1 11 1 12 8 2 8 2 8 2 8 2 8 2 8 2 8 2 8 2 8 2 8 2 8 2 8 2 8 2 8 2 8 2 8 2 7 2 8 2 8 2 8 2 0-9 0-9 0-10 0-9 0-9 0-9 0-10 0-9 0-10 0-9 0-10 0-9 0-10 0-9Z",
+  OH: "M755 206l-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-1-8-2-8-2-8-1-8-2-8-2-8-1-8-2-8-2-8-1-8-2-8-2-8-1-1 4-2 4-1 4-2 4-1 4-2 4-1 4-2 5 11 2 11 2 11 2 11 2 11 2 11 2 11 2 11 2-3 6-3 5-3 6-3 5-3 6-3 5-3 6-2 5-3 6-3 5-3 5-3 5-2 5-3 5-2 5-2 4-3 5-2 4-2 5-2 4-2 4-2 4-2 4-2 4-2 4-2 3-2 4-2 4-2 3-2 4-2 3-2 4-2 3-1 3-2 3-1 3-2 3-1 3 11 4 11 4 11 4 11 4 11 3 11 4 11 3 11 3 11 3 11 3 11 3 11 3 11 3 11 4 11 3 11 3 11 3 11 3 5 1 4 1 5 1 4 1 5 1 4 1 5 1 4 1 5 0 4 1 5 0 4 1 5 0 4 0 4 1 5 0 4 0 5 1 4 0 5 1 4 1 5 1 4 1 5 1 5 2 4 1 5 2 4 2 5 2 5 2 4 2 5 2 5 2 5 2 5 3 5 3 5 3 5 3 5 3 5 3-2-6-2-6-2-5-2-6-2-5-2-6-2-6-2-6-2-6-2-6-2-6-2-7-2-6-2-7-2-7-2-7-2-7-2-7-2-8-2-7-2-8-3-8-2-8-3-8-3-8-3-9-3-9-3-9-3-9-3-10-3-10-3-10-4-10-4-11-4-11-4-11-4-12-4-12-5-12-5-13-5-13-5-14-5-14-6-14-6-15Z",
+  OK: "M469 309l-43 8-43 7-43 8-43 7-43 8-43 7-43 8 2 28 3 28 3 29 43-7 43-8 43-7 43-8 43-7 43-8 43-7 43-8-1-28-2-29-2-28-3-28Z",
+  OR: "M96 68l2-27-8-3-9-1-10 1-9 2-8 4-7 5-8 9-9 11-6 8-4 6-7 10-8 13-5 9-6 11-7 13-7 13-8 15-8 15-9 16-9 17-10 18-10 19-10 20-11 21-11 22-12 23-12 24-12 25-1 2 8 2 7 2 8 2 7 2 8 2 7 2 8 2 7 2 8 2 8 2 7 2 8 2 7 2 8 2 7 2 8 2 7 2 8 2 8 2 7 2 8 2 7 2 8 2 7 1 8 2 7 2 8 2 7 2 8 2 1-4 6-21 6-20 5-21 6-21 5-20 6-21 5-21 6-20 5-21 6-21 5-20 6-21 1-4 1-4 1-4 1-4 1-4 1-4 1-4 1-4 1-4 1-4 1-4 1-4 6-21 5-21 6-20 5-21 6-21 5-20 6-21 5-20Z",
+  PA: "M819 184l-11-3-11-2-11-3-11-2-11-3-11-2-11-3-11-2-8-2-8-2-8-2-8-2-8-2-8-1-8-2-8-2-8-2-8-2-8-2-8-1-8-2-8-2-8-2-8-1-8-2-8-2-8-1 1-5 5-10 4-10 5-9 4-9 4-9 4-9 4-9 4-9 4-8 3-9 4-8 3-8 3-8 3-8 3-8 3-8 3-7 3-8 2-7 3-8 2-7 2-7 2-7 2-7 1-3-11-2-11-2-11-2-11-2-11-2-11-1-11-2-11-1 0 10 1 10 1 10 1 10 0 10 1 10 1 10 1 9 1 10 1 9 1 10 1 9 1 10 1 9 1 9 1 10 1 9 1 9 1 9 1 9 1 9 1 9 0 9-7 23-6 23-6 23 6 2 11 4 11 4 11 4 11 3 11 4 11 3 11 3 11 3 11 3 11 3 11 3 11 3 11 4 11 3 11 3 11 3Z",
+  RI: "M891 157l-13-3-13-3-13-3-13-3-2 6-2 6-1 4-1 3 11 3 11 3 11 3 11 2 3-8 3-9 3-9 3-9Z",
+  SC: "M789 320l-11-3-11-3-11-3-11-3-11-3-11-3-11-3-11-3 0 4 0 4 1 3 2 3 2 2 4 2 11 4 11 4 11 3 11 3 4 1 4 0 4 0 4-1 11-8 5-3 5-2 5-1 5 0 5 1 4 2 4 3 3 3 3 4 1 3-1 2-10 14-9 13-9 13-8 13-8 12-7 12-7 12-6 11-6 11-5 11-5 10-4 10-4 10-3 9-3 9-2 9-2 9-1 8-1 8 0 8 0 8 1 7 1 7 8 1 8 1 7 1 8 1 7 1 8 1 8 1 7-1 8-1 8-1 7-1 8-1 8-1 7-1 8-1 1-2 6-20 6-20 6-19 5-18 5-18 5-17 5-16 4-15 4-15 3-14 3-13 3-13 2-12 2-11-11-3-11-3-11-3-11-3-11-2-11-3-11-3-11-3Z",
+  SD: "M426 79l0-28 0-28 0-24-43 7-43 7-43 8-43 7-43 8-43 7-43 8-43 7-2 29-3 28-3 29-2 28-3 29 43-7 43-8 43-7 43-8 43-7 43-8 43-7 43-8Z",
+  TN: "M753 276l-11 3-11 3-11 2-11 3-11 3-11 2-11 3-11 3-11 2-11 3-11 3-11 2-11 3-11 3-11 2-11 3-11 3-11 3-11 3-11 3-11 3-11 3-11 3-11 3-11 3-11 3-11 3-11 3-11 3 2 11 3 12 3 11 3 12 4 12 4 13 5 13 26 3 26 3 26 4 27 4 1-13 0-13 1-4 1-3 1-1 3-1 3 0 3-1 2-1 1-1 1-2 1-4 1-10 1-13 1-13 1-12 1-6 4 0 6 1 12 2 15 2 15 3 22 4 23 4 2 2 2 2 2 3 1 2 6 5-3 3-3 5-3 5-3 5-2 7-2 7-1 6Z",
+  TX: "M469 365l-43 7-43 8-43 7-43 8-43 7-43 8-43 7-43 8 1 9 2 13 2 17 3 20 4 23 5 27 6 30 7 33 8 37 9 40 9 42 10 44 11 46 12 48 12 50 13 51 14 53 14 54 15 56 4 13 27-5 26-5 26-5 26-5 27-5 26-5 27-5 26-5 27-5 26-5 27-5 26-5 27-5 26-5 27-5 26-5 27-5 26-5 27-5-5-16-6-17-6-18-7-19-7-19-8-20-8-21-8-21-9-22-9-23-10-23-10-24-11-24-11-25-11-25-12-26-12-26-13-27-13-27-13-27-14-28-14-28 4-11 4-12 4-11 3-12 4-11 3-11 3-11 3-11-10-3-11-3-11-4-11-3-11-4-11-3-11-4-11-4-11-4-11-4 4-12 4-11 3-12 4-11 3-11 3-11 3-11 1-6-26-3-27-4-26-3-26-4 0-13-1-13-1-13-1-13-1-13-1-13-1-13-2-28-3-29-3-28Z",
+  UT: "M197 124l0-19 0-25 0-26 1-28 2-27-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2 1-7 1-8 2-8 2-9 2-8 2-9 3-9 2-9-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-3 12-25 12-24 12-23 11-22 11-21 10-20 10-19 10-18 9-17 9-16 8-15 8-15 7-13 7-13 6-11-7-2-8-2-7-2-8-2-7-2-8-2-7-2-8-2-7-2-8-2-8-2-7-2-8-2-7-2-8-2-7-2-8-2-7-2-8-2-7-2-8-2-8-2-7-2-8-2-7-2-8-2-7-2-8-2-7-2-8-2 5-9 8-13 7-10 4-6 6-8 9-11 8-9 7-5 8-4 9-2 10-1 9 1 8 3-2 27-1 28 0 26 0 25 1 22 1 20 2 18 3 16 3 14 4 13 4 10 4 8 4 7 11 18 24 37 27 43-20 5-20 4-21 4-20 5-20 4-20 4-20 5-20 4-21 4-20 4 3 6 2 11 1 14 1 19 0 24 0 30 0 32-1 27-1 22-1 17-1 13-1 10-2 8-2 5-3 4Z",
+  VT: "M852 61l-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-2 10-2 10-2 10-2 10-3 10-2 10-2 10-3 11-2 10-3 10-2 11-3 10-3 11-2 10-3 11-3 11-3 11-3 11-3 11-3 11-3 12 8 2 8 2 8 2 8 2 8 2 8 2 8 2 8 2 3-11 3-12 3-11 3-11 3-11 3-11 3-11 3-10 3-11 2-10 3-10 2-10 2-10 3-10 2-10 2-9 2-10 2-9 2-9 2-9 2-9 2-9 2-9 2-10Z",
+  VA: "M819 243l-11-3-11-3-11-3-11-2-11-3-11-3-11-2-11-3-11-2-11-3-11-3-11-2-11-3-11-3-11-2-11-3-11-3-11-3-11-3-11-3-11-3-11-3 2-11 3-12 3-11 3-12 4-12 4-13 5-13-26-3-26-3-26-4-27-4-1 13-1 13-1 13 0 13 1 13 1 13 1 13 26 3 27 4 26 4 26 3 1 6-1 13-1 12-1 13-1 13-1 10-1 4-1 3-1 1-3 1-3 0-3 1-2 1-1 1-1 2-1 4-1 10-1 13-1 13-1 12-1 6-4 0-6 1-12 2-15 2-15 3-22 4-23 4-2 2-2 2-2 3-1 2-6 5 3 3 3 5 3 5 3 5 2 7 2 7 1 6-1 13-1 6 2 4 2 4 2 4 2 4 11 3 11 3 11 2 11 3 11 3 11 2 11 3 11 3 11 2 11 3 11 3 11 2 11 3 11 3 11 3 11 3 11 3 11 3 4 1 4 1 4 0 4 0 11-8 5-3 5-2 5-1 5 0 5 1 4 2 4 3 3 3 3 4 1 3Z",
+  WA: "M96 13l-8-2-7-2-8-2-7-2-8-2-7-2-8-2-8-2-7-2-8-2-7-2-8-2-7-2-8-2-7-2-8-2-7-2-8-2-7-2-8-2-8-2-7-2-8-2-7-2-8-2-7-2-8-2-7-2-8-2-7-2-8-2-7-2-8-2-7-2-8-2-7-2 5-9 8-13 7-10 4-6 6-8 9-11 8-9 7-5 8-4 9-2 10-1 9 1 8 3 7 2 8 2 7 2 8 2 7 2 8 2 7 2 8 2 8 2 7 2 8 2 7 2 8 2 7 2 8 2 7 2 8 2 7 2 8 2 7 2 8 2 7 2 8 2 7 2 8 2 7 2 8 2 7 2-12 25-12 24-12 23-11 22-11 21-10 20-10 19-10 18-9 17-9 16-8 15-8 15-7 13-7 13-6 11Z",
+  WV: "M789 207l-11-3-11-2-11-3-11-3-11-2-11-3-11-2-11-3-11-2-11-3-11-3-11-2-11-3-11-3-11-2-11-3-11-3-11-3-11-3-11-3-11-3-11-3 2-11 3-12 3-11 3-12 4-12 4-13 5-13 6-15 6-14 5-14 5-14 5-13 5-13 5-12 4-12 4-11 4-11 4-10 3-10 3-10 3-9 3-9 3-9 3-8 3-8 2-8 2-7 2-8 2-7 2-7 2-7-11-3-11-2-11-3-11-2-11-3-11-2-11-3-11-3 1-2 2-4 2-5 2-4 2-5 2-4 3-5 2-5 2-4 3-5 2-5 3-5 2-5 3-5 3-5 3-5 3-6 3-5 3-6 3-5 3-6 2-5 3-6 2-5 3-5 2-5 3-5 2-5 2-4 3-5 2-4 2-4 2-4 2-4 2-4 2-4 2-3 2-4 2-4 1-4 2-4 2-4 1-4 2-4 1-4 2-5 1-4 2-4 1-4 2-5 1-4 2-4 1-5 1-4 2-5 1-4 1-5 1-4 1-5 1-4 1-5 1-5 1-5-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2 0 10 1 10 1 10 1 10 0 10 1 10 1 10 1 9 1 10 1 9 1 10 1 9 1 10 1 9 1 9 1 10 1 9 1 9 1 9 1 9 1 9 1 9 0 9-7 23-6 23-6 23 6 2 11 4 11 4 11 4 11 3 11 4 11 3 11 3 11 3 11 3 11 3 11 3 11 3 11 4 11 3 11 3 11 3 11 3Z",
+  WI: "M634 63l-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2 0 9 0 10 1 9 0 10 1 9 0 10 1 10 0 9 1 10 0 10 1 9 0 10 1 10 0 9 1 10 0 10 1 9 0 10 1 10 0 9 43-7 43-7 43-7 43-7 43-6 43-7 1-9 0-10 1-9 1-9 0-9 1-9 1-9 1-9 0-9 1-9-8-2-8-2-8-2-8-2-8-2-8-2-8-2-8-2-1-12-1-11-1-12-1-11-1-11-1-11-1-11-1-10-1-11-1-10-1-11-1-10Z",
+  WY: "M297 101l1-28 1-28 0-10 1-10 0-10 1-10 0-10 1-10 0-10 1-11-43 7-43 7-43 8-43 7-43 8-43 7-43 8-43 7 1 28 1 28 1 28 43-7 43-8 43-7 43-8 43-7 43-8 43-7 43-8Z",
+  DC: "M848 245l-2 4-2 4-2 4-2 4 8 2 8 2 8 1 8 2 2-4 2-4 2-4 2-4-8-2-8-2-8-1-8-2Z",
+};
 
 export default function NetworkMap() {
-  const [hoveredCity, setHoveredCity] = useState<City | null>(null);
-  const [hoveredLine, setHoveredLine] = useState<string | null>(null);
-  const [animationProgress, setAnimationProgress] = useState(0);
+  const [hoveredState, setHoveredState] = useState<string | null>(null);
 
-  const hub = cities.find(c => c.isHub)!;
-  const otherCities = cities.filter(c => !c.isHub);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setAnimationProgress((prev) => {
-        if (prev < 100) return prev + 1;
-        return 100;
-      });
-    }, 20);
-
-    return () => clearInterval(interval);
-  }, []);
+  const activeStates = Object.keys(statesData).filter(abbr => statesData[abbr].active);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/10">
@@ -89,209 +122,76 @@ export default function NetworkMap() {
               CT1 Nationwide Reach
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
-              Connecting premier contractors from Fraser, Michigan to markets across America
+              From our Fraser, Michigan headquarters to markets across America
             </p>
           </div>
 
-          {/* Network Visualization */}
+          {/* Interactive US Map */}
           <Card className="p-6 md:p-12 bg-card/30 backdrop-blur-sm border-2 relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent"></div>
-            <div className="relative w-full aspect-[16/10]">
-              {/* US Map Background Image */}
-              <div className="absolute inset-0">
-                <img 
-                  src={usMapBackground} 
-                  alt="United States Map" 
-                  className="w-full h-full object-contain"
-                  style={{
-                    opacity: animationProgress >= 20 ? "0.4" : "0",
-                    transition: "opacity 1s"
-                  }}
-                />
-              </div>
+            <div className="relative">
+              <svg viewBox="0 0 960 600" className="w-full h-auto">
+                {/* Render all states */}
+                {Object.entries(statePaths).map(([abbr, path]) => {
+                  const stateData = statesData[abbr];
+                  const isActive = stateData?.active;
+                  const isHovered = hoveredState === abbr;
+                  const isHub = abbr === "MI"; // Michigan is the hub
 
-              {/* SVG Overlay for connections and markers */}
-              <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
-                {/* Connection Lines */}
-                {animationProgress >= 40 && otherCities.map((city, idx) => {
-                  const progress = Math.min(100, Math.max(0, (animationProgress - 40 - idx * 2)));
-                  if (progress === 0) return null;
-
-                  const sharedBusinessLines = city.businessLines.filter(bl => 
-                    hub.businessLines.includes(bl)
-                  );
-                  
-                  return sharedBusinessLines.map((businessLine, lineIdx) => {
-                    const color = businessLines[businessLine].color;
-                    const offset = (lineIdx - sharedBusinessLines.length / 2) * 0.15;
-                    
-                    return (
-                      <g key={`${city.name}-${businessLine}`}>
-                        <line
-                          x1={hub.x}
-                          y1={hub.y}
-                          x2={city.x + offset}
-                          y2={city.y}
-                          stroke={color}
-                          strokeWidth="0.2"
-                          opacity={(progress / 100) * 0.5}
-                          strokeDasharray="0.5,0.5"
-                          onMouseEnter={() => setHoveredLine(`${city.name}-${businessLine}`)}
-                          onMouseLeave={() => setHoveredLine(null)}
-                          style={{
-                            filter: hoveredLine === `${city.name}-${businessLine}` ? `drop-shadow(0 0 2px ${color})` : 'none',
-                            opacity: hoveredLine === `${city.name}-${businessLine}` ? 0.9 : (progress / 100) * 0.5,
-                          }}
-                          className="transition-all duration-300 cursor-pointer"
-                        />
-                        {hoveredLine === `${city.name}-${businessLine}` && (
-                          <line
-                            x1={hub.x}
-                            y1={hub.y}
-                            x2={city.x + offset}
-                            y2={city.y}
-                            stroke={color}
-                            strokeWidth="0.4"
-                            opacity="0.7"
-                            className="animate-pulse pointer-events-none"
-                          />
-                        )}
-                      </g>
-                    );
-                  });
-                })}
-
-                {/* City Markers */}
-                {cities.map((city, idx) => {
-                  const delay = city.isHub ? 30 : 40 + idx * 2;
-                  const progress = Math.min(100, Math.max(0, (animationProgress - delay)));
-                  if (progress === 0) return null;
-
-                  const isHovered = hoveredCity?.name === city.name;
-                  const scale = (progress / 100) * (isHovered ? 1.3 : 1);
-                  
                   return (
-                    <g
-                      key={city.name}
-                      onMouseEnter={() => setHoveredCity(city)}
-                      onMouseLeave={() => setHoveredCity(null)}
-                      className="cursor-pointer transition-transform duration-300"
-                      opacity={progress / 100}
-                    >
-                      {/* Glow effect for hub */}
-                      {city.isHub && (
-                        <circle
-                          cx={city.x}
-                          cy={city.y}
-                          r={3 * scale}
-                          fill="hsl(var(--primary))"
-                          opacity="0.3"
-                          className="animate-pulse"
-                        />
-                      )}
-                      
-                      {/* Building marker */}
-                      <circle
-                        cx={city.x}
-                        cy={city.y}
-                        r={(city.isHub ? 1.8 : 1) * scale}
-                        fill={city.isHub ? "hsl(var(--primary))" : "hsl(var(--foreground))"}
-                        stroke={isHovered ? "hsl(var(--primary))" : "hsl(var(--background))"}
-                        strokeWidth={isHovered ? "0.3" : "0.2"}
+                    <g key={abbr}>
+                      <path
+                        d={path}
+                        fill={
+                          isHub
+                            ? "hsl(var(--primary))"
+                            : isActive
+                            ? "hsl(var(--primary) / 0.4)"
+                            : "hsl(var(--muted))"
+                        }
+                        stroke="hsl(var(--border))"
+                        strokeWidth="1"
+                        className={`transition-all duration-300 ${
+                          isActive ? "cursor-pointer" : ""
+                        }`}
                         style={{
-                          filter: isHovered ? 'drop-shadow(0 0 2px hsl(var(--primary)))' : city.isHub ? 'drop-shadow(0 0 1.5px hsl(var(--primary)))' : 'none',
+                          filter: isHovered
+                            ? "brightness(1.3) drop-shadow(0 0 8px hsl(var(--primary)))"
+                            : isHub
+                            ? "drop-shadow(0 0 6px hsl(var(--primary)))"
+                            : "none",
+                          opacity: isActive ? 1 : 0.3,
                         }}
+                        onMouseEnter={() => isActive && setHoveredState(abbr)}
+                        onMouseLeave={() => setHoveredState(null)}
                       />
-
-                      {/* Building icon */}
-                      {(city.isHub || isHovered) && (
-                        <>
-                          <rect
-                            x={city.x - 0.4 * scale}
-                            y={city.y - 0.8 * scale}
-                            width={0.8 * scale}
-                            height={1.2 * scale}
-                            fill={city.isHub ? "hsl(var(--primary))" : "hsl(var(--foreground))"}
-                            opacity="0.9"
-                          />
-                          <rect
-                            x={city.x - 0.2 * scale}
-                            y={city.y - 0.5 * scale}
-                            width={0.4 * scale}
-                            height={0.4 * scale}
-                            fill="hsl(var(--background))"
-                            opacity="0.7"
-                          />
-                        </>
-                      )}
-                      
-                      {/* City label */}
-                      {(city.isHub || isHovered) && (
-                        <text
-                          x={city.x}
-                          y={city.y - 3}
-                          textAnchor="middle"
-                          fontSize={city.isHub ? "2.5" : "1.8"}
-                          fill="hsl(var(--foreground))"
-                          fontWeight="bold"
-                          className="pointer-events-none"
-                          style={{ 
-                            textShadow: '0 0 4px hsl(var(--background)), 0 0 8px hsl(var(--background))',
-                            filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))'
-                          }}
-                        >
-                          {city.name}
-                        </text>
-                      )}
                     </g>
                   );
                 })}
               </svg>
 
               {/* Hover Tooltip */}
-              {hoveredCity && (
-                <div
-                  className="absolute bg-card/95 backdrop-blur-md border-2 border-border rounded-lg p-4 shadow-2xl pointer-events-none z-50 animate-fade-in"
-                  style={{
-                    left: `${hoveredCity.x}%`,
-                    top: `${hoveredCity.y}%`,
-                    transform: 'translate(-50%, -120%)',
-                  }}
-                >
-                  <div className="flex items-center gap-2 mb-3">
-                    <Building2 className="h-5 w-5 text-primary" />
-                    <div className="font-bold text-lg">{hoveredCity.name}</div>
+              {hoveredState && statesData[hoveredState] && (
+                <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-card/95 backdrop-blur-md border-2 border-border rounded-lg p-4 shadow-2xl z-50 animate-fade-in">
+                  <div className="font-bold text-lg mb-2">
+                    {statesData[hoveredState].name}
                   </div>
-                  <div className="space-y-2">
-                    <div className="text-sm text-muted-foreground font-medium">Service Lines:</div>
-                    <div className="flex flex-wrap gap-2">
-                      {hoveredCity.businessLines.map(bl => (
-                        <div
-                          key={bl}
-                          className="text-xs px-2 py-1 rounded-md font-medium"
-                          style={{ 
-                            backgroundColor: businessLines[bl].color, 
-                            color: 'white',
-                            boxShadow: `0 2px 8px ${businessLines[bl].color}40`
-                          }}
-                        >
-                          {businessLines[bl].name}
-                        </div>
-                      ))}
-                    </div>
+                  <div className="text-sm text-muted-foreground font-medium mb-2">
+                    Service Lines:
                   </div>
-                </div>
-              )}
-
-              {/* Line Hover Tooltip */}
-              {hoveredLine && (
-                <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-card/95 backdrop-blur-md border border-border rounded-lg px-4 py-2 shadow-xl pointer-events-none animate-fade-in">
-                  <div className="text-sm font-semibold flex items-center gap-2">
-                    <div 
-                      className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: businessLines[hoveredLine.split('-')[1] as keyof typeof businessLines]?.color }}
-                    ></div>
-                    {businessLines[hoveredLine.split('-')[1] as keyof typeof businessLines]?.name}
+                  <div className="flex flex-wrap gap-2">
+                    {statesData[hoveredState].businessLines?.map((bl) => (
+                      <div
+                        key={bl}
+                        className="text-xs px-2 py-1 rounded-md font-medium text-white"
+                        style={{
+                          backgroundColor: businessLines[bl].color,
+                          boxShadow: `0 2px 8px ${businessLines[bl].color}40`,
+                        }}
+                      >
+                        {businessLines[bl].name}
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
@@ -303,13 +203,16 @@ export default function NetworkMap() {
             <h3 className="text-xl font-bold mb-4 text-center">Service Lines</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {Object.entries(businessLines).map(([key, value]) => (
-                <Card key={key} className="p-4 bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-colors">
+                <Card
+                  key={key}
+                  className="p-4 bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-colors"
+                >
                   <div className="flex items-center gap-3">
                     <div
                       className="w-4 h-4 rounded-full shadow-lg"
-                      style={{ 
+                      style={{
                         backgroundColor: value.color,
-                        boxShadow: `0 2px 12px ${value.color}60`
+                        boxShadow: `0 2px 12px ${value.color}60`,
                       }}
                     ></div>
                     <span className="text-sm font-medium">{value.name}</span>
@@ -322,11 +225,15 @@ export default function NetworkMap() {
           {/* Stats */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
             <Card className="p-6 text-center bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
-              <div className="text-4xl font-bold text-primary mb-2">{cities.length}</div>
-              <div className="text-muted-foreground">Active Markets</div>
+              <div className="text-4xl font-bold text-primary mb-2">
+                {activeStates.length}
+              </div>
+              <div className="text-muted-foreground">Active States</div>
             </Card>
             <Card className="p-6 text-center bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
-              <div className="text-4xl font-bold text-primary mb-2">{Object.keys(businessLines).length}</div>
+              <div className="text-4xl font-bold text-primary mb-2">
+                {Object.keys(businessLines).length}
+              </div>
               <div className="text-muted-foreground">Service Lines</div>
             </Card>
             <Card className="p-6 text-center bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
@@ -342,7 +249,8 @@ export default function NetworkMap() {
                 Expand Your Reach with CT1
               </h2>
               <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-                Join our nationwide network and connect with industry-leading contractors across America
+                Join our nationwide network and connect with industry-leading
+                contractors across America
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link to="/contact">
