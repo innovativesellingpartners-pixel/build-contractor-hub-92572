@@ -36,25 +36,12 @@ export function TierCheckout({ tier, isOpen, onClose, onPaymentSuccess }: TierCh
   const handlePayment = async () => {
     setLoading(true);
     try {
-      // For testing: simulate successful payment
-      // TODO: Replace with actual Clover integration when keys are added
       console.log('Processing payment:', {
         amount: calculatePrice() * 100,
         tier_id: tier.id,
         billing_cycle: billingCycle,
       });
 
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Simulate success for now
-      toast({
-        title: 'Payment successful!',
-        description: 'Redirecting to account setup...',
-      });
-      onPaymentSuccess(tier.id, billingCycle);
-
-      /* When Clover keys are added, uncomment this:
       const { data, error } = await supabase.functions.invoke('process-clover-payment', {
         body: {
           amount: calculatePrice() * 100,
@@ -65,20 +52,20 @@ export function TierCheckout({ tier, isOpen, onClose, onPaymentSuccess }: TierCh
 
       if (error) throw error;
 
-      if (data.success) {
+      if (data?.success) {
         toast({
           title: 'Payment successful!',
           description: 'Redirecting to account setup...',
         });
         onPaymentSuccess(tier.id, billingCycle);
       } else {
-        throw new Error(data.message || 'Payment failed');
+        throw new Error(data?.message || 'Payment failed');
       }
-      */
     } catch (error: any) {
+      console.error('Payment error:', error);
       toast({
         title: 'Payment failed',
-        description: error.message,
+        description: error.message || 'Unable to process payment. Please try again.',
         variant: 'destructive',
       });
     } finally {

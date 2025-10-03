@@ -16,33 +16,44 @@ serve(async (req) => {
     console.log('Processing Clover payment:', { amount, tier_id, billing_cycle });
 
     // Get Clover credentials from environment
-    const cloverApiKey = Deno.env.get('CLOVER_API_KEY');
+    const cloverApiToken = Deno.env.get('CLOVER_API_TOKEN');
     const cloverMerchantId = Deno.env.get('CLOVER_MERCHANT_ID');
 
-    if (!cloverApiKey || !cloverMerchantId) {
+    if (!cloverApiToken || !cloverMerchantId) {
       throw new Error('Clover credentials not configured');
     }
 
-    // For now, return a simulated success response
-    // TODO: Integrate with actual Clover API
-    // const cloverResponse = await fetch(`https://api.clover.com/v3/merchants/${cloverMerchantId}/charges`, {
-    //   method: 'POST',
-    //   headers: {
-    //     'Authorization': `Bearer ${cloverApiKey}`,
-    //     'Content-Type': 'application/json',
-    //   },
-    //   body: JSON.stringify({
-    //     amount,
-    //     currency: 'usd',
-    //   }),
-    // });
+    // Call Clover API to create a charge
+    const cloverResponse = await fetch(
+      `https://api.clover.com/v3/merchants/${cloverMerchantId}/charges`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${cloverApiToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount,
+          currency: 'usd',
+          source: 'clover', // This may need to be adjusted based on your Clover setup
+          description: `${tier_id} tier - ${billing_cycle} billing`,
+        }),
+      }
+    );
 
-    console.log('Payment processed successfully');
+    const cloverData = await cloverResponse.json();
+
+    if (!cloverResponse.ok) {
+      console.error('Clover API error:', cloverData);
+      throw new Error(cloverData.message || 'Clover payment failed');
+    }
+
+    console.log('Payment processed successfully:', cloverData.id);
 
     return new Response(
       JSON.stringify({
         success: true,
-        payment_id: `clover_${Date.now()}`, // Replace with actual Clover payment ID
+        payment_id: cloverData.id,
         message: 'Payment processed successfully',
       }),
       {
