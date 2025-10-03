@@ -1,11 +1,28 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, ArrowLeft, Star, Zap, Crown } from "lucide-react";
 import ct1Logo from "@/assets/ct1-logo-main.png";
+import { TierCheckout } from "@/components/TierCheckout";
+import { SignupAfterPayment } from "@/components/SignupAfterPayment";
 
 export function Pricing() {
+  const [selectedTier, setSelectedTier] = useState<{ id: string; name: string; price: number } | null>(null);
+  const [showSignup, setShowSignup] = useState(false);
+  const [paymentData, setPaymentData] = useState<{ tierId: string; billingCycle: string; paymentId: string } | null>(null);
+
+  const handlePaymentSuccess = (tierId: string, billingCycle: string) => {
+    setPaymentData({
+      tierId,
+      billingCycle,
+      paymentId: `clover_${Date.now()}`,
+    });
+    setSelectedTier(null);
+    setShowSignup(true);
+  };
+
   const tiers = [
     {
       id: "launch",
@@ -167,18 +184,17 @@ export function Pricing() {
                         Coming Soon
                       </Button>
                     ) : (
-                      <Link to="/subscribe" className="block">
-                        <Button 
-                          className={`w-full ${
-                            tier.popular 
-                              ? "bg-primary text-primary-foreground hover:bg-primary/90" 
-                              : ""
-                          }`}
-                          variant={tier.popular ? "default" : "outline"}
-                        >
-                          Get Started
-                        </Button>
-                      </Link>
+                      <Button 
+                        onClick={() => setSelectedTier({ id: tier.id, name: tier.name, price: tier.price })}
+                        className={`w-full ${
+                          tier.popular 
+                            ? "bg-primary text-primary-foreground hover:bg-primary/90" 
+                            : ""
+                        }`}
+                        variant={tier.popular ? "default" : "outline"}
+                      >
+                        Sign up for {tier.name}
+                      </Button>
                     )}
                   </div>
                 </CardContent>
@@ -211,6 +227,24 @@ export function Pricing() {
           </div>
         </div>
       </section>
+
+      {selectedTier && (
+        <TierCheckout
+          tier={selectedTier}
+          isOpen={!!selectedTier}
+          onClose={() => setSelectedTier(null)}
+          onPaymentSuccess={handlePaymentSuccess}
+        />
+      )}
+
+      {showSignup && paymentData && (
+        <SignupAfterPayment
+          isOpen={showSignup}
+          tierId={paymentData.tierId}
+          billingCycle={paymentData.billingCycle}
+          cloverPaymentId={paymentData.paymentId}
+        />
+      )}
     </div>
   );
 }

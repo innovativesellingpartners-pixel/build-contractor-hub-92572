@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { useUserTier } from "@/hooks/useUserTier";
 import { useToast } from "@/hooks/use-toast";
 import { TrainingHub } from "@/components/TrainingHub";
 import { ContractorCRM } from "@/components/contractor/ContractorCRM";
@@ -46,6 +47,7 @@ type ActiveSection = 'training' | 'crm' | 'schedule' | 'marketplace' | 'leads' |
 export function Dashboard() {
   const { user, profile, signOut } = useAuth();
   const { isAdmin } = useAdminAuth();
+  const { tierFeatures, hasFullAccess } = useUserTier();
   const { toast } = useToast();
   const [activeSection, setActiveSection] = useState<ActiveSection>('training');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -93,10 +95,14 @@ export function Dashboard() {
                 </SheetTrigger>
                 <SheetContent side="left" className="w-72 p-0 overflow-y-auto">
                   <div className="py-4">
-                    <SidebarNav activeSection={activeSection} setActiveSection={(section) => {
-                      setActiveSection(section);
-                      setMobileMenuOpen(false);
-                    }} />
+                    <SidebarNav 
+                      activeSection={activeSection} 
+                      setActiveSection={(section) => {
+                        setActiveSection(section);
+                        setMobileMenuOpen(false);
+                      }} 
+                      tierFeatures={tierFeatures}
+                    />
                   </div>
                 </SheetContent>
               </Sheet>
@@ -222,7 +228,7 @@ export function Dashboard() {
         {/* Left Sidebar Navigation - Hidden on mobile */}
         <div className="hidden lg:block w-64 flex-shrink-0">
           <div className="bg-card border border-border/50 rounded-xl shadow-md p-3 sticky top-24">
-            <SidebarNav activeSection={activeSection} setActiveSection={setActiveSection} />
+            <SidebarNav activeSection={activeSection} setActiveSection={setActiveSection} tierFeatures={tierFeatures} />
           </div>
         </div>
 
@@ -447,49 +453,91 @@ export function Dashboard() {
 interface SidebarNavProps {
   activeSection: ActiveSection;
   setActiveSection: (section: ActiveSection) => void;
+  tierFeatures: {
+    trainingHub: boolean;
+    crm: boolean;
+    monthlyCall: boolean;
+    insurance: boolean;
+    podcast: boolean;
+    standards: boolean;
+    myAccount: boolean;
+    home: boolean;
+    leads: boolean;
+    aiAssistant: boolean;
+    marketplace: boolean;
+  };
 }
 
-function SidebarNav({ activeSection, setActiveSection }: SidebarNavProps) {
+function SidebarNav({ activeSection, setActiveSection, tierFeatures }: SidebarNavProps) {
   return (
     <nav className="space-y-1 p-3">
-      <Button
-        variant={activeSection === 'training' ? 'default' : 'ghost'}
-        className={`w-full justify-start transition-all ${
-          activeSection === 'training' 
-            ? 'shadow-md' 
-            : 'hover:bg-muted/80 hover:translate-x-1'
-        }`}
-        onClick={() => setActiveSection('training')}
-      >
-        <BookOpen className="h-4 w-4 mr-3" />
-        5-Star Training
-      </Button>
+      {tierFeatures.trainingHub && (
+        <Button
+          variant={activeSection === 'training' ? 'default' : 'ghost'}
+          className={`w-full justify-start transition-all ${
+            activeSection === 'training' 
+              ? 'shadow-md' 
+              : 'hover:bg-muted/80 hover:translate-x-1'
+          }`}
+          onClick={() => setActiveSection('training')}
+        >
+          <BookOpen className="h-4 w-4 mr-3" />
+          5-Star Training
+        </Button>
+      )}
       
-      <Button
-        variant={activeSection === 'crm' ? 'default' : 'ghost'}
-        className={`w-full justify-start transition-all ${
-          activeSection === 'crm' 
-            ? 'shadow-md' 
-            : 'hover:bg-muted/80 hover:translate-x-1'
-        }`}
-        onClick={() => setActiveSection('crm')}
-      >
-        <Briefcase className="h-4 w-4 mr-3" />
-        CRM/Jobs
-      </Button>
+      {tierFeatures.crm && (
+        <Button
+          variant={activeSection === 'crm' ? 'default' : 'ghost'}
+          className={`w-full justify-start transition-all ${
+            activeSection === 'crm' 
+              ? 'shadow-md' 
+              : 'hover:bg-muted/80 hover:translate-x-1'
+          }`}
+          onClick={() => setActiveSection('crm')}
+        >
+          <Briefcase className="h-4 w-4 mr-3" />
+          CRM/Jobs
+        </Button>
+      )}
+
+      {tierFeatures.monthlyCall && (
+        <Button
+          variant="ghost"
+          className="w-full justify-start transition-all hover:bg-muted/80 hover:translate-x-1"
+          asChild
+        >
+          <a href="https://calendly.com/innovativesellingpartners/contractor-1-1-with-ct1-trainer" target="_blank" rel="noopener noreferrer">
+            <Phone className="h-4 w-4 mr-3" />
+            Monthly 1:1 Call
+          </a>
+        </Button>
+      )}
       
-      <Button
-        variant={activeSection === 'leads' ? 'default' : 'ghost'}
-        className={`w-full justify-start transition-all ${
-          activeSection === 'leads' 
-            ? 'shadow-md' 
-            : 'hover:bg-muted/80 hover:translate-x-1'
-        }`}
-        onClick={() => setActiveSection('leads')}
-      >
-        <Users className="h-4 w-4 mr-3" />
-        Leads
-      </Button>
+      {tierFeatures.leads && (
+        <Button
+          variant={activeSection === 'leads' ? 'default' : 'ghost'}
+          className={`w-full justify-start transition-all ${
+            activeSection === 'leads' 
+              ? 'shadow-md' 
+              : 'hover:bg-muted/80 hover:translate-x-1'
+          }`}
+          onClick={() => setActiveSection('leads')}
+        >
+          <Users className="h-4 w-4 mr-3" />
+          Leads
+        </Button>
+      )}
+
+      {tierFeatures.aiAssistant && (
+        <Button
+          variant="ghost"
+          className="w-full justify-start transition-all hover:bg-muted/80 hover:translate-x-1"
+        >
+          <Bot className="h-4 w-4 mr-3" />
+          AI Voice Assistant
+        </Button>
+      )}
       
       <Button
         variant={activeSection === 'quickbooks' ? 'default' : 'ghost'}
@@ -504,79 +552,91 @@ function SidebarNav({ activeSection, setActiveSection }: SidebarNavProps) {
         QuickBooks
       </Button>
       
-      <Button
-        variant={activeSection === 'insurance' ? 'default' : 'ghost'}
-        className={`w-full justify-start transition-all ${
-          activeSection === 'insurance' 
-            ? 'shadow-md' 
-            : 'hover:bg-muted/80 hover:translate-x-1'
-        }`}
-        onClick={() => setActiveSection('insurance')}
-      >
-        <Shield className="h-4 w-4 mr-3" />
-        Insurance
-      </Button>
+      {tierFeatures.insurance && (
+        <Button
+          variant={activeSection === 'insurance' ? 'default' : 'ghost'}
+          className={`w-full justify-start transition-all ${
+            activeSection === 'insurance' 
+              ? 'shadow-md' 
+              : 'hover:bg-muted/80 hover:translate-x-1'
+          }`}
+          onClick={() => setActiveSection('insurance')}
+        >
+          <Shield className="h-4 w-4 mr-3" />
+          Insurance
+        </Button>
+      )}
       
-      <Button
-        variant={activeSection === 'marketplace' ? 'default' : 'ghost'}
-        className={`w-full justify-start transition-all ${
-          activeSection === 'marketplace' 
-            ? 'shadow-md' 
-            : 'hover:bg-muted/80 hover:translate-x-1'
-        }`}
-        onClick={() => setActiveSection('marketplace')}
-      >
-        <Store className="h-4 w-4 mr-3" />
-        Marketplace
-      </Button>
+      {tierFeatures.marketplace && (
+        <Button
+          variant={activeSection === 'marketplace' ? 'default' : 'ghost'}
+          className={`w-full justify-start transition-all ${
+            activeSection === 'marketplace' 
+              ? 'shadow-md' 
+              : 'hover:bg-muted/80 hover:translate-x-1'
+          }`}
+          onClick={() => setActiveSection('marketplace')}
+        >
+          <Store className="h-4 w-4 mr-3" />
+          Marketplace
+        </Button>
+      )}
       
-      <Button
-        variant="ghost"
-        className="w-full justify-start transition-all hover:bg-muted/80 hover:translate-x-1"
-        asChild
-      >
-        <a href="https://lovable.dev/projects/eb889344-3c18-4b7f-b049-eddbd3665869" target="_blank" rel="noopener noreferrer">
-          <Mic className="h-4 w-4 mr-3" />
-          Podcast
-        </a>
-      </Button>
+      {tierFeatures.podcast && (
+        <Button
+          variant="ghost"
+          className="w-full justify-start transition-all hover:bg-muted/80 hover:translate-x-1"
+          asChild
+        >
+          <a href="https://lovable.dev/projects/eb889344-3c18-4b7f-b049-eddbd3665869" target="_blank" rel="noopener noreferrer">
+            <Mic className="h-4 w-4 mr-3" />
+            Podcast
+          </a>
+        </Button>
+      )}
       
-      <Button
-        variant="ghost"
-        className="w-full justify-start transition-all hover:bg-muted/80 hover:translate-x-1"
-        asChild
-      >
-        <a href="/core-values">
-          <Award className="h-4 w-4 mr-3" />
-          CT1 Contractor Standards
-        </a>
-      </Button>
+      {tierFeatures.standards && (
+        <Button
+          variant="ghost"
+          className="w-full justify-start transition-all hover:bg-muted/80 hover:translate-x-1"
+          asChild
+        >
+          <a href="/core-values">
+            <Award className="h-4 w-4 mr-3" />
+            CT1 Contractor Standards
+          </a>
+        </Button>
+      )}
       
       <div className="my-2 border-t border-border/50" />
       
-      <Button
-        variant={activeSection === 'account' ? 'default' : 'ghost'}
-        className={`w-full justify-start transition-all ${
-          activeSection === 'account' 
-            ? 'shadow-md' 
-            : 'hover:bg-muted/80 hover:translate-x-1'
-        }`}
-        onClick={() => setActiveSection('account')}
-      >
-        <User className="h-4 w-4 mr-3" />
-        My Account
-      </Button>
+      {tierFeatures.myAccount && (
+        <Button
+          variant={activeSection === 'account' ? 'default' : 'ghost'}
+          className={`w-full justify-start transition-all ${
+            activeSection === 'account' 
+              ? 'shadow-md' 
+              : 'hover:bg-muted/80 hover:translate-x-1'
+          }`}
+          onClick={() => setActiveSection('account')}
+        >
+          <User className="h-4 w-4 mr-3" />
+          My Account
+        </Button>
+      )}
       
-      <Button
-        variant="ghost"
-        className="w-full justify-start transition-all hover:bg-muted/80 hover:translate-x-1"
-        asChild
-      >
-        <a href="/">
-          <Building2 className="h-4 w-4 mr-3" />
-          CT1 Home
-        </a>
-      </Button>
+      {tierFeatures.home && (
+        <Button
+          variant="ghost"
+          className="w-full justify-start transition-all hover:bg-muted/80 hover:translate-x-1"
+          asChild
+        >
+          <a href="/">
+            <Building2 className="h-4 w-4 mr-3" />
+            CT1 Home
+          </a>
+        </Button>
+      )}
     </nav>
   );
 }
