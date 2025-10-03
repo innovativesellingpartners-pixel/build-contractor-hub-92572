@@ -17,18 +17,21 @@ export default function NetworkMap() {
   useEffect(() => {
     if (!canvasRef.current) return;
 
+    let cleanup: (() => void) | undefined;
+
     // Create script element for Three.js
     const script = document.createElement("script");
     script.src = "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js";
     script.async = true;
     
     script.onload = () => {
-      initThreeScene();
+      cleanup = initThreeScene();
     };
     
     document.body.appendChild(script);
 
     return () => {
+      if (cleanup) cleanup();
       if (document.body.contains(script)) {
         document.body.removeChild(script);
       }
