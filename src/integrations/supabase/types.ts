@@ -108,6 +108,27 @@ export type Database = {
           },
         ]
       }
+      marketplace_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       marketplace_services: {
         Row: {
           category: string | null
@@ -115,9 +136,16 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          is_active: boolean | null
+          is_featured: boolean | null
+          location: string | null
           logo_url: string | null
           name: string
           price_info: string | null
+          price_range: string | null
+          provider_email: string | null
+          provider_name: string | null
+          title: string | null
           updated_at: string
         }
         Insert: {
@@ -126,9 +154,16 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          location?: string | null
           logo_url?: string | null
           name: string
           price_info?: string | null
+          price_range?: string | null
+          provider_email?: string | null
+          provider_name?: string | null
+          title?: string | null
           updated_at?: string
         }
         Update: {
@@ -137,9 +172,16 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          location?: string | null
           logo_url?: string | null
           name?: string
           price_info?: string | null
+          price_range?: string | null
+          provider_email?: string | null
+          provider_name?: string | null
+          title?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -159,6 +201,7 @@ export type Database = {
           tax_id: string | null
           trade: string | null
           updated_at: string
+          user_id: string
           username: string | null
           zip_code: string | null
         }
@@ -176,6 +219,7 @@ export type Database = {
           tax_id?: string | null
           trade?: string | null
           updated_at?: string
+          user_id: string
           username?: string | null
           zip_code?: string | null
         }
@@ -193,6 +237,7 @@ export type Database = {
           tax_id?: string | null
           trade?: string | null
           updated_at?: string
+          user_id?: string
           username?: string | null
           zip_code?: string | null
         }
@@ -374,6 +419,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_lesson_notes: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          lesson_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          lesson_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          lesson_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_lesson_progress: {
         Row: {
