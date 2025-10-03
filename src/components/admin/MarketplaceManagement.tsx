@@ -27,7 +27,7 @@ type Service = {
   is_featured: boolean;
   is_active: boolean;
   created_at: string;
-  marketplace_categories?: { name: string };
+  marketplace_categories?: { name: string } | null;
 };
 
 export const MarketplaceManagement = () => {
@@ -337,7 +337,7 @@ export const MarketplaceManagement = () => {
                     </div>
                   </TableCell>
                   <TableCell>
-                    {service.marketplace_categories?.name || 'Uncategorized'}
+                    {(service as any).marketplace_categories?.name || 'Uncategorized'}
                   </TableCell>
                   <TableCell>{service.price_range || 'N/A'}</TableCell>
                   <TableCell>

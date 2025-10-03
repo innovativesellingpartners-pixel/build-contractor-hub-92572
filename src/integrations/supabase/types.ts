@@ -132,6 +132,7 @@ export type Database = {
       marketplace_services: {
         Row: {
           category: string | null
+          category_id: string | null
           contact_info: string | null
           created_at: string
           description: string | null
@@ -150,6 +151,7 @@ export type Database = {
         }
         Insert: {
           category?: string | null
+          category_id?: string | null
           contact_info?: string | null
           created_at?: string
           description?: string | null
@@ -168,6 +170,7 @@ export type Database = {
         }
         Update: {
           category?: string | null
+          category_id?: string | null
           contact_info?: string | null
           created_at?: string
           description?: string | null
@@ -184,7 +187,15 @@ export type Database = {
           title?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_services_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
