@@ -14,13 +14,112 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          business_address: string | null
+          city: string | null
+          company_name: string | null
+          contact_name: string | null
+          created_at: string
+          id: string
+          logo_url: string | null
+          phone: string | null
+          state: string | null
+          subscription_tier: string | null
+          tax_id: string | null
+          trade: string | null
+          updated_at: string
+          username: string | null
+          zip_code: string | null
+        }
+        Insert: {
+          business_address?: string | null
+          city?: string | null
+          company_name?: string | null
+          contact_name?: string | null
+          created_at?: string
+          id: string
+          logo_url?: string | null
+          phone?: string | null
+          state?: string | null
+          subscription_tier?: string | null
+          tax_id?: string | null
+          trade?: string | null
+          updated_at?: string
+          username?: string | null
+          zip_code?: string | null
+        }
+        Update: {
+          business_address?: string | null
+          city?: string | null
+          company_name?: string | null
+          contact_name?: string | null
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          phone?: string | null
+          state?: string | null
+          subscription_tier?: string | null
+          tax_id?: string | null
+          trade?: string | null
+          updated_at?: string
+          username?: string | null
+          zip_code?: string | null
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          billing_cycle: string
+          clover_payment_id: string | null
+          created_at: string
+          expires_at: string | null
+          id: string
+          started_at: string
+          status: string
+          tier_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          billing_cycle: string
+          clover_payment_id?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          started_at?: string
+          status?: string
+          tier_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          billing_cycle?: string
+          clover_payment_id?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          started_at?: string
+          status?: string
+          tier_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_tier: {
+        Args: { user_id: string }
+        Returns: string
+      }
+      has_full_access: {
+        Args: { user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
