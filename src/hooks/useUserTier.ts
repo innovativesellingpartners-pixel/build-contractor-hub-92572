@@ -21,21 +21,28 @@ export const useUserTier = () => {
         return { tier_id: 'full_access', billing_cycle: 'N/A', status: 'active' } as Subscription;
       }
 
-      const { data, error } = await supabase
-        .from('subscriptions' as any)
-        .select('tier_id, billing_cycle, status')
-        .eq('user_id', user.id)
-        .eq('status', 'active')
-        .maybeSingle();
+      try {
+        const { data, error } = await supabase
+          .from('subscriptions' as any)
+          .select('tier_id, billing_cycle, status')
+          .eq('user_id', user.id)
+          .eq('status', 'active')
+          .maybeSingle();
 
-      if (error) {
-        console.error('Error fetching user tier:', error);
+        if (error) {
+          // Table might not exist yet - return null gracefully
+          console.error('Error fetching user tier:', error);
+          return null;
+        }
+
+        return (data as unknown as Subscription) || null;
+      } catch (error) {
+        console.error('Error in tier query:', error);
         return null;
       }
-
-      return (data as unknown as Subscription) || null;
     },
     enabled: !!user?.id,
+    retry: false, // Don't retry if table doesn't exist
   });
 
   const hasFullAccess = user?.email?.endsWith('@myct1.com') || false;
