@@ -1,55 +1,49 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Building2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import ct1Logo from "@/assets/ct1-logo-main.png";
-import usMapBackground from "@/assets/us-map-reference.webp";
 
 // Business lines with colors
 const businessLines = {
-  construction: { name: "Construction", color: "#e31e24" },
-  training: { name: "Training", color: "#f59e0b" },
-  equipment: { name: "Equipment", color: "#3b82f6" },
-  consulting: { name: "Consulting", color: "#8b5cf6" },
+  construction: { name: "Construction", color: "hsl(var(--primary))" },
+  training: { name: "Training", color: "hsl(35, 91%, 51%)" },
+  equipment: { name: "Equipment", color: "hsl(217, 91%, 60%)" },
+  consulting: { name: "Consulting", color: "hsl(258, 77%, 62%)" },
 };
 
-type City = {
+type BusinessLine = keyof typeof businessLines;
+
+// States with CT1 presence
+type StateData = {
   name: string;
-  x: number; // Percentage position on map
-  y: number; // Percentage position on map
-  isHub?: boolean;
-  businessLines: (keyof typeof businessLines)[];
+  abbr: string;
+  active: boolean;
+  businessLines?: BusinessLine[];
 };
 
-// Cities positioned geographically on the US map
-const cities: City[] = [
-  // Hub - Michigan
-  { name: "Fraser, MI", x: 70, y: 28, isHub: true, businessLines: ["construction", "training", "equipment", "consulting"] },
-  // Local Michigan Markets
-  { name: "Detroit", x: 70.5, y: 29, businessLines: ["construction", "equipment"] },
-  { name: "Grand Rapids", x: 69, y: 27, businessLines: ["construction", "training"] },
-  { name: "Ann Arbor", x: 69.5, y: 29.5, businessLines: ["training", "consulting"] },
-  { name: "Lansing", x: 69.3, y: 28, businessLines: ["construction"] },
-  // East Coast
-  { name: "New York", x: 82, y: 25, businessLines: ["construction", "consulting"] },
-  { name: "Philadelphia", x: 81, y: 28, businessLines: ["training", "consulting"] },
-  { name: "Boston", x: 84, y: 22, businessLines: ["consulting", "training"] },
-  // Southeast
-  { name: "Miami", x: 78, y: 63, businessLines: ["construction", "consulting"] },
-  // Midwest
-  { name: "Chicago", x: 67, y: 29, businessLines: ["construction", "training"] },
-  // South Central
-  { name: "Dallas", x: 50, y: 52, businessLines: ["construction", "equipment"] },
-  { name: "Houston", x: 51, y: 58, businessLines: ["equipment", "consulting"] },
-  { name: "San Antonio", x: 49, y: 60, businessLines: ["construction"] },
-  // Mountain West
-  { name: "Denver", x: 43, y: 31, businessLines: ["construction", "equipment"] },
-  { name: "Phoenix", x: 33, y: 52, businessLines: ["construction"] },
-  // West Coast
-  { name: "Seattle", x: 18, y: 18, businessLines: ["training", "equipment"] },
-  { name: "Los Angeles", x: 20, y: 50, businessLines: ["construction", "equipment", "consulting"] },
-];
+const statesData: Record<string, StateData> = {
+  MI: { name: "Michigan", abbr: "MI", active: true, businessLines: ["construction", "training", "equipment", "consulting"] },
+  NY: { name: "New York", abbr: "NY", active: true, businessLines: ["construction", "consulting"] },
+  PA: { name: "Pennsylvania", abbr: "PA", active: true, businessLines: ["training", "consulting"] },
+  MA: { name: "Massachusetts", abbr: "MA", active: true, businessLines: ["consulting", "training"] },
+  FL: { name: "Florida", abbr: "FL", active: true, businessLines: ["construction", "consulting"] },
+  IL: { name: "Illinois", abbr: "IL", active: true, businessLines: ["construction", "training"] },
+  TX: { name: "Texas", abbr: "TX", active: true, businessLines: ["construction", "equipment"] },
+  CO: { name: "Colorado", abbr: "CO", active: true, businessLines: ["construction", "equipment"] },
+  AZ: { name: "Arizona", abbr: "AZ", active: true, businessLines: ["construction"] },
+  WA: { name: "Washington", abbr: "WA", active: true, businessLines: ["training", "equipment"] },
+  CA: { name: "California", abbr: "CA", active: true, businessLines: ["construction", "equipment", "consulting"] },
+};
+
+// Simplified US state paths (all 50 states + DC)
+const statePaths: Record<string, string> = {
+  AL: "M774 394l2-38-1-9-2-12-3-3-4-1-10 0-14-1-14-2-13-1-16-1-1 11 0 11 0 13 1 16 4 17 4 13 5 13 6 11 4 7 4 5 5 4 9-1 8-1 8 0 7 0 11 0 8-1 4-6 2-10 2-17 1-12-1-11Z",
+  AK: "M133 450l3-1 3 0 2 1 2 2 1 3 0 3-2 3-3 2-3 0-3-1-2-2-1-3 0-3 2-3 2-1Zm40-10l3-1 4 1 2 2 1 3-1 3-2 2-3 1-4-1-2-2-1-3 1-3 2-2Zm-60-5l3 0 3 1 1 2 1 3-1 3-2 2-3 1-3 0-2-2-1-3 0-3 2-2 2-1Z",
+  AZ: "M197 282l0-19-1-19-1-22-2-29-3-31-4-38-5-31-32 6-32 7-33 7-33 7-33 7-1 3 0 4 1 9 2 17 3 20 5 28 6 31 7 32 8 32 8 30 21-4 20-4 20-4 20-4 19-4 20-4 20-4Z",
+  AR: "M586 313l1-6 2-7 2-7 3-7 3-5 3-5 3-3 6-5-1-2-2-3-2-2-2-2-23-4-22-4-15-3-15-2-12-2-6-1-4 0-1 6-1 12-1 13-1 13-1 10-1 4-1 2-1 1-2 1-3 0-3 1-1 1-1 3-1 4 0 13 0 13 1 13 1 12 1 13 1 13 1 13 26 3 27 4 26 4 26 3 1-10 1-12 2-17 2-18 1-10 1-10 0-11-1-11-1-10-2-11Z",
+  CA: "M96 68l-3 18-4 20-5 23-7 29-8 32-9 35-10 39-11 42-12 45-12 47-8 30 3 3 4 1 5 0 8 1 6 2 5 3 4 4 2 3 2 4 2 5 3 8 4 12 5 16 7 20 7 21 4 10 4 7 5 5 6 3 7 2 16 2 12 1 3-4 2-5 2-8 1-10 1-13 1-17 1-22 1-27 0-32 0-30 0-24 1-19 1-14 2-11 3-6 20-4 20-5 21-4 20-4 20-4 20-4 20-5 21-4 20-4 20-5-27-43-24-37-11-18-4-7-4-8-4-10-4-13-3-14-3-16-2-18-1-20-1-22 0-25 0-26 1-28 2-27-8-3-9-1-10 1-9 2-8 4-7 5-8 9-9 11-6 8-4 6-7 10-8 13-5 9Z",
 
 export default function NetworkMap() {
   const [hoveredCity, setHoveredCity] = useState<City | null>(null);
