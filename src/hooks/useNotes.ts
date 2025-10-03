@@ -22,7 +22,7 @@ export const useUserNotes = (lessonId: string, enrollmentId: string) => {
         .select('*')
         .eq('lesson_id', lessonId)
         .eq('enrollment_id', enrollmentId)
-        .maybeSingle();
+        .maybeSingle() as any;
 
       if (error) throw error;
       return data;

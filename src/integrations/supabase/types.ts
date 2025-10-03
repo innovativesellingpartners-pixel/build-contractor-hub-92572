@@ -435,6 +435,7 @@ export type Database = {
         Row: {
           content: string
           created_at: string
+          enrollment_id: string | null
           id: string
           lesson_id: string
           updated_at: string
@@ -443,6 +444,7 @@ export type Database = {
         Insert: {
           content: string
           created_at?: string
+          enrollment_id?: string | null
           id?: string
           lesson_id: string
           updated_at?: string
@@ -451,6 +453,7 @@ export type Database = {
         Update: {
           content?: string
           created_at?: string
+          enrollment_id?: string | null
           id?: string
           lesson_id?: string
           updated_at?: string
