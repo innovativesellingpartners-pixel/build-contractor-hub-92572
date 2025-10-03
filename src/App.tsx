@@ -21,6 +21,7 @@ import { TrainingModulePage } from "@/components/TrainingModulePage";
 import { CoursePlayer } from "@/components/CoursePlayer";
 import Subscribe from "./pages/Subscribe";
 import NotFound from "./pages/NotFound";
+import NetworkMap from "./pages/NetworkMap";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminLayout } from "@/components/admin/AdminLayout";
@@ -54,8 +55,9 @@ const App = () => (
             <Route path="/business-suite/insurance" element={<Insurance />} />
             <Route path="/marketplace" element={<Marketplace />} />
             <Route path="/about" element={<About />} />
-            <Route path="/what-we-do" element={<WhatWeDo />} />
-            <Route path="/core-values" element={<CoreValues />} />
+          <Route path="/what-we-do" element={<WhatWeDo />} />
+          <Route path="/core-values" element={<CoreValues />} />
+          <Route path="/network-map" element={<NetworkMap />} />
             <Route path="/trades-we-serve" element={<TradesWeServe />} />
             <Route path="/blog-podcast" element={<BlogPodcast />} />
             <Route path="/legal/terms" element={<Terms />} />
