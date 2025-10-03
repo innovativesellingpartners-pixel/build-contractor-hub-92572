@@ -85,6 +85,34 @@ export default function NetworkMap() {
             <div className="relative w-full aspect-[16/10] bg-gradient-to-br from-muted/30 to-muted/10 rounded-lg overflow-hidden">
               {/* SVG Map */}
               <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+                {/* US Map Outline - Simplified */}
+                <g opacity="0.15" stroke="hsl(var(--foreground))" strokeWidth="0.3" fill="hsl(var(--muted))">
+                  {/* West Coast */}
+                  <path d="M 10 30 L 12 25 L 13 28 L 12 35 L 14 40 L 16 45 L 18 52 L 17 58 L 15 62 L 13 60 L 11 55 L 10 48 L 9 42 L 10 35 Z" />
+                  {/* Mountain States */}
+                  <path d="M 18 52 L 20 48 L 25 47 L 28 50 L 30 52 L 28 58 L 25 60 L 22 58 L 19 56 Z" />
+                  {/* Southwest */}
+                  <path d="M 18 58 L 22 60 L 28 62 L 32 68 L 35 72 L 33 75 L 28 73 L 23 70 L 20 66 L 17 62 Z" />
+                  {/* Texas */}
+                  <path d="M 33 75 L 38 76 L 42 74 L 45 70 L 48 68 L 48 72 L 45 78 L 42 80 L 38 82 L 35 80 L 32 77 Z" />
+                  {/* Great Plains */}
+                  <path d="M 28 50 L 35 48 L 40 50 L 42 52 L 40 58 L 38 62 L 35 65 L 32 68 L 30 65 L 28 60 L 28 55 Z" />
+                  {/* Midwest */}
+                  <path d="M 40 50 L 48 48 L 52 50 L 50 55 L 48 58 L 45 60 L 42 58 L 40 55 Z" />
+                  {/* Great Lakes */}
+                  <path d="M 48 42 L 52 40 L 56 42 L 58 45 L 56 48 L 52 50 L 48 48 Z" />
+                  {/* Northeast */}
+                  <path d="M 65 35 L 70 33 L 75 35 L 76 38 L 74 42 L 70 44 L 65 42 L 63 38 Z" />
+                  {/* Mid-Atlantic */}
+                  <path d="M 63 42 L 68 44 L 72 46 L 73 50 L 70 52 L 65 50 L 62 48 Z" />
+                  {/* Southeast */}
+                  <path d="M 55 55 L 60 58 L 65 62 L 68 68 L 70 75 L 68 78 L 65 80 L 60 78 L 55 72 L 52 65 L 50 60 L 52 56 Z" />
+                  {/* Florida */}
+                  <path d="M 65 78 L 68 82 L 67 88 L 65 90 L 63 88 L 62 82 L 63 78 Z" />
+                  {/* Michigan (emphasized) */}
+                  <path d="M 48 40 L 52 38 L 56 40 L 58 43 L 56 46 L 52 48 L 48 46 L 46 43 Z" strokeWidth="0.5" stroke="hsl(var(--primary))" opacity="0.3" />
+                </g>
+                
                 {/* Connection Lines */}
                 {allMarkets.map((market, index) => {
                   if (index < animatedConnections) {
