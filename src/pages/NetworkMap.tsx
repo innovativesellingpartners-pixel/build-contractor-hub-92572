@@ -4,6 +4,7 @@ import { ArrowLeft, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import ct1Logo from "@/assets/ct1-logo-main.png";
+import usMapBackground from "@/assets/us-map-reference.webp";
 
 // Business lines with colors
 const businessLines = {
@@ -24,30 +25,30 @@ type City = {
 // Cities positioned geographically on the US map
 const cities: City[] = [
   // Hub - Michigan
-  { name: "Fraser, MI", x: 67, y: 35, isHub: true, businessLines: ["construction", "training", "equipment", "consulting"] },
+  { name: "Fraser, MI", x: 70, y: 28, isHub: true, businessLines: ["construction", "training", "equipment", "consulting"] },
   // Local Michigan Markets
-  { name: "Detroit", x: 67.5, y: 36, businessLines: ["construction", "equipment"] },
-  { name: "Grand Rapids", x: 65, y: 35, businessLines: ["construction", "training"] },
-  { name: "Ann Arbor", x: 66.5, y: 36.5, businessLines: ["training", "consulting"] },
-  { name: "Lansing", x: 66, y: 35.5, businessLines: ["construction"] },
+  { name: "Detroit", x: 70.5, y: 29, businessLines: ["construction", "equipment"] },
+  { name: "Grand Rapids", x: 69, y: 27, businessLines: ["construction", "training"] },
+  { name: "Ann Arbor", x: 69.5, y: 29.5, businessLines: ["training", "consulting"] },
+  { name: "Lansing", x: 69.3, y: 28, businessLines: ["construction"] },
   // East Coast
-  { name: "New York", x: 80, y: 33, businessLines: ["construction", "consulting"] },
-  { name: "Philadelphia", x: 79, y: 35, businessLines: ["training", "consulting"] },
-  { name: "Boston", x: 82, y: 30, businessLines: ["consulting", "training"] },
+  { name: "New York", x: 82, y: 25, businessLines: ["construction", "consulting"] },
+  { name: "Philadelphia", x: 81, y: 28, businessLines: ["training", "consulting"] },
+  { name: "Boston", x: 84, y: 22, businessLines: ["consulting", "training"] },
   // Southeast
-  { name: "Miami", x: 78, y: 65, businessLines: ["construction", "consulting"] },
+  { name: "Miami", x: 78, y: 63, businessLines: ["construction", "consulting"] },
   // Midwest
-  { name: "Chicago", x: 64, y: 37, businessLines: ["construction", "training"] },
+  { name: "Chicago", x: 67, y: 29, businessLines: ["construction", "training"] },
   // South Central
-  { name: "Dallas", x: 48, y: 58, businessLines: ["construction", "equipment"] },
-  { name: "Houston", x: 47, y: 63, businessLines: ["equipment", "consulting"] },
-  { name: "San Antonio", x: 46, y: 64, businessLines: ["construction"] },
+  { name: "Dallas", x: 50, y: 52, businessLines: ["construction", "equipment"] },
+  { name: "Houston", x: 51, y: 58, businessLines: ["equipment", "consulting"] },
+  { name: "San Antonio", x: 49, y: 60, businessLines: ["construction"] },
   // Mountain West
-  { name: "Denver", x: 42, y: 37, businessLines: ["construction", "equipment"] },
-  { name: "Phoenix", x: 30, y: 57, businessLines: ["construction"] },
+  { name: "Denver", x: 43, y: 31, businessLines: ["construction", "equipment"] },
+  { name: "Phoenix", x: 33, y: 52, businessLines: ["construction"] },
   // West Coast
-  { name: "Seattle", x: 18, y: 22, businessLines: ["training", "equipment"] },
-  { name: "Los Angeles", x: 20, y: 55, businessLines: ["construction", "equipment", "consulting"] },
+  { name: "Seattle", x: 18, y: 18, businessLines: ["training", "equipment"] },
+  { name: "Los Angeles", x: 20, y: 50, businessLines: ["construction", "equipment", "consulting"] },
 ];
 
 export default function NetworkMap() {
@@ -102,34 +103,22 @@ export default function NetworkMap() {
           <Card className="p-6 md:p-12 bg-card/30 backdrop-blur-sm border-2 relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent"></div>
             <div className="relative w-full aspect-[16/10]">
-              <svg className="w-full h-full" viewBox="0 0 100 80" preserveAspectRatio="xMidYMid meet">
-                {/* US Map Shape with 3D Effect */}
-                <defs>
-                  <linearGradient id="mapGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="hsl(var(--muted))" stopOpacity="0.4" />
-                    <stop offset="100%" stopColor="hsl(var(--muted))" stopOpacity="0.2" />
-                  </linearGradient>
-                  <filter id="mapShadow">
-                    <feDropShadow dx="0.5" dy="1" stdDeviation="0.5" floodOpacity="0.3"/>
-                  </filter>
-                </defs>
+              {/* US Map Background Image */}
+              <div className="absolute inset-0">
+                <img 
+                  src={usMapBackground} 
+                  alt="United States Map" 
+                  className="w-full h-full object-contain"
+                  style={{
+                    opacity: animationProgress >= 20 ? "0.4" : "0",
+                    transition: "opacity 1s"
+                  }}
+                />
+              </div>
 
-                {/* US Map Outline - Accurate shape */}
-                <g filter="url(#mapShadow)">
-                  <path
-                    d="M 15 25 L 17 20 L 18 22 L 19 20 L 20 25 L 22 28 L 24 32 L 26 36 L 28 40 L 30 45 L 32 50 L 30 55 L 28 58 L 25 60 L 22 58 L 20 54 L 18 50 L 16 45 L 15 40 L 14 35 L 15 30 Z 
-                       M 32 50 L 35 48 L 40 47 L 45 48 L 48 52 L 50 55 L 52 58 L 50 62 L 48 65 L 46 68 L 44 70 L 42 72 L 40 74 L 38 76 L 36 74 L 34 70 L 32 66 L 30 62 L 32 58 L 34 54 Z
-                       M 50 55 L 55 53 L 60 52 L 62 50 L 64 48 L 66 46 L 68 45 L 70 44 L 72 42 L 74 40 L 76 38 L 78 36 L 80 34 L 82 32 L 84 30 L 85 32 L 86 34 L 87 36 L 86 38 L 84 40 L 82 42 L 80 44 L 78 46 L 76 48 L 74 50 L 72 52 L 70 54 L 68 56 L 66 58 L 64 60 L 62 62 L 60 64 L 58 66 L 56 68 L 54 70 L 52 72 L 50 74 L 48 76 L 46 78 L 44 76 L 46 74 L 48 72 L 50 70 L 52 68 L 54 66 L 56 64 L 58 62 L 60 60 L 62 58 L 64 56 L 66 54 L 68 52 L 70 50 L 72 48 L 74 46 L 76 44 L 78 42 L 80 40 L 82 38 L 84 36 L 85 34 L 84 32 L 82 30 L 80 28 L 78 26 L 76 28 L 74 30 L 72 32 L 70 34 L 68 36 L 66 38 L 64 40 L 62 42 L 60 44 L 58 46 L 56 48 L 54 50 L 52 52 Z
-                       M 76 58 L 78 60 L 80 64 L 80 68 L 78 72 L 76 74 L 74 76 L 72 78 L 70 76 L 72 74 L 74 72 L 76 68 L 76 64 L 75 60 Z"
-                    fill="url(#mapGradient)"
-                    stroke="hsl(var(--border))"
-                    strokeWidth="0.3"
-                    opacity={animationProgress >= 20 ? "1" : "0"}
-                    className="transition-opacity duration-1000"
-                  />
-                </g>
-
-                {/* Connection Lines - Only show after map appears */}
+              {/* SVG Overlay for connections and markers */}
+              <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+                {/* Connection Lines */}
                 {animationProgress >= 40 && otherCities.map((city, idx) => {
                   const progress = Math.min(100, Math.max(0, (animationProgress - 40 - idx * 2)));
                   if (progress === 0) return null;
@@ -150,14 +139,14 @@ export default function NetworkMap() {
                           x2={city.x + offset}
                           y2={city.y}
                           stroke={color}
-                          strokeWidth="0.15"
-                          opacity={(progress / 100) * 0.4}
+                          strokeWidth="0.2"
+                          opacity={(progress / 100) * 0.5}
                           strokeDasharray="0.5,0.5"
                           onMouseEnter={() => setHoveredLine(`${city.name}-${businessLine}`)}
                           onMouseLeave={() => setHoveredLine(null)}
                           style={{
                             filter: hoveredLine === `${city.name}-${businessLine}` ? `drop-shadow(0 0 2px ${color})` : 'none',
-                            opacity: hoveredLine === `${city.name}-${businessLine}` ? 0.8 : (progress / 100) * 0.4,
+                            opacity: hoveredLine === `${city.name}-${businessLine}` ? 0.9 : (progress / 100) * 0.5,
                           }}
                           className="transition-all duration-300 cursor-pointer"
                         />
@@ -168,8 +157,8 @@ export default function NetworkMap() {
                             x2={city.x + offset}
                             y2={city.y}
                             stroke={color}
-                            strokeWidth="0.3"
-                            opacity="0.6"
+                            strokeWidth="0.4"
+                            opacity="0.7"
                             className="animate-pulse pointer-events-none"
                           />
                         )}
@@ -185,7 +174,7 @@ export default function NetworkMap() {
                   if (progress === 0) return null;
 
                   const isHovered = hoveredCity?.name === city.name;
-                  const scale = (progress / 100) * (isHovered ? 1.2 : 1);
+                  const scale = (progress / 100) * (isHovered ? 1.3 : 1);
                   
                   return (
                     <g
@@ -200,9 +189,9 @@ export default function NetworkMap() {
                         <circle
                           cx={city.x}
                           cy={city.y}
-                          r={2.5 * scale}
+                          r={3 * scale}
                           fill="hsl(var(--primary))"
-                          opacity="0.2"
+                          opacity="0.3"
                           className="animate-pulse"
                         />
                       )}
@@ -211,33 +200,33 @@ export default function NetworkMap() {
                       <circle
                         cx={city.x}
                         cy={city.y}
-                        r={(city.isHub ? 1.5 : 0.8) * scale}
+                        r={(city.isHub ? 1.8 : 1) * scale}
                         fill={city.isHub ? "hsl(var(--primary))" : "hsl(var(--foreground))"}
                         stroke={isHovered ? "hsl(var(--primary))" : "hsl(var(--background))"}
                         strokeWidth={isHovered ? "0.3" : "0.2"}
                         style={{
-                          filter: isHovered ? 'drop-shadow(0 0 2px hsl(var(--primary)))' : city.isHub ? 'drop-shadow(0 0 1px hsl(var(--primary)))' : 'none',
+                          filter: isHovered ? 'drop-shadow(0 0 2px hsl(var(--primary)))' : city.isHub ? 'drop-shadow(0 0 1.5px hsl(var(--primary)))' : 'none',
                         }}
                       />
 
-                      {/* Building icon for larger cities */}
+                      {/* Building icon */}
                       {(city.isHub || isHovered) && (
                         <>
                           <rect
-                            x={city.x - 0.3 * scale}
-                            y={city.y - 0.6 * scale}
-                            width={0.6 * scale}
-                            height={0.8 * scale}
+                            x={city.x - 0.4 * scale}
+                            y={city.y - 0.8 * scale}
+                            width={0.8 * scale}
+                            height={1.2 * scale}
                             fill={city.isHub ? "hsl(var(--primary))" : "hsl(var(--foreground))"}
-                            opacity="0.8"
+                            opacity="0.9"
                           />
                           <rect
-                            x={city.x - 0.15 * scale}
-                            y={city.y - 0.4 * scale}
-                            width={0.3 * scale}
-                            height={0.3 * scale}
+                            x={city.x - 0.2 * scale}
+                            y={city.y - 0.5 * scale}
+                            width={0.4 * scale}
+                            height={0.4 * scale}
                             fill="hsl(var(--background))"
-                            opacity="0.6"
+                            opacity="0.7"
                           />
                         </>
                       )}
@@ -246,12 +235,16 @@ export default function NetworkMap() {
                       {(city.isHub || isHovered) && (
                         <text
                           x={city.x}
-                          y={city.y - 2.5}
+                          y={city.y - 3}
                           textAnchor="middle"
-                          fontSize={city.isHub ? "2" : "1.5"}
+                          fontSize={city.isHub ? "2.5" : "1.8"}
                           fill="hsl(var(--foreground))"
-                          className="font-bold pointer-events-none"
-                          style={{ textShadow: '0 0 3px hsl(var(--background))' }}
+                          fontWeight="bold"
+                          className="pointer-events-none"
+                          style={{ 
+                            textShadow: '0 0 4px hsl(var(--background)), 0 0 8px hsl(var(--background))',
+                            filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))'
+                          }}
                         >
                           {city.name}
                         </text>
@@ -376,4 +369,3 @@ export default function NetworkMap() {
     </div>
   );
 }
-
