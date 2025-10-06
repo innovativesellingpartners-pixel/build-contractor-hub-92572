@@ -222,11 +222,11 @@ export function NewLandingPage() {
               <h4 className="font-semibold text-white text-lg mb-2 group-hover:text-primary transition-colors">Save 20+ Hours/Week</h4>
               <p className="text-white/80 text-sm">Automated workflows</p>
             </Link>
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-5 border border-white/20 hover:bg-white/20 transition-all">
-              <Award className="h-10 w-10 text-primary mb-3" />
-              <h4 className="font-semibold text-white text-lg mb-2">Industry Leading</h4>
+            <Link to="/platform" className="bg-white/10 backdrop-blur-sm rounded-lg p-5 border border-white/20 hover:bg-white/20 hover:border-primary/50 transition-all cursor-pointer group">
+              <Award className="h-10 w-10 text-primary mb-3 group-hover:scale-110 transition-transform" />
+              <h4 className="font-semibold text-white text-lg mb-2 group-hover:text-primary transition-colors">Industry Leading</h4>
               <p className="text-white/80 text-sm">Contractor platform</p>
-            </div>
+            </Link>
           </div>
 
           {/* CTA Buttons */}

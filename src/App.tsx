@@ -37,6 +37,7 @@ import { Leads } from "@/pages/features/Leads";
 import { QuickBooks } from "@/pages/features/QuickBooks";
 import { Insurance } from "@/pages/features/Insurance";
 import Savings from "./pages/Savings";
+import Platform from "./pages/Platform";
 
 const queryClient = new QueryClient();
 
@@ -50,6 +51,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<NewLandingPage />} />
             <Route path="/savings" element={<Savings />} />
+            <Route path="/platform" element={<Platform />} />
             <Route path="/business-suite" element={<BusinessSuite />} />
             <Route path="/business-suite/training" element={<Training />} />
             <Route path="/business-suite/crm" element={<CRM />} />
