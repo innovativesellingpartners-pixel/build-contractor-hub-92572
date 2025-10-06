@@ -41,6 +41,8 @@ serve(async (req) => {
         : ['https://api.clover.com', 'https://apisandbox.dev.clover.com'];
 
     let lastErrorText = '';
+    let successfulEnv = '';
+    
     for (const baseUrl of candidates) {
       console.log('Trying Clover Hosted Checkout endpoint:', baseUrl);
       const cloverResponse = await fetch(
@@ -55,8 +57,6 @@ serve(async (req) => {
           body: JSON.stringify({
             customer: {
               email: customer_email || 'customer@example.com',
-              firstName: 'Customer',
-              lastName: 'Name',
             },
             shoppingCart: {
               lineItems: [
@@ -71,6 +71,8 @@ serve(async (req) => {
           }),
         }
       );
+      
+      successfulEnv = baseUrl.includes('sandbox') ? 'SANDBOX' : 'PRODUCTION';
 
       const responseText = await cloverResponse.text();
       console.log('Clover API response status:', cloverResponse.status);
@@ -78,13 +80,16 @@ serve(async (req) => {
 
       if (cloverResponse.ok) {
         const cloverData = JSON.parse(responseText);
+        console.log(`✅ SUCCESS using ${successfulEnv} environment`);
         console.log('Checkout session created:', cloverData.checkoutSessionId);
         console.log('Checkout URL:', cloverData.href);
+        console.log('Merchant ID used:', cloverMerchantId);
         
         const response = {
           success: true,
           checkout_url: cloverData.href,
           session_id: cloverData.checkoutSessionId,
+          environment: successfulEnv,
         };
         
         console.log('Returning response:', JSON.stringify(response));
