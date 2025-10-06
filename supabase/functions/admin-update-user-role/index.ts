@@ -32,9 +32,9 @@ serve(async (req) => {
     if (authError || !user) {
       console.error('Authentication error:', authError);
       return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
+        JSON.stringify({ success: false, error: 'Unauthorized' }),
         { 
-          status: 401,
+          status: 200, // Return 200 to ensure response body is accessible
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       );
@@ -50,9 +50,9 @@ serve(async (req) => {
     if (roleError || !userRole || !['admin', 'super_admin'].includes(userRole.role)) {
       console.error('Authorization error:', roleError);
       return new Response(
-        JSON.stringify({ error: 'Forbidden - Admin access required' }),
+        JSON.stringify({ success: false, error: 'Forbidden - Admin access required' }),
         { 
-          status: 403,
+          status: 200, // Return 200 to ensure response body is accessible
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       );
@@ -63,9 +63,9 @@ serve(async (req) => {
     // Validate input
     if (!userId || !newRole) {
       return new Response(
-        JSON.stringify({ error: 'Missing required fields: userId and newRole' }),
+        JSON.stringify({ success: false, error: 'Missing required fields: userId and newRole' }),
         { 
-          status: 400,
+          status: 200, // Return 200 to ensure response body is accessible
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       );
@@ -75,9 +75,9 @@ serve(async (req) => {
     const validRoles = ['user', 'admin', 'super_admin'];
     if (!validRoles.includes(newRole)) {
       return new Response(
-        JSON.stringify({ error: 'Invalid role. Must be one of: user, admin, super_admin' }),
+        JSON.stringify({ success: false, error: 'Invalid role. Must be one of: user, admin, super_admin' }),
         { 
-          status: 400,
+          status: 200, // Return 200 to ensure response body is accessible
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       );
@@ -140,9 +140,12 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error updating user role:', error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error occurred' }),
+      JSON.stringify({ 
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred' 
+      }),
       {
-        status: 500,
+        status: 200, // Return 200 to ensure response body is accessible
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     );

@@ -108,6 +108,12 @@ export const UserManagement = () => {
       });
 
       if (error) throw error;
+      
+      // Check if the response indicates an error (even with 200 status)
+      if (data && !data.success) {
+        throw new Error(data.error || 'Failed to update user role');
+      }
+      
       return data;
     },
     onSuccess: () => {
