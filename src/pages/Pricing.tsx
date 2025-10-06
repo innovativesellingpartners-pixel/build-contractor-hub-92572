@@ -42,7 +42,7 @@ export function Pricing() {
     },
     {
       id: "growth",
-      name: "Tier 2 - CT1 - Tier 2 - Growth Business Builder", 
+      name: "CT1 - Growth Business Builder", 
       subtitle: "Tier 2",
       price: 200,
       originalPrice: null,
