@@ -11,7 +11,7 @@ serve(async (req) => {
   }
 
   try {
-    const { amount, tier_id, billing_cycle } = await req.json();
+    const { amount, tier_id, billing_cycle, customer_email } = await req.json();
 
     console.log('Creating Clover checkout session:', { amount, tier_id, billing_cycle });
 
@@ -23,47 +23,60 @@ serve(async (req) => {
       throw new Error('Clover credentials not configured');
     }
 
-    // Get the callback URL from environment or construct it
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const callbackUrl = `${supabaseUrl}/functions/v1/clover-payment-callback`;
+    // Determine tier name for display
+    const tierNames: Record<string, string> = {
+      'launch': 'Launch Growth Starter',
+      'growth': 'Growth Business Builder',
+      'accel': 'Accel! Market Dominator'
+    };
 
-    // Create a Clover checkout session using Ecommerce API
+    // Create a Clover checkout session using the correct Hosted Checkout API
     const cloverResponse = await fetch(
-      `https://api.clover.com/v1/charges`,
+      'https://scl.clover.com/invoicingcheckoutservice/v1/checkouts',
       {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${cloverApiToken}`,
           'Content-Type': 'application/json',
+          'X-Clover-Merchant-Id': cloverMerchantId,
         },
         body: JSON.stringify({
-          amount,
-          currency: 'usd',
-          description: `${tier_id} tier - ${billing_cycle} billing`,
-          metadata: {
-            tier_id,
-            billing_cycle,
+          customer: {
+            email: customer_email || 'customer@example.com',
+            firstName: 'Customer',
+            lastName: 'Name',
           },
-          success_url: callbackUrl + '?status=success',
-          cancel_url: callbackUrl + '?status=cancel',
+          shoppingCart: {
+            lineItems: [
+              {
+                name: `${tierNames[tier_id] || tier_id} Subscription`,
+                unitQty: 1,
+                price: amount,
+                note: `${billing_cycle} billing cycle`,
+              },
+            ],
+          },
         }),
       }
     );
 
-    const cloverData = await cloverResponse.json();
+    const responseText = await cloverResponse.text();
+    console.log('Clover API response status:', cloverResponse.status);
+    console.log('Clover API response:', responseText);
 
     if (!cloverResponse.ok) {
-      console.error('Clover API error:', cloverData);
-      throw new Error(cloverData.message || 'Failed to create checkout session');
+      console.error('Clover API error:', responseText);
+      throw new Error(`Clover API error: ${responseText}`);
     }
 
+    const cloverData = JSON.parse(responseText);
     console.log('Checkout session created:', cloverData.id);
 
     // Return the checkout URL for redirect
     return new Response(
       JSON.stringify({
         success: true,
-        checkout_url: cloverData.hosted_checkout_url || cloverData.checkout_url,
+        checkout_url: cloverData.href,
         session_id: cloverData.id,
       }),
       {
