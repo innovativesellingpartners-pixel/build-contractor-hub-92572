@@ -30,60 +30,75 @@ serve(async (req) => {
       'accel': 'Accel! Market Dominator'
     };
 
-    // Create a Clover checkout session using the correct Hosted Checkout API
-    const cloverResponse = await fetch(
-      'https://scl.clover.com/invoicingcheckoutservice/v1/checkouts',
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${cloverApiToken}`,
-          'Content-Type': 'application/json',
-          'X-Clover-Merchant-Id': cloverMerchantId,
-        },
-        body: JSON.stringify({
-          customer: {
-            email: customer_email || 'customer@example.com',
-            firstName: 'Customer',
-            lastName: 'Name',
+    // Decide environment (sandbox or production) with auto-fallback
+    const envRaw = (Deno.env.get('CLOVER_ENV') || 'auto').toLowerCase();
+    const envMode = ['sandbox', 'production'].includes(envRaw) ? envRaw : 'auto';
+    const candidates = envMode === 'sandbox'
+      ? ['https://scl-sandbox.dev.clover.com']
+      : envMode === 'production'
+        ? ['https://scl.clover.com']
+        : ['https://scl.clover.com', 'https://scl-sandbox.dev.clover.com'];
+
+    let lastErrorText = '';
+    for (const baseUrl of candidates) {
+      console.log('Trying Clover Hosted Checkout endpoint:', baseUrl);
+      const cloverResponse = await fetch(
+        `${baseUrl}/invoicingcheckoutservice/v1/checkouts`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${cloverApiToken}`,
+            'Content-Type': 'application/json',
+            'X-Clover-Merchant-Id': cloverMerchantId,
           },
-          shoppingCart: {
-            lineItems: [
-              {
-                name: `${tierNames[tier_id] || tier_id} Subscription`,
-                unitQty: 1,
-                price: amount,
-                note: `${billing_cycle} billing cycle`,
-              },
-            ],
-          },
-        }),
+          body: JSON.stringify({
+            customer: {
+              email: customer_email || 'customer@example.com',
+              firstName: 'Customer',
+              lastName: 'Name',
+            },
+            shoppingCart: {
+              lineItems: [
+                {
+                  name: `${tierNames[tier_id] || tier_id} Subscription`,
+                  unitQty: 1,
+                  price: amount,
+                  note: `${billing_cycle} billing cycle`,
+                },
+              ],
+            },
+          }),
+        }
+      );
+
+      const responseText = await cloverResponse.text();
+      console.log('Clover API response status:', cloverResponse.status);
+      console.log('Clover API response:', responseText);
+
+      if (cloverResponse.ok) {
+        const cloverData = JSON.parse(responseText);
+        console.log('Checkout session created:', cloverData.id);
+        return new Response(
+          JSON.stringify({
+            success: true,
+            checkout_url: cloverData.href,
+            session_id: cloverData.id,
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+        );
       }
-    );
 
-    const responseText = await cloverResponse.text();
-    console.log('Clover API response status:', cloverResponse.status);
-    console.log('Clover API response:', responseText);
-
-    if (!cloverResponse.ok) {
-      console.error('Clover API error:', responseText);
-      throw new Error(`Clover API error: ${responseText}`);
+      lastErrorText = responseText || `HTTP ${cloverResponse.status}`;
+      // If 404, try next base URL (likely wrong env)
+      if (cloverResponse.status === 404) {
+        console.warn('Clover 404, trying next environment if available');
+        continue;
+      }
+      // Non-404 failure, break early
+      break;
     }
 
-    const cloverData = JSON.parse(responseText);
-    console.log('Checkout session created:', cloverData.id);
-
-    // Return the checkout URL for redirect
-    return new Response(
-      JSON.stringify({
-        success: true,
-        checkout_url: cloverData.href,
-        session_id: cloverData.id,
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      }
-    );
+    throw new Error(`Clover checkout creation failed. Details: ${lastErrorText}. Check your CLOVER_ENV (sandbox vs production), merchant ID, and API token.`);
   } catch (error) {
     console.error('Checkout session creation error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Failed to create checkout session';
