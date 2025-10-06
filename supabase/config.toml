@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.clover-payment-callback]
 verify_jwt = false
+
+[functions.admin-update-user-role]
+verify_jwt = true

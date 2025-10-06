@@ -18,6 +18,52 @@ interface ContactEmailRequest {
   formType?: string;
 }
 
+// Server-side validation function
+function validateContactForm(data: any): { valid: boolean; errors: string[] } {
+  const errors: string[] = [];
+  
+  // Name validation
+  if (!data.name || typeof data.name !== 'string' || data.name.trim().length === 0) {
+    errors.push('Name is required');
+  } else if (data.name.trim().length > 100) {
+    errors.push('Name must be less than 100 characters');
+  }
+  
+  // Email validation
+  if (!data.email || typeof data.email !== 'string') {
+    errors.push('Email is required');
+  } else {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(data.email.trim())) {
+      errors.push('Invalid email address');
+    } else if (data.email.trim().length > 255) {
+      errors.push('Email must be less than 255 characters');
+    }
+  }
+  
+  // Phone validation
+  if (!data.phone || typeof data.phone !== 'string' || data.phone.trim().length === 0) {
+    errors.push('Phone is required');
+  } else if (data.phone.trim().length > 20) {
+    errors.push('Phone must be less than 20 characters');
+  }
+  
+  // Optional fields validation
+  if (data.companyName && typeof data.companyName === 'string' && data.companyName.trim().length > 200) {
+    errors.push('Company name must be less than 200 characters');
+  }
+  
+  if (data.reason && typeof data.reason === 'string' && data.reason.trim().length > 2000) {
+    errors.push('Reason must be less than 2000 characters');
+  }
+  
+  if (data.formType && typeof data.formType === 'string' && data.formType.trim().length > 50) {
+    errors.push('Form type must be less than 50 characters');
+  }
+  
+  return { valid: errors.length === 0, errors };
+}
+
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -25,7 +71,30 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { name, phone, email, companyName, reason, formType }: ContactEmailRequest = await req.json();
+    const requestData = await req.json();
+    
+    // Server-side validation
+    const validation = validateContactForm(requestData);
+    if (!validation.valid) {
+      console.error('Validation errors:', validation.errors);
+      return new Response(
+        JSON.stringify({ error: 'Validation failed', details: validation.errors }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        }
+      );
+    }
+    
+    // Sanitize and trim inputs
+    const { name, phone, email, companyName, reason, formType } = {
+      name: requestData.name.trim().slice(0, 100),
+      phone: requestData.phone.trim().slice(0, 20),
+      email: requestData.email.trim().toLowerCase().slice(0, 255),
+      companyName: requestData.companyName?.trim().slice(0, 200),
+      reason: requestData.reason?.trim().slice(0, 2000),
+      formType: requestData.formType?.trim().slice(0, 50)
+    };
 
     // Send notification email to sales team
     const salesEmailResponse = await resend.emails.send({
