@@ -36,11 +36,17 @@ export function TierCheckout({ tier, isOpen, onClose, onPaymentSuccess }: TierCh
   const handlePayment = async () => {
     setLoading(true);
     try {
-      console.log('Processing payment:', {
+      console.log('Creating checkout session:', {
         amount: calculatePrice() * 100,
         tier_id: tier.id,
         billing_cycle: billingCycle,
       });
+
+      // Store checkout info in sessionStorage for callback
+      sessionStorage.setItem('pending_checkout', JSON.stringify({
+        tier_id: tier.id,
+        billing_cycle: billingCycle,
+      }));
 
       const { data, error } = await supabase.functions.invoke('process-clover-payment', {
         body: {
@@ -52,23 +58,19 @@ export function TierCheckout({ tier, isOpen, onClose, onPaymentSuccess }: TierCh
 
       if (error) throw error;
 
-      if (data?.success) {
-        toast({
-          title: 'Payment successful!',
-          description: 'Redirecting to account setup...',
-        });
-        onPaymentSuccess(tier.id, billingCycle);
+      if (data?.success && data?.checkout_url) {
+        // Redirect to Clover's hosted checkout page
+        window.location.href = data.checkout_url;
       } else {
-        throw new Error(data?.message || 'Payment failed');
+        throw new Error(data?.message || 'Failed to create checkout session');
       }
     } catch (error: any) {
-      console.error('Payment error:', error);
+      console.error('Checkout error:', error);
       toast({
-        title: 'Payment failed',
-        description: error.message || 'Unable to process payment. Please try again.',
+        title: 'Checkout failed',
+        description: error.message || 'Unable to start checkout. Please try again.',
         variant: 'destructive',
       });
-    } finally {
       setLoading(false);
     }
   };

@@ -13,7 +13,7 @@ serve(async (req) => {
   try {
     const { amount, tier_id, billing_cycle } = await req.json();
 
-    console.log('Processing Clover payment:', { amount, tier_id, billing_cycle });
+    console.log('Creating Clover checkout session:', { amount, tier_id, billing_cycle });
 
     // Get Clover credentials from environment
     const cloverApiToken = Deno.env.get('CLOVER_API_TOKEN');
@@ -23,9 +23,13 @@ serve(async (req) => {
       throw new Error('Clover credentials not configured');
     }
 
-    // Call Clover API to create a charge
+    // Get the callback URL from environment or construct it
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const callbackUrl = `${supabaseUrl}/functions/v1/clover-payment-callback`;
+
+    // Create a Clover checkout session using Ecommerce API
     const cloverResponse = await fetch(
-      `https://api.clover.com/v3/merchants/${cloverMerchantId}/charges`,
+      `https://api.clover.com/v1/charges`,
       {
         method: 'POST',
         headers: {
@@ -35,8 +39,13 @@ serve(async (req) => {
         body: JSON.stringify({
           amount,
           currency: 'usd',
-          source: 'clover', // This may need to be adjusted based on your Clover setup
           description: `${tier_id} tier - ${billing_cycle} billing`,
+          metadata: {
+            tier_id,
+            billing_cycle,
+          },
+          success_url: callbackUrl + '?status=success',
+          cancel_url: callbackUrl + '?status=cancel',
         }),
       }
     );
@@ -45,16 +54,17 @@ serve(async (req) => {
 
     if (!cloverResponse.ok) {
       console.error('Clover API error:', cloverData);
-      throw new Error(cloverData.message || 'Clover payment failed');
+      throw new Error(cloverData.message || 'Failed to create checkout session');
     }
 
-    console.log('Payment processed successfully:', cloverData.id);
+    console.log('Checkout session created:', cloverData.id);
 
+    // Return the checkout URL for redirect
     return new Response(
       JSON.stringify({
         success: true,
-        payment_id: cloverData.id,
-        message: 'Payment processed successfully',
+        checkout_url: cloverData.hosted_checkout_url || cloverData.checkout_url,
+        session_id: cloverData.id,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -62,8 +72,8 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error('Payment processing error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Payment processing failed';
+    console.error('Checkout session creation error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Failed to create checkout session';
     return new Response(
       JSON.stringify({
         success: false,

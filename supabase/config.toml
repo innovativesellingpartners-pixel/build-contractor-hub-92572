@@ -1,1 +1,7 @@
 project_id = "faqrzzodtmsybofakcvv"
+
+[functions.process-clover-payment]
+verify_jwt = false
+
+[functions.clover-payment-callback]
+verify_jwt = false

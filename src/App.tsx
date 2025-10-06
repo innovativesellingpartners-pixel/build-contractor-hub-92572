@@ -22,6 +22,7 @@ import { CoursePlayer } from "@/components/CoursePlayer";
 import Subscribe from "./pages/Subscribe";
 import NotFound from "./pages/NotFound";
 import NetworkMap from "./pages/NetworkMap";
+import PaymentSuccess from "./pages/PaymentSuccess";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminLayout } from "@/components/admin/AdminLayout";
@@ -65,6 +66,7 @@ const App = () => (
             <Route path="/contact" element={<Contact />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/pricing" element={<Pricing />} />
+            <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/subscribe" element={<Subscribe />} />
             <Route path="/dashboard" element={
               <ProtectedRoute>
