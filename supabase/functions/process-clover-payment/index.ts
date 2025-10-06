@@ -34,10 +34,10 @@ serve(async (req) => {
     const envRaw = (Deno.env.get('CLOVER_ENV') || 'auto').toLowerCase();
     const envMode = ['sandbox', 'production'].includes(envRaw) ? envRaw : 'auto';
     const candidates = envMode === 'sandbox'
-      ? ['https://scl-sandbox.dev.clover.com']
+      ? ['https://apisandbox.dev.clover.com']
       : envMode === 'production'
-        ? ['https://scl.clover.com']
-        : ['https://scl.clover.com', 'https://scl-sandbox.dev.clover.com'];
+        ? ['https://api.clover.com']
+        : ['https://api.clover.com', 'https://apisandbox.dev.clover.com'];
 
     let lastErrorText = '';
     for (const baseUrl of candidates) {
