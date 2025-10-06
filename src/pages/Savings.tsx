@@ -66,13 +66,20 @@ export default function Savings() {
       <header className="border-b border-border/50 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
+            <Link to="/" className="flex items-center space-x-3">
+              <img src={ct1Logo} alt="CT1 Logo" className="h-12 w-12" />
+              <div>
+                <h1 className="text-2xl font-bold text-foreground">CT1</h1>
+                <p className="text-xs text-muted-foreground font-medium">One-Up the Competition</p>
+              </div>
+            </Link>
+            
             <Link to="/">
               <Button variant="outline" size="sm" className="gap-2">
                 <ArrowLeft className="h-4 w-4" />
                 Back to Home
               </Button>
             </Link>
-            <img src={ct1Logo} alt="CT1 Logo" className="h-10" />
           </div>
         </div>
       </header>
