@@ -14,6 +14,7 @@ serve(async (req) => {
     const { amount, tier_id, billing_cycle, customer_email } = await req.json();
 
     console.log('Creating Clover checkout session:', { amount, tier_id, billing_cycle });
+    console.log('Clover environment:', Deno.env.get('CLOVER_ENV'));
 
     // Get Clover credentials from environment
     const cloverApiToken = Deno.env.get('CLOVER_API_TOKEN');
