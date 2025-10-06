@@ -58,7 +58,10 @@ export function TierCheckout({ tier, isOpen, onClose, onPaymentSuccess }: TierCh
 
       if (error) throw error;
 
+      console.log('Received checkout data:', data);
+
       if (data?.success && data?.checkout_url) {
+        console.log('Redirecting to:', data.checkout_url);
         // Redirect to Clover's hosted checkout page
         window.location.href = data.checkout_url;
       } else {

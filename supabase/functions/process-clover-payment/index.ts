@@ -78,13 +78,19 @@ serve(async (req) => {
 
       if (cloverResponse.ok) {
         const cloverData = JSON.parse(responseText);
-        console.log('Checkout session created:', cloverData.id);
+        console.log('Checkout session created:', cloverData.checkoutSessionId);
+        console.log('Checkout URL:', cloverData.href);
+        
+        const response = {
+          success: true,
+          checkout_url: cloverData.href,
+          session_id: cloverData.checkoutSessionId,
+        };
+        
+        console.log('Returning response:', JSON.stringify(response));
+        
         return new Response(
-          JSON.stringify({
-            success: true,
-            checkout_url: cloverData.href,
-            session_id: cloverData.id,
-          }),
+          JSON.stringify(response),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
         );
       }
