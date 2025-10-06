@@ -118,11 +118,11 @@ export default function NetworkMap() {
       <section className="py-8 md:py-16">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-primary via-primary/80 to-primary bg-clip-text text-transparent">
-              CT1 Nationwide Reach
+            <h1 className="text-3xl md:text-5xl font-bold mb-4 text-foreground">
+              A Network of the Nation's Best Contractors all in a Single Network
             </h1>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
-              From our Fraser, Michigan headquarters to markets across America
+            <p className="text-xl md:text-2xl font-semibold bg-gradient-to-r from-primary via-primary/80 to-primary bg-clip-text text-transparent">
+              CT1 Nationwide Reach
             </p>
           </div>
 
@@ -131,114 +131,174 @@ export default function NetworkMap() {
             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent"></div>
             <div className="relative">
               <svg viewBox="0 0 960 600" className="w-full h-auto">
-                {/* Render all states */}
-                {Object.entries(statePaths).map(([abbr, path]) => {
-                  const stateData = statesData[abbr];
-                  const isActive = stateData?.active;
-                  const isHovered = hoveredState === abbr;
-                  const isHub = abbr === "MI"; // Michigan is the hub
+                <defs>
+                  {/* Glow effect for flagship */}
+                  <radialGradient id="flagshipGlow" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.8" />
+                    <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0" />
+                  </radialGradient>
+                  
+                  {/* Expansion ripple */}
+                  <radialGradient id="expansionGlow" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stopColor="hsl(35, 91%, 51%)" stopOpacity="0.3" />
+                    <stop offset="100%" stopColor="hsl(35, 91%, 51%)" stopOpacity="0" />
+                  </radialGradient>
+                </defs>
 
-                  return (
-                    <g key={abbr}>
-                      <path
-                        d={path}
-                        fill={
-                          isHub
-                            ? "hsl(var(--primary))"
-                            : isActive
-                            ? "hsl(var(--primary) / 0.4)"
-                            : "hsl(var(--muted))"
-                        }
-                        stroke="hsl(var(--border))"
-                        strokeWidth="1"
-                        className={`transition-all duration-300 ${
-                          isActive ? "cursor-pointer" : ""
-                        }`}
-                        style={{
-                          filter: isHovered
-                            ? "brightness(1.3) drop-shadow(0 0 8px hsl(var(--primary)))"
-                            : isHub
-                            ? "drop-shadow(0 0 6px hsl(var(--primary)))"
-                            : "none",
-                          opacity: isActive ? 1 : 0.3,
-                        }}
-                        onMouseEnter={() => isActive && setHoveredState(abbr)}
-                        onMouseLeave={() => setHoveredState(null)}
-                      />
-                    </g>
-                  );
-                })}
+                {/* Render all US states - muted */}
+                {Object.entries(statePaths).map(([abbr, path]) => (
+                  <path
+                    key={abbr}
+                    d={path}
+                    fill="hsl(var(--muted))"
+                    stroke="hsl(var(--border))"
+                    strokeWidth="1"
+                    opacity="0.3"
+                  />
+                ))}
+
+                {/* Expansion circles from Sterling Heights, MI */}
+                {/* Michigan (Sterling Heights) is approximately at (713, 150) */}
+                <g className="animate-pulse" style={{ animationDuration: '3s' }}>
+                  <circle cx="713" cy="150" r="180" fill="url(#expansionGlow)" />
+                  <circle cx="713" cy="150" r="260" fill="url(#expansionGlow)" opacity="0.6" />
+                  <circle cx="713" cy="150" r="340" fill="url(#expansionGlow)" opacity="0.3" />
+                </g>
+
+                {/* Connection lines to major markets */}
+                {[
+                  { x: 863, y: 205, label: 'NY', name: 'New York' },
+                  { x: 197, y: 282, label: 'AZ', name: 'Arizona' },
+                  { x: 784, y: 467, label: 'FL', name: 'Florida' },
+                  { x: 469, y: 365, label: 'TX', name: 'Texas' },
+                  { x: 120, y: 150, label: 'CA', name: 'California' },
+                  { x: 120, y: 60, label: 'WA', name: 'Washington' },
+                  { x: 667, y: 240, label: 'IL', name: 'Illinois' },
+                ].map((market, i) => (
+                  <g key={i}>
+                    {/* Connection line */}
+                    <line
+                      x1="713"
+                      y1="150"
+                      x2={market.x}
+                      y2={market.y}
+                      stroke="hsl(var(--primary))"
+                      strokeWidth="1.5"
+                      strokeDasharray="4,4"
+                      opacity="0.4"
+                    />
+                    {/* Market indicator */}
+                    <circle
+                      cx={market.x}
+                      cy={market.y}
+                      r="6"
+                      fill="hsl(35, 91%, 51%)"
+                      stroke="hsl(var(--foreground))"
+                      strokeWidth="2"
+                      className="cursor-pointer hover:r-8 transition-all"
+                      onMouseEnter={() => setHoveredState(market.label)}
+                      onMouseLeave={() => setHoveredState(null)}
+                    />
+                  </g>
+                ))}
+
+                {/* Flagship location - Sterling Heights, MI */}
+                <g>
+                  <circle
+                    cx="713"
+                    cy="150"
+                    r="50"
+                    fill="url(#flagshipGlow)"
+                  />
+                  <circle
+                    cx="713"
+                    cy="150"
+                    r="12"
+                    fill="hsl(var(--primary))"
+                    stroke="hsl(var(--foreground))"
+                    strokeWidth="2"
+                  />
+                  <text
+                    x="713"
+                    y="135"
+                    textAnchor="middle"
+                    fill="hsl(var(--foreground))"
+                    fontSize="12"
+                    fontWeight="700"
+                  >
+                    FLAGSHIP HQ
+                  </text>
+                  <text
+                    x="713"
+                    y="180"
+                    textAnchor="middle"
+                    fill="hsl(var(--foreground))"
+                    fontSize="10"
+                    fontWeight="600"
+                  >
+                    Sterling Heights, MI
+                  </text>
+                </g>
+
+                {/* Legend */}
+                <g transform="translate(720, 420)">
+                  <rect width="200" height="140" fill="hsl(var(--card))" opacity="0.95" rx="8" stroke="hsl(var(--border))" strokeWidth="1" />
+                  <text x="10" y="25" fill="hsl(var(--foreground))" fontSize="14" fontWeight="700">
+                    Network Legend
+                  </text>
+                  
+                  <circle cx="20" cy="50" r="6" fill="hsl(var(--primary))" stroke="hsl(var(--foreground))" strokeWidth="2" />
+                  <text x="35" y="55" fill="hsl(var(--foreground))" fontSize="11">
+                    Flagship Headquarters
+                  </text>
+                  
+                  <circle cx="20" cy="80" r="6" fill="hsl(35, 91%, 51%)" stroke="hsl(var(--foreground))" strokeWidth="2" />
+                  <text x="35" y="85" fill="hsl(var(--foreground))" fontSize="11">
+                    Expanding Markets
+                  </text>
+                  
+                  <line x1="20" y1="105" x2="35" y2="105" stroke="hsl(var(--primary))" strokeWidth="1.5" strokeDasharray="4,4" />
+                  <text x="40" y="110" fill="hsl(var(--foreground))" fontSize="11">
+                    Network Connection
+                  </text>
+                  
+                  <circle cx="20" cy="130" r="10" fill="url(#expansionGlow)" opacity="0.5" />
+                  <text x="35" y="135" fill="hsl(var(--foreground))" fontSize="11">
+                    Growth Radius
+                  </text>
+                </g>
               </svg>
 
               {/* Hover Tooltip */}
-              {hoveredState && statesData[hoveredState] && (
-                <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-card/95 backdrop-blur-md border-2 border-border rounded-lg p-4 shadow-2xl z-50 animate-fade-in">
-                  <div className="font-bold text-lg mb-2">
-                    {statesData[hoveredState].name}
+              {hoveredState && (
+                <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-card/95 backdrop-blur-md border-2 border-primary/20 rounded-lg p-4 shadow-2xl z-50 animate-fade-in">
+                  <div className="font-bold text-lg text-foreground">
+                    {hoveredState} - Expanding Market
                   </div>
-                  <div className="text-sm text-muted-foreground font-medium mb-2">
-                    Service Lines:
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {statesData[hoveredState].businessLines?.map((bl) => (
-                      <div
-                        key={bl}
-                        className="text-xs px-2 py-1 rounded-md font-medium text-white"
-                        style={{
-                          backgroundColor: businessLines[bl].color,
-                          boxShadow: `0 2px 8px ${businessLines[bl].color}40`,
-                        }}
-                      >
-                        {businessLines[bl].name}
-                      </div>
-                    ))}
-                  </div>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    CT1 Network Growth Area
+                  </p>
                 </div>
               )}
             </div>
           </Card>
 
-          {/* Legend */}
-          <div className="mt-10">
-            <h3 className="text-xl font-bold mb-4 text-center">Service Lines</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {Object.entries(businessLines).map(([key, value]) => (
-                <Card
-                  key={key}
-                  className="p-4 bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="w-4 h-4 rounded-full shadow-lg"
-                      style={{
-                        backgroundColor: value.color,
-                        boxShadow: `0 2px 12px ${value.color}60`,
-                      }}
-                    ></div>
-                    <span className="text-sm font-medium">{value.name}</span>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </div>
-
           {/* Stats */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
             <Card className="p-6 text-center bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
-              <div className="text-4xl font-bold text-primary mb-2">
-                {activeStates.length}
-              </div>
-              <div className="text-muted-foreground">Active States</div>
+              <div className="text-4xl font-bold text-primary mb-2">1</div>
+              <div className="text-muted-foreground">Flagship Headquarters</div>
+              <div className="text-sm text-muted-foreground mt-1">Sterling Heights, MI</div>
             </Card>
             <Card className="p-6 text-center bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
-              <div className="text-4xl font-bold text-primary mb-2">
-                {Object.keys(businessLines).length}
-              </div>
-              <div className="text-muted-foreground">Service Lines</div>
+              <div className="text-4xl font-bold text-primary mb-2">50+</div>
+              <div className="text-muted-foreground">Expanding Markets</div>
+              <div className="text-sm text-muted-foreground mt-1">Nationwide Growth</div>
             </Card>
             <Card className="p-6 text-center bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
               <div className="text-4xl font-bold text-primary mb-2">24/7</div>
               <div className="text-muted-foreground">Network Support</div>
+              <div className="text-sm text-muted-foreground mt-1">Always Available</div>
             </Card>
           </div>
 
