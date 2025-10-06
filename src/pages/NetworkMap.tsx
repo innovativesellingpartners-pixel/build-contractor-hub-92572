@@ -130,152 +130,159 @@ export default function NetworkMap() {
           <Card className="p-6 md:p-12 bg-card/30 backdrop-blur-sm border-2 relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent"></div>
             <div className="relative">
-              <svg viewBox="0 0 960 600" className="w-full h-auto">
-                <defs>
-                  {/* Glow effect for flagship */}
-                  <radialGradient id="flagshipGlow" cx="50%" cy="50%" r="50%">
-                    <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.8" />
-                    <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0" />
-                  </radialGradient>
-                  
-                  {/* Expansion ripple */}
-                  <radialGradient id="expansionGlow" cx="50%" cy="50%" r="50%">
-                    <stop offset="0%" stopColor="hsl(35, 91%, 51%)" stopOpacity="0.3" />
-                    <stop offset="100%" stopColor="hsl(35, 91%, 51%)" stopOpacity="0" />
-                  </radialGradient>
-                </defs>
+              {/* US Map Background */}
+              <div className="relative w-full" style={{ aspectRatio: '16/10' }}>
+                <img 
+                  src={require("@/assets/us-map-reference.webp")} 
+                  alt="US Map" 
+                  className="w-full h-full object-contain opacity-20"
+                />
+                
+                {/* Overlay for flagship and markets */}
+                <svg 
+                  viewBox="0 0 1000 600" 
+                  className="absolute inset-0 w-full h-full"
+                  style={{ pointerEvents: 'none' }}
+                >
+                  <defs>
+                    {/* Glow effect for flagship */}
+                    <radialGradient id="flagshipGlow" cx="50%" cy="50%" r="50%">
+                      <stop offset="0%" stopColor="rgb(239, 68, 68)" stopOpacity="0.8" />
+                      <stop offset="100%" stopColor="rgb(239, 68, 68)" stopOpacity="0" />
+                    </radialGradient>
+                    
+                    {/* Expansion ripple */}
+                    <radialGradient id="expansionGlow" cx="50%" cy="50%" r="50%">
+                      <stop offset="0%" stopColor="rgb(251, 146, 60)" stopOpacity="0.4" />
+                      <stop offset="100%" stopColor="rgb(251, 146, 60)" stopOpacity="0" />
+                    </radialGradient>
+                  </defs>
 
-                {/* Render all US states - muted */}
-                {Object.entries(statePaths).map(([abbr, path]) => (
-                  <path
-                    key={abbr}
-                    d={path}
-                    fill="hsl(var(--muted))"
-                    stroke="hsl(var(--border))"
-                    strokeWidth="1"
-                    opacity="0.3"
-                  />
-                ))}
-
-                {/* Expansion circles from Sterling Heights, MI */}
-                {/* Michigan (Sterling Heights) is approximately at (713, 150) */}
-                <g className="animate-pulse" style={{ animationDuration: '3s' }}>
-                  <circle cx="713" cy="150" r="180" fill="url(#expansionGlow)" />
-                  <circle cx="713" cy="150" r="260" fill="url(#expansionGlow)" opacity="0.6" />
-                  <circle cx="713" cy="150" r="340" fill="url(#expansionGlow)" opacity="0.3" />
-                </g>
-
-                {/* Connection lines to major markets */}
-                {[
-                  { x: 863, y: 205, label: 'NY', name: 'New York' },
-                  { x: 197, y: 282, label: 'AZ', name: 'Arizona' },
-                  { x: 784, y: 467, label: 'FL', name: 'Florida' },
-                  { x: 469, y: 365, label: 'TX', name: 'Texas' },
-                  { x: 120, y: 150, label: 'CA', name: 'California' },
-                  { x: 120, y: 60, label: 'WA', name: 'Washington' },
-                  { x: 667, y: 240, label: 'IL', name: 'Illinois' },
-                ].map((market, i) => (
-                  <g key={i}>
-                    {/* Connection line */}
-                    <line
-                      x1="713"
-                      y1="150"
-                      x2={market.x}
-                      y2={market.y}
-                      stroke="hsl(var(--primary))"
-                      strokeWidth="1.5"
-                      strokeDasharray="4,4"
-                      opacity="0.4"
-                    />
-                    {/* Market indicator */}
-                    <circle
-                      cx={market.x}
-                      cy={market.y}
-                      r="6"
-                      fill="hsl(35, 91%, 51%)"
-                      stroke="hsl(var(--foreground))"
-                      strokeWidth="2"
-                      className="cursor-pointer hover:r-8 transition-all"
-                      onMouseEnter={() => setHoveredState(market.label)}
-                      onMouseLeave={() => setHoveredState(null)}
-                    />
+                  {/* Expansion circles from Sterling Heights, MI */}
+                  <g className="animate-pulse" style={{ animationDuration: '4s', pointerEvents: 'none' }}>
+                    <circle cx="720" cy="280" r="100" fill="url(#expansionGlow)" />
+                    <circle cx="720" cy="280" r="170" fill="url(#expansionGlow)" opacity="0.6" />
+                    <circle cx="720" cy="280" r="240" fill="url(#expansionGlow)" opacity="0.3" />
                   </g>
-                ))}
 
-                {/* Flagship location - Sterling Heights, MI */}
-                <g>
-                  <circle
-                    cx="713"
-                    cy="150"
-                    r="50"
-                    fill="url(#flagshipGlow)"
-                  />
-                  <circle
-                    cx="713"
-                    cy="150"
-                    r="12"
-                    fill="hsl(var(--primary))"
-                    stroke="hsl(var(--foreground))"
-                    strokeWidth="2"
-                  />
-                  <text
-                    x="713"
-                    y="135"
-                    textAnchor="middle"
-                    fill="hsl(var(--foreground))"
-                    fontSize="12"
-                    fontWeight="700"
-                  >
-                    FLAGSHIP HQ
-                  </text>
-                  <text
-                    x="713"
-                    y="180"
-                    textAnchor="middle"
-                    fill="hsl(var(--foreground))"
-                    fontSize="10"
-                    fontWeight="600"
-                  >
-                    Sterling Heights, MI
-                  </text>
-                </g>
+                  {/* Connection lines to major markets */}
+                  {[
+                    { x: 880, y: 290, label: 'NY' },
+                    { x: 220, y: 380, label: 'AZ' },
+                    { x: 810, y: 520, label: 'FL' },
+                    { x: 480, y: 470, label: 'TX' },
+                    { x: 120, y: 330, label: 'CA' },
+                    { x: 140, y: 200, label: 'WA' },
+                    { x: 650, y: 320, label: 'IL' },
+                  ].map((market, i) => (
+                    <g key={i} style={{ pointerEvents: 'auto' }}>
+                      {/* Connection line */}
+                      <line
+                        x1="720"
+                        y1="280"
+                        x2={market.x}
+                        y2={market.y}
+                        stroke="rgb(239, 68, 68)"
+                        strokeWidth="2"
+                        strokeDasharray="5,5"
+                        opacity="0.5"
+                      />
+                      {/* Market indicator */}
+                      <circle
+                        cx={market.x}
+                        cy={market.y}
+                        r="8"
+                        fill="rgb(251, 146, 60)"
+                        stroke="rgb(255, 255, 255)"
+                        strokeWidth="2"
+                        className="cursor-pointer"
+                        onMouseEnter={() => setHoveredState(market.label)}
+                        onMouseLeave={() => setHoveredState(null)}
+                      />
+                      <text
+                        x={market.x}
+                        y={market.y - 15}
+                        textAnchor="middle"
+                        fill="rgb(255, 255, 255)"
+                        fontSize="14"
+                        fontWeight="700"
+                        style={{ pointerEvents: 'none' }}
+                      >
+                        {market.label}
+                      </text>
+                    </g>
+                  ))}
 
-                {/* Legend */}
-                <g transform="translate(720, 420)">
-                  <rect width="200" height="140" fill="hsl(var(--card))" opacity="0.95" rx="8" stroke="hsl(var(--border))" strokeWidth="1" />
-                  <text x="10" y="25" fill="hsl(var(--foreground))" fontSize="14" fontWeight="700">
-                    Network Legend
-                  </text>
-                  
-                  <circle cx="20" cy="50" r="6" fill="hsl(var(--primary))" stroke="hsl(var(--foreground))" strokeWidth="2" />
-                  <text x="35" y="55" fill="hsl(var(--foreground))" fontSize="11">
-                    Flagship Headquarters
-                  </text>
-                  
-                  <circle cx="20" cy="80" r="6" fill="hsl(35, 91%, 51%)" stroke="hsl(var(--foreground))" strokeWidth="2" />
-                  <text x="35" y="85" fill="hsl(var(--foreground))" fontSize="11">
-                    Expanding Markets
-                  </text>
-                  
-                  <line x1="20" y1="105" x2="35" y2="105" stroke="hsl(var(--primary))" strokeWidth="1.5" strokeDasharray="4,4" />
-                  <text x="40" y="110" fill="hsl(var(--foreground))" fontSize="11">
-                    Network Connection
-                  </text>
-                  
-                  <circle cx="20" cy="130" r="10" fill="url(#expansionGlow)" opacity="0.5" />
-                  <text x="35" y="135" fill="hsl(var(--foreground))" fontSize="11">
-                    Growth Radius
-                  </text>
-                </g>
-              </svg>
+                  {/* Flagship location - Sterling Heights, MI */}
+                  <g style={{ pointerEvents: 'none' }}>
+                    <circle
+                      cx="720"
+                      cy="280"
+                      r="60"
+                      fill="url(#flagshipGlow)"
+                    />
+                    <circle
+                      cx="720"
+                      cy="280"
+                      r="14"
+                      fill="rgb(239, 68, 68)"
+                      stroke="rgb(255, 255, 255)"
+                      strokeWidth="3"
+                    />
+                    <text
+                      x="720"
+                      y="260"
+                      textAnchor="middle"
+                      fill="rgb(255, 255, 255)"
+                      fontSize="14"
+                      fontWeight="700"
+                    >
+                      FLAGSHIP HQ
+                    </text>
+                    <text
+                      x="720"
+                      y="320"
+                      textAnchor="middle"
+                      fill="rgb(255, 255, 255)"
+                      fontSize="12"
+                      fontWeight="600"
+                    >
+                      Sterling Heights, MI
+                    </text>
+                  </g>
+
+                  {/* Legend */}
+                  <g transform="translate(750, 450)">
+                    <rect width="220" height="130" fill="rgba(0, 0, 0, 0.8)" rx="8" stroke="rgb(255, 255, 255)" strokeWidth="1" />
+                    <text x="10" y="25" fill="rgb(255, 255, 255)" fontSize="14" fontWeight="700">
+                      Network Legend
+                    </text>
+                    
+                    <circle cx="20" cy="50" r="7" fill="rgb(239, 68, 68)" stroke="rgb(255, 255, 255)" strokeWidth="2" />
+                    <text x="35" y="55" fill="rgb(255, 255, 255)" fontSize="11">
+                      Flagship Headquarters
+                    </text>
+                    
+                    <circle cx="20" cy="78" r="7" fill="rgb(251, 146, 60)" stroke="rgb(255, 255, 255)" strokeWidth="2" />
+                    <text x="35" y="83" fill="rgb(255, 255, 255)" fontSize="11">
+                      Expanding Markets
+                    </text>
+                    
+                    <line x1="15" y1="105" x2="35" y2="105" stroke="rgb(239, 68, 68)" strokeWidth="2" strokeDasharray="5,5" />
+                    <text x="40" y="110" fill="rgb(255, 255, 255)" fontSize="11">
+                      Network Connection
+                    </text>
+                  </g>
+                </svg>
+              </div>
 
               {/* Hover Tooltip */}
               {hoveredState && (
-                <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-card/95 backdrop-blur-md border-2 border-primary/20 rounded-lg p-4 shadow-2xl z-50 animate-fade-in">
-                  <div className="font-bold text-lg text-foreground">
+                <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-black/90 backdrop-blur-md border-2 border-red-500/50 rounded-lg p-4 shadow-2xl z-50">
+                  <div className="font-bold text-lg text-white">
                     {hoveredState} - Expanding Market
                   </div>
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <p className="text-sm text-gray-300 mt-1">
                     CT1 Network Growth Area
                   </p>
                 </div>
