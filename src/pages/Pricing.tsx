@@ -26,7 +26,7 @@ export function Pricing() {
   const tiers = [
     {
       id: "launch",
-      name: "LAUNCH Growth Starter",
+      name: "CT1 LAUNCH Growth Starter",
       subtitle: "Tier 1",
       price: 50,
       originalPrice: null,
@@ -42,7 +42,7 @@ export function Pricing() {
     },
     {
       id: "growth",
-      name: "Growth Business Builder", 
+      name: "Tier 2 - CT1 - Tier 2 - Growth Business Builder", 
       subtitle: "Tier 2",
       price: 200,
       originalPrice: null,
@@ -132,8 +132,8 @@ export function Pricing() {
                 )}
                 
                 <CardHeader className="text-center pb-6">
-                  <div className="flex justify-center mb-4 text-primary">
-                    {tier.icon}
+                  <div className="flex justify-center mb-4">
+                    <img src={ct1Logo} alt="CT1 Logo" className="h-16 w-16" />
                   </div>
                   <div className="space-y-2">
                     <p className="text-sm font-semibold text-primary">{tier.subtitle}</p>
@@ -187,8 +187,8 @@ export function Pricing() {
                 className="relative p-6 opacity-75"
               >
                 <CardHeader className="text-center pb-6">
-                  <div className="flex justify-center mb-4 text-primary">
-                    {tier.icon}
+                  <div className="flex justify-center mb-4">
+                    <img src={ct1Logo} alt="CT1 Logo" className="h-16 w-16" />
                   </div>
                   <div className="space-y-2">
                     <p className="text-sm font-semibold text-primary">{tier.subtitle}</p>
