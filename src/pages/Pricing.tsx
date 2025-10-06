@@ -61,7 +61,7 @@ export function Pricing() {
     },
     {
       id: "accel",
-      name: "Accel! Market Dominator",
+      name: "CT1 Market Dominator",
       subtitle: "Tier 3 - Coming Soon",
       price: null,
       originalPrice: null,
