@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bot, Send, Loader2, Lock, Sparkles, X, Minimize2 } from "lucide-react";
+import { Bot, Send, Loader2, Lock, Sparkles, X, Minimize2, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import ct1Logo from "@/assets/ct1-logo-main.png";
@@ -11,6 +11,8 @@ import ct1Logo from "@/assets/ct1-logo-main.png";
 interface Message {
   role: "user" | "assistant";
   content: string;
+  pdfData?: string;
+  fileName?: string;
 }
 
 const MAX_FREE_PROMPTS = 3;
@@ -101,6 +103,22 @@ export function FloatingPocketbot({ onClose }: FloatingPocketbotProps) {
           throw new Error("AI usage limit reached. Please contact support.");
         }
         throw new Error("Failed to get response from AI");
+      }
+
+      // Check if response is JSON (PDF response) or streaming
+      const contentType = response.headers.get("content-type");
+      if (contentType?.includes("application/json")) {
+        const pdfResponse = await response.json();
+        if (pdfResponse.type === "pdf") {
+          setMessages([...newMessages, {
+            role: "assistant",
+            content: pdfResponse.content,
+            pdfData: pdfResponse.pdfData,
+            fileName: pdfResponse.fileName
+          }]);
+          setIsLoading(false);
+          return;
+        }
       }
 
       const reader = response.body?.getReader();
@@ -288,6 +306,22 @@ export function FloatingPocketbot({ onClose }: FloatingPocketbotProps) {
                     }`}
                   >
                     <p className="whitespace-pre-wrap leading-relaxed">{message.content}</p>
+                    {message.pdfData && message.fileName && (
+                      <Button
+                        onClick={() => {
+                          const link = document.createElement('a');
+                          link.href = message.pdfData!;
+                          link.download = message.fileName!;
+                          link.click();
+                        }}
+                        variant="outline"
+                        size="sm"
+                        className="mt-2 w-full text-xs"
+                      >
+                        <Download className="h-3 w-3 mr-1" />
+                        Download PDF
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))}

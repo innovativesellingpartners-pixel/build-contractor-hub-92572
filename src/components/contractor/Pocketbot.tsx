@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bot, Send, Loader2, Lock, Sparkles } from "lucide-react";
+import { Bot, Send, Loader2, Lock, Sparkles, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import ct1Logo from "@/assets/ct1-logo-main.png";
@@ -11,6 +11,8 @@ import ct1Logo from "@/assets/ct1-logo-main.png";
 interface Message {
   role: "user" | "assistant";
   content: string;
+  pdfData?: string;
+  fileName?: string;
 }
 
 const MAX_FREE_PROMPTS = 3;
@@ -100,6 +102,22 @@ export function Pocketbot() {
           throw new Error("AI usage limit reached. Please contact support.");
         }
         throw new Error("Failed to get response from AI");
+      }
+
+      // Check if response is JSON (PDF response) or streaming
+      const contentType = response.headers.get("content-type");
+      if (contentType?.includes("application/json")) {
+        const pdfResponse = await response.json();
+        if (pdfResponse.type === "pdf") {
+          setMessages([...newMessages, {
+            role: "assistant",
+            content: pdfResponse.content,
+            pdfData: pdfResponse.pdfData,
+            fileName: pdfResponse.fileName
+          }]);
+          setIsLoading(false);
+          return;
+        }
       }
 
       const reader = response.body?.getReader();
@@ -281,6 +299,22 @@ export function Pocketbot() {
                       }`}
                     >
                       <p className="whitespace-pre-wrap leading-relaxed text-sm md:text-[15px]">{message.content}</p>
+                      {message.pdfData && message.fileName && (
+                        <Button
+                          onClick={() => {
+                            const link = document.createElement('a');
+                            link.href = message.pdfData!;
+                            link.download = message.fileName!;
+                            link.click();
+                          }}
+                          variant="outline"
+                          size="sm"
+                          className="mt-3 w-full"
+                        >
+                          <Download className="h-4 w-4 mr-2" />
+                          Download PDF
+                        </Button>
+                      )}
                     </div>
                     {message.role === "user" && (
                       <div className="flex-shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-xl bg-gradient-to-br from-primary/30 to-primary/20 flex items-center justify-center border border-primary/40">

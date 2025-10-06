@@ -1,8 +1,47 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { jsPDF } from "https://esm.sh/jspdf@2.5.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+// PDF generation tool
+const generatePDF = (content: { title: string; sections: Array<{ heading: string; content: string }> }) => {
+  const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const margin = 20;
+  const maxWidth = pageWidth - 2 * margin;
+  let y = margin;
+
+  // Title
+  doc.setFontSize(18);
+  doc.setFont(undefined, 'bold');
+  doc.text(content.title, margin, y);
+  y += 15;
+
+  // Sections
+  doc.setFontSize(12);
+  content.sections.forEach((section) => {
+    // Check if we need a new page
+    if (y > doc.internal.pageSize.getHeight() - 30) {
+      doc.addPage();
+      y = margin;
+    }
+
+    // Section heading
+    doc.setFont(undefined, 'bold');
+    doc.text(section.heading, margin, y);
+    y += 8;
+
+    // Section content
+    doc.setFont(undefined, 'normal');
+    const lines = doc.splitTextToSize(section.content, maxWidth);
+    doc.text(lines, margin, y);
+    y += lines.length * 7 + 10;
+  });
+
+  return doc.output('dataurlstring');
 };
 
 serve(async (req) => {
@@ -17,6 +56,38 @@ serve(async (req) => {
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
+
+    const tools = [
+      {
+        type: "function",
+        function: {
+          name: "generate_pdf",
+          description: "Generate a PDF document with structured content. Use this when users ask for a PDF report, guide, checklist, or any document they want to download.",
+          parameters: {
+            type: "object",
+            properties: {
+              title: {
+                type: "string",
+                description: "The main title of the PDF document"
+              },
+              sections: {
+                type: "array",
+                description: "Array of sections, each with a heading and content",
+                items: {
+                  type: "object",
+                  properties: {
+                    heading: { type: "string", description: "Section heading" },
+                    content: { type: "string", description: "Section content/body text" }
+                  },
+                  required: ["heading", "content"]
+                }
+              }
+            },
+            required: ["title", "sections"]
+          }
+        }
+      }
+    ];
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -39,6 +110,8 @@ IMPORTANT: You ONLY provide guidance on these specific topics:
 - Customer relationship management
 - Construction industry best practices
 
+You can generate PDF documents for users when they request guides, checklists, reports, or any business documents.
+
 STRICT TOPIC ENFORCEMENT:
 If a user asks about ANY topic outside of trades, business, sales training, project management, estimating, or construction-related topics, you MUST respond with EXACTLY this message:
 
@@ -54,6 +127,7 @@ You are knowledgeable, professional, friendly, and provide actionable advice wit
           },
           ...messages,
         ],
+        tools: tools,
         stream: true,
       }),
     });
@@ -88,7 +162,114 @@ You are knowledgeable, professional, friendly, and provide actionable advice wit
       );
     }
 
-    return new Response(response.body, {
+    // Check if response contains tool calls
+    const reader = response.body?.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    let toolCalls: any[] = [];
+    let accumulatedContent = "";
+
+    if (reader) {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const data = line.slice(6);
+            if (data === '[DONE]') continue;
+            
+            try {
+              const parsed = JSON.parse(data);
+              const delta = parsed.choices?.[0]?.delta;
+              
+              if (delta?.tool_calls) {
+                toolCalls.push(...delta.tool_calls);
+              }
+              if (delta?.content) {
+                accumulatedContent += delta.content;
+              }
+            } catch (e) {
+              // Ignore parse errors for partial chunks
+            }
+          }
+        }
+      }
+    }
+
+    // If tool calls detected, handle them
+    if (toolCalls.length > 0) {
+      console.log("Tool calls detected:", toolCalls);
+      
+      for (const toolCall of toolCalls) {
+        if (toolCall.function?.name === "generate_pdf") {
+          const args = JSON.parse(toolCall.function.arguments);
+          const pdfDataUrl = generatePDF(args);
+          
+          // Return the PDF as a special message format
+          return new Response(
+            JSON.stringify({ 
+              type: "pdf",
+              content: "I've generated your PDF document. Click below to download it.",
+              pdfData: pdfDataUrl,
+              fileName: `${args.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`
+            }),
+            {
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+            }
+          );
+        }
+      }
+    }
+
+    // If no tool calls, stream the response normally
+    const streamResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: [
+          {
+            role: "system",
+            content: `You are CT1 Pocketbot, an expert AI assistant specializing in helping contractors grow their business. 
+
+IMPORTANT: You ONLY provide guidance on these specific topics:
+- Trades and construction work
+- Business management and growth strategies
+- Project management and estimating
+- Sales training and sales data
+- Customer relationship management
+- Construction industry best practices
+
+You can generate PDF documents for users when they request guides, checklists, reports, or any business documents.
+
+STRICT TOPIC ENFORCEMENT:
+If a user asks about ANY topic outside of trades, business, sales training, project management, estimating, or construction-related topics, you MUST respond with EXACTLY this message:
+
+"We apologize for the inconvenience, the CT1 Pocketbot is only trained to give responses related to the trades, business and Sales Training and development, project management and estimating"
+
+Do NOT answer questions about:
+- General knowledge, trivia, or non-business topics
+- Personal advice unrelated to contracting business
+- Technical support for non-business software
+- Any topic outside the scope listed above
+
+You are knowledgeable, professional, friendly, and provide actionable advice within your scope. Keep responses clear, concise, and practical. When appropriate, suggest using CT1's suite of tools and features to help solve their challenges.`
+          },
+          ...messages,
+        ],
+        stream: true,
+      }),
+    });
+
+    return new Response(streamResponse.body, {
       headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
     });
   } catch (error) {
