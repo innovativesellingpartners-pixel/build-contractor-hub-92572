@@ -17,8 +17,9 @@ export function Auth() {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [showJoinOptions, setShowJoinOptions] = useState(false);
+  const [showResetPassword, setShowResetPassword] = useState(false);
   const navigate = useNavigate();
-  const { signIn, signUp, user } = useAuth();
+  const { signIn, signUp, user, resetPassword } = useAuth();
 
   // Redirect if already logged in
   useEffect(() => {
@@ -87,6 +88,33 @@ export function Auth() {
     }
   };
 
+  const handleResetPassword = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
+    setMessage("");
+    
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get("reset-email") as string;
+
+    try {
+      const { error } = await resetPassword(email);
+      if (error) {
+        setError(error.message);
+      } else {
+        setMessage("Password reset link sent! Check your email.");
+        setTimeout(() => {
+          setShowResetPassword(false);
+          setMessage("");
+        }, 3000);
+      }
+    } catch (err) {
+      setError("An unexpected error occurred");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="max-w-md w-full space-y-8">
@@ -112,47 +140,122 @@ export function Auth() {
               </TabsList>
 
               <TabsContent value="signin" className="space-y-4">
-                <form onSubmit={handleSignIn} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="signin-email">Email</Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="signin-email"
-                        name="email"
-                        type="email"
-                        placeholder="Enter your email"
-                        className="pl-10"
-                        required
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="signin-password">Password</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="signin-password"
-                        name="password"
-                        type="password"
-                        placeholder="Enter your password"
-                        className="pl-10"
-                        required
-                      />
-                    </div>
-                  </div>
+                {!showResetPassword ? (
+                  <>
+                    <form onSubmit={handleSignIn} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="signin-email">Email</Label>
+                        <div className="relative">
+                          <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            id="signin-email"
+                            name="email"
+                            type="email"
+                            placeholder="Enter your email"
+                            className="pl-10"
+                            required
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="signin-password">Password</Label>
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            id="signin-password"
+                            name="password"
+                            type="password"
+                            placeholder="Enter your password"
+                            className="pl-10"
+                            required
+                          />
+                        </div>
+                      </div>
 
-                  {error && (
-                    <Alert variant="destructive">
-                      <AlertDescription>{error}</AlertDescription>
-                    </Alert>
-                  )}
+                      <div className="flex justify-end">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowResetPassword(true);
+                            setError("");
+                            setMessage("");
+                          }}
+                          className="text-sm text-primary hover:underline"
+                        >
+                          Forgot password?
+                        </button>
+                      </div>
 
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? "Signing in..." : "Sign In"}
-                  </Button>
-                </form>
+                      {error && (
+                        <Alert variant="destructive">
+                          <AlertDescription>{error}</AlertDescription>
+                        </Alert>
+                      )}
+
+                      <Button type="submit" className="w-full" disabled={isLoading}>
+                        {isLoading ? "Signing in..." : "Sign In"}
+                      </Button>
+                    </form>
+                  </>
+                ) : (
+                  <>
+                    <div className="space-y-4">
+                      <div className="text-center space-y-2">
+                        <h3 className="text-lg font-semibold">Reset Password</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Enter your email and we'll send you a link to reset your password.
+                        </p>
+                      </div>
+
+                      <form onSubmit={handleResetPassword} className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="reset-email">Email</Label>
+                          <div className="relative">
+                            <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                            <Input
+                              id="reset-email"
+                              name="reset-email"
+                              type="email"
+                              placeholder="Enter your email"
+                              className="pl-10"
+                              required
+                            />
+                          </div>
+                        </div>
+
+                        {error && (
+                          <Alert variant="destructive">
+                            <AlertDescription>{error}</AlertDescription>
+                          </Alert>
+                        )}
+
+                        {message && (
+                          <Alert>
+                            <AlertDescription>{message}</AlertDescription>
+                          </Alert>
+                        )}
+
+                        <Button type="submit" className="w-full" disabled={isLoading}>
+                          {isLoading ? "Sending..." : "Send Reset Link"}
+                        </Button>
+
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="w-full"
+                          onClick={() => {
+                            setShowResetPassword(false);
+                            setError("");
+                            setMessage("");
+                          }}
+                        >
+                          Back to Sign In
+                        </Button>
+                      </form>
+                    </div>
+                  </>
+                )}
               </TabsContent>
 
               <TabsContent value="signup" className="space-y-4">
