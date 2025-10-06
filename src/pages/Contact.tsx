@@ -86,7 +86,7 @@ export function Contact() {
               <Link to="/about" className="text-foreground hover:text-primary transition-colors font-medium">About</Link>
               <Link to="/for-contractors" className="text-foreground hover:text-primary transition-colors font-medium">For Contractors</Link>
               <Link 
-                to="/subscribe" 
+                to="/pricing" 
                 className="bg-primary text-primary-foreground px-6 py-2 rounded-lg font-bold hover:bg-primary-hover transition-colors"
               >
                 Get Started
@@ -269,7 +269,7 @@ export function Contact() {
                 <li><Link to="/about" className="hover:text-primary transition-colors">About Us</Link></li>
                 <li><Link to="/for-contractors" className="hover:text-primary transition-colors">For Contractors</Link></li>
                 <li><Link to="/find-contractor" className="hover:text-primary transition-colors">Find Contractors</Link></li>
-                <li><Link to="/subscribe" className="hover:text-primary transition-colors">Get Started</Link></li>
+                <li><Link to="/pricing" className="hover:text-primary transition-colors">Get Started</Link></li>
               </ul>
             </div>
             

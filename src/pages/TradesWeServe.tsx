@@ -86,7 +86,7 @@ export const TradesWeServe = () => {
             CT1 is built for contractors across all major trades. Whether you're just starting out or ready to dominate your market, 
             we have the tools, training, and leads to help you succeed.
           </p>
-          <Link to="/auth">
+          <Link to="/pricing">
             <Button size="lg">Get Started Today</Button>
           </Link>
         </div>

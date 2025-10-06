@@ -320,7 +320,7 @@ export default function NetworkMap() {
                 contractors across America
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link to="/contact">
+                <Link to="/pricing">
                   <Button size="lg" className="w-full sm:w-auto">
                     Get Started
                   </Button>

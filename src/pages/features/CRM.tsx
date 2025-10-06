@@ -78,7 +78,7 @@ export function CRM() {
             <nav className="hidden md:flex items-center space-x-8">
               <Link to="/business-suite" className="text-foreground hover:text-primary transition-colors font-medium">Back to Suite</Link>
               <Link 
-                to="/auth" 
+                to="/pricing" 
                 className="bg-primary text-primary-foreground px-6 py-2 rounded-lg font-bold hover:bg-primary-hover transition-colors"
               >
                 Get Started

@@ -65,7 +65,7 @@ export function About() {
               <Link to="/for-contractors" className="text-foreground hover:text-primary transition-colors font-medium">For Contractors</Link>
               <Link to="/contact" className="text-foreground hover:text-primary transition-colors font-medium">Contact</Link>
               <Link 
-                to="/subscribe" 
+                to="/pricing" 
                 className="bg-primary text-primary-foreground px-6 py-2 rounded-lg font-bold hover:bg-primary-hover transition-colors"
               >
                 Get Started
@@ -190,7 +190,7 @@ export function About() {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/subscribe">
+            <Link to="/pricing">
               <Button size="lg" className="bg-background text-primary hover:bg-background/90 text-lg px-8 py-4 font-bold">
                 Get Started Today
                 <ArrowRight className="ml-2 h-5 w-5" />

@@ -77,7 +77,7 @@ export const WhatWeDo = () => {
             Everything you need in one place.
           </p>
           <div className="flex gap-4 justify-center">
-            <Link to="/auth">
+            <Link to="/pricing">
               <Button size="lg">Get Started</Button>
             </Link>
             <Link to="/contact">
