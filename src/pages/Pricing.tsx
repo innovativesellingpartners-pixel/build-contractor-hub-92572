@@ -116,13 +116,14 @@ export function Pricing() {
       {/* Pricing Tiers */}
       <section className="py-12 sm:py-16 md:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-            {tiers.map((tier) => (
+          {/* First 2 tiers side by side */}
+          <div className="grid sm:grid-cols-2 gap-6 sm:gap-8 mb-8">
+            {tiers.slice(0, 2).map((tier) => (
               <Card 
                 key={tier.id} 
                 className={`relative p-6 ${
                   tier.popular ? "border-primary shadow-lg ring-2 ring-primary/20" : ""
-                } ${tier.comingSoon ? "opacity-75" : ""}`}
+                }`}
               >
                 {tier.popular && (
                   <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground px-4 py-1">
@@ -140,23 +141,14 @@ export function Pricing() {
                   </div>
                   
                   <div className="mt-4">
-                    {tier.comingSoon ? (
-                      <div className="text-center">
-                        <p className="text-2xl font-bold text-muted-foreground">Coming Soon</p>
-                        <p className="text-sm text-muted-foreground line-through">
-                          ${tier.originalPrice}/month
-                        </p>
+                    <div className="text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        <span className="text-3xl font-bold text-foreground">
+                          ${tier.price}
+                        </span>
+                        <span className="text-muted-foreground">/month</span>
                       </div>
-                    ) : (
-                      <div className="text-center">
-                        <div className="flex items-center justify-center gap-2">
-                          <span className="text-3xl font-bold text-foreground">
-                            ${tier.price}
-                          </span>
-                          <span className="text-muted-foreground">/month</span>
-                        </div>
-                      </div>
-                    )}
+                    </div>
                   </div>
                   
                   <p className="text-muted-foreground text-sm mt-4">
@@ -175,27 +167,66 @@ export function Pricing() {
                   </ul>
 
                   <div className="pt-4">
-                    {tier.comingSoon ? (
-                      <Button 
-                        className="w-full" 
-                        variant="outline" 
-                        disabled
-                      >
-                        Coming Soon
-                      </Button>
-                    ) : (
-                      <Button 
-                        onClick={() => setSelectedTier({ id: tier.id, name: tier.name, price: tier.price })}
-                        className={`w-full ${
-                          tier.popular 
-                            ? "bg-primary text-primary-foreground hover:bg-primary/90" 
-                            : ""
-                        }`}
-                        variant={tier.popular ? "default" : "outline"}
-                      >
-                        Sign up for {tier.name}
-                      </Button>
-                    )}
+                    <Button 
+                      onClick={() => setSelectedTier({ id: tier.id, name: tier.name, price: tier.price })}
+                      className="w-full bg-red-600 text-white hover:bg-red-700"
+                    >
+                      Sign up for {tier.name}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Third tier below */}
+          <div className="max-w-2xl mx-auto">
+            {tiers.slice(2).map((tier) => (
+              <Card 
+                key={tier.id} 
+                className="relative p-6 opacity-75"
+              >
+                <CardHeader className="text-center pb-6">
+                  <div className="flex justify-center mb-4 text-primary">
+                    {tier.icon}
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-sm font-semibold text-primary">{tier.subtitle}</p>
+                    <CardTitle className="text-2xl font-bold">{tier.name}</CardTitle>
+                  </div>
+                  
+                  <div className="mt-4">
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-muted-foreground">Coming Soon</p>
+                      <p className="text-sm text-muted-foreground mt-2">
+                        Pricing TBD
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <p className="text-muted-foreground text-sm mt-4">
+                    {tier.description}
+                  </p>
+                </CardHeader>
+
+                <CardContent className="space-y-6">
+                  <ul className="space-y-3">
+                    {tier.features.map((feature, index) => (
+                      <li key={index} className="flex items-start gap-3">
+                        <CheckCircle className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                        <span className="text-sm text-foreground">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <div className="pt-4">
+                    <Button 
+                      className="w-full" 
+                      variant="outline" 
+                      disabled
+                    >
+                      Coming Soon
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
