@@ -62,8 +62,17 @@ export function TierCheckout({ tier, isOpen, onClose, onPaymentSuccess }: TierCh
 
       if (data?.success && data?.checkout_url) {
         console.log('Redirecting to:', data.checkout_url);
-        // Redirect to Clover's hosted checkout page
-        window.location.href = data.checkout_url;
+        // Try top-level navigation to avoid iframe issues
+        try {
+          if (window.top) {
+            (window.top as Window).location.href = data.checkout_url;
+          } else {
+            window.location.href = data.checkout_url;
+          }
+        } catch (e) {
+          console.warn('Top-level navigation blocked, opening new tab');
+          window.open(data.checkout_url, '_blank', 'noopener,noreferrer');
+        }
       } else {
         throw new Error(data?.message || 'Failed to create checkout session');
       }
