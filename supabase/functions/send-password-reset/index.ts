@@ -47,48 +47,31 @@ const handler = async (req: Request): Promise<Response> => {
       }
     );
 
-    // Check if user exists
-    const { data: userData, error: userError } = await supabaseAdmin.auth.admin.listUsers();
-    
-    if (userError) {
-      console.error("Error listing users:", userError);
-      return new Response(
-        JSON.stringify({ error: "Failed to process request" }),
-        {
-          status: 500,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        }
-      );
-    }
+    // Build redirect target back to the app
+    const origin = req.headers.get("origin") || "";
+    const defaultSite = Deno.env.get("SITE_URL") || "https://build-contractor-hub-92572.lovable.app";
+    const redirectTo = `${origin || defaultSite}/auth`;
 
-    const user = userData.users.find(u => u.email === email);
-
-    if (!user) {
-      // Don't reveal if user exists or not for security
-      console.log("User not found, but returning success");
-      return new Response(
-        JSON.stringify({ message: "If an account exists with this email, you will receive a password reset link" }),
-        {
-          status: 200,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        }
-      );
-    }
-
-    // Generate password reset link
+    // Generate password reset link (don't leak existence)
     const { data: resetData, error: resetError } = await supabaseAdmin.auth.admin.generateLink({
       type: 'recovery',
-      email: email,
+      email,
+      options: { redirectTo }
     });
 
     if (resetError || !resetData) {
+      // If user doesn't exist, return success message without sending email
+      if (resetError && typeof resetError.message === 'string' && resetError.message.toLowerCase().includes('no user')) {
+        console.log("No user for email, returning success to avoid leakage");
+        return new Response(
+          JSON.stringify({ message: "If an account exists with this email, you will receive a password reset link" }),
+          { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+      }
       console.error("Error generating reset link:", resetError);
       return new Response(
         JSON.stringify({ error: "Failed to generate reset link" }),
-        {
-          status: 500,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        }
+        { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
 
@@ -96,7 +79,6 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Extract the recovery link from the properties
     const recoveryLink = resetData.properties.action_link;
-
     // Send email via Resend
     const emailResponse = await resend.emails.send({
       from: "CT1 Network <onboarding@resend.dev>",
