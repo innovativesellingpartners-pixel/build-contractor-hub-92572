@@ -118,7 +118,7 @@ export function Dashboard() {
             <div className="flex items-center gap-2 md:gap-3">
               {isAdmin && (
                 <Button variant="outline" size="sm" asChild className="hover:bg-primary/10 transition-colors hidden sm:flex">
-                  <a href="/admin">Admin Dashboard</a>
+                  <Link to="/admin">Admin Dashboard</Link>
                 </Button>
               )}
               <Button variant="ghost" size="sm" onClick={handleLogout} className="hover:bg-destructive/10 hover:text-destructive transition-colors">
