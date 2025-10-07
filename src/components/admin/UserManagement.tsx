@@ -54,6 +54,8 @@ export const UserManagement = () => {
       phone?: string;
       contact_name?: string;
       role: 'user' | 'admin' | 'super_admin';
+      tier_id?: string;
+      billing_cycle?: string;
     }) => {
       const { data, error } = await supabase.functions.invoke('admin-create-user', {
         body: userData
@@ -137,6 +139,8 @@ export const UserManagement = () => {
       phone: formData.get('phone') as string,
       contact_name: formData.get('contact_name') as string,
       role: formData.get('role') as 'user' | 'admin' | 'super_admin',
+      tier_id: formData.get('tier_id') as string,
+      billing_cycle: formData.get('billing_cycle') as string,
     });
   };
 
@@ -250,6 +254,32 @@ export const UserManagement = () => {
                     <SelectItem value="user">User</SelectItem>
                     <SelectItem value="admin">Admin</SelectItem>
                     <SelectItem value="super_admin">Super Admin</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="create-tier">Subscription Tier</Label>
+                <Select name="tier_id" defaultValue="launch">
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="launch">Launch ($500/mo)</SelectItem>
+                    <SelectItem value="growth">Growth ($1000/mo)</SelectItem>
+                    <SelectItem value="accel">Accel ($1500/mo)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="create-billing">Billing Cycle</Label>
+                <Select name="billing_cycle" defaultValue="monthly">
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="monthly">Monthly</SelectItem>
+                    <SelectItem value="quarterly">Quarterly</SelectItem>
+                    <SelectItem value="yearly">Yearly</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

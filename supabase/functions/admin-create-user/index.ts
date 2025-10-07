@@ -42,7 +42,7 @@ serve(async (req) => {
 
     // Get request body with validation
     const body = await req.json();
-    const { email, password, company_name, phone, contact_name, role } = body;
+    const { email, password, company_name, phone, contact_name, role, tier_id, billing_cycle } = body;
 
     // Input validation
     if (!email || typeof email !== 'string' || !email.includes('@')) {
@@ -94,6 +94,23 @@ serve(async (req) => {
 
       if (roleError) {
         console.error("Role assignment error:", roleError);
+      }
+    }
+
+    // Create subscription if tier_id and billing_cycle are provided
+    if (tier_id && billing_cycle && ['launch', 'growth', 'accel'].includes(tier_id) && ['monthly', 'quarterly', 'yearly'].includes(billing_cycle)) {
+      const { error: subscriptionError } = await supabaseClient
+        .from("subscriptions")
+        .insert({
+          user_id: newUser.user.id,
+          tier_id: tier_id,
+          billing_cycle: billing_cycle,
+          status: 'active',
+          started_at: new Date().toISOString()
+        });
+
+      if (subscriptionError) {
+        console.error("Subscription creation error:", subscriptionError);
       }
     }
 
