@@ -92,7 +92,7 @@ serve(async (req) => {
 
     let result;
     if (existingRole) {
-      // Update existing role
+      // Update existing role (trigger will automatically log this)
       const { data, error } = await supabaseClient
         .from('user_roles')
         .update({ role: newRole })
@@ -104,7 +104,7 @@ serve(async (req) => {
       result = data;
       console.log('Role updated:', { userId, newRole, adminId: user.id });
     } else {
-      // Insert new role
+      // Insert new role (trigger will automatically log this)
       const { data, error } = await supabaseClient
         .from('user_roles')
         .insert({ user_id: userId, role: newRole })
@@ -115,19 +115,6 @@ serve(async (req) => {
       result = data;
       console.log('Role assigned:', { userId, newRole, adminId: user.id });
     }
-
-    // Log audit trail
-    await supabaseClient
-      .from('admin_audit_log')
-      .insert({
-        admin_user_id: user.id,
-        action: existingRole ? 'update_user_role' : 'assign_user_role',
-        target_user_id: userId,
-        details: {
-          old_role: existingRole?.role || null,
-          new_role: newRole
-        }
-      });
 
     return new Response(
       JSON.stringify({ success: true, data: result }),

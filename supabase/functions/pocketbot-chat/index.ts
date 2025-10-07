@@ -1,10 +1,13 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.58.0';
 import { jsPDF } from "https://esm.sh/jspdf@2.5.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+const RATE_LIMIT_PER_DAY = 50;
 
 // PDF generation tool
 const generatePDF = (content: { title: string; sections: Array<{ heading: string; content: string }> }) => {
@@ -50,6 +53,83 @@ serve(async (req) => {
   }
 
   try {
+    // Initialize Supabase client with service role for rate limiting
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Get user from auth header
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: "Authentication required" }),
+        {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: "Invalid authentication" }),
+        {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // SERVER-SIDE RATE LIMITING: Check usage
+    const today = new Date().toISOString().split('T')[0];
+    const { data: usage, error: usageError } = await supabase
+      .from('chatbot_usage')
+      .select('*')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (usageError) {
+      console.error('Error checking usage:', usageError);
+    }
+
+    // Initialize or reset usage if needed
+    if (!usage) {
+      await supabase.from('chatbot_usage').insert({
+        user_id: user.id,
+        prompt_count: 1,
+        last_reset_date: new Date().toISOString()
+      });
+    } else {
+      const lastReset = new Date(usage.last_reset_date).toISOString().split('T')[0];
+      
+      if (lastReset !== today) {
+        // Reset counter for new day
+        await supabase.from('chatbot_usage')
+          .update({ prompt_count: 1, last_reset_date: new Date().toISOString() })
+          .eq('user_id', user.id);
+      } else if (usage.prompt_count >= RATE_LIMIT_PER_DAY) {
+        // Rate limit exceeded
+        return new Response(
+          JSON.stringify({ 
+            error: `Daily limit of ${RATE_LIMIT_PER_DAY} prompts reached. Resets at midnight.`,
+            limit_exceeded: true
+          }),
+          {
+            status: 429,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
+        );
+      } else {
+        // Increment counter
+        await supabase.from('chatbot_usage')
+          .update({ prompt_count: usage.prompt_count + 1 })
+          .eq('user_id', user.id);
+      }
+    }
+
     const { messages } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     

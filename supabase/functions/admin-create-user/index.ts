@@ -40,11 +40,21 @@ serve(async (req) => {
       throw new Error("Insufficient permissions");
     }
 
-    // Get request body
-    const { email, password, company_name, phone, contact_name, role } = await req.json();
+    // Get request body with validation
+    const body = await req.json();
+    const { email, password, company_name, phone, contact_name, role } = body;
 
-    if (!email || !password) {
-      throw new Error("Email and password are required");
+    // Input validation
+    if (!email || typeof email !== 'string' || !email.includes('@')) {
+      throw new Error("Valid email is required");
+    }
+
+    if (!password || typeof password !== 'string' || password.length < 8) {
+      throw new Error("Password must be at least 8 characters");
+    }
+
+    if (role && !['user', 'admin', 'super_admin'].includes(role)) {
+      throw new Error("Invalid role. Must be one of: user, admin, super_admin");
     }
 
     // Create user in auth
@@ -73,7 +83,7 @@ serve(async (req) => {
       console.error("Profile creation error:", profileError);
     }
 
-    // Assign role
+    // Assign role (trigger will automatically log this)
     if (role && ['user', 'admin', 'super_admin'].includes(role)) {
       const { error: roleError } = await supabaseClient
         .from("user_roles")

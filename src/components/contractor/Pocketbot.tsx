@@ -6,6 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Bot, Send, Loader2, Lock, Sparkles, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
 import ct1Logo from "@/assets/ct1-logo-main.png";
 
 interface Message {
@@ -15,8 +16,7 @@ interface Message {
   fileName?: string;
 }
 
-const MAX_FREE_PROMPTS = 3;
-const SUBSCRIPTION_PRICE = 10;
+const DAILY_LIMIT = 50;
 
 export function Pocketbot() {
   const [messages, setMessages] = useState<Message[]>([
@@ -27,11 +27,6 @@ export function Pocketbot() {
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [promptCount, setPromptCount] = useState(() => {
-    const saved = localStorage.getItem('ct1_pocketbot_prompts');
-    return saved ? parseInt(saved, 10) : 0;
-  });
-  const [showPaywall, setShowPaywall] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -41,45 +36,27 @@ export function Pocketbot() {
     }
   }, [messages]);
 
-  const handleSubscribe = () => {
-    toast({
-      title: "Subscription Coming Soon",
-      description: `CT1 Pocketbot subscription for $${SUBSCRIPTION_PRICE}/month will be available soon!`,
-    });
-  };
-
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
 
-    // Check if user has exceeded free prompts
-    if (promptCount >= MAX_FREE_PROMPTS) {
-      setShowPaywall(true);
+    // Get auth session
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to use the Pocketbot.",
+        variant: "destructive"
+      });
       return;
     }
 
     const userMessage = input.trim();
     setInput("");
     
-    // Increment prompt count
-    const newPromptCount = promptCount + 1;
-    setPromptCount(newPromptCount);
-    localStorage.setItem('ct1_pocketbot_prompts', newPromptCount.toString());
-    
     // Add user message
     const newMessages = [...messages, { role: "user" as const, content: userMessage }];
     setMessages(newMessages);
     setIsLoading(true);
-
-    // Check if this is the 3rd prompt
-    if (newPromptCount === MAX_FREE_PROMPTS) {
-      setIsLoading(false);
-      setMessages([...newMessages, {
-        role: "assistant",
-        content: "You've reached your free prompt limit. Subscribe for $10/month to continue using CT1 Pocketbot!"
-      }]);
-      setShowPaywall(true);
-      return;
-    }
 
     try {
       const response = await fetch(
@@ -88,16 +65,23 @@ export function Pocketbot() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            Authorization: `Bearer ${session.access_token}`,
           },
           body: JSON.stringify({ messages: newMessages }),
         }
       );
 
+      if (response.status === 429) {
+        const errorData = await response.json();
+        setIsLoading(false);
+        setMessages([...newMessages, {
+          role: "assistant",
+          content: errorData.error || "You've reached your daily limit. Please try again tomorrow!"
+        }]);
+        return;
+      }
+
       if (!response.ok) {
-        if (response.status === 429) {
-          throw new Error("Rate limit exceeded. Please wait a moment and try again.");
-        }
         if (response.status === 402) {
           throw new Error("AI usage limit reached. Please contact support.");
         }
@@ -233,48 +217,29 @@ export function Pocketbot() {
           </div>
           <div className="text-right">
             <Badge 
-              variant={promptCount >= MAX_FREE_PROMPTS ? "destructive" : "secondary"}
+              variant="secondary"
               className="text-xs md:text-sm px-2 md:px-4 py-1 md:py-2"
             >
-              {promptCount}/{MAX_FREE_PROMPTS} Free
+              {DAILY_LIMIT} Daily Limit
             </Badge>
           </div>
         </div>
       </div>
 
-      {showPaywall ? (
-        <div className="flex-1 flex items-center justify-center p-6">
-          <Card className="max-w-md w-full border-2 border-primary/20 shadow-2xl">
-            <CardContent className="text-center space-y-6 p-8">
-              <div className="mx-auto w-20 h-20 bg-gradient-to-br from-primary/20 to-primary/10 rounded-full flex items-center justify-center border-2 border-primary/30 shadow-lg">
-                <Lock className="h-10 w-10 text-primary" />
-              </div>
-              <div>
-                <h3 className="text-3xl font-bold mb-3 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-                  Unlock Unlimited Access
-                </h3>
-                <p className="text-muted-foreground text-base">
-                  You've used all {MAX_FREE_PROMPTS} free prompts. Subscribe to continue getting expert guidance for your contracting business.
-                </p>
-              </div>
-              <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-8 rounded-xl border border-primary/20">
-                <p className="text-4xl font-bold mb-2">
-                  ${SUBSCRIPTION_PRICE}
-                  <span className="text-lg font-normal text-muted-foreground">/month</span>
-                </p>
-                <p className="text-sm text-muted-foreground font-medium">Unlimited prompts & expert advice</p>
-              </div>
-              <Button onClick={handleSubscribe} size="lg" className="w-full text-base py-6">
-                <Sparkles className="mr-2 h-5 w-5" />
-                Subscribe Now
-              </Button>
-              <p className="text-xs text-muted-foreground">
-                Cancel anytime. Questions? Contact our support team.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      ) : (
+      {/* Main Chat Area */}
+      <Card className="flex-1 m-4 md:m-6 border-2 border-primary/20 shadow-2xl overflow-hidden flex flex-col bg-gradient-to-br from-card/95 to-card backdrop-blur-sm">
+        <CardHeader className="border-b border-primary/10 bg-gradient-to-r from-primary/5 via-transparent to-primary/5">
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <div className="absolute inset-0 bg-primary/20 rounded-full blur-lg"></div>
+              <Bot className="relative h-8 w-8 text-primary" />
+            </div>
+            <div>
+              <CardTitle className="text-2xl">CT1 Pocketbot</CardTitle>
+              <CardDescription>Your AI business consultant</CardDescription>
+            </div>
+          </div>
+        </CardHeader>
         <div className="flex-1 flex flex-col overflow-hidden m-4">
           <Card className="flex-1 flex flex-col overflow-hidden border-2 border-primary/10 shadow-xl">
             <ScrollArea className="flex-1 p-6" ref={scrollRef}>
@@ -361,8 +326,8 @@ export function Pocketbot() {
               </div>
             </div>
           </Card>
-        </div>
-      )}
-    </div>
-  );
+        </Card>
+      </div>
+    );
+  }
 }

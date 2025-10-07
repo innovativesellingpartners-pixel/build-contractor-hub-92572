@@ -41,6 +41,33 @@ export type Database = {
         }
         Relationships: []
       }
+      chatbot_usage: {
+        Row: {
+          created_at: string
+          id: string
+          last_reset_date: string
+          prompt_count: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_reset_date?: string
+          prompt_count?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_reset_date?: string
+          prompt_count?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       course_lessons: {
         Row: {
           content: string | null
