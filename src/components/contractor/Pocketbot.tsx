@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bot, Send, Loader2, Lock, Sparkles, Download } from "lucide-react";
+import { Bot, Send, Loader2, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
@@ -200,15 +200,14 @@ export function Pocketbot() {
             <div className="relative">
               <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl"></div>
               <div className="relative bg-gradient-to-br from-primary/20 to-primary/10 p-2 md:p-3 rounded-2xl border-2 border-primary/30">
-                <img src={ct1Logo} alt="CT1" className="h-8 w-8 md:h-12 md:w-12" />
+                <img src={ct1Logo} alt="CT1 Logo" className="h-8 w-8 md:h-10 md:w-10 object-contain" />
               </div>
             </div>
             <div>
-              <div className="flex items-center gap-2 mb-1">
-                <h2 className="text-xl md:text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
                   CT1 Pocketbot
                 </h2>
-                <Sparkles className="h-4 w-4 md:h-5 md:w-5 text-primary animate-pulse" />
               </div>
               <p className="text-xs md:text-sm text-muted-foreground font-medium hidden sm:block">
                 Your AI-powered assistant for trades, business, sales training, project management, and estimating
@@ -240,94 +239,93 @@ export function Pocketbot() {
             </div>
           </div>
         </CardHeader>
-        <div className="flex-1 flex flex-col overflow-hidden m-4">
-          <Card className="flex-1 flex flex-col overflow-hidden border-2 border-primary/10 shadow-xl">
-            <ScrollArea className="flex-1 p-6" ref={scrollRef}>
-              <div className="space-y-6 max-w-4xl mx-auto">
-                {messages.map((message, index) => (
-                  <div
-                    key={index}
-                    className={`flex gap-2 md:gap-3 ${
-                      message.role === "user" ? "justify-end" : "justify-start"
-                    } animate-in fade-in slide-in-from-bottom-2 duration-500`}
-                  >
-                    {message.role === "assistant" && (
-                      <div className="flex-shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center border border-primary/30">
-                        <img src={ct1Logo} alt="CT1" className="h-5 w-5 md:h-6 md:w-6" />
-                      </div>
-                    )}
-                    <div
-                      className={`max-w-[80%] md:max-w-[75%] rounded-2xl p-3 md:p-4 shadow-md ${
-                        message.role === "user"
-                          ? "bg-gradient-to-br from-primary to-primary/90 text-primary-foreground border border-primary/20"
-                          : "bg-gradient-to-br from-muted/50 to-muted border border-border"
-                      }`}
-                    >
-                      <p className="whitespace-pre-wrap leading-relaxed text-sm md:text-[15px]">{message.content}</p>
-                      {message.pdfData && message.fileName && (
-                        <Button
-                          onClick={() => {
-                            const link = document.createElement('a');
-                            link.href = message.pdfData!;
-                            link.download = message.fileName!;
-                            link.click();
-                          }}
-                          variant="outline"
-                          size="sm"
-                          className="mt-3 w-full"
-                        >
-                          <Download className="h-4 w-4 mr-2" />
-                          Download PDF
-                        </Button>
-                      )}
-                    </div>
-                    {message.role === "user" && (
-                      <div className="flex-shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-xl bg-gradient-to-br from-primary/30 to-primary/20 flex items-center justify-center border border-primary/40">
-                        <span className="text-primary-foreground font-bold text-xs md:text-sm">You</span>
-                      </div>
-                    )}
+
+        <ScrollArea className="flex-1 p-6" ref={scrollRef}>
+          <div className="space-y-6 max-w-4xl mx-auto">
+            {messages.map((message, index) => (
+              <div
+                key={index}
+                className={`flex gap-2 md:gap-3 ${
+                  message.role === "assistant" ? "justify-start" : "justify-end"
+                } animate-in fade-in slide-in-from-bottom-2`}
+              >
+                {message.role === "assistant" && (
+                  <div className="flex-shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center border border-primary/30">
+                    <img src={ct1Logo} alt="CT1" className="h-5 w-5 md:h-6 md:w-6" />
                   </div>
-                ))}
-                {isLoading && messages[messages.length - 1]?.role === "user" && (
-                  <div className="flex gap-2 md:gap-3 justify-start animate-in fade-in slide-in-from-bottom-2">
-                    <div className="flex-shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center border border-primary/30">
-                      <img src={ct1Logo} alt="CT1" className="h-5 w-5 md:h-6 md:w-6" />
-                    </div>
-                    <div className="bg-gradient-to-br from-muted/50 to-muted border border-border rounded-2xl p-3 md:p-4 shadow-md">
-                      <Loader2 className="h-4 w-4 md:h-5 md:w-5 animate-spin text-primary" />
-                    </div>
+                )}
+                <div
+                  className={`rounded-2xl p-3 md:p-4 max-w-[85%] shadow-lg ${
+                    message.role === "assistant"
+                      ? "bg-gradient-to-br from-muted/50 to-muted border border-border"
+                      : "bg-gradient-to-br from-primary to-primary/90 text-primary-foreground border border-primary/50"
+                  }`}
+                >
+                  <p className="whitespace-pre-wrap text-sm md:text-base leading-relaxed">
+                    {message.content}
+                  </p>
+                  {message.pdfData && message.fileName && (
+                    <Button
+                      onClick={() => {
+                        const link = document.createElement('a');
+                        link.href = message.pdfData!;
+                        link.download = message.fileName!;
+                        link.click();
+                      }}
+                      variant="outline"
+                      size="sm"
+                      className="mt-3 w-full"
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Download PDF
+                    </Button>
+                  )}
+                </div>
+                {message.role === "user" && (
+                  <div className="flex-shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-xl bg-gradient-to-br from-primary/30 to-primary/20 flex items-center justify-center border border-primary/40">
+                    <span className="text-primary-foreground font-bold text-xs md:text-sm">You</span>
                   </div>
                 )}
               </div>
-            </ScrollArea>
-
-            <div className="border-t border-primary/10 p-4 bg-gradient-to-r from-background via-primary/5 to-background backdrop-blur-sm">
-              <div className="flex gap-3 max-w-4xl mx-auto">
-                <Input
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Ask me anything about your contracting business..."
-                  disabled={isLoading}
-                  className="flex-1 text-base py-6 rounded-xl border-primary/20 focus:border-primary/40"
-                />
-                <Button 
-                  onClick={handleSend} 
-                  disabled={isLoading || !input.trim()}
-                  size="lg"
-                  className="px-6 rounded-xl"
-                >
-                  {isLoading ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                  ) : (
-                    <Send className="h-5 w-5" />
-                  )}
-                </Button>
+            ))}
+            {isLoading && messages[messages.length - 1]?.role === "user" && (
+              <div className="flex gap-2 md:gap-3 justify-start animate-in fade-in slide-in-from-bottom-2">
+                <div className="flex-shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center border border-primary/30">
+                  <img src={ct1Logo} alt="CT1" className="h-5 w-5 md:h-6 md:w-6" />
+                </div>
+                <div className="bg-gradient-to-br from-muted/50 to-muted border border-border rounded-2xl p-3 md:p-4 shadow-md">
+                  <Loader2 className="h-4 w-4 md:h-5 md:w-5 animate-spin text-primary" />
+                </div>
               </div>
-            </div>
-          </Card>
-        </Card>
-      </div>
-    );
-  }
+            )}
+          </div>
+        </ScrollArea>
+
+        <div className="border-t border-primary/10 p-4 bg-gradient-to-r from-background via-primary/5 to-background backdrop-blur-sm">
+          <div className="flex gap-3 max-w-4xl mx-auto">
+            <Input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Ask me anything about your contracting business..."
+              disabled={isLoading}
+              className="flex-1 text-base py-6 rounded-xl border-primary/20 focus:border-primary/40"
+            />
+            <Button 
+              onClick={handleSend} 
+              disabled={isLoading || !input.trim()}
+              size="lg"
+              className="px-6 rounded-xl"
+            >
+              {isLoading ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <Send className="h-5 w-5" />
+              )}
+            </Button>
+          </div>
+        </div>
+      </Card>
+    </div>
+  );
 }
