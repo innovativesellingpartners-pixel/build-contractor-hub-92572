@@ -11,6 +11,7 @@ import ct1Logo from "@/assets/ct1-logo-main.png";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect } from "react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { supabase } from "@/integrations/supabase/client";
 
 export function Auth() {
   const [isLoading, setIsLoading] = useState(false);
@@ -98,11 +99,14 @@ export function Auth() {
     const email = formData.get("reset-email") as string;
 
     try {
-      const { error } = await resetPassword(email);
+      const { data, error } = await supabase.functions.invoke('send-password-reset', {
+        body: { email }
+      });
+      
       if (error) {
         setError(error.message);
       } else {
-        setMessage("Password reset link sent! Check your email.");
+        setMessage(data?.message || "If an account exists with this email, you will receive a password reset link");
         setTimeout(() => {
           setShowResetPassword(false);
           setMessage("");
