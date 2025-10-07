@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/password-input';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -157,9 +158,8 @@ export function SignupAfterPayment({ isOpen, tierId, billingCycle, cloverPayment
 
           <div>
             <Label htmlFor="password">Password *</Label>
-            <Input
+            <PasswordInput
               id="password"
-              type="password"
               required
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
@@ -168,9 +168,8 @@ export function SignupAfterPayment({ isOpen, tierId, billingCycle, cloverPayment
 
           <div>
             <Label htmlFor="confirmPassword">Confirm Password *</Label>
-            <Input
+            <PasswordInput
               id="confirmPassword"
-              type="password"
               required
               value={formData.confirmPassword}
               onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}

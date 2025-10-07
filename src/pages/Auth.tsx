@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -227,11 +228,10 @@ export function Auth() {
                       <div className="space-y-2">
                         <Label htmlFor="new-password">New Password</Label>
                         <div className="relative">
-                          <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                          <Input
+                          <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
+                          <PasswordInput
                             id="new-password"
                             name="new-password"
-                            type="password"
                             placeholder="Enter new password"
                             className="pl-10"
                             required
@@ -242,11 +242,10 @@ export function Auth() {
                       <div className="space-y-2">
                         <Label htmlFor="confirm-new-password">Confirm New Password</Label>
                         <div className="relative">
-                          <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                          <Input
+                          <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
+                          <PasswordInput
                             id="confirm-new-password"
                             name="confirm-new-password"
-                            type="password"
                             placeholder="Confirm new password"
                             className="pl-10"
                             required
@@ -292,11 +291,10 @@ export function Auth() {
                       <div className="space-y-2">
                         <Label htmlFor="signin-password">Password</Label>
                         <div className="relative">
-                          <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                          <Input
+                          <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
+                          <PasswordInput
                             id="signin-password"
                             name="password"
-                            type="password"
                             placeholder="Enter your password"
                             className="pl-10"
                             required
