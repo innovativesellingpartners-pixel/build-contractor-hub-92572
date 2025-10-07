@@ -11,7 +11,8 @@ export interface Subscription {
 export const useUserTier = () => {
   const { user } = useAuth();
 
-  const { data: subscription, isLoading } = useQuery({
+  // Fetch both subscription and role data
+  const { data: subscription, isLoading: isSubscriptionLoading } = useQuery({
     queryKey: ['userTier', user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
@@ -45,14 +46,38 @@ export const useUserTier = () => {
     retry: false, // Don't retry if table doesn't exist
   });
 
-  const hasFullAccess = user?.email?.endsWith('@myct1.com') || false;
+  // Fetch user role
+  const { data: userRole, isLoading: isRoleLoading } = useQuery({
+    queryKey: ['userRole', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error fetching user role:', error);
+        return null;
+      }
+
+      return data?.role || null;
+    },
+    enabled: !!user?.id,
+  });
+
+  // Check if user has full access via email domain OR super_admin role
+  const hasFullAccess = user?.email?.endsWith('@myct1.com') || userRole === 'super_admin';
   const tierFeatures = getTierFeatures(subscription?.tier_id ?? null, hasFullAccess);
 
   return {
     subscription,
     tierFeatures,
     hasFullAccess,
-    isLoading,
+    isLoading: isSubscriptionLoading || isRoleLoading,
+    userRole,
   };
 };
 
