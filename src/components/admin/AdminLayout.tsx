@@ -34,7 +34,7 @@ export const AdminLayout = () => {
             >
               <Link to="/dashboard">
                 <Home className="h-4 w-4" />
-                Back to Website
+                Back to Contractor Hub
               </Link>
             </Button>
             <Button 
