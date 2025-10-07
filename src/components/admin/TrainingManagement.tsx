@@ -318,78 +318,92 @@ export const TrainingManagement = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Difficulty</TableHead>
-                <TableHead>Duration</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {courses?.map((course) => (
-                <TableRow key={course.id}>
-                  <TableCell className="font-medium">{course.title}</TableCell>
-                  <TableCell>
-                    {course.training_categories?.name || 'Uncategorized'}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline">
-                      {course.difficulty_level || 'N/A'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{course.duration_minutes || 0} min</TableCell>
-                  <TableCell>
-                    <Badge variant={course.is_published ? 'default' : 'secondary'}>
-                      {course.is_published ? 'Published' : 'Draft'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {new Date(course.created_at).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>
-                     <div className="flex gap-2">
-                      <CourseBuilderDialog courseId={course.id} />
-                      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-                        <DialogTrigger asChild>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => handleEditClick(course)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="z-50">
-                          <DialogHeader>
-                            <DialogTitle>Edit Course</DialogTitle>
-                          </DialogHeader>
-                          <CourseForm 
-                            course={editingCourse}
-                            onSubmit={(data) => updateCourseMutation.mutate({ 
-                              id: editingCourse?.id, 
-                              ...data 
-                            })} 
-                          />
-                        </DialogContent>
-                      </Dialog>
-                      <Button 
-                        variant="destructive" 
-                        size="sm"
-                        onClick={() => deleteCourseMutation.mutate(course.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
+          {courses && courses.length > 0 ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Title</TableHead>
+                  <TableHead>Category</TableHead>
+                  <TableHead>Difficulty</TableHead>
+                  <TableHead>Duration</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Created</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {courses.map((course) => (
+                  <TableRow key={course.id}>
+                    <TableCell className="font-medium">{course.title}</TableCell>
+                    <TableCell>
+                      {course.training_categories?.name || 'Uncategorized'}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">
+                        {course.difficulty_level || 'N/A'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{course.duration_minutes || 0} min</TableCell>
+                    <TableCell>
+                      <Badge variant={course.is_published ? 'default' : 'secondary'}>
+                        {course.is_published ? 'Published' : 'Draft'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {new Date(course.created_at).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                       <div className="flex gap-2">
+                        <CourseBuilderDialog courseId={course.id} />
+                        <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+                          <DialogTrigger asChild>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleEditClick(course)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="z-50">
+                            <DialogHeader>
+                              <DialogTitle>Edit Course</DialogTitle>
+                            </DialogHeader>
+                            <CourseForm 
+                              course={editingCourse}
+                              onSubmit={(data) => updateCourseMutation.mutate({ 
+                                id: editingCourse?.id, 
+                                ...data 
+                              })} 
+                            />
+                          </DialogContent>
+                        </Dialog>
+                        <Button 
+                          variant="destructive" 
+                          size="sm"
+                          onClick={() => deleteCourseMutation.mutate(course.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <BookOpen className="h-16 w-16 text-muted-foreground mb-4" />
+              <h3 className="text-xl font-semibold mb-2">No Training Courses Yet</h3>
+              <p className="text-muted-foreground mb-6 max-w-md">
+                Get started by creating your first training course. Once created, you can add modules and lessons using the "Build" button.
+              </p>
+              <Button onClick={() => setIsCreateOpen(true)} className="flex items-center gap-2">
+                <Plus className="h-4 w-4" />
+                Create Your First Course
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
