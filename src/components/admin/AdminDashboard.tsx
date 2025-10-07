@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -110,14 +111,22 @@ export const AdminDashboard = () => {
           </CardHeader>
           <CardContent className="space-y-2">
             <div className="grid grid-cols-2 gap-2">
-              <button className="p-3 text-left border rounded-lg hover:bg-accent">
+              <Link to="/admin/users" className="p-3 text-left border rounded-lg hover:bg-accent transition-colors">
                 <div className="font-medium">Manage Users</div>
                 <div className="text-sm text-muted-foreground">View and edit users</div>
-              </button>
-              <button className="p-3 text-left border rounded-lg hover:bg-accent">
+              </Link>
+              <Link to="/admin/training" className="p-3 text-left border rounded-lg hover:bg-accent transition-colors">
                 <div className="font-medium">Add Course</div>
                 <div className="text-sm text-muted-foreground">Create training content</div>
-              </button>
+              </Link>
+              <Link to="/admin/marketplace" className="p-3 text-left border rounded-lg hover:bg-accent transition-colors">
+                <div className="font-medium">Marketplace</div>
+                <div className="text-sm text-muted-foreground">Manage services</div>
+              </Link>
+              <Link to="/admin/users" className="p-3 text-left border rounded-lg hover:bg-accent transition-colors">
+                <div className="font-medium">Add User</div>
+                <div className="text-sm text-muted-foreground">Create new contractor</div>
+              </Link>
             </div>
           </CardContent>
         </Card>
