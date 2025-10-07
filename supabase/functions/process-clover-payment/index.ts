@@ -1,9 +1,17 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.58.0';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Official pricing configuration - SERVER-SIDE SOURCE OF TRUTH
+const TIER_PRICING = {
+  launch: { monthly: 99, quarterly: 297, yearly: 1069 },
+  growth: { monthly: 149, quarterly: 447, yearly: 1609 },
+  accel: { monthly: 199, quarterly: 597, yearly: 2149 }
+} as const;
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -11,7 +19,39 @@ serve(async (req) => {
   }
 
   try {
+    // Verify authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      throw new Error('Authentication required');
+    }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey, {
+      global: { headers: { Authorization: authHeader } }
+    });
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      throw new Error('Invalid authentication token');
+    }
+
     const { amount, tier_id, billing_cycle, customer_email } = await req.json();
+
+    // CRITICAL SECURITY: Validate pricing server-side
+    const validTier = TIER_PRICING[tier_id as keyof typeof TIER_PRICING];
+    if (!validTier) {
+      throw new Error('Invalid tier selected');
+    }
+
+    const expectedAmount = billing_cycle === 'quarterly' 
+      ? validTier.quarterly * 100 
+      : validTier.yearly * 100;
+
+    if (amount !== expectedAmount) {
+      console.error(`Price manipulation detected! Expected: ${expectedAmount}, Received: ${amount}`);
+      throw new Error('Price validation failed. Please refresh and try again.');
+    }
 
     console.log('Creating Clover checkout session:', { amount, tier_id, billing_cycle });
     console.log('Clover environment:', Deno.env.get('CLOVER_ENV'));

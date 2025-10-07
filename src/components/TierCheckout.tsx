@@ -48,6 +48,12 @@ export function TierCheckout({ tier, isOpen, onClose, onPaymentSuccess }: TierCh
         billing_cycle: billingCycle,
       }));
 
+      // Get auth session for secure payment processing
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Please sign in to complete checkout');
+      }
+
       const { data, error } = await supabase.functions.invoke('process-clover-payment', {
         body: {
           amount: calculatePrice() * 100,
