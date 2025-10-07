@@ -4,12 +4,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/password-input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from '@/components/ui/dialog';
-import { Search, UserPlus, Edit, Trash2, Mail, Phone, Building2, User } from 'lucide-react';
+import { Search, UserPlus, Edit, Trash2, Mail, Phone, Building2, User, Key } from 'lucide-react';
 import { toast } from 'sonner';
 
 type UserWithProfile = {
@@ -33,7 +34,11 @@ export const UserManagement = () => {
   const [selectedRole, setSelectedRole] = useState<string>('all');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserWithProfile | null>(null);
+  const [deletingUser, setDeletingUser] = useState<UserWithProfile | null>(null);
+  const [passwordResetUser, setPasswordResetUser] = useState<UserWithProfile | null>(null);
   const queryClient = useQueryClient();
 
   const { data: users, isLoading } = useQuery({
@@ -128,6 +133,53 @@ export const UserManagement = () => {
     },
   });
 
+  const deleteUserMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      const { data, error } = await supabase.functions.invoke('admin-delete-user', {
+        body: { userId }
+      });
+
+      if (error) throw error;
+      if (data && !data.success) {
+        throw new Error(data.error || 'Failed to delete user');
+      }
+      
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
+      toast.success('User deleted successfully');
+      setIsDeleteDialogOpen(false);
+      setDeletingUser(null);
+    },
+    onError: (error) => {
+      toast.error('Failed to delete user: ' + (error as Error).message);
+    },
+  });
+
+  const resetPasswordMutation = useMutation({
+    mutationFn: async ({ userId, newPassword }: { userId: string; newPassword: string }) => {
+      const { data, error } = await supabase.functions.invoke('admin-reset-password', {
+        body: { userId, newPassword }
+      });
+
+      if (error) throw error;
+      if (data && !data.success) {
+        throw new Error(data.error || 'Failed to reset password');
+      }
+      
+      return data;
+    },
+    onSuccess: () => {
+      toast.success('Password reset successfully');
+      setIsPasswordDialogOpen(false);
+      setPasswordResetUser(null);
+    },
+    onError: (error) => {
+      toast.error('Failed to reset password: ' + (error as Error).message);
+    },
+  });
+
   const handleCreateUser = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -159,6 +211,30 @@ export const UserManagement = () => {
         ct1_contractor_number: formData.get('ct1_contractor_number') as string,
         subscription_tier: formData.get('subscription_tier') as string,
       }
+    });
+  };
+
+  const handleResetPassword = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!passwordResetUser) return;
+    
+    const formData = new FormData(e.currentTarget);
+    const newPassword = formData.get('newPassword') as string;
+    const confirmPassword = formData.get('confirmPassword') as string;
+
+    if (newPassword !== confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast.error('Password must be at least 6 characters long');
+      return;
+    }
+    
+    resetPasswordMutation.mutate({
+      userId: passwordResetUser.id,
+      newPassword
     });
   };
 
@@ -408,6 +484,26 @@ export const UserManagement = () => {
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => {
+                            setPasswordResetUser(user);
+                            setIsPasswordDialogOpen(true);
+                          }}
+                        >
+                          <Key className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="destructive" 
+                          size="sm"
+                          onClick={() => {
+                            setDeletingUser(user);
+                            setIsDeleteDialogOpen(true);
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -488,6 +584,94 @@ export const UserManagement = () => {
                 </Button>
               </DialogFooter>
             </form>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Password Reset Dialog */}
+      <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Reset User Password</DialogTitle>
+            <DialogDescription>
+              Set a new password for {passwordResetUser?.email}
+            </DialogDescription>
+          </DialogHeader>
+          {passwordResetUser && (
+            <form onSubmit={handleResetPassword} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="newPassword">New Password *</Label>
+                <PasswordInput 
+                  id="newPassword" 
+                  name="newPassword" 
+                  required 
+                  minLength={6}
+                  placeholder="Enter new password"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm Password *</Label>
+                <PasswordInput 
+                  id="confirmPassword" 
+                  name="confirmPassword" 
+                  required 
+                  minLength={6}
+                  placeholder="Confirm new password"
+                />
+              </div>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => {
+                  setIsPasswordDialogOpen(false);
+                  setPasswordResetUser(null);
+                }}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={resetPasswordMutation.isPending}>
+                  {resetPasswordMutation.isPending ? 'Resetting...' : 'Reset Password'}
+                </Button>
+              </DialogFooter>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete User Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Delete User</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete {deletingUser?.email}? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          {deletingUser && (
+            <div className="space-y-4">
+              <div className="p-4 bg-destructive/10 rounded-lg border border-destructive/20">
+                <p className="text-sm text-destructive font-medium">
+                  Warning: This will permanently delete:
+                </p>
+                <ul className="mt-2 text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                  <li>User account and authentication</li>
+                  <li>Profile information</li>
+                  <li>All associated data</li>
+                </ul>
+              </div>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => {
+                  setIsDeleteDialogOpen(false);
+                  setDeletingUser(null);
+                }}>
+                  Cancel
+                </Button>
+                <Button 
+                  variant="destructive" 
+                  onClick={() => deleteUserMutation.mutate(deletingUser.id)}
+                  disabled={deleteUserMutation.isPending}
+                >
+                  {deleteUserMutation.isPending ? 'Deleting...' : 'Delete User'}
+                </Button>
+              </DialogFooter>
+            </div>
           )}
         </DialogContent>
       </Dialog>
