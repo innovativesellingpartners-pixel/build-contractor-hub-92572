@@ -4,14 +4,12 @@ import {
   BookOpen, 
   ShoppingCart, 
   BarChart3, 
-  Settings,
-  Home
+  Settings
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
-  { to: '/admin', icon: Home, label: 'Dashboard', end: true },
-  { to: '/admin/users', icon: Users, label: 'User Management' },
+  { to: '/admin', icon: Users, label: 'User Management', end: true },
   { to: '/admin/training', icon: BookOpen, label: 'Training Content' },
   { to: '/admin/marketplace', icon: ShoppingCart, label: 'Marketplace' },
   { to: '/admin/analytics', icon: BarChart3, label: 'Analytics' },
