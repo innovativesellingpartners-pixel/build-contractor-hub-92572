@@ -19,6 +19,7 @@ export function Auth() {
   const [message, setMessage] = useState("");
   const [showJoinOptions, setShowJoinOptions] = useState(false);
   const [showResetPassword, setShowResetPassword] = useState(false);
+  const [showNewPasswordForm, setShowNewPasswordForm] = useState(false);
   const navigate = useNavigate();
   const { signIn, signUp, user, resetPassword } = useAuth();
 
@@ -29,6 +30,16 @@ export function Auth() {
     }
   }, [user, navigate]);
 
+  // Listen for password recovery event to show new password form
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY") {
+        setShowNewPasswordForm(true);
+        setShowResetPassword(false);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
@@ -104,7 +115,19 @@ export function Auth() {
       });
       
       if (error) {
-        setError(error.message);
+        // Fallback to built-in reset if function fails
+        const { error: fallbackError } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/auth`
+        });
+        if (fallbackError) {
+          setError(fallbackError.message);
+        } else {
+          setMessage("If an account exists with this email, you will receive a password reset link");
+          setTimeout(() => {
+            setShowResetPassword(false);
+            setMessage("");
+          }, 3000);
+        }
       } else {
         setMessage(data?.message || "If an account exists with this email, you will receive a password reset link");
         setTimeout(() => {
@@ -113,10 +136,57 @@ export function Auth() {
         }, 3000);
       }
     } catch (err) {
-      setError("An unexpected error occurred");
+      // Fallback to built-in reset on unexpected errors
+      try {
+        const { error: fallbackError } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/auth`
+        });
+        if (fallbackError) {
+          setError(fallbackError.message);
+        } else {
+          setMessage("If an account exists with this email, you will receive a password reset link");
+          setTimeout(() => {
+            setShowResetPassword(false);
+            setMessage("");
+          }, 3000);
+        }
+      } catch (e) {
+        setError("An unexpected error occurred");
+      }
     } finally {
       setIsLoading(false);
     }
+  };
+  const handleSetNewPassword = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
+    setMessage("");
+
+    const formData = new FormData(e.currentTarget);
+    const password = formData.get("new-password") as string;
+    const confirm = formData.get("confirm-new-password") as string;
+
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters");
+      setIsLoading(false);
+      return;
+    }
+    if (password !== confirm) {
+      setError("Passwords don't match");
+      setIsLoading(false);
+      return;
+    }
+
+    const { error } = await supabase.auth.updateUser({ password });
+    if (error) {
+      setError(error.message);
+    } else {
+      setMessage("Password updated successfully. Signing you in...");
+      setShowNewPasswordForm(false);
+      navigate("/dashboard");
+    }
+    setIsLoading(false);
   };
 
   return (
@@ -144,7 +214,64 @@ export function Auth() {
               </TabsList>
 
               <TabsContent value="signin" className="space-y-4">
-                {!showResetPassword ? (
+                {showNewPasswordForm ? (
+                  <div className="space-y-4">
+                    <div className="text-center space-y-2">
+                      <h3 className="text-lg font-semibold">Set New Password</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Enter a new password for your account.
+                      </p>
+                    </div>
+
+                    <form onSubmit={handleSetNewPassword} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="new-password">New Password</Label>
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            id="new-password"
+                            name="new-password"
+                            type="password"
+                            placeholder="Enter new password"
+                            className="pl-10"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="confirm-new-password">Confirm New Password</Label>
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            id="confirm-new-password"
+                            name="confirm-new-password"
+                            type="password"
+                            placeholder="Confirm new password"
+                            className="pl-10"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      {error && (
+                        <Alert variant="destructive">
+                          <AlertDescription>{error}</AlertDescription>
+                        </Alert>
+                      )}
+
+                      {message && (
+                        <Alert>
+                          <AlertDescription>{message}</AlertDescription>
+                        </Alert>
+                      )}
+
+                      <Button type="submit" className="w-full" disabled={isLoading}>
+                        {isLoading ? "Updating..." : "Update Password"}
+                      </Button>
+                    </form>
+                  </div>
+                ) : !showResetPassword ? (
                   <>
                     <form onSubmit={handleSignIn} className="space-y-4">
                       <div className="space-y-2">
