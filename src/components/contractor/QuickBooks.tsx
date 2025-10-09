@@ -7,6 +7,7 @@ import { DollarSign, CheckCircle, TrendingUp, FileText, Users, Loader2, PhoneCal
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import ct1Logo from "@/assets/ct1-logo-main.png";
 
 export function QuickBooks() {
   const [isConnected, setIsConnected] = useState(false);
@@ -121,18 +122,21 @@ export function QuickBooks() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold flex items-center gap-3">
-            <DollarSign className="h-8 w-8 text-primary" />
-            QuickBooks Integration
-          </h2>
-          <p className="text-muted-foreground mt-2">
-            Connect your QuickBooks account to sync invoices, expenses, and financial data
-          </p>
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-4 border-b">
+        <div className="flex items-center gap-4">
+          <img src={ct1Logo} alt="CT1 Logo" className="h-12 w-12" />
+          <div>
+            <h2 className="text-3xl font-bold flex items-center gap-3">
+              <DollarSign className="h-8 w-8 text-primary" />
+              CT1 QuickBooks Integration
+            </h2>
+            <p className="text-muted-foreground mt-1">
+              Connect your QuickBooks account to sync invoices, expenses, and financial data
+            </p>
+          </div>
         </div>
         {isConnected && (
-          <Badge className="bg-green-500 text-white">
+          <Badge className="bg-green-500 text-white flex-shrink-0">
             <CheckCircle className="h-3 w-3 mr-1" />
             Connected
           </Badge>

@@ -4,21 +4,25 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Bot, CheckCircle, Phone, Clock, Users, ExternalLink, PhoneCall } from "lucide-react";
+import ct1Logo from "@/assets/ct1-logo-main.png";
 
 export function VoiceAI() {
   const [voiceAIDialogOpen, setVoiceAIDialogOpen] = useState(true);
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold flex items-center gap-3">
-            <Bot className="h-8 w-8 text-primary" />
-            AI Voice Assistant
-          </h2>
-          <p className="text-muted-foreground mt-2">
-            smith.ai virtual receptionists handle calls, schedule appointments, and capture leads
-          </p>
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-4 border-b">
+        <div className="flex items-center gap-4">
+          <img src={ct1Logo} alt="CT1 Logo" className="h-12 w-12" />
+          <div>
+            <h2 className="text-3xl font-bold flex items-center gap-3">
+              <Bot className="h-8 w-8 text-primary" />
+              CT1 AI Voice Assistant
+            </h2>
+            <p className="text-muted-foreground mt-1">
+              smith.ai virtual receptionists handle calls, schedule appointments, and capture leads
+            </p>
+          </div>
         </div>
       </div>
 

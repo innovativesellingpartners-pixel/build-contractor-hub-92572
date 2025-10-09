@@ -13,6 +13,7 @@ import {
   ExternalLink
 } from "lucide-react";
 import { useState } from "react";
+import ct1Logo from "@/assets/ct1-logo-main.png";
 
 interface Lead {
   id: string;
@@ -77,14 +78,17 @@ export function ContractorCRM() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold mb-2">CT1 ZCRM</h2>
-          <p className="text-muted-foreground">Manage your leads and customer relationships</p>
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-4 border-b">
+        <div className="flex items-center gap-4">
+          <img src={ct1Logo} alt="CT1 Logo" className="h-12 w-12" />
+          <div>
+            <h2 className="text-3xl font-bold mb-1">CT1 ZCRM</h2>
+            <p className="text-muted-foreground">Manage your leads and customer relationships</p>
+          </div>
         </div>
         <Dialog open={crmDialogOpen} onOpenChange={setCrmDialogOpen}>
           <DialogTrigger asChild>
-            <Button>
+            <Button size="lg">
               <ExternalLink className="h-4 w-4 mr-2" />
               Open CRM
             </Button>
