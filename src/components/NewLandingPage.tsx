@@ -48,21 +48,28 @@ export function NewLandingPage() {
       company: "Johnson Construction",
       text: "CT1 transformed my business. The PocketBots handle all my estimates and client communication automatically. I've increased my revenue by 40% in just 6 months.",
       rating: 5,
-      location: "Dallas, TX"
+      location: "Sterling Heights, MI"
     },
     {
       name: "Sarah Martinez",
       company: "Elite Roofing Solutions",
       text: "The training modules helped me get certified and the marketplace connected me with quality suppliers. CT1 is a complete game-changer for contractors.",
       rating: 5,
-      location: "Phoenix, AZ"
+      location: "Detroit, MI"
     },
     {
       name: "David Chen",
       company: "Chen Electrical Services",
       text: "From lead generation to project management, CT1 handles everything. I can focus on quality work while my business runs itself.",
       rating: 5,
-      location: "Seattle, WA"
+      location: "Ann Arbor, MI"
+    },
+    {
+      name: "Lisa Thompson",
+      company: "Thompson HVAC",
+      text: "The scheduling tools and automated reminders have eliminated no-shows. My team stays organized and customers love the professional experience.",
+      rating: 5,
+      location: "East Lansing, MI"
     }
   ];
 
