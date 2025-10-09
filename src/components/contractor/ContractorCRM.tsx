@@ -1,22 +1,18 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { 
   Users, 
   Phone, 
   Mail, 
-  MapPin, 
   Calendar,
   DollarSign,
   FileText,
-  Clock,
-  TrendingUp
+  TrendingUp,
+  ExternalLink
 } from "lucide-react";
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
 
 interface Lead {
   id: string;
@@ -30,10 +26,7 @@ interface Lead {
 }
 
 export function ContractorCRM() {
-  const [loginOpen, setLoginOpen] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const { toast } = useToast();
+  const [crmDialogOpen, setCrmDialogOpen] = useState(false);
   
   const [leads] = useState<Lead[]>([
     { 
@@ -68,15 +61,6 @@ export function ContractorCRM() {
     }
   ]);
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast({
-      title: "Logging in...",
-      description: "Connecting to your CT1/PSA account.",
-    });
-    setLoginOpen(false);
-  };
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'new': return 'bg-blue-500 hover:bg-blue-600';
@@ -98,46 +82,37 @@ export function ContractorCRM() {
           <h2 className="text-3xl font-bold mb-2">CT1 ZCRM</h2>
           <p className="text-muted-foreground">Manage your leads and customer relationships</p>
         </div>
-        <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
+        <Dialog open={crmDialogOpen} onOpenChange={setCrmDialogOpen}>
           <DialogTrigger asChild>
-            <Button variant="outline">
-              Log in to CRM
+            <Button>
+              <ExternalLink className="h-4 w-4 mr-2" />
+              Open CRM
             </Button>
           </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>CT1/PSA Account Login</DialogTitle>
-              <DialogDescription>
-                Enter your CT1/PSA credentials to access your CRM account.
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="crm-email">Email</Label>
-                <Input
-                  id="crm-email"
-                  type="email"
-                  placeholder="your@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
+          <DialogContent className="max-w-6xl h-[90vh] p-0">
+            <div className="flex flex-col h-full">
+              <div className="flex items-center justify-between p-4 border-b">
+                <div>
+                  <h3 className="text-lg font-semibold">CT1/PSA CRM Login</h3>
+                  <p className="text-sm text-muted-foreground">Login to access your CRM within CT1</p>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => setCrmDialogOpen(false)}
+                >
+                  Close
+                </Button>
+              </div>
+              <div className="flex-1 overflow-hidden">
+                <iframe 
+                  src="https://psarcweb.com/front/account/login.aspx/1000"
+                  className="w-full h-full border-0"
+                  title="CT1 CRM Login"
+                  sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="crm-password">Password</Label>
-                <Input
-                  id="crm-password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
-              <Button type="submit" className="w-full">
-                Log In to CT1/PSA
-              </Button>
-            </form>
+            </div>
           </DialogContent>
         </Dialog>
       </div>
