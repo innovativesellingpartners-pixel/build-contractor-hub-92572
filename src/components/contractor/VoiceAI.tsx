@@ -104,53 +104,63 @@ export function VoiceAI() {
         </CardHeader>
         <CardContent>
           <Dialog open={voiceAIDialogOpen} onOpenChange={setVoiceAIDialogOpen}>
-            <DialogTrigger asChild>
-              <Button size="lg" className="w-full">
-                <ExternalLink className="h-4 w-4 mr-2" />
-                Log in to smith.ai
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-6xl h-[90vh] p-0">
-              <div className="flex flex-col h-full">
-                <div className="flex items-center justify-between p-4 border-b">
-                  <div>
-                    <h3 className="text-lg font-semibold">smith.ai Login</h3>
-                    <p className="text-sm text-muted-foreground">Access your virtual receptionist dashboard</p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button 
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setVoiceAIDialogOpen(false);
-                        window.location.href = '/contact';
-                      }}
-                    >
-                      <PhoneCall className="h-4 w-4 mr-2" />
-                      Contact Sales
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      onClick={() => setVoiceAIDialogOpen(false)}
-                    >
-                      Close
-                    </Button>
-                  </div>
+            <DialogContent className="sm:max-w-[500px]">
+              <div className="flex flex-col items-center space-y-6 p-4">
+                <div className="flex items-center gap-3">
+                  <img src={ct1Logo} alt="CT1 Logo" className="h-10 w-10" />
+                  <Bot className="h-10 w-10 text-primary" />
                 </div>
-                <div className="flex-1 overflow-hidden">
-                  <iframe 
-                    src="https://app.smith.ai/log-in/?utm_source=google-ads&utm_medium=cpc&utm_campaign=air-key-terms-search&_gl=1*16pd9z*_gcl_aw*R0NMLjE3NjAwMTg5NzAuQ2p3S0NBand1cDNIQmhBQUVpd0E3ZXVadWlZbDN6YnNSeURHZ0xsSlFTa1pTdDZxR05qMnpObnVNUkpZaGo2dVFWVVM2dzJWTHAwQkRCb0NtczhRQXZEX0J3RQ..*_gcl_au*MTc2Nzk4ODc4MC4xNzYwMDE4OTcw"
-                    className="w-full h-full border-0"
-                    title="smith.ai Login"
-                    sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
-                  />
+                
+                <div className="text-center space-y-2">
+                  <h2 className="text-2xl font-bold">Access smith.ai</h2>
+                  <p className="text-muted-foreground">
+                    You'll be redirected to smith.ai to log in and manage your virtual receptionist
+                  </p>
                 </div>
+
+                <div className="w-full space-y-3">
+                  <Button 
+                    onClick={() => {
+                      window.open('https://app.smith.ai/log-in/?utm_source=google-ads&utm_medium=cpc&utm_campaign=air-key-terms-search&_gl=1*oi56mm*_gcl_aw*R0NMLjE3NjAwMTk3MDMuQ2p3S0NBand1cDNIQmhBQUVpd0E3ZXVadWlZbDN6YnNSeURHZ0xsSlFTa1pTdDZxR05qMnpObnVNUkpZaGo2dVFWVVM2dzJWTHAwQkRCb0NtczhRQXZEX0J3RQ..*_gcl_au*MTc2Nzk4ODc4MC4xNzYwMDE4OTcw', '_blank');
+                      setVoiceAIDialogOpen(false);
+                    }}
+                    size="lg" 
+                    className="w-full"
+                  >
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    Log in to smith.ai
+                  </Button>
+
+                  <Button 
+                    variant="outline" 
+                    size="lg" 
+                    className="w-full"
+                    onClick={() => {
+                      setVoiceAIDialogOpen(false);
+                      window.location.href = '/contact';
+                    }}
+                  >
+                    <PhoneCall className="h-4 w-4 mr-2" />
+                    Contact Sales
+                  </Button>
+                </div>
+
+                <p className="text-xs text-center text-muted-foreground">
+                  smith.ai will open in a new window for secure authentication
+                </p>
               </div>
             </DialogContent>
           </Dialog>
+          <Button 
+            onClick={() => setVoiceAIDialogOpen(true)}
+            size="lg" 
+            className="w-full"
+          >
+            <ExternalLink className="h-4 w-4 mr-2" />
+            Log in to smith.ai
+          </Button>
           <p className="text-xs text-muted-foreground mt-2 text-center">
-            Secure login within CT1 environment
+            Opens in new window for secure login
           </p>
         </CardContent>
       </Card>
