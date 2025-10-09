@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { DollarSign, CheckCircle, TrendingUp, FileText, Users, Loader2 } from "lucide-react";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { DollarSign, CheckCircle, TrendingUp, FileText, Users, Loader2, PhoneCall } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,6 +12,7 @@ export function QuickBooks() {
   const [isConnected, setIsConnected] = useState(false);
   const [loading, setLoading] = useState(false);
   const [checkingConnection, setCheckingConnection] = useState(true);
+  const [loginDialogOpen, setLoginDialogOpen] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -219,6 +221,72 @@ export function QuickBooks() {
               </Button>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* QuickBooks Login Dialog */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Need Help with QuickBooks?</CardTitle>
+          <CardDescription>
+            Access QuickBooks support and sales assistance
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Dialog open={loginDialogOpen} onOpenChange={setLoginDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="lg" className="w-full">
+                <DollarSign className="h-4 w-4 mr-2" />
+                Log in to QuickBooks Online
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[450px]">
+              <div className="flex flex-col items-center space-y-6 p-4">
+                <div className="text-center space-y-2">
+                  <h2 className="text-2xl font-bold text-blue-600">INTUIT</h2>
+                  <p className="text-lg font-medium">Let's get you in to QuickBooks</p>
+                </div>
+
+                <div className="w-full space-y-3">
+                  <Button 
+                    onClick={handleConnect} 
+                    size="lg" 
+                    className="w-full bg-green-700 hover:bg-green-800 text-white"
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Connecting...
+                      </>
+                    ) : (
+                      <>
+                        <DollarSign className="h-4 w-4 mr-2" />
+                        Connect to QuickBooks
+                      </>
+                    )}
+                  </Button>
+
+                  <Button 
+                    variant="outline" 
+                    size="lg" 
+                    className="w-full"
+                    onClick={() => {
+                      setLoginDialogOpen(false);
+                      window.location.href = '/contact';
+                    }}
+                  >
+                    <PhoneCall className="h-4 w-4 mr-2" />
+                    Contact Sales
+                  </Button>
+                </div>
+
+                <p className="text-xs text-center text-muted-foreground">
+                  By connecting, you agree to Intuit Terms and our Privacy Policy applies to your personal data.
+                </p>
+              </div>
+            </DialogContent>
+          </Dialog>
         </CardContent>
       </Card>
 
