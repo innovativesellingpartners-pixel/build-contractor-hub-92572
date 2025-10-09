@@ -239,7 +239,7 @@ export function FloatingPocketbot({ onClose }: FloatingPocketbotProps) {
             className="h-7 text-xs px-3 w-full"
             onClick={() => window.location.href = '/bot-signup'}
           >
-            Sign Up Here for Full Access
+            Sign up today
           </Button>
         </div>
         
