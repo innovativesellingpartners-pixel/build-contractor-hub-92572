@@ -164,6 +164,38 @@ export function BotSignup() {
 
           {/* Signup Form */}
           <div className="bg-card border border-border/50 rounded-xl shadow-lg p-8">
+            {/* Pricing Information */}
+            <div className="mb-8 p-6 bg-primary/5 border-2 border-primary/20 rounded-xl">
+              <div className="text-center">
+                <h3 className="text-2xl font-bold mb-2">Pocketbot Full Access</h3>
+                <div className="flex items-baseline justify-center gap-2 mb-3">
+                  <span className="text-4xl font-bold text-primary">$200</span>
+                  <span className="text-muted-foreground">/month</span>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Includes unlimited Pocketbot access plus:
+                </p>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div className="flex items-center gap-2 text-left">
+                    <Award className="h-4 w-4 text-primary flex-shrink-0" />
+                    <span>5-Star Training Library</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-left">
+                    <Shield className="h-4 w-4 text-primary flex-shrink-0" />
+                    <span>Complete CRM Access</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-left">
+                    <Store className="h-4 w-4 text-primary flex-shrink-0" />
+                    <span>Marketplace Access</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-left">
+                    <Calendar className="h-4 w-4 text-primary flex-shrink-0" />
+                    <span>Monthly 1:1 Coaching Call</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Personal Information */}
               <div>
