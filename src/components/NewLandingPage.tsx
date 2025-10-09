@@ -269,42 +269,6 @@ export function NewLandingPage() {
         </div>
       </section>
 
-      {/* How CT1 Helps Contractors */}
-      <section id="features" className="py-12 sm:py-16 md:py-20 bg-muted/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10 sm:mb-12 md:mb-16">
-            <Link to="/business-suite">
-              <Badge className="mb-3 sm:mb-4 bg-primary text-primary-foreground px-3 sm:px-4 py-1.5 sm:py-2 text-sm sm:text-base md:text-lg cursor-pointer hover:bg-primary/90 transition-colors">
-                <Target className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-                Unified Business Suite
-              </Badge>
-            </Link>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-4 sm:mb-6 px-4">
-              Everything Connected, <span className="text-primary">Nothing Missing</span>
-            </h2>
-            <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto px-4">
-              Stop juggling multiple tools. CT1 combines all contractor business functions 
-              in one professional, no-nonsense platform.
-            </p>
-          </div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
-            {features.map((feature, index) => (
-              <Card key={index} className="card-ct1 p-6 hover:shadow-red-glow transition-all">
-                <CardHeader className="pb-4">
-                  <feature.icon className="h-12 w-12 text-primary mb-4" />
-                  <CardTitle className="text-xl font-bold">{feature.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    {feature.description}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* For Contractors Section */}
       <section id="for-contractors" className="py-12 sm:py-16 md:py-20 bg-background">
