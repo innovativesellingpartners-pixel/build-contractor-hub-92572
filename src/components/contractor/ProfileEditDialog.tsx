@@ -61,18 +61,25 @@ export function ProfileEditDialog() {
     setUploading(true);
     try {
       const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}-${Math.random()}.${fileExt}`;
-      const filePath = `${fileName}`;
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
 
-      const { error: uploadError, data } = await supabase.storage
-        .from('certificates')
-        .upload(filePath, file, { upsert: true });
+      const { error: uploadError } = await supabase.storage
+        .from('company-logos')
+        .upload(fileName, file, { upsert: true });
 
       if (uploadError) throw uploadError;
 
       const { data: { publicUrl } } = supabase.storage
-        .from('certificates')
-        .getPublicUrl(filePath);
+        .from('company-logos')
+        .getPublicUrl(fileName);
+
+      // Save logo URL to profile
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ logo_url: publicUrl })
+        .eq('user_id', user.id);
+
+      if (updateError) throw updateError;
 
       setFormData({ ...formData, logo_url: publicUrl });
       
@@ -80,6 +87,9 @@ export function ProfileEditDialog() {
         title: "Logo uploaded",
         description: "Your company logo has been uploaded successfully.",
       });
+      
+      // Refresh the page to show updated logo
+      setTimeout(() => window.location.reload(), 1000);
     } catch (error) {
       console.error('Error uploading logo:', error);
       toast({
