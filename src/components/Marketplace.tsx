@@ -27,6 +27,7 @@ import ringcentralLogo from "@/assets/ringcentral-logo.webp";
 import zoomLogo from "@/assets/zoom-logo.webp";
 import geotabLogo from "@/assets/geotab-logo.png";
 import fortinetLogo from "@/assets/fortinet-logo.png";
+import teletracLogo from "@/assets/teletrac-navman-logo.svg";
 
 interface TechnologyPartner {
   id: string;
@@ -192,7 +193,7 @@ export function Marketplace() {
       id: 'teletrac-navman',
       name: 'Teletrac Navman',
       category: 'iot',
-      logo: 'https://www.teletracnavman.com/resources/themes/tnm/img/teletrac-navman-logo.svg',
+      logo: teletracLogo,
       description: 'GPS fleet management solutions',
       fullDescription: 'Teletrac Navman offers powerful GPS tracking and fleet management tools specifically designed for construction and contractor businesses. Track vehicles, equipment, and improve operational efficiency.',
       features: ['Vehicle Tracking', 'Equipment Monitoring', 'Driver Behavior Analysis', 'Job Site Verification', 'Asset Management'],
