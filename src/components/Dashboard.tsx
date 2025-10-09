@@ -484,7 +484,7 @@ function SidebarNav({ activeSection, setActiveSection, tierFeatures }: SidebarNa
           className={`w-full justify-start transition-all ${
             activeSection === 'training' 
               ? 'shadow-md' 
-              : 'hover:bg-muted/80 hover:translate-x-1'
+              : 'hover:bg-red-50 hover:border-red-500 hover:text-black border border-transparent'
           }`}
           onClick={() => setActiveSection('training')}
         >
@@ -499,7 +499,7 @@ function SidebarNav({ activeSection, setActiveSection, tierFeatures }: SidebarNa
           className={`w-full justify-start transition-all ${
             activeSection === 'crm' 
               ? 'shadow-md' 
-              : 'hover:bg-muted/80 hover:translate-x-1'
+              : 'hover:bg-red-50 hover:border-red-500 hover:text-black border border-transparent'
           }`}
           onClick={() => setActiveSection('crm')}
         >
@@ -514,7 +514,7 @@ function SidebarNav({ activeSection, setActiveSection, tierFeatures }: SidebarNa
           className={`w-full justify-start transition-all ${
             activeSection === 'voiceai' 
               ? 'shadow-md' 
-              : 'hover:bg-muted/80 hover:translate-x-1'
+              : 'hover:bg-red-50 hover:border-red-500 hover:text-black border border-transparent'
           }`}
           onClick={() => setActiveSection('voiceai')}
         >
@@ -529,7 +529,7 @@ function SidebarNav({ activeSection, setActiveSection, tierFeatures }: SidebarNa
           className={`w-full justify-start transition-all ${
             activeSection === 'leads' 
               ? 'shadow-md' 
-              : 'hover:bg-muted/80 hover:translate-x-1'
+              : 'hover:bg-red-50 hover:border-red-500 hover:text-black border border-transparent'
           }`}
           onClick={() => setActiveSection('leads')}
         >
@@ -543,7 +543,7 @@ function SidebarNav({ activeSection, setActiveSection, tierFeatures }: SidebarNa
         className={`w-full justify-start transition-all ${
           activeSection === 'quickbooks' 
             ? 'shadow-md' 
-            : 'hover:bg-muted/80 hover:translate-x-1'
+            : 'hover:bg-red-50 hover:border-red-500 hover:text-black border border-transparent'
         }`}
         onClick={() => setActiveSection('quickbooks')}
       >
@@ -557,7 +557,7 @@ function SidebarNav({ activeSection, setActiveSection, tierFeatures }: SidebarNa
           className={`w-full justify-start transition-all ${
             activeSection === 'insurance' 
               ? 'shadow-md' 
-              : 'hover:bg-muted/80 hover:translate-x-1'
+              : 'hover:bg-red-50 hover:border-red-500 hover:text-black border border-transparent'
           }`}
           onClick={() => setActiveSection('insurance')}
         >
@@ -572,7 +572,7 @@ function SidebarNav({ activeSection, setActiveSection, tierFeatures }: SidebarNa
           className={`w-full justify-start transition-all ${
             activeSection === 'marketplace' 
               ? 'shadow-md' 
-              : 'hover:bg-muted/80 hover:translate-x-1'
+              : 'hover:bg-red-50 hover:border-red-500 hover:text-black border border-transparent'
           }`}
           onClick={() => setActiveSection('marketplace')}
         >
@@ -584,7 +584,7 @@ function SidebarNav({ activeSection, setActiveSection, tierFeatures }: SidebarNa
       {tierFeatures.monthlyCall && (
         <Button
           variant="ghost"
-          className="w-full justify-start transition-all hover:bg-muted/80 hover:translate-x-1"
+          className="w-full justify-start transition-all hover:bg-red-50 hover:border-red-500 hover:text-black border border-transparent"
           asChild
         >
           <a href="https://calendly.com/innovativesellingpartners/contractor-1-1-with-ct1-trainer" target="_blank" rel="noopener noreferrer">
@@ -600,7 +600,7 @@ function SidebarNav({ activeSection, setActiveSection, tierFeatures }: SidebarNa
           className={`w-full justify-start transition-all ${
             activeSection === 'account' 
               ? 'shadow-md' 
-              : 'hover:bg-muted/80 hover:translate-x-1'
+              : 'hover:bg-red-50 hover:border-red-500 hover:text-black border border-transparent'
           }`}
           onClick={() => setActiveSection('account')}
         >
@@ -612,7 +612,7 @@ function SidebarNav({ activeSection, setActiveSection, tierFeatures }: SidebarNa
       {tierFeatures.standards && (
         <Button
           variant="ghost"
-          className="w-full justify-start transition-all hover:bg-muted/80 hover:translate-x-1"
+          className="w-full justify-start transition-all hover:bg-red-50 hover:border-red-500 hover:text-black border border-transparent"
           asChild
         >
           <a href="/core-values">
@@ -625,7 +625,7 @@ function SidebarNav({ activeSection, setActiveSection, tierFeatures }: SidebarNa
       {tierFeatures.podcast && (
         <Button
           variant="ghost"
-          className="w-full justify-start transition-all hover:bg-muted/80 hover:translate-x-1"
+          className="w-full justify-start transition-all hover:bg-red-50 hover:border-red-500 hover:text-black border border-transparent"
           asChild
         >
           <a href="https://lovable.dev/projects/eb889344-3c18-4b7f-b049-eddbd3665869" target="_blank" rel="noopener noreferrer">
@@ -640,7 +640,7 @@ function SidebarNav({ activeSection, setActiveSection, tierFeatures }: SidebarNa
       {tierFeatures.home && (
         <Button
           variant="ghost"
-          className="w-full justify-start transition-all hover:bg-muted/80 hover:translate-x-1"
+          className="w-full justify-start transition-all hover:bg-red-50 hover:border-red-500 hover:text-black border border-transparent"
           asChild
         >
           <a href="/">
