@@ -41,8 +41,9 @@ import { StarRating } from "@/components/contractor/StarRating";
 import { FloatingPocketbot } from "@/components/contractor/FloatingPocketbot";
 import ct1Logo from "@/assets/ct1-logo-main.png";
 import { QuickBooks } from "@/components/contractor/QuickBooks";
+import { VoiceAI } from "@/components/contractor/VoiceAI";
 
-type ActiveSection = 'training' | 'crm' | 'schedule' | 'marketplace' | 'leads' | 'quickbooks' | 'insurance' | 'account';
+type ActiveSection = 'training' | 'crm' | 'schedule' | 'marketplace' | 'leads' | 'quickbooks' | 'insurance' | 'account' | 'voiceai';
 
 export function Dashboard() {
   const { user, profile, signOut } = useAuth();
@@ -240,6 +241,7 @@ export function Dashboard() {
             {activeSection === 'leads' && <Leads />}
             {activeSection === 'quickbooks' && <QuickBooks />}
             {activeSection === 'insurance' && <Insurance />}
+            {activeSection === 'voiceai' && <VoiceAI />}
             {activeSection === 'marketplace' && <Marketplace />}
             {activeSection === 'account' && (
               <div className="max-w-5xl mx-auto space-y-6">
@@ -531,8 +533,13 @@ function SidebarNav({ activeSection, setActiveSection, tierFeatures }: SidebarNa
 
       {tierFeatures.aiAssistant && (
         <Button
-          variant="ghost"
-          className="w-full justify-start transition-all hover:bg-muted/80 hover:translate-x-1"
+          variant={activeSection === 'voiceai' ? 'default' : 'ghost'}
+          className={`w-full justify-start transition-all ${
+            activeSection === 'voiceai' 
+              ? 'shadow-md' 
+              : 'hover:bg-muted/80 hover:translate-x-1'
+          }`}
+          onClick={() => setActiveSection('voiceai')}
         >
           <Bot className="h-4 w-4 mr-3" />
           AI Voice Assistant
