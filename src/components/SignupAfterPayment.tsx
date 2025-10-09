@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { ContractorAccountSetup } from './ContractorAccountSetup';
 
 interface SignupAfterPaymentProps {
   isOpen: boolean;
@@ -20,6 +21,8 @@ export function SignupAfterPayment({ isOpen, tierId, billingCycle, cloverPayment
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [showContractorSetup, setShowContractorSetup] = useState(false);
+  const [newUserId, setNewUserId] = useState<string>("");
   const [formData, setFormData] = useState({
     businessName: '',
     email: '',
@@ -76,10 +79,12 @@ export function SignupAfterPayment({ isOpen, tierId, billingCycle, cloverPayment
 
         toast({
           title: 'Account created successfully!',
-          description: 'Redirecting to your dashboard...',
+          description: 'Now let\'s set up your contractor account.',
         });
 
-        setTimeout(() => navigate('/dashboard'), 2000);
+        // Show contractor account setup
+        setNewUserId(authData.user.id);
+        setShowContractorSetup(true);
       }
     } catch (error: any) {
       toast({
@@ -188,6 +193,14 @@ export function SignupAfterPayment({ isOpen, tierId, billingCycle, cloverPayment
           </Button>
         </form>
       </DialogContent>
+
+      {showContractorSetup && newUserId && (
+        <ContractorAccountSetup
+          isOpen={showContractorSetup}
+          userId={newUserId}
+          onClose={() => setShowContractorSetup(false)}
+        />
+      )}
     </Dialog>
   );
 }

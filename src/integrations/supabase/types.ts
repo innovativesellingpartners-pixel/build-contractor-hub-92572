@@ -258,6 +258,7 @@ export type Database = {
           company_name: string | null
           contact_name: string | null
           created_at: string
+          ct1_contractor_number: string | null
           id: string
           logo_url: string | null
           phone: string | null
@@ -276,6 +277,7 @@ export type Database = {
           company_name?: string | null
           contact_name?: string | null
           created_at?: string
+          ct1_contractor_number?: string | null
           id: string
           logo_url?: string | null
           phone?: string | null
@@ -294,6 +296,7 @@ export type Database = {
           company_name?: string | null
           contact_name?: string | null
           created_at?: string
+          ct1_contractor_number?: string | null
           id?: string
           logo_url?: string | null
           phone?: string | null

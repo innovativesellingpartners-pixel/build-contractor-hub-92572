@@ -8,12 +8,15 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import ct1Logo from "@/assets/ct1-logo-main.png";
 import { Loader2, Shield, Award, Store } from "lucide-react";
+import { ContractorAccountSetup } from "@/components/ContractorAccountSetup";
 
 export function TrialSignup() {
   const navigate = useNavigate();
   const { signUp } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [showContractorSetup, setShowContractorSetup] = useState(false);
+  const [newUserId, setNewUserId] = useState<string>("");
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -108,7 +111,9 @@ export function TrialSignup() {
         description: "Your 30-day free trial has started. Enjoy full access to Training, CRM, and Marketplace!",
       });
 
-      navigate("/dashboard");
+      // Show contractor account setup
+      setNewUserId(user.id);
+      setShowContractorSetup(true);
     } catch (error: any) {
       console.error("Trial signup error:", error);
       toast({
@@ -392,6 +397,14 @@ export function TrialSignup() {
           </div>
         </div>
       </main>
+
+      {showContractorSetup && newUserId && (
+        <ContractorAccountSetup
+          isOpen={showContractorSetup}
+          userId={newUserId}
+          onClose={() => setShowContractorSetup(false)}
+        />
+      )}
     </div>
   );
 }
