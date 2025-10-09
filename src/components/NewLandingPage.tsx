@@ -178,16 +178,6 @@ export function NewLandingPage() {
             <span className="font-bold text-sm md:hidden">CT1 Bot</span>
             <ArrowRight className="h-5 w-5 md:h-6 md:w-6 text-primary group-hover:translate-x-1 transition-transform" />
           </div>
-          
-          {/* Tooltip */}
-          <div className="absolute bottom-full right-0 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none hidden md:block">
-            <div className="bg-foreground text-background text-sm px-4 py-2 rounded-lg shadow-lg whitespace-nowrap">
-              <div className="flex items-center gap-2">
-                <Zap className="h-4 w-4 text-primary" />
-                <span>3 Free Prompts • $10/month after</span>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 
