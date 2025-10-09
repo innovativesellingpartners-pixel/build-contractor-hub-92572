@@ -230,6 +230,19 @@ export function FloatingPocketbot({ onClose }: FloatingPocketbotProps) {
     <Card className="h-full flex flex-col shadow-2xl border-2 border-primary/20">
       {/* Header */}
       <div className="bg-gradient-to-r from-primary/10 to-primary/5 p-3 md:p-4 border-b border-primary/20 flex-shrink-0">
+        {/* Signup Banner */}
+        <div className="mb-3 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-lg p-2 text-center">
+          <p className="text-xs font-semibold mb-1">Want unlimited access?</p>
+          <Button 
+            variant="secondary" 
+            size="sm" 
+            className="h-7 text-xs px-3 w-full"
+            onClick={() => window.location.href = '/bot-signup'}
+          >
+            Sign Up Here for Full Access
+          </Button>
+        </div>
+        
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <img src={ct1Logo} alt="CT1" className="h-6 w-6 md:h-8 md:w-8" />

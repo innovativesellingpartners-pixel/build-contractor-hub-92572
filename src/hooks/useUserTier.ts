@@ -98,6 +98,23 @@ function getTierFeatures(tierId: string | null, hasFullAccess: boolean) {
     };
   }
 
+  // Bot user tier - Training, CRM, Marketplace, and Monthly Call
+  if (tierId === 'bot_user') {
+    return {
+      trainingHub: true,
+      crm: true,
+      monthlyCall: true,
+      insurance: false,
+      podcast: false,
+      standards: false,
+      myAccount: true,
+      home: true,
+      leads: false,
+      aiAssistant: false,
+      marketplace: true,
+    };
+  }
+
   // Trial tier - limited access to Training, CRM, and Marketplace
   if (tierId === 'trial') {
     return {
