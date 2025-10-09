@@ -26,6 +26,7 @@ import tmobileLogo from "@/assets/t-mobile-logo.png";
 import ringcentralLogo from "@/assets/ringcentral-logo.webp";
 import zoomLogo from "@/assets/zoom-logo.webp";
 import geotabLogo from "@/assets/geotab-logo.png";
+import fortinetLogo from "@/assets/fortinet-logo.png";
 
 interface TechnologyPartner {
   id: string;
@@ -158,7 +159,7 @@ export function Marketplace() {
       id: 'fortinet',
       name: 'Fortinet',
       category: 'cybersecurity',
-      logo: 'https://www.fortinet.com/content/dam/fortinet-com/images/general-images/fortinet-logo.png',
+      logo: fortinetLogo,
       description: 'Enterprise cybersecurity protection',
       fullDescription: 'Fortinet delivers comprehensive cybersecurity solutions to protect your contractor business from cyber threats. Advanced firewall protection, secure VPN access, and threat detection keep your business data safe.',
       features: ['Next-Gen Firewall', 'VPN Security', 'Threat Detection', 'Email Security', '24/7 Monitoring'],
