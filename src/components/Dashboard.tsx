@@ -508,16 +508,18 @@ function SidebarNav({ activeSection, setActiveSection, tierFeatures }: SidebarNa
         </Button>
       )}
 
-      {tierFeatures.monthlyCall && (
+      {tierFeatures.aiAssistant && (
         <Button
-          variant="ghost"
-          className="w-full justify-start transition-all hover:bg-muted/80 hover:translate-x-1"
-          asChild
+          variant={activeSection === 'voiceai' ? 'default' : 'ghost'}
+          className={`w-full justify-start transition-all ${
+            activeSection === 'voiceai' 
+              ? 'shadow-md' 
+              : 'hover:bg-muted/80 hover:translate-x-1'
+          }`}
+          onClick={() => setActiveSection('voiceai')}
         >
-          <a href="https://calendly.com/innovativesellingpartners/contractor-1-1-with-ct1-trainer" target="_blank" rel="noopener noreferrer">
-            <Phone className="h-4 w-4 mr-3" />
-            Monthly 1:1 Call
-          </a>
+          <Bot className="h-4 w-4 mr-3" />
+          AI Voice Assistant
         </Button>
       )}
       
@@ -533,21 +535,6 @@ function SidebarNav({ activeSection, setActiveSection, tierFeatures }: SidebarNa
         >
           <Users className="h-4 w-4 mr-3" />
           Leads
-        </Button>
-      )}
-
-      {tierFeatures.aiAssistant && (
-        <Button
-          variant={activeSection === 'voiceai' ? 'default' : 'ghost'}
-          className={`w-full justify-start transition-all ${
-            activeSection === 'voiceai' 
-              ? 'shadow-md' 
-              : 'hover:bg-muted/80 hover:translate-x-1'
-          }`}
-          onClick={() => setActiveSection('voiceai')}
-        >
-          <Bot className="h-4 w-4 mr-3" />
-          AI Voice Assistant
         </Button>
       )}
       
@@ -594,33 +581,18 @@ function SidebarNav({ activeSection, setActiveSection, tierFeatures }: SidebarNa
         </Button>
       )}
       
-      {tierFeatures.podcast && (
+      {tierFeatures.monthlyCall && (
         <Button
           variant="ghost"
           className="w-full justify-start transition-all hover:bg-muted/80 hover:translate-x-1"
           asChild
         >
-          <a href="https://lovable.dev/projects/eb889344-3c18-4b7f-b049-eddbd3665869" target="_blank" rel="noopener noreferrer">
-            <Mic className="h-4 w-4 mr-3" />
-            Podcast
+          <a href="https://calendly.com/innovativesellingpartners/contractor-1-1-with-ct1-trainer" target="_blank" rel="noopener noreferrer">
+            <Phone className="h-4 w-4 mr-3" />
+            Monthly 1:1
           </a>
         </Button>
       )}
-      
-      {tierFeatures.standards && (
-        <Button
-          variant="ghost"
-          className="w-full justify-start transition-all hover:bg-muted/80 hover:translate-x-1"
-          asChild
-        >
-          <a href="/core-values">
-            <Award className="h-4 w-4 mr-3" />
-            CT1 Contractor Standards
-          </a>
-        </Button>
-      )}
-      
-      <div className="my-2 border-t border-border/50" />
       
       {tierFeatures.myAccount && (
         <Button
@@ -636,6 +608,34 @@ function SidebarNav({ activeSection, setActiveSection, tierFeatures }: SidebarNa
           My Account
         </Button>
       )}
+      
+      {tierFeatures.standards && (
+        <Button
+          variant="ghost"
+          className="w-full justify-start transition-all hover:bg-muted/80 hover:translate-x-1"
+          asChild
+        >
+          <a href="/core-values">
+            <Award className="h-4 w-4 mr-3" />
+            CT1 Standards
+          </a>
+        </Button>
+      )}
+      
+      {tierFeatures.podcast && (
+        <Button
+          variant="ghost"
+          className="w-full justify-start transition-all hover:bg-muted/80 hover:translate-x-1"
+          asChild
+        >
+          <a href="https://lovable.dev/projects/eb889344-3c18-4b7f-b049-eddbd3665869" target="_blank" rel="noopener noreferrer">
+            <Mic className="h-4 w-4 mr-3" />
+            Podcast
+          </a>
+        </Button>
+      )}
+      
+      <div className="my-2 border-t border-border/50" />
       
       {tierFeatures.home && (
         <Button
