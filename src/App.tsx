@@ -36,6 +36,7 @@ import { CRM } from "@/pages/features/CRM";
 import { Leads } from "@/pages/features/Leads";
 import { QuickBooks } from "@/pages/features/QuickBooks";
 import { Insurance } from "@/pages/features/Insurance";
+import { TrialSignup } from "@/pages/TrialSignup";
 import Savings from "./pages/Savings";
 import Platform from "./pages/Platform";
 
@@ -70,6 +71,7 @@ const App = () => (
             <Route path="/contact" element={<Contact />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/pricing" element={<Pricing />} />
+            <Route path="/trial-signup" element={<TrialSignup />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/subscribe" element={<Subscribe />} />
             <Route path="/dashboard" element={

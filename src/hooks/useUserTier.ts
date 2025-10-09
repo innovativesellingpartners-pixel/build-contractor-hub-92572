@@ -98,6 +98,23 @@ function getTierFeatures(tierId: string | null, hasFullAccess: boolean) {
     };
   }
 
+  // Trial tier - limited access to Training, CRM, and Marketplace
+  if (tierId === 'trial') {
+    return {
+      trainingHub: true,
+      crm: true,
+      monthlyCall: false,
+      insurance: false,
+      podcast: false,
+      standards: false,
+      myAccount: true,
+      home: true,
+      leads: false,
+      aiAssistant: false,
+      marketplace: true,
+    };
+  }
+
   if (tierId === 'launch') {
     return {
       trainingHub: true,

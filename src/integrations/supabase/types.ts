@@ -351,6 +351,7 @@ export type Database = {
           started_at: string
           status: string
           tier_id: string
+          trial_end_date: string | null
           updated_at: string
           user_id: string
         }
@@ -363,6 +364,7 @@ export type Database = {
           started_at?: string
           status?: string
           tier_id: string
+          trial_end_date?: string | null
           updated_at?: string
           user_id: string
         }
@@ -375,6 +377,7 @@ export type Database = {
           started_at?: string
           status?: string
           tier_id?: string
+          trial_end_date?: string | null
           updated_at?: string
           user_id?: string
         }

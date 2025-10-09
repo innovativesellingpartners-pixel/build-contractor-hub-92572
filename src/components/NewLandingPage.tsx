@@ -256,22 +256,11 @@ export function NewLandingPage() {
               </DialogContent>
             </Dialog>
             
-            <Dialog open={activeContactForm === "one-up-today"} onOpenChange={(open) => setActiveContactForm(open ? "one-up-today" : null)}>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="lg" className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-foreground px-8 py-4">
-                  One-Up Today
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl mx-4">
-                <ContactForm
-                  title="One-Up Your Business Today"
-                  description="Get started with CT1 and transform your contracting business"
-                  ctaText="Get Started"
-                  formType="get-started"
-                  onClose={() => setActiveContactForm(null)}
-                />
-              </DialogContent>
-            </Dialog>
+            <Button variant="outline" size="lg" className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-foreground px-8 py-4" asChild>
+              <Link to="/trial-signup">
+                Try CT1 For Free
+              </Link>
+            </Button>
           </div>
 
           {/* Contractor Login Section */}
