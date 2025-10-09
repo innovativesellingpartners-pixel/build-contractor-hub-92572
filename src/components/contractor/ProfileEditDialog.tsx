@@ -102,6 +102,47 @@ export function ProfileEditDialog() {
     }
   };
 
+  const handleSaveAll = async () => {
+    if (!user) return;
+
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          company_name: formData.company_name,
+          contact_name: formData.contact_name,
+          phone: formData.phone,
+          business_address: formData.business_address,
+          city: formData.city,
+          state: formData.state,
+          zip_code: formData.zip_code,
+          tax_id: formData.tax_id,
+          ct1_contractor_number: formData.ct1_contractor_number,
+        })
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Profile updated",
+        description: "Your profile has been updated successfully.",
+      });
+      
+      setOpen(false);
+      setTimeout(() => window.location.reload(), 500);
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast({
+        title: "Update failed",
+        description: "Failed to update profile. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSaveField = async (field: EditingField) => {
     if (!user || !field) return;
 
@@ -137,70 +178,20 @@ export function ProfileEditDialog() {
     label: string,
     type: string = "text"
   ) => {
-    const isEditing = editingField === field;
     const value = formData[field as keyof typeof formData];
 
     return (
       <div>
         <Label htmlFor={field!}>{label}</Label>
-        <div className="flex items-center gap-2 mt-2">
-          {isEditing ? (
-            <>
-              <Input
-                id={field!}
-                name={field!}
-                type={type}
-                value={value}
-                onChange={handleChange}
-                className="flex-1"
-                autoFocus
-              />
-              <Button
-                type="button"
-                size="icon"
-                variant="ghost"
-                onClick={() => handleSaveField(field)}
-                disabled={loading}
-              >
-                {loading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Check className="h-4 w-4 text-green-600" />
-                )}
-              </Button>
-              <Button
-                type="button"
-                size="icon"
-                variant="ghost"
-                onClick={() => {
-                  setEditingField(null);
-                  // Reset to original value
-                  if (profile) {
-                    setFormData(prev => ({
-                      ...prev,
-                      [field!]: profile[field as keyof typeof profile] || ''
-                    }));
-                  }
-                }}
-              >
-                <X className="h-4 w-4 text-red-600" />
-              </Button>
-            </>
-          ) : (
-            <>
-              <div className="flex-1 px-3 py-2 border rounded-md bg-muted/30">
-                {value || <span className="text-muted-foreground">Not set</span>}
-              </div>
-              <Button
-                type="button"
-                size="icon"
-                variant="ghost"
-                onClick={() => setEditingField(field)}
-              >
-                <Pencil className="h-4 w-4" />
-              </Button>
-            </>
-          )}
+        <div className="mt-2">
+          <Input
+            id={field!}
+            name={field!}
+            type={type}
+            value={value}
+            onChange={handleChange}
+            placeholder={`Enter ${label.toLowerCase()}`}
+          />
         </div>
       </div>
     );
@@ -278,9 +269,22 @@ export function ProfileEditDialog() {
             {renderField('tax_id', 'Tax ID')}
           </div>
 
-          <div className="flex justify-end pt-4 border-t">
-            <Button type="button" onClick={() => setOpen(false)}>
-              Close
+          <div className="flex justify-end gap-2 pt-4 border-t">
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="button" onClick={handleSaveAll} disabled={loading}>
+              {loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Check className="h-4 w-4 mr-2" />
+                  Save Changes
+                </>
+              )}
             </Button>
           </div>
         </div>
