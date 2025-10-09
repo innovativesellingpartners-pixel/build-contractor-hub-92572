@@ -75,10 +75,28 @@ export function Pocketbot() {
       if (response.status === 429) {
         const errorData = await response.json();
         setIsLoading(false);
+        
+        // Show upgrade link for free users
+        const content = errorData.upgrade_required 
+          ? errorData.error
+          : errorData.error || "You've reached your daily limit. Please try again tomorrow!";
+        
         setMessages([...newMessages, {
           role: "assistant",
-          content: errorData.error || "You've reached your daily limit. Please try again tomorrow!"
+          content
         }]);
+        
+        if (errorData.upgrade_required) {
+          toast({
+            title: "Upgrade Required",
+            description: "Get unlimited prompts and full responses with a CT1 Pocketbot subscription!",
+            action: (
+              <Link to="/bot-signup">
+                <Button size="sm" variant="default">Upgrade Now</Button>
+              </Link>
+            ),
+          });
+        }
         return;
       }
 

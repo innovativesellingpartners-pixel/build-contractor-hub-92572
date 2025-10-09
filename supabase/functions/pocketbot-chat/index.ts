@@ -8,6 +8,8 @@ const corsHeaders = {
 };
 
 const RATE_LIMIT_PER_DAY = 50;
+const FREE_USER_LIMIT = 3;
+const FREE_USER_MAX_CHARS = 500;
 
 // PDF generation tool
 const generatePDF = (content: { title: string; sections: Array<{ heading: string; content: string }> }) => {
@@ -83,6 +85,19 @@ serve(async (req) => {
       );
     }
 
+    // Check if user has a paid subscription for bot access
+    const { data: subscription } = await supabase
+      .from('subscriptions')
+      .select('tier_id, status')
+      .eq('user_id', user.id)
+      .eq('status', 'active')
+      .maybeSingle();
+
+    const hasPaidBot = subscription?.tier_id === 'bot_user' || 
+                       subscription?.tier_id === 'growth' || 
+                       subscription?.tier_id === 'launch' ||
+                       user.email?.endsWith('@myct1.com');
+
     // SERVER-SIDE RATE LIMITING: Check usage
     const today = new Date().toISOString().split('T')[0];
     const { data: usage, error: usageError } = await supabase
@@ -94,6 +109,9 @@ serve(async (req) => {
     if (usageError) {
       console.error('Error checking usage:', usageError);
     }
+
+    // Determine limit based on subscription
+    const userLimit = hasPaidBot ? RATE_LIMIT_PER_DAY : FREE_USER_LIMIT;
 
     // Initialize or reset usage if needed
     if (!usage) {
@@ -110,12 +128,17 @@ serve(async (req) => {
         await supabase.from('chatbot_usage')
           .update({ prompt_count: 1, last_reset_date: new Date().toISOString() })
           .eq('user_id', user.id);
-      } else if (usage.prompt_count >= RATE_LIMIT_PER_DAY) {
+      } else if (usage.prompt_count >= userLimit) {
         // Rate limit exceeded
+        const errorMessage = hasPaidBot 
+          ? `Daily limit of ${RATE_LIMIT_PER_DAY} prompts reached. Resets at midnight.`
+          : `You've reached your free limit of ${FREE_USER_LIMIT} prompts. To continue using CT1 Pocketbot with unlimited prompts and full responses, please upgrade your subscription at /bot-signup`;
+        
         return new Response(
           JSON.stringify({ 
-            error: `Daily limit of ${RATE_LIMIT_PER_DAY} prompts reached. Resets at midnight.`,
-            limit_exceeded: true
+            error: errorMessage,
+            limit_exceeded: true,
+            upgrade_required: !hasPaidBot
           }),
           {
             status: 429,
@@ -203,10 +226,13 @@ Do NOT answer questions about:
 - Technical support for non-business software
 - Any topic outside the scope listed above
 
+${!hasPaidBot ? `\nCRITICAL: This is a FREE TIER user. You MUST limit your response to a MAXIMUM of ${FREE_USER_MAX_CHARS} characters. Keep responses brief and encourage them to upgrade for unlimited access.\n` : ''}
+
 You are knowledgeable, professional, friendly, and provide actionable advice within your scope. Keep responses clear, concise, and practical. When appropriate, suggest using CT1's suite of tools and features to help solve their challenges.`
           },
           ...messages,
         ],
+        max_tokens: hasPaidBot ? undefined : 200,
         tools: tools,
         stream: true,
       }),
@@ -341,10 +367,13 @@ Do NOT answer questions about:
 - Technical support for non-business software
 - Any topic outside the scope listed above
 
+${!hasPaidBot ? `\nCRITICAL: This is a FREE TIER user. You MUST limit your response to a MAXIMUM of ${FREE_USER_MAX_CHARS} characters. Keep responses brief and encourage them to upgrade for unlimited access.\n` : ''}
+
 You are knowledgeable, professional, friendly, and provide actionable advice within your scope. Keep responses clear, concise, and practical. When appropriate, suggest using CT1's suite of tools and features to help solve their challenges.`
           },
           ...messages,
         ],
+        max_tokens: hasPaidBot ? undefined : 200,
         stream: true,
       }),
     });
