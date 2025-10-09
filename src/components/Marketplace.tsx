@@ -24,6 +24,7 @@ import ct1Logo from "@/assets/ct1-logo-main.png";
 import heroImage from "@/assets/hero-construction.jpg";
 import tmobileLogo from "@/assets/t-mobile-logo.png";
 import ringcentralLogo from "@/assets/ringcentral-logo.webp";
+import zoomLogo from "@/assets/zoom-logo.webp";
 
 interface TechnologyPartner {
   id: string;
@@ -134,7 +135,7 @@ export function Marketplace() {
       id: 'zoom',
       name: 'Zoom',
       category: 'communication',
-      logo: 'https://st1.zoom.us/static/6.3.28380/image/new/ZoomLogo.png',
+      logo: zoomLogo,
       description: 'Video meetings for client consultations',
       fullDescription: 'Zoom provides reliable video conferencing solutions for contractors to meet with clients remotely, conduct virtual walkthroughs, and collaborate with team members. HD video and screen sharing make remote meetings feel personal.',
       features: ['HD Video Meetings', 'Screen Sharing', 'Meeting Recording', 'Virtual Backgrounds', 'Calendar Integration'],
