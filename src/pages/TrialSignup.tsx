@@ -122,14 +122,17 @@ export function TrialSignup() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-primary/10 flex flex-col">
       {/* Header */}
-      <header className="border-b bg-card/80 backdrop-blur-sm">
+      <header className="border-b border-primary/20 bg-card/95 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <Link to="/" className="flex items-center space-x-3">
-            <img src={ct1Logo} alt="CT1 Logo" className="h-10 w-10" />
+            <div className="relative">
+              <div className="absolute inset-0 bg-primary/20 rounded-xl blur-lg"></div>
+              <img src={ct1Logo} alt="CT1 Logo" className="relative h-12 w-12" />
+            </div>
             <div>
-              <h1 className="text-xl font-bold text-foreground">CT1</h1>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">CT1</h1>
               <p className="text-xs text-muted-foreground font-medium">One-Up Your Business</p>
             </div>
           </Link>
@@ -140,34 +143,43 @@ export function TrialSignup() {
         <div className="max-w-4xl mx-auto">
           {/* Hero Section */}
           <div className="text-center mb-10">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
+            <div className="inline-block mb-6">
+              <div className="relative">
+                <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl"></div>
+                <img src={ct1Logo} alt="CT1" className="relative h-20 w-20 mx-auto drop-shadow-2xl" />
+              </div>
+            </div>
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary/80 to-primary">
               Start Your 30-Day Free Trial
             </h1>
-            <p className="text-xl text-muted-foreground mb-6">
+            <p className="text-xl text-muted-foreground mb-8">
               Get instant access to 5-Star Training, CRM, and Marketplace
             </p>
-            <div className="flex justify-center gap-6 mb-8">
-              <div className="flex items-center gap-2">
+            <div className="flex flex-wrap justify-center gap-4 md:gap-6 mb-8">
+              <div className="flex items-center gap-2 bg-primary/10 px-4 py-2 rounded-full border border-primary/20">
                 <Award className="h-5 w-5 text-primary" />
-                <span className="text-sm font-medium">5-Star Training</span>
+                <span className="text-sm font-semibold">5-Star Training</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 bg-primary/10 px-4 py-2 rounded-full border border-primary/20">
                 <Shield className="h-5 w-5 text-primary" />
-                <span className="text-sm font-medium">Full CRM Access</span>
+                <span className="text-sm font-semibold">Full CRM Access</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 bg-primary/10 px-4 py-2 rounded-full border border-primary/20">
                 <Store className="h-5 w-5 text-primary" />
-                <span className="text-sm font-medium">Marketplace</span>
+                <span className="text-sm font-semibold">Marketplace</span>
               </div>
             </div>
           </div>
 
           {/* Signup Form */}
-          <div className="bg-card border border-border/50 rounded-xl shadow-lg p-8">
+          <div className="bg-card border-2 border-primary/20 rounded-2xl shadow-2xl p-8 backdrop-blur-sm">
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Personal Information */}
               <div>
-                <h3 className="text-lg font-semibold mb-4">Personal Information</h3>
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <div className="h-8 w-1 bg-primary rounded-full"></div>
+                  Personal Information
+                </h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="firstName">First Name *</Label>
@@ -179,6 +191,7 @@ export function TrialSignup() {
                       value={formData.firstName}
                       onChange={handleInputChange}
                       placeholder="John"
+                      className="border-2 border-border focus:border-primary transition-colors"
                     />
                   </div>
                   <div className="space-y-2">
@@ -191,6 +204,7 @@ export function TrialSignup() {
                       value={formData.lastName}
                       onChange={handleInputChange}
                       placeholder="Doe"
+                      className="border-2 border-border focus:border-primary transition-colors"
                     />
                   </div>
                 </div>
@@ -198,7 +212,10 @@ export function TrialSignup() {
 
               {/* Account Information */}
               <div>
-                <h3 className="text-lg font-semibold mb-4">Account Information</h3>
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <div className="h-8 w-1 bg-primary rounded-full"></div>
+                  Account Information
+                </h3>
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="email">Email Address *</Label>
@@ -210,6 +227,7 @@ export function TrialSignup() {
                       value={formData.email}
                       onChange={handleInputChange}
                       placeholder="john@example.com"
+                      className="border-2 border-border focus:border-primary transition-colors"
                     />
                   </div>
                   <div className="space-y-2">
@@ -223,6 +241,7 @@ export function TrialSignup() {
                       onChange={handleInputChange}
                       placeholder="••••••••"
                       minLength={6}
+                      className="border-2 border-border focus:border-primary transition-colors"
                     />
                     <p className="text-xs text-muted-foreground">Minimum 6 characters</p>
                   </div>
@@ -231,7 +250,10 @@ export function TrialSignup() {
 
               {/* Business Information */}
               <div>
-                <h3 className="text-lg font-semibold mb-4">Business Information</h3>
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <div className="h-8 w-1 bg-primary rounded-full"></div>
+                  Business Information
+                </h3>
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="businessName">Business Name *</Label>
@@ -243,6 +265,7 @@ export function TrialSignup() {
                       value={formData.businessName}
                       onChange={handleInputChange}
                       placeholder="ABC Construction LLC"
+                      className="border-2 border-border focus:border-primary transition-colors"
                     />
                   </div>
                   <div className="space-y-2">
@@ -255,6 +278,7 @@ export function TrialSignup() {
                       value={formData.address}
                       onChange={handleInputChange}
                       placeholder="123 Main Street"
+                      className="border-2 border-border focus:border-primary transition-colors"
                     />
                   </div>
                   <div className="grid md:grid-cols-3 gap-4">
@@ -268,6 +292,7 @@ export function TrialSignup() {
                         value={formData.city}
                         onChange={handleInputChange}
                         placeholder="Detroit"
+                        className="border-2 border-border focus:border-primary transition-colors"
                       />
                     </div>
                     <div className="space-y-2">
@@ -281,6 +306,7 @@ export function TrialSignup() {
                         onChange={handleInputChange}
                         placeholder="MI"
                         maxLength={2}
+                        className="border-2 border-border focus:border-primary transition-colors"
                       />
                     </div>
                     <div className="space-y-2">
@@ -294,6 +320,7 @@ export function TrialSignup() {
                         onChange={handleInputChange}
                         placeholder="48201"
                         maxLength={10}
+                        className="border-2 border-border focus:border-primary transition-colors"
                       />
                     </div>
                   </div>
@@ -302,7 +329,10 @@ export function TrialSignup() {
 
               {/* Payment Information */}
               <div>
-                <h3 className="text-lg font-semibold mb-4">Payment Information</h3>
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <div className="h-8 w-1 bg-primary rounded-full"></div>
+                  Payment Information
+                </h3>
                 <div className="space-y-2">
                   <Label htmlFor="cardNumber">Card Number *</Label>
                   <Input
@@ -314,6 +344,7 @@ export function TrialSignup() {
                     onChange={handleInputChange}
                     placeholder="•••• •••• •••• ••••"
                     maxLength={19}
+                    className="border-2 border-border focus:border-primary transition-colors"
                   />
                   <p className="text-xs text-muted-foreground">
                     You won't be charged during your 30-day trial
@@ -324,7 +355,7 @@ export function TrialSignup() {
               {/* Submit Button */}
               <Button 
                 type="submit" 
-                className="w-full h-12 text-lg"
+                className="w-full h-12 text-lg bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-lg"
                 disabled={loading}
               >
                 {loading ? (
