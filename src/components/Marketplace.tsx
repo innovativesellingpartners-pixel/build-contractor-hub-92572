@@ -25,6 +25,7 @@ import heroImage from "@/assets/hero-construction.jpg";
 import tmobileLogo from "@/assets/t-mobile-logo.png";
 import ringcentralLogo from "@/assets/ringcentral-logo.webp";
 import zoomLogo from "@/assets/zoom-logo.webp";
+import geotabLogo from "@/assets/geotab-logo.png";
 
 interface TechnologyPartner {
   id: string;
@@ -146,7 +147,7 @@ export function Marketplace() {
       id: 'geotab',
       name: 'Geotab',
       category: 'iot',
-      logo: 'https://www.geotab.com/wp-content/themes/geotab/images/geotab-logo.svg',
+      logo: geotabLogo,
       description: 'Fleet tracking and management',
       fullDescription: 'Geotab provides advanced GPS fleet tracking and management solutions for contractors. Monitor vehicle locations, optimize routes, improve driver safety, and reduce fuel costs with real-time tracking and detailed analytics.',
       features: ['Real-Time GPS Tracking', 'Route Optimization', 'Driver Safety Monitoring', 'Fuel Management', 'Maintenance Scheduling'],
