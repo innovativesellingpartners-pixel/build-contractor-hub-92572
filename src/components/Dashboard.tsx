@@ -116,7 +116,12 @@ export function Dashboard() {
                 </div>
               </Link>
             </div>
-            <div className="flex items-center gap-2 md:gap-3">
+            <div className="flex items-center gap-2 md:gap-4">
+              <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-primary/5 rounded-lg border border-primary/20">
+                <Building2 className="h-4 w-4 text-primary" />
+                <span className="font-semibold text-sm">{profile?.company_name || 'Your Company'}</span>
+              </div>
+              <ProfileEditDialog />
               {isAdmin && (
                 <Button variant="outline" size="sm" asChild className="hover:bg-primary/10 transition-colors hidden sm:flex">
                   <Link to="/admin">Admin Dashboard</Link>
