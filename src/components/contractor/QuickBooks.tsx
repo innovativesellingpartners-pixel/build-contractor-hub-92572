@@ -1,39 +1,113 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DollarSign, ExternalLink, CheckCircle, TrendingUp, FileText, Users, Lock } from "lucide-react";
+import { DollarSign, CheckCircle, TrendingUp, FileText, Users, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function QuickBooks() {
   const [isConnected, setIsConnected] = useState(false);
-  const [loginOpen, setLoginOpen] = useState(false);
-  const [emailOrUserId, setEmailOrUserId] = useState("");
-  const [phone, setPhone] = useState("");
-  const [rememberMe, setRememberMe] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [checkingConnection, setCheckingConnection] = useState(true);
   const { toast } = useToast();
+  const { user } = useAuth();
 
-  const handleConnect = () => {
-    // In production, this would initiate OAuth flow
-    toast({
-      title: "QuickBooks Integration",
-      description: "QuickBooks connection coming soon! This feature will sync your financial data seamlessly.",
-    });
+  useEffect(() => {
+    checkConnection();
+    
+    // Check for OAuth callback parameters
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('qb_connected') === 'true') {
+      toast({
+        title: "QuickBooks Connected!",
+        description: "Your QuickBooks account has been successfully connected.",
+      });
+      setIsConnected(true);
+      window.history.replaceState({}, '', window.location.pathname);
+    } else if (params.get('qb_error')) {
+      toast({
+        title: "Connection Failed",
+        description: params.get('qb_error') || "Failed to connect to QuickBooks",
+        variant: "destructive",
+      });
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, []);
+
+  const checkConnection = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('quickbooks_connections')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (error) throw error;
+      setIsConnected(!!data);
+    } catch (error) {
+      console.error('Error checking QuickBooks connection:', error);
+    } finally {
+      setCheckingConnection(false);
+    }
   };
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast({
-      title: "Signing in...",
-      description: "Connecting to your QuickBooks Online account.",
-    });
-    setLoginOpen(false);
+  const handleConnect = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('quickbooks-oauth-init');
+      
+      if (error) throw error;
+      
+      // Redirect to QuickBooks OAuth
+      window.location.href = data.authUrl;
+    } catch (error) {
+      console.error('Error initiating QuickBooks OAuth:', error);
+      toast({
+        title: "Connection Failed",
+        description: "Failed to initiate QuickBooks connection. Please try again.",
+        variant: "destructive",
+      });
+      setLoading(false);
+    }
   };
+
+  const handleDisconnect = async () => {
+    if (!user) return;
+    
+    try {
+      const { error } = await supabase
+        .from('quickbooks_connections')
+        .delete()
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      setIsConnected(false);
+      toast({
+        title: "Disconnected",
+        description: "QuickBooks account has been disconnected.",
+      });
+    } catch (error) {
+      console.error('Error disconnecting QuickBooks:', error);
+      toast({
+        title: "Error",
+        description: "Failed to disconnect QuickBooks account.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  if (checkingConnection) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -90,139 +164,61 @@ export function QuickBooks() {
                   </li>
                 </ul>
               </div>
-              <Button onClick={handleConnect} size="lg" className="w-full">
-                <DollarSign className="h-4 w-4 mr-2" />
-                Connect QuickBooks Account
+              <Button onClick={handleConnect} size="lg" className="w-full" disabled={loading}>
+                {loading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Connecting...
+                  </>
+                ) : (
+                  <>
+                    <DollarSign className="h-4 w-4 mr-2" />
+                    Connect QuickBooks Account
+                  </>
+                )}
               </Button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="text-center">
-                    <TrendingUp className="h-8 w-8 text-primary mx-auto mb-2" />
-                    <p className="text-2xl font-bold">$127,450</p>
-                    <p className="text-sm text-muted-foreground">Total Revenue</p>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="text-center">
-                    <FileText className="h-8 w-8 text-primary mx-auto mb-2" />
-                    <p className="text-2xl font-bold">23</p>
-                    <p className="text-sm text-muted-foreground">Open Invoices</p>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="text-center">
-                    <Users className="h-8 w-8 text-primary mx-auto mb-2" />
-                    <p className="text-2xl font-bold">48</p>
-                    <p className="text-sm text-muted-foreground">Active Clients</p>
-                  </div>
-                </CardContent>
-              </Card>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="text-center">
+                      <TrendingUp className="h-8 w-8 text-primary mx-auto mb-2" />
+                      <p className="text-2xl font-bold">Connected</p>
+                      <p className="text-sm text-muted-foreground">QuickBooks Data</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="text-center">
+                      <FileText className="h-8 w-8 text-primary mx-auto mb-2" />
+                      <p className="text-2xl font-bold">Synced</p>
+                      <p className="text-sm text-muted-foreground">Invoices</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="text-center">
+                      <Users className="h-8 w-8 text-primary mx-auto mb-2" />
+                      <p className="text-2xl font-bold">Active</p>
+                      <p className="text-sm text-muted-foreground">Integration</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+              <Button 
+                onClick={handleDisconnect} 
+                variant="outline" 
+                size="lg" 
+                className="w-full"
+              >
+                Disconnect QuickBooks
+              </Button>
             </div>
           )}
-        </CardContent>
-      </Card>
-
-      {/* QuickBooks Online Access */}
-      <Card>
-        <CardHeader>
-          <CardTitle>QuickBooks Online Access</CardTitle>
-          <CardDescription>
-            Access your QuickBooks account directly from CT1
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="lg" className="w-full">
-                <ExternalLink className="h-4 w-4 mr-2" />
-                Log in to QuickBooks Online
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[450px]">
-              <div className="flex flex-col items-center space-y-4">
-                <div className="text-center space-y-2">
-                  <h2 className="text-2xl font-bold text-blue-600">INTUIT</h2>
-                  <p className="text-lg font-medium">Let's get you in to QuickBooks</p>
-                </div>
-                
-                <form onSubmit={handleLogin} className="w-full space-y-4">
-                  <Tabs defaultValue="email" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2">
-                      <TabsTrigger value="email">Email or user ID</TabsTrigger>
-                      <TabsTrigger value="phone">Phone</TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="email" className="space-y-4 mt-4">
-                      <Input
-                        id="emailOrUserId"
-                        type="text"
-                        placeholder="Email or user ID"
-                        value={emailOrUserId}
-                        onChange={(e) => setEmailOrUserId(e.target.value)}
-                        required
-                        className="h-11"
-                      />
-                    </TabsContent>
-                    <TabsContent value="phone" className="space-y-4 mt-4">
-                      <Input
-                        id="phone"
-                        type="tel"
-                        placeholder="Phone number"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        className="h-11"
-                      />
-                    </TabsContent>
-                  </Tabs>
-
-                  <div className="flex items-center space-x-2">
-                    <Checkbox 
-                      id="qb-remember" 
-                      checked={rememberMe}
-                      onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-                      className="data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600"
-                    />
-                    <label
-                      htmlFor="qb-remember"
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                    >
-                      Remember me
-                    </label>
-                  </div>
-
-                  <Button type="submit" className="w-full h-11 bg-green-700 hover:bg-green-800 text-white">
-                    <Lock className="h-4 w-4 mr-2" />
-                    Sign in
-                  </Button>
-
-                  <div className="text-xs text-center text-muted-foreground">
-                    By selecting Sign in, you agree to Intuit Terms and Mailchimp Terms. Our Privacy Policy applies to your personal data.
-                  </div>
-
-                  <div className="text-center space-y-2">
-                    <Button type="button" variant="link" className="text-sm text-green-700 hover:text-green-800">
-                      Try something else
-                    </Button>
-                    <p className="text-sm">
-                      New to Intuit?{" "}
-                      <Button type="button" variant="link" className="text-sm text-primary p-0 h-auto">
-                        Create an account
-                      </Button>
-                    </p>
-                  </div>
-                </form>
-              </div>
-            </DialogContent>
-          </Dialog>
-          <p className="text-xs text-muted-foreground mt-2 text-center">
-            Secure login within CT1 environment
-          </p>
         </CardContent>
       </Card>
 
