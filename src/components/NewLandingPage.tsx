@@ -273,10 +273,12 @@ export function NewLandingPage() {
       <section id="features" className="py-12 sm:py-16 md:py-20 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10 sm:mb-12 md:mb-16">
-            <Badge className="mb-3 sm:mb-4 bg-primary text-primary-foreground px-3 sm:px-4 py-1.5 sm:py-2 text-sm sm:text-base md:text-lg">
-              <Target className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-              Unified Business Suite
-            </Badge>
+            <Link to="/business-suite">
+              <Badge className="mb-3 sm:mb-4 bg-primary text-primary-foreground px-3 sm:px-4 py-1.5 sm:py-2 text-sm sm:text-base md:text-lg cursor-pointer hover:bg-primary/90 transition-colors">
+                <Target className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                Unified Business Suite
+              </Badge>
+            </Link>
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-4 sm:mb-6 px-4">
               Everything Connected, <span className="text-primary">Nothing Missing</span>
             </h2>
