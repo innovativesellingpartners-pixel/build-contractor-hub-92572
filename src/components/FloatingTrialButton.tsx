@@ -4,7 +4,7 @@ import ct1Logo from "@/assets/ct1-logo-main.png";
 
 export function FloatingTrialButton() {
   return (
-    <div className="fixed left-16 top-24 z-40 hidden md:block">
+    <div className="fixed left-[4.5rem] top-24 z-40 hidden md:block">
       <Link to="/trial-signup">
         <Button 
           size="lg"
