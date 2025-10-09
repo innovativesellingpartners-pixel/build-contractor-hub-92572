@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FloatingTrialButton } from "@/components/FloatingTrialButton";
 import { ArrowLeft, Clock, DollarSign, TrendingUp, Zap, Package, Shield, Calculator } from "lucide-react";
 import ct1Logo from "@/assets/ct1-logo-main.png";
 
@@ -62,6 +63,7 @@ export default function Savings() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/10">
+      <FloatingTrialButton />
       {/* Header */}
       <header className="border-b border-border/50 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

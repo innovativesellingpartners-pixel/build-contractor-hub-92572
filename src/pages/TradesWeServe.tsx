@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { FloatingTrialButton } from '@/components/FloatingTrialButton';
 import { Wrench, Zap, Droplet, Wind, Hammer, Paintbrush, Home, Fence } from 'lucide-react';
 import ct1Logo from '@/assets/ct1-logo-main.png';
 
@@ -50,6 +51,7 @@ export const TradesWeServe = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <FloatingTrialButton />
       {/* Header */}
       <header className="border-b sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50">
         <div className="container mx-auto px-4 py-4">

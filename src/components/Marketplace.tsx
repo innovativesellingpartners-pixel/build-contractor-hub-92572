@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { FloatingTrialButton } from "@/components/FloatingTrialButton";
 import { Badge } from "@/components/ui/badge";
 import { 
   Cloud, 
@@ -353,6 +354,7 @@ export function Marketplace() {
 
   return (
     <div className="min-h-screen bg-background">
+      <FloatingTrialButton />
       {/* Hero Section */}
       <section className="relative h-[60vh] min-h-[500px] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">

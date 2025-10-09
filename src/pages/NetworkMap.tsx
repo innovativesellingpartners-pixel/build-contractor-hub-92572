@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { FloatingTrialButton } from "@/components/FloatingTrialButton";
 import ct1Logo from "@/assets/ct1-logo-main.png";
 
 // Business lines with colors
@@ -99,6 +100,7 @@ export default function NetworkMap() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/10">
+      <FloatingTrialButton />
       {/* Header */}
       <header className="border-b border-border/50 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-4">

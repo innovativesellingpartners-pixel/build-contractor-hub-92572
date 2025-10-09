@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { FloatingTrialButton } from "@/components/FloatingTrialButton";
 import { MobileNav } from "@/components/MobileNav";
 import ct1Logo from "@/assets/ct1-logo-main.png";
 import { 
@@ -97,6 +98,7 @@ export function BusinessSuite() {
 
   return (
     <div className="min-h-screen bg-background">
+      <FloatingTrialButton />
       {/* Header */}
       <header className="border-b border-border sticky top-0 bg-background/95 backdrop-blur-sm z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
