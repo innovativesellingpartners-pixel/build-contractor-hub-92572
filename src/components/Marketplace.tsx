@@ -28,6 +28,7 @@ import zoomLogo from "@/assets/zoom-logo.webp";
 import geotabLogo from "@/assets/geotab-logo.png";
 import fortinetLogo from "@/assets/fortinet-logo.png";
 import teletracLogo from "@/assets/teletrac-navman-logo.svg";
+import vonageLogo from "@/assets/vonage-logo.png";
 
 interface TechnologyPartner {
   id: string;
@@ -204,7 +205,7 @@ export function Marketplace() {
       id: 'vonage',
       name: 'Vonage',
       category: 'communication',
-      logo: 'https://www.vonage.com/content/dam/vonage/us/logos/vonage-logo.svg',
+      logo: vonageLogo,
       description: 'Business communication platform',
       fullDescription: 'Vonage delivers unified communications for contractors including voice, video, messaging, and contact center solutions. Keep your team and customers connected with reliable business communications.',
       features: ['Business Phone Service', 'SMS/MMS Messaging', 'Video Conferencing', 'Call Center Tools', 'API Integration'],
