@@ -26,6 +26,7 @@ import leadershipImg from '@/assets/training-leadership.jpg';
 import performanceImg from '@/assets/training-performance.jpg';
 import processImg from '@/assets/training-process.jpg';
 import sellingImg from '@/assets/training-selling.jpg';
+import videoThumbnail from '@/assets/training-video-thumbnail.png';
 
 export const TrainingHub = () => {
   const navigate = useNavigate();
@@ -96,18 +97,23 @@ export const TrainingHub = () => {
         </div>
 
         {/* Welcome Video Section */}
-        <div className="mb-8 max-w-3xl mx-auto">
+        <div className="mb-8 max-w-2xl mx-auto">
           <Card className="overflow-hidden">
-            <div className="bg-gradient-to-r from-primary to-primary/80 p-4 text-center">
-              <h2 className="text-2xl font-bold text-primary-foreground">
+            <div className="bg-gradient-to-r from-primary to-primary/80 p-3 text-center">
+              <h2 className="text-xl font-bold text-primary-foreground">
                 Welcome to CT1&apos;s 5-Star Training
               </h2>
             </div>
-            <CardContent className="p-4">
-              <div className="aspect-video w-full">
+            <CardContent className="p-3">
+              <div className="aspect-video w-full relative rounded-lg overflow-hidden">
+                <img 
+                  src={videoThumbnail} 
+                  alt="Training Course Introduction"
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
                 <iframe
                   src="https://drive.google.com/file/d/1eMBOcQ776JFxqniVIZ7g78DQxn5GzwbY/preview"
-                  className="w-full h-full rounded-lg"
+                  className="w-full h-full rounded-lg relative z-10"
                   allow="autoplay"
                   title="Welcome to CT1's 5-Star Training"
                 />
