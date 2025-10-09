@@ -44,8 +44,12 @@ export const WhatWeDo = () => {
       <header className="border-b sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
-            <Link to="/">
-              <img src={ct1Logo} alt="CT1 Logo" className="h-12" />
+            <Link to="/" className="flex items-center space-x-3">
+              <img src={ct1Logo} alt="CT1 Logo" className="h-12 w-12" />
+              <div>
+                <h1 className="text-2xl font-bold text-foreground">CT1</h1>
+                <p className="text-xs text-muted-foreground font-medium">One-Up Your Business</p>
+              </div>
             </Link>
             <nav className="hidden md:flex items-center gap-6">
               <Link to="/" className="text-sm hover:text-primary transition-colors">Home</Link>

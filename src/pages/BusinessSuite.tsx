@@ -105,7 +105,7 @@ export function BusinessSuite() {
               <img src={ct1Logo} alt="CT1 Logo" className="h-10 w-10 sm:h-12 sm:w-12" />
               <div>
                 <h1 className="text-xl sm:text-2xl font-bold text-foreground">CT1</h1>
-                <p className="text-[10px] sm:text-xs text-muted-foreground font-medium">One-Up the Competition</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground font-medium">One-Up Your Business</p>
               </div>
             </Link>
             
