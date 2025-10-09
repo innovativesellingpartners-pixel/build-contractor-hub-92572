@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -214,13 +215,18 @@ export function Pocketbot() {
               </p>
             </div>
           </div>
-          <div className="text-right">
+          <div className="flex items-center gap-3">
             <Badge 
               variant="secondary"
               className="text-xs md:text-sm px-2 md:px-4 py-1 md:py-2"
             >
               {DAILY_LIMIT} Daily Limit
             </Badge>
+            <Link to="/bot-signup">
+              <Button size="sm" variant="secondary" className="rounded-full">
+                Sign up today
+              </Button>
+            </Link>
           </div>
         </div>
       </div>

@@ -8,7 +8,7 @@ export function FloatingTrialButton() {
       <Link to="/trial-signup">
         <Button 
           size="lg"
-          className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-lg hover:shadow-xl transition-all duration-300 animate-pulse hover:animate-none flex items-center gap-2"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2"
         >
           <Sparkles className="h-5 w-5" />
           Try CT1 For Free
