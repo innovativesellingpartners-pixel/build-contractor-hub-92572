@@ -23,6 +23,7 @@ import {
 import ct1Logo from "@/assets/ct1-logo-main.png";
 import heroImage from "@/assets/hero-construction.jpg";
 import tmobileLogo from "@/assets/t-mobile-logo.png";
+import ringcentralLogo from "@/assets/ringcentral-logo.webp";
 
 interface TechnologyPartner {
   id: string;
@@ -122,7 +123,7 @@ export function Marketplace() {
       id: 'ringcentral',
       name: 'RingCentral',
       category: 'communication',
-      logo: 'https://www.ringcentral.com/content/dam/rc-www/en_us/images/brand-assets/rc-logo-icon-orange-rgb.svg',
+      logo: ringcentralLogo,
       description: 'Unified communications for contractors',
       fullDescription: 'RingCentral provides a complete business phone system with video conferencing, team messaging, and call management—all in one platform. Perfect for contractors who need professional communication tools.',
       features: ['Business Phone System', 'Video Conferencing', 'Team Messaging', 'Call Recording', 'Mobile App'],
