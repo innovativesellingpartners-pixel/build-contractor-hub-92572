@@ -29,6 +29,7 @@ import geotabLogo from "@/assets/geotab-logo.png";
 import fortinetLogo from "@/assets/fortinet-logo.png";
 import teletracLogo from "@/assets/teletrac-navman-logo.svg";
 import vonageLogo from "@/assets/vonage-logo.png";
+import ciscoLogo from "@/assets/cisco-logo.png";
 
 interface TechnologyPartner {
   id: string;
@@ -172,7 +173,7 @@ export function Marketplace() {
       id: 'cisco',
       name: 'Cisco',
       category: 'networking',
-      logo: 'https://www.cisco.com/c/dam/cdc/t/cisco-logo.png',
+      logo: ciscoLogo,
       description: 'Enterprise networking solutions',
       fullDescription: 'Cisco provides industry-leading networking equipment and solutions for contractors. Build a reliable, secure network infrastructure that scales with your business growth.',
       features: ['Enterprise Routers & Switches', 'Wireless Access Points', 'Network Security', 'SD-WAN', 'Network Management'],
