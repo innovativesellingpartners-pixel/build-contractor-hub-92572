@@ -21,6 +21,11 @@ import {
   Mail
 } from 'lucide-react';
 import { useTrainingCourses, useUserEnrollments, useUserCertificates } from '@/hooks/useTrainingData';
+import communicationImg from '@/assets/training-communication.jpg';
+import leadershipImg from '@/assets/training-leadership.jpg';
+import performanceImg from '@/assets/training-performance.jpg';
+import processImg from '@/assets/training-process.jpg';
+import sellingImg from '@/assets/training-selling.jpg';
 
 export const TrainingHub = () => {
   const navigate = useNavigate();
@@ -44,6 +49,17 @@ export const TrainingHub = () => {
     if (name.includes('process')) return Settings;
     if (name.includes('sales')) return DollarSignIcon;
     return BookOpen;
+  };
+
+  // Get thumbnail image for course
+  const getThumbnailImage = (title: string) => {
+    const titleLower = title.toLowerCase();
+    if (titleLower.includes('communication')) return communicationImg;
+    if (titleLower.includes('leadership')) return leadershipImg;
+    if (titleLower.includes('performance')) return performanceImg;
+    if (titleLower.includes('process')) return processImg;
+    if (titleLower.includes('selling') || titleLower.includes('sales')) return sellingImg;
+    return null;
   };
 
   // Get color scheme for course
@@ -113,13 +129,14 @@ export const TrainingHub = () => {
               {courses.map((course, index) => {
                 const Icon = getCategoryIcon(course.training_categories?.name || null);
                 const colorScheme = getColorScheme(index);
+                const thumbnailImg = getThumbnailImage(course.title);
                 const isEnrolled = enrollments?.some(e => e.course_id === course.id);
                 const isCompleted = enrollments?.find(e => e.course_id === course.id)?.completed_at;
                 
                 return (
                   <Card 
                     key={course.id}
-                    className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border-2 hover:border-primary relative"
+                    className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border-2 hover:border-primary relative overflow-hidden"
                     onClick={() => {
                       if (isEnrolled) {
                         navigate(`/dashboard/training/course/${course.id}`);
@@ -128,17 +145,28 @@ export const TrainingHub = () => {
                       }
                     }}
                   >
+                    {isCompleted && (
+                      <div className="absolute top-2 right-2 z-10">
+                        <CheckCircle className="h-6 w-6 text-green-600 fill-green-600" />
+                      </div>
+                    )}
+                    {thumbnailImg && (
+                      <div className="w-full h-40 overflow-hidden">
+                        <img 
+                          src={thumbnailImg} 
+                          alt={course.title}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                        />
+                      </div>
+                    )}
                     <CardContent className="p-6 text-center">
-                      {isCompleted && (
-                        <div className="absolute top-2 right-2">
-                          <CheckCircle className="h-6 w-6 text-green-600 fill-green-600" />
+                      {!thumbnailImg && (
+                        <div className="mb-4 flex justify-center">
+                          <div className={`h-16 w-16 rounded-full ${colorScheme.bg} flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                            <Icon className={`h-8 w-8 ${colorScheme.text}`} />
+                          </div>
                         </div>
                       )}
-                      <div className="mb-4 flex justify-center">
-                        <div className={`h-16 w-16 rounded-full ${colorScheme.bg} flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                          <Icon className={`h-8 w-8 ${colorScheme.text}`} />
-                        </div>
-                      </div>
                       <h3 className="font-bold text-lg mb-2">{course.title}</h3>
                       {course.description && (
                         <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{course.description}</p>
@@ -172,7 +200,7 @@ export const TrainingHub = () => {
                         ) : (
                           <>
                             <Play className="h-4 w-4 mr-2" />
-                            Start Course
+                            Start Now
                           </>
                         )}
                       </Button>
