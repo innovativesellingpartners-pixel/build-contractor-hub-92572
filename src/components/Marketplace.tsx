@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import ct1Logo from "@/assets/ct1-logo-main.png";
 import heroImage from "@/assets/hero-construction.jpg";
+import tmobileLogo from "@/assets/t-mobile-logo.png";
 
 interface TechnologyPartner {
   id: string;
@@ -110,7 +111,7 @@ export function Marketplace() {
       id: 'tmobile',
       name: 'T-Mobile',
       category: 'mobility',
-      logo: 'https://upload.wikimedia.org/wikipedia/commons/3/3e/T-Mobile_logo.svg',
+      logo: tmobileLogo,
       description: '5G connectivity for field teams',
       fullDescription: 'T-Mobile for Business provides contractors with America\'s largest 5G network, ensuring your field teams stay connected with fast, reliable mobile service. Special business plans designed for construction companies.',
       features: ['Unlimited 5G Data', 'Mobile Hotspots', 'Business Device Management', 'International Coverage', 'Priority Support'],
