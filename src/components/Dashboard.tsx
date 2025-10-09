@@ -628,10 +628,10 @@ function SidebarNav({ activeSection, setActiveSection, tierFeatures }: SidebarNa
           className="w-full justify-start transition-all hover:bg-red-50 hover:border-red-500 hover:text-black border border-transparent"
           asChild
         >
-          <a href="https://lovable.dev/projects/eb889344-3c18-4b7f-b049-eddbd3665869" target="_blank" rel="noopener noreferrer">
+          <Link to="/blog-podcast">
             <Mic className="h-4 w-4 mr-3" />
             Podcast
-          </a>
+          </Link>
         </Button>
       )}
       
