@@ -370,10 +370,6 @@ export function NewLandingPage() {
       <section id="find-contractor" className="py-20 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <Badge className="mb-4 bg-primary text-primary-foreground px-4 py-2 text-lg">
-              <Search className="h-5 w-5 mr-2" />
-              For Consumers
-            </Badge>
             <h2 className="text-4xl font-bold text-foreground mb-6">
               Find a <span className="text-primary">Trusted Contractor</span> Powered by CT1
             </h2>
@@ -442,23 +438,12 @@ export function NewLandingPage() {
                   </div>
                 </div>
                 
-                <Dialog open={activeContactForm === "find-contractor"} onOpenChange={(open) => setActiveContactForm(open ? "find-contractor" : null)}>
-                  <DialogTrigger asChild>
-                    <Button className="w-full btn-ct1">
-                      <Search className="mr-2 h-5 w-5" />
-                      Find Contractors
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-2xl">
-                    <ContactForm
-                      title="Find Your Perfect Contractor"
-                      description="Tell us about your project and we'll connect you with verified CT1 contractors"
-                      ctaText="Find Contractors"
-                      formType="find-contractor"
-                      onClose={() => setActiveContactForm(null)}
-                    />
-                  </DialogContent>
-                </Dialog>
+                <Link to="/for-consumers">
+                  <Button className="w-full btn-ct1">
+                    <Search className="mr-2 h-5 w-5" />
+                    Looking for a reliable contractor in your area?
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>

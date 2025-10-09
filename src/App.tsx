@@ -40,6 +40,7 @@ import { TrialSignup } from "@/pages/TrialSignup";
 import { BotSignup } from "@/pages/BotSignup";
 import Savings from "./pages/Savings";
 import Platform from "./pages/Platform";
+import ForConsumers from "./pages/ForConsumers";
 
 const queryClient = new QueryClient();
 
@@ -54,6 +55,7 @@ const App = () => (
             <Route path="/" element={<NewLandingPage />} />
             <Route path="/savings" element={<Savings />} />
             <Route path="/platform" element={<Platform />} />
+            <Route path="/for-consumers" element={<ForConsumers />} />
             <Route path="/business-suite" element={<BusinessSuite />} />
             <Route path="/business-suite/training" element={<Training />} />
             <Route path="/business-suite/crm" element={<CRM />} />
