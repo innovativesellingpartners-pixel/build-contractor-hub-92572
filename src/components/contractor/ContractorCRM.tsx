@@ -26,7 +26,7 @@ interface Lead {
 }
 
 export function ContractorCRM() {
-  const [crmDialogOpen, setCrmDialogOpen] = useState(false);
+  const [crmDialogOpen, setCrmDialogOpen] = useState(true);
   
   const [leads] = useState<Lead[]>([
     { 

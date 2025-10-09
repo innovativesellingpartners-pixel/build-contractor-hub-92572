@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Bot, CheckCircle, Phone, Clock, Users, ExternalLink, PhoneCall } from "lucide-react";
 
 export function VoiceAI() {
-  const [voiceAIDialogOpen, setVoiceAIDialogOpen] = useState(false);
+  const [voiceAIDialogOpen, setVoiceAIDialogOpen] = useState(true);
 
   return (
     <div className="space-y-6">

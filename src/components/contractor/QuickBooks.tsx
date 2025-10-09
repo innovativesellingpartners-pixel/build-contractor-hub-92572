@@ -13,6 +13,7 @@ export function QuickBooks() {
   const [loading, setLoading] = useState(false);
   const [checkingConnection, setCheckingConnection] = useState(true);
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
+  const [hasCheckedConnection, setHasCheckedConnection] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -49,7 +50,14 @@ export function QuickBooks() {
         .maybeSingle();
 
       if (error) throw error;
-      setIsConnected(!!data);
+      const connected = !!data;
+      setIsConnected(connected);
+      
+      // Auto-open login dialog if not connected and first time checking
+      if (!connected && !hasCheckedConnection) {
+        setLoginDialogOpen(true);
+        setHasCheckedConnection(true);
+      }
     } catch (error) {
       console.error('Error checking QuickBooks connection:', error);
     } finally {
