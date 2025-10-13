@@ -271,28 +271,57 @@ export function FloatingPocketbot({ onClose }: FloatingPocketbotProps) {
       </div>
 
       {showPaywall ? (
-        <CardContent className="flex-1 flex items-center justify-center p-4">
-          <div className="text-center space-y-4 max-w-sm">
+        <CardContent className="flex-1 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="text-center space-y-4 max-w-sm w-full">
             <div className="mx-auto w-16 h-16 bg-gradient-to-br from-primary/20 to-primary/10 rounded-full flex items-center justify-center border-2 border-primary/30">
               <Lock className="h-8 w-8 text-primary" />
             </div>
             <div>
-              <h3 className="text-xl font-bold mb-2">Unlock Unlimited Access</h3>
+              <h3 className="text-xl font-bold mb-2">Choose Your Plan</h3>
               <p className="text-sm text-muted-foreground">
-                You've used all {MAX_FREE_PROMPTS} free prompts. Subscribe to continue.
+                You've used all {MAX_FREE_PROMPTS} free prompts. Choose a plan to continue.
               </p>
             </div>
-            <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-6 rounded-xl border border-primary/20">
-              <p className="text-3xl font-bold mb-1">
+            
+            {/* Pocketbot Only Option */}
+            <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-5 rounded-xl border-2 border-primary/20 hover:border-primary/40 transition-colors">
+              <p className="text-xs font-semibold text-muted-foreground mb-1">POCKETBOT ONLY</p>
+              <p className="text-3xl font-bold mb-2">
                 ${SUBSCRIPTION_PRICE}
                 <span className="text-sm font-normal text-muted-foreground">/month</span>
               </p>
-              <p className="text-xs text-muted-foreground">Unlimited prompts</p>
+              <p className="text-xs text-muted-foreground mb-3">Unlimited Pocketbot prompts</p>
+              <Button onClick={handleSubscribe} className="w-full" size="sm">
+                <Sparkles className="mr-2 h-4 w-4" />
+                Subscribe to Pocketbot
+              </Button>
             </div>
-            <Button onClick={handleSubscribe} className="w-full">
-              <Sparkles className="mr-2 h-4 w-4" />
-              Subscribe Now
-            </Button>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-border" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">Or</span>
+              </div>
+            </div>
+
+            {/* Full Access Option */}
+            <div className="bg-gradient-to-br from-primary/5 to-transparent p-5 rounded-xl border-2 border-border hover:border-primary/40 transition-colors">
+              <p className="text-xs font-semibold text-primary mb-1">FULL ACCESS</p>
+              <p className="text-lg font-bold mb-2">Choose Your Tier</p>
+              <p className="text-xs text-muted-foreground mb-3">
+                Get unlimited Pocketbot + Training + CRM + Marketplace + Monthly Coaching
+              </p>
+              <Button 
+                onClick={() => window.location.href = '/pricing'} 
+                variant="outline" 
+                className="w-full"
+                size="sm"
+              >
+                View All Tiers
+              </Button>
+            </div>
           </div>
         </CardContent>
       ) : (
