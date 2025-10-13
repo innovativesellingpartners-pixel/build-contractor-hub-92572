@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -91,9 +90,13 @@ export function Pocketbot() {
             title: "Upgrade Required",
             description: "Get unlimited prompts and full responses with a CT1 Pocketbot subscription!",
             action: (
-              <Link to="/bot-signup">
-                <Button size="sm" variant="default">Upgrade Now</Button>
-              </Link>
+              <Button 
+                size="sm" 
+                variant="default"
+                onClick={() => window.location.href = '/bot-signup'}
+              >
+                Upgrade Now
+              </Button>
             ),
           });
         }
@@ -240,11 +243,14 @@ export function Pocketbot() {
             >
               {DAILY_LIMIT} Daily Limit
             </Badge>
-            <Link to="/bot-signup">
-              <Button size="sm" variant="secondary" className="rounded-full">
-                Sign up today
-              </Button>
-            </Link>
+            <Button 
+              size="sm" 
+              variant="secondary" 
+              className="rounded-full"
+              onClick={() => window.location.href = '/bot-signup'}
+            >
+              Sign up today
+            </Button>
           </div>
         </div>
       </div>
