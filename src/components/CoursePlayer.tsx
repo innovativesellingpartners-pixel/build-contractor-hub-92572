@@ -62,6 +62,16 @@ const getYouTubeEmbedUrl = (url: string): string => {
   return `https://www.youtube-nocookie.com/embed/${id}?${params}`;
 };
 
+const isGoogleDriveUrl = (url: string): boolean => {
+  if (!url) return false;
+  try {
+    const urlObj = new URL(url);
+    return urlObj.hostname.includes('drive.google.com');
+  } catch {
+    return false;
+  }
+};
+
 export const CoursePlayer = () => {
   const { courseId } = useParams();
   const navigate = useNavigate();
@@ -322,6 +332,15 @@ export const CoursePlayer = () => {
                             title={currentLesson.title}
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                             referrerPolicy="strict-origin-when-cross-origin"
+                            allowFullScreen
+                          />
+                      ) : isGoogleDriveUrl(currentLesson.video_url) ? (
+                          <iframe
+                            key={currentLesson.id}
+                            src={currentLesson.video_url}
+                            className="w-full h-full rounded-lg"
+                            title={currentLesson.title}
+                            allow="autoplay"
                             allowFullScreen
                           />
                       ) : (
