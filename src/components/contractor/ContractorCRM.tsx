@@ -27,7 +27,7 @@ interface Lead {
 }
 
 export function ContractorCRM() {
-  const [crmDialogOpen, setCrmDialogOpen] = useState(true);
+  const [crmDialogOpen, setCrmDialogOpen] = useState(false);
   
   const [leads] = useState<Lead[]>([
     { 
@@ -113,7 +113,7 @@ export function ContractorCRM() {
                   src="https://psarcweb.com/PSAWeb/Account/Login?ReturnUrl=%2fPSAWeb"
                   className="w-full h-full border-0"
                   title="CT1 CRM Login"
-                  sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
+                  sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox"
                 />
               </div>
             </div>
