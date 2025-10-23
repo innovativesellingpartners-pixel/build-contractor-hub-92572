@@ -1,6 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { 
   Users, 
   Phone, 
@@ -8,9 +11,11 @@ import {
   Calendar,
   DollarSign,
   FileText,
-  TrendingUp
+  TrendingUp,
+  Upload
 } from "lucide-react";
 import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 import ct1Logo from "@/assets/ct1-logo-main.png";
 
 interface Lead {
@@ -58,6 +63,52 @@ export function Leads() {
     }
   ]);
 
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const { toast } = useToast();
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (file.type !== 'text/csv' && !file.name.endsWith('.csv')) {
+        toast({
+          title: "Invalid File Type",
+          description: "Please upload a CSV file",
+          variant: "destructive",
+        });
+        return;
+      }
+      setUploadedFile(file);
+    }
+  };
+
+  const handleImport = async () => {
+    if (!uploadedFile) {
+      toast({
+        title: "No File Selected",
+        description: "Please select a CSV file to import",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Simulate import - in real implementation, this would parse CSV and add to database
+    toast({
+      title: "Import Started",
+      description: `Processing ${uploadedFile.name}...`,
+    });
+
+    // Simulate processing delay
+    setTimeout(() => {
+      toast({
+        title: "Import Successful",
+        description: "Your leads have been imported successfully",
+      });
+      setImportDialogOpen(false);
+      setUploadedFile(null);
+    }, 1500);
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'new': return 'bg-blue-500 hover:bg-blue-600';
@@ -82,6 +133,65 @@ export function Leads() {
             <p className="text-muted-foreground">Manage your leads and sales pipeline</p>
           </div>
         </div>
+        <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="flex items-center gap-2">
+              <Upload className="h-4 w-4" />
+              Import Leads
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Import Leads from CSV</DialogTitle>
+              <DialogDescription>
+                Upload a CSV file containing your leads data. The file should include columns for name, email, phone, project, and value.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="csv-file">CSV File</Label>
+                <Input
+                  id="csv-file"
+                  type="file"
+                  accept=".csv"
+                  onChange={handleFileChange}
+                  className="cursor-pointer"
+                />
+                {uploadedFile && (
+                  <p className="text-sm text-muted-foreground">
+                    Selected: {uploadedFile.name}
+                  </p>
+                )}
+              </div>
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <p className="text-sm font-medium mb-2">CSV Format Example:</p>
+                <code className="text-xs block bg-background p-2 rounded">
+                  name,email,phone,project,value,status<br/>
+                  John Doe,john@email.com,(555)123-4567,Kitchen,25000,new
+                </code>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setImportDialogOpen(false);
+                  setUploadedFile(null);
+                }}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleImport}
+                disabled={!uploadedFile}
+                className="flex-1"
+              >
+                Import Leads
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* KPI Cards */}
