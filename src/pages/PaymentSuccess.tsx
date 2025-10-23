@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckCircle2, Loader2 } from 'lucide-react';
 import { SignupAfterPayment } from '@/components/SignupAfterPayment';
+import ct1Logo from '@/assets/ct1-logo-main.png';
 
 export default function PaymentSuccess() {
   const [searchParams] = useSearchParams();
@@ -45,8 +46,23 @@ export default function PaymentSuccess() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="max-w-md w-full p-8">
+    <div className="min-h-screen flex flex-col bg-background">
+      {/* Header with Logo */}
+      <header className="border-b">
+        <div className="container mx-auto px-4 py-4">
+          <Link to="/" className="flex items-center space-x-3">
+            <img src={ct1Logo} alt="CT1 Logo" className="h-10 w-10" />
+            <div>
+              <h1 className="text-xl font-bold text-foreground">CT1</h1>
+              <p className="text-xs text-muted-foreground font-medium">One-Up Your Business</p>
+            </div>
+          </Link>
+        </div>
+      </header>
+
+      {/* Payment Success Content */}
+      <div className="flex-1 flex items-center justify-center p-4">
+        <Card className="max-w-md w-full p-8">
         <div className="text-center space-y-6">
           <div className="flex justify-center">
             <CheckCircle2 className="h-16 w-16 text-green-500" />
@@ -73,7 +89,8 @@ export default function PaymentSuccess() {
             </Button>
           )}
         </div>
-      </Card>
+        </Card>
+      </div>
 
       {showSignup && checkoutInfo && (
         <SignupAfterPayment
