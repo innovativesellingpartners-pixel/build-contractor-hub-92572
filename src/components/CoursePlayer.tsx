@@ -301,7 +301,7 @@ export const CoursePlayer = () => {
         <div className="mb-6">
           <h2 className="text-lg font-semibold mb-3">All Training Courses</h2>
           <ScrollArea className="w-full">
-            <div className="flex gap-4 pb-4">
+            <div className="flex gap-3 pb-4">
               {courses?.map((c) => {
                 const isCurrentCourse = c.id === courseId;
                 const courseEnrollment = enrollments?.find(e => e.course_id === c.id);
@@ -309,7 +309,7 @@ export const CoursePlayer = () => {
                 return (
                   <Card 
                     key={c.id} 
-                    className={`flex-shrink-0 w-72 cursor-pointer transition-all hover:border-primary ${
+                    className={`flex-shrink-0 w-52 cursor-pointer transition-all hover:border-primary ${
                       isCurrentCourse ? 'border-primary shadow-md' : ''
                     }`}
                     onClick={() => {
@@ -377,7 +377,7 @@ export const CoursePlayer = () => {
                 return (
                   <Card 
                     key={module.id} 
-                    className={`flex-shrink-0 w-64 cursor-pointer transition-all hover:border-primary ${
+                    className={`flex-shrink-0 w-52 cursor-pointer transition-all hover:border-primary ${
                       isCurrentModule ? 'border-primary shadow-md' : ''
                     }`}
                     onClick={() => {
