@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Separator } from '@/components/ui/separator';
 import { 
   BookOpen, 
   Clock, 
@@ -12,13 +11,14 @@ import {
   Play, 
   CheckCircle,
   Award,
-  ArrowLeft,
   MessageCircle,
   Trophy,
   Zap,
   Settings,
   DollarSign as DollarSignIcon,
-  Mail
+  Mail,
+  GraduationCap,
+  TrendingUp
 } from 'lucide-react';
 import { useTrainingCourses, useUserEnrollments, useUserCertificates } from '@/hooks/useTrainingData';
 import communicationImg from '@/assets/training-communication.jpg';
@@ -27,11 +27,12 @@ import performanceImg from '@/assets/training-performance.jpg';
 import processImg from '@/assets/training-process.jpg';
 import sellingImg from '@/assets/training-selling.jpg';
 import videoThumbnail from '@/assets/training-video-thumbnail.png';
-import ct1Logo from '@/assets/ct1-logo-main.png';
+
+type TrainingSection = 'courses' | 'progress' | 'certificates' | 'support';
 
 export const TrainingHub = () => {
   const navigate = useNavigate();
-  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [activeSection, setActiveSection] = useState<TrainingSection>('courses');
   
   const { data: courses, isLoading: coursesLoading } = useTrainingCourses();
   const { data: enrollments, isLoading: enrollmentsLoading } = useUserEnrollments();
@@ -84,218 +85,327 @@ export const TrainingHub = () => {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <Button variant="ghost" onClick={() => navigate('/dashboard')}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
-            </Button>
-            <img src={ct1Logo} alt="CT1 Logo" className="h-10 w-10" />
+  const renderCourses = () => (
+    <>
+      {/* Welcome Video Section */}
+      <div className="mb-8">
+        <Card className="overflow-hidden">
+          <div className="bg-gradient-to-r from-primary to-primary/80 p-3 text-center">
+            <h2 className="text-xl font-bold text-primary-foreground">
+              Welcome to CT1&apos;s 5-Star Training
+            </h2>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold">Training Hub</h1>
-          <p className="text-muted-foreground mt-2">Build your skills with professional construction training</p>
-        </div>
-
-        {/* Welcome Video Section */}
-        <div className="mb-8 max-w-2xl mx-auto">
-          <Card className="overflow-hidden">
-            <div className="bg-gradient-to-r from-primary to-primary/80 p-3 text-center">
-              <h2 className="text-xl font-bold text-primary-foreground">
-                Welcome to CT1&apos;s 5-Star Training
-              </h2>
+          <CardContent className="p-3">
+            <div className="aspect-video w-full relative rounded-lg overflow-hidden">
+              <img 
+                src={videoThumbnail} 
+                alt="Training Course Introduction"
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+              <iframe
+                src="https://drive.google.com/file/d/1eMBOcQ776JFxqniVIZ7g78DQxn5GzwbY/preview"
+                className="w-full h-full rounded-lg relative z-10"
+                allow="autoplay"
+                title="Welcome to CT1's 5-Star Training"
+              />
             </div>
-            <CardContent className="p-3">
-              <div className="aspect-video w-full relative rounded-lg overflow-hidden">
-                <img 
-                  src={videoThumbnail} 
-                  alt="Training Course Introduction"
-                  className="absolute inset-0 w-full h-full object-cover"
-                />
-                <iframe
-                  src="https://drive.google.com/file/d/1eMBOcQ776JFxqniVIZ7g78DQxn5GzwbY/preview"
-                  className="w-full h-full rounded-lg relative z-10"
-                  allow="autoplay"
-                  title="Welcome to CT1's 5-Star Training"
-                />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+          </CardContent>
+        </Card>
+      </div>
 
-        {/* Training Courses */}
-        <div className="mb-8">
-          <div className="flex items-center gap-2 mb-6">
-            <Star className="h-6 w-6 text-yellow-500 fill-yellow-500" />
-            <h2 className="text-2xl font-bold">Training Courses</h2>
-            <Star className="h-6 w-6 text-yellow-500 fill-yellow-500" />
-          </div>
-          
-          {courses && courses.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-              {courses.map((course, index) => {
-                const Icon = getCategoryIcon(course.training_categories?.name || null);
-                const colorScheme = getColorScheme(index);
-                const thumbnailImg = getThumbnailImage(course.title);
-                const isEnrolled = enrollments?.some(e => e.course_id === course.id);
-                const isCompleted = enrollments?.find(e => e.course_id === course.id)?.completed_at;
-                
-                return (
-                  <Card 
-                    key={course.id}
-                    className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border-2 hover:border-primary relative overflow-hidden"
-                    onClick={() => {
-                      if (isEnrolled) {
-                        navigate(`/dashboard/training/course/${course.id}`);
-                      } else {
-                        navigate(`/dashboard/training/course/${course.id}`);
-                      }
-                    }}
-                  >
-                    {isCompleted && (
-                      <div className="absolute top-2 right-2 z-10">
-                        <CheckCircle className="h-6 w-6 text-green-600 fill-green-600" />
+      {/* Training Courses */}
+      <div className="mb-8">
+        <div className="flex items-center gap-2 mb-6">
+          <Star className="h-6 w-6 text-yellow-500 fill-yellow-500" />
+          <h2 className="text-2xl font-bold">Training Courses</h2>
+          <Star className="h-6 w-6 text-yellow-500 fill-yellow-500" />
+        </div>
+        
+        {courses && courses.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {courses.map((course, index) => {
+              const Icon = getCategoryIcon(course.training_categories?.name || null);
+              const colorScheme = getColorScheme(index);
+              const thumbnailImg = getThumbnailImage(course.title);
+              const isEnrolled = enrollments?.some(e => e.course_id === course.id);
+              const isCompleted = enrollments?.find(e => e.course_id === course.id)?.completed_at;
+              
+              return (
+                <Card 
+                  key={course.id}
+                  className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border-2 hover:border-primary relative overflow-hidden"
+                  onClick={() => navigate(`/dashboard/training/course/${course.id}`)}
+                >
+                  {isCompleted && (
+                    <div className="absolute top-2 right-2 z-10">
+                      <CheckCircle className="h-6 w-6 text-green-600 fill-green-600" />
+                    </div>
+                  )}
+                  {thumbnailImg && (
+                    <div className="w-full h-40 overflow-hidden">
+                      <img 
+                        src={thumbnailImg} 
+                        alt={course.title}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                      />
+                    </div>
+                  )}
+                  <CardContent className="p-4 text-center">
+                    {!thumbnailImg && (
+                      <div className="mb-4 flex justify-center">
+                        <div className={`h-16 w-16 rounded-full ${colorScheme.bg} flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                          <Icon className={`h-8 w-8 ${colorScheme.text}`} />
+                        </div>
                       </div>
                     )}
-                    {thumbnailImg && (
-                      <div className="w-full h-40 overflow-hidden">
-                        <img 
-                          src={thumbnailImg} 
-                          alt={course.title}
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                        />
+                    <h3 className="font-bold text-base mb-2">{course.title}</h3>
+                    {course.description && (
+                      <p className="text-xs text-muted-foreground mb-3 line-clamp-2">{course.description}</p>
+                    )}
+                    {course.duration_minutes && (
+                      <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground mb-2">
+                        <Clock className="h-3 w-3" />
+                        <span>{course.duration_minutes} min</span>
                       </div>
                     )}
-                    <CardContent className="p-6 text-center">
-                      {!thumbnailImg && (
-                        <div className="mb-4 flex justify-center">
-                          <div className={`h-16 w-16 rounded-full ${colorScheme.bg} flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                            <Icon className={`h-8 w-8 ${colorScheme.text}`} />
-                          </div>
-                        </div>
+                    {course.difficulty_level && (
+                      <Badge variant="secondary" className="mb-3 text-xs">
+                        {course.difficulty_level}
+                      </Badge>
+                    )}
+                    <Button variant="default" size="sm" className="w-full">
+                      {isEnrolled ? (
+                        <>
+                          {isCompleted ? (
+                            <>
+                              <CheckCircle className="h-3 w-3 mr-2" />
+                              Review
+                            </>
+                          ) : (
+                            <>
+                              <Play className="h-3 w-3 mr-2" />
+                              Continue
+                            </>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          <Play className="h-3 w-3 mr-2" />
+                          Start Now
+                        </>
                       )}
-                      <h3 className="font-bold text-lg mb-2">{course.title}</h3>
-                      {course.description && (
-                        <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{course.description}</p>
-                      )}
-                      {course.duration_minutes && (
-                        <div className="flex items-center justify-center gap-1 text-sm text-muted-foreground mb-2">
-                          <Clock className="h-4 w-4" />
-                          <span>{course.duration_minutes} min</span>
-                        </div>
-                      )}
-                      {course.difficulty_level && (
-                        <Badge variant="secondary" className="mb-4">
-                          {course.difficulty_level}
-                        </Badge>
-                      )}
-                      <Button variant="default" size="sm" className="w-full">
-                        {isEnrolled ? (
-                          <>
-                            {isCompleted ? (
-                              <>
-                                <CheckCircle className="h-4 w-4 mr-2" />
-                                Review Course
-                              </>
-                            ) : (
-                              <>
-                                <Play className="h-4 w-4 mr-2" />
-                                Continue
-                              </>
-                            )}
-                          </>
-                        ) : (
-                          <>
-                            <Play className="h-4 w-4 mr-2" />
-                            Start Now
-                          </>
-                        )}
-                      </Button>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          ) : (
-            <Card>
-              <CardContent className="p-12 text-center">
-                <BookOpen className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-xl font-semibold mb-2">No Courses Available</h3>
-                <p className="text-muted-foreground">
-                  Training courses will appear here once they are published by administrators.
-                </p>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-
-        {/* Progress Chart */}
-        {totalCourses > 0 && (
-          <div className="mt-12 mb-8">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-center text-2xl">Your Training Progress</CardTitle>
-              </CardHeader>
-              <CardContent className="p-8">
-                <div className="flex flex-col items-center">
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8 w-full max-w-3xl">
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-primary mb-1">{totalCourses}</div>
-                      <p className="text-sm text-muted-foreground">Total Courses</p>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-blue-600 mb-1">{enrollments?.length || 0}</div>
-                      <p className="text-sm text-muted-foreground">Enrolled</p>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-green-600 mb-1">{completedCourses}</div>
-                      <p className="text-sm text-muted-foreground">Completed</p>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-yellow-600 mb-1">{certificates?.length || 0}</div>
-                      <p className="text-sm text-muted-foreground">Certificates</p>
-                    </div>
-                  </div>
-                  <div className="text-center mb-6">
-                    <div className="text-4xl font-bold text-primary mb-2">
-                      {Math.round(progressPercentage)}%
-                    </div>
-                    <p className="text-muted-foreground">
-                      Complete all courses to earn your certificates
-                    </p>
-                  </div>
-                  <div className="w-full max-w-2xl">
-                    <Progress value={progressPercentage} className="h-4" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                    </Button>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
-        )}
-
-        {/* Contact Support */}
-        <div className="flex justify-center mb-8">
-          <Card className="w-full max-w-md">
-            <CardContent className="p-6 text-center">
-              <Mail className="h-12 w-12 text-primary mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Need Help?</h3>
-              <p className="text-muted-foreground mb-4">
-                Our support team is here to assist you with any questions about your training.
+        ) : (
+          <Card>
+            <CardContent className="p-12 text-center">
+              <BookOpen className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-xl font-semibold mb-2">No Courses Available</h3>
+              <p className="text-muted-foreground">
+                Training courses will appear here once they are published by administrators.
               </p>
-              <Button 
-                size="lg"
-                className="w-full"
-                onClick={() => window.location.href = 'mailto:sales@myct1.com'}
-              >
-                <Mail className="h-4 w-4 mr-2" />
-                Contact Support
-              </Button>
             </CardContent>
           </Card>
+        )}
+      </div>
+    </>
+  );
+
+  const renderProgress = () => (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-center text-2xl">Your Training Progress</CardTitle>
+      </CardHeader>
+      <CardContent className="p-8">
+        <div className="flex flex-col items-center">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8 w-full max-w-3xl">
+            <div className="text-center">
+              <div className="text-3xl font-bold text-primary mb-1">{totalCourses}</div>
+              <p className="text-sm text-muted-foreground">Total Courses</p>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-blue-600 mb-1">{enrollments?.length || 0}</div>
+              <p className="text-sm text-muted-foreground">Enrolled</p>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-green-600 mb-1">{completedCourses}</div>
+              <p className="text-sm text-muted-foreground">Completed</p>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-yellow-600 mb-1">{certificates?.length || 0}</div>
+              <p className="text-sm text-muted-foreground">Certificates</p>
+            </div>
+          </div>
+          <div className="text-center mb-6">
+            <div className="text-4xl font-bold text-primary mb-2">
+              {Math.round(progressPercentage)}%
+            </div>
+            <p className="text-muted-foreground">
+              Complete all courses to earn your certificates
+            </p>
+          </div>
+          <div className="w-full max-w-2xl">
+            <Progress value={progressPercentage} className="h-4" />
+          </div>
         </div>
+      </CardContent>
+    </Card>
+  );
+
+  const renderCertificates = () => (
+    <div>
+      <h2 className="text-2xl font-bold mb-6">Your Certificates</h2>
+      {certificates && certificates.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {certificates.map((cert) => (
+            <Card key={cert.id} className="hover:shadow-lg transition-shadow">
+              <CardContent className="p-6 text-center">
+                <Award className="h-16 w-16 text-yellow-500 mx-auto mb-4" />
+                <h3 className="font-bold text-lg mb-2">{cert.training_courses?.title}</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Issued: {new Date(cert.issued_at).toLocaleDateString()}
+                </p>
+                <Button variant="outline" className="w-full">
+                  View Certificate
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <Card>
+          <CardContent className="p-12 text-center">
+            <Award className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-xl font-semibold mb-2">No Certificates Yet</h3>
+            <p className="text-muted-foreground">
+              Complete courses to earn your certificates
+            </p>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+
+  const renderSupport = () => (
+    <Card className="max-w-md mx-auto">
+      <CardContent className="p-8 text-center">
+        <Mail className="h-16 w-16 text-primary mx-auto mb-4" />
+        <h3 className="text-2xl font-semibold mb-2">Need Help?</h3>
+        <p className="text-muted-foreground mb-6">
+          Our support team is here to assist you with any questions about your training.
+        </p>
+        <Button 
+          size="lg"
+          className="w-full"
+          onClick={() => window.location.href = 'mailto:sales@myct1.com'}
+        >
+          <Mail className="h-4 w-4 mr-2" />
+          Contact Support
+        </Button>
+      </CardContent>
+    </Card>
+  );
+
+  return (
+    <div className="flex gap-6">
+      {/* Left Sidebar Navigation */}
+      <div className="w-64 flex-shrink-0">
+        <div className="space-y-2">
+          <button
+            onClick={() => setActiveSection('courses')}
+            className={`w-full p-4 rounded-lg border-2 transition-all text-left ${
+              activeSection === 'courses'
+                ? 'border-primary bg-primary/5'
+                : 'border-border hover:border-primary/50'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${
+                activeSection === 'courses' ? 'bg-primary text-primary-foreground' : 'bg-muted'
+              }`}>
+                <BookOpen className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="font-semibold">All Courses</h3>
+                <p className="text-xs text-muted-foreground">Browse training</p>
+              </div>
+            </div>
+          </button>
+
+          <button
+            onClick={() => setActiveSection('progress')}
+            className={`w-full p-4 rounded-lg border-2 transition-all text-left ${
+              activeSection === 'progress'
+                ? 'border-primary bg-primary/5'
+                : 'border-border hover:border-primary/50'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${
+                activeSection === 'progress' ? 'bg-primary text-primary-foreground' : 'bg-muted'
+              }`}>
+                <TrendingUp className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="font-semibold">My Progress</h3>
+                <p className="text-xs text-muted-foreground">Track learning</p>
+              </div>
+            </div>
+          </button>
+
+          <button
+            onClick={() => setActiveSection('certificates')}
+            className={`w-full p-4 rounded-lg border-2 transition-all text-left ${
+              activeSection === 'certificates'
+                ? 'border-primary bg-primary/5'
+                : 'border-border hover:border-primary/50'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${
+                activeSection === 'certificates' ? 'bg-primary text-primary-foreground' : 'bg-muted'
+              }`}>
+                <GraduationCap className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="font-semibold">Certificates</h3>
+                <p className="text-xs text-muted-foreground">View achievements</p>
+              </div>
+            </div>
+          </button>
+
+          <button
+            onClick={() => setActiveSection('support')}
+            className={`w-full p-4 rounded-lg border-2 transition-all text-left ${
+              activeSection === 'support'
+                ? 'border-primary bg-primary/5'
+                : 'border-border hover:border-primary/50'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${
+                activeSection === 'support' ? 'bg-primary text-primary-foreground' : 'bg-muted'
+              }`}>
+                <Mail className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="font-semibold">Support</h3>
+                <p className="text-xs text-muted-foreground">Get help</p>
+              </div>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      {/* Main Content Panel */}
+      <div className="flex-1 overflow-auto min-w-0">{activeSection === 'courses' && renderCourses()}
+        {activeSection === 'progress' && renderProgress()}
+        {activeSection === 'certificates' && renderCertificates()}
+        {activeSection === 'support' && renderSupport()}
       </div>
     </div>
   );
