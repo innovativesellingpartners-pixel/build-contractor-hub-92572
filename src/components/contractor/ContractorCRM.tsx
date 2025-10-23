@@ -90,7 +90,7 @@ export function ContractorCRM() {
           <DialogTrigger asChild>
             <Button size="lg">
               <ExternalLink className="h-4 w-4 mr-2" />
-              Open CRM
+              ProvenJobs
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-6xl h-[90vh] p-0">
@@ -110,7 +110,7 @@ export function ContractorCRM() {
               </div>
               <div className="flex-1 overflow-hidden">
                 <iframe 
-                  src="https://psarcweb.com/front/account/login.aspx/1000"
+                  src="https://psarcweb.com/PSAWeb/Account/Login?ReturnUrl=%2fPSAWeb"
                   className="w-full h-full border-0"
                   title="CT1 CRM Login"
                   sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
