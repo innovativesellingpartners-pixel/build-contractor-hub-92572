@@ -27,6 +27,7 @@ import performanceImg from '@/assets/training-performance.jpg';
 import processImg from '@/assets/training-process.jpg';
 import sellingImg from '@/assets/training-selling.jpg';
 import videoThumbnail from '@/assets/training-video-thumbnail.png';
+import ct1Logo from '@/assets/ct1-logo-main.png';
 
 export const TrainingHub = () => {
   const navigate = useNavigate();
@@ -88,10 +89,13 @@ export const TrainingHub = () => {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <Button variant="ghost" onClick={() => navigate('/dashboard')} className="mb-4">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Dashboard
-          </Button>
+          <div className="flex items-center justify-between mb-4">
+            <Button variant="ghost" onClick={() => navigate('/dashboard')}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Dashboard
+            </Button>
+            <img src={ct1Logo} alt="CT1 Logo" className="h-10 w-10" />
+          </div>
           <h1 className="text-3xl md:text-4xl font-bold">Training Hub</h1>
           <p className="text-muted-foreground mt-2">Build your skills with professional construction training</p>
         </div>

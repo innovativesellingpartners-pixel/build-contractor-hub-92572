@@ -4,6 +4,7 @@ import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { AdminSidebar } from './AdminSidebar';
 import { Button } from '@/components/ui/button';
 import { LogOut, Home } from 'lucide-react';
+import ct1Logo from '@/assets/ct1-logo-main.png';
 
 export const AdminLayout = () => {
   const { signOut } = useAuth();
@@ -25,7 +26,10 @@ export const AdminLayout = () => {
     <div className="min-h-screen bg-background">
       <header className="border-b bg-card px-6 py-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-primary">ConstructeAM Admin</h1>
+          <div className="flex items-center gap-3">
+            <img src={ct1Logo} alt="CT1 Logo" className="h-10 w-10" />
+            <h1 className="text-2xl font-bold text-primary">ConstructeAM Admin</h1>
+          </div>
           <div className="flex items-center gap-2">
             <Button 
               variant="outline" 

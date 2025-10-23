@@ -28,6 +28,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import ct1Logo from '@/assets/ct1-logo-main.png';
 // YouTube helpers
 const isYouTubeUrl = (url: string): boolean => {
   if (!url) return false;
@@ -288,14 +289,16 @@ export const CoursePlayer = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
-        <Button 
-          variant="ghost" 
-          onClick={() => navigate('/dashboard/training')}
-          className="mb-6"
-        >
-          <ChevronLeft className="h-4 w-4 mr-2" />
-          Back to Training Hub
-        </Button>
+        <div className="flex items-center justify-between mb-6">
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate('/dashboard/training')}
+          >
+            <ChevronLeft className="h-4 w-4 mr-2" />
+            Back to Training Hub
+          </Button>
+          <img src={ct1Logo} alt="CT1 Logo" className="h-10 w-10" />
+        </div>
 
         {/* All Courses Navigation */}
         <div className="mb-6">

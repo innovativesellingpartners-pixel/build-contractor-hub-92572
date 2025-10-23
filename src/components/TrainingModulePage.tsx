@@ -16,6 +16,7 @@ import {
   DollarSign as DollarSignIcon
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import ct1Logo from '@/assets/ct1-logo-main.png';
 
 interface Video {
   id: string;
@@ -208,10 +209,13 @@ export const TrainingModulePage = () => {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <Button variant="ghost" onClick={() => navigate('/dashboard/training')} className="mb-4">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Training Hub
-          </Button>
+          <div className="flex items-center justify-between mb-4">
+            <Button variant="ghost" onClick={() => navigate('/dashboard/training')}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Training Hub
+            </Button>
+            <img src={ct1Logo} alt="CT1 Logo" className="h-10 w-10" />
+          </div>
           <div className="flex items-start gap-4">
             <div className={`h-16 w-16 rounded-full bg-${module.color}-100 flex items-center justify-center`}>
               {module.icon}

@@ -7,6 +7,7 @@ import {
   Settings
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import ct1Logo from '@/assets/ct1-logo-main.png';
 
 const navItems = [
   { to: '/admin', icon: Users, label: 'User Management', end: true },
@@ -19,6 +20,12 @@ const navItems = [
 export const AdminSidebar = () => {
   return (
     <aside className="w-64 bg-card border-r min-h-screen">
+      <div className="p-4 border-b">
+        <div className="flex items-center gap-2">
+          <img src={ct1Logo} alt="CT1 Logo" className="h-8 w-8" />
+          <span className="font-semibold text-sm">Admin Portal</span>
+        </div>
+      </div>
       <nav className="p-4 space-y-2">
         {navItems.map((item) => (
           <NavLink
