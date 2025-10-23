@@ -227,12 +227,6 @@ export const TrainingHub = () => {
                     {course.description && (
                       <p className="text-xs text-muted-foreground mb-3 line-clamp-2">{course.description}</p>
                     )}
-                    {course.duration_minutes && (
-                      <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground mb-2">
-                        <Clock className="h-3 w-3" />
-                        <span>{course.duration_minutes} min</span>
-                      </div>
-                    )}
                     {course.difficulty_level && (
                       <Badge variant="secondary" className="mb-3 text-xs">
                         {course.difficulty_level}
@@ -523,12 +517,6 @@ export const TrainingHub = () => {
                       </div>
                       <div className="flex-1 min-w-0">
                         <h4 className="font-medium text-sm line-clamp-2">{course.title}</h4>
-                        {course.duration_minutes && (
-                          <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                            <Clock className="h-3 w-3" />
-                            {course.duration_minutes} min
-                          </p>
-                        )}
                       </div>
                     </div>
                   </button>

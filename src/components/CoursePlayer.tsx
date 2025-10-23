@@ -284,10 +284,6 @@ export const CoursePlayer = () => {
                     <div className="flex gap-2 mb-4">
                       <Badge variant="secondary">{course.training_categories?.name}</Badge>
                       <Badge variant="outline">{course.difficulty_level}</Badge>
-                      <Badge variant="outline">
-                        <Clock className="h-3 w-3 mr-1" />
-                        {course.duration_minutes} min
-                      </Badge>
                     </div>
                   </div>
                 </div>
@@ -313,11 +309,6 @@ export const CoursePlayer = () => {
                                   {lesson.lesson_type === 'pdf' && <FileText className="h-4 w-4" />}
                                   {lesson.lesson_type === 'text' && <BookOpen className="h-4 w-4" />}
                                   <span className="flex-1">{lesson.title}</span>
-                                  {lesson.duration_minutes && (
-                                    <Badge variant="outline" className="text-xs">
-                                      {lesson.duration_minutes}min
-                                    </Badge>
-                                  )}
                                 </div>
                               ))}
                             </div>
@@ -490,11 +481,6 @@ export const CoursePlayer = () => {
                             )}
                             <span className="text-sm font-medium line-clamp-2">{lesson.title}</span>
                           </div>
-                          {lesson.duration_minutes && (
-                            <Badge variant="outline" className="text-xs">
-                              {lesson.duration_minutes}min
-                            </Badge>
-                          )}
                         </CardContent>
                       </Card>
                     );
