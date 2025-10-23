@@ -180,8 +180,8 @@ export const TrainingHub = () => {
       {/* Training Courses */}
       <div className="mb-8">
         <div className="mb-6">
-          <h2 className="text-2xl font-bold">Available Training Courses</h2>
-          <p className="text-muted-foreground mt-1">Choose a course to begin or continue your training</p>
+          <h2 className="text-2xl font-bold">Course Overview</h2>
+          <p className="text-muted-foreground mt-1">Explore our comprehensive training curriculum</p>
         </div>
         
         {courses && courses.length > 0 ? (
@@ -461,6 +461,50 @@ export const TrainingHub = () => {
               </div>
             </div>
           </button>
+
+          {/* Divider */}
+          {courses && courses.length > 0 && (
+            <>
+              <div className="pt-4 pb-2">
+                <h4 className="text-sm font-semibold text-muted-foreground px-2">Available Courses</h4>
+              </div>
+              
+              {/* Course Buttons */}
+              {courses.map((course) => {
+                const isEnrolled = enrollments?.some(e => e.course_id === course.id);
+                const isCompleted = enrollments?.find(e => e.course_id === course.id)?.completed_at;
+                
+                return (
+                  <button
+                    key={course.id}
+                    onClick={() => navigate(`/dashboard/training/course/${course.id}`)}
+                    className="w-full p-3 rounded-lg border-2 border-border hover:border-primary/50 transition-all text-left"
+                  >
+                    <div className="flex items-start gap-2">
+                      <div className={`h-8 w-8 rounded flex items-center justify-center flex-shrink-0 ${
+                        isCompleted ? 'bg-green-100 dark:bg-green-950' : 'bg-muted'
+                      }`}>
+                        {isCompleted ? (
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                        ) : (
+                          <Play className="h-4 w-4" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium text-sm line-clamp-2">{course.title}</h4>
+                        {course.duration_minutes && (
+                          <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                            <Clock className="h-3 w-3" />
+                            {course.duration_minutes} min
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </>
+          )}
         </div>
       </div>
 
