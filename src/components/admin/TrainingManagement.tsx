@@ -343,7 +343,7 @@ export const TrainingManagement = () => {
                         {course.difficulty_level || 'N/A'}
                       </Badge>
                     </TableCell>
-                    <TableCell>{course.duration_minutes || 0} min</TableCell>
+                    <TableCell>&lt;60 min</TableCell>
                     <TableCell>
                       <Badge variant={course.is_published ? 'default' : 'secondary'}>
                         {course.is_published ? 'Published' : 'Draft'}
