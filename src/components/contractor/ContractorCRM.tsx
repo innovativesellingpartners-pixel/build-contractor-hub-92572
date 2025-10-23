@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+
 import { 
   Users, 
   Phone, 
@@ -27,7 +27,7 @@ interface Lead {
 }
 
 export function ContractorCRM() {
-  const [crmDialogOpen, setCrmDialogOpen] = useState(false);
+  
   
   const [leads] = useState<Lead[]>([
     { 
@@ -86,39 +86,17 @@ export function ContractorCRM() {
             <p className="text-muted-foreground">Manage your leads and customer relationships</p>
           </div>
         </div>
-        <Dialog open={crmDialogOpen} onOpenChange={setCrmDialogOpen}>
-          <DialogTrigger asChild>
-            <Button size="lg">
+          <Button size="lg" asChild>
+            <a
+              href="https://psarcweb.com/PSAWeb/Account/Login?ReturnUrl=%2fPSAWeb"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Open ProvenJobs login in a new tab"
+            >
               <ExternalLink className="h-4 w-4 mr-2" />
               ProvenJobs
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-6xl h-[90vh] p-0">
-            <div className="flex flex-col h-full">
-              <div className="flex items-center justify-between p-4 border-b">
-                <div>
-                  <h3 className="text-lg font-semibold">CT1/PSA CRM Login</h3>
-                  <p className="text-sm text-muted-foreground">Login to access your CRM within CT1</p>
-                </div>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => setCrmDialogOpen(false)}
-                >
-                  Close
-                </Button>
-              </div>
-              <div className="flex-1 overflow-hidden">
-                <iframe 
-                  src="https://psarcweb.com/PSAWeb/Account/Login?ReturnUrl=%2fPSAWeb"
-                  className="w-full h-full border-0"
-                  title="CT1 CRM Login"
-                  sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox"
-                />
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+            </a>
+          </Button>
       </div>
 
       {/* KPI Cards */}
