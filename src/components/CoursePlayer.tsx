@@ -32,6 +32,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import ct1Logo from '@/assets/ct1-logo-main.png';
@@ -95,6 +96,7 @@ export const CoursePlayer = () => {
   const [isNotesOpen, setIsNotesOpen] = useState(false);
   const [noteContent, setNoteContent] = useState('');
   const [quizAnswers, setQuizAnswers] = useState<Record<string, string>>({});
+  const [showQuizModal, setShowQuizModal] = useState(false);
 
   const course = courses?.find(c => c.id === courseId);
   const enrollment = enrollments?.find(e => e.course_id === courseId);
@@ -157,6 +159,7 @@ export const CoursePlayer = () => {
     setVideoError(null);
     setPdfError(null);
     setQuizAnswers({});
+    setShowQuizModal(false);
     if (existingNote?.content) {
       setContent(existingNote.content);
       setNoteContent(existingNote.content);
@@ -173,6 +176,20 @@ export const CoursePlayer = () => {
   };
 
   const handleMarkComplete = () => {
+    // Check if there's a quiz for video lessons
+    if (currentLesson?.lesson_type === 'video' && quizQuestions && quizQuestions.length > 0) {
+      // Check if all questions are answered
+      const allQuestionsAnswered = quizQuestions.every(q => 
+        userQuizAnswers?.some(a => a.question_id === q.id && a.is_correct)
+      );
+      
+      if (!allQuestionsAnswered) {
+        setShowQuizModal(true);
+        return;
+      }
+    }
+
+    // Mark lesson as complete
     if (currentLesson && enrollment) {
       updateProgress({
         lessonId: currentLesson.id,
@@ -184,6 +201,18 @@ export const CoursePlayer = () => {
   };
 
   const goToNextLesson = () => {
+    // Check if there's a quiz for video lessons before proceeding
+    if (currentLesson?.lesson_type === 'video' && quizQuestions && quizQuestions.length > 0) {
+      const allQuestionsAnswered = quizQuestions.every(q => 
+        userQuizAnswers?.some(a => a.question_id === q.id && a.is_correct)
+      );
+      
+      if (!allQuestionsAnswered) {
+        setShowQuizModal(true);
+        return;
+      }
+    }
+
     if (!course?.course_modules) return;
 
     const currentModuleLessons = course.course_modules[currentModuleIndex]?.course_lessons.length || 0;
@@ -549,101 +578,6 @@ export const CoursePlayer = () => {
                     </div>
                   )}
 
-                  {/* Quiz Section */}
-                  {currentLesson?.lesson_type === 'video' && quizQuestions && quizQuestions.length > 0 && (
-                    <div className="pt-6 border-t space-y-6">
-                      <h3 className="text-lg font-semibold">Lesson Quiz</h3>
-                      <div className="space-y-6">
-                        {quizQuestions.map((question, idx) => {
-                          const userAnswer = userQuizAnswers?.find(a => a.question_id === question.id);
-                          const currentAnswer = quizAnswers[question.id];
-                          const isAnswered = !!userAnswer;
-                          
-                          return (
-                            <Card key={question.id} className={isAnswered && userAnswer.is_correct ? 'border-green-500' : ''}>
-                              <CardHeader>
-                                <CardTitle className="text-base">
-                                  Question {idx + 1}: {question.question_text}
-                                </CardTitle>
-                              </CardHeader>
-                              <CardContent className="space-y-4">
-                                {question.question_type === 'multiple_choice' && question.options && (
-                                  <RadioGroup
-                                    value={currentAnswer || ''}
-                                    onValueChange={(value) => {
-                                      setQuizAnswers(prev => ({ ...prev, [question.id]: value }));
-                                    }}
-                                    disabled={isAnswered}
-                                  >
-                                    {question.options.map((option, optIdx) => (
-                                      <div key={optIdx} className="flex items-center space-x-2">
-                                        <RadioGroupItem value={option} id={`${question.id}-${optIdx}`} />
-                                        <Label htmlFor={`${question.id}-${optIdx}`}>{option}</Label>
-                                      </div>
-                                    ))}
-                                  </RadioGroup>
-                                )}
-                                
-                                {question.question_type === 'true_false' && (
-                                  <RadioGroup
-                                    value={currentAnswer || ''}
-                                    onValueChange={(value) => {
-                                      setQuizAnswers(prev => ({ ...prev, [question.id]: value }));
-                                    }}
-                                    disabled={isAnswered}
-                                  >
-                                    <div className="flex items-center space-x-2">
-                                      <RadioGroupItem value="True" id={`${question.id}-true`} />
-                                      <Label htmlFor={`${question.id}-true`}>True</Label>
-                                    </div>
-                                    <div className="flex items-center space-x-2">
-                                      <RadioGroupItem value="False" id={`${question.id}-false`} />
-                                      <Label htmlFor={`${question.id}-false`}>False</Label>
-                                    </div>
-                                  </RadioGroup>
-                                )}
-
-                                <div className="flex items-center justify-between">
-                                  {!isAnswered && (
-                                    <Button
-                                      size="sm"
-                                      onClick={() => {
-                                        if (currentAnswer && enrollment) {
-                                          submitQuizAnswer({
-                                            enrollmentId: enrollment.id,
-                                            lessonId: currentLesson.id,
-                                            questionId: question.id,
-                                            userAnswer: currentAnswer,
-                                            correctAnswer: question.correct_answer,
-                                          });
-                                        }
-                                      }}
-                                      disabled={!currentAnswer}
-                                    >
-                                      Submit Answer
-                                    </Button>
-                                  )}
-                                  {isAnswered && (
-                                    <div className="flex items-center gap-2">
-                                      {userAnswer.is_correct ? (
-                                        <>
-                                          <CheckCircle className="h-4 w-4 text-green-500" />
-                                          <span className="text-sm text-green-600">Correct!</span>
-                                        </>
-                                      ) : (
-                                        <span className="text-sm text-red-600">Incorrect - try again</span>
-                                      )}
-                                    </div>
-                                  )}
-                                </div>
-                              </CardContent>
-                            </Card>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-
                    {/* Notes Section */}
                    {enrollment && currentLesson && (
                      <div className="pt-6 border-t">
@@ -791,6 +725,134 @@ export const CoursePlayer = () => {
        </div>
      </div>
      </div>
+
+     {/* Quiz Modal */}
+     <Dialog open={showQuizModal} onOpenChange={setShowQuizModal}>
+       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+         <DialogHeader>
+           <DialogTitle>Complete the Quiz</DialogTitle>
+           <DialogDescription>
+             Please answer all questions correctly before proceeding to the next lesson.
+           </DialogDescription>
+         </DialogHeader>
+         <div className="space-y-6 py-4">
+           {quizQuestions?.map((question, idx) => {
+             const userAnswer = userQuizAnswers?.find(a => a.question_id === question.id);
+             const currentAnswer = quizAnswers[question.id];
+             const isAnswered = !!userAnswer;
+             
+             return (
+               <Card key={question.id} className={isAnswered && userAnswer.is_correct ? 'border-green-500' : ''}>
+                 <CardHeader>
+                   <CardTitle className="text-base">
+                     Question {idx + 1}: {question.question_text}
+                   </CardTitle>
+                 </CardHeader>
+                 <CardContent className="space-y-4">
+                   {question.question_type === 'multiple_choice' && question.options && (
+                     <RadioGroup
+                       value={currentAnswer || ''}
+                       onValueChange={(value) => {
+                         setQuizAnswers(prev => ({ ...prev, [question.id]: value }));
+                       }}
+                       disabled={isAnswered && userAnswer?.is_correct}
+                     >
+                       {question.options.map((option, optIdx) => (
+                         <div key={optIdx} className="flex items-center space-x-2">
+                           <RadioGroupItem value={option} id={`modal-${question.id}-${optIdx}`} />
+                           <Label htmlFor={`modal-${question.id}-${optIdx}`}>{option}</Label>
+                         </div>
+                       ))}
+                     </RadioGroup>
+                   )}
+                   
+                   {question.question_type === 'true_false' && (
+                     <RadioGroup
+                       value={currentAnswer || ''}
+                       onValueChange={(value) => {
+                         setQuizAnswers(prev => ({ ...prev, [question.id]: value }));
+                       }}
+                       disabled={isAnswered && userAnswer?.is_correct}
+                     >
+                       <div className="flex items-center space-x-2">
+                         <RadioGroupItem value="True" id={`modal-${question.id}-true`} />
+                         <Label htmlFor={`modal-${question.id}-true`}>True</Label>
+                       </div>
+                       <div className="flex items-center space-x-2">
+                         <RadioGroupItem value="False" id={`modal-${question.id}-false`} />
+                         <Label htmlFor={`modal-${question.id}-false`}>False</Label>
+                       </div>
+                     </RadioGroup>
+                   )}
+
+                   <div className="flex items-center justify-between">
+                     {(!isAnswered || !userAnswer?.is_correct) && (
+                       <Button
+                         size="sm"
+                         onClick={() => {
+                           if (currentAnswer && enrollment && currentLesson) {
+                             submitQuizAnswer({
+                               enrollmentId: enrollment.id,
+                               lessonId: currentLesson.id,
+                               questionId: question.id,
+                               userAnswer: currentAnswer,
+                               correctAnswer: question.correct_answer,
+                             });
+                           }
+                         }}
+                         disabled={!currentAnswer}
+                       >
+                         Submit Answer
+                       </Button>
+                     )}
+                     {isAnswered && (
+                       <div className="flex items-center gap-2">
+                         {userAnswer.is_correct ? (
+                           <>
+                             <CheckCircle className="h-4 w-4 text-green-500" />
+                             <span className="text-sm text-green-600">Correct!</span>
+                           </>
+                         ) : (
+                           <span className="text-sm text-red-600">Incorrect - Please try again</span>
+                         )}
+                       </div>
+                     )}
+                   </div>
+                 </CardContent>
+               </Card>
+             );
+           })}
+         </div>
+         <div className="flex justify-end gap-2">
+           <Button variant="outline" onClick={() => setShowQuizModal(false)}>
+             Cancel
+           </Button>
+           <Button
+             onClick={() => {
+               const allCorrect = quizQuestions?.every(q => 
+                 userQuizAnswers?.some(a => a.question_id === q.id && a.is_correct)
+               );
+               
+               if (allCorrect) {
+                 setShowQuizModal(false);
+                 if (currentLesson && enrollment) {
+                   updateProgress({
+                     lessonId: currentLesson.id,
+                     enrollmentId: enrollment.id,
+                     isCompleted: true,
+                     timeSpentMinutes: currentLesson.duration_minutes || 0,
+                   });
+                 }
+               } else {
+                 toast.error('Please answer all questions correctly before proceeding');
+               }
+             }}
+           >
+             Complete Lesson
+           </Button>
+         </div>
+       </DialogContent>
+     </Dialog>
    </div>
    );
 };
