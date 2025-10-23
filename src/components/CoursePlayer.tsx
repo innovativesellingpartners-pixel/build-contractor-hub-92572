@@ -297,6 +297,65 @@ export const CoursePlayer = () => {
           Back to Training Hub
         </Button>
 
+        {/* Module Navigation */}
+        <div className="mb-6">
+          <h2 className="text-lg font-semibold mb-3">Course Modules</h2>
+          <ScrollArea className="w-full">
+            <div className="flex gap-4 pb-4">
+              {course.course_modules?.map((module, idx) => {
+                const moduleLessons = module.course_lessons.length;
+                const completedInModule = lessonProgress?.filter(p => 
+                  module.course_lessons.some(l => l.id === p.lesson_id && p.is_completed)
+                ).length || 0;
+                const isCurrentModule = idx === currentModuleIndex;
+                
+                return (
+                  <Card 
+                    key={module.id} 
+                    className={`flex-shrink-0 w-64 cursor-pointer transition-all hover:border-primary ${
+                      isCurrentModule ? 'border-primary shadow-md' : ''
+                    }`}
+                    onClick={() => {
+                      setCurrentModuleIndex(idx);
+                      setCurrentLessonIndex(0);
+                    }}
+                  >
+                    <CardHeader className="p-4">
+                      <div className="flex items-start justify-between gap-2">
+                        <CardTitle className="text-sm font-medium line-clamp-2">
+                          {module.title}
+                        </CardTitle>
+                        {isCurrentModule && (
+                          <Badge variant="default" className="flex-shrink-0">Active</Badge>
+                        )}
+                      </div>
+                      {module.description && (
+                        <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
+                          {module.description}
+                        </p>
+                      )}
+                    </CardHeader>
+                    <CardContent className="p-4 pt-0">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-muted-foreground">
+                          {completedInModule}/{moduleLessons} lessons
+                        </span>
+                        {completedInModule === moduleLessons && moduleLessons > 0 && (
+                          <CheckCircle className="h-4 w-4 text-primary" />
+                        )}
+                      </div>
+                      <Progress 
+                        value={moduleLessons > 0 ? (completedInModule / moduleLessons) * 100 : 0} 
+                        className="mt-2 h-1.5"
+                      />
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </ScrollArea>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Course Content Area */}
           <div className="lg:col-span-3">
