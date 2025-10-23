@@ -31,7 +31,6 @@ import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { useUserTier } from "@/hooks/useUserTier";
 import { useToast } from "@/hooks/use-toast";
 import { TrainingHub } from "@/components/TrainingHub";
-import { ContractorCRM } from "@/components/contractor/ContractorCRM";
 import { ScheduleCall } from "@/components/contractor/ScheduleCall";
 import { Marketplace } from "@/components/Marketplace";
 import { Leads } from "@/components/contractor/Leads";
@@ -242,7 +241,6 @@ export function Dashboard() {
         <div className="flex-1 overflow-auto min-w-0">
           <div className="bg-card border border-border/50 rounded-xl shadow-md p-4 md:p-6 min-h-[600px]">
             {activeSection === 'training' && <TrainingHub />}
-            {activeSection === 'crm' && <ContractorCRM />}
             {activeSection === 'leads' && <Leads />}
             {activeSection === 'quickbooks' && <QuickBooks />}
             {activeSection === 'insurance' && <Insurance />}
@@ -495,16 +493,18 @@ function SidebarNav({ activeSection, setActiveSection, tierFeatures }: SidebarNa
       
       {tierFeatures.crm && (
         <Button
-          variant={activeSection === 'crm' ? 'default' : 'ghost'}
-          className={`w-full justify-start transition-all ${
-            activeSection === 'crm' 
-              ? 'shadow-md' 
-              : 'hover:bg-red-50 hover:border-red-500 hover:text-black border border-transparent'
-          }`}
-          onClick={() => setActiveSection('crm')}
+          variant="ghost"
+          className="w-full justify-start transition-all hover:bg-red-50 hover:border-red-500 hover:text-black border border-transparent"
+          asChild
         >
-          <Briefcase className="h-4 w-4 mr-3" />
-          ProvenJobs
+          <a 
+            href="https://psarcweb.com/PSAWeb/Account/Login?ReturnUrl=%2fPSAWeb" 
+            target="_blank" 
+            rel="noopener noreferrer"
+          >
+            <Briefcase className="h-4 w-4 mr-3" />
+            ProvenJobs
+          </a>
         </Button>
       )}
 
