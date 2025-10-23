@@ -24,6 +24,9 @@ import {
 import { useTrainingCourses, useUserEnrollments, useEnrollInCourse, useUpdateLessonProgress, useLessonProgress } from '@/hooks/useTrainingData';
 import { useSignedUrl } from '@/hooks/useSignedUrl';
 import { useUserNotes, useAutoSaveNote, useDeleteNote } from '@/hooks/useNotes';
+import { useQuizQuestions, useUserQuizAnswers, useSubmitQuizAnswer } from '@/hooks/useQuizData';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
@@ -88,6 +91,7 @@ export const CoursePlayer = () => {
   const [pdfError, setPdfError] = useState<string | null>(null);
   const [isNotesOpen, setIsNotesOpen] = useState(false);
   const [noteContent, setNoteContent] = useState('');
+  const [quizAnswers, setQuizAnswers] = useState<Record<string, string>>({});
 
   const course = courses?.find(c => c.id === courseId);
   const enrollment = enrollments?.find(e => e.course_id === courseId);
@@ -106,6 +110,11 @@ export const CoursePlayer = () => {
   
   const { url: signedVideoUrl } = useSignedUrl(currentLesson?.video_url || null);
   const { url: signedPdfUrl } = useSignedUrl(currentLesson?.pdf_url || null);
+
+  // Quiz hooks
+  const { data: quizQuestions } = useQuizQuestions(currentLesson?.id || '');
+  const { data: userQuizAnswers } = useUserQuizAnswers(enrollment?.id || '', currentLesson?.id || '');
+  const { mutate: submitQuizAnswer } = useSubmitQuizAnswer();
 
   const totalLessons = course?.course_modules?.reduce((total, module) => 
     total + module.course_lessons.length, 0) || 0;
@@ -144,6 +153,7 @@ export const CoursePlayer = () => {
   useEffect(() => {
     setVideoError(null);
     setPdfError(null);
+    setQuizAnswers({});
     if (existingNote?.content) {
       setContent(existingNote.content);
       setNoteContent(existingNote.content);
@@ -518,6 +528,101 @@ export const CoursePlayer = () => {
                           className="w-full h-full rounded-lg"
                           title={currentLesson.title}
                         />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Quiz Section */}
+                  {currentLesson?.lesson_type === 'video' && quizQuestions && quizQuestions.length > 0 && (
+                    <div className="pt-6 border-t space-y-6">
+                      <h3 className="text-lg font-semibold">Lesson Quiz</h3>
+                      <div className="space-y-6">
+                        {quizQuestions.map((question, idx) => {
+                          const userAnswer = userQuizAnswers?.find(a => a.question_id === question.id);
+                          const currentAnswer = quizAnswers[question.id];
+                          const isAnswered = !!userAnswer;
+                          
+                          return (
+                            <Card key={question.id} className={isAnswered && userAnswer.is_correct ? 'border-green-500' : ''}>
+                              <CardHeader>
+                                <CardTitle className="text-base">
+                                  Question {idx + 1}: {question.question_text}
+                                </CardTitle>
+                              </CardHeader>
+                              <CardContent className="space-y-4">
+                                {question.question_type === 'multiple_choice' && question.options && (
+                                  <RadioGroup
+                                    value={currentAnswer || ''}
+                                    onValueChange={(value) => {
+                                      setQuizAnswers(prev => ({ ...prev, [question.id]: value }));
+                                    }}
+                                    disabled={isAnswered}
+                                  >
+                                    {question.options.map((option, optIdx) => (
+                                      <div key={optIdx} className="flex items-center space-x-2">
+                                        <RadioGroupItem value={option} id={`${question.id}-${optIdx}`} />
+                                        <Label htmlFor={`${question.id}-${optIdx}`}>{option}</Label>
+                                      </div>
+                                    ))}
+                                  </RadioGroup>
+                                )}
+                                
+                                {question.question_type === 'true_false' && (
+                                  <RadioGroup
+                                    value={currentAnswer || ''}
+                                    onValueChange={(value) => {
+                                      setQuizAnswers(prev => ({ ...prev, [question.id]: value }));
+                                    }}
+                                    disabled={isAnswered}
+                                  >
+                                    <div className="flex items-center space-x-2">
+                                      <RadioGroupItem value="True" id={`${question.id}-true`} />
+                                      <Label htmlFor={`${question.id}-true`}>True</Label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                      <RadioGroupItem value="False" id={`${question.id}-false`} />
+                                      <Label htmlFor={`${question.id}-false`}>False</Label>
+                                    </div>
+                                  </RadioGroup>
+                                )}
+
+                                <div className="flex items-center justify-between">
+                                  {!isAnswered && (
+                                    <Button
+                                      size="sm"
+                                      onClick={() => {
+                                        if (currentAnswer && enrollment) {
+                                          submitQuizAnswer({
+                                            enrollmentId: enrollment.id,
+                                            lessonId: currentLesson.id,
+                                            questionId: question.id,
+                                            userAnswer: currentAnswer,
+                                            correctAnswer: question.correct_answer,
+                                          });
+                                        }
+                                      }}
+                                      disabled={!currentAnswer}
+                                    >
+                                      Submit Answer
+                                    </Button>
+                                  )}
+                                  {isAnswered && (
+                                    <div className="flex items-center gap-2">
+                                      {userAnswer.is_correct ? (
+                                        <>
+                                          <CheckCircle className="h-4 w-4 text-green-500" />
+                                          <span className="text-sm text-green-600">Correct!</span>
+                                        </>
+                                      ) : (
+                                        <span className="text-sm text-red-600">Incorrect - try again</span>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              </CardContent>
+                            </Card>
+                          );
+                        })}
                       </div>
                     </div>
                   )}

@@ -162,6 +162,53 @@ export type Database = {
           },
         ]
       }
+      lesson_quiz_questions: {
+        Row: {
+          correct_answer: string
+          created_at: string
+          id: string
+          lesson_id: string
+          options: Json | null
+          order_index: number
+          points: number
+          question_text: string
+          question_type: string
+          updated_at: string
+        }
+        Insert: {
+          correct_answer: string
+          created_at?: string
+          id?: string
+          lesson_id: string
+          options?: Json | null
+          order_index: number
+          points?: number
+          question_text: string
+          question_type?: string
+          updated_at?: string
+        }
+        Update: {
+          correct_answer?: string
+          created_at?: string
+          id?: string
+          lesson_id?: string
+          options?: Json | null
+          order_index?: number
+          points?: number
+          question_text?: string
+          question_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_quiz_questions_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "course_lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       marketplace_categories: {
         Row: {
           created_at: string
@@ -646,6 +693,61 @@ export type Database = {
           },
         ]
       }
+      user_quiz_answers: {
+        Row: {
+          answered_at: string
+          enrollment_id: string
+          id: string
+          is_correct: boolean
+          lesson_id: string
+          question_id: string
+          user_answer: string
+          user_id: string
+        }
+        Insert: {
+          answered_at?: string
+          enrollment_id: string
+          id?: string
+          is_correct: boolean
+          lesson_id: string
+          question_id: string
+          user_answer: string
+          user_id: string
+        }
+        Update: {
+          answered_at?: string
+          enrollment_id?: string
+          id?: string
+          is_correct?: boolean
+          lesson_id?: string
+          question_id?: string
+          user_answer?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_quiz_answers_enrollment_id_fkey"
+            columns: ["enrollment_id"]
+            isOneToOne: false
+            referencedRelation: "user_course_enrollments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_quiz_answers_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "course_lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_quiz_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_quiz_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -672,18 +774,9 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      get_user_tier: {
-        Args: { user_id: string }
-        Returns: string
-      }
-      has_full_access: {
-        Args: { user_id: string }
-        Returns: boolean
-      }
-      has_role: {
-        Args: { _role: string; _user_id: string }
-        Returns: boolean
-      }
+      get_user_tier: { Args: { user_id: string }; Returns: string }
+      has_full_access: { Args: { user_id: string }; Returns: boolean }
+      has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never

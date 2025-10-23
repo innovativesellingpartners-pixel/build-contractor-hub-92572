@@ -170,6 +170,7 @@ export const useUpdateLessonProgress = () => {
         updateData.time_spent_minutes = timeSpentMinutes;
       }
 
+      // Update lesson progress
       const { data, error } = await supabase
         .from('user_lesson_progress')
         .upsert(updateData)
@@ -177,6 +178,49 @@ export const useUpdateLessonProgress = () => {
         .single();
 
       if (error) throw error;
+
+      // Recalculate enrollment progress percentage
+      // Get all lessons in the course
+      const { data: enrollment } = await supabase
+        .from('user_course_enrollments')
+        .select('course_id')
+        .eq('id', enrollmentId)
+        .single();
+
+      if (enrollment) {
+        const { data: course } = await supabase
+          .from('training_courses')
+          .select(`
+            course_modules!course_modules_course_id_fkey(
+              course_lessons!course_lessons_module_id_fkey(id)
+            )
+          `)
+          .eq('id', enrollment.course_id)
+          .single();
+
+        if (course) {
+          const totalLessons = course.course_modules.reduce((total: number, module: any) => 
+            total + (module.course_lessons?.length || 0), 0
+          );
+
+          const { data: progress } = await supabase
+            .from('user_lesson_progress')
+            .select('*')
+            .eq('enrollment_id', enrollmentId)
+            .eq('user_id', user.id)
+            .eq('is_completed', true);
+
+          const completedLessons = progress?.length || 0;
+          const progressPercentage = totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0;
+
+          // Update enrollment progress
+          await supabase
+            .from('user_course_enrollments')
+            .update({ progress_percentage: progressPercentage })
+            .eq('id', enrollmentId);
+        }
+      }
+
       return data;
     },
     onSuccess: () => {
