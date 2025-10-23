@@ -19,8 +19,11 @@ import {
   ChevronDown, 
   StickyNote, 
   Save, 
-  Trash2
+  Trash2,
+  Award,
+  HelpCircle
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useTrainingCourses, useUserEnrollments, useEnrollInCourse, useUpdateLessonProgress, useLessonProgress } from '@/hooks/useTrainingData';
 import { useSignedUrl } from '@/hooks/useSignedUrl';
 import { useUserNotes, useAutoSaveNote, useDeleteNote } from '@/hooks/useNotes';
@@ -298,145 +301,159 @@ export const CoursePlayer = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-6">
-          <Button 
-            variant="ghost" 
-            onClick={() => navigate('/dashboard/training')}
-          >
-            <ChevronLeft className="h-4 w-4 mr-2" />
-            Back to Training Hub
-          </Button>
-          <img src={ct1Logo} alt="CT1 Logo" className="h-10 w-10" />
-        </div>
+      <div className="flex">
+        {/* Left Sidebar */}
+        <div className="w-80 border-r bg-card/50 backdrop-blur-sm min-h-screen overflow-y-auto">
+          <div className="p-6 space-y-6">
+            {/* Back Button and Logo */}
+            <div className="flex items-center justify-between">
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => navigate('/dashboard/training')}
+              >
+                <ChevronLeft className="h-4 w-4 mr-2" />
+                Back
+              </Button>
+              <img src={ct1Logo} alt="CT1 Logo" className="h-8 w-8" />
+            </div>
 
-        {/* All Courses Navigation */}
-        <div className="mb-6">
-          <h2 className="text-lg font-semibold mb-3">All Training Courses</h2>
-          <ScrollArea className="w-full">
-            <div className="flex gap-3 pb-4">
-              {courses?.map((c) => {
-                const isCurrentCourse = c.id === courseId;
-                const courseEnrollment = enrollments?.find(e => e.course_id === c.id);
-                
-                return (
-                  <Card 
-                    key={c.id} 
-                    className={`flex-shrink-0 w-52 cursor-pointer transition-all hover:border-primary ${
-                      isCurrentCourse ? 'border-primary shadow-md' : ''
-                    }`}
-                    onClick={() => {
-                      if (!isCurrentCourse) {
-                        navigate(`/dashboard/training/course/${c.id}`);
-                      }
-                    }}
-                  >
-                    <CardHeader className="p-4">
-                      <div className="flex items-start justify-between gap-2">
-                        <CardTitle className="text-sm font-medium line-clamp-2">
-                          {c.title}
-                        </CardTitle>
-                        {isCurrentCourse && (
-                          <Badge variant="default" className="flex-shrink-0">Current</Badge>
-                        )}
-                      </div>
-                      {c.description && (
-                        <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
-                          {c.description}
-                        </p>
-                      )}
-                    </CardHeader>
-                    <CardContent className="p-4 pt-0 space-y-2">
-                      <div className="flex items-center gap-2 text-xs">
-                        <Badge variant="secondary" className="text-xs">
-                          {c.training_categories?.name}
-                        </Badge>
-                        <Badge variant="outline" className="text-xs">
-                          {c.difficulty_level}
-                        </Badge>
-                      </div>
-                      {courseEnrollment && (
-                        <div className="space-y-1">
-                          <div className="flex items-center justify-between text-xs">
-                            <span className="text-muted-foreground">Progress</span>
-                            <span className="font-medium">{Math.round(courseEnrollment.progress_percentage)}%</span>
+            {/* Course Progress Card */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Course Progress</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Progress value={progressPercentage} className="h-2" />
+                <p className="text-sm text-muted-foreground">
+                  {completedLessons} of {totalLessons} lessons completed
+                </p>
+                <p className="text-2xl font-bold">{Math.round(progressPercentage)}%</p>
+              </CardContent>
+            </Card>
+
+            {/* Quick Actions */}
+            <div className="space-y-2">
+              <Button variant="outline" className="w-full justify-start" asChild>
+                <Link to="/dashboard/training">
+                  <Award className="h-4 w-4 mr-2" />
+                  My Certificates
+                </Link>
+              </Button>
+              <Button variant="outline" className="w-full justify-start" asChild>
+                <a href="mailto:support@myct1.com">
+                  <HelpCircle className="h-4 w-4 mr-2" />
+                  Support
+                </a>
+              </Button>
+            </div>
+
+            {/* All Training Courses */}
+            <div>
+              <h3 className="font-semibold mb-3">All Courses</h3>
+              <ScrollArea className="h-[400px]">
+                <div className="space-y-3 pr-4">
+                  {courses?.map((c) => {
+                    const isCurrentCourse = c.id === courseId;
+                    const courseEnrollment = enrollments?.find(e => e.course_id === c.id);
+                    
+                    return (
+                      <Card 
+                        key={c.id} 
+                        className={`cursor-pointer transition-all hover:border-primary ${
+                          isCurrentCourse ? 'border-primary shadow-md' : ''
+                        }`}
+                        onClick={() => {
+                          if (!isCurrentCourse) {
+                            navigate(`/dashboard/training/course/${c.id}`);
+                          }
+                        }}
+                      >
+                        <CardHeader className="p-3">
+                          <div className="flex items-start justify-between gap-2">
+                            <CardTitle className="text-sm font-medium line-clamp-2">
+                              {c.title}
+                            </CardTitle>
+                            {isCurrentCourse && (
+                              <Badge variant="default" className="text-xs flex-shrink-0">Active</Badge>
+                            )}
                           </div>
-                          <Progress value={courseEnrollment.progress_percentage} className="h-1.5" />
-                        </div>
-                      )}
-                      {!courseEnrollment && (
-                        <Badge variant="outline" className="text-xs">Not Enrolled</Badge>
-                      )}
-                    </CardContent>
-                  </Card>
-                );
-              })}
+                        </CardHeader>
+                        <CardContent className="p-3 pt-0 space-y-2">
+                          <div className="flex flex-wrap gap-1">
+                            <Badge variant="secondary" className="text-xs">
+                              {c.training_categories?.name}
+                            </Badge>
+                            <Badge variant="outline" className="text-xs">
+                              {c.difficulty_level}
+                            </Badge>
+                          </div>
+                          {courseEnrollment && (
+                            <div className="space-y-1">
+                              <div className="flex items-center justify-between text-xs">
+                                <span className="text-muted-foreground">Progress</span>
+                                <span className="font-medium">{Math.round(courseEnrollment.progress_percentage)}%</span>
+                              </div>
+                              <Progress value={courseEnrollment.progress_percentage} className="h-1.5" />
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </ScrollArea>
             </div>
-          </ScrollArea>
+          </div>
         </div>
 
-        {/* Current Course Modules */}
-        <div className="mb-6">
-          <h2 className="text-lg font-semibold mb-3">Modules in {course.title}</h2>
-          <ScrollArea className="w-full">
-            <div className="flex gap-4 pb-4">
-              {course.course_modules?.map((module, idx) => {
-                const moduleLessons = module.course_lessons.length;
-                const completedInModule = lessonProgress?.filter(p => 
-                  module.course_lessons.some(l => l.id === p.lesson_id && p.is_completed)
-                ).length || 0;
-                const isCurrentModule = idx === currentModuleIndex;
-                
-                return (
-                  <Card 
-                    key={module.id} 
-                    className={`flex-shrink-0 w-52 cursor-pointer transition-all hover:border-primary ${
-                      isCurrentModule ? 'border-primary shadow-md' : ''
-                    }`}
-                    onClick={() => {
-                      setCurrentModuleIndex(idx);
-                      setCurrentLessonIndex(0);
-                    }}
-                  >
-                    <CardHeader className="p-4">
-                      <div className="flex items-start justify-between gap-2">
-                        <CardTitle className="text-sm font-medium line-clamp-2">
-                          {module.title}
-                        </CardTitle>
-                        {isCurrentModule && (
-                          <Badge variant="default" className="flex-shrink-0">Active</Badge>
-                        )}
-                      </div>
-                      {module.description && (
-                        <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
-                          {module.description}
-                        </p>
-                      )}
-                    </CardHeader>
-                    <CardContent className="p-4 pt-0">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-muted-foreground">
-                          {completedInModule}/{moduleLessons} lessons
-                        </span>
-                        {completedInModule === moduleLessons && moduleLessons > 0 && (
-                          <CheckCircle className="h-4 w-4 text-primary" />
-                        )}
-                      </div>
-                      <Progress 
-                        value={moduleLessons > 0 ? (completedInModule / moduleLessons) * 100 : 0} 
-                        className="mt-2 h-1.5"
-                      />
-                    </CardContent>
-                  </Card>
-                );
-              })}
+        {/* Main Content Area */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="container mx-auto px-6 py-8">
+            {/* Current Module Lessons Navigation */}
+            <div className="mb-6">
+              <h2 className="text-lg font-semibold mb-3">Lessons in {currentModule?.title}</h2>
+              <ScrollArea className="w-full">
+                <div className="flex gap-3 pb-4">
+                  {currentModule?.course_lessons.map((lesson, lessonIdx) => {
+                    const isCompleted = lessonProgress?.some(
+                      p => p.lesson_id === lesson.id && p.is_completed
+                    );
+                    const isCurrent = lessonIdx === currentLessonIndex;
+                    
+                    return (
+                      <Card 
+                        key={lesson.id} 
+                        className={`flex-shrink-0 w-48 cursor-pointer transition-all hover:border-primary ${
+                          isCurrent ? 'border-primary shadow-md' : ''
+                        }`}
+                        onClick={() => setCurrentLessonIndex(lessonIdx)}
+                      >
+                        <CardContent className="p-4">
+                          <div className="flex items-start gap-2 mb-2">
+                            {isCompleted ? (
+                              <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0 mt-0.5" />
+                            ) : (
+                              <div className="h-4 w-4 rounded-full border-2 border-muted-foreground flex-shrink-0 mt-0.5" />
+                            )}
+                            <span className="text-sm font-medium line-clamp-2">{lesson.title}</span>
+                          </div>
+                          {lesson.duration_minutes && (
+                            <Badge variant="outline" className="text-xs">
+                              {lesson.duration_minutes}min
+                            </Badge>
+                          )}
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </ScrollArea>
             </div>
-          </ScrollArea>
-        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 gap-6">
           {/* Course Content Area */}
-          <div className="lg:col-span-3">
+          <div className="w-full">
             <Card>
               <CardHeader>
                 <div className="flex justify-between items-start">
@@ -765,74 +782,15 @@ export const CoursePlayer = () => {
                        Next
                        <ChevronRight className="h-4 w-4 ml-2" />
                      </Button>
-                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Sidebar */}
-          <div className="lg:col-span-1">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Course Progress</CardTitle>
-                <div className="space-y-2">
-                  <Progress value={progressPercentage} />
-                  <p className="text-sm text-muted-foreground">
-                    {completedLessons} of {totalLessons} lessons completed
-                  </p>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <ScrollArea className="h-96">
-                  <div className="space-y-4">
-                    {course.course_modules?.map((module, moduleIdx) => (
-                      <div key={module.id}>
-                        <h4 className="font-semibold text-sm mb-2">{module.title}</h4>
-                        <div className="space-y-1 ml-2">
-                          {module.course_lessons.map((lesson, lessonIdx) => {
-                            const isCompleted = lessonProgress?.some(
-                              p => p.lesson_id === lesson.id && p.is_completed
-                            );
-                            const isCurrent = moduleIdx === currentModuleIndex && lessonIdx === currentLessonIndex;
-                            
-                            return (
-                              <button
-                                key={lesson.id}
-                                onClick={() => {
-                                  setCurrentModuleIndex(moduleIdx);
-                                  setCurrentLessonIndex(lessonIdx);
-                                }}
-                                className={`w-full text-left p-2 rounded text-sm transition-colors ${
-                                  isCurrent 
-                                    ? 'bg-primary text-primary-foreground' 
-                                    : 'hover:bg-muted'
-                                }`}
-                              >
-                                <div className="flex items-center gap-2">
-                                  {isCompleted ? (
-                                    <CheckCircle className="h-3 w-3 text-green-500" />
-                                  ) : (
-                                    <div className="h-3 w-3 rounded-full border-2 border-muted-foreground" />
-                                  )}
-                                  <span className="flex-1 truncate">{lesson.title}</span>
-                                </div>
-                              </button>
-                            );
-                          })}
-                        </div>
-                        {moduleIdx < (course.course_modules?.length || 0) - 1 && (
-                          <Separator className="mt-3" />
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </ScrollArea>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+                    </div>
+                 </div>
+               </CardContent>
+              </Card>
+           </div>
+         </div>
+       </div>
+     </div>
+     </div>
+   </div>
+   );
 };
