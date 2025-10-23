@@ -206,16 +206,26 @@ export const TrainingModulePage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <Button variant="ghost" onClick={() => navigate('/dashboard/training')}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Training Hub
-            </Button>
+      {/* CT1 Branding Header */}
+      <div className="bg-gradient-to-r from-primary to-primary/80 p-4 shadow-md mb-6">
+        <div className="container mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
             <img src={ct1Logo} alt="CT1 Logo" className="h-10 w-10" />
+            <div>
+              <h1 className="text-xl font-bold text-primary-foreground">CT1 Training</h1>
+              <p className="text-xs text-primary-foreground/90">One-Up Your Business</p>
+            </div>
           </div>
+          <Button variant="ghost" onClick={() => navigate('/dashboard/training')} className="text-primary-foreground hover:text-primary-foreground hover:bg-primary-foreground/10">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Training Hub
+          </Button>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 py-8">
+        {/* Module Header */}
+        <div className="mb-8">
           <div className="flex items-start gap-4">
             <div className={`h-16 w-16 rounded-full bg-${module.color}-100 flex items-center justify-center`}>
               {module.icon}

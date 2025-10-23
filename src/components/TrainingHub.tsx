@@ -27,6 +27,7 @@ import performanceImg from '@/assets/training-performance.jpg';
 import processImg from '@/assets/training-process.jpg';
 import sellingImg from '@/assets/training-selling.jpg';
 import videoThumbnail from '@/assets/training-video-thumbnail.png';
+import ct1Logo from '@/assets/ct1-logo-main.png';
 
 type TrainingSection = 'courses' | 'progress' | 'certificates' | 'support';
 
@@ -374,10 +375,28 @@ export const TrainingHub = () => {
   );
 
   return (
-    <div className="flex gap-6">
-      {/* Left Sidebar Navigation */}
-      <div className="w-64 flex-shrink-0">
-        <div className="space-y-2">
+    <div className="flex flex-col min-h-screen">
+      {/* CT1 Branding Header */}
+      <div className="bg-gradient-to-r from-primary to-primary/80 p-4 shadow-md">
+        <div className="container mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <img src={ct1Logo} alt="CT1 Logo" className="h-12 w-12" />
+            <div>
+              <h1 className="text-2xl font-bold text-primary-foreground">CT1 Training Hub</h1>
+              <p className="text-sm text-primary-foreground/90">One-Up Your Business</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+            <span className="text-primary-foreground font-semibold">5-Star Training</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex gap-6 flex-1 container mx-auto py-6">
+        {/* Left Sidebar Navigation */}
+        <div className="w-64 flex-shrink-0">
+          <div className="space-y-2">
           <button
             onClick={() => setActiveSection('courses')}
             className={`w-full p-4 rounded-lg border-2 transition-all text-left ${
@@ -509,10 +528,12 @@ export const TrainingHub = () => {
       </div>
 
       {/* Main Content Panel */}
-      <div className="flex-1 overflow-auto min-w-0">{activeSection === 'courses' && renderCourses()}
+      <div className="flex-1 overflow-auto min-w-0">
+        {activeSection === 'courses' && renderCourses()}
         {activeSection === 'progress' && renderProgress()}
         {activeSection === 'certificates' && renderCertificates()}
         {activeSection === 'support' && renderSupport()}
+      </div>
       </div>
     </div>
   );

@@ -251,15 +251,28 @@ export const CoursePlayer = () => {
   if (!enrollment) {
     return (
       <div className="min-h-screen bg-background">
+        {/* CT1 Branding Header */}
+        <div className="bg-gradient-to-r from-primary to-primary/80 p-3 shadow-md mb-6">
+          <div className="container mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <img src={ct1Logo} alt="CT1 Logo" className="h-10 w-10" />
+              <div>
+                <h1 className="text-xl font-bold text-primary-foreground">CT1 Training</h1>
+                <p className="text-xs text-primary-foreground/90">One-Up Your Business</p>
+              </div>
+            </div>
+            <Button 
+              variant="ghost" 
+              onClick={() => navigate('/dashboard/training')}
+              className="text-primary-foreground hover:text-primary-foreground hover:bg-primary-foreground/10"
+            >
+              <ChevronLeft className="h-4 w-4 mr-2" />
+              Back to Training Hub
+            </Button>
+          </div>
+        </div>
+
         <div className="container mx-auto px-4 py-8">
-          <Button 
-            variant="ghost" 
-            onClick={() => navigate('/dashboard/training')}
-            className="mb-6"
-          >
-            <ChevronLeft className="h-4 w-4 mr-2" />
-            Back to Training Hub
-          </Button>
 
           <div className="max-w-4xl mx-auto">
             <Card>
@@ -330,22 +343,32 @@ export const CoursePlayer = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* CT1 Branding Header */}
+      <div className="bg-gradient-to-r from-primary to-primary/80 p-3 shadow-md">
+        <div className="container mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <img src={ct1Logo} alt="CT1 Logo" className="h-10 w-10" />
+            <div>
+              <h1 className="text-xl font-bold text-primary-foreground">CT1 Course Player</h1>
+              <p className="text-xs text-primary-foreground/90">One-Up Your Business</p>
+            </div>
+          </div>
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={() => navigate('/dashboard/training')}
+            className="text-primary-foreground hover:text-primary-foreground hover:bg-primary-foreground/10"
+          >
+            <ChevronLeft className="h-4 w-4 mr-2" />
+            Back to Training Hub
+          </Button>
+        </div>
+      </div>
+
       <div className="flex">
         {/* Left Sidebar */}
         <div className="w-80 border-r bg-card/50 backdrop-blur-sm min-h-screen overflow-y-auto">
           <div className="p-6 space-y-6">
-            {/* Back Button and Logo */}
-            <div className="flex items-center justify-between">
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => navigate('/dashboard/training')}
-              >
-                <ChevronLeft className="h-4 w-4 mr-2" />
-                Back
-              </Button>
-              <img src={ct1Logo} alt="CT1 Logo" className="h-8 w-8" />
-            </div>
 
             {/* Course Progress Card */}
             <Card>
