@@ -36,7 +36,7 @@ export function BusinessSuite() {
     {
       id: "crm",
       icon: Briefcase,
-      title: "CRM/Jobs",
+      title: "ProvenJobs",
       description: "Complete job management and customer relationship tools in one place",
       color: "from-blue-500 to-cyan-500",
       features: ["Job Tracking", "Client Management", "Pipeline View"]

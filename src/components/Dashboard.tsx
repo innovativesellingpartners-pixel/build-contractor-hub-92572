@@ -504,7 +504,7 @@ function SidebarNav({ activeSection, setActiveSection, tierFeatures }: SidebarNa
           onClick={() => setActiveSection('crm')}
         >
           <Briefcase className="h-4 w-4 mr-3" />
-          CRM/Jobs
+          ProvenJobs
         </Button>
       )}
 
