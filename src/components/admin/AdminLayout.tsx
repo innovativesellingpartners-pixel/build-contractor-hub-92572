@@ -28,7 +28,7 @@ export const AdminLayout = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img src={ct1Logo} alt="CT1 Logo" className="h-10 w-10" />
-            <h1 className="text-2xl font-bold text-primary">ConstructeAM Admin</h1>
+            <h1 className="text-2xl font-bold text-primary">CT1 Admin</h1>
           </div>
           <div className="flex items-center gap-2">
             <Button 
