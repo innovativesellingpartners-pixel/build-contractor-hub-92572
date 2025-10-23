@@ -297,9 +297,74 @@ export const CoursePlayer = () => {
           Back to Training Hub
         </Button>
 
-        {/* Module Navigation */}
+        {/* All Courses Navigation */}
         <div className="mb-6">
-          <h2 className="text-lg font-semibold mb-3">Course Modules</h2>
+          <h2 className="text-lg font-semibold mb-3">All Training Courses</h2>
+          <ScrollArea className="w-full">
+            <div className="flex gap-4 pb-4">
+              {courses?.map((c) => {
+                const isCurrentCourse = c.id === courseId;
+                const courseEnrollment = enrollments?.find(e => e.course_id === c.id);
+                
+                return (
+                  <Card 
+                    key={c.id} 
+                    className={`flex-shrink-0 w-72 cursor-pointer transition-all hover:border-primary ${
+                      isCurrentCourse ? 'border-primary shadow-md' : ''
+                    }`}
+                    onClick={() => {
+                      if (!isCurrentCourse) {
+                        navigate(`/dashboard/training/course/${c.id}`);
+                      }
+                    }}
+                  >
+                    <CardHeader className="p-4">
+                      <div className="flex items-start justify-between gap-2">
+                        <CardTitle className="text-sm font-medium line-clamp-2">
+                          {c.title}
+                        </CardTitle>
+                        {isCurrentCourse && (
+                          <Badge variant="default" className="flex-shrink-0">Current</Badge>
+                        )}
+                      </div>
+                      {c.description && (
+                        <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
+                          {c.description}
+                        </p>
+                      )}
+                    </CardHeader>
+                    <CardContent className="p-4 pt-0 space-y-2">
+                      <div className="flex items-center gap-2 text-xs">
+                        <Badge variant="secondary" className="text-xs">
+                          {c.training_categories?.name}
+                        </Badge>
+                        <Badge variant="outline" className="text-xs">
+                          {c.difficulty_level}
+                        </Badge>
+                      </div>
+                      {courseEnrollment && (
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="text-muted-foreground">Progress</span>
+                            <span className="font-medium">{Math.round(courseEnrollment.progress_percentage)}%</span>
+                          </div>
+                          <Progress value={courseEnrollment.progress_percentage} className="h-1.5" />
+                        </div>
+                      )}
+                      {!courseEnrollment && (
+                        <Badge variant="outline" className="text-xs">Not Enrolled</Badge>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </ScrollArea>
+        </div>
+
+        {/* Current Course Modules */}
+        <div className="mb-6">
+          <h2 className="text-lg font-semibold mb-3">Modules in {course.title}</h2>
           <ScrollArea className="w-full">
             <div className="flex gap-4 pb-4">
               {course.course_modules?.map((module, idx) => {
