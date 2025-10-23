@@ -9,6 +9,7 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import ct1Logo from "@/assets/ct1-logo-main.png";
+import { ContactForm } from "@/components/ContactForm";
 
 const insuranceProviders = [
   "State Farm",
@@ -118,6 +119,7 @@ export function Insurance() {
   const [open, setOpen] = useState(true);
   const [comboboxOpen, setComboboxOpen] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState("");
+  const [quoteDialogOpen, setQuoteDialogOpen] = useState(false);
   const { toast } = useToast();
 
   const handleProviderSelect = (provider: string) => {
@@ -301,7 +303,20 @@ export function Insurance() {
                     Comprehensive coverage designed specifically for CT1 contractors with competitive rates and exclusive benefits.
                   </p>
                   <div className="flex gap-2">
-                    <Button>Get a Quote</Button>
+                    <Dialog open={quoteDialogOpen} onOpenChange={setQuoteDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button>Get a Quote</Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                        <ContactForm 
+                          title="Get Insurance Quote"
+                          description="Fill out the form below and our insurance team will contact you with a personalized quote"
+                          ctaText="Request Quote"
+                          formType="insurance_quote"
+                          onClose={() => setQuoteDialogOpen(false)}
+                        />
+                      </DialogContent>
+                    </Dialog>
                     <Button variant="outline">Learn More</Button>
                   </div>
                 </div>
