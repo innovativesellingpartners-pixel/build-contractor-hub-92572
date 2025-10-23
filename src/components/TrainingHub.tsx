@@ -18,7 +18,8 @@ import {
   DollarSign as DollarSignIcon,
   Mail,
   GraduationCap,
-  TrendingUp
+  TrendingUp,
+  ArrowLeft
 } from 'lucide-react';
 import { useTrainingCourses, useUserEnrollments, useUserCertificates } from '@/hooks/useTrainingData';
 import communicationImg from '@/assets/training-communication.jpg';
@@ -379,11 +380,22 @@ export const TrainingHub = () => {
       {/* CT1 Branding Header */}
       <div className="bg-gradient-to-r from-primary to-primary/80 p-4 shadow-md">
         <div className="container mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src={ct1Logo} alt="CT1 Logo" className="h-12 w-12" />
-            <div>
-              <h1 className="text-2xl font-bold text-primary-foreground">CT1 Training Hub</h1>
-              <p className="text-sm text-primary-foreground/90">One-Up Your Business</p>
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/dashboard')}
+              className="text-primary-foreground hover:bg-primary-foreground/10"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to CT1 Hub
+            </Button>
+            <div className="flex items-center gap-3">
+              <img src={ct1Logo} alt="CT1 Logo" className="h-12 w-12" />
+              <div>
+                <h1 className="text-2xl font-bold text-primary-foreground">CT1 Training Hub</h1>
+                <p className="text-sm text-primary-foreground/90">One-Up Your Business</p>
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-2">
