@@ -491,23 +491,6 @@ function SidebarNav({ activeSection, setActiveSection, tierFeatures }: SidebarNa
         </Button>
       )}
       
-      {tierFeatures.crm && (
-        <Button
-          variant="ghost"
-          className="w-full justify-start transition-all hover:bg-red-50 hover:border-red-500 hover:text-black border border-transparent"
-          asChild
-        >
-          <a 
-            href="https://psarcweb.com/PSAWeb/Account/Login?ReturnUrl=%2fPSAWeb" 
-            target="_blank" 
-            rel="noopener noreferrer"
-          >
-            <Briefcase className="h-4 w-4 mr-3" />
-            ProvenJobs
-          </a>
-        </Button>
-      )}
-
       {tierFeatures.aiAssistant && (
         <Button
           variant={activeSection === 'voiceai' ? 'default' : 'ghost'}
@@ -533,8 +516,8 @@ function SidebarNav({ activeSection, setActiveSection, tierFeatures }: SidebarNa
           }`}
           onClick={() => setActiveSection('leads')}
         >
-          <Users className="h-4 w-4 mr-3" />
-          Leads
+          <Briefcase className="h-4 w-4 mr-3" />
+          CRM/Jobs
         </Button>
       )}
       
