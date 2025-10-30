@@ -41,6 +41,7 @@ import { BotSignup } from "@/pages/BotSignup";
 import Savings from "./pages/Savings";
 import Platform from "./pages/Platform";
 import ForConsumers from "./pages/ForConsumers";
+import { CRMDashboard } from "@/pages/CRMDashboard";
 
 const queryClient = new QueryClient();
 
@@ -81,6 +82,11 @@ const App = () => (
             <Route path="/dashboard" element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/crm" element={
+              <ProtectedRoute>
+                <CRMDashboard />
               </ProtectedRoute>
             } />
             <Route path="/dashboard/marketplace" element={
