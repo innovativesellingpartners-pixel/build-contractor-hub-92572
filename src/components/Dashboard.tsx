@@ -242,6 +242,7 @@ export function Dashboard() {
           <div className="bg-card border border-border/50 rounded-xl shadow-md p-4 md:p-6 min-h-[600px]">
             {activeSection === 'training' && <TrainingHub />}
             {activeSection === 'leads' && <Leads />}
+            {activeSection === 'schedule' && <ScheduleCall />}
             {activeSection === 'quickbooks' && <QuickBooks />}
             {activeSection === 'insurance' && <Insurance />}
             {activeSection === 'voiceai' && <VoiceAI />}
@@ -566,14 +567,16 @@ function SidebarNav({ activeSection, setActiveSection, tierFeatures }: SidebarNa
       
       {tierFeatures.monthlyCall && (
         <Button
-          variant="ghost"
-          className="w-full justify-start transition-all hover:bg-red-50 hover:border-red-500 hover:text-black border border-transparent"
-          asChild
+          variant={activeSection === 'schedule' ? 'default' : 'ghost'}
+          className={`w-full justify-start transition-all ${
+            activeSection === 'schedule' 
+              ? 'shadow-md' 
+              : 'hover:bg-red-50 hover:border-red-500 hover:text-black border border-transparent'
+          }`}
+          onClick={() => setActiveSection('schedule')}
         >
-          <a href="https://calendly.com/innovativesellingpartners/contractor-1-1-with-ct1-trainer" target="_blank" rel="noopener noreferrer">
-            <Phone className="h-4 w-4 mr-3" />
-            Monthly 1:1
-          </a>
+          <Phone className="h-4 w-4 mr-3" />
+          Schedule Calls
         </Button>
       )}
       
