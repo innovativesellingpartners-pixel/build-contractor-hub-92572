@@ -537,8 +537,12 @@ export const UserManagement = () => {
                           variant="outline" 
                           size="sm"
                           onClick={() => {
+                            console.log('Edit button clicked for user:', user.email);
+                            console.log('Setting editingUser:', user);
                             setEditingUser(user);
+                            setLogoPreview((user.profile as any)?.logo_url || null);
                             setIsEditDialogOpen(true);
+                            console.log('Dialog should open now');
                           }}
                         >
                           <Edit className="h-4 w-4" />
