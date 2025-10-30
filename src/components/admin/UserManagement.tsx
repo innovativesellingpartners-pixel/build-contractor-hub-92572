@@ -10,7 +10,8 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from '@/components/ui/dialog';
-import { Search, UserPlus, Edit, Trash2, Mail, Phone, Building2, User, Key } from 'lucide-react';
+import { Search, UserPlus, Edit, Trash2, Mail, Phone, Building2, User, Key, Upload, X } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toast } from 'sonner';
 
 type UserWithProfile = {
@@ -39,6 +40,8 @@ export const UserManagement = () => {
   const [editingUser, setEditingUser] = useState<UserWithProfile | null>(null);
   const [deletingUser, setDeletingUser] = useState<UserWithProfile | null>(null);
   const [passwordResetUser, setPasswordResetUser] = useState<UserWithProfile | null>(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
   const { data: users, isLoading } = useQuery({
@@ -88,6 +91,7 @@ export const UserManagement = () => {
         contact_name?: string;
         ct1_contractor_number?: string;
         subscription_tier?: string;
+        logo_url?: string;
       }
     }) => {
       const { error } = await supabase
@@ -101,6 +105,7 @@ export const UserManagement = () => {
       queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
       toast.success('Profile updated successfully');
       setIsEditDialogOpen(false);
+      setLogoPreview(null);
     },
     onError: (error) => {
       toast.error('Failed to update profile');
@@ -196,6 +201,50 @@ export const UserManagement = () => {
     });
   };
 
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !editingUser) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please upload an image file');
+      return;
+    }
+
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('Image must be less than 2MB');
+      return;
+    }
+
+    setUploadingLogo(true);
+    try {
+      // Create a unique file name
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${editingUser.id}/${Date.now()}.${fileExt}`;
+
+      // Upload to Supabase storage
+      const { error: uploadError } = await supabase.storage
+        .from('company-logos')
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('company-logos')
+        .getPublicUrl(fileName);
+
+      setLogoPreview(publicUrl);
+      toast.success('Logo uploaded successfully');
+    } catch (error) {
+      console.error('Error uploading logo:', error);
+      toast.error('Failed to upload logo');
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
   const handleUpdateProfile = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!editingUser) return;
@@ -210,6 +259,7 @@ export const UserManagement = () => {
         contact_name: formData.get('contact_name') as string,
         ct1_contractor_number: formData.get('ct1_contractor_number') as string,
         subscription_tier: formData.get('subscription_tier') as string,
+        logo_url: logoPreview || undefined,
       }
     });
   };
@@ -413,6 +463,7 @@ export const UserManagement = () => {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>Profile</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Company</TableHead>
                   <TableHead>Contact</TableHead>
@@ -426,6 +477,14 @@ export const UserManagement = () => {
               <TableBody>
                 {filteredUsers?.map((user) => (
                   <TableRow key={user.id}>
+                    <TableCell>
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={(user.profile as any)?.logo_url} alt={user.profile?.company_name || user.email} />
+                        <AvatarFallback>
+                          {user.profile?.company_name?.charAt(0) || user.email.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                    </TableCell>
                     <TableCell className="font-medium">{user.email}</TableCell>
                     <TableCell>{user.profile?.company_name || 'N/A'}</TableCell>
                     <TableCell>{user.profile?.contact_name || 'N/A'}</TableCell>
@@ -525,6 +584,42 @@ export const UserManagement = () => {
           </DialogHeader>
           {editingUser && (
             <form onSubmit={handleUpdateProfile} className="space-y-4">
+              <div className="space-y-2">
+                <Label>Profile Picture</Label>
+                <div className="flex items-center gap-4">
+                  <Avatar className="h-20 w-20">
+                    <AvatarImage 
+                      src={logoPreview || (editingUser.profile as any)?.logo_url} 
+                      alt={editingUser.profile?.company_name || editingUser.email} 
+                    />
+                    <AvatarFallback className="text-2xl">
+                      {editingUser.profile?.company_name?.charAt(0) || editingUser.email.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleLogoUpload}
+                      disabled={uploadingLogo}
+                      className="cursor-pointer"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Upload a company logo (max 2MB)
+                    </p>
+                  </div>
+                  {logoPreview && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setLogoPreview(null)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              </div>
               <div className="space-y-2">
                 <Label>Email</Label>
                 <Input value={editingUser.email} disabled className="bg-muted" />
