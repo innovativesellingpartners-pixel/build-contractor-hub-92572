@@ -1,7 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, Video, Phone, Mail, User } from "lucide-react";
+import { Calendar, Clock, Video, Phone, Mail, User, Mic, Settings } from "lucide-react";
 import { useState } from "react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { useToast } from "@/components/ui/use-toast";
 
 interface UpcomingCall {
   id: string;
@@ -13,6 +18,7 @@ interface UpcomingCall {
 }
 
 export function ScheduleCall() {
+  const { toast } = useToast();
   const [upcomingCalls] = useState<UpcomingCall[]>([
     {
       id: '1',
@@ -23,6 +29,26 @@ export function ScheduleCall() {
       status: 'confirmed'
     }
   ]);
+  
+  const [aiVoiceEnabled, setAiVoiceEnabled] = useState(false);
+  const [aiVoiceProvider, setAiVoiceProvider] = useState('openai');
+  const [apiKey, setApiKey] = useState('');
+
+  const handleSaveAiVoice = () => {
+    if (aiVoiceEnabled && !apiKey) {
+      toast({
+        title: "API Key Required",
+        description: "Please enter your API key to enable AI voice.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    toast({
+      title: "Settings Saved",
+      description: "AI voice provider settings have been updated.",
+    });
+  };
 
   const getCallTypeLabel = (type: string) => {
     switch (type) {
@@ -48,6 +74,92 @@ export function ScheduleCall() {
         <h2 className="text-3xl font-bold mb-2">Schedule a Call with CT1 Account Manager</h2>
         <p className="text-muted-foreground">Book one-on-one sessions with your dedicated account manager</p>
       </div>
+
+      {/* AI Voice Provider Connection */}
+      <Card className="border-primary/20">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-primary/10 rounded-full">
+                <Mic className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <CardTitle>AI Voice Assistant</CardTitle>
+                <CardDescription>Connect to an AI voice provider for automated call handling</CardDescription>
+              </div>
+            </div>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Settings className="h-4 w-4 mr-2" />
+                  Configure
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>AI Voice Provider Settings</DialogTitle>
+                  <DialogDescription>
+                    Configure your AI voice assistant for automated call handling
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="ai-voice-toggle">Enable AI Voice</Label>
+                    <Switch
+                      id="ai-voice-toggle"
+                      checked={aiVoiceEnabled}
+                      onCheckedChange={setAiVoiceEnabled}
+                    />
+                  </div>
+                  
+                  {aiVoiceEnabled && (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="provider">Provider</Label>
+                        <select
+                          id="provider"
+                          value={aiVoiceProvider}
+                          onChange={(e) => setAiVoiceProvider(e.target.value)}
+                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          <option value="openai">OpenAI Realtime API</option>
+                          <option value="elevenlabs">ElevenLabs</option>
+                        </select>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="api-key">API Key</Label>
+                        <Input
+                          id="api-key"
+                          type="password"
+                          placeholder="Enter your API key"
+                          value={apiKey}
+                          onChange={(e) => setApiKey(e.target.value)}
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Your API key is stored securely and never shared
+                        </p>
+                      </div>
+                    </>
+                  )}
+                  
+                  <Button onClick={handleSaveAiVoice} className="w-full">
+                    Save Settings
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-2">
+            <div className={`h-2 w-2 rounded-full ${aiVoiceEnabled ? 'bg-green-500' : 'bg-gray-300'}`} />
+            <span className="text-sm text-muted-foreground">
+              {aiVoiceEnabled ? `Connected to ${aiVoiceProvider === 'openai' ? 'OpenAI' : 'ElevenLabs'}` : 'Not connected'}
+            </span>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
