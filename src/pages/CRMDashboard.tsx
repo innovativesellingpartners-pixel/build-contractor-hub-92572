@@ -215,13 +215,14 @@ export function CRMDashboard() {
                   <h1 className="text-3xl font-bold">Leads</h1>
                   <p className="text-muted-foreground mt-1">Manage and assign leads to contractors</p>
                 </div>
-                <Dialog open={addLeadDialogOpen} onOpenChange={setAddLeadDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button size="lg" className="gap-2">
-                      <Plus className="h-5 w-5" />
-                      Add Lead
-                    </Button>
-                  </DialogTrigger>
+                <div className="flex items-center gap-3">
+                  <Dialog open={addLeadDialogOpen} onOpenChange={setAddLeadDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button size="lg" className="gap-2 bg-[#C94A3C] hover:bg-[#B43F31] text-white">
+                        <Plus className="h-5 w-5" />
+                        Add Lead
+                      </Button>
+                    </DialogTrigger>
                   <DialogContent className="sm:max-w-lg">
                     <DialogHeader>
                       <DialogTitle>Add New Lead</DialogTitle>
@@ -340,6 +341,23 @@ export function CRMDashboard() {
                     </div>
                   </DialogContent>
                 </Dialog>
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="gap-2"
+                  onClick={() => {
+                    toast({
+                      title: "Import CSV",
+                      description: "CSV import functionality coming soon",
+                    });
+                  }}
+                >
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                  </svg>
+                  Import CSV
+                </Button>
+                </div>
               </div>
 
               {/* Leads Content */}
