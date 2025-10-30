@@ -16,10 +16,13 @@ import {
   TrendingUp,
   Upload,
   Briefcase,
-  BriefcaseBusiness
+  BriefcaseBusiness,
+  Plus
 } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ct1Logo from "@/assets/ct1-logo-main.png";
 
 interface Lead {
@@ -34,7 +37,7 @@ interface Lead {
 }
 
 export function Leads() {
-  const [leads] = useState<Lead[]>([
+  const [leads, setLeads] = useState<Lead[]>([
     { 
       id: '1', 
       name: 'Sarah Johnson', 
@@ -68,10 +71,22 @@ export function Leads() {
   ]);
 
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [addLeadDialogOpen, setAddLeadDialogOpen] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [vocallinkLoading, setVocallinkLoading] = useState(true);
   const [provenjobsLoading, setProvenjobsLoading] = useState(true);
   const { toast } = useToast();
+
+  // New lead form state
+  const [newLead, setNewLead] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    project: '',
+    value: '',
+    status: 'new' as Lead['status'],
+    notes: ''
+  });
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -115,6 +130,85 @@ export function Leads() {
     }, 1500);
   };
 
+  const handleAddLead = () => {
+    // Validate required fields
+    if (!newLead.name.trim()) {
+      toast({
+        title: "Name Required",
+        description: "Please enter the lead's name",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!newLead.email.trim() || !newLead.email.includes('@')) {
+      toast({
+        title: "Valid Email Required",
+        description: "Please enter a valid email address",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!newLead.phone.trim()) {
+      toast({
+        title: "Phone Required",
+        description: "Please enter a phone number",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!newLead.project.trim()) {
+      toast({
+        title: "Project Required",
+        description: "Please enter the project description",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!newLead.value || parseFloat(newLead.value) <= 0) {
+      toast({
+        title: "Valid Value Required",
+        description: "Please enter a valid project value",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Create new lead
+    const lead: Lead = {
+      id: Date.now().toString(),
+      name: newLead.name.trim(),
+      email: newLead.email.trim(),
+      phone: newLead.phone.trim(),
+      project: newLead.project.trim(),
+      value: parseFloat(newLead.value),
+      status: newLead.status,
+      date: new Date().toISOString().split('T')[0]
+    };
+
+    setLeads([lead, ...leads]);
+
+    toast({
+      title: "Lead Added",
+      description: `${lead.name} has been added to your pipeline`,
+    });
+
+    // Reset form and close dialog
+    setNewLead({
+      name: '',
+      email: '',
+      phone: '',
+      project: '',
+      value: '',
+      status: 'new',
+      notes: ''
+    });
+    setAddLeadDialogOpen(false);
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'new': return 'bg-blue-500 hover:bg-blue-600';
@@ -139,13 +233,140 @@ export function Leads() {
             <p className="text-muted-foreground">Manage leads, jobs, and customer relationships</p>
           </div>
         </div>
-        <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="flex items-center gap-2">
-              <Upload className="h-4 w-4" />
-              Import Leads
-            </Button>
-          </DialogTrigger>
+        <div className="flex gap-2">
+          <Dialog open={addLeadDialogOpen} onOpenChange={setAddLeadDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="flex items-center gap-2">
+                <Plus className="h-4 w-4" />
+                Add Lead
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-lg">
+              <DialogHeader>
+                <DialogTitle>Add New Lead</DialogTitle>
+                <DialogDescription>
+                  Enter the details of your new lead to add them to your pipeline.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Name *</Label>
+                  <Input
+                    id="name"
+                    placeholder="John Doe"
+                    value={newLead.name}
+                    onChange={(e) => setNewLead({ ...newLead, name: e.target.value })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email *</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="john@example.com"
+                    value={newLead.email}
+                    onChange={(e) => setNewLead({ ...newLead, email: e.target.value })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone *</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="(555) 123-4567"
+                    value={newLead.phone}
+                    onChange={(e) => setNewLead({ ...newLead, phone: e.target.value })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="project">Project Description *</Label>
+                  <Input
+                    id="project"
+                    placeholder="Kitchen Remodel"
+                    value={newLead.project}
+                    onChange={(e) => setNewLead({ ...newLead, project: e.target.value })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="value">Project Value ($) *</Label>
+                  <Input
+                    id="value"
+                    type="number"
+                    min="0"
+                    step="100"
+                    placeholder="25000"
+                    value={newLead.value}
+                    onChange={(e) => setNewLead({ ...newLead, value: e.target.value })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="status">Status</Label>
+                  <Select
+                    value={newLead.status}
+                    onValueChange={(value) => setNewLead({ ...newLead, status: value as Lead['status'] })}
+                  >
+                    <SelectTrigger id="status">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="new">New</SelectItem>
+                      <SelectItem value="contacted">Contacted</SelectItem>
+                      <SelectItem value="quoted">Quoted</SelectItem>
+                      <SelectItem value="won">Won</SelectItem>
+                      <SelectItem value="lost">Lost</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="notes">Notes (Optional)</Label>
+                  <Textarea
+                    id="notes"
+                    placeholder="Additional information about the lead..."
+                    value={newLead.notes}
+                    onChange={(e) => setNewLead({ ...newLead, notes: e.target.value })}
+                    rows={3}
+                  />
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setAddLeadDialogOpen(false);
+                    setNewLead({
+                      name: '',
+                      email: '',
+                      phone: '',
+                      project: '',
+                      value: '',
+                      status: 'new',
+                      notes: ''
+                    });
+                  }}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button onClick={handleAddLead} className="flex-1">
+                  Add Lead
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="flex items-center gap-2">
+                <Upload className="h-4 w-4" />
+                Import CSV
+              </Button>
+            </DialogTrigger>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <DialogTitle>Import Leads from CSV</DialogTitle>
@@ -199,6 +420,7 @@ export function Leads() {
           </DialogContent>
         </Dialog>
       </div>
+    </div>
 
       <Tabs defaultValue="pipeline" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
