@@ -24,6 +24,7 @@ import {
   Upload
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { ProfileEditDialog } from "@/components/contractor/ProfileEditDialog";
 import ct1Logo from "@/assets/ct1-logo-circle.png";
 
 interface Lead {
@@ -668,9 +669,12 @@ export function CRMDashboard() {
             <User className="h-5 w-5 text-muted-foreground" />
             <span className="text-sm text-muted-foreground">{user?.email}</span>
           </div>
-          <Button variant="outline" onClick={signOut}>
-            Sign Out
-          </Button>
+          <div className="flex items-center gap-2">
+            <ProfileEditDialog />
+            <Button variant="outline" onClick={signOut}>
+              Sign Out
+            </Button>
+          </div>
         </header>
 
         <div className="p-6">
