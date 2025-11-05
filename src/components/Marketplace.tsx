@@ -356,7 +356,7 @@ export function Marketplace() {
     <div className="min-h-screen bg-background">
       <FloatingTrialButton />
       {/* Hero Section */}
-      <section className="relative h-[60vh] min-h-[500px] flex items-center justify-center overflow-hidden">
+      <section className="relative h-[50vh] min-h-[400px] md:h-[60vh] md:min-h-[500px] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
           <img 
             src={heroImage} 
@@ -367,29 +367,29 @@ export function Marketplace() {
         </div>
         
         <div className="relative z-10 text-center px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
-          <img src={ct1Logo} alt="CT1 Logo" className="h-24 w-24 mx-auto mb-8 drop-shadow-2xl" />
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 drop-shadow-lg">
+          <img src={ct1Logo} alt="CT1 Logo" className="h-16 w-16 md:h-24 md:w-24 mx-auto mb-6 md:mb-8 drop-shadow-2xl" />
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-4 md:mb-6 drop-shadow-lg">
             CT1 Technology Marketplace
           </h1>
-          <p className="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto drop-shadow-lg">
+          <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-white/90 max-w-3xl mx-auto drop-shadow-lg">
             Transform your contracting business with cutting-edge solutions to save time and money
           </p>
         </div>
       </section>
 
       {/* Contractor Portal Modules Section */}
-      <section className="py-20 bg-background">
+      <section className="py-12 md:py-20 bg-background">
         <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+          <div className="text-center mb-8 md:mb-12">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-3 md:mb-4">
               Your Complete <span className="text-primary">Contractor Portal</span>
             </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            <p className="text-base md:text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto px-4">
               Everything you need to run your contracting business efficiently, all in one integrated platform
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8 mb-12 md:mb-16">
             {contractorModules.map((module, idx) => {
               const Icon = module.icon;
               return (
@@ -409,19 +409,19 @@ export function Marketplace() {
       </section>
 
       {/* Technology Partners Section */}
-      <section className="py-20 bg-muted/30">
-        <div className="container mx-auto max-w-7xl p-6">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+      <section className="py-12 md:py-20 bg-muted/30">
+        <div className="container mx-auto max-w-7xl p-4 md:p-6">
+          <div className="text-center mb-8 md:mb-12">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-3 md:mb-4">
               Technology <span className="text-primary">Partners</span>
             </h2>
-            <p className="text-xl text-muted-foreground">
+            <p className="text-base md:text-lg lg:text-xl text-muted-foreground px-4">
               Best-in-class integrations to extend your capabilities
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-4 gap-8">
-            <div className="lg:col-span-1">
+          <div className="grid lg:grid-cols-4 gap-4 md:gap-8">
+            <div className="lg:col-span-1 mb-4 lg:mb-0">
               <Card>
                 <CardHeader>
                   <CardTitle>Categories</CardTitle>
@@ -454,25 +454,25 @@ export function Marketplace() {
             </div>
 
             <div className="lg:col-span-3">
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
                 {filteredPartners.map((partner) => (
                   <Card 
                     key={partner.id} 
                     className="cursor-pointer hover:shadow-lg transition-all hover:scale-105"
                     onClick={() => setSelectedPartner(partner)}
                   >
-                    <CardContent className="p-6 flex flex-col items-center text-center">
-                      <div className="h-24 w-full flex items-center justify-center mb-4 bg-white rounded-lg p-4">
+                    <CardContent className="p-4 md:p-6 flex flex-col items-center text-center">
+                      <div className="h-20 w-full md:h-24 flex items-center justify-center mb-3 md:mb-4 bg-white rounded-lg p-3 md:p-4">
                         <img 
                           src={partner.logo} 
                           alt={partner.name}
-                          className="max-h-16 w-auto object-contain"
+                          className="max-h-12 md:max-h-16 w-auto object-contain"
                           onError={(e) => {
                             e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2NjYyIvPjwvc3ZnPg==';
                           }}
                         />
                       </div>
-                      <h3 className="font-semibold mb-2">{partner.name}</h3>
+                      <h3 className="font-semibold mb-2 text-sm md:text-base">{partner.name}</h3>
                       <p className="text-xs text-muted-foreground line-clamp-2">{partner.description}</p>
                     </CardContent>
                   </Card>

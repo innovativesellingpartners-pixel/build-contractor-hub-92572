@@ -239,7 +239,7 @@ export function Dashboard() {
 
         {/* Main Content Panel */}
         <div className="flex-1 overflow-auto min-w-0">
-          <div className="bg-card border border-border/50 rounded-xl shadow-md p-4 md:p-6 min-h-[600px]">
+          <div className="bg-card border border-border/50 rounded-xl shadow-md p-3 md:p-4 lg:p-6 min-h-[400px] md:min-h-[600px]">
             {activeSection === 'training' && <TrainingHub />}
             {activeSection === 'leads' && <Leads />}
             {activeSection === 'schedule' && <ScheduleCall />}
@@ -248,16 +248,16 @@ export function Dashboard() {
             {activeSection === 'voiceai' && <VoiceAI />}
             {activeSection === 'marketplace' && <Marketplace />}
             {activeSection === 'account' && (
-              <div className="max-w-5xl mx-auto space-y-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-3xl font-bold">My Account</h2>
-                  <Badge variant="outline" className="text-sm">
+              <div className="max-w-5xl mx-auto space-y-4 md:space-y-6">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4 md:mb-6">
+                  <h2 className="text-2xl md:text-3xl font-bold">My Account</h2>
+                  <Badge variant="outline" className="text-xs md:text-sm">
                     Account ID: {user?.id?.substring(0, 8)}
                   </Badge>
                 </div>
                 
                 {/* Billing & Upgrade Section */}
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   <div className="group bg-gradient-to-br from-primary/5 to-primary/10 border-2 border-primary/30 rounded-xl p-6 space-y-4 hover:shadow-lg hover:border-primary/50 transition-all">
                     <div className="flex items-center gap-3 mb-2">
                       <div className="h-12 w-12 rounded-lg bg-primary/20 flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -327,7 +327,7 @@ export function Dashboard() {
                   </div>
                 </div>
                 
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   {/* Account Information Card */}
                   <div className="bg-gradient-to-br from-card to-muted/20 border border-border/50 rounded-xl shadow-md overflow-hidden">
                     <div className="bg-primary/5 px-6 py-4 border-b border-border/50">

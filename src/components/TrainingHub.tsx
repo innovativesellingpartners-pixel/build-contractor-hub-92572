@@ -90,21 +90,21 @@ export const TrainingHub = () => {
   const renderCourses = () => (
     <>
       {/* Welcome Section with Video and Stats */}
-      <div className="mb-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="mb-6 md:mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
           {/* Welcome Video - Takes up 2 columns */}
           <Card className="lg:col-span-2 overflow-hidden">
-            <div className="bg-gradient-to-r from-primary to-primary/80 p-4">
-              <h2 className="text-xl font-bold text-primary-foreground flex items-center gap-2">
-                <Star className="h-5 w-5 fill-yellow-500 text-yellow-500" />
-                Welcome to CT1&apos;s 5-Star Training
-                <Star className="h-5 w-5 fill-yellow-500 text-yellow-500" />
+            <div className="bg-gradient-to-r from-primary to-primary/80 p-3 md:p-4">
+              <h2 className="text-base md:text-xl font-bold text-primary-foreground flex items-center gap-2">
+                <Star className="h-4 w-4 md:h-5 md:w-5 fill-yellow-500 text-yellow-500" />
+                <span className="text-sm md:text-xl">Welcome to CT1&apos;s 5-Star Training</span>
+                <Star className="h-4 w-4 md:h-5 md:w-5 fill-yellow-500 text-yellow-500" />
               </h2>
-              <p className="text-primary-foreground/90 text-sm mt-1">
+              <p className="text-primary-foreground/90 text-xs md:text-sm mt-1">
                 Start your journey to becoming a top-performing contractor
               </p>
             </div>
-            <CardContent className="p-4">
+            <CardContent className="p-3 md:p-4">
               <div className="aspect-video w-full relative rounded-lg overflow-hidden shadow-lg">
                 <img 
                   src={videoThumbnail} 
@@ -180,14 +180,14 @@ export const TrainingHub = () => {
       </div>
 
       {/* Training Courses */}
-      <div className="mb-8">
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold">Course Overview</h2>
-          <p className="text-muted-foreground mt-1">Explore our comprehensive training curriculum</p>
+      <div className="mb-6 md:mb-8">
+        <div className="mb-4 md:mb-6">
+          <h2 className="text-xl md:text-2xl font-bold">Course Overview</h2>
+          <p className="text-sm md:text-base text-muted-foreground mt-1">Explore our comprehensive training curriculum</p>
         </div>
         
         {courses && courses.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
             {courses.map((course, index) => {
               const Icon = getCategoryIcon(course.training_categories?.name || null);
               const colorScheme = getColorScheme(index);
@@ -372,36 +372,78 @@ export const TrainingHub = () => {
   return (
     <div className="flex flex-col min-h-screen">
       {/* CT1 Branding Header */}
-      <div className="bg-gradient-to-r from-primary to-primary/80 p-4 shadow-md">
-        <div className="container mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate('/dashboard')}
-              className="text-primary-foreground hover:bg-primary-foreground/10"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to CT1 Hub
-            </Button>
-            <div className="flex items-center gap-3">
-              <img src={ct1Logo} alt="CT1 Logo" className="h-12 w-12" />
-              <div>
-                <h1 className="text-2xl font-bold text-primary-foreground">CT1 Training Hub</h1>
-                <p className="text-sm text-primary-foreground/90">One-Up Your Business</p>
+      <div className="bg-gradient-to-r from-primary to-primary/80 p-3 md:p-4 shadow-md">
+        <div className="container mx-auto">
+          <div className="flex items-center justify-between mb-3 md:mb-0">
+            <div className="flex items-center gap-2 md:gap-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/dashboard')}
+                className="text-primary-foreground hover:bg-primary-foreground/10 text-xs md:text-sm"
+              >
+                <ArrowLeft className="h-3 w-3 md:h-4 md:w-4 md:mr-2" />
+                <span className="hidden sm:inline">Back to CT1 Hub</span>
+              </Button>
+              <div className="flex items-center gap-2 md:gap-3">
+                <img src={ct1Logo} alt="CT1 Logo" className="h-8 w-8 md:h-12 md:w-12" />
+                <div>
+                  <h1 className="text-base md:text-2xl font-bold text-primary-foreground">CT1 Training Hub</h1>
+                  <p className="text-xs md:text-sm text-primary-foreground/90 hidden sm:block">One-Up Your Business</p>
+                </div>
               </div>
             </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-            <span className="text-primary-foreground font-semibold">5-Star Training</span>
+            <div className="flex items-center gap-1 md:gap-2">
+              <Star className="h-4 w-4 md:h-5 md:w-5 fill-yellow-400 text-yellow-400" />
+              <span className="text-primary-foreground font-semibold text-xs md:text-base hidden sm:inline">5-Star Training</span>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="flex gap-6 flex-1 container mx-auto py-6">
-        {/* Left Sidebar Navigation */}
-        <div className="w-64 flex-shrink-0">
+      <div className="flex flex-col lg:flex-row gap-4 md:gap-6 flex-1 container mx-auto py-4 md:py-6 px-4">
+        {/* Mobile Section Tabs */}
+        <div className="lg:hidden flex overflow-x-auto gap-2 pb-2 border-b">
+          <Button
+            size="sm"
+            variant={activeSection === 'courses' ? 'default' : 'outline'}
+            onClick={() => setActiveSection('courses')}
+            className="flex-shrink-0"
+          >
+            <BookOpen className="h-4 w-4 mr-1" />
+            Courses
+          </Button>
+          <Button
+            size="sm"
+            variant={activeSection === 'progress' ? 'default' : 'outline'}
+            onClick={() => setActiveSection('progress')}
+            className="flex-shrink-0"
+          >
+            <TrendingUp className="h-4 w-4 mr-1" />
+            Progress
+          </Button>
+          <Button
+            size="sm"
+            variant={activeSection === 'certificates' ? 'default' : 'outline'}
+            onClick={() => setActiveSection('certificates')}
+            className="flex-shrink-0"
+          >
+            <Award className="h-4 w-4 mr-1" />
+            Certificates
+          </Button>
+          <Button
+            size="sm"
+            variant={activeSection === 'support' ? 'default' : 'outline'}
+            onClick={() => setActiveSection('support')}
+            className="flex-shrink-0"
+          >
+            <Mail className="h-4 w-4 mr-1" />
+            Support
+          </Button>
+        </div>
+
+        {/* Left Sidebar Navigation - Desktop Only */}
+        <div className="hidden lg:block w-64 flex-shrink-0">
           <div className="space-y-2">
           <button
             onClick={() => setActiveSection('courses')}

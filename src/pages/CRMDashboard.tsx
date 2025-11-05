@@ -713,39 +713,39 @@ export function CRMDashboard() {
           </div>
         </header>
 
-        <div className="p-4 lg:p-6">
+        <div className="p-3 md:p-4 lg:p-6">
           {/* Dashboard */}
           {activeSection === 'dashboard' && (
-            <div className="space-y-6">
-              <h1 className="text-3xl font-bold">Dashboard</h1>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="border rounded-lg p-6 bg-card">
+            <div className="space-y-4 md:space-y-6">
+              <h1 className="text-2xl md:text-3xl font-bold">Dashboard</h1>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+                <div className="border rounded-lg p-4 md:p-6 bg-card">
                   <div className="flex items-center justify-between mb-2">
-                    <ClipboardList className="h-8 w-8 text-primary" />
-                    <span className="text-3xl font-bold">{leads.length}</span>
+                    <ClipboardList className="h-6 w-6 md:h-8 md:w-8 text-primary" />
+                    <span className="text-2xl md:text-3xl font-bold">{leads.length}</span>
                   </div>
-                  <p className="text-sm text-muted-foreground">Active Leads</p>
+                  <p className="text-xs md:text-sm text-muted-foreground">Active Leads</p>
                 </div>
-                <div className="border rounded-lg p-6 bg-card">
+                <div className="border rounded-lg p-4 md:p-6 bg-card">
                   <div className="flex items-center justify-between mb-2">
-                    <CalendarIcon className="h-8 w-8 text-primary" />
-                    <span className="text-3xl font-bold">{siteVisits.filter(sv => sv.status === 'scheduled').length}</span>
+                    <CalendarIcon className="h-6 w-6 md:h-8 md:w-8 text-primary" />
+                    <span className="text-2xl md:text-3xl font-bold">{siteVisits.filter(sv => sv.status === 'scheduled').length}</span>
                   </div>
-                  <p className="text-sm text-muted-foreground">Scheduled Site Visits</p>
+                  <p className="text-xs md:text-sm text-muted-foreground">Scheduled Site Visits</p>
                 </div>
-                <div className="border rounded-lg p-6 bg-card">
+                <div className="border rounded-lg p-4 md:p-6 bg-card">
                   <div className="flex items-center justify-between mb-2">
-                    <FileText className="h-8 w-8 text-primary" />
-                    <span className="text-3xl font-bold">{estimates.filter(e => ['draft', 'sent', 'follow-up'].includes(e.stage)).length}</span>
+                    <FileText className="h-6 w-6 md:h-8 md:w-8 text-primary" />
+                    <span className="text-2xl md:text-3xl font-bold">{estimates.filter(e => ['draft', 'sent', 'follow-up'].includes(e.stage)).length}</span>
                   </div>
-                  <p className="text-sm text-muted-foreground">Open Estimates</p>
+                  <p className="text-xs md:text-sm text-muted-foreground">Open Estimates</p>
                 </div>
-                <div className="border rounded-lg p-6 bg-card">
+                <div className="border rounded-lg p-4 md:p-6 bg-card">
                   <div className="flex items-center justify-between mb-2">
-                    <Briefcase className="h-8 w-8 text-primary" />
-                    <span className="text-3xl font-bold">{jobs.filter(j => j.status !== 'completed').length}</span>
+                    <Briefcase className="h-6 w-6 md:h-8 md:w-8 text-primary" />
+                    <span className="text-2xl md:text-3xl font-bold">{jobs.filter(j => j.status !== 'completed').length}</span>
                   </div>
-                  <p className="text-sm text-muted-foreground">Active Jobs</p>
+                  <p className="text-xs md:text-sm text-muted-foreground">Active Jobs</p>
                 </div>
               </div>
             </div>
