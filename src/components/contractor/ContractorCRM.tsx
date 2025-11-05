@@ -29,38 +29,7 @@ interface Lead {
 export function ContractorCRM() {
   
   
-  const [leads] = useState<Lead[]>([
-    { 
-      id: '1', 
-      name: 'Sarah Johnson', 
-      project: 'Kitchen Remodel', 
-      value: 25000, 
-      status: 'new', 
-      date: '2024-01-15',
-      phone: '(555) 123-4567',
-      email: 'sarah.j@email.com'
-    },
-    { 
-      id: '2', 
-      name: 'Mike Chen', 
-      project: 'Bathroom Addition', 
-      value: 18000, 
-      status: 'contacted', 
-      date: '2024-01-14',
-      phone: '(555) 234-5678',
-      email: 'mike.c@email.com'
-    },
-    { 
-      id: '3', 
-      name: 'Lisa Rodriguez', 
-      project: 'Deck Installation', 
-      value: 12000, 
-      status: 'quoted', 
-      date: '2024-01-13',
-      phone: '(555) 345-6789',
-      email: 'lisa.r@email.com'
-    }
-  ]);
+  const [leads] = useState<Lead[]>([]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
