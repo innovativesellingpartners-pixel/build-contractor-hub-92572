@@ -19,8 +19,10 @@ import {
   BriefcaseBusiness,
   Plus
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ct1Logo from "@/assets/ct1-logo-main.png";
@@ -48,12 +50,31 @@ const STAGE_LABELS = {
 
 export function Leads() {
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
-
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [addOpportunityDialogOpen, setAddOpportunityDialogOpen] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [vocallinkLoading, setVocallinkLoading] = useState(true);
+  const [vocallinkUrl, setVocallinkUrl] = useState("https://vocallink-pro.lovable.app/admin");
   const { toast } = useToast();
+  const { user } = useAuth();
+
+  useEffect(() => {
+    const getVocallinkUrl = async () => {
+      if (user) {
+        const { data } = await supabase.auth.getSession();
+        if (data.session) {
+          // Pass the access token and user email to VocalLink for auto-login
+          const params = new URLSearchParams({
+            token: data.session.access_token,
+            email: user.email || '',
+            auto_login: 'true'
+          });
+          setVocallinkUrl(`https://vocallink-pro.lovable.app/admin?${params.toString()}`);
+        }
+      }
+    };
+    getVocallinkUrl();
+  }, [user]);
 
   // New opportunity form state
   const [newOpportunity, setNewOpportunity] = useState({
@@ -437,7 +458,7 @@ export function Leads() {
                   </div>
                 )}
                 <iframe
-                  src="https://vocallink-pro.lovable.app/admin"
+                  src={vocallinkUrl}
                   className="w-full h-full border-0 rounded-lg"
                   title="VocalLink Pro CRM"
                   onLoad={() => setVocallinkLoading(false)}
@@ -449,35 +470,6 @@ export function Leads() {
         </TabsContent>
 
 
-        <TabsContent value="vocallink" className="mt-6">
-          <Card className="border-0">
-            <CardContent className="p-0">
-              <div className="relative w-full" style={{ height: 'calc(100vh - 280px)', minHeight: '600px' }}>
-                {vocallinkLoading && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-background">
-                    <div className="space-y-4 w-full max-w-md p-8">
-                      <Skeleton className="h-8 w-3/4" />
-                      <Skeleton className="h-4 w-full" />
-                      <Skeleton className="h-4 w-5/6" />
-                      <div className="pt-4 space-y-2">
-                        <Skeleton className="h-12 w-full" />
-                        <Skeleton className="h-12 w-full" />
-                        <Skeleton className="h-12 w-full" />
-                      </div>
-                    </div>
-                  </div>
-                )}
-                <iframe
-                  src="https://vocallink-pro.lovable.app/admin"
-                  className="w-full h-full border-0 rounded-lg"
-                  title="VocalLink Pro CRM"
-                  onLoad={() => setVocallinkLoading(false)}
-                  sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox"
-                />
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
 
         <TabsContent value="pipeline" className="mt-6 space-y-6">
           {/* KPI Cards */}
