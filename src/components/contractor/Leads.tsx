@@ -404,19 +404,80 @@ export function Leads() {
       </div>
     </div>
 
-      <Tabs defaultValue="pipeline" className="w-full">
+      <Tabs defaultValue="vocallink" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="pipeline" className="flex items-center gap-2">
-            <TrendingUp className="h-4 w-4" />
-            <span className="hidden sm:inline">Opportunity Pipeline</span>
-            <span className="sm:hidden">Pipeline</span>
-          </TabsTrigger>
           <TabsTrigger value="vocallink" className="flex items-center gap-2">
             <Briefcase className="h-4 w-4" />
             <span className="hidden sm:inline">VocalLink CRM</span>
             <span className="sm:hidden">CRM</span>
           </TabsTrigger>
+          <TabsTrigger value="pipeline" className="flex items-center gap-2">
+            <TrendingUp className="h-4 w-4" />
+            <span className="hidden sm:inline">Opportunity Pipeline</span>
+            <span className="sm:hidden">Pipeline</span>
+          </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="vocallink" className="mt-6">
+          <Card className="border-0">
+            <CardContent className="p-0">
+              <div className="relative w-full" style={{ height: 'calc(100vh - 280px)', minHeight: '600px' }}>
+                {vocallinkLoading && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-background">
+                    <div className="space-y-4 w-full max-w-md p-8">
+                      <Skeleton className="h-8 w-3/4" />
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-5/6" />
+                      <div className="pt-4 space-y-2">
+                        <Skeleton className="h-12 w-full" />
+                        <Skeleton className="h-12 w-full" />
+                        <Skeleton className="h-12 w-full" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <iframe
+                  src="https://vocallink-pro.lovable.app/admin"
+                  className="w-full h-full border-0 rounded-lg"
+                  title="VocalLink Pro CRM"
+                  onLoad={() => setVocallinkLoading(false)}
+                  sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox"
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+
+        <TabsContent value="vocallink" className="mt-6">
+          <Card className="border-0">
+            <CardContent className="p-0">
+              <div className="relative w-full" style={{ height: 'calc(100vh - 280px)', minHeight: '600px' }}>
+                {vocallinkLoading && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-background">
+                    <div className="space-y-4 w-full max-w-md p-8">
+                      <Skeleton className="h-8 w-3/4" />
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-5/6" />
+                      <div className="pt-4 space-y-2">
+                        <Skeleton className="h-12 w-full" />
+                        <Skeleton className="h-12 w-full" />
+                        <Skeleton className="h-12 w-full" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <iframe
+                  src="https://vocallink-pro.lovable.app/admin"
+                  className="w-full h-full border-0 rounded-lg"
+                  title="VocalLink Pro CRM"
+                  onLoad={() => setVocallinkLoading(false)}
+                  sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox"
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         <TabsContent value="pipeline" className="mt-6 space-y-6">
           {/* KPI Cards */}
@@ -517,37 +578,6 @@ export function Leads() {
             })}
           </div>
         </TabsContent>
-
-        <TabsContent value="vocallink" className="mt-6">
-          <Card className="border-0">
-            <CardContent className="p-0">
-              <div className="relative w-full" style={{ height: 'calc(100vh - 280px)', minHeight: '600px' }}>
-                {vocallinkLoading && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-background">
-                    <div className="space-y-4 w-full max-w-md p-8">
-                      <Skeleton className="h-8 w-3/4" />
-                      <Skeleton className="h-4 w-full" />
-                      <Skeleton className="h-4 w-5/6" />
-                      <div className="pt-4 space-y-2">
-                        <Skeleton className="h-12 w-full" />
-                        <Skeleton className="h-12 w-full" />
-                        <Skeleton className="h-12 w-full" />
-                      </div>
-                    </div>
-                  </div>
-                )}
-                <iframe
-                  src="https://vocallink-pro.lovable.app/admin"
-                  className="w-full h-full border-0 rounded-lg"
-                  title="VocalLink Pro CRM"
-                  onLoad={() => setVocallinkLoading(false)}
-                  sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox"
-                />
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
       </Tabs>
     </div>
   );
