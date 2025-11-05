@@ -49,22 +49,12 @@ export function Contact() {
 
   const offices = [
     {
-      city: "Dallas, TX",
-      address: "1234 Main Street, Suite 100",
+      city: "Fraser, MI",
+      address: "31780 Groesbeck Hwy, Fraser, MI 48026",
       phone: "(248) 752-7308",
-      region: "Southwest Region"
-    },
-    {
-      city: "Atlanta, GA",
-      address: "5678 Peachtree Ave, Floor 5",
-      phone: "(248) 752-7308",
-      region: "Southeast Region"
-    },
-    {
-      city: "Chicago, IL",
-      address: "9012 Michigan Ave, Suite 300",
-      phone: "(248) 752-7308",
-      region: "Midwest Region"
+      region: "Flagship Location",
+      website: "https://restoreitright.com/",
+      coverage: "And surrounding areas"
     }
   ];
 
@@ -178,16 +168,26 @@ export function Contact() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="flex justify-center">
             {offices.map((office, index) => (
-              <Card key={index} className="card-ct1 p-6 text-center">
+              <Card key={index} className="card-ct1 p-8 text-center max-w-md">
                 <CardContent className="pt-6">
-                  <MapPin className="h-8 w-8 text-primary mx-auto mb-4" />
-                  <h3 className="text-xl font-bold text-foreground mb-2">{office.city}</h3>
+                  <MapPin className="h-10 w-10 text-primary mx-auto mb-4" />
+                  <h3 className="text-2xl font-bold text-foreground mb-2">{office.city}</h3>
                   <Badge className="mb-4 bg-primary/10 text-primary">{office.region}</Badge>
-                  <div className="space-y-2 text-muted-foreground">
+                  <div className="space-y-3 text-muted-foreground">
                     <p className="text-sm">{office.address}</p>
                     <p className="font-semibold text-primary">{office.phone}</p>
+                    <a 
+                      href={office.website} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 text-primary hover:underline"
+                    >
+                      <Globe className="h-4 w-4" />
+                      Visit Website
+                    </a>
+                    <p className="text-sm italic text-muted-foreground mt-4">{office.coverage}</p>
                   </div>
                 </CardContent>
               </Card>
