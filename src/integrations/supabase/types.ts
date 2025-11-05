@@ -433,6 +433,60 @@ export type Database = {
         }
         Relationships: []
       }
+      support_tickets: {
+        Row: {
+          admin_notes: string | null
+          business_name: string | null
+          created_at: string
+          description: string
+          email: string
+          full_name: string
+          id: string
+          phone_number: string
+          priority: Database["public"]["Enums"]["ticket_priority"]
+          reason: string
+          resolved_at: string | null
+          status: Database["public"]["Enums"]["ticket_status"]
+          ticket_category: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          business_name?: string | null
+          created_at?: string
+          description: string
+          email: string
+          full_name: string
+          id?: string
+          phone_number: string
+          priority?: Database["public"]["Enums"]["ticket_priority"]
+          reason: string
+          resolved_at?: string | null
+          status?: Database["public"]["Enums"]["ticket_status"]
+          ticket_category?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          business_name?: string | null
+          created_at?: string
+          description?: string
+          email?: string
+          full_name?: string
+          id?: string
+          phone_number?: string
+          priority?: Database["public"]["Enums"]["ticket_priority"]
+          reason?: string
+          resolved_at?: string | null
+          status?: Database["public"]["Enums"]["ticket_status"]
+          ticket_category?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       training_categories: {
         Row: {
           created_at: string
@@ -779,7 +833,8 @@ export type Database = {
       has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      ticket_priority: "low" | "medium" | "high"
+      ticket_status: "open" | "in_progress" | "resolved" | "closed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -906,6 +961,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      ticket_priority: ["low", "medium", "high"],
+      ticket_status: ["open", "in_progress", "resolved", "closed"],
+    },
   },
 } as const

@@ -38,6 +38,7 @@ import { Insurance } from "@/components/contractor/Insurance";
 import { ProfileEditDialog } from "@/components/contractor/ProfileEditDialog";
 import { StarRating } from "@/components/contractor/StarRating";
 import { FloatingPocketbot } from "@/components/contractor/FloatingPocketbot";
+import { ContactSupport } from "@/components/ContactSupport";
 import ct1Logo from "@/assets/ct1-logo-main.png";
 import { QuickBooks } from "@/components/contractor/QuickBooks";
 import { VoiceAI } from "@/components/contractor/VoiceAI";
@@ -52,6 +53,7 @@ export function Dashboard() {
   const [activeSection, setActiveSection] = useState<ActiveSection>('training');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [pocketbotOpen, setPocketbotOpen] = useState(false);
+  const [contactSupportOpen, setContactSupportOpen] = useState(false);
 
   const handleLogout = async () => {
     await signOut();
@@ -217,7 +219,7 @@ export function Dashboard() {
                   variant="outline" 
                   size="sm" 
                   className="hover:bg-primary/10 transition-colors flex-1 md:flex-none"
-                  onClick={() => window.location.href = 'mailto:support@myct1.com'}
+                  onClick={() => setContactSupportOpen(true)}
                 >
                   <HelpCircle className="h-4 w-4 mr-2" />
                   Support
@@ -441,6 +443,9 @@ export function Dashboard() {
           <FloatingPocketbot onClose={() => setPocketbotOpen(false)} />
         </div>
       )}
+      
+      {/* Contact Support Dialog */}
+      <ContactSupport open={contactSupportOpen} onOpenChange={setContactSupportOpen} />
       
       {/* Floating Chat Button */}
       <button

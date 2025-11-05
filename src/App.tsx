@@ -31,6 +31,7 @@ import { AdminDashboard } from "@/components/admin/AdminDashboard";
 import { UserManagement } from "@/components/admin/UserManagement";
 import { TrainingManagement } from "@/components/admin/TrainingManagement";
 import { MarketplaceManagement } from "@/components/admin/MarketplaceManagement";
+import { SupportTickets } from "@/components/admin/SupportTickets";
 import { BusinessSuite } from "@/pages/BusinessSuite";
 import { Training } from "@/pages/features/Training";
 import { CRM } from "@/pages/features/CRM";
@@ -119,6 +120,7 @@ const App = () => (
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<UserManagement />} />
               <Route path="users" element={<UserManagement />} />
+              <Route path="support" element={<SupportTickets />} />
               <Route path="training" element={<TrainingManagement />} />
               <Route path="marketplace" element={<MarketplaceManagement />} />
               <Route path="analytics" element={<div>Analytics coming soon...</div>} />
