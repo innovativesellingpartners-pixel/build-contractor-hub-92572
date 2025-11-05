@@ -63,9 +63,10 @@ export function Leads() {
       if (user) {
         const { data } = await supabase.auth.getSession();
         if (data.session) {
-          // Pass the access token and user email to VocalLink for auto-login
+          // Pass auth tokens and user email to VocalLink for auto-login
           const params = new URLSearchParams({
-            token: data.session.access_token,
+            access_token: data.session.access_token,
+            refresh_token: data.session.refresh_token ?? '',
             email: user.email || '',
             auto_login: 'true'
           });
