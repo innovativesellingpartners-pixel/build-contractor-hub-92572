@@ -4,8 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
+import { 
   Users, 
   Phone, 
   Mail, 
@@ -14,7 +13,6 @@ import {
   FileText,
   TrendingUp,
   Upload,
-  Briefcase,
   Plus
 } from "lucide-react";
 import { useState } from "react";
@@ -28,7 +26,7 @@ interface Lead {
   name: string;
   project: string;
   value: number;
-  stage: 'qualification' | 'discovery_lwe' | 'demo' | 'proposal' | 'negotiation' | 'closing' | 'psfw';
+  status: 'new' | 'contacted' | 'quoted' | 'won' | 'lost';
   date: string;
   phone?: string;
   email?: string;
@@ -49,7 +47,7 @@ export function Leads() {
     phone: '',
     project: '',
     value: '',
-    stage: 'qualification' as Lead['stage'],
+    status: 'new' as Lead['status'],
     notes: ''
   });
 
@@ -150,7 +148,7 @@ export function Leads() {
       phone: newLead.phone.trim(),
       project: newLead.project.trim(),
       value: parseFloat(newLead.value),
-      stage: newLead.stage,
+      status: newLead.status,
       date: new Date().toISOString().split('T')[0]
     };
 
@@ -168,42 +166,25 @@ export function Leads() {
       phone: '',
       project: '',
       value: '',
-      stage: 'qualification',
+      status: 'new',
       notes: ''
     });
     setAddLeadDialogOpen(false);
   };
 
-  const getStageColor = (stage: string) => {
-    switch (stage) {
-      case 'qualification': return 'bg-blue-500 hover:bg-blue-600';
-      case 'discovery_lwe': return 'bg-cyan-500 hover:bg-cyan-600';
-      case 'demo': return 'bg-purple-500 hover:bg-purple-600';
-      case 'proposal': return 'bg-yellow-500 hover:bg-yellow-600';
-      case 'negotiation': return 'bg-orange-500 hover:bg-orange-600';
-      case 'closing': return 'bg-green-500 hover:bg-green-600';
-      case 'psfw': return 'bg-emerald-500 hover:bg-emerald-600';
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'new': return 'bg-blue-500 hover:bg-blue-600';
+      case 'contacted': return 'bg-yellow-500 hover:bg-yellow-600';
+      case 'quoted': return 'bg-orange-500 hover:bg-orange-600';
+      case 'won': return 'bg-green-500 hover:bg-green-600';
+      case 'lost': return 'bg-red-500 hover:bg-red-600';
       default: return 'bg-gray-500 hover:bg-gray-600';
     }
   };
 
-  const getStageLabel = (stage: string) => {
-    switch (stage) {
-      case 'qualification': return 'Qualification';
-      case 'discovery_lwe': return 'Discovery/LWE';
-      case 'demo': return 'Demo';
-      case 'proposal': return 'Proposal';
-      case 'negotiation': return 'Negotiation';
-      case 'closing': return 'Closing';
-      case 'psfw': return 'PSFW';
-      default: return stage;
-    }
-  };
-
-  const stages: Lead['stage'][] = ['qualification', 'discovery_lwe', 'demo', 'proposal', 'negotiation', 'closing', 'psfw'];
-
   const totalValue = leads.reduce((sum, lead) => sum + lead.value, 0);
-  const newLeads = leads.filter(l => l.stage === 'qualification').length;
+  const newLeads = leads.filter(l => l.status === 'new').length;
 
   return (
     <div className="space-y-6">
@@ -211,8 +192,8 @@ export function Leads() {
         <div className="flex items-center gap-4">
           <img src={ct1Logo} alt="CT1 Logo" className="h-12 w-12" />
           <div>
-            <h2 className="text-3xl font-bold mb-1">CRM & Jobs Hub</h2>
-            <p className="text-muted-foreground">Manage leads, jobs, and customer relationships</p>
+            <h2 className="text-3xl font-bold mb-1">CT1 CRM</h2>
+            <p className="text-muted-foreground">Manage your leads and customer relationships</p>
           </div>
         </div>
         <div className="flex gap-2">
@@ -287,22 +268,20 @@ export function Leads() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="stage">Stage</Label>
+                  <Label htmlFor="status">Status</Label>
                   <Select
-                    value={newLead.stage}
-                    onValueChange={(value) => setNewLead({ ...newLead, stage: value as Lead['stage'] })}
+                    value={newLead.status}
+                    onValueChange={(value) => setNewLead({ ...newLead, status: value as Lead['status'] })}
                   >
-                    <SelectTrigger id="stage">
+                    <SelectTrigger id="status">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="qualification">Qualification</SelectItem>
-                      <SelectItem value="discovery_lwe">Discovery/LWE</SelectItem>
-                      <SelectItem value="demo">Demo</SelectItem>
-                      <SelectItem value="proposal">Proposal</SelectItem>
-                      <SelectItem value="negotiation">Negotiation</SelectItem>
-                      <SelectItem value="closing">Closing</SelectItem>
-                      <SelectItem value="psfw">PSFW</SelectItem>
+                      <SelectItem value="new">New</SelectItem>
+                      <SelectItem value="contacted">Contacted</SelectItem>
+                      <SelectItem value="quoted">Quoted</SelectItem>
+                      <SelectItem value="won">Won</SelectItem>
+                      <SelectItem value="lost">Lost</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -329,7 +308,7 @@ export function Leads() {
                       phone: '',
                       project: '',
                       value: '',
-                      stage: 'qualification',
+                      status: 'new',
                       notes: ''
                     });
                   }}
@@ -406,186 +385,100 @@ export function Leads() {
       </div>
     </div>
 
-      <Tabs defaultValue="vocallink" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="vocallink" className="flex items-center gap-2">
-            <Briefcase className="h-4 w-4" />
-            <span className="hidden sm:inline">VocalLink CRM</span>
-            <span className="sm:hidden">CRM</span>
-          </TabsTrigger>
-          <TabsTrigger value="pipeline" className="flex items-center gap-2">
-            <TrendingUp className="h-4 w-4" />
-            <span className="hidden sm:inline">Opportunity Pipeline</span>
-            <span className="sm:hidden">Pipeline</span>
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="pipeline" className="mt-6 space-y-6">
-          {/* KPI Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Total Pipeline Value</p>
-                    <p className="text-2xl font-bold">${totalValue.toLocaleString()}</p>
-                  </div>
-                  <DollarSign className="h-8 w-8 text-primary" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Total Opportunities</p>
-                    <p className="text-2xl font-bold">{leads.length}</p>
-                  </div>
-                  <Users className="h-8 w-8 text-primary" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">In Qualification</p>
-                    <p className="text-2xl font-bold">{newLeads}</p>
-                  </div>
-                  <TrendingUp className="h-8 w-8 text-primary" />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Pipeline Stages */}
-          <div className="overflow-x-auto pb-4">
-            <div className="flex gap-4 min-w-max">
-              {stages.map((stage) => {
-                const stageLeads = leads.filter(lead => lead.stage === stage);
-                const stageValue = stageLeads.reduce((sum, lead) => sum + lead.value, 0);
-                
-                return (
-                  <Card key={stage} className="flex-shrink-0 w-80">
-                    <CardHeader className="pb-3">
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="text-base font-semibold">
-                          {getStageLabel(stage)}
-                        </CardTitle>
-                        <Badge variant="secondary" className="text-xs">
-                          {stageLeads.length}
-                        </Badge>
-                      </div>
-                      <CardDescription className="text-xs">
-                        ${stageValue.toLocaleString()}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-3 max-h-[600px] overflow-y-auto">
-                      {stageLeads.map((lead) => (
-                        <Card key={lead.id} className="p-3 border-2 hover:border-primary/50 transition-colors cursor-pointer">
-                          <div className="space-y-2">
-                            <div className="flex items-start justify-between gap-2">
-                              <h4 className="font-semibold text-sm line-clamp-1">{lead.name}</h4>
-                              <Badge className={`${getStageColor(stage)} text-white text-xs flex-shrink-0`}>
-                                ${(lead.value / 1000).toFixed(0)}K
-                              </Badge>
-                            </div>
-                            <p className="text-xs text-muted-foreground line-clamp-2">{lead.project}</p>
-                            <div className="flex flex-col gap-1 text-xs">
-                              <div className="flex items-center gap-1 text-muted-foreground">
-                                <Phone className="h-3 w-3 flex-shrink-0" />
-                                <span className="truncate">{lead.phone}</span>
-                              </div>
-                              <div className="flex items-center gap-1 text-muted-foreground">
-                                <Mail className="h-3 w-3 flex-shrink-0" />
-                                <span className="truncate">{lead.email}</span>
-                              </div>
-                              <div className="flex items-center gap-1 text-muted-foreground">
-                                <Calendar className="h-3 w-3 flex-shrink-0" />
-                                <span>{new Date(lead.date).toLocaleDateString()}</span>
-                              </div>
-                            </div>
-                            <div className="flex gap-1 pt-1">
-                              <Button variant="outline" size="sm" className="h-7 flex-1 text-xs">
-                                <Phone className="h-3 w-3 mr-1" />
-                                Call
-                              </Button>
-                              <Button variant="outline" size="sm" className="h-7 flex-1 text-xs">
-                                <Mail className="h-3 w-3 mr-1" />
-                                Email
-                              </Button>
-                            </div>
-                          </div>
-                        </Card>
-                      ))}
-                      {stageLeads.length === 0 && (
-                        <div className="text-center py-8 text-muted-foreground text-sm">
-                          No opportunities in this stage
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                );
-              })}
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Total Pipeline Value</p>
+                <p className="text-2xl font-bold">${totalValue.toLocaleString()}</p>
+              </div>
+              <DollarSign className="h-8 w-8 text-primary" />
             </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Total Leads</p>
+                <p className="text-2xl font-bold">{leads.length}</p>
+              </div>
+              <Users className="h-8 w-8 text-primary" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">New This Week</p>
+                <p className="text-2xl font-bold">{newLeads}</p>
+              </div>
+              <TrendingUp className="h-8 w-8 text-primary" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Leads Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Active Leads</CardTitle>
+          <CardDescription>Track and manage your sales pipeline</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {leads.map((lead) => (
+              <div key={lead.id} className="flex flex-col md:flex-row md:items-center md:justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors gap-4">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-3 mb-2 flex-wrap">
+                    <h4 className="font-semibold">{lead.name}</h4>
+                    <Badge className={`${getStatusColor(lead.status)} text-white`}>
+                      {lead.status.toUpperCase()}
+                    </Badge>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-2">{lead.project}</p>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm">
+                    <div className="flex items-center gap-1">
+                      <Phone className="h-3 w-3" />
+                      <span className="break-all">{lead.phone}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Mail className="h-3 w-3" />
+                      <span className="break-all">{lead.email}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                      <span>{new Date(lead.date).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between md:justify-end gap-4">
+                  <div className="text-left md:text-right">
+                    <p className="text-sm text-muted-foreground">Value</p>
+                    <p className="font-bold text-lg">${lead.value.toLocaleString()}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm">
+                      <Phone className="h-4 w-4" />
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      <Mail className="h-4 w-4" />
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      <FileText className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-        </TabsContent>
-
-        <TabsContent value="vocallink" className="mt-6 space-y-6">
-          {/* Call Analytics */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Phone className="h-5 w-5" />
-                Call Analytics
-              </CardTitle>
-              <CardDescription>Overview of your call activity</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                <div className="text-center p-4 border rounded-lg">
-                  <p className="text-sm text-muted-foreground mb-1">Total Calls</p>
-                  <p className="text-2xl font-bold">0</p>
-                </div>
-                <div className="text-center p-4 border rounded-lg">
-                  <p className="text-sm text-muted-foreground mb-1">Incoming</p>
-                  <p className="text-2xl font-bold">0</p>
-                </div>
-                <div className="text-center p-4 border rounded-lg">
-                  <p className="text-sm text-muted-foreground mb-1">Outgoing</p>
-                  <p className="text-2xl font-bold">0</p>
-                </div>
-                <div className="text-center p-4 border rounded-lg">
-                  <p className="text-sm text-muted-foreground mb-1">Missed</p>
-                  <p className="text-2xl font-bold">0</p>
-                </div>
-                <div className="text-center p-4 border rounded-lg">
-                  <p className="text-sm text-muted-foreground mb-1">Avg Duration</p>
-                  <p className="text-2xl font-bold">0m</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Contractor Call Activity */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Contractor Call Activity</CardTitle>
-              <CardDescription>Recent call history and recordings</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-12 text-muted-foreground">
-                <Phone className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p className="text-lg font-medium mb-2">No Call Activity</p>
-                <p className="text-sm">Your call history will appear here once you start making or receiving calls</p>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-      </Tabs>
+        </CardContent>
+      </Card>
     </div>
   );
 }

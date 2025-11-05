@@ -34,7 +34,7 @@ import { useToast } from "@/hooks/use-toast";
 import { TrainingHub } from "@/components/TrainingHub";
 import { ScheduleCall } from "@/components/contractor/ScheduleCall";
 import { Marketplace } from "@/components/Marketplace";
-import { Leads } from "@/components/contractor/Leads";
+import { CRMDashboard } from "@/pages/CRMDashboard";
 import { Insurance } from "@/components/contractor/Insurance";
 import { ProfileEditDialog } from "@/components/contractor/ProfileEditDialog";
 import { StarRating } from "@/components/contractor/StarRating";
@@ -245,7 +245,7 @@ export function Dashboard() {
         <div className="flex-1 overflow-auto min-w-0">
           <div className="bg-card border border-border/50 rounded-xl shadow-md p-3 md:p-4 lg:p-6 min-h-[400px] md:min-h-[600px]">
             {activeSection === 'training' && <TrainingHub />}
-            {activeSection === 'leads' && <Leads />}
+            {activeSection === 'leads' && <CRMDashboard />}
             {activeSection === 'schedule' && <ScheduleCall />}
             {activeSection === 'quickbooks' && <QuickBooks />}
             {activeSection === 'insurance' && <Insurance />}

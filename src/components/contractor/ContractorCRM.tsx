@@ -9,8 +9,7 @@ import {
   Calendar,
   DollarSign,
   FileText,
-  TrendingUp,
-  ExternalLink
+  TrendingUp
 } from "lucide-react";
 import { useState } from "react";
 import ct1Logo from "@/assets/ct1-logo-main.png";
@@ -51,21 +50,10 @@ export function ContractorCRM() {
         <div className="flex items-center gap-4">
           <img src={ct1Logo} alt="CT1 Logo" className="h-12 w-12" />
           <div>
-            <h2 className="text-3xl font-bold mb-1">CT1 ZCRM</h2>
+            <h2 className="text-3xl font-bold mb-1">CT1 CRM</h2>
             <p className="text-muted-foreground">Manage your leads and customer relationships</p>
           </div>
         </div>
-          <Button size="lg" asChild>
-            <a
-              href="https://psarcweb.com/PSAWeb/Account/Login?ReturnUrl=%2fPSAWeb"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Open ProvenJobs login in a new tab"
-            >
-              <ExternalLink className="h-4 w-4 mr-2" />
-              ProvenJobs
-            </a>
-          </Button>
       </div>
 
       {/* KPI Cards */}

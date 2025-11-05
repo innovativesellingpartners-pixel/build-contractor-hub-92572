@@ -60,18 +60,14 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     if (resetError || !resetData) {
-      // If user doesn't exist, return success message without sending email (prevent email enumeration)
-      const errorMsg = resetError?.message?.toLowerCase() || '';
-      const errorCode = (resetError as any)?.code || '';
-      
-      if (errorCode === 'user_not_found' || errorMsg.includes('no user') || errorMsg.includes('not found')) {
-        console.log("User not found for email, returning success to prevent enumeration");
+      // If user doesn't exist, return success message without sending email
+      if (resetError && typeof resetError.message === 'string' && resetError.message.toLowerCase().includes('no user')) {
+        console.log("No user for email, returning success to avoid leakage");
         return new Response(
           JSON.stringify({ message: "If an account exists with this email, you will receive a password reset link" }),
           { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
         );
       }
-      
       console.error("Error generating reset link:", resetError);
       return new Response(
         JSON.stringify({ error: "Failed to generate reset link" }),
