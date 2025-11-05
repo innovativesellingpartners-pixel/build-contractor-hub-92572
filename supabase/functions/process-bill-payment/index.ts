@@ -1,5 +1,4 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -23,26 +22,6 @@ serve(async (req) => {
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-
-    // Initialize Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    // Get authenticated user
-    const { data: { user }, error: userError } = await supabase.auth.getUser(
-      authHeader.replace('Bearer ', '')
-    );
-
-    if (userError || !user) {
-      console.error('Authentication error:', userError);
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    console.log('User authenticated:', user.id);
 
     // Parse request body
     const { amount, customer_email, customer_name, description } = await req.json();
@@ -87,9 +66,6 @@ serve(async (req) => {
 
     console.log('Using Clover environment:', cloverEnv);
     console.log('Clover base URL:', cloverBaseUrl);
-
-    // Get callback URL
-    const callbackUrl = `${supabaseUrl}/functions/v1/clover-payment-callback`;
 
     // Create Clover checkout session
     const checkoutPayload = {
@@ -184,10 +160,11 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error processing bill payment:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     return new Response(
       JSON.stringify({ 
         error: 'Payment processing failed',
-        details: error.message 
+        details: errorMessage
       }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
