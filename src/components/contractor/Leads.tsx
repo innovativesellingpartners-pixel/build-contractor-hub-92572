@@ -16,7 +16,6 @@ import {
   TrendingUp,
   Upload,
   Briefcase,
-  BriefcaseBusiness,
   Plus
 } from "lucide-react";
 import { useState } from "react";
@@ -30,7 +29,7 @@ interface Lead {
   name: string;
   project: string;
   value: number;
-  status: 'new' | 'contacted' | 'quoted' | 'won' | 'lost';
+  stage: 'qualification' | 'discovery_lwe' | 'demo' | 'proposal' | 'negotiation' | 'closing' | 'psfw';
   date: string;
   phone?: string;
   email?: string;
@@ -43,7 +42,6 @@ export function Leads() {
   const [addLeadDialogOpen, setAddLeadDialogOpen] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [vocallinkLoading, setVocallinkLoading] = useState(true);
-  const [provenjobsLoading, setProvenjobsLoading] = useState(true);
   const { toast } = useToast();
 
   // New lead form state
@@ -53,7 +51,7 @@ export function Leads() {
     phone: '',
     project: '',
     value: '',
-    status: 'new' as Lead['status'],
+    stage: 'qualification' as Lead['stage'],
     notes: ''
   });
 
@@ -154,7 +152,7 @@ export function Leads() {
       phone: newLead.phone.trim(),
       project: newLead.project.trim(),
       value: parseFloat(newLead.value),
-      status: newLead.status,
+      stage: newLead.stage,
       date: new Date().toISOString().split('T')[0]
     };
 
@@ -172,25 +170,42 @@ export function Leads() {
       phone: '',
       project: '',
       value: '',
-      status: 'new',
+      stage: 'qualification',
       notes: ''
     });
     setAddLeadDialogOpen(false);
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'new': return 'bg-blue-500 hover:bg-blue-600';
-      case 'contacted': return 'bg-yellow-500 hover:bg-yellow-600';
-      case 'quoted': return 'bg-orange-500 hover:bg-orange-600';
-      case 'won': return 'bg-green-500 hover:bg-green-600';
-      case 'lost': return 'bg-red-500 hover:bg-red-600';
+  const getStageColor = (stage: string) => {
+    switch (stage) {
+      case 'qualification': return 'bg-blue-500 hover:bg-blue-600';
+      case 'discovery_lwe': return 'bg-cyan-500 hover:bg-cyan-600';
+      case 'demo': return 'bg-purple-500 hover:bg-purple-600';
+      case 'proposal': return 'bg-yellow-500 hover:bg-yellow-600';
+      case 'negotiation': return 'bg-orange-500 hover:bg-orange-600';
+      case 'closing': return 'bg-green-500 hover:bg-green-600';
+      case 'psfw': return 'bg-emerald-500 hover:bg-emerald-600';
       default: return 'bg-gray-500 hover:bg-gray-600';
     }
   };
 
+  const getStageLabel = (stage: string) => {
+    switch (stage) {
+      case 'qualification': return 'Qualification';
+      case 'discovery_lwe': return 'Discovery/LWE';
+      case 'demo': return 'Demo';
+      case 'proposal': return 'Proposal';
+      case 'negotiation': return 'Negotiation';
+      case 'closing': return 'Closing';
+      case 'psfw': return 'PSFW';
+      default: return stage;
+    }
+  };
+
+  const stages: Lead['stage'][] = ['qualification', 'discovery_lwe', 'demo', 'proposal', 'negotiation', 'closing', 'psfw'];
+
   const totalValue = leads.reduce((sum, lead) => sum + lead.value, 0);
-  const newLeads = leads.filter(l => l.status === 'new').length;
+  const newLeads = leads.filter(l => l.stage === 'qualification').length;
 
   return (
     <div className="space-y-6">
@@ -274,20 +289,22 @@ export function Leads() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="status">Status</Label>
+                  <Label htmlFor="stage">Stage</Label>
                   <Select
-                    value={newLead.status}
-                    onValueChange={(value) => setNewLead({ ...newLead, status: value as Lead['status'] })}
+                    value={newLead.stage}
+                    onValueChange={(value) => setNewLead({ ...newLead, stage: value as Lead['stage'] })}
                   >
-                    <SelectTrigger id="status">
+                    <SelectTrigger id="stage">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="new">New</SelectItem>
-                      <SelectItem value="contacted">Contacted</SelectItem>
-                      <SelectItem value="quoted">Quoted</SelectItem>
-                      <SelectItem value="won">Won</SelectItem>
-                      <SelectItem value="lost">Lost</SelectItem>
+                      <SelectItem value="qualification">Qualification</SelectItem>
+                      <SelectItem value="discovery_lwe">Discovery/LWE</SelectItem>
+                      <SelectItem value="demo">Demo</SelectItem>
+                      <SelectItem value="proposal">Proposal</SelectItem>
+                      <SelectItem value="negotiation">Negotiation</SelectItem>
+                      <SelectItem value="closing">Closing</SelectItem>
+                      <SelectItem value="psfw">PSFW</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -314,7 +331,7 @@ export function Leads() {
                       phone: '',
                       project: '',
                       value: '',
-                      status: 'new',
+                      stage: 'qualification',
                       notes: ''
                     });
                   }}
@@ -392,21 +409,16 @@ export function Leads() {
     </div>
 
       <Tabs defaultValue="pipeline" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="pipeline" className="flex items-center gap-2">
             <TrendingUp className="h-4 w-4" />
-            <span className="hidden sm:inline">Leads Pipeline</span>
-            <span className="sm:hidden">Leads</span>
+            <span className="hidden sm:inline">Opportunity Pipeline</span>
+            <span className="sm:hidden">Pipeline</span>
           </TabsTrigger>
           <TabsTrigger value="vocallink" className="flex items-center gap-2">
             <Briefcase className="h-4 w-4" />
             <span className="hidden sm:inline">VocalLink CRM</span>
             <span className="sm:hidden">CRM</span>
-          </TabsTrigger>
-          <TabsTrigger value="provenjobs" className="flex items-center gap-2">
-            <BriefcaseBusiness className="h-4 w-4" />
-            <span className="hidden sm:inline">ProvenJobs</span>
-            <span className="sm:hidden">Jobs</span>
           </TabsTrigger>
         </TabsList>
 
@@ -429,7 +441,7 @@ export function Leads() {
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Total Leads</p>
+                    <p className="text-sm text-muted-foreground">Total Opportunities</p>
                     <p className="text-2xl font-bold">{leads.length}</p>
                   </div>
                   <Users className="h-8 w-8 text-primary" />
@@ -441,7 +453,7 @@ export function Leads() {
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">New This Week</p>
+                    <p className="text-sm text-muted-foreground">In Qualification</p>
                     <p className="text-2xl font-bold">{newLeads}</p>
                   </div>
                   <TrendingUp className="h-8 w-8 text-primary" />
@@ -450,61 +462,77 @@ export function Leads() {
             </Card>
           </div>
 
-          {/* Leads Table */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Active Leads</CardTitle>
-              <CardDescription>Track and manage your sales pipeline</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {leads.map((lead) => (
-                  <div key={lead.id} className="flex flex-col md:flex-row md:items-center md:justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors gap-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-3 mb-2 flex-wrap">
-                        <h4 className="font-semibold">{lead.name}</h4>
-                        <Badge className={`${getStatusColor(lead.status)} text-white`}>
-                          {lead.status.toUpperCase()}
+          {/* Pipeline Stages */}
+          <div className="overflow-x-auto pb-4">
+            <div className="flex gap-4 min-w-max">
+              {stages.map((stage) => {
+                const stageLeads = leads.filter(lead => lead.stage === stage);
+                const stageValue = stageLeads.reduce((sum, lead) => sum + lead.value, 0);
+                
+                return (
+                  <Card key={stage} className="flex-shrink-0 w-80">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-base font-semibold">
+                          {getStageLabel(stage)}
+                        </CardTitle>
+                        <Badge variant="secondary" className="text-xs">
+                          {stageLeads.length}
                         </Badge>
                       </div>
-                      <p className="text-sm text-muted-foreground mb-2">{lead.project}</p>
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm">
-                        <div className="flex items-center gap-1">
-                          <Phone className="h-3 w-3" />
-                          <span className="break-all">{lead.phone}</span>
+                      <CardDescription className="text-xs">
+                        ${stageValue.toLocaleString()}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-3 max-h-[600px] overflow-y-auto">
+                      {stageLeads.map((lead) => (
+                        <Card key={lead.id} className="p-3 border-2 hover:border-primary/50 transition-colors cursor-pointer">
+                          <div className="space-y-2">
+                            <div className="flex items-start justify-between gap-2">
+                              <h4 className="font-semibold text-sm line-clamp-1">{lead.name}</h4>
+                              <Badge className={`${getStageColor(stage)} text-white text-xs flex-shrink-0`}>
+                                ${(lead.value / 1000).toFixed(0)}K
+                              </Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground line-clamp-2">{lead.project}</p>
+                            <div className="flex flex-col gap-1 text-xs">
+                              <div className="flex items-center gap-1 text-muted-foreground">
+                                <Phone className="h-3 w-3 flex-shrink-0" />
+                                <span className="truncate">{lead.phone}</span>
+                              </div>
+                              <div className="flex items-center gap-1 text-muted-foreground">
+                                <Mail className="h-3 w-3 flex-shrink-0" />
+                                <span className="truncate">{lead.email}</span>
+                              </div>
+                              <div className="flex items-center gap-1 text-muted-foreground">
+                                <Calendar className="h-3 w-3 flex-shrink-0" />
+                                <span>{new Date(lead.date).toLocaleDateString()}</span>
+                              </div>
+                            </div>
+                            <div className="flex gap-1 pt-1">
+                              <Button variant="outline" size="sm" className="h-7 flex-1 text-xs">
+                                <Phone className="h-3 w-3 mr-1" />
+                                Call
+                              </Button>
+                              <Button variant="outline" size="sm" className="h-7 flex-1 text-xs">
+                                <Mail className="h-3 w-3 mr-1" />
+                                Email
+                              </Button>
+                            </div>
+                          </div>
+                        </Card>
+                      ))}
+                      {stageLeads.length === 0 && (
+                        <div className="text-center py-8 text-muted-foreground text-sm">
+                          No opportunities in this stage
                         </div>
-                        <div className="flex items-center gap-1">
-                          <Mail className="h-3 w-3" />
-                          <span className="break-all">{lead.email}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
-                          <span>{new Date(lead.date).toLocaleDateString()}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between md:justify-end gap-4">
-                      <div className="text-left md:text-right">
-                        <p className="text-sm text-muted-foreground">Value</p>
-                        <p className="font-bold text-lg">${lead.value.toLocaleString()}</p>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm">
-                          <Phone className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          <Mail className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          <FileText className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="vocallink" className="mt-6">
@@ -537,34 +565,6 @@ export function Leads() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="provenjobs" className="mt-6">
-          <Card className="border-0">
-            <CardContent className="p-0">
-              <div className="relative w-full" style={{ height: 'calc(100vh - 280px)', minHeight: '600px' }}>
-                {provenjobsLoading && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-background">
-                    <div className="space-y-4 w-full max-w-md p-8">
-                      <Skeleton className="h-8 w-3/4" />
-                      <Skeleton className="h-4 w-full" />
-                      <Skeleton className="h-4 w-5/6" />
-                      <div className="pt-4 space-y-2">
-                        <Skeleton className="h-12 w-full" />
-                        <Skeleton className="h-12 w-full" />
-                      </div>
-                    </div>
-                  </div>
-                )}
-                <iframe
-                  src="https://www.psaweblogin.com/"
-                  className="w-full h-full border-0 rounded-lg"
-                  title="ProvenJobs Portal"
-                  onLoad={() => setProvenjobsLoading(false)}
-                  sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox"
-                />
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
       </Tabs>
     </div>
   );
