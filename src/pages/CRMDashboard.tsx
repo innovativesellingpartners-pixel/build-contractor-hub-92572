@@ -627,7 +627,7 @@ export function CRMDashboard() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img src={ct1Logo} alt="CT1" className="h-8 w-8" />
-            <h1 className="text-xl font-bold">CT1 CRM</h1>
+            <h1 className="text-xl font-bold">Contractor CRM</h1>
           </div>
           <ProfileEditDialog />
         </div>
@@ -661,7 +661,7 @@ export function CRMDashboard() {
       <aside className="hidden lg:flex w-64 border-r border-border bg-card flex-col">
         <div className="p-4 border-b border-border flex items-center gap-3">
           <img src={ct1Logo} alt="CT1" className="h-8 w-8" />
-          <h1 className="text-xl font-bold">CT1 CRM</h1>
+          <h1 className="text-xl font-bold">Contractor CRM</h1>
         </div>
 
         <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
