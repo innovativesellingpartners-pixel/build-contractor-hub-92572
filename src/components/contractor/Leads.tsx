@@ -25,35 +25,44 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ct1Logo from "@/assets/ct1-logo-main.png";
 
-interface Lead {
+interface Opportunity {
   id: string;
   name: string;
   project: string;
   value: number;
-  status: 'new' | 'contacted' | 'quoted' | 'won' | 'lost';
+  stage: 'qualification' | 'discovery' | 'demo' | 'proposal' | 'negotiation' | 'closing' | 'psfw';
   date: string;
   phone?: string;
   email?: string;
 }
 
+const STAGE_LABELS = {
+  qualification: 'Qualification',
+  discovery: 'Discovery/LWE',
+  demo: 'Demo',
+  proposal: 'Proposal',
+  negotiation: 'Negotiation',
+  closing: 'Closing',
+  psfw: 'PSFW'
+};
+
 export function Leads() {
-  const [leads, setLeads] = useState<Lead[]>([]);
+  const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
 
   const [importDialogOpen, setImportDialogOpen] = useState(false);
-  const [addLeadDialogOpen, setAddLeadDialogOpen] = useState(false);
+  const [addOpportunityDialogOpen, setAddOpportunityDialogOpen] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [vocallinkLoading, setVocallinkLoading] = useState(true);
-  const [provenjobsLoading, setProvenjobsLoading] = useState(true);
   const { toast } = useToast();
 
-  // New lead form state
-  const [newLead, setNewLead] = useState({
+  // New opportunity form state
+  const [newOpportunity, setNewOpportunity] = useState({
     name: '',
     email: '',
     phone: '',
     project: '',
     value: '',
-    status: 'new' as Lead['status'],
+    stage: 'qualification' as Opportunity['stage'],
     notes: ''
   });
 
@@ -92,25 +101,25 @@ export function Leads() {
     setTimeout(() => {
       toast({
         title: "Import Successful",
-        description: "Your leads have been imported successfully",
+        description: "Your opportunities have been imported successfully",
       });
       setImportDialogOpen(false);
       setUploadedFile(null);
     }, 1500);
   };
 
-  const handleAddLead = () => {
+  const handleAddOpportunity = () => {
     // Validate required fields
-    if (!newLead.name.trim()) {
+    if (!newOpportunity.name.trim()) {
       toast({
         title: "Name Required",
-        description: "Please enter the lead's name",
+        description: "Please enter the contact's name",
         variant: "destructive",
       });
       return;
     }
 
-    if (!newLead.email.trim() || !newLead.email.includes('@')) {
+    if (!newOpportunity.email.trim() || !newOpportunity.email.includes('@')) {
       toast({
         title: "Valid Email Required",
         description: "Please enter a valid email address",
@@ -119,7 +128,7 @@ export function Leads() {
       return;
     }
 
-    if (!newLead.phone.trim()) {
+    if (!newOpportunity.phone.trim()) {
       toast({
         title: "Phone Required",
         description: "Please enter a phone number",
@@ -128,7 +137,7 @@ export function Leads() {
       return;
     }
 
-    if (!newLead.project.trim()) {
+    if (!newOpportunity.project.trim()) {
       toast({
         title: "Project Required",
         description: "Please enter the project description",
@@ -137,7 +146,7 @@ export function Leads() {
       return;
     }
 
-    if (!newLead.value || parseFloat(newLead.value) <= 0) {
+    if (!newOpportunity.value || parseFloat(newOpportunity.value) <= 0) {
       toast({
         title: "Valid Value Required",
         description: "Please enter a valid project value",
@@ -146,51 +155,53 @@ export function Leads() {
       return;
     }
 
-    // Create new lead
-    const lead: Lead = {
+    // Create new opportunity
+    const opportunity: Opportunity = {
       id: Date.now().toString(),
-      name: newLead.name.trim(),
-      email: newLead.email.trim(),
-      phone: newLead.phone.trim(),
-      project: newLead.project.trim(),
-      value: parseFloat(newLead.value),
-      status: newLead.status,
+      name: newOpportunity.name.trim(),
+      email: newOpportunity.email.trim(),
+      phone: newOpportunity.phone.trim(),
+      project: newOpportunity.project.trim(),
+      value: parseFloat(newOpportunity.value),
+      stage: newOpportunity.stage,
       date: new Date().toISOString().split('T')[0]
     };
 
-    setLeads([lead, ...leads]);
+    setOpportunities([opportunity, ...opportunities]);
 
     toast({
-      title: "Lead Added",
-      description: `${lead.name} has been added to your pipeline`,
+      title: "Opportunity Added",
+      description: `${opportunity.name} has been added to your pipeline`,
     });
 
     // Reset form and close dialog
-    setNewLead({
+    setNewOpportunity({
       name: '',
       email: '',
       phone: '',
       project: '',
       value: '',
-      status: 'new',
+      stage: 'qualification',
       notes: ''
     });
-    setAddLeadDialogOpen(false);
+    setAddOpportunityDialogOpen(false);
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'new': return 'bg-blue-500 hover:bg-blue-600';
-      case 'contacted': return 'bg-yellow-500 hover:bg-yellow-600';
-      case 'quoted': return 'bg-orange-500 hover:bg-orange-600';
-      case 'won': return 'bg-green-500 hover:bg-green-600';
-      case 'lost': return 'bg-red-500 hover:bg-red-600';
+  const getStageColor = (stage: string) => {
+    switch (stage) {
+      case 'qualification': return 'bg-blue-500 hover:bg-blue-600';
+      case 'discovery': return 'bg-purple-500 hover:bg-purple-600';
+      case 'demo': return 'bg-cyan-500 hover:bg-cyan-600';
+      case 'proposal': return 'bg-yellow-500 hover:bg-yellow-600';
+      case 'negotiation': return 'bg-orange-500 hover:bg-orange-600';
+      case 'closing': return 'bg-green-500 hover:bg-green-600';
+      case 'psfw': return 'bg-emerald-500 hover:bg-emerald-600';
       default: return 'bg-gray-500 hover:bg-gray-600';
     }
   };
 
-  const totalValue = leads.reduce((sum, lead) => sum + lead.value, 0);
-  const newLeads = leads.filter(l => l.status === 'new').length;
+  const totalValue = opportunities.reduce((sum, opp) => sum + opp.value, 0);
+  const activeOpportunities = opportunities.length;
 
   return (
     <div className="space-y-6">
@@ -203,28 +214,28 @@ export function Leads() {
           </div>
         </div>
         <div className="flex gap-2">
-          <Dialog open={addLeadDialogOpen} onOpenChange={setAddLeadDialogOpen}>
+          <Dialog open={addOpportunityDialogOpen} onOpenChange={setAddOpportunityDialogOpen}>
             <DialogTrigger asChild>
               <Button className="flex items-center gap-2">
                 <Plus className="h-4 w-4" />
-                Add Lead
+                Add Opportunity
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-lg">
               <DialogHeader>
-                <DialogTitle>Add New Lead</DialogTitle>
+                <DialogTitle>Add New Opportunity</DialogTitle>
                 <DialogDescription>
-                  Enter the details of your new lead to add them to your pipeline.
+                  Enter the details of your new opportunity to add it to your pipeline.
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Name *</Label>
+                  <Label htmlFor="name">Contact Name *</Label>
                   <Input
                     id="name"
                     placeholder="John Doe"
-                    value={newLead.name}
-                    onChange={(e) => setNewLead({ ...newLead, name: e.target.value })}
+                    value={newOpportunity.name}
+                    onChange={(e) => setNewOpportunity({ ...newOpportunity, name: e.target.value })}
                   />
                 </div>
 
@@ -234,8 +245,8 @@ export function Leads() {
                     id="email"
                     type="email"
                     placeholder="john@example.com"
-                    value={newLead.email}
-                    onChange={(e) => setNewLead({ ...newLead, email: e.target.value })}
+                    value={newOpportunity.email}
+                    onChange={(e) => setNewOpportunity({ ...newOpportunity, email: e.target.value })}
                   />
                 </div>
 
@@ -245,8 +256,8 @@ export function Leads() {
                     id="phone"
                     type="tel"
                     placeholder="(555) 123-4567"
-                    value={newLead.phone}
-                    onChange={(e) => setNewLead({ ...newLead, phone: e.target.value })}
+                    value={newOpportunity.phone}
+                    onChange={(e) => setNewOpportunity({ ...newOpportunity, phone: e.target.value })}
                   />
                 </div>
 
@@ -255,8 +266,8 @@ export function Leads() {
                   <Input
                     id="project"
                     placeholder="Kitchen Remodel"
-                    value={newLead.project}
-                    onChange={(e) => setNewLead({ ...newLead, project: e.target.value })}
+                    value={newOpportunity.project}
+                    onChange={(e) => setNewOpportunity({ ...newOpportunity, project: e.target.value })}
                   />
                 </div>
 
@@ -268,26 +279,28 @@ export function Leads() {
                     min="0"
                     step="100"
                     placeholder="25000"
-                    value={newLead.value}
-                    onChange={(e) => setNewLead({ ...newLead, value: e.target.value })}
+                    value={newOpportunity.value}
+                    onChange={(e) => setNewOpportunity({ ...newOpportunity, value: e.target.value })}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="status">Status</Label>
+                  <Label htmlFor="stage">Stage</Label>
                   <Select
-                    value={newLead.status}
-                    onValueChange={(value) => setNewLead({ ...newLead, status: value as Lead['status'] })}
+                    value={newOpportunity.stage}
+                    onValueChange={(value) => setNewOpportunity({ ...newOpportunity, stage: value as Opportunity['stage'] })}
                   >
-                    <SelectTrigger id="status">
+                    <SelectTrigger id="stage">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="new">New</SelectItem>
-                      <SelectItem value="contacted">Contacted</SelectItem>
-                      <SelectItem value="quoted">Quoted</SelectItem>
-                      <SelectItem value="won">Won</SelectItem>
-                      <SelectItem value="lost">Lost</SelectItem>
+                      <SelectItem value="qualification">Qualification</SelectItem>
+                      <SelectItem value="discovery">Discovery/LWE</SelectItem>
+                      <SelectItem value="demo">Demo</SelectItem>
+                      <SelectItem value="proposal">Proposal</SelectItem>
+                      <SelectItem value="negotiation">Negotiation</SelectItem>
+                      <SelectItem value="closing">Closing</SelectItem>
+                      <SelectItem value="psfw">PSFW</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -296,9 +309,9 @@ export function Leads() {
                   <Label htmlFor="notes">Notes (Optional)</Label>
                   <Textarea
                     id="notes"
-                    placeholder="Additional information about the lead..."
-                    value={newLead.notes}
-                    onChange={(e) => setNewLead({ ...newLead, notes: e.target.value })}
+                    placeholder="Additional information about the opportunity..."
+                    value={newOpportunity.notes}
+                    onChange={(e) => setNewOpportunity({ ...newOpportunity, notes: e.target.value })}
                     rows={3}
                   />
                 </div>
@@ -307,14 +320,14 @@ export function Leads() {
                 <Button
                   variant="outline"
                   onClick={() => {
-                    setAddLeadDialogOpen(false);
-                    setNewLead({
+                    setAddOpportunityDialogOpen(false);
+                    setNewOpportunity({
                       name: '',
                       email: '',
                       phone: '',
                       project: '',
                       value: '',
-                      status: 'new',
+                      stage: 'qualification',
                       notes: ''
                     });
                   }}
@@ -322,8 +335,8 @@ export function Leads() {
                 >
                   Cancel
                 </Button>
-                <Button onClick={handleAddLead} className="flex-1">
-                  Add Lead
+                <Button onClick={handleAddOpportunity} className="flex-1">
+                  Add Opportunity
                 </Button>
               </div>
             </DialogContent>
@@ -338,9 +351,9 @@ export function Leads() {
             </DialogTrigger>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Import Leads from CSV</DialogTitle>
+              <DialogTitle>Import Opportunities from CSV</DialogTitle>
               <DialogDescription>
-                Upload a CSV file containing your leads data. The file should include columns for name, email, phone, project, and value.
+                Upload a CSV file containing your opportunities data. The file should include columns for name, email, phone, project, value, and stage.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
@@ -362,8 +375,8 @@ export function Leads() {
               <div className="bg-muted/50 p-4 rounded-lg">
                 <p className="text-sm font-medium mb-2">CSV Format Example:</p>
                 <code className="text-xs block bg-background p-2 rounded">
-                  name,email,phone,project,value,status<br/>
-                  John Doe,john@email.com,(555)123-4567,Kitchen,25000,new
+                  name,email,phone,project,value,stage<br/>
+                  John Doe,john@email.com,(555)123-4567,Kitchen,25000,qualification
                 </code>
               </div>
             </div>
@@ -383,7 +396,7 @@ export function Leads() {
                 disabled={!uploadedFile}
                 className="flex-1"
               >
-                Import Leads
+                Import Opportunities
               </Button>
             </div>
           </DialogContent>
@@ -392,27 +405,22 @@ export function Leads() {
     </div>
 
       <Tabs defaultValue="pipeline" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="pipeline" className="flex items-center gap-2">
             <TrendingUp className="h-4 w-4" />
-            <span className="hidden sm:inline">Leads Pipeline</span>
-            <span className="sm:hidden">Leads</span>
+            <span className="hidden sm:inline">Opportunity Pipeline</span>
+            <span className="sm:hidden">Pipeline</span>
           </TabsTrigger>
           <TabsTrigger value="vocallink" className="flex items-center gap-2">
             <Briefcase className="h-4 w-4" />
             <span className="hidden sm:inline">VocalLink CRM</span>
             <span className="sm:hidden">CRM</span>
           </TabsTrigger>
-          <TabsTrigger value="provenjobs" className="flex items-center gap-2">
-            <BriefcaseBusiness className="h-4 w-4" />
-            <span className="hidden sm:inline">ProvenJobs</span>
-            <span className="sm:hidden">Jobs</span>
-          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="pipeline" className="mt-6 space-y-6">
           {/* KPI Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Card>
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
@@ -429,20 +437,8 @@ export function Leads() {
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Total Leads</p>
-                    <p className="text-2xl font-bold">{leads.length}</p>
-                  </div>
-                  <Users className="h-8 w-8 text-primary" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">New This Week</p>
-                    <p className="text-2xl font-bold">{newLeads}</p>
+                    <p className="text-sm text-muted-foreground">Active Opportunities</p>
+                    <p className="text-2xl font-bold">{activeOpportunities}</p>
                   </div>
                   <TrendingUp className="h-8 w-8 text-primary" />
                 </div>
@@ -450,61 +446,76 @@ export function Leads() {
             </Card>
           </div>
 
-          {/* Leads Table */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Active Leads</CardTitle>
-              <CardDescription>Track and manage your sales pipeline</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {leads.map((lead) => (
-                  <div key={lead.id} className="flex flex-col md:flex-row md:items-center md:justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors gap-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-3 mb-2 flex-wrap">
-                        <h4 className="font-semibold">{lead.name}</h4>
-                        <Badge className={`${getStatusColor(lead.status)} text-white`}>
-                          {lead.status.toUpperCase()}
+          {/* Sales Process Stages */}
+          <div className="space-y-4">
+            {(['qualification', 'discovery', 'demo', 'proposal', 'negotiation', 'closing', 'psfw'] as const).map((stage) => {
+              const stageOpportunities = opportunities.filter(opp => opp.stage === stage);
+              const stageValue = stageOpportunities.reduce((sum, opp) => sum + opp.value, 0);
+              
+              return (
+                <Card key={stage}>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Badge className={`${getStageColor(stage)} text-white`}>
+                          {STAGE_LABELS[stage]}
                         </Badge>
-                      </div>
-                      <p className="text-sm text-muted-foreground mb-2">{lead.project}</p>
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm">
-                        <div className="flex items-center gap-1">
-                          <Phone className="h-3 w-3" />
-                          <span className="break-all">{lead.phone}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Mail className="h-3 w-3" />
-                          <span className="break-all">{lead.email}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
-                          <span>{new Date(lead.date).toLocaleDateString()}</span>
+                        <div>
+                          <CardTitle className="text-lg">{stageOpportunities.length} {stageOpportunities.length === 1 ? 'Opportunity' : 'Opportunities'}</CardTitle>
+                          <CardDescription>${stageValue.toLocaleString()} Total Value</CardDescription>
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center justify-between md:justify-end gap-4">
-                      <div className="text-left md:text-right">
-                        <p className="text-sm text-muted-foreground">Value</p>
-                        <p className="font-bold text-lg">${lead.value.toLocaleString()}</p>
+                  </CardHeader>
+                  {stageOpportunities.length > 0 && (
+                    <CardContent>
+                      <div className="space-y-3">
+                        {stageOpportunities.map((opportunity) => (
+                          <div key={opportunity.id} className="flex flex-col md:flex-row md:items-center md:justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors gap-4">
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-semibold mb-1">{opportunity.name}</h4>
+                              <p className="text-sm text-muted-foreground mb-2">{opportunity.project}</p>
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm">
+                                <div className="flex items-center gap-1">
+                                  <Phone className="h-3 w-3" />
+                                  <span className="break-all">{opportunity.phone}</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Mail className="h-3 w-3" />
+                                  <span className="break-all">{opportunity.email}</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Calendar className="h-3 w-3" />
+                                  <span>{new Date(opportunity.date).toLocaleDateString()}</span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-between md:justify-end gap-4">
+                              <div className="text-left md:text-right">
+                                <p className="text-sm text-muted-foreground">Value</p>
+                                <p className="font-bold text-lg">${opportunity.value.toLocaleString()}</p>
+                              </div>
+                              <div className="flex gap-2">
+                                <Button variant="outline" size="sm">
+                                  <Phone className="h-4 w-4" />
+                                </Button>
+                                <Button variant="outline" size="sm">
+                                  <Mail className="h-4 w-4" />
+                                </Button>
+                                <Button variant="outline" size="sm">
+                                  <FileText className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm">
-                          <Phone className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          <Mail className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          <FileText className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                    </CardContent>
+                  )}
+                </Card>
+              );
+            })}
+          </div>
         </TabsContent>
 
         <TabsContent value="vocallink" className="mt-6">
@@ -537,34 +548,6 @@ export function Leads() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="provenjobs" className="mt-6">
-          <Card className="border-0">
-            <CardContent className="p-0">
-              <div className="relative w-full" style={{ height: 'calc(100vh - 280px)', minHeight: '600px' }}>
-                {provenjobsLoading && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-background">
-                    <div className="space-y-4 w-full max-w-md p-8">
-                      <Skeleton className="h-8 w-3/4" />
-                      <Skeleton className="h-4 w-full" />
-                      <Skeleton className="h-4 w-5/6" />
-                      <div className="pt-4 space-y-2">
-                        <Skeleton className="h-12 w-full" />
-                        <Skeleton className="h-12 w-full" />
-                      </div>
-                    </div>
-                  </div>
-                )}
-                <iframe
-                  src="https://www.psaweblogin.com/"
-                  className="w-full h-full border-0 rounded-lg"
-                  title="ProvenJobs Portal"
-                  onLoad={() => setProvenjobsLoading(false)}
-                  sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox"
-                />
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
       </Tabs>
     </div>
   );
