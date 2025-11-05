@@ -7,6 +7,7 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, Mail, Lock, User, Phone, ChevronDown, ChevronUp } from "lucide-react";
 import ct1Logo from "@/assets/ct1-logo-main.png";
 import { useAuth } from "@/contexts/AuthContext";
@@ -21,6 +22,7 @@ export function Auth() {
   const [showJoinOptions, setShowJoinOptions] = useState(false);
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [showNewPasswordForm, setShowNewPasswordForm] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
   const { signIn, signUp, user, resetPassword } = useAuth();
 
@@ -41,6 +43,7 @@ export function Auth() {
     });
     return () => subscription.unsubscribe();
   }, []);
+  
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
@@ -51,7 +54,7 @@ export function Auth() {
     const password = formData.get("password") as string;
 
     try {
-      const { error } = await signIn(email, password);
+      const { error } = await signIn(email, password, rememberMe);
       if (error) {
         setError(error.message);
       } else {
@@ -302,7 +305,20 @@ export function Auth() {
                         </div>
                       </div>
 
-                      <div className="flex justify-end">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox 
+                            id="remember-me" 
+                            checked={rememberMe}
+                            onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                          />
+                          <label
+                            htmlFor="remember-me"
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                          >
+                            Remember me
+                          </label>
+                        </div>
                         <button
                           type="button"
                           onClick={() => {
