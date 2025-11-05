@@ -268,9 +268,15 @@ export function Dashboard() {
                     <p className="text-sm text-muted-foreground">
                       Keep your subscription active by paying your monthly bill securely.
                     </p>
-                    <Button className="w-full shadow-md hover:shadow-lg transition-shadow" size="lg">
-                      <CreditCard className="h-4 w-4 mr-2" />
-                      Pay Bill
+                    <Button 
+                      className="w-full shadow-md hover:shadow-lg transition-shadow" 
+                      size="lg"
+                      asChild
+                    >
+                      <Link to="/pay-bill">
+                        <CreditCard className="h-4 w-4 mr-2" />
+                        Pay Bill
+                      </Link>
                     </Button>
                   </div>
                   
