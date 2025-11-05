@@ -79,7 +79,7 @@ serve(async (req) => {
           {
             name: description || 'CT1 Bill Payment',
             price: Math.round(paymentAmount * 100), // Convert to cents
-            quantity: 1,
+            unitQty: 1,
           },
         ],
       },
