@@ -621,9 +621,44 @@ export function CRMDashboard() {
   ];
 
   return (
-    <div className="flex h-screen bg-background">
-      {/* Sidebar */}
-      <aside className="w-64 border-r border-border bg-card flex flex-col">
+    <div className="flex flex-col lg:flex-row h-screen bg-background">
+      {/* Mobile Header */}
+      <div className="lg:hidden border-b border-border bg-card p-4 sticky top-0 z-50">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <img src={ct1Logo} alt="CT1" className="h-8 w-8" />
+            <h1 className="text-xl font-bold">Contractor CRM</h1>
+          </div>
+          <ProfileEditDialog />
+        </div>
+        
+        {/* Mobile Navigation Tabs */}
+        <div className="mt-4 overflow-x-auto -mx-4 px-4">
+          <div className="flex gap-2 min-w-max pb-2">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeSection === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveSection(item.id)}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg whitespace-nowrap transition-colors ${
+                    isActive
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted hover:bg-muted/80'
+                  }`}
+                >
+                  <Icon className="h-4 w-4" />
+                  <span className="text-sm font-medium">{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Desktop Sidebar */}
+      <aside className="hidden lg:flex w-64 border-r border-border bg-card flex-col">
         <div className="p-4 border-b border-border flex items-center gap-3">
           <img src={ct1Logo} alt="CT1" className="h-8 w-8" />
           <h1 className="text-xl font-bold">Contractor CRM</h1>
@@ -664,7 +699,8 @@ export function CRMDashboard() {
 
       {/* Main Content */}
       <main className="flex-1 overflow-auto">
-        <header className="border-b border-border bg-card px-6 py-4 flex items-center justify-between">
+        {/* Desktop Header */}
+        <header className="hidden lg:flex border-b border-border bg-card px-4 lg:px-6 py-4 items-center justify-between">
           <div className="flex items-center gap-2">
             <User className="h-5 w-5 text-muted-foreground" />
             <span className="text-sm text-muted-foreground">{user?.email}</span>
@@ -677,7 +713,7 @@ export function CRMDashboard() {
           </div>
         </header>
 
-        <div className="p-6">
+        <div className="p-4 lg:p-6">
           {/* Dashboard */}
           {activeSection === 'dashboard' && (
             <div className="space-y-6">
@@ -717,18 +753,18 @@ export function CRMDashboard() {
 
           {/* Leads Section */}
           {activeSection === 'leads' && (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
+            <div className="space-y-4 lg:space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <h1 className="text-3xl font-bold">Leads</h1>
-                  <p className="text-muted-foreground mt-1">Document and manage new leads</p>
+                  <h1 className="text-2xl lg:text-3xl font-bold">Leads</h1>
+                  <p className="text-muted-foreground mt-1 text-sm lg:text-base">Document and manage new leads</p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 lg:gap-3">
                   <Dialog open={addLeadDialogOpen} onOpenChange={setAddLeadDialogOpen}>
                     <DialogTrigger asChild>
-                      <Button size="lg" className="gap-2 bg-[#C94A3C] hover:bg-[#B43F31] text-white">
-                        <Plus className="h-5 w-5" />
-                        Add Lead
+                      <Button size="default" className="gap-2 bg-[#C94A3C] hover:bg-[#B43F31] text-white flex-1 sm:flex-none">
+                        <Plus className="h-4 w-4 lg:h-5 lg:w-5" />
+                        <span className="text-sm lg:text-base">Add Lead</span>
                       </Button>
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-lg">
@@ -810,13 +846,14 @@ export function CRMDashboard() {
                     </DialogContent>
                   </Dialog>
                   <Button 
-                    size="lg" 
+                    size="default" 
                     variant="outline" 
-                    className="gap-2"
+                    className="gap-2 flex-1 sm:flex-none"
                     onClick={() => toast({ title: "Import CSV", description: "CSV import coming soon" })}
                   >
-                    <Upload className="h-5 w-5" />
-                    Import CSV
+                    <Upload className="h-4 w-4 lg:h-5 lg:w-5" />
+                    <span className="hidden sm:inline text-sm lg:text-base">Import CSV</span>
+                    <span className="sm:hidden text-sm">Import</span>
                   </Button>
                 </div>
               </div>
@@ -829,20 +866,20 @@ export function CRMDashboard() {
                   </p>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3 lg:space-y-4">
                   {leads.map((lead) => (
-                    <div key={lead.id} className="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
-                      <div className="flex items-start justify-between">
+                    <div key={lead.id} className="border rounded-lg p-3 lg:p-4 hover:bg-muted/50 transition-colors">
+                      <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-3">
                         <div className="space-y-1 flex-1">
-                          <h3 className="font-semibold text-lg">{lead.name}</h3>
+                          <h3 className="font-semibold text-base lg:text-lg">{lead.name}</h3>
                           <p className="text-sm text-muted-foreground">{lead.project}</p>
-                          <div className="flex items-center gap-4 text-sm">
-                            <span className="flex items-center gap-1">
-                              <Mail className="h-3 w-3" />
-                              {lead.email}
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm">
+                            <span className="flex items-center gap-1 break-all">
+                              <Mail className="h-3 w-3 flex-shrink-0" />
+                              <span className="truncate">{lead.email}</span>
                             </span>
                             <span className="flex items-center gap-1">
-                              <Phone className="h-3 w-3" />
+                              <Phone className="h-3 w-3 flex-shrink-0" />
                               {lead.phone}
                             </span>
                           </div>

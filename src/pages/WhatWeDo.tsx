@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { FloatingTrialButton } from '@/components/FloatingTrialButton';
+import { MobileNav } from '@/components/MobileNav';
 import { Wrench, Users, TrendingUp, Award, Phone, Bot } from 'lucide-react';
 import ct1Logo from '@/assets/ct1-logo-main.png';
 
@@ -46,11 +47,11 @@ export const WhatWeDo = () => {
       <header className="border-b sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
-            <Link to="/" className="flex items-center space-x-3">
-              <img src={ct1Logo} alt="CT1 Logo" className="h-12 w-12" />
+            <Link to="/" className="flex items-center space-x-2 sm:space-x-3">
+              <img src={ct1Logo} alt="CT1 Logo" className="h-10 w-10 sm:h-12 sm:w-12" />
               <div>
-                <h1 className="text-2xl font-bold text-foreground">CT1</h1>
-                <p className="text-xs text-muted-foreground font-medium">One-Up Your Business</p>
+                <h1 className="text-xl sm:text-2xl font-bold text-foreground">CT1</h1>
+                <p className="text-[10px] sm:text-xs text-muted-foreground font-medium">One-Up Your Business</p>
               </div>
             </Link>
             <nav className="hidden md:flex items-center gap-6">
@@ -62,7 +63,7 @@ export const WhatWeDo = () => {
               <Link to="/blog-podcast" className="text-sm hover:text-primary transition-colors">Blog & Podcast</Link>
               <Link to="/contact" className="text-sm hover:text-primary transition-colors">Contact</Link>
             </nav>
-            <div className="flex items-center gap-3">
+            <div className="hidden md:flex items-center gap-3">
               <Link to="/auth">
                 <Button variant="outline">Login</Button>
               </Link>
@@ -70,33 +71,34 @@ export const WhatWeDo = () => {
                 <Button>Start Free Trial</Button>
               </Link>
             </div>
+            <MobileNav />
           </div>
         </div>
       </header>
 
       {/* Hero Section */}
-      <section className="py-20 bg-gradient-to-br from-primary/5 to-primary/10">
+      <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-br from-primary/5 to-primary/10">
         <div className="container mx-auto px-4 text-center">
-          <h1 className="text-5xl md:text-6xl font-bold mb-6">What We Do</h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6">What We Do</h1>
+          <p className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto mb-6 sm:mb-8 px-4">
             We provide contractors with the training, tools, and qualified leads needed to build a thriving business. 
             Everything you need in one place.
           </p>
-          <div className="flex gap-4 justify-center">
-            <Link to="/pricing">
-              <Button size="lg">Get Started</Button>
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center max-w-md mx-auto sm:max-w-none">
+            <Link to="/pricing" className="w-full sm:w-auto">
+              <Button size="lg" className="w-full sm:w-auto">Get Started</Button>
             </Link>
-            <Link to="/contact">
-              <Button size="lg" variant="outline">Contact Sales</Button>
+            <Link to="/contact" className="w-full sm:w-auto">
+              <Button size="lg" variant="outline" className="w-full sm:w-auto">Contact Sales</Button>
             </Link>
           </div>
         </div>
       </section>
 
       {/* Services Grid */}
-      <section className="py-20">
+      <section className="py-12 sm:py-16 lg:py-20">
         <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {services.map((service, index) => (
               <Card key={index} className="border-2 hover:border-primary transition-colors">
                 <CardContent className="p-6">
