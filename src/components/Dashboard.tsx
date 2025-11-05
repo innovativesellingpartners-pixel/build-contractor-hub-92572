@@ -216,6 +216,7 @@ export function Dashboard() {
 
               {/* Action Buttons */}
               <div className="flex flex-row md:flex-col gap-2 w-full md:w-auto">
+                <ProfileEditDialog />
                 <Button 
                   variant="outline" 
                   size="sm" 
