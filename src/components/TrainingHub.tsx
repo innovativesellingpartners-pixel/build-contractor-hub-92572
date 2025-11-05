@@ -106,14 +106,9 @@ export const TrainingHub = () => {
             </div>
             <CardContent className="p-3 md:p-4">
               <div className="aspect-video w-full relative rounded-lg overflow-hidden shadow-lg">
-                <img 
-                  src={videoThumbnail} 
-                  alt="Training Course Introduction"
-                  className="absolute inset-0 w-full h-full object-cover"
-                />
                 <iframe
                   src="https://drive.google.com/file/d/1eMBOcQ776JFxqniVIZ7g78DQxn5GzwbY/preview"
-                  className="w-full h-full rounded-lg relative z-10"
+                  className="w-full h-full rounded-lg"
                   allow="autoplay"
                   title="Welcome to CT1's 5-Star Training"
                 />
