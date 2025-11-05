@@ -5,8 +5,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Skeleton } from "@/components/ui/skeleton";
-import { 
+import {
   Users, 
   Phone, 
   Mail, 
@@ -41,7 +40,6 @@ export function Leads() {
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [addLeadDialogOpen, setAddLeadDialogOpen] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const [vocallinkLoading, setVocallinkLoading] = useState(true);
   const { toast } = useToast();
 
   // New lead form state
@@ -408,17 +406,17 @@ export function Leads() {
       </div>
     </div>
 
-      <Tabs defaultValue="pipeline" className="w-full">
+      <Tabs defaultValue="vocallink" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="pipeline" className="flex items-center gap-2">
-            <TrendingUp className="h-4 w-4" />
-            <span className="hidden sm:inline">Opportunity Pipeline</span>
-            <span className="sm:hidden">Pipeline</span>
-          </TabsTrigger>
           <TabsTrigger value="vocallink" className="flex items-center gap-2">
             <Briefcase className="h-4 w-4" />
             <span className="hidden sm:inline">VocalLink CRM</span>
             <span className="sm:hidden">CRM</span>
+          </TabsTrigger>
+          <TabsTrigger value="pipeline" className="flex items-center gap-2">
+            <TrendingUp className="h-4 w-4" />
+            <span className="hidden sm:inline">Opportunity Pipeline</span>
+            <span className="sm:hidden">Pipeline</span>
           </TabsTrigger>
         </TabsList>
 
@@ -535,31 +533,53 @@ export function Leads() {
           </div>
         </TabsContent>
 
-        <TabsContent value="vocallink" className="mt-6">
-          <Card className="border-0">
-            <CardContent className="p-0">
-              <div className="relative w-full" style={{ height: 'calc(100vh - 280px)', minHeight: '600px' }}>
-                {vocallinkLoading && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-background">
-                    <div className="space-y-4 w-full max-w-md p-8">
-                      <Skeleton className="h-8 w-3/4" />
-                      <Skeleton className="h-4 w-full" />
-                      <Skeleton className="h-4 w-5/6" />
-                      <div className="pt-4 space-y-2">
-                        <Skeleton className="h-12 w-full" />
-                        <Skeleton className="h-12 w-full" />
-                        <Skeleton className="h-12 w-full" />
-                      </div>
-                    </div>
-                  </div>
-                )}
-                <iframe
-                  src="https://vocallink-pro.lovable.app/admin"
-                  className="w-full h-full border-0 rounded-lg"
-                  title="VocalLink Pro CRM"
-                  onLoad={() => setVocallinkLoading(false)}
-                  sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox"
-                />
+        <TabsContent value="vocallink" className="mt-6 space-y-6">
+          {/* Call Analytics */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Phone className="h-5 w-5" />
+                Call Analytics
+              </CardTitle>
+              <CardDescription>Overview of your call activity</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <div className="text-center p-4 border rounded-lg">
+                  <p className="text-sm text-muted-foreground mb-1">Total Calls</p>
+                  <p className="text-2xl font-bold">0</p>
+                </div>
+                <div className="text-center p-4 border rounded-lg">
+                  <p className="text-sm text-muted-foreground mb-1">Incoming</p>
+                  <p className="text-2xl font-bold">0</p>
+                </div>
+                <div className="text-center p-4 border rounded-lg">
+                  <p className="text-sm text-muted-foreground mb-1">Outgoing</p>
+                  <p className="text-2xl font-bold">0</p>
+                </div>
+                <div className="text-center p-4 border rounded-lg">
+                  <p className="text-sm text-muted-foreground mb-1">Missed</p>
+                  <p className="text-2xl font-bold">0</p>
+                </div>
+                <div className="text-center p-4 border rounded-lg">
+                  <p className="text-sm text-muted-foreground mb-1">Avg Duration</p>
+                  <p className="text-2xl font-bold">0m</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Contractor Call Activity */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Contractor Call Activity</CardTitle>
+              <CardDescription>Recent call history and recordings</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-12 text-muted-foreground">
+                <Phone className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p className="text-lg font-medium mb-2">No Call Activity</p>
+                <p className="text-sm">Your call history will appear here once you start making or receiving calls</p>
               </div>
             </CardContent>
           </Card>
