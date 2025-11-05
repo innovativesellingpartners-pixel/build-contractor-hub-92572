@@ -141,13 +141,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const resetPassword = async (email: string) => {
-    // Use /auth route with a hash parameter for password reset
-    const redirectUrl = `${window.location.origin}/auth#reset`;
-    
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: redirectUrl,
-    });
-    return { error };
+    try {
+      const { data, error } = await supabase.functions.invoke('send-password-reset', {
+        body: { email }
+      });
+      return { error };
+    } catch (e: any) {
+      return { error: e };
+    }
   };
 
   const value = {
