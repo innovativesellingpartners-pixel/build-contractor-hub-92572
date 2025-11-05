@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { 
   BookOpen,
   Store,
@@ -54,6 +55,7 @@ export function Dashboard() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [pocketbotOpen, setPocketbotOpen] = useState(false);
   const [contactSupportOpen, setContactSupportOpen] = useState(false);
+  const [upgradePlanOpen, setUpgradePlanOpen] = useState(false);
 
   const handleLogout = async () => {
     await signOut();
@@ -292,7 +294,12 @@ export function Dashboard() {
                     <p className="text-sm text-muted-foreground">
                       Unlock more features and grow your business faster.
                     </p>
-                    <Button variant="outline" className="w-full hover:bg-primary/10 transition-colors" size="lg">
+                    <Button 
+                      variant="outline" 
+                      className="w-full hover:bg-primary/10 transition-colors" 
+                      size="lg"
+                      onClick={() => setUpgradePlanOpen(true)}
+                    >
                       <ArrowUpCircle className="h-4 w-4 mr-2" />
                       View Plans
                     </Button>
@@ -318,7 +325,11 @@ export function Dashboard() {
                           Not Connected
                         </Badge>
                       </div>
-                      <Button className="w-full shadow-md hover:shadow-lg transition-shadow" size="lg">
+                      <Button 
+                        className="w-full shadow-md hover:shadow-lg transition-shadow" 
+                        size="lg"
+                        onClick={() => window.open('https://accounts.intuit.com/app/sign-in?app_group=QBO&asset_alias=Intuit.accounting.core.qbowebapp&app_environment=prod&intent=qbo', '_blank')}
+                      >
                         <FileText className="h-4 w-4 mr-2" />
                         Connect QuickBooks
                       </Button>
@@ -446,6 +457,49 @@ export function Dashboard() {
       
       {/* Contact Support Dialog */}
       <ContactSupport open={contactSupportOpen} onOpenChange={setContactSupportOpen} />
+      
+      {/* Upgrade Plan Dialog */}
+      <Dialog open={upgradePlanOpen} onOpenChange={setUpgradePlanOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ArrowUpCircle className="h-5 w-5 text-primary" />
+              Upgrade Your Plan
+            </DialogTitle>
+            <DialogDescription>
+              Choose an option to continue:
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 pt-4">
+            <Button 
+              className="w-full" 
+              size="lg"
+              asChild
+              onClick={() => setUpgradePlanOpen(false)}
+            >
+              <Link to="/pricing">
+                <ArrowUpCircle className="h-4 w-4 mr-2" />
+                View Available Plans
+              </Link>
+            </Button>
+            <Button 
+              variant="outline" 
+              className="w-full" 
+              size="lg"
+              asChild
+              onClick={() => {
+                setUpgradePlanOpen(false);
+                setContactSupportOpen(true);
+              }}
+            >
+              <Link to="/contact">
+                <Mail className="h-4 w-4 mr-2" />
+                Contact Sales
+              </Link>
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
       
       {/* Floating Chat Button */}
       <button
