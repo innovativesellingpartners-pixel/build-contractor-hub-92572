@@ -410,7 +410,7 @@ export function Leads() {
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="vocallink" className="flex items-center gap-2">
             <Briefcase className="h-4 w-4" />
-            <span className="hidden sm:inline">CT1 CRM</span>
+            <span className="hidden sm:inline">VocalLink CRM</span>
             <span className="sm:hidden">CRM</span>
           </TabsTrigger>
           <TabsTrigger value="pipeline" className="flex items-center gap-2">
