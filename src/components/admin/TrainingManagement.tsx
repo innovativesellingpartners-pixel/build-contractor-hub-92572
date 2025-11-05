@@ -25,7 +25,6 @@ type Course = {
   is_published: boolean;
   created_at: string;
   category?: { name: string };
-  actualDuration?: number;
 };
 
 type Category = {
@@ -68,7 +67,7 @@ export const TrainingManagement = () => {
   const { data: courses, isLoading: coursesLoading } = useQuery({
     queryKey: ['adminCourses'],
     queryFn: async () => {
-      const { data: coursesData, error } = await supabase
+      const { data, error } = await supabase
         .from('training_courses')
         .select(`
           *,
@@ -80,36 +79,7 @@ export const TrainingManagement = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-
-      // Calculate actual duration for each course by summing lesson durations
-      const coursesWithDuration = await Promise.all(
-        (coursesData || []).map(async (course) => {
-          // Get all modules for this course
-          const { data: modules } = await supabase
-            .from('course_modules')
-            .select('id')
-            .eq('course_id', course.id);
-
-          if (!modules || modules.length === 0) {
-            return { ...course, actualDuration: 0 };
-          }
-
-          // Get all lessons for these modules and sum their durations
-          const { data: lessons } = await supabase
-            .from('course_lessons')
-            .select('duration_minutes')
-            .in('module_id', modules.map(m => m.id));
-
-          const totalDuration = (lessons || []).reduce(
-            (sum, lesson) => sum + (lesson.duration_minutes || 0),
-            0
-          );
-
-          return { ...course, actualDuration: totalDuration };
-        })
-      );
-
-      return coursesWithDuration;
+      return data;
     },
   });
 
@@ -373,11 +343,7 @@ export const TrainingManagement = () => {
                         {course.difficulty_level || 'N/A'}
                       </Badge>
                     </TableCell>
-                    <TableCell>
-                      {course.actualDuration > 0 
-                        ? `${course.actualDuration} min` 
-                        : '0 min'}
-                    </TableCell>
+                    <TableCell>&lt;60 min</TableCell>
                     <TableCell>
                       <Badge variant={course.is_published ? 'default' : 'secondary'}>
                         {course.is_published ? 'Published' : 'Draft'}
