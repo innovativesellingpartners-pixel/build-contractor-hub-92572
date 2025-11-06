@@ -1,11 +1,14 @@
+import { useState } from 'react';
 import { useCustomers } from '@/hooks/useCustomers';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, Phone, Mail, MapPin } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import AddCustomerDialog from '../AddCustomerDialog';
 
 export default function CustomersSection() {
   const { customers, loading } = useCustomers();
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
   if (loading) {
     return <div className="p-6">Loading customers...</div>;
@@ -19,7 +22,7 @@ export default function CustomersSection() {
           <h1 className="text-3xl font-bold">Customers</h1>
           <p className="text-muted-foreground">Manage your customer database</p>
         </div>
-        <Button>
+        <Button onClick={() => setIsAddDialogOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
           Add Customer
         </Button>
@@ -73,6 +76,11 @@ export default function CustomersSection() {
           ))}
         </div>
       </div>
+
+      <AddCustomerDialog 
+        open={isAddDialogOpen} 
+        onOpenChange={setIsAddDialogOpen}
+      />
     </div>
   );
 }

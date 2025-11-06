@@ -47,6 +47,10 @@ const handler = async (req: Request): Promise<Response> => {
     const publicUrl = `${Deno.env.get('SUPABASE_URL')?.replace('supabase.co', 'lovableproject.com')}/estimate/${estimate.public_token}`;
 
     // Send email to client
+    console.log('Attempting to send email to:', estimate.client_email);
+    console.log('From:', `${contractorName} <${FROM_EMAIL}>`);
+    console.log('Reply-to:', contractorEmail);
+    
     const emailResponse = await resend.emails.send({
       from: `${contractorName} <${FROM_EMAIL}>`,
       to: [estimate.client_email],
@@ -164,12 +168,26 @@ const handler = async (req: Request): Promise<Response> => {
       `,
     });
 
+    console.log('Resend API response:', JSON.stringify(emailResponse, null, 2));
+
     // If Resend rejected the email, return an error and do not mark as sent
     if (emailResponse?.error) {
       console.error('Resend error:', emailResponse.error);
       return new Response(JSON.stringify({
         success: false,
-        error: emailResponse.error,
+        error: `Failed to send email: ${JSON.stringify(emailResponse.error)}`,
+      }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    // Verify email was accepted by Resend
+    if (!emailResponse?.data) {
+      console.error('No email data returned from Resend');
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'Email was not accepted by the email service',
       }), {
         status: 400,
         headers: { "Content-Type": "application/json", ...corsHeaders },
@@ -177,6 +195,9 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Update estimate status
+    console.log('Email sent successfully with ID:', emailResponse.data.id);
+    console.log('Updating estimate status to sent...');
+    
     const { error: updateError } = await supabase
       .from('estimates')
       .update({ 
@@ -187,9 +208,11 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (updateError) {
       console.error('Error updating estimate status:', updateError);
+    } else {
+      console.log('Estimate status updated successfully');
     }
 
-    console.log("Estimate email sent successfully:", emailResponse);
+    console.log("Estimate email sent successfully to:", estimate.client_email);
 
     return new Response(JSON.stringify({ 
       success: true, 

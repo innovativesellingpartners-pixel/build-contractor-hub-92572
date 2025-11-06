@@ -112,8 +112,8 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
   // Load initialData when it changes (for editing existing estimates)
   useEffect(() => {
     if (initialData) {
-      // Reset form fields
-      reset({
+      // Reset form fields with proper typing
+      const formData = {
         title: initialData.title || '',
         client_name: initialData.client_name || '',
         client_email: initialData.client_email || '',
@@ -125,7 +125,14 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
         valid_until: initialData.valid_until || '',
         profit_markup_percentage: initialData.cost_summary?.profit_markup_percentage || 15,
         tax_and_fees: initialData.cost_summary?.tax_and_fees || 0,
-      });
+      };
+      
+      reset(formData);
+      
+      // Explicitly set trade_type to ensure Select component updates
+      if (initialData.trade_type) {
+        setValue('trade_type', initialData.trade_type, { shouldValidate: true });
+      }
 
       // Load line items
       if (initialData.line_items && initialData.line_items.length > 0) {
@@ -330,7 +337,10 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
                     
                     <div className="space-y-2">
                       <Label htmlFor="trade_type">Trade Type *</Label>
-                      <Select onValueChange={(value) => setValue('trade_type', value)} value={watch('trade_type')}>
+                      <Select 
+                        onValueChange={(value) => setValue('trade_type', value, { shouldValidate: true })} 
+                        value={watch('trade_type') || undefined}
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Select trade" />
                         </SelectTrigger>
