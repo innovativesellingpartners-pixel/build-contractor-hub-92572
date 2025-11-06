@@ -32,8 +32,9 @@ export default function JobsSection() {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="w-full h-full overflow-y-auto">
+      <div className="p-6 space-y-6 max-w-7xl mx-auto">
+        <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Jobs</h1>
           <p className="text-muted-foreground">Manage your active and completed jobs</p>
@@ -42,9 +43,9 @@ export default function JobsSection() {
           <Plus className="h-4 w-4 mr-2" />
           Add Job
         </Button>
-      </div>
+        </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {jobs.map((job) => (
           <Card 
             key={job.id} 
@@ -91,15 +92,16 @@ export default function JobsSection() {
                 </p>
               )}
             </CardContent>
-          </Card>
-        ))}
-      </div>
+            </Card>
+          ))}
+        </div>
 
-      <JobDetailView
-        job={selectedJob}
-        open={detailOpen}
-        onOpenChange={setDetailOpen}
-      />
+        <JobDetailView
+          job={selectedJob}
+          open={detailOpen}
+          onOpenChange={setDetailOpen}
+        />
+      </div>
     </div>
   );
 }

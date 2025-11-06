@@ -54,14 +54,15 @@ export default function CRMDashboard() {
   ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5);
 
   return (
-    <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">CRM Dashboard</h1>
-        <p className="text-muted-foreground">Overview of your business pipeline</p>
-      </div>
+    <div className="w-full h-full overflow-y-auto">
+      <div className="p-6 space-y-6 max-w-7xl mx-auto">
+        <div>
+          <h1 className="text-3xl font-bold">CRM Dashboard</h1>
+          <p className="text-muted-foreground">Overview of your business pipeline</p>
+        </div>
 
-      {/* Stats Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {/* Stats Grid */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
           <Card key={stat.title}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -74,10 +75,10 @@ export default function CRMDashboard() {
             </CardContent>
           </Card>
         ))}
-      </div>
+        </div>
 
-      {/* Recent Activity */}
-      <Card>
+        {/* Recent Activity */}
+        <Card>
         <CardHeader>
           <CardTitle>Recent Activity</CardTitle>
         </CardHeader>
@@ -95,8 +96,9 @@ export default function CRMDashboard() {
               </div>
             ))}
           </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

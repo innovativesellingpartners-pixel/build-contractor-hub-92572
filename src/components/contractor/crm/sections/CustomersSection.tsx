@@ -12,8 +12,9 @@ export default function CustomersSection() {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="w-full h-full overflow-y-auto">
+      <div className="p-6 space-y-6 max-w-7xl mx-auto">
+        <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Customers</h1>
           <p className="text-muted-foreground">Manage your customer database</p>
@@ -22,9 +23,9 @@ export default function CustomersSection() {
           <Plus className="h-4 w-4 mr-2" />
           Add Customer
         </Button>
-      </div>
+        </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {customers.map((customer) => (
           <Card key={customer.id} className="hover:shadow-lg transition-shadow cursor-pointer">
             <CardHeader>
@@ -68,8 +69,9 @@ export default function CustomersSection() {
                 </div>
               )}
             </CardContent>
-          </Card>
-        ))}
+            </Card>
+          ))}
+        </div>
       </div>
     </div>
   );

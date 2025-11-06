@@ -64,12 +64,12 @@ export default function CT1CRM() {
   };
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-full w-full bg-background">
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-50 flex flex-col bg-card border-r transition-all duration-300',
-          sidebarOpen ? 'w-64' : 'w-0 lg:w-16'
+          'flex-shrink-0 flex flex-col bg-card border-r transition-all duration-300',
+          sidebarOpen ? 'w-64' : 'w-16'
         )}
       >
         {/* Header */}
@@ -115,13 +115,8 @@ export default function CT1CRM() {
       </aside>
 
       {/* Main Content */}
-      <main
-        className={cn(
-          'flex-1 transition-all duration-300',
-          sidebarOpen ? 'lg:ml-64' : 'lg:ml-16'
-        )}
-      >
-        <div className="h-full overflow-auto">
+      <main className="flex-1 overflow-hidden">
+        <div className="h-full overflow-y-auto">
           {renderSection()}
         </div>
       </main>

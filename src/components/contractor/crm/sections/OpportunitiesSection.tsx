@@ -24,8 +24,9 @@ export default function OpportunitiesSection() {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="w-full h-full overflow-y-auto">
+      <div className="p-6 space-y-6 max-w-7xl mx-auto">
+        <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Opportunities</h1>
           <p className="text-muted-foreground">Track your sales pipeline</p>
@@ -34,9 +35,9 @@ export default function OpportunitiesSection() {
           <Plus className="h-4 w-4 mr-2" />
           Add Opportunity
         </Button>
-      </div>
+        </div>
 
-      <div className="grid gap-4 grid-cols-1 lg:grid-cols-3">
+        <div className="grid gap-4 grid-cols-1 lg:grid-cols-3">
         {stages.map((stage) => (
           <div key={stage.id} className="space-y-4">
             <div className="flex items-center justify-between">
@@ -69,8 +70,9 @@ export default function OpportunitiesSection() {
                 </Card>
               ))}
             </div>
-          </div>
-        ))}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

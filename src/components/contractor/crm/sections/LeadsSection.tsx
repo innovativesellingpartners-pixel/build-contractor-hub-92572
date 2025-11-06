@@ -34,16 +34,17 @@ export default function LeadsSection() {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="w-full h-full overflow-y-auto">
+      <div className="p-6 space-y-6 max-w-7xl mx-auto">
+        <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Leads</h1>
           <p className="text-muted-foreground">Manage and track your leads</p>
         </div>
         <AddLeadDialog onAdd={addLead} sources={sources} />
-      </div>
+        </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {leads.map((lead) => (
           <Card key={lead.id} className="hover:shadow-lg transition-shadow">
             <CardHeader>
@@ -96,18 +97,19 @@ export default function LeadsSection() {
             </CardContent>
           </Card>
         ))}
-      </div>
+        </div>
 
-      {selectedLead && (
-        <EditLeadDialog
+        {selectedLead && (
+          <EditLeadDialog
           lead={selectedLead}
           open={editDialogOpen}
           onOpenChange={setEditDialogOpen}
           onUpdate={updateLead}
           onDelete={deleteLead}
-          sources={sources}
-        />
-      )}
+            sources={sources}
+          />
+        )}
+      </div>
     </div>
   );
 }
