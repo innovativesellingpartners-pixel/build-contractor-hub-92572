@@ -198,9 +198,12 @@ export function useEstimates() {
     estimates,
     isLoading,
     createEstimate: createEstimate.mutate,
+    createEstimateAsync: createEstimate.mutateAsync,
     updateEstimate: updateEstimate.mutate,
+    updateEstimateAsync: updateEstimate.mutateAsync,
     deleteEstimate: deleteEstimate.mutate,
     sendEstimate: sendEstimate.mutate,
+    sendEstimateAsync: sendEstimate.mutateAsync,
     isSendingEstimate: sendEstimate.isPending,
   };
 }

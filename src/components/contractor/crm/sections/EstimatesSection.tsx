@@ -13,22 +13,33 @@ import { MobileOptimizedWrapper, MobileCard, MobileGrid } from './MobileOptimize
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function EstimatesSection() {
-  const { estimates, isLoading, createEstimate, updateEstimate, deleteEstimate, sendEstimate, isSendingEstimate } = useEstimates();
+  const { estimates, isLoading, createEstimate, createEstimateAsync, updateEstimate, updateEstimateAsync, deleteEstimate, sendEstimate, sendEstimateAsync, isSendingEstimate } = useEstimates();
   const { user } = useAuth();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedEstimate, setSelectedEstimate] = useState<any>(null);
 
   const handleSubmit = async (data: any, isDraft: boolean) => {
     try {
+      let saved: any;
       if (selectedEstimate) {
-        await updateEstimate({ id: selectedEstimate.id, ...data });
+        saved = await updateEstimateAsync({ id: selectedEstimate.id, ...data });
       } else {
-        await createEstimate(data);
+        saved = await createEstimateAsync(data);
       }
+
+      // If the user clicked "Send to Client", actually send the email now
+      if (!isDraft && saved?.id) {
+        await sendEstimateAsync({
+          estimateId: saved.id,
+          contractorName: user?.user_metadata?.full_name || 'CT1 Contractor',
+          contractorEmail: user?.email || '',
+        });
+      }
+
       setIsFormOpen(false);
       setSelectedEstimate(null);
     } catch (error) {
-      console.error('Error saving estimate:', error);
+      console.error('Error saving or sending estimate:', error);
     }
   };
 

@@ -317,7 +317,7 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
       trade_specific: tradeSpecific,
       contractor_signature: contractorSigRef.current?.toDataURL(),
       client_signature: clientSigRef.current?.toDataURL(),
-      status: isDraft ? 'draft' : 'sent',
+      status: isDraft ? 'draft' : (initialData?.status || 'draft'),
       total_amount: totals.grandTotal,
     };
 
