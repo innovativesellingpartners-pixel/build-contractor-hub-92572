@@ -49,7 +49,7 @@ const handler = async (req: Request): Promise<Response> => {
     const emailResponse = await resend.emails.send({
       from: `${contractorName} <onboarding@resend.dev>`,
       to: [estimate.client_email],
-      subject: `Estimate ${estimate.estimate_number || 'from ' + contractorName}`,
+      subject: `RE: ${contractorName} - Powered by CT1 - Estimate`,
       html: `
         <!DOCTYPE html>
         <html>
