@@ -23,6 +23,19 @@ export default function PublicEstimate() {
     if (token) {
       fetchEstimate();
       logView();
+
+      // Check for payment status in URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const paymentStatus = urlParams.get('payment');
+
+      if (paymentStatus === 'success') {
+        setSigned(true);
+        toast.success('Payment successful! Thank you for your payment. Our team will contact you shortly to schedule the work.');
+      } else if (paymentStatus === 'cancelled') {
+        toast.error('Payment cancelled. You can try again by signing the estimate.');
+      } else if (paymentStatus === 'error') {
+        toast.error('Payment error. There was an error processing your payment. Please try again.');
+      }
     }
   }, [token]);
 
@@ -73,25 +86,48 @@ export default function PublicEstimate() {
 
     setSigning(true);
     try {
-      // Update estimate as accepted and signed
-      const { error: updateError } = await supabase
+      const signatureData = clientSigRef.current.toDataURL();
+
+      // Save signature to estimate
+      const { error: sigError } = await supabase
         .from('estimates')
         .update({
-          client_signature: clientSigRef.current.toDataURL(),
-          signed_at: new Date().toISOString(),
-          status: 'accepted',
+          client_signature: signatureData,
         })
         .eq('id', estimate.id);
 
-      if (updateError) throw updateError;
+      if (sigError) throw sigError;
 
-      setSigned(true);
-      toast.success('Estimate accepted successfully! We will contact you to discuss payment and schedule the work.');
-      fetchEstimate();
+      // Initiate Clover payment
+      const { data: paymentData, error: paymentError } = await supabase.functions.invoke(
+        'process-estimate-payment',
+        {
+          body: {
+            estimate_id: estimate.id,
+            public_token: token,
+            amount: estimate.total_amount,
+            customer_email: estimate.client_email,
+          },
+        }
+      );
+
+      if (paymentError) throw paymentError;
+
+      if (paymentData?.success && paymentData?.checkout_url) {
+        // Store payment session info
+        sessionStorage.setItem('estimate_payment', JSON.stringify({
+          estimate_id: estimate.id,
+          token,
+        }));
+
+        // Redirect to Clover checkout
+        window.location.href = paymentData.checkout_url;
+      } else {
+        throw new Error(paymentData?.message || 'Failed to create payment session');
+      }
     } catch (error) {
-      console.error('Error signing estimate:', error);
-      toast.error('Failed to sign estimate');
-    } finally {
+      console.error('Error processing estimate:', error);
+      toast.error('Failed to process estimate. Please try again.');
       setSigning(false);
     }
   };

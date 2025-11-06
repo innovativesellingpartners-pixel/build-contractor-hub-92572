@@ -397,6 +397,41 @@ export type Database = {
           },
         ]
       }
+      estimate_payment_sessions: {
+        Row: {
+          amount: number
+          clover_session_id: string
+          created_at: string
+          customer_email: string
+          estimate_id: string
+          id: string
+        }
+        Insert: {
+          amount: number
+          clover_session_id: string
+          created_at?: string
+          customer_email: string
+          estimate_id: string
+          id?: string
+        }
+        Update: {
+          amount?: number
+          clover_session_id?: string
+          created_at?: string
+          customer_email?: string
+          estimate_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estimate_payment_sessions_estimate_id_fkey"
+            columns: ["estimate_id"]
+            isOneToOne: false
+            referencedRelation: "estimates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       estimate_views: {
         Row: {
           estimate_id: string | null
@@ -451,6 +486,7 @@ export type Database = {
           paid_at: string | null
           payment_amount: number | null
           payment_method: string | null
+          payment_status: string | null
           project_description: string | null
           public_token: string | null
           sent_at: string | null
@@ -487,6 +523,7 @@ export type Database = {
           paid_at?: string | null
           payment_amount?: number | null
           payment_method?: string | null
+          payment_status?: string | null
           project_description?: string | null
           public_token?: string | null
           sent_at?: string | null
@@ -523,6 +560,7 @@ export type Database = {
           paid_at?: string | null
           payment_amount?: number | null
           payment_method?: string | null
+          payment_status?: string | null
           project_description?: string | null
           public_token?: string | null
           sent_at?: string | null
