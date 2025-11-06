@@ -444,9 +444,60 @@ export default function PublicEstimate() {
                     Estimate Successfully Accepted!
                   </h3>
                   <p className="text-green-800 text-lg mb-4 font-medium">
-                    Thank you for accepting this estimate. Your project has been converted to an active job 
-                    and we'll be in touch shortly to schedule the work and discuss payment options.
+                    Thank you for accepting this estimate. Your project has been converted to an active job.
                   </p>
+                  
+                  {estimate.payment_status !== 'paid' && (
+                    <Button
+                      onClick={async () => {
+                        setSigning(true);
+                        try {
+                          const { data: paymentData, error: paymentError } = await supabase.functions.invoke(
+                            'process-estimate-payment',
+                            {
+                              body: {
+                                estimate_id: estimate.id,
+                                public_token: token,
+                                amount: estimate.total_amount,
+                                customer_email: estimate.client_email,
+                              },
+                            }
+                          );
+
+                          if (paymentError) throw paymentError;
+
+                          if (paymentData?.success && paymentData?.checkout_url) {
+                            sessionStorage.setItem('estimate_payment', JSON.stringify({
+                              estimate_id: estimate.id,
+                              token,
+                            }));
+                            window.location.href = paymentData.checkout_url;
+                          } else {
+                            throw new Error(paymentData?.message || 'Failed to create payment session');
+                          }
+                        } catch (error) {
+                          console.error('Error processing payment:', error);
+                          toast.error('Failed to process payment. Please try again.');
+                          setSigning(false);
+                        }
+                      }}
+                      disabled={signing}
+                      size="lg"
+                      className="w-full sm:w-auto h-14 text-lg font-bold bg-gradient-to-r from-primary to-primary-hover shadow-lg hover:shadow-xl mt-4"
+                    >
+                      {signing ? (
+                        <>
+                          <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                          Processing...
+                        </>
+                      ) : (
+                        <>
+                          <CreditCard className="h-5 w-5 mr-2" />
+                          Pay Now - ${estimate.total_amount?.toFixed(2)}
+                        </>
+                      )}
+                    </Button>
+                  )}
                   <div className="bg-white rounded-xl p-6 border-2 border-green-300 shadow-sm">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
@@ -468,7 +519,9 @@ export default function PublicEstimate() {
                   <div className="mt-6 bg-green-600/10 border-l-4 border-green-600 p-4 rounded-r-lg">
                     <p className="text-sm text-green-900 font-semibold flex items-center gap-2">
                       <CreditCard className="h-4 w-4" />
-                      Next Steps: Our team will contact you to discuss payment options and project scheduling.
+                      {estimate.payment_status === 'paid' 
+                        ? 'Payment received! Our team will contact you to schedule the work.'
+                        : 'Next Steps: Click "Pay Now" above to complete payment, then our team will schedule your project.'}
                     </p>
                   </div>
                 </div>

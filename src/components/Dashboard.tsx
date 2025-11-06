@@ -51,11 +51,25 @@ export function Dashboard() {
   const { isAdmin } = useAdminAuth();
   const { tierFeatures, hasFullAccess } = useUserTier();
   const { toast } = useToast();
-  const [activeSection, setActiveSection] = useState<ActiveSection>('training');
+  
+  // Persist active section in sessionStorage
+  const getInitialSection = (): ActiveSection => {
+    const saved = sessionStorage.getItem('dashboardActiveSection');
+    return (saved as ActiveSection) || 'training';
+  };
+  
+  const [activeSection, setActiveSection] = useState<ActiveSection>(getInitialSection);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [pocketbotOpen, setPocketbotOpen] = useState(false);
   const [contactSupportOpen, setContactSupportOpen] = useState(false);
   const [upgradePlanOpen, setUpgradePlanOpen] = useState(false);
+
+  // Save active section to sessionStorage whenever it changes
+  const handleSectionChange = (section: ActiveSection) => {
+    setActiveSection(section);
+    sessionStorage.setItem('dashboardActiveSection', section);
+    setMobileMenuOpen(false);
+  };
 
   const handleLogout = async () => {
     await signOut();
@@ -101,10 +115,7 @@ export function Dashboard() {
                   <div className="py-4">
                     <SidebarNav 
                       activeSection={activeSection} 
-                      setActiveSection={(section) => {
-                        setActiveSection(section);
-                        setMobileMenuOpen(false);
-                      }} 
+                      setActiveSection={handleSectionChange} 
                       tierFeatures={tierFeatures}
                     />
                   </div>
@@ -237,7 +248,7 @@ export function Dashboard() {
         {/* Left Sidebar Navigation - Hidden on mobile */}
         <div className="hidden lg:block w-64 flex-shrink-0">
           <div className="bg-card border border-border/50 rounded-xl shadow-md p-3 sticky top-24">
-            <SidebarNav activeSection={activeSection} setActiveSection={setActiveSection} tierFeatures={tierFeatures} />
+            <SidebarNav activeSection={activeSection} setActiveSection={handleSectionChange} tierFeatures={tierFeatures} />
           </div>
         </div>
 

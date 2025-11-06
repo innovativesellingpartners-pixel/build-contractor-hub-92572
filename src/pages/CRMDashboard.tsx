@@ -132,7 +132,20 @@ interface Review {
 type Section = 'dashboard' | 'leads' | 'site-visits' | 'estimates' | 'jobs' | 'communications' | 'payments' | 'reviews';
 
 export function CRMDashboard() {
-  const [activeSection, setActiveSection] = useState<Section>('leads');
+  // Persist active section in sessionStorage
+  const getInitialSection = (): Section => {
+    const saved = sessionStorage.getItem('crmActiveSection');
+    return (saved as Section) || 'leads';
+  };
+  
+  const [activeSection, setActiveSection] = useState<Section>(getInitialSection);
+  
+  // Save active section to sessionStorage whenever it changes
+  const handleSectionChange = (section: Section) => {
+    setActiveSection(section);
+    sessionStorage.setItem('crmActiveSection', section);
+  };
+  
   const [leads, setLeads] = useState<Lead[]>([]);
   const [siteVisits, setSiteVisits] = useState<SiteVisit[]>([]);
   const [estimates, setEstimates] = useState<Estimate[]>([]);
@@ -641,7 +654,7 @@ export function CRMDashboard() {
               return (
                 <button
                   key={item.id}
-                  onClick={() => setActiveSection(item.id)}
+                  onClick={() => handleSectionChange(item.id)}
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg whitespace-nowrap transition-colors ${
                     isActive
                       ? 'bg-primary text-primary-foreground'
@@ -668,10 +681,10 @@ export function CRMDashboard() {
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeSection === item.id;
-            return (
+              return (
               <button
                 key={item.id}
-                onClick={() => setActiveSection(item.id)}
+                onClick={() => handleSectionChange(item.id)}
                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                   isActive
                     ? 'bg-primary text-primary-foreground'

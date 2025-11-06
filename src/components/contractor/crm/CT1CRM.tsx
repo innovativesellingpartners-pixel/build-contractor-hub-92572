@@ -40,8 +40,20 @@ const navItems = [
 ];
 
 export default function CT1CRM() {
-  const [activeSection, setActiveSection] = useState<Section>('dashboard');
+  // Persist active section in sessionStorage
+  const getInitialSection = (): Section => {
+    const saved = sessionStorage.getItem('ct1CrmActiveSection');
+    return (saved as Section) || 'dashboard';
+  };
+  
+  const [activeSection, setActiveSection] = useState<Section>(getInitialSection);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  // Save active section to sessionStorage whenever it changes
+  const handleSectionChange = (section: Section) => {
+    setActiveSection(section);
+    sessionStorage.setItem('ct1CrmActiveSection', section);
+  };
 
   const renderSection = () => {
     switch (activeSection) {
@@ -101,7 +113,7 @@ export default function CT1CRM() {
             {navItems.map((item) => (
               <li key={item.id}>
                 <button
-                  onClick={() => setActiveSection(item.id)}
+                  onClick={() => handleSectionChange(item.id)}
                   className={cn(
                     'w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors',
                     'hover:bg-accent',
