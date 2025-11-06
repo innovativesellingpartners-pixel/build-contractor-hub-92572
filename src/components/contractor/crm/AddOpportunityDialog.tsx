@@ -1,51 +1,58 @@
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus } from 'lucide-react';
-import { Opportunity } from '@/hooks/useOpportunities';
+import { OpportunityStage, LeadSource } from '@/hooks/useOpportunities';
 
 interface AddOpportunityDialogProps {
-  onAdd: (opportunityData: Omit<Opportunity, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => Promise<any>;
+  onAdd: (opportunityData: any) => Promise<any>;
 }
 
 export function AddOpportunityDialog({ onAdd }: AddOpportunityDialogProps) {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    value: '',
-    probability: '50',
-    stage: 'qualification' as Opportunity['stage'],
-    expected_close_date: '',
+    title: '',
+    customer_name: '',
+    customer_phone: '',
+    customer_email: '',
+    job_address: '',
+    trade_type: '',
+    lead_source: 'other' as LeadSource,
+    estimated_value: '',
+    estimated_close_date: '',
     notes: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      await onAdd({
-        ...formData,
-        value: formData.value ? parseFloat(formData.value) : undefined,
-        probability: parseInt(formData.probability),
-        expected_close_date: formData.expected_close_date || undefined,
-      });
-      setOpen(false);
-      setFormData({
-        name: '',
-        description: '',
-        value: '',
-        probability: '50',
-        stage: 'qualification',
-        expected_close_date: '',
-        notes: '',
-      });
-    } catch (error) {
-      console.error('Error adding opportunity:', error);
-    }
+    
+    const opportunityData = {
+      ...formData,
+      estimated_value: formData.estimated_value ? parseFloat(formData.estimated_value) : undefined,
+      stage: 'qualification' as OpportunityStage,
+      probability_percent: 10,
+      probability_override: false,
+      budget_confirmed: false,
+    };
+
+    await onAdd(opportunityData);
+    setOpen(false);
+    setFormData({
+      title: '',
+      customer_name: '',
+      customer_phone: '',
+      customer_email: '',
+      job_address: '',
+      trade_type: '',
+      lead_source: 'other',
+      estimated_value: '',
+      estimated_close_date: '',
+      notes: '',
+    });
   };
 
   return (
@@ -53,93 +60,150 @@ export function AddOpportunityDialog({ onAdd }: AddOpportunityDialogProps) {
       <DialogTrigger asChild>
         <Button>
           <Plus className="h-4 w-4 mr-2" />
-          Add Opportunity
+          New Opportunity
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New Opportunity</DialogTitle>
-          <DialogDescription>Enter the details of your new opportunity</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Opportunity Name *</Label>
-            <Input
-              id="name"
-              required
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="e.g., Commercial Kitchen Renovation"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              rows={3}
-            />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="value">Estimated Value</Label>
+              <Label htmlFor="title">Opportunity Title *</Label>
               <Input
-                id="value"
-                type="number"
-                step="0.01"
-                value={formData.value}
-                onChange={(e) => setFormData({ ...formData, value: e.target.value })}
-                placeholder="0.00"
+                id="title"
+                required
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                placeholder="e.g., Kitchen Remodel - Smith Residence"
               />
             </div>
+
             <div className="space-y-2">
-              <Label htmlFor="probability">Probability (%)</Label>
+              <Label htmlFor="customer_name">Customer Name *</Label>
               <Input
-                id="probability"
-                type="number"
-                min="0"
-                max="100"
-                value={formData.probability}
-                onChange={(e) => setFormData({ ...formData, probability: e.target.value })}
+                id="customer_name"
+                required
+                value={formData.customer_name}
+                onChange={(e) => setFormData({ ...formData, customer_name: e.target.value })}
+                placeholder="John Smith"
               />
             </div>
+
             <div className="space-y-2">
-              <Label htmlFor="stage">Stage</Label>
-              <Select value={formData.stage} onValueChange={(value: Opportunity['stage']) => setFormData({ ...formData, stage: value })}>
+              <Label htmlFor="customer_phone">Phone</Label>
+              <Input
+                id="customer_phone"
+                type="tel"
+                value={formData.customer_phone}
+                onChange={(e) => setFormData({ ...formData, customer_phone: e.target.value })}
+                placeholder="(555) 123-4567"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="customer_email">Email</Label>
+              <Input
+                id="customer_email"
+                type="email"
+                value={formData.customer_email}
+                onChange={(e) => setFormData({ ...formData, customer_email: e.target.value })}
+                placeholder="john@example.com"
+              />
+            </div>
+
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="job_address">Job Address</Label>
+              <Input
+                id="job_address"
+                value={formData.job_address}
+                onChange={(e) => setFormData({ ...formData, job_address: e.target.value })}
+                placeholder="123 Main St, City, State ZIP"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="trade_type">Trade Type *</Label>
+              <Select
+                value={formData.trade_type}
+                onValueChange={(value) => setFormData({ ...formData, trade_type: value })}
+                required
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select trade" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="plumbing">Plumbing</SelectItem>
+                  <SelectItem value="electrical">Electrical</SelectItem>
+                  <SelectItem value="hvac">HVAC</SelectItem>
+                  <SelectItem value="roofing">Roofing</SelectItem>
+                  <SelectItem value="concrete">Concrete</SelectItem>
+                  <SelectItem value="landscaping">Landscaping</SelectItem>
+                  <SelectItem value="carpentry">Carpentry</SelectItem>
+                  <SelectItem value="painting">Painting</SelectItem>
+                  <SelectItem value="general">General Contractor</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="lead_source">Lead Source</Label>
+              <Select
+                value={formData.lead_source}
+                onValueChange={(value) => setFormData({ ...formData, lead_source: value as LeadSource })}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="qualification">Qualification</SelectItem>
-                  <SelectItem value="discovery">Discovery</SelectItem>
-                  <SelectItem value="proposal">Proposal</SelectItem>
-                  <SelectItem value="negotiation">Negotiation</SelectItem>
-                  <SelectItem value="closed_won">Closed Won</SelectItem>
-                  <SelectItem value="closed_lost">Closed Lost</SelectItem>
+                  <SelectItem value="referral">Referral</SelectItem>
+                  <SelectItem value="website">Website</SelectItem>
+                  <SelectItem value="ad">Advertisement</SelectItem>
+                  <SelectItem value="repeat_customer">Repeat Customer</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+
             <div className="space-y-2">
-              <Label htmlFor="expected_close_date">Expected Close Date</Label>
+              <Label htmlFor="estimated_value">Estimated Value ($)</Label>
               <Input
-                id="expected_close_date"
+                id="estimated_value"
+                type="number"
+                min="0"
+                step="0.01"
+                value={formData.estimated_value}
+                onChange={(e) => setFormData({ ...formData, estimated_value: e.target.value })}
+                placeholder="5000"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="estimated_close_date">Expected Close Date</Label>
+              <Input
+                id="estimated_close_date"
                 type="date"
-                value={formData.expected_close_date}
-                onChange={(e) => setFormData({ ...formData, expected_close_date: e.target.value })}
+                value={formData.estimated_close_date}
+                onChange={(e) => setFormData({ ...formData, estimated_close_date: e.target.value })}
+                min={new Date().toISOString().split('T')[0]}
+              />
+            </div>
+
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="notes">Notes</Label>
+              <Textarea
+                id="notes"
+                value={formData.notes}
+                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                placeholder="Additional information about this opportunity..."
+                rows={3}
               />
             </div>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="notes">Notes</Label>
-            <Textarea
-              id="notes"
-              value={formData.notes}
-              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              rows={3}
-            />
-          </div>
-          <div className="flex justify-end gap-2">
+
+          <div className="flex justify-end gap-2 pt-4">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>

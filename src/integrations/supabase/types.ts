@@ -451,13 +451,6 @@ export type Database = {
             referencedRelation: "customers"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "estimates_opportunity_id_fkey"
-            columns: ["opportunity_id"]
-            isOneToOne: false
-            referencedRelation: "opportunities"
-            referencedColumns: ["id"]
-          },
         ]
       }
       invoices: {
@@ -740,13 +733,6 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "jobs_opportunity_id_fkey"
-            columns: ["opportunity_id"]
-            isOneToOne: false
-            referencedRelation: "opportunities"
             referencedColumns: ["id"]
           },
         ]
@@ -1075,49 +1061,112 @@ export type Database = {
       }
       opportunities: {
         Row: {
+          assigned_user_id: string | null
+          budget_confirmed: boolean | null
+          competing_options_description: string | null
+          contract_document_url: string | null
           created_at: string
+          customer_email: string | null
           customer_id: string | null
-          description: string | null
-          expected_close_date: string | null
+          customer_name: string
+          customer_phone: string | null
+          decision_maker_name: string | null
+          estimated_close_date: string | null
+          estimated_value: number | null
           id: string
+          job_address: string | null
+          job_start_target_date: string | null
+          last_activity_at: string | null
           lead_id: string | null
-          name: string
+          lead_source: Database["public"]["Enums"]["lead_source"] | null
+          need_description: string | null
+          next_action_date: string | null
+          next_action_description: string | null
           notes: string | null
-          probability: number | null
-          stage: string
+          previous_stage:
+            | Database["public"]["Enums"]["opportunity_stage"]
+            | null
+          probability_override: boolean | null
+          probability_percent: number | null
+          proposal_document_url: string | null
+          stage: Database["public"]["Enums"]["opportunity_stage"]
+          stage_entered_at: string
+          title: string
+          trade_type: string
           updated_at: string
           user_id: string
-          value: number | null
         }
         Insert: {
+          assigned_user_id?: string | null
+          budget_confirmed?: boolean | null
+          competing_options_description?: string | null
+          contract_document_url?: string | null
           created_at?: string
+          customer_email?: string | null
           customer_id?: string | null
-          description?: string | null
-          expected_close_date?: string | null
+          customer_name: string
+          customer_phone?: string | null
+          decision_maker_name?: string | null
+          estimated_close_date?: string | null
+          estimated_value?: number | null
           id?: string
+          job_address?: string | null
+          job_start_target_date?: string | null
+          last_activity_at?: string | null
           lead_id?: string | null
-          name: string
+          lead_source?: Database["public"]["Enums"]["lead_source"] | null
+          need_description?: string | null
+          next_action_date?: string | null
+          next_action_description?: string | null
           notes?: string | null
-          probability?: number | null
-          stage?: string
+          previous_stage?:
+            | Database["public"]["Enums"]["opportunity_stage"]
+            | null
+          probability_override?: boolean | null
+          probability_percent?: number | null
+          proposal_document_url?: string | null
+          stage?: Database["public"]["Enums"]["opportunity_stage"]
+          stage_entered_at?: string
+          title: string
+          trade_type: string
           updated_at?: string
           user_id: string
-          value?: number | null
         }
         Update: {
+          assigned_user_id?: string | null
+          budget_confirmed?: boolean | null
+          competing_options_description?: string | null
+          contract_document_url?: string | null
           created_at?: string
+          customer_email?: string | null
           customer_id?: string | null
-          description?: string | null
-          expected_close_date?: string | null
+          customer_name?: string
+          customer_phone?: string | null
+          decision_maker_name?: string | null
+          estimated_close_date?: string | null
+          estimated_value?: number | null
           id?: string
+          job_address?: string | null
+          job_start_target_date?: string | null
+          last_activity_at?: string | null
           lead_id?: string | null
-          name?: string
+          lead_source?: Database["public"]["Enums"]["lead_source"] | null
+          need_description?: string | null
+          next_action_date?: string | null
+          next_action_description?: string | null
           notes?: string | null
-          probability?: number | null
-          stage?: string
+          previous_stage?:
+            | Database["public"]["Enums"]["opportunity_stage"]
+            | null
+          probability_override?: boolean | null
+          probability_percent?: number | null
+          proposal_document_url?: string | null
+          stage?: Database["public"]["Enums"]["opportunity_stage"]
+          stage_entered_at?: string
+          title?: string
+          trade_type?: string
           updated_at?: string
           user_id?: string
-          value?: number | null
         }
         Relationships: [
           {
@@ -1260,6 +1309,47 @@ export type Database = {
             columns: ["estimate_id"]
             isOneToOne: false
             referencedRelation: "estimates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stage_history: {
+        Row: {
+          changed_at: string
+          changed_by_user_id: string
+          from_stage: Database["public"]["Enums"]["opportunity_stage"] | null
+          id: string
+          note: string | null
+          opportunity_id: string
+          reason: string | null
+          to_stage: Database["public"]["Enums"]["opportunity_stage"]
+        }
+        Insert: {
+          changed_at?: string
+          changed_by_user_id: string
+          from_stage?: Database["public"]["Enums"]["opportunity_stage"] | null
+          id?: string
+          note?: string | null
+          opportunity_id: string
+          reason?: string | null
+          to_stage: Database["public"]["Enums"]["opportunity_stage"]
+        }
+        Update: {
+          changed_at?: string
+          changed_by_user_id?: string
+          from_stage?: Database["public"]["Enums"]["opportunity_stage"] | null
+          id?: string
+          note?: string | null
+          opportunity_id?: string
+          reason?: string | null
+          to_stage?: Database["public"]["Enums"]["opportunity_stage"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stage_history_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
             referencedColumns: ["id"]
           },
         ]
@@ -1894,6 +1984,15 @@ export type Database = {
         | "inspection_pending"
         | "completed"
         | "closed"
+      lead_source: "referral" | "website" | "ad" | "repeat_customer" | "other"
+      opportunity_stage:
+        | "qualification"
+        | "lwe_discovery"
+        | "demo"
+        | "proposal"
+        | "negotiation"
+        | "close"
+        | "psfu"
       task_status: "not_started" | "in_progress" | "completed" | "blocked"
       ticket_priority: "low" | "medium" | "high"
       ticket_status: "open" | "in_progress" | "resolved" | "closed"
@@ -2034,6 +2133,16 @@ export const Constants = {
         "inspection_pending",
         "completed",
         "closed",
+      ],
+      lead_source: ["referral", "website", "ad", "repeat_customer", "other"],
+      opportunity_stage: [
+        "qualification",
+        "lwe_discovery",
+        "demo",
+        "proposal",
+        "negotiation",
+        "close",
+        "psfu",
       ],
       task_status: ["not_started", "in_progress", "completed", "blocked"],
       ticket_priority: ["low", "medium", "high"],

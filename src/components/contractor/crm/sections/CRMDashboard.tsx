@@ -20,9 +20,9 @@ export default function CRMDashboard() {
     },
     {
       title: 'Active Opportunities',
-      value: opportunities.filter(o => !['closed_won', 'closed_lost'].includes(o.stage)).length,
+      value: opportunities.filter(o => !['close', 'psfu'].includes(o.stage)).length,
       icon: Target,
-      description: `$${opportunities.reduce((sum, o) => sum + (o.value || 0), 0).toLocaleString()} pipeline`,
+      description: `$${opportunities.reduce((sum, o) => sum + (o.estimated_value || 0), 0).toLocaleString()} pipeline`,
     },
     {
       title: 'Active Jobs',
@@ -47,7 +47,7 @@ export default function CRMDashboard() {
     })),
     ...opportunities.slice(0, 2).map(o => ({
       type: 'Opportunity',
-      name: o.name,
+      name: o.title,
       status: o.stage,
       date: new Date(o.created_at).toLocaleDateString(),
     })),
