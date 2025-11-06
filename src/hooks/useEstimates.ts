@@ -190,8 +190,16 @@ export function useEstimates() {
       toast.success('Estimate sent to client successfully');
     },
     onError: (error: any) => {
-      const details = error?.context?.error || error?.message || 'Unknown error';
-      toast.error(`Failed to send estimate: ${details}`);
+      let details = error?.context?.error || error?.message || 'Unknown error';
+      
+      // Check for domain verification error
+      if (details.includes('domain is not verified') || details.includes('verify your domain')) {
+        details = 'Domain not verified. Please verify your sending domain at resend.com/domains';
+      }
+      
+      toast.error(`Failed to send estimate: ${details}`, {
+        duration: 6000,
+      });
     },
   });
 

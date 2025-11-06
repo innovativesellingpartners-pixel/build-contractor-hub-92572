@@ -238,7 +238,7 @@ export default function EstimatesSection() {
                 )}
 
                 {/* Actions */}
-                <div className="flex flex-col sm:flex-row gap-2 pt-2">
+                <div className="flex gap-2 pt-2">
                   <Button
                     variant="outline"
                     size="sm"
@@ -268,7 +268,7 @@ export default function EstimatesSection() {
                         deleteEstimate(estimate.id);
                       }
                     }}
-                    className="flex-1 sm:flex-none"
+                    className="shrink-0"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
