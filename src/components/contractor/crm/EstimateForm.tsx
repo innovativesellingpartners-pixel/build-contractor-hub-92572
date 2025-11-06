@@ -86,27 +86,106 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
     handleSubmit,
     watch,
     setValue,
+    reset,
     formState: { errors },
   } = useForm<EstimateFormData>({
     resolver: zodResolver(estimateSchema),
     defaultValues: {
-      title: initialData?.title || '',
-      client_name: initialData?.client_name || '',
-      client_email: initialData?.client_email || '',
-      client_address: initialData?.client_address || '',
-      site_address: initialData?.site_address || '',
-      trade_type: initialData?.trade_type || '',
-      project_description: initialData?.project_description || '',
-      assumptions_and_exclusions: initialData?.assumptions_and_exclusions || '',
-      valid_until: initialData?.valid_until || '',
-      profit_markup_percentage: initialData?.cost_summary?.profit_markup_percentage || 15,
-      tax_and_fees: initialData?.cost_summary?.tax_and_fees || 0,
+      title: '',
+      client_name: '',
+      client_email: '',
+      client_address: '',
+      site_address: '',
+      trade_type: '',
+      project_description: '',
+      assumptions_and_exclusions: '',
+      valid_until: '',
+      profit_markup_percentage: 15,
+      tax_and_fees: 0,
     },
   });
 
   const tradeType = watch('trade_type');
   const profitMarkupPercentage = watch('profit_markup_percentage');
   const taxAndFees = watch('tax_and_fees');
+
+  // Load initialData when it changes (for editing existing estimates)
+  useEffect(() => {
+    if (initialData) {
+      // Reset form fields
+      reset({
+        title: initialData.title || '',
+        client_name: initialData.client_name || '',
+        client_email: initialData.client_email || '',
+        client_address: initialData.client_address || '',
+        site_address: initialData.site_address || '',
+        trade_type: initialData.trade_type || '',
+        project_description: initialData.project_description || '',
+        assumptions_and_exclusions: initialData.assumptions_and_exclusions || '',
+        valid_until: initialData.valid_until || '',
+        profit_markup_percentage: initialData.cost_summary?.profit_markup_percentage || 15,
+        tax_and_fees: initialData.cost_summary?.tax_and_fees || 0,
+      });
+
+      // Load line items
+      if (initialData.line_items && initialData.line_items.length > 0) {
+        setLineItems(initialData.line_items);
+      } else {
+        // Reset to default empty line item if no line items exist
+        setLineItems([{
+          category: 'Materials',
+          item_description: '',
+          quantity: 0,
+          unit_type: '',
+          unit_cost: 0,
+          line_total: 0,
+          included: true,
+        }]);
+      }
+
+      // Load trade-specific data
+      if (initialData.trade_specific) {
+        setTradeSpecific(initialData.trade_specific);
+      } else {
+        setTradeSpecific({});
+      }
+
+      // Load signatures if they exist
+      if (initialData.contractor_signature && contractorSigRef.current) {
+        contractorSigRef.current.fromDataURL(initialData.contractor_signature);
+      }
+      if (initialData.client_signature && clientSigRef.current) {
+        clientSigRef.current.fromDataURL(initialData.client_signature);
+      }
+    } else {
+      // Reset to defaults for new estimate
+      reset({
+        title: '',
+        client_name: '',
+        client_email: '',
+        client_address: '',
+        site_address: '',
+        trade_type: '',
+        project_description: '',
+        assumptions_and_exclusions: '',
+        valid_until: '',
+        profit_markup_percentage: 15,
+        tax_and_fees: 0,
+      });
+      setLineItems([{
+        category: 'Materials',
+        item_description: '',
+        quantity: 0,
+        unit_type: '',
+        unit_cost: 0,
+        line_total: 0,
+        included: true,
+      }]);
+      setTradeSpecific({});
+      contractorSigRef.current?.clear();
+      clientSigRef.current?.clear();
+    }
+  }, [initialData, reset]);
 
   // Auto-calculate line totals and cost summary
   const calculateTotals = () => {
