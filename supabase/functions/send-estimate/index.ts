@@ -50,15 +50,9 @@ const handler = async (req: Request): Promise<Response> => {
     const recipients = [estimate.client_email];
     const bcc: string[] | undefined = contractorEmail ? [contractorEmail] : undefined;
 
-    // Guard: block sending with default resend.dev sender to avoid 403s
+    // Log if using default resend.dev email (optional: verify custom domain later)
     if (FROM_EMAIL.endsWith('@resend.dev') || FROM_EMAIL === 'onboarding@resend.dev') {
-      const reason =
-        'Email sending blocked: Using onboarding@resend.dev. Please verify a sending domain at resend.com/domains and set the EMAIL_FROM secret to an address on that domain (e.g., estimates@yourdomain.com).';
-      console.error(reason, { configuredFrom: FROM_EMAIL, to: recipients });
-      return new Response(JSON.stringify({ success: false, error: reason }), {
-        status: 400,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      });
+      console.log('Note: Using Resend test domain. For custom branding, verify your domain at resend.com/domains');
     }
 
     console.log('Attempting to send estimate email', { to: recipients, bcc, from: FROM_EMAIL, replyTo: contractorEmail || null });
