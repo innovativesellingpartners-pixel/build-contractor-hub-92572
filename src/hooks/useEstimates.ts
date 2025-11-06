@@ -40,6 +40,19 @@ export interface Estimate {
   client_signature?: string;
   created_at?: string;
   updated_at?: string;
+  sent_at?: string;
+  viewed_at?: string;
+  signed_at?: string;
+  paid_at?: string;
+  payment_amount?: number;
+  payment_method?: string;
+  public_token?: string;
+}
+
+export interface SendEstimateParams {
+  estimateId: string;
+  contractorName: string;
+  contractorEmail: string;
 }
 
 export function useEstimates() {
@@ -141,11 +154,31 @@ export function useEstimates() {
     },
   });
 
+  const sendEstimate = useMutation({
+    mutationFn: async ({ estimateId, contractorName, contractorEmail }: SendEstimateParams) => {
+      const { data, error } = await supabase.functions.invoke('send-estimate', {
+        body: { estimateId, contractorName, contractorEmail },
+      });
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['estimates'] });
+      toast.success('Estimate sent to client successfully');
+    },
+    onError: (error) => {
+      toast.error(`Failed to send estimate: ${error.message}`);
+    },
+  });
+
   return {
     estimates,
     isLoading,
     createEstimate: createEstimate.mutate,
     updateEstimate: updateEstimate.mutate,
     deleteEstimate: deleteEstimate.mutate,
+    sendEstimate: sendEstimate.mutate,
+    isSendingEstimate: sendEstimate.isPending,
   };
 }

@@ -44,6 +44,7 @@ import Savings from "./pages/Savings";
 import Platform from "./pages/Platform";
 import ForConsumers from "./pages/ForConsumers";
 import { CRMDashboard } from "@/pages/CRMDashboard";
+import PublicEstimate from "./pages/PublicEstimate";
 
 const queryClient = new QueryClient();
 
@@ -76,6 +77,7 @@ const App = () => (
             <Route path="/legal/privacy" element={<Privacy />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/estimate/:token" element={<PublicEstimate />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/trial-signup" element={<TrialSignup />} />
             <Route path="/bot-signup" element={<BotSignup />} />

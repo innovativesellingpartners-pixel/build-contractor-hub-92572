@@ -1,26 +1,51 @@
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Plus, FileText, Calendar, DollarSign, Trash2, Eye } from 'lucide-react';
+import { Plus, FileText, Calendar, DollarSign, Trash2, Eye, Send, CheckCircle, Clock } from 'lucide-react';
 import { useEstimates } from '@/hooks/useEstimates';
 import EstimateForm from '../EstimateForm';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { MobileOptimizedWrapper, MobileCard, MobileGrid } from './MobileOptimizedWrapper';
 
 export default function EstimatesSection() {
-  const { estimates, isLoading, createEstimate, updateEstimate, deleteEstimate } = useEstimates();
+  const { estimates, isLoading, createEstimate, updateEstimate, deleteEstimate, sendEstimate, isSendingEstimate } = useEstimates();
+  const { user } = useAuth();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedEstimate, setSelectedEstimate] = useState<any>(null);
 
-  const handleSubmit = (data: any, isDraft: boolean) => {
-    if (selectedEstimate) {
-      updateEstimate({ id: selectedEstimate.id, ...data });
-    } else {
-      createEstimate(data);
+  const handleSubmit = async (data: any, isDraft: boolean) => {
+    try {
+      if (selectedEstimate) {
+        await updateEstimate({ id: selectedEstimate.id, ...data });
+      } else {
+        await createEstimate(data);
+      }
+      setIsFormOpen(false);
+      setSelectedEstimate(null);
+    } catch (error) {
+      console.error('Error saving estimate:', error);
     }
-    setIsFormOpen(false);
-    setSelectedEstimate(null);
+  };
+
+  const handleSendEstimate = async (estimate: any) => {
+    if (!estimate.client_email) {
+      toast.error('Client email is required to send estimate');
+      return;
+    }
+
+    try {
+      await sendEstimate({
+        estimateId: estimate.id,
+        contractorName: user?.user_metadata?.full_name || 'CT1 Contractor',
+        contractorEmail: user?.email || '',
+      });
+    } catch (error) {
+      console.error('Error sending estimate:', error);
+    }
   };
 
   const handleEdit = (estimate: any) => {
@@ -48,113 +73,164 @@ export default function EstimatesSection() {
     }
   };
 
+  const getStatusIcon = (estimate: any) => {
+    if (estimate.signed_at) return <CheckCircle className="h-4 w-4 text-green-600" />;
+    if (estimate.viewed_at) return <Eye className="h-4 w-4 text-blue-600" />;
+    if (estimate.sent_at) return <Send className="h-4 w-4 text-gray-600" />;
+    return <Clock className="h-4 w-4 text-muted-foreground" />;
+  };
+
   return (
-    <>
-      <div className="w-full h-full overflow-y-auto">
-        <div className="p-6 space-y-6 max-w-7xl mx-auto">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold">Estimates</h1>
-              <p className="text-muted-foreground">Create and manage project estimates</p>
-            </div>
+    <MobileOptimizedWrapper
+      title="Estimates"
+      actions={
+        <Button onClick={handleNew} className="w-full sm:w-auto">
+          <Plus className="h-4 w-4 mr-2" />
+          Create Estimate
+        </Button>
+      }
+    >
+      <CardDescription className="px-4 sm:px-0 mb-4">
+        Create, manage, and track project estimates
+      </CardDescription>
+
+      {isLoading ? (
+        <div className="flex justify-center p-8">
+          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+        </div>
+      ) : estimates && estimates.length > 0 ? (
+        <MobileGrid>
+          {estimates.map((estimate: any) => (
+            <MobileCard key={estimate.id}>
+              <div className="space-y-4">
+                {/* Header */}
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-lg truncate">{estimate.title}</h3>
+                    {estimate.estimate_number && (
+                      <p className="text-sm text-muted-foreground">#{estimate.estimate_number}</p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {getStatusIcon(estimate)}
+                    <Badge variant={getStatusColor(estimate.status)}>
+                      {estimate.status}
+                    </Badge>
+                  </div>
+                </div>
+
+                {/* Client Info */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm">
+                    <FileText className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">Client:</span>
+                    <span className="font-medium truncate">{estimate.client_name}</span>
+                  </div>
+                  {estimate.client_email && (
+                    <div className="text-sm text-muted-foreground truncate">
+                      {estimate.client_email}
+                    </div>
+                  )}
+                </div>
+
+                {/* Amount & Date */}
+                <div className="flex items-center justify-between pt-3 border-t">
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="h-4 w-4 text-primary" />
+                    <span className="text-xl font-bold text-primary">
+                      ${estimate.total_amount?.toFixed(2) || '0.00'}
+                    </span>
+                  </div>
+                  {estimate.valid_until && (
+                    <div className="text-xs text-muted-foreground">
+                      Valid until {format(new Date(estimate.valid_until), 'MMM dd, yyyy')}
+                    </div>
+                  )}
+                </div>
+
+                {/* Status Indicators */}
+                {(estimate.sent_at || estimate.viewed_at || estimate.signed_at) && (
+                  <div className="flex flex-wrap gap-2 text-xs">
+                    {estimate.sent_at && (
+                      <Badge variant="outline" className="gap-1">
+                        <Send className="h-3 w-3" />
+                        Sent {format(new Date(estimate.sent_at), 'MMM dd')}
+                      </Badge>
+                    )}
+                    {estimate.viewed_at && (
+                      <Badge variant="outline" className="gap-1">
+                        <Eye className="h-3 w-3" />
+                        Viewed {format(new Date(estimate.viewed_at), 'MMM dd')}
+                      </Badge>
+                    )}
+                    {estimate.signed_at && (
+                      <Badge variant="outline" className="gap-1 border-green-600 text-green-600">
+                        <CheckCircle className="h-3 w-3" />
+                        Signed {format(new Date(estimate.signed_at), 'MMM dd')}
+                      </Badge>
+                    )}
+                  </div>
+                )}
+
+                {/* Actions */}
+                <div className="flex flex-col sm:flex-row gap-2 pt-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleEdit(estimate)}
+                    className="flex-1"
+                  >
+                    <Eye className="h-4 w-4 mr-2" />
+                    View/Edit
+                  </Button>
+                  {estimate.status === 'draft' && estimate.client_email && (
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={() => handleSendEstimate(estimate)}
+                      disabled={isSendingEstimate}
+                      className="flex-1"
+                    >
+                      <Send className="h-4 w-4 mr-2" />
+                      Send
+                    </Button>
+                  )}
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => {
+                      if (window.confirm('Are you sure you want to delete this estimate?')) {
+                        deleteEstimate(estimate.id);
+                      }
+                    }}
+                    className="flex-1 sm:flex-none"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </MobileCard>
+          ))}
+        </MobileGrid>
+      ) : (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <FileText className="h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No estimates yet</h3>
+            <p className="text-muted-foreground text-center mb-4">
+              Create your first estimate to get started
+            </p>
             <Button onClick={handleNew}>
               <Plus className="h-4 w-4 mr-2" />
               Create Estimate
             </Button>
-          </div>
+          </CardContent>
+        </Card>
+      )}
 
-          {isLoading ? (
-            <div className="text-center py-8">Loading estimates...</div>
-          ) : estimates && estimates.length > 0 ? (
-            <div className="grid gap-4">
-              {estimates.map((estimate) => (
-                <Card key={estimate.id} className="hover:shadow-md transition-shadow">
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <CardTitle className="flex items-center gap-2">
-                          <FileText className="h-5 w-5" />
-                          {estimate.title}
-                        </CardTitle>
-                        <div className="mt-2 flex flex-wrap gap-2 text-sm text-muted-foreground">
-                          {estimate.estimate_number && (
-                            <span>#{estimate.estimate_number}</span>
-                          )}
-                          <Badge variant={getStatusColor(estimate.status)}>
-                            {estimate.status}
-                          </Badge>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-2xl font-bold text-primary">
-                          ${estimate.total_amount?.toFixed(2) || '0.00'}
-                        </div>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      {estimate.description && (
-                        <p className="text-sm text-muted-foreground">{estimate.description}</p>
-                      )}
-                      <div className="flex items-center gap-4 text-sm">
-                        {estimate.created_at && (
-                          <div className="flex items-center gap-1">
-                            <Calendar className="h-4 w-4" />
-                            <span>{format(new Date(estimate.created_at), 'MMM d, yyyy')}</span>
-                          </div>
-                        )}
-                        {estimate.valid_until && (
-                          <div className="flex items-center gap-1">
-                            <span className="text-muted-foreground">Valid until:</span>
-                            <span>{format(new Date(estimate.valid_until), 'MMM d, yyyy')}</span>
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex gap-2 pt-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEdit(estimate)}
-                        >
-                          <Eye className="h-4 w-4 mr-1" />
-                          View/Edit
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => deleteEstimate(estimate.id!)}
-                        >
-                          <Trash2 className="h-4 w-4 mr-1" />
-                          Delete
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            <Card className="hover:shadow-md transition-shadow">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="h-5 w-5" />
-                  No estimates yet
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
-                  Create your first estimate to get started. Estimates help you provide
-                  professional quotes to customers and track project profitability.
-                </p>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-      </div>
-
+      {/* Estimate Form Dialog */}
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="max-w-6xl h-[90vh] p-0">
+        <DialogContent className="max-w-6xl max-h-[95vh] p-0">
           <DialogHeader className="px-6 pt-6">
             <DialogTitle>
               {selectedEstimate ? 'Edit Estimate' : 'Create New Estimate'}
@@ -170,6 +246,6 @@ export default function EstimatesSection() {
           />
         </DialogContent>
       </Dialog>
-    </>
+    </MobileOptimizedWrapper>
   );
 }

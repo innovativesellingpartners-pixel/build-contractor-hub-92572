@@ -697,26 +697,29 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
           </Card>
 
           {/* Fixed Bottom Bar with Total and Actions */}
-          <div className="sticky bottom-0 bg-background border-t p-4 flex flex-col md:flex-row items-center justify-between gap-4 shadow-lg">
-            <div className="text-xl font-bold">
-              Grand Total: <span className="text-primary">${totals.grandTotal.toFixed(2)}</span>
-            </div>
-            <div className="flex gap-2">
-              <Button type="button" variant="outline" onClick={onCancel}>
-                Cancel
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleSubmit((data) => handleFormSubmit(data, true))}
-              >
-                <Save className="h-4 w-4 mr-2" />
-                Save Draft
-              </Button>
-              <Button type="submit">
-                <Send className="h-4 w-4 mr-2" />
-                Send to Client
-              </Button>
+          <div className="sticky bottom-0 bg-background border-t p-4 shadow-lg">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+              <div className="text-xl font-bold text-center sm:text-left">
+                Grand Total: <span className="text-primary">${totals.grandTotal.toFixed(2)}</span>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button type="button" variant="outline" onClick={onCancel} className="w-full sm:w-auto">
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleSubmit((data) => handleFormSubmit(data, true))}
+                  className="w-full sm:w-auto"
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Draft
+                </Button>
+                <Button type="submit" className="w-full sm:w-auto">
+                  <Send className="h-4 w-4 mr-2" />
+                  Send to Client
+                </Button>
+              </div>
             </div>
           </div>
         </form>

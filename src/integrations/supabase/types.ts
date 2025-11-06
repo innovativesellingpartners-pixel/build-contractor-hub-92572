@@ -397,6 +397,38 @@ export type Database = {
           },
         ]
       }
+      estimate_views: {
+        Row: {
+          estimate_id: string | null
+          id: string
+          ip_address: string | null
+          user_agent: string | null
+          viewed_at: string | null
+        }
+        Insert: {
+          estimate_id?: string | null
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          viewed_at?: string | null
+        }
+        Update: {
+          estimate_id?: string | null
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          viewed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estimate_views_estimate_id_fkey"
+            columns: ["estimate_id"]
+            isOneToOne: false
+            referencedRelation: "estimates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       estimates: {
         Row: {
           created_at: string
@@ -406,12 +438,19 @@ export type Database = {
           id: string
           line_items: Json | null
           opportunity_id: string | null
+          paid_at: string | null
+          payment_amount: number | null
+          payment_method: string | null
+          public_token: string | null
+          sent_at: string | null
+          signed_at: string | null
           status: string
           title: string
           total_amount: number
           updated_at: string
           user_id: string
           valid_until: string | null
+          viewed_at: string | null
         }
         Insert: {
           created_at?: string
@@ -421,12 +460,19 @@ export type Database = {
           id?: string
           line_items?: Json | null
           opportunity_id?: string | null
+          paid_at?: string | null
+          payment_amount?: number | null
+          payment_method?: string | null
+          public_token?: string | null
+          sent_at?: string | null
+          signed_at?: string | null
           status?: string
           title: string
           total_amount?: number
           updated_at?: string
           user_id: string
           valid_until?: string | null
+          viewed_at?: string | null
         }
         Update: {
           created_at?: string
@@ -436,12 +482,19 @@ export type Database = {
           id?: string
           line_items?: Json | null
           opportunity_id?: string | null
+          paid_at?: string | null
+          payment_amount?: number | null
+          payment_method?: string | null
+          public_token?: string | null
+          sent_at?: string | null
+          signed_at?: string | null
           status?: string
           title?: string
           total_amount?: number
           updated_at?: string
           user_id?: string
           valid_until?: string | null
+          viewed_at?: string | null
         }
         Relationships: [
           {
