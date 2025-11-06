@@ -243,17 +243,33 @@ export default function EstimatesSection() {
                     <Eye className="h-4 w-4 mr-2" />
                     View/Edit
                   </Button>
-                  {estimate.status === 'draft' && estimate.client_email && (
-                    <Button
-                      variant="default"
-                      size="sm"
-                      onClick={() => handleSendEstimate(estimate)}
-                      disabled={isSendingEstimate}
-                      className="flex-1 min-w-[120px]"
-                    >
-                      <Send className="h-4 w-4 mr-2" />
-                      Send
-                    </Button>
+                  {estimate.client_email && (
+                    <>
+                      {estimate.status === 'draft' && (
+                        <Button
+                          variant="default"
+                          size="sm"
+                          onClick={() => handleSendEstimate(estimate)}
+                          disabled={isSendingEstimate}
+                          className="flex-1 min-w-[120px]"
+                        >
+                          <Send className="h-4 w-4 mr-2" />
+                          Send
+                        </Button>
+                      )}
+                      {(estimate.status === 'sent' || estimate.status === 'accepted') && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleSendEstimate(estimate)}
+                          disabled={isSendingEstimate}
+                          className="flex-1 min-w-[120px] gap-2"
+                        >
+                          <RefreshCw className={`h-4 w-4 ${isSendingEstimate ? 'animate-spin' : ''}`} />
+                          Resend
+                        </Button>
+                      )}
+                    </>
                   )}
                   <Button
                     variant="destructive"
