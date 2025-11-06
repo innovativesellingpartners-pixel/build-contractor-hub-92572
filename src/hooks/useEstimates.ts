@@ -189,8 +189,9 @@ export function useEstimates() {
       queryClient.invalidateQueries({ queryKey: ['estimates'] });
       toast.success('Estimate sent to client successfully');
     },
-    onError: (error) => {
-      toast.error(`Failed to send estimate: ${error.message}`);
+    onError: (error: any) => {
+      const details = error?.context?.error || error?.message || 'Unknown error';
+      toast.error(`Failed to send estimate: ${details}`);
     },
   });
 
