@@ -330,7 +330,7 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
                     
                     <div className="space-y-2">
                       <Label htmlFor="trade_type">Trade Type *</Label>
-                      <Select onValueChange={(value) => setValue('trade_type', value)} defaultValue={watch('trade_type')}>
+                      <Select onValueChange={(value) => setValue('trade_type', value)} value={watch('trade_type')}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select trade" />
                         </SelectTrigger>
