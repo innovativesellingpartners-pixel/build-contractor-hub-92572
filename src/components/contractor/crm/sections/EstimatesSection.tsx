@@ -185,14 +185,9 @@ export default function EstimatesSection() {
                               <div className="text-xs text-muted-foreground">
                                 Last attempt: {format(new Date(estimate.last_send_attempt), 'MMM dd, yyyy h:mm a')}
                               </div>
-                              {estimate.email_provider_id && (
-                                <div className="text-xs text-muted-foreground font-mono">
-                                  ID: {estimate.email_provider_id}
-                                </div>
-                              )}
                               {estimate.email_send_error && (
                                 <div className="text-xs text-destructive mt-1">
-                                  Error: {estimate.email_send_error}
+                                  Failed to deliver
                                 </div>
                               )}
                             </div>

@@ -31,40 +31,40 @@ export default function CustomersSection() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {customers.map((customer) => (
           <Card key={customer.id} className="hover:shadow-lg transition-shadow cursor-pointer">
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle className="text-lg">{customer.name}</CardTitle>
+            <CardHeader className="pb-3">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <CardTitle className="text-lg truncate">{customer.name}</CardTitle>
                   {customer.company && (
-                    <p className="text-sm text-muted-foreground">{customer.company}</p>
+                    <p className="text-sm text-muted-foreground truncate">{customer.company}</p>
                   )}
                 </div>
-                <Badge variant={customer.customer_type === 'commercial' ? 'default' : 'secondary'}>
+                <Badge variant={customer.customer_type === 'commercial' ? 'default' : 'secondary'} className="shrink-0">
                   {customer.customer_type}
                 </Badge>
               </div>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-2">
               {customer.phone && (
-                <div className="flex items-center gap-2 text-sm">
-                  <Phone className="h-4 w-4 text-muted-foreground" />
-                  <a href={`tel:${customer.phone}`} className="hover:underline">
+                <div className="flex items-center gap-2 text-sm min-w-0">
+                  <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <a href={`tel:${customer.phone}`} className="hover:underline truncate">
                     {customer.phone}
                   </a>
                 </div>
               )}
               {customer.email && (
-                <div className="flex items-center gap-2 text-sm">
-                  <Mail className="h-4 w-4 text-muted-foreground" />
-                  <a href={`mailto:${customer.email}`} className="hover:underline">
+                <div className="flex items-center gap-2 text-sm min-w-0">
+                  <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <a href={`mailto:${customer.email}`} className="hover:underline truncate">
                     {customer.email}
                   </a>
                 </div>
               )}
               {customer.address && (
-                <div className="flex items-start gap-2 text-sm">
-                  <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                  <span>
+                <div className="flex items-start gap-2 text-sm min-w-0">
+                  <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
+                  <span className="line-clamp-2">
                     {customer.address}
                     {customer.city && `, ${customer.city}`}
                     {customer.state && `, ${customer.state}`}
