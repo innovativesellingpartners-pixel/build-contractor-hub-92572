@@ -548,6 +548,45 @@ export type Database = {
           },
         ]
       }
+      insurance_documents: {
+        Row: {
+          document_type: string
+          expires_at: string | null
+          file_name: string
+          file_path: string
+          file_size: number
+          file_type: string
+          id: string
+          notes: string | null
+          uploaded_at: string
+          user_id: string
+        }
+        Insert: {
+          document_type: string
+          expires_at?: string | null
+          file_name: string
+          file_path: string
+          file_size: number
+          file_type: string
+          id?: string
+          notes?: string | null
+          uploaded_at?: string
+          user_id: string
+        }
+        Update: {
+          document_type?: string
+          expires_at?: string | null
+          file_name?: string
+          file_path?: string
+          file_size?: number
+          file_type?: string
+          id?: string
+          notes?: string | null
+          uploaded_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       invoices: {
         Row: {
           amount_due: number

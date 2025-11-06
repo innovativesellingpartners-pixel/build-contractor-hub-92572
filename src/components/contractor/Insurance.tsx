@@ -4,12 +4,18 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Shield, FileText, AlertCircle, CheckCircle, Check, ChevronsUpDown } from "lucide-react";
-import { useState } from "react";
+import { Shield, FileText, AlertCircle, CheckCircle, Check, ChevronsUpDown, Upload, Download, Trash2, Loader2 } from "lucide-react";
+import { useState, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import ct1Logo from "@/assets/ct1-logo-main.png";
 import { ContactForm } from "@/components/ContactForm";
+import { useInsuranceDocuments } from "@/hooks/useInsuranceDocuments";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { format } from "date-fns";
 
 const insuranceProviders = [
   "State Farm",
@@ -120,7 +126,14 @@ export function Insurance() {
   const [comboboxOpen, setComboboxOpen] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState("");
   const [quoteDialogOpen, setQuoteDialogOpen] = useState(false);
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const { toast } = useToast();
+  const { documents, isLoading: documentsLoading, uploadDocument, deleteDocument, downloadDocument, isUploading, isDeleting } = useInsuranceDocuments();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [documentType, setDocumentType] = useState<string>("");
+  const [expiresAt, setExpiresAt] = useState<string>("");
+  const [notes, setNotes] = useState<string>("");
 
   const handleProviderSelect = (provider: string) => {
     setSelectedProvider(provider);
@@ -129,6 +142,66 @@ export function Insurance() {
       title: "Insurance Provider Selected",
       description: `You selected ${provider}. Contact your provider to manage your policy.`,
     });
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Check file size (10MB limit)
+      if (file.size > 10485760) {
+        toast({
+          title: "File too large",
+          description: "Please select a file smaller than 10MB",
+          variant: "destructive",
+        });
+        return;
+      }
+      setSelectedFile(file);
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!selectedFile || !documentType) {
+      toast({
+        title: "Missing information",
+        description: "Please select a file and document type",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    await uploadDocument.mutateAsync({
+      file: selectedFile,
+      documentType,
+      expiresAt: expiresAt || undefined,
+      notes: notes || undefined,
+    });
+
+    // Reset form
+    setSelectedFile(null);
+    setDocumentType("");
+    setExpiresAt("");
+    setNotes("");
+    setUploadDialogOpen(false);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleDelete = async (document: any) => {
+    if (window.confirm(`Are you sure you want to delete ${document.file_name}?`)) {
+      await deleteDocument.mutateAsync(document);
+    }
+  };
+
+  const getDocumentTypeLabel = (type: string) => {
+    const labels: Record<string, string> = {
+      general_liability: "General Liability",
+      workers_comp: "Workers Comp",
+      contractor_license: "Contractor License",
+      other: "Other",
+    };
+    return labels[type] || type;
   };
 
   return (
@@ -154,7 +227,15 @@ export function Insurance() {
           >
             Contact Sales
           </Button>
-          <Button variant="secondary" className="w-full sm:w-auto" size="sm">Upload Documents</Button>
+          <Button 
+            variant="secondary" 
+            className="w-full sm:w-auto" 
+            size="sm"
+            onClick={() => setUploadDialogOpen(true)}
+          >
+            <Upload className="h-4 w-4 mr-2" />
+            Upload Documents
+          </Button>
         </div>
       </div>
 
@@ -347,45 +428,181 @@ export function Insurance() {
       {/* Documents */}
       <Card>
         <CardHeader>
-          <CardTitle>Insurance Documents</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>Insurance Documents</CardTitle>
+            <Button 
+              size="sm" 
+              onClick={() => setUploadDialogOpen(true)}
+            >
+              <Upload className="h-4 w-4 mr-2" />
+              Upload
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 transition-colors">
-              <div className="flex items-center gap-3">
-                <FileText className="h-5 w-5 text-primary" />
-                <div>
-                  <p className="font-medium">General Liability Certificate</p>
-                  <p className="text-xs text-muted-foreground">Updated: Jan 1, 2024</p>
-                </div>
-              </div>
-              <Button size="sm" variant="outline">Download</Button>
+          {documentsLoading ? (
+            <div className="flex justify-center p-8">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
-
-            <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 transition-colors">
-              <div className="flex items-center gap-3">
-                <FileText className="h-5 w-5 text-primary" />
-                <div>
-                  <p className="font-medium">Workers Comp Policy</p>
-                  <p className="text-xs text-muted-foreground">Updated: Jan 1, 2023</p>
+          ) : documents && documents.length > 0 ? (
+            <div className="space-y-3">
+              {documents.map((doc) => (
+                <div key={doc.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 transition-colors">
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <FileText className="h-5 w-5 text-primary shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium truncate">{doc.file_name}</p>
+                        <Badge variant="outline" className="shrink-0">
+                          {getDocumentTypeLabel(doc.document_type)}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Uploaded: {format(new Date(doc.uploaded_at), 'MMM dd, yyyy')}
+                        {doc.expires_at && ` • Expires: ${format(new Date(doc.expires_at), 'MMM dd, yyyy')}`}
+                      </p>
+                      {doc.notes && (
+                        <p className="text-xs text-muted-foreground truncate mt-1">{doc.notes}</p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => downloadDocument(doc)}
+                    >
+                      <Download className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="destructive"
+                      onClick={() => handleDelete(doc)}
+                      disabled={isDeleting}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
-              </div>
-              <Button size="sm" variant="outline">Download</Button>
+              ))}
             </div>
-
-            <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 transition-colors">
-              <div className="flex items-center gap-3">
-                <FileText className="h-5 w-5 text-primary" />
-                <div>
-                  <p className="font-medium">Contractor License</p>
-                  <p className="text-xs text-muted-foreground">Updated: Jul 1, 2023</p>
-                </div>
-              </div>
-              <Button size="sm" variant="outline">Download</Button>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>No documents uploaded yet</p>
+              <Button 
+                variant="outline" 
+                className="mt-4"
+                onClick={() => setUploadDialogOpen(true)}
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                Upload Your First Document
+              </Button>
             </div>
-          </div>
+          )}
         </CardContent>
       </Card>
+
+      {/* Upload Dialog */}
+      <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Upload Insurance Document</DialogTitle>
+            <DialogDescription>
+              Upload your insurance certificates, licenses, and compliance documents
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 mt-4">
+            <div className="space-y-2">
+              <Label htmlFor="file">Select File</Label>
+              <Input
+                id="file"
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                onChange={handleFileSelect}
+              />
+              {selectedFile && (
+                <p className="text-sm text-muted-foreground">
+                  Selected: {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="document-type">Document Type</Label>
+              <Select value={documentType} onValueChange={setDocumentType}>
+                <SelectTrigger id="document-type">
+                  <SelectValue placeholder="Select document type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="general_liability">General Liability</SelectItem>
+                  <SelectItem value="workers_comp">Workers Comp</SelectItem>
+                  <SelectItem value="contractor_license">Contractor License</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="expires-at">Expiration Date (Optional)</Label>
+              <Input
+                id="expires-at"
+                type="date"
+                value={expiresAt}
+                onChange={(e) => setExpiresAt(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="notes">Notes (Optional)</Label>
+              <Textarea
+                id="notes"
+                placeholder="Add any notes about this document..."
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                rows={3}
+              />
+            </div>
+
+            <div className="flex gap-2 pt-4">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => {
+                  setUploadDialogOpen(false);
+                  setSelectedFile(null);
+                  setDocumentType("");
+                  setExpiresAt("");
+                  setNotes("");
+                  if (fileInputRef.current) {
+                    fileInputRef.current.value = "";
+                  }
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="flex-1"
+                onClick={handleUpload}
+                disabled={!selectedFile || !documentType || isUploading}
+              >
+                {isUploading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Uploading...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="h-4 w-4 mr-2" />
+                    Upload
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
