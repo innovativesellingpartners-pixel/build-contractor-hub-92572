@@ -14,6 +14,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Plus, Trash2, ChevronDown, Save, Send, FileText } from 'lucide-react';
 import SignatureCanvas from 'react-signature-canvas';
 import { EstimateLineItem } from '@/hooks/useEstimates';
+import { useCustomers } from '@/hooks/useCustomers';
+import AddCustomerDialog from './AddCustomerDialog';
 
 const tradeTypes = [
   'General Remodel',
@@ -78,6 +80,11 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
   const [summaryOpen, setSummaryOpen] = useState(true);
   const [tradeSpecificOpen, setTradeSpecificOpen] = useState(false);
 
+  // Customers
+  const { customers, refreshCustomers } = useCustomers();
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string | undefined>(undefined);
+  const [isAddCustomerOpen, setIsAddCustomerOpen] = useState(false);
+
   const contractorSigRef = useRef<SignatureCanvas>(null);
   const clientSigRef = useRef<SignatureCanvas>(null);
 
@@ -140,6 +147,11 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
       // Explicitly set trade_type to ensure Select component updates
       if (initialData.trade_type) {
         setValue('trade_type', initialData.trade_type, { shouldValidate: true });
+      }
+
+      // Set the selected customer if present
+      if (initialData.customer_id) {
+        setSelectedCustomerId(initialData.customer_id);
       }
 
       // Load line items
@@ -287,6 +299,7 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
   const handleFormSubmit = (data: EstimateFormData, isDraft: boolean) => {
     const formData = {
       ...data,
+      customer_id: selectedCustomerId,
       line_items: lineItems,
       cost_summary: {
         materials_total: totals.materialsTotal,
@@ -336,6 +349,44 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <CardContent className="space-y-4">
+                  {/* Customer selection */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                    <div className="space-y-2 md:col-span-2">
+                      <Label htmlFor="customer">Customer</Label>
+                      <Select 
+                        value={selectedCustomerId}
+                        onValueChange={(id) => {
+                          setSelectedCustomerId(id);
+                          const customer = customers.find(c => c.id === id);
+                          if (customer) {
+                            setValue('client_name', customer.name || '');
+                            setValue('client_email', customer.email || '');
+                            const addr = [customer.address, customer.city, customer.state, customer.zip_code]
+                              .filter(Boolean)
+                              .join(', ');
+                            setValue('client_address', addr);
+                          }
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a customer" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {customers.map((c) => (
+                            <SelectItem key={c.id} value={c.id}>
+                              {c.name}{c.company ? ` — ${c.company}` : ''}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex md:justify-end">
+                      <Button type="button" variant="outline" onClick={() => setIsAddCustomerOpen(true)}>
+                        <Plus className="h-4 w-4 mr-2" /> Add New
+                      </Button>
+                    </div>
+                  </div>
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="title">Estimate Title *</Label>
@@ -821,6 +872,10 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
           </div>
         </form>
       </div>
+      <AddCustomerDialog 
+        open={isAddCustomerOpen} 
+        onOpenChange={(open) => { setIsAddCustomerOpen(open); if (!open) refreshCustomers(); }}
+      />
     </ScrollArea>
   );
 }
