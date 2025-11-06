@@ -238,12 +238,12 @@ export default function EstimatesSection() {
                 )}
 
                 {/* Actions */}
-                <div className="flex gap-2 pt-2">
+                <div className="flex flex-wrap items-center gap-2 pt-2">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => handleEdit(estimate)}
-                    className="flex-1"
+                    className="flex-1 min-w-[140px]"
                   >
                     <Eye className="h-4 w-4 mr-2" />
                     View/Edit
@@ -254,7 +254,7 @@ export default function EstimatesSection() {
                       size="sm"
                       onClick={() => handleSendEstimate(estimate)}
                       disabled={isSendingEstimate}
-                      className="flex-1"
+                      className="flex-1 min-w-[120px]"
                     >
                       <Send className="h-4 w-4 mr-2" />
                       Send
@@ -269,6 +269,8 @@ export default function EstimatesSection() {
                       }
                     }}
                     className="shrink-0"
+                    aria-label="Delete estimate"
+                    title="Delete estimate"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
