@@ -92,6 +92,17 @@ export function useEstimates() {
           total_amount: estimate.total_amount,
           valid_until: estimate.valid_until,
           line_items: estimate.line_items as any || [],
+          client_name: estimate.client_name,
+          client_email: estimate.client_email,
+          client_address: estimate.client_address,
+          site_address: estimate.site_address,
+          trade_type: estimate.trade_type,
+          project_description: estimate.project_description,
+          assumptions_and_exclusions: estimate.assumptions_and_exclusions,
+          cost_summary: estimate.cost_summary as any,
+          trade_specific: estimate.trade_specific as any,
+          contractor_signature: estimate.contractor_signature,
+          client_signature: estimate.client_signature,
         }])
         .select()
         .single();
@@ -119,6 +130,17 @@ export function useEstimates() {
           total_amount: estimate.total_amount,
           valid_until: estimate.valid_until,
           line_items: estimate.line_items as any || [],
+          client_name: estimate.client_name,
+          client_email: estimate.client_email,
+          client_address: estimate.client_address,
+          site_address: estimate.site_address,
+          trade_type: estimate.trade_type,
+          project_description: estimate.project_description,
+          assumptions_and_exclusions: estimate.assumptions_and_exclusions,
+          cost_summary: estimate.cost_summary as any,
+          trade_specific: estimate.trade_specific as any,
+          contractor_signature: estimate.contractor_signature,
+          client_signature: estimate.client_signature,
         })
         .eq('id', id)
         .select()

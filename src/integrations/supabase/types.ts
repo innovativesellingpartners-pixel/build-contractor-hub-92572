@@ -431,6 +431,13 @@ export type Database = {
       }
       estimates: {
         Row: {
+          assumptions_and_exclusions: string | null
+          client_address: string | null
+          client_email: string | null
+          client_name: string | null
+          client_signature: string | null
+          contractor_signature: string | null
+          cost_summary: Json | null
           created_at: string
           customer_id: string | null
           description: string | null
@@ -441,18 +448,29 @@ export type Database = {
           paid_at: string | null
           payment_amount: number | null
           payment_method: string | null
+          project_description: string | null
           public_token: string | null
           sent_at: string | null
           signed_at: string | null
+          site_address: string | null
           status: string
           title: string
           total_amount: number
+          trade_specific: Json | null
+          trade_type: string | null
           updated_at: string
           user_id: string
           valid_until: string | null
           viewed_at: string | null
         }
         Insert: {
+          assumptions_and_exclusions?: string | null
+          client_address?: string | null
+          client_email?: string | null
+          client_name?: string | null
+          client_signature?: string | null
+          contractor_signature?: string | null
+          cost_summary?: Json | null
           created_at?: string
           customer_id?: string | null
           description?: string | null
@@ -463,18 +481,29 @@ export type Database = {
           paid_at?: string | null
           payment_amount?: number | null
           payment_method?: string | null
+          project_description?: string | null
           public_token?: string | null
           sent_at?: string | null
           signed_at?: string | null
+          site_address?: string | null
           status?: string
           title: string
           total_amount?: number
+          trade_specific?: Json | null
+          trade_type?: string | null
           updated_at?: string
           user_id: string
           valid_until?: string | null
           viewed_at?: string | null
         }
         Update: {
+          assumptions_and_exclusions?: string | null
+          client_address?: string | null
+          client_email?: string | null
+          client_name?: string | null
+          client_signature?: string | null
+          contractor_signature?: string | null
+          cost_summary?: Json | null
           created_at?: string
           customer_id?: string | null
           description?: string | null
@@ -485,12 +514,16 @@ export type Database = {
           paid_at?: string | null
           payment_amount?: number | null
           payment_method?: string | null
+          project_description?: string | null
           public_token?: string | null
           sent_at?: string | null
           signed_at?: string | null
+          site_address?: string | null
           status?: string
           title?: string
           total_amount?: number
+          trade_specific?: Json | null
+          trade_type?: string | null
           updated_at?: string
           user_id?: string
           valid_until?: string | null
