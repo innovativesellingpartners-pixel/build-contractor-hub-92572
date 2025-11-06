@@ -5,6 +5,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4';
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const FROM_EMAIL = Deno.env.get('EMAIL_FROM') || 'onboarding@resend.dev';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -47,7 +48,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send email to client
     const emailResponse = await resend.emails.send({
-      from: `${contractorName} <onboarding@resend.dev>`,
+      from: `${contractorName} <${FROM_EMAIL}>`,
       to: [estimate.client_email],
       subject: `RE: ${contractorName} - Powered by CT1 - Estimate`,
       html: `
@@ -161,6 +162,18 @@ const handler = async (req: Request): Promise<Response> => {
         </html>
       `,
     });
+
+    // If Resend rejected the email, return an error and do not mark as sent
+    if (emailResponse?.error) {
+      console.error('Resend error:', emailResponse.error);
+      return new Response(JSON.stringify({
+        success: false,
+        error: emailResponse.error,
+      }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
 
     // Update estimate status
     const { error: updateError } = await supabase
