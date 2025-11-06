@@ -55,6 +55,7 @@ export function Leads() {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [vocallinkLoading, setVocallinkLoading] = useState(true);
   const [vocallinkUrl, setVocallinkUrl] = useState("https://vocallink-pro.lovable.app/admin");
+  const [debugInfo, setDebugInfo] = useState<{ hasToken: boolean; hasRefresh: boolean; email: string }>({ hasToken: false, hasRefresh: false, email: '' });
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -71,6 +72,13 @@ export function Leads() {
             auto_login: 'true'
           });
           setVocallinkUrl(`https://vocallink-pro.lovable.app/admin?${params.toString()}`);
+          
+          // Set debug info
+          setDebugInfo({
+            hasToken: !!data.session.access_token,
+            hasRefresh: !!data.session.refresh_token,
+            email: user.email || ''
+          });
         }
       }
     };
@@ -443,7 +451,35 @@ export function Leads() {
         <TabsContent value="vocallink" className="mt-6">
           <Card className="border-0">
             <CardContent className="p-0">
-              <div className="relative w-full" style={{ height: 'calc(100vh - 280px)', minHeight: '600px' }}>
+              {/* Debug Info Panel */}
+              <div className="mb-4 p-4 bg-muted/50 rounded-lg border border-border">
+                <h4 className="font-semibold mb-2 text-sm">🔍 Auto-Login Debug Info</h4>
+                <div className="space-y-1 text-xs font-mono">
+                  <div className="flex items-center gap-2">
+                    <span className={debugInfo.hasToken ? 'text-green-600' : 'text-red-600'}>
+                      {debugInfo.hasToken ? '✓' : '✗'}
+                    </span>
+                    <span>Access Token: {debugInfo.hasToken ? 'Present' : 'Missing'}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={debugInfo.hasRefresh ? 'text-green-600' : 'text-red-600'}>
+                      {debugInfo.hasRefresh ? '✓' : '✗'}
+                    </span>
+                    <span>Refresh Token: {debugInfo.hasRefresh ? 'Present' : 'Missing'}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={debugInfo.email ? 'text-green-600' : 'text-red-600'}>
+                      {debugInfo.email ? '✓' : '✗'}
+                    </span>
+                    <span>Email: {debugInfo.email || 'Missing'}</span>
+                  </div>
+                  <div className="mt-2 pt-2 border-t border-border text-muted-foreground">
+                    💡 If tokens are present but login still required, VocalLink may use a different backend
+                  </div>
+                </div>
+              </div>
+              
+              <div className="relative w-full" style={{ height: 'calc(100vh - 380px)', minHeight: '500px' }}>
                 {vocallinkLoading && (
                   <div className="absolute inset-0 flex items-center justify-center bg-background">
                     <div className="space-y-4 w-full max-w-md p-8">
