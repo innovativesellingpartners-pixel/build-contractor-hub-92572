@@ -44,7 +44,8 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Generate public view URL
-    const publicUrl = `${Deno.env.get('SUPABASE_URL')?.replace('supabase.co', 'lovableproject.com')}/estimate/${estimate.public_token}`;
+    const appUrl = Deno.env.get('APP_URL') || 'https://yourapp.lovable.app';
+    const publicUrl = `${appUrl}/estimate/${estimate.public_token}`;
 
     // Send email to client
     const recipients = [estimate.client_email];
