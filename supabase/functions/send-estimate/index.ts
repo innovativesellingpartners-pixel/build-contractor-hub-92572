@@ -47,14 +47,15 @@ const handler = async (req: Request): Promise<Response> => {
     const publicUrl = `${Deno.env.get('SUPABASE_URL')?.replace('supabase.co', 'lovableproject.com')}/estimate/${estimate.public_token}`;
 
     // Send email to client
-    console.log('Attempting to send email to:', estimate.client_email);
-    console.log('From:', `${contractorName} <${FROM_EMAIL}>`);
-    console.log('Reply-to:', contractorEmail);
+    const recipients = [estimate.client_email];
+    const bcc: string[] | undefined = contractorEmail ? [contractorEmail] : undefined;
+    console.log('Attempting to send estimate email', { to: recipients, bcc, from: FROM_EMAIL, replyTo: contractorEmail || null });
     
     const emailResponse = await resend.emails.send({
       from: `${contractorName} <${FROM_EMAIL}>`,
-      to: [estimate.client_email],
-      reply_to: contractorEmail,
+      to: recipients,
+      bcc,
+      reply_to: contractorEmail || undefined,
       subject: `RE: ${contractorName} - Powered by CT1 - Estimate`,
       html: `
         <!DOCTYPE html>

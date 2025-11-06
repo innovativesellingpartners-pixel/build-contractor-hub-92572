@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -108,6 +108,14 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
   const tradeType = watch('trade_type');
   const profitMarkupPercentage = watch('profit_markup_percentage');
   const taxAndFees = watch('tax_and_fees');
+
+  const tradeOptions = useMemo(() => {
+    const base = [...tradeTypes];
+    if (initialData?.trade_type && !base.includes(initialData.trade_type)) {
+      return [initialData.trade_type, ...base];
+    }
+    return base;
+  }, [initialData]);
 
   // Load initialData when it changes (for editing existing estimates)
   useEffect(() => {
@@ -345,7 +353,7 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
                           <SelectValue placeholder="Select trade" />
                         </SelectTrigger>
                         <SelectContent>
-                          {tradeTypes.map((trade) => (
+                          {tradeOptions.map((trade) => (
                             <SelectItem key={trade} value={trade}>
                               {trade}
                             </SelectItem>
