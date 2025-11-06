@@ -1,27 +1,21 @@
 import { useState } from 'react';
-import { useJobs, Job } from '@/hooks/useJobs';
-import { useJobPhotos } from '@/hooks/useJobPhotos';
-import { useJobCosts } from '@/hooks/useJobCosts';
-import { useDailyLogs } from '@/hooks/useDailyLogs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
-  Upload, 
-  Plus, 
-  Trash2, 
-  MapPin, 
-  Calendar, 
-  DollarSign,
-  Image as ImageIcon,
-  FileText,
-  Calculator
+  MapPin, Clock, TrendingUp, AlertCircle, CheckCircle, Edit, Briefcase 
 } from 'lucide-react';
+import { useJobs, Job } from '@/hooks/useJobs';
+import { useJobPhotos } from '@/hooks/useJobPhotos';
+import { useDailyLogs } from '@/hooks/useDailyLogs';
+import TasksTab from './job/TasksTab';
+import MaterialsTab from './job/MaterialsTab';
+import ChangeOrdersTab from './job/ChangeOrdersTab';
+import InvoicesTab from './job/InvoicesTab';
+import { format } from 'date-fns';
 
 interface JobDetailViewProps {
   job: Job | null;
@@ -29,10 +23,246 @@ interface JobDetailViewProps {
   onOpenChange: (open: boolean) => void;
 }
 
+// Photos Tab Component
+function PhotosTab({ jobId }: { jobId: string }) {
+  const { photos, uploading, uploadPhoto, deletePhoto } = useJobPhotos(jobId);
+  const [photoCaption, setPhotoCaption] = useState('');
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      await uploadPhoto(file, photoCaption);
+      setPhotoCaption('');
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-semibold">Job Photos</h3>
+        <div className="flex gap-2 items-center">
+          <input
+            type="text"
+            placeholder="Photo caption"
+            className="px-3 py-2 border rounded-md text-sm"
+            value={photoCaption}
+            onChange={(e) => setPhotoCaption(e.target.value)}
+          />
+          <label className="cursor-pointer">
+            <Button disabled={uploading} asChild>
+              <span>{uploading ? 'Uploading...' : 'Upload Photo'}</span>
+            </Button>
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handlePhotoUpload}
+              disabled={uploading}
+            />
+          </label>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        {photos && photos.length > 0 ? (
+          photos.map((photo) => (
+            <Card key={photo.id} className="overflow-hidden">
+              <img
+                src={photo.photo_url}
+                alt={photo.caption || 'Job photo'}
+                className="w-full h-48 object-cover"
+              />
+              <CardContent className="p-3">
+                {photo.caption && <p className="text-sm">{photo.caption}</p>}
+                <p className="text-xs text-muted-foreground mt-1">
+                  {format(new Date(photo.created_at!), 'MMM d, yyyy')}
+                </p>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="w-full mt-2"
+                  onClick={() => deletePhoto(photo.id!, photo.photo_url)}
+                >
+                  Delete
+                </Button>
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          <Card className="col-span-full">
+            <CardContent className="p-8 text-center text-muted-foreground">
+              No photos yet. Upload photos to document job progress.
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Daily Logs Tab Component
+function DailyLogsTab({ jobId }: { jobId: string }) {
+  const { logs, addLog, deleteLog } = useDailyLogs(jobId);
+  const [isAdding, setIsAdding] = useState(false);
+  const [newLog, setNewLog] = useState({
+    log_date: new Date().toISOString().split('T')[0],
+    weather: '',
+    crew_count: '',
+    hours_worked: '',
+    work_completed: '',
+    materials_used: '',
+    equipment_used: '',
+    notes: '',
+  });
+
+  const handleAddLog = async () => {
+    await addLog({
+      log_date: newLog.log_date,
+      weather: newLog.weather,
+      crew_count: parseInt(newLog.crew_count) || undefined,
+      hours_worked: parseFloat(newLog.hours_worked) || undefined,
+      work_completed: newLog.work_completed,
+      materials_used: newLog.materials_used,
+      equipment_used: newLog.equipment_used,
+      notes: newLog.notes,
+    });
+    setNewLog({
+      log_date: new Date().toISOString().split('T')[0],
+      weather: '',
+      crew_count: '',
+      hours_worked: '',
+      work_completed: '',
+      materials_used: '',
+      equipment_used: '',
+      notes: '',
+    });
+    setIsAdding(false);
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-semibold">Daily Logs</h3>
+        <Button onClick={() => setIsAdding(!isAdding)}>
+          {isAdding ? 'Cancel' : 'Add Log'}
+        </Button>
+      </div>
+
+      {isAdding && (
+        <Card>
+          <CardContent className="p-4 space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <input
+                type="date"
+                className="px-3 py-2 border rounded-md"
+                value={newLog.log_date}
+                onChange={(e) => setNewLog({ ...newLog, log_date: e.target.value })}
+              />
+              <input
+                type="text"
+                placeholder="Weather"
+                className="px-3 py-2 border rounded-md"
+                value={newLog.weather}
+                onChange={(e) => setNewLog({ ...newLog, weather: e.target.value })}
+              />
+              <input
+                type="number"
+                placeholder="Crew Count"
+                className="px-3 py-2 border rounded-md"
+                value={newLog.crew_count}
+                onChange={(e) => setNewLog({ ...newLog, crew_count: e.target.value })}
+              />
+              <input
+                type="number"
+                step="0.5"
+                placeholder="Hours Worked"
+                className="px-3 py-2 border rounded-md"
+                value={newLog.hours_worked}
+                onChange={(e) => setNewLog({ ...newLog, hours_worked: e.target.value })}
+              />
+            </div>
+            <textarea
+              placeholder="Work Completed"
+              className="w-full px-3 py-2 border rounded-md"
+              rows={2}
+              value={newLog.work_completed}
+              onChange={(e) => setNewLog({ ...newLog, work_completed: e.target.value })}
+            />
+            <textarea
+              placeholder="Materials Used"
+              className="w-full px-3 py-2 border rounded-md"
+              rows={2}
+              value={newLog.materials_used}
+              onChange={(e) => setNewLog({ ...newLog, materials_used: e.target.value })}
+            />
+            <textarea
+              placeholder="Equipment Used"
+              className="w-full px-3 py-2 border rounded-md"
+              rows={2}
+              value={newLog.equipment_used}
+              onChange={(e) => setNewLog({ ...newLog, equipment_used: e.target.value })}
+            />
+            <textarea
+              placeholder="Notes"
+              className="w-full px-3 py-2 border rounded-md"
+              rows={2}
+              value={newLog.notes}
+              onChange={(e) => setNewLog({ ...newLog, notes: e.target.value })}
+            />
+            <Button onClick={handleAddLog} className="w-full">
+              Save Log
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="space-y-3">
+        {logs && logs.length > 0 ? (
+          logs.map((log) => (
+            <Card key={log.id}>
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                  <CardTitle className="text-base">
+                    {format(new Date(log.log_date), 'EEEE, MMMM d, yyyy')}
+                  </CardTitle>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => deleteLog(log.id!)}
+                  >
+                    Delete
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-2 text-sm">
+                {log.weather && <p><strong>Weather:</strong> {log.weather}</p>}
+                {log.crew_count && <p><strong>Crew:</strong> {log.crew_count} people</p>}
+                {log.hours_worked && <p><strong>Hours:</strong> {log.hours_worked}</p>}
+                {log.work_completed && <p><strong>Work Completed:</strong> {log.work_completed}</p>}
+                {log.materials_used && <p><strong>Materials:</strong> {log.materials_used}</p>}
+                {log.equipment_used && <p><strong>Equipment:</strong> {log.equipment_used}</p>}
+                {log.notes && <p><strong>Notes:</strong> {log.notes}</p>}
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          <Card>
+            <CardContent className="p-8 text-center text-muted-foreground">
+              No daily logs yet. Add logs to track daily progress.
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function JobDetailView({ job, open, onOpenChange }: JobDetailViewProps) {
   const { updateJob } = useJobs();
   const [isEditingStatus, setIsEditingStatus] = useState(false);
-  const [jobStatus, setJobStatus] = useState(job.job_status || 'scheduled');
+  const [jobStatus, setJobStatus] = useState<string>(job?.status || 'scheduled');
+
+  if (!job) return null;
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -66,557 +296,181 @@ export default function JobDetailView({ job, open, onOpenChange }: JobDetailView
   };
 
   const handleStatusUpdate = () => {
-    updateJob({
-      ...job,
-      id: job.id!,
-      job_status: jobStatus as any,
-    });
+    updateJob(job.id!, { status: jobStatus as any });
     setIsEditingStatus(false);
   };
 
-  const isOverBudget = (job.actual_cost || 0) > (job.budget_amount || 0);
-  const isDelayed = job.scheduled_end_date && new Date() > new Date(job.scheduled_end_date) && 
-                   job.job_status !== 'completed' && job.job_status !== 'closed';
-  const { updateJob } = useJobs();
-  const { photos, uploading, uploadPhoto, deletePhoto } = useJobPhotos(job?.id);
-  const { costs, totalCosts, addCost, deleteCost } = useJobCosts(job?.id);
-  const { logs, addLog, deleteLog } = useDailyLogs(job?.id);
-
-  const [photoCaption, setPhotoCaption] = useState('');
-  const [newCost, setNewCost] = useState({
-    category: '',
-    description: '',
-    amount: '',
-    cost_date: new Date().toISOString().split('T')[0],
-  });
-  const [newLog, setNewLog] = useState({
-    log_date: new Date().toISOString().split('T')[0],
-    weather: '',
-    crew_count: '',
-    hours_worked: '',
-    work_completed: '',
-    materials_used: '',
-    equipment_used: '',
-    notes: '',
-  });
-
-  if (!job) return null;
-
-  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    try {
-      await uploadPhoto(file, photoCaption);
-      setPhotoCaption('');
-      e.target.value = '';
-    } catch (error) {
-      console.error('Upload error:', error);
-    }
-  };
-
-  const handleAddCost = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await addCost({
-        category: newCost.category,
-        description: newCost.description,
-        amount: parseFloat(newCost.amount),
-        cost_date: newCost.cost_date,
-      });
-      
-      // Update job total cost
-      await updateJob(job.id, {
-        total_cost: totalCosts + parseFloat(newCost.amount),
-      });
-
-      setNewCost({
-        category: '',
-        description: '',
-        amount: '',
-        cost_date: new Date().toISOString().split('T')[0],
-      });
-    } catch (error) {
-      console.error('Add cost error:', error);
-    }
-  };
-
-  const handleAddLog = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await addLog({
-        log_date: newLog.log_date,
-        weather: newLog.weather,
-        crew_count: newLog.crew_count ? parseInt(newLog.crew_count) : undefined,
-        hours_worked: newLog.hours_worked ? parseFloat(newLog.hours_worked) : undefined,
-        work_completed: newLog.work_completed,
-        materials_used: newLog.materials_used,
-        equipment_used: newLog.equipment_used,
-        notes: newLog.notes,
-      });
-
-      setNewLog({
-        log_date: new Date().toISOString().split('T')[0],
-        weather: '',
-        crew_count: '',
-        hours_worked: '',
-        work_completed: '',
-        materials_used: '',
-        equipment_used: '',
-        notes: '',
-      });
-    } catch (error) {
-      console.error('Add log error:', error);
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    const colors: Record<string, string> = {
-      scheduled: 'bg-blue-500',
-      in_progress: 'bg-yellow-500',
-      completed: 'bg-green-500',
-      on_hold: 'bg-orange-500',
-      cancelled: 'bg-red-500',
-    };
-    return colors[status] || 'bg-gray-500';
-  };
+  const isOverBudget = (job.total_cost || 0) > 0; // Simplified for now
+  const isDelayed = job.end_date && new Date() > new Date(job.end_date) && 
+                   job.status !== 'completed';
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-7xl h-[90vh] p-0">
+        <DialogHeader className="px-6 pt-6 pb-4 border-b">
           <div className="flex items-start justify-between">
-            <div>
-              <DialogTitle className="text-2xl">{job.name}</DialogTitle>
-              <p className="text-sm text-muted-foreground mt-1">{job.job_number}</p>
+            <div className="flex-1">
+              <DialogTitle className="text-2xl font-bold mb-2">{job.name}</DialogTitle>
+              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                <span className="font-medium">{job.job_number}</span>
+              </div>
             </div>
-            <Badge className={getStatusColor(job.status)}>
-              {job.status.replace('_', ' ')}
-            </Badge>
+            <div className="flex items-center gap-2">
+              {isDelayed && (
+                <Badge variant="destructive">
+                  <AlertCircle className="h-3 w-3 mr-1" />
+                  Delayed
+                </Badge>
+              )}
+              {isEditingStatus ? (
+                <div className="flex items-center gap-2">
+                  <Select value={jobStatus} onValueChange={(value) => setJobStatus(value)}>
+                    <SelectTrigger className="w-[160px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="scheduled">Scheduled</SelectItem>
+                      <SelectItem value="in_progress">In Progress</SelectItem>
+                      <SelectItem value="on_hold">On Hold</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button size="sm" onClick={handleStatusUpdate}>Save</Button>
+                  <Button size="sm" variant="outline" onClick={() => setIsEditingStatus(false)}>Cancel</Button>
+                </div>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className={`${getStatusColor(job.status)} text-white hover:opacity-90`}
+                  onClick={() => {
+                    setJobStatus(job.status);
+                    setIsEditingStatus(true);
+                  }}
+                >
+                  {getStatusIcon(job.status)}
+                  <span className="ml-2 capitalize">{job.status.replace('_', ' ')}</span>
+                  <Edit className="h-3 w-3 ml-2" />
+                </Button>
+              )}
+            </div>
           </div>
         </DialogHeader>
 
-        <Tabs defaultValue="overview" className="mt-4">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="photos">Photos ({photos.length})</TabsTrigger>
-            <TabsTrigger value="costs">Costs</TabsTrigger>
-            <TabsTrigger value="logs">Daily Logs</TabsTrigger>
-          </TabsList>
-
-          {/* Overview Tab */}
-          <TabsContent value="overview" className="space-y-4">
+        <div className="flex-1 overflow-y-auto">
+          <div className="px-6 py-4 grid grid-cols-1 md:grid-cols-3 gap-4 bg-muted/30">
             <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Job Details</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {job.description && (
-                  <div>
-                    <Label className="text-muted-foreground">Description</Label>
-                    <p className="mt-1">{job.description}</p>
-                  </div>
-                )}
-                
-                {job.address && (
-                  <div className="flex items-start gap-2">
-                    <MapPin className="h-5 w-5 text-muted-foreground mt-0.5" />
-                    <div>
-                      <Label className="text-muted-foreground">Location</Label>
-                      <p className="mt-1">
-                        {job.address}
-                        {job.city && `, ${job.city}`}
-                        {job.state && `, ${job.state}`}
-                        {job.zip_code && ` ${job.zip_code}`}
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                <div className="grid grid-cols-2 gap-4">
-                  {job.start_date && (
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <Label className="text-muted-foreground">Start Date</Label>
-                        <p className="mt-1">{new Date(job.start_date).toLocaleDateString()}</p>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {job.end_date && (
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <Label className="text-muted-foreground">End Date</Label>
-                        <p className="mt-1">{new Date(job.end_date).toLocaleDateString()}</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <DollarSign className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <Label className="text-muted-foreground">Total Cost</Label>
-                    <p className="text-2xl font-bold text-primary mt-1">
-                      ${job.total_cost.toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-
-                {job.notes && (
-                  <div>
-                    <Label className="text-muted-foreground">Notes</Label>
-                    <p className="mt-1 text-sm">{job.notes}</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Photos Tab */}
-          <TabsContent value="photos" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Upload className="h-5 w-5" />
-                  Upload Photo
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="caption">Caption (Optional)</Label>
-                  <Input
-                    id="caption"
-                    value={photoCaption}
-                    onChange={(e) => setPhotoCaption(e.target.value)}
-                    placeholder="Add a description..."
-                  />
-                </div>
-                <div>
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    onChange={handlePhotoUpload}
-                    disabled={uploading}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {photos.map((photo) => (
-                <Card key={photo.id} className="overflow-hidden">
-                  <div className="aspect-square relative">
-                    <img
-                      src={photo.photo_url}
-                      alt={photo.caption || 'Job photo'}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  {photo.caption && (
-                    <CardContent className="p-3">
-                      <p className="text-sm">{photo.caption}</p>
-                    </CardContent>
-                  )}
-                  <CardContent className="p-3 pt-0">
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      className="w-full"
-                      onClick={() => deletePhoto(photo.id, photo.photo_url)}
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Delete
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
-            {photos.length === 0 && (
-              <Card className="p-12 text-center">
-                <ImageIcon className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-muted-foreground">No photos uploaded yet</p>
-              </Card>
-            )}
-          </TabsContent>
-
-          {/* Costs Tab */}
-          <TabsContent value="costs" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center justify-between">
-                  <span className="flex items-center gap-2">
-                    <Calculator className="h-5 w-5" />
-                    Add Cost
-                  </span>
-                  <span className="text-2xl font-bold text-primary">
-                    ${totalCosts.toLocaleString()}
-                  </span>
-                </CardTitle>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Total Cost</CardTitle>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleAddCost} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="category">Category *</Label>
-                      <Input
-                        id="category"
-                        required
-                        value={newCost.category}
-                        onChange={(e) => setNewCost({ ...newCost, category: e.target.value })}
-                        placeholder="e.g., Materials, Labor"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="amount">Amount *</Label>
-                      <Input
-                        id="amount"
-                        type="number"
-                        step="0.01"
-                        required
-                        value={newCost.amount}
-                        onChange={(e) => setNewCost({ ...newCost, amount: e.target.value })}
-                        placeholder="0.00"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <Label htmlFor="cost-description">Description</Label>
-                    <Input
-                      id="cost-description"
-                      value={newCost.description}
-                      onChange={(e) => setNewCost({ ...newCost, description: e.target.value })}
-                      placeholder="Details about this cost..."
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="cost-date">Date</Label>
-                    <Input
-                      id="cost-date"
-                      type="date"
-                      value={newCost.cost_date}
-                      onChange={(e) => setNewCost({ ...newCost, cost_date: e.target.value })}
-                    />
-                  </div>
-                  <Button type="submit" className="w-full">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Cost
-                  </Button>
-                </form>
+                <div className="text-2xl font-bold text-primary">${(job.total_cost || 0).toFixed(0)}</div>
               </CardContent>
             </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Start Date</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-lg font-semibold">
+                  {job.start_date ? format(new Date(job.start_date), 'MMM d, yyyy') : 'Not set'}
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">End Date</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-lg font-semibold">
+                  {job.end_date ? format(new Date(job.end_date), 'MMM d, yyyy') : 'Not set'}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
-            <div className="space-y-3">
-              {costs.map((cost) => (
-                <Card key={cost.id}>
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Badge variant="outline">{cost.category}</Badge>
-                          <span className="text-sm text-muted-foreground">
-                            {new Date(cost.cost_date).toLocaleDateString()}
-                          </span>
+          <div className="px-6 py-4">
+            <Tabs defaultValue="overview" className="w-full">
+              <TabsList className="grid w-full grid-cols-7">
+                <TabsTrigger value="overview">Overview</TabsTrigger>
+                <TabsTrigger value="tasks">Tasks</TabsTrigger>
+                <TabsTrigger value="materials">Materials</TabsTrigger>
+                <TabsTrigger value="change-orders">Changes</TabsTrigger>
+                <TabsTrigger value="invoices">Invoices</TabsTrigger>
+                <TabsTrigger value="photos">Photos</TabsTrigger>
+                <TabsTrigger value="logs">Logs</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="overview" className="space-y-4 mt-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Job Information</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      {job.description && (
+                        <div>
+                          <h4 className="text-sm font-medium text-muted-foreground mb-1">Description</h4>
+                          <p className="text-sm">{job.description}</p>
                         </div>
-                        {cost.description && (
-                          <p className="text-sm text-muted-foreground">{cost.description}</p>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className="text-lg font-semibold">${cost.amount.toLocaleString()}</span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => deleteCost(cost.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                      )}
+                      {job.notes && (
+                        <div>
+                          <h4 className="text-sm font-medium text-muted-foreground mb-1">Notes</h4>
+                          <p className="text-sm text-muted-foreground">{job.notes}</p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
 
-            {costs.length === 0 && (
-              <Card className="p-12 text-center">
-                <Calculator className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-muted-foreground">No costs recorded yet</p>
-              </Card>
-            )}
-          </TabsContent>
-
-          {/* Daily Logs Tab */}
-          <TabsContent value="logs" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <FileText className="h-5 w-5" />
-                  Add Daily Log
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleAddLog} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="log-date">Date *</Label>
-                      <Input
-                        id="log-date"
-                        type="date"
-                        required
-                        value={newLog.log_date}
-                        onChange={(e) => setNewLog({ ...newLog, log_date: e.target.value })}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="weather">Weather</Label>
-                      <Input
-                        id="weather"
-                        value={newLog.weather}
-                        onChange={(e) => setNewLog({ ...newLog, weather: e.target.value })}
-                        placeholder="Sunny, Rainy, etc."
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="crew-count">Crew Count</Label>
-                      <Input
-                        id="crew-count"
-                        type="number"
-                        value={newLog.crew_count}
-                        onChange={(e) => setNewLog({ ...newLog, crew_count: e.target.value })}
-                        placeholder="0"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="hours-worked">Hours Worked</Label>
-                      <Input
-                        id="hours-worked"
-                        type="number"
-                        step="0.5"
-                        value={newLog.hours_worked}
-                        onChange={(e) => setNewLog({ ...newLog, hours_worked: e.target.value })}
-                        placeholder="0.0"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <Label htmlFor="work-completed">Work Completed</Label>
-                    <Textarea
-                      id="work-completed"
-                      value={newLog.work_completed}
-                      onChange={(e) => setNewLog({ ...newLog, work_completed: e.target.value })}
-                      placeholder="Describe the work completed today..."
-                      rows={3}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="materials">Materials Used</Label>
-                    <Textarea
-                      id="materials"
-                      value={newLog.materials_used}
-                      onChange={(e) => setNewLog({ ...newLog, materials_used: e.target.value })}
-                      placeholder="List materials used..."
-                      rows={2}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="equipment">Equipment Used</Label>
-                    <Textarea
-                      id="equipment"
-                      value={newLog.equipment_used}
-                      onChange={(e) => setNewLog({ ...newLog, equipment_used: e.target.value })}
-                      placeholder="List equipment used..."
-                      rows={2}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="log-notes">Notes</Label>
-                    <Textarea
-                      id="log-notes"
-                      value={newLog.notes}
-                      onChange={(e) => setNewLog({ ...newLog, notes: e.target.value })}
-                      placeholder="Additional notes..."
-                      rows={2}
-                    />
-                  </div>
-                  <Button type="submit" className="w-full">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Log Entry
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-
-            <div className="space-y-3">
-              {logs.map((log) => (
-                <Card key={log.id}>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-base">
-                        {new Date(log.log_date).toLocaleDateString('en-US', { 
-                          weekday: 'long', 
-                          year: 'numeric', 
-                          month: 'long', 
-                          day: 'numeric' 
-                        })}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <MapPin className="h-4 w-4" />
+                        Location
                       </CardTitle>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => deleteLog(log.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <div className="flex gap-4 text-sm text-muted-foreground">
-                      {log.weather && <span>Weather: {log.weather}</span>}
-                      {log.crew_count && <span>Crew: {log.crew_count}</span>}
-                      {log.hours_worked && <span>Hours: {log.hours_worked}</span>}
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    {log.work_completed && (
-                      <div>
-                        <Label className="text-muted-foreground">Work Completed</Label>
-                        <p className="text-sm mt-1">{log.work_completed}</p>
-                      </div>
-                    )}
-                    {log.materials_used && (
-                      <div>
-                        <Label className="text-muted-foreground">Materials</Label>
-                        <p className="text-sm mt-1">{log.materials_used}</p>
-                      </div>
-                    )}
-                    {log.equipment_used && (
-                      <div>
-                        <Label className="text-muted-foreground">Equipment</Label>
-                        <p className="text-sm mt-1">{log.equipment_used}</p>
-                      </div>
-                    )}
-                    {log.notes && (
-                      <div>
-                        <Label className="text-muted-foreground">Notes</Label>
-                        <p className="text-sm mt-1">{log.notes}</p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      {job.address && <p className="text-sm">{job.address}</p>}
+                      {(job.city || job.state) && (
+                        <p className="text-sm">
+                          {job.city}{job.city && job.state && ', '}{job.state} {job.zip_code}
+                        </p>
+                      )}
+                      {!job.address && !job.city && !job.state && (
+                        <p className="text-sm text-muted-foreground">No location specified</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
 
-            {logs.length === 0 && (
-              <Card className="p-12 text-center">
-                <FileText className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-muted-foreground">No daily logs recorded yet</p>
-              </Card>
-            )}
-          </TabsContent>
-        </Tabs>
+              <TabsContent value="tasks" className="mt-4">
+                <TasksTab jobId={job.id!} />
+              </TabsContent>
+
+              <TabsContent value="materials" className="mt-4">
+                <MaterialsTab jobId={job.id!} />
+              </TabsContent>
+
+              <TabsContent value="change-orders" className="mt-4">
+                <ChangeOrdersTab jobId={job.id!} />
+              </TabsContent>
+
+              <TabsContent value="invoices" className="mt-4">
+                <InvoicesTab jobId={job.id!} customerId={job.customer_id} />
+              </TabsContent>
+
+              <TabsContent value="photos" className="mt-4">
+                <PhotosTab jobId={job.id!} />
+              </TabsContent>
+
+              <TabsContent value="logs" className="mt-4">
+                <DailyLogsTab jobId={job.id!} />
+              </TabsContent>
+            </Tabs>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );
