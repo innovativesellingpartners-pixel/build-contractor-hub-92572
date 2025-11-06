@@ -35,7 +35,7 @@
     --destructive: 0 62.8% 40.6%;
     --destructive-foreground: 0 0% 100%;
     
-    --border: 0 0% 92%;                   /* Light neutral border */
+    --border: 0 0% 85%;                   /* Darker neutral border for better visibility */
     --input: 0 0% 98%;                    /* Light neutral input bg */
     --ring: 0 70% 50%;                    /* Red focus ring */
 
@@ -97,7 +97,7 @@
     --destructive: 0 62.8% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 20%;                   /* Dark border */
+    --border: 0 0% 30%;                   /* Lighter dark border for better visibility */
     --input: 0 0% 15%;                    /* Dark input bg */
     --ring: 0 70% 60%;                    /* Soft red focus ring */
 
