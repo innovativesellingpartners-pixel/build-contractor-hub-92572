@@ -51,38 +51,114 @@ const handler = async (req: Request): Promise<Response> => {
       to: [estimate.client_email],
       subject: `Estimate ${estimate.estimate_number || 'from ' + contractorName}`,
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h1 style="color: #E02424;">New Estimate from ${contractorName}</h1>
-          <p>Hello ${estimate.client_name},</p>
-          <p>You have received a new estimate for your project: <strong>${estimate.title}</strong></p>
-          
-          <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h2 style="color: #374151; margin-top: 0;">Estimate Details</h2>
-            <p><strong>Project:</strong> ${estimate.title}</p>
-            <p><strong>Total Amount:</strong> $${estimate.total_amount?.toFixed(2) || '0.00'}</p>
-            ${estimate.valid_until ? `<p><strong>Valid Until:</strong> ${new Date(estimate.valid_until).toLocaleDateString()}</p>` : ''}
-          </div>
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+              body { margin: 0; padding: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; }
+              .container { max-width: 600px; margin: 0 auto; background: #ffffff; }
+              .header { background: linear-gradient(135deg, #E02424 0%, #C01E1E 100%); padding: 40px 30px; text-align: center; }
+              .logo { max-width: 180px; height: auto; margin-bottom: 20px; }
+              .header-title { color: #ffffff; font-size: 28px; font-weight: 700; margin: 0; }
+              .header-subtitle { color: #ffffff; opacity: 0.95; font-size: 16px; margin: 10px 0 0 0; }
+              .content { padding: 40px 30px; }
+              .greeting { color: #000000; font-size: 18px; font-weight: 600; margin: 0 0 20px 0; }
+              .message { color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 30px 0; }
+              .details-box { background: #F9FAFB; border-left: 4px solid #E02424; padding: 25px; border-radius: 8px; margin: 30px 0; }
+              .details-title { color: #000000; font-size: 20px; font-weight: 700; margin: 0 0 20px 0; }
+              .detail-row { margin: 12px 0; }
+              .detail-label { color: #6B7280; font-size: 14px; margin: 0 0 4px 0; }
+              .detail-value { color: #000000; font-size: 16px; font-weight: 600; margin: 0; }
+              .total-amount { color: #E02424; font-size: 28px; font-weight: 700; }
+              .cta-button { display: inline-block; background: #E02424; color: #ffffff !important; padding: 16px 40px; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 16px; margin: 30px 0; box-shadow: 0 4px 12px rgba(224, 36, 36, 0.3); }
+              .cta-button:hover { background: #C01E1E; }
+              .divider { border: none; border-top: 1px solid #E5E7EB; margin: 30px 0; }
+              .contact-info { color: #6B7280; font-size: 14px; line-height: 1.6; margin: 25px 0; padding: 20px; background: #F9FAFB; border-radius: 8px; }
+              .footer { background: #F9FAFB; padding: 30px; text-align: center; border-top: 1px solid #E5E7EB; }
+              .footer-text { color: #9CA3AF; font-size: 13px; line-height: 1.6; margin: 0; }
+              .powered-by { color: #6B7280; font-size: 12px; margin: 20px 0 0 0; }
+              @media only screen and (max-width: 600px) {
+                .header { padding: 30px 20px; }
+                .content { padding: 30px 20px; }
+                .header-title { font-size: 24px; }
+                .cta-button { padding: 14px 30px; font-size: 15px; }
+              }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <img src="https://faqrzzodtmsybofakcvv.supabase.co/storage/v1/object/public/assets/ct1-logo-white.png" alt="CT1" class="logo" />
+                <h1 class="header-title">Professional Estimate</h1>
+                <p class="header-subtitle">Estimate ${estimate.estimate_number || ''}</p>
+              </div>
+              
+              <div class="content">
+                <p class="greeting">Hello ${estimate.client_name},</p>
+                <p class="message">
+                  Thank you for the opportunity to work on your project. We've prepared a detailed estimate for 
+                  <strong>${estimate.title}</strong>. Please review the details below and sign digitally to proceed.
+                </p>
+                
+                <div class="details-box">
+                  <h2 class="details-title">Estimate Summary</h2>
+                  <div class="detail-row">
+                    <p class="detail-label">Project</p>
+                    <p class="detail-value">${estimate.title}</p>
+                  </div>
+                  ${estimate.trade_type ? `
+                  <div class="detail-row">
+                    <p class="detail-label">Trade Type</p>
+                    <p class="detail-value">${estimate.trade_type}</p>
+                  </div>
+                  ` : ''}
+                  ${estimate.site_address ? `
+                  <div class="detail-row">
+                    <p class="detail-label">Project Location</p>
+                    <p class="detail-value">${estimate.site_address}</p>
+                  </div>
+                  ` : ''}
+                  ${estimate.valid_until ? `
+                  <div class="detail-row">
+                    <p class="detail-label">Valid Until</p>
+                    <p class="detail-value">${new Date(estimate.valid_until).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                  </div>
+                  ` : ''}
+                  <hr style="border: none; border-top: 1px solid #E5E7EB; margin: 20px 0;">
+                  <div class="detail-row">
+                    <p class="detail-label">Total Investment</p>
+                    <p class="total-amount">$${estimate.total_amount?.toFixed(2) || '0.00'}</p>
+                  </div>
+                </div>
 
-          <p>To view, sign, and approve this estimate, please click the button below:</p>
-          
-          <a href="${publicUrl}" 
-             style="display: inline-block; background: #E02424; color: white; padding: 12px 24px; 
-                    text-decoration: none; border-radius: 6px; font-weight: bold; margin: 20px 0;">
-            View & Sign Estimate
-          </a>
+                <center>
+                  <a href="${publicUrl}" class="cta-button">
+                    View Full Estimate & Sign
+                  </a>
+                </center>
 
-          <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
-            If you have any questions, please reply to this email or contact:<br>
-            ${contractorEmail}
-          </p>
+                <div class="contact-info">
+                  <strong style="color: #000000;">Questions?</strong><br>
+                  We're here to help! Reply to this email or contact us directly:<br>
+                  📧 ${contractorEmail}<br>
+                  ${contractorName}
+                </div>
+              </div>
 
-          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
-          
-          <p style="color: #9ca3af; font-size: 12px;">
-            This is an automated message from ${contractorName}. 
-            Please do not reply directly to this email if it's from a no-reply address.
-          </p>
-        </div>
+              <div class="footer">
+                <p class="footer-text">
+                  This estimate was prepared specifically for ${estimate.client_name}.<br>
+                  All pricing and terms are confidential.
+                </p>
+                <p class="powered-by">
+                  Powered by <strong>CT1</strong> - Professional Contractor Management
+                </p>
+              </div>
+            </div>
+          </body>
+        </html>
       `,
     });
 
