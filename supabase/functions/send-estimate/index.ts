@@ -55,8 +55,8 @@ const handler = async (req: Request): Promise<Response> => {
       console.log('Note: Using Resend test domain. For custom branding, verify your domain at resend.com/domains');
     }
 
-    // Always use Resend test domain to avoid domain verification issues for now
-    const effectiveFromEmail = 'onboarding@resend.dev';
+    // Use FROM_EMAIL environment variable (now set to estimates@myct1.com)
+    const effectiveFromEmail = FROM_EMAIL;
     console.log('Attempting to send estimate email', { to: recipients, bcc, from: effectiveFromEmail, replyTo: contractorEmail || null });
     
     let emailResponse = await resend.emails.send({
