@@ -59,7 +59,7 @@ const handler = async (req: Request): Promise<Response> => {
     const effectiveFromEmail = 'onboarding@resend.dev';
     console.log('Attempting to send estimate email', { to: recipients, bcc, from: effectiveFromEmail, replyTo: contractorEmail || null });
     
-    const emailResponse = await resend.emails.send({
+    let emailResponse = await resend.emails.send({
       from: `${contractorName} <${effectiveFromEmail}>`,
       to: recipients,
       bcc,
@@ -181,7 +181,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Handle Resend test-mode restriction by re-sending to the allowed owner email
     let usedFallback = false;
-    if (emailResponse?.error && emailResponse.error.statusCode === 403 && typeof emailResponse.error.message === 'string' && emailResponse.error.message.includes('only send testing emails to your own email address')) {
+    if (emailResponse?.error && (emailResponse.error as any).statusCode === 403 && typeof emailResponse.error.message === 'string' && emailResponse.error.message.includes('only send testing emails to your own email address')) {
       const match = emailResponse.error.message.match(/\(([^)]+)\)/);
       const ownerEmail = match?.[1];
       console.warn('Resend test-mode restriction encountered. Owner email:', ownerEmail);
