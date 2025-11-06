@@ -179,7 +179,39 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log('Resend API response:', JSON.stringify(emailResponse, null, 2));
 
-    // If Resend rejected the email, return an error and do not mark as sent
+    // Handle Resend test-mode restriction by re-sending to the allowed owner email
+    let usedFallback = false;
+    if (emailResponse?.error && emailResponse.error.statusCode === 403 && typeof emailResponse.error.message === 'string' && emailResponse.error.message.includes('only send testing emails to your own email address')) {
+      const match = emailResponse.error.message.match(/\(([^)]+)\)/);
+      const ownerEmail = match?.[1];
+      console.warn('Resend test-mode restriction encountered. Owner email:', ownerEmail);
+      if (ownerEmail) {
+        const retry = await resend.emails.send({
+          from: `${contractorName} <${effectiveFromEmail}>`,
+          to: [ownerEmail],
+          subject: `Forward to ${estimate.client_name} <${estimate.client_email}> — Estimate from ${contractorName}`,
+          html: `
+            <!DOCTYPE html>
+            <html><body style="font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;">
+              <div style="background:#FFF7ED;border:1px solid #FDBA74;color:#7C2D12;padding:12px 16px;border-radius:8px;margin-bottom:16px;">
+                Your email service is in test mode. Please forward this estimate to ${estimate.client_name} &lt;${estimate.client_email}&gt;.
+              </div>
+              <p>Open the estimate here:</p>
+              <p><a href="${publicUrl}" style="display:inline-block;background:#E02424;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;">View Full Estimate & Sign</a></p>
+              <hr style="border:none;border-top:1px solid #E5E7EB;margin:20px 0;" />
+              <p style="color:#6B7280;font-size:14px;">If the button does not work, copy this link: ${publicUrl}</p>
+              <p style="color:#6B7280;font-size:14px;">Reply-To: ${contractorEmail}</p>
+            </body></html>
+          `,
+          reply_to: contractorEmail || undefined,
+        });
+        emailResponse = retry as any;
+        usedFallback = true;
+        console.log('Retry response:', JSON.stringify(emailResponse, null, 2));
+      }
+    }
+
+    // Final error handling
     if (emailResponse?.error) {
       console.error('Resend error:', emailResponse.error);
       return new Response(JSON.stringify({
@@ -191,7 +223,6 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    // Verify email was accepted by Resend
     if (!emailResponse?.data) {
       console.error('No email data returned from Resend');
       return new Response(JSON.stringify({
@@ -203,40 +234,38 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    // Update estimate status with email provider ID
-    console.log('Email sent successfully with ID:', emailResponse.data.id);
-    console.log('Updating estimate status to sent...');
-    
+    // Update estimate record
+    console.log('Email accepted with ID:', emailResponse.data.id);
     const now = new Date().toISOString();
+    const updateData: Record<string, any> = {
+      last_send_attempt: now,
+      email_provider_id: emailResponse.data.id,
+      email_send_error: null,
+    };
+    if (!usedFallback) {
+      updateData.status = 'sent';
+      updateData.sent_at = now;
+    } else {
+      updateData.email_send_error = `Sent to account owner only (test mode). Please forward to ${estimate.client_email}.`;
+    }
+
     const { error: updateError } = await supabase
       .from('estimates')
-      .update({ 
-        status: 'sent',
-        sent_at: now,
-        last_send_attempt: now,
-        email_provider_id: emailResponse.data.id,
-        email_send_error: null
-      })
+      .update(updateData)
       .eq('id', estimateId);
 
     if (updateError) {
       console.error('Error updating estimate status:', updateError);
-    } else {
-      console.log('Estimate status updated successfully');
     }
-
-    console.log("Estimate email sent successfully to:", estimate.client_email);
 
     return new Response(JSON.stringify({ 
       success: true, 
       emailResponse,
-      publicUrl 
+      publicUrl,
+      usedFallback,
     }), {
       status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        ...corsHeaders,
-      },
+      headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   } catch (error: any) {
     console.error("Error in send-estimate function:", error);
