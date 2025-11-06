@@ -1,11 +1,10 @@
 import { useOpportunities } from '@/hooks/useOpportunities';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { AddOpportunityDialog } from '../AddOpportunityDialog';
 
 export default function OpportunitiesSection() {
-  const { opportunities, loading } = useOpportunities();
+  const { opportunities, loading, addOpportunity } = useOpportunities();
 
   const stages = [
     { id: 'qualification', label: 'Qualification' },
@@ -31,10 +30,7 @@ export default function OpportunitiesSection() {
           <h1 className="text-3xl font-bold">Opportunities</h1>
           <p className="text-muted-foreground">Track your sales pipeline</p>
         </div>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Opportunity
-        </Button>
+        <AddOpportunityDialog onAdd={addOpportunity} />
         </div>
 
         <div className="grid gap-4 grid-cols-1 lg:grid-cols-3">

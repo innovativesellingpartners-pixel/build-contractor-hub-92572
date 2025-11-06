@@ -9,7 +9,8 @@ import {
   Calendar, 
   Mail,
   Menu,
-  X
+  X,
+  FileText
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -21,9 +22,10 @@ import CustomersSection from './sections/CustomersSection';
 import CallsSection from './sections/CallsSection';
 import CalendarSection from './sections/CalendarSection';
 import EmailsSection from './sections/EmailsSection';
+import EstimatesSection from './sections/EstimatesSection';
 import ct1Logo from '@/assets/ct1-logo-main.png';
 
-type Section = 'dashboard' | 'leads' | 'opportunities' | 'jobs' | 'customers' | 'calls' | 'calendar' | 'emails';
+type Section = 'dashboard' | 'leads' | 'opportunities' | 'jobs' | 'customers' | 'calls' | 'calendar' | 'emails' | 'estimates';
 
 const navItems = [
   { id: 'dashboard' as Section, label: 'Dashboard', icon: LayoutDashboard },
@@ -31,6 +33,7 @@ const navItems = [
   { id: 'opportunities' as Section, label: 'Opportunities', icon: Target },
   { id: 'jobs' as Section, label: 'Jobs', icon: Briefcase },
   { id: 'customers' as Section, label: 'Customers', icon: Users },
+  { id: 'estimates' as Section, label: 'Estimates', icon: FileText },
   { id: 'calls' as Section, label: 'Calls', icon: Phone },
   { id: 'calendar' as Section, label: 'Calendar', icon: Calendar },
   { id: 'emails' as Section, label: 'Emails', icon: Mail },
@@ -58,6 +61,8 @@ export default function CT1CRM() {
         return <CalendarSection />;
       case 'emails':
         return <EmailsSection />;
+      case 'estimates':
+        return <EstimatesSection />;
       default:
         return <CRMDashboard />;
     }

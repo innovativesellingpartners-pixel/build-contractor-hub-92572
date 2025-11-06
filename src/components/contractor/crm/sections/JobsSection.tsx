@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { useJobs } from '@/hooks/useJobs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Plus, MapPin, Calendar } from 'lucide-react';
+import { MapPin, Calendar } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import JobDetailView from '../JobDetailView';
+import { AddJobDialog } from '../AddJobDialog';
 
 export default function JobsSection() {
-  const { jobs, loading } = useJobs();
+  const { jobs, loading, addJob } = useJobs();
   const [selectedJob, setSelectedJob] = useState<any>(null);
   const [detailOpen, setDetailOpen] = useState(false);
 
@@ -39,10 +39,7 @@ export default function JobsSection() {
           <h1 className="text-3xl font-bold">Jobs</h1>
           <p className="text-muted-foreground">Manage your active and completed jobs</p>
         </div>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Job
-        </Button>
+        <AddJobDialog onAdd={addJob} />
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
