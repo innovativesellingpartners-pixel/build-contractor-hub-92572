@@ -162,6 +162,327 @@ export type Database = {
           },
         ]
       }
+      customers: {
+        Row: {
+          address: string | null
+          city: string | null
+          company: string | null
+          created_at: string
+          customer_type: string | null
+          email: string | null
+          id: string
+          name: string
+          notes: string | null
+          phone: string | null
+          state: string | null
+          updated_at: string
+          user_id: string
+          zip_code: string | null
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          company?: string | null
+          created_at?: string
+          customer_type?: string | null
+          email?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+          state?: string | null
+          updated_at?: string
+          user_id: string
+          zip_code?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          company?: string | null
+          created_at?: string
+          customer_type?: string | null
+          email?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          state?: string | null
+          updated_at?: string
+          user_id?: string
+          zip_code?: string | null
+        }
+        Relationships: []
+      }
+      daily_logs: {
+        Row: {
+          created_at: string
+          crew_count: number | null
+          equipment_used: string | null
+          hours_worked: number | null
+          id: string
+          job_id: string
+          log_date: string
+          materials_used: string | null
+          notes: string | null
+          user_id: string
+          weather: string | null
+          work_completed: string | null
+        }
+        Insert: {
+          created_at?: string
+          crew_count?: number | null
+          equipment_used?: string | null
+          hours_worked?: number | null
+          id?: string
+          job_id: string
+          log_date?: string
+          materials_used?: string | null
+          notes?: string | null
+          user_id: string
+          weather?: string | null
+          work_completed?: string | null
+        }
+        Update: {
+          created_at?: string
+          crew_count?: number | null
+          equipment_used?: string | null
+          hours_worked?: number | null
+          id?: string
+          job_id?: string
+          log_date?: string
+          materials_used?: string | null
+          notes?: string | null
+          user_id?: string
+          weather?: string | null
+          work_completed?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_logs_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      estimates: {
+        Row: {
+          created_at: string
+          customer_id: string | null
+          description: string | null
+          estimate_number: string | null
+          id: string
+          line_items: Json | null
+          opportunity_id: string | null
+          status: string
+          title: string
+          total_amount: number
+          updated_at: string
+          user_id: string
+          valid_until: string | null
+        }
+        Insert: {
+          created_at?: string
+          customer_id?: string | null
+          description?: string | null
+          estimate_number?: string | null
+          id?: string
+          line_items?: Json | null
+          opportunity_id?: string | null
+          status?: string
+          title: string
+          total_amount?: number
+          updated_at?: string
+          user_id: string
+          valid_until?: string | null
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string | null
+          description?: string | null
+          estimate_number?: string | null
+          id?: string
+          line_items?: Json | null
+          opportunity_id?: string | null
+          status?: string
+          title?: string
+          total_amount?: number
+          updated_at?: string
+          user_id?: string
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estimates_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estimates_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_costs: {
+        Row: {
+          amount: number
+          category: string
+          cost_date: string
+          created_at: string
+          description: string | null
+          id: string
+          job_id: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          category: string
+          cost_date?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          job_id: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          cost_date?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          job_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_costs_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_photos: {
+        Row: {
+          caption: string | null
+          created_at: string
+          id: string
+          job_id: string
+          photo_url: string
+          user_id: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          job_id: string
+          photo_url: string
+          user_id: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          job_id?: string
+          photo_url?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_photos_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      jobs: {
+        Row: {
+          address: string | null
+          city: string | null
+          created_at: string
+          customer_id: string | null
+          description: string | null
+          end_date: string | null
+          id: string
+          job_number: string | null
+          name: string
+          notes: string | null
+          opportunity_id: string | null
+          start_date: string | null
+          state: string | null
+          status: string
+          total_cost: number | null
+          updated_at: string
+          user_id: string
+          zip_code: string | null
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          created_at?: string
+          customer_id?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          job_number?: string | null
+          name: string
+          notes?: string | null
+          opportunity_id?: string | null
+          start_date?: string | null
+          state?: string | null
+          status?: string
+          total_cost?: number | null
+          updated_at?: string
+          user_id: string
+          zip_code?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          created_at?: string
+          customer_id?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          job_number?: string | null
+          name?: string
+          notes?: string | null
+          opportunity_id?: string | null
+          start_date?: string | null
+          state?: string | null
+          status?: string
+          total_cost?: number | null
+          updated_at?: string
+          user_id?: string
+          zip_code?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "jobs_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "jobs_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lead_activities: {
         Row: {
           activity_type: string
@@ -422,6 +743,69 @@ export type Database = {
           },
         ]
       }
+      opportunities: {
+        Row: {
+          created_at: string
+          customer_id: string | null
+          description: string | null
+          expected_close_date: string | null
+          id: string
+          lead_id: string | null
+          name: string
+          notes: string | null
+          probability: number | null
+          stage: string
+          updated_at: string
+          user_id: string
+          value: number | null
+        }
+        Insert: {
+          created_at?: string
+          customer_id?: string | null
+          description?: string | null
+          expected_close_date?: string | null
+          id?: string
+          lead_id?: string | null
+          name: string
+          notes?: string | null
+          probability?: number | null
+          stage?: string
+          updated_at?: string
+          user_id: string
+          value?: number | null
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string | null
+          description?: string | null
+          expected_close_date?: string | null
+          id?: string
+          lead_id?: string | null
+          name?: string
+          notes?: string | null
+          probability?: number | null
+          stage?: string
+          updated_at?: string
+          user_id?: string
+          value?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "opportunities_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "opportunities_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           business_address: string | null
@@ -514,6 +898,41 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      signatures: {
+        Row: {
+          customer_name: string
+          estimate_id: string
+          id: string
+          ip_address: string | null
+          signature_data: string
+          signed_at: string
+        }
+        Insert: {
+          customer_name: string
+          estimate_id: string
+          id?: string
+          ip_address?: string | null
+          signature_data: string
+          signed_at?: string
+        }
+        Update: {
+          customer_name?: string
+          estimate_id?: string
+          id?: string
+          ip_address?: string | null
+          signature_data?: string
+          signed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "signatures_estimate_id_fkey"
+            columns: ["estimate_id"]
+            isOneToOne: false
+            referencedRelation: "estimates"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       subscriptions: {
         Row: {
@@ -952,6 +1371,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_estimate_number: { Args: never; Returns: string }
+      generate_job_number: { Args: never; Returns: string }
       get_user_tier: { Args: { user_id: string }; Returns: string }
       has_full_access: { Args: { user_id: string }; Returns: boolean }
       has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }

@@ -34,7 +34,7 @@ import { useToast } from "@/hooks/use-toast";
 import { TrainingHub } from "@/components/TrainingHub";
 import { ScheduleCall } from "@/components/contractor/ScheduleCall";
 import { Marketplace } from "@/components/Marketplace";
-import { Leads } from "@/components/contractor/Leads";
+import CT1CRM from "@/components/contractor/crm/CT1CRM";
 import { Insurance } from "@/components/contractor/Insurance";
 import { ProfileEditDialog } from "@/components/contractor/ProfileEditDialog";
 import { StarRating } from "@/components/contractor/StarRating";
@@ -243,16 +243,41 @@ export function Dashboard() {
 
         {/* Main Content Panel */}
         <div className="flex-1 overflow-auto min-w-0">
-          <div className="bg-card border border-border/50 rounded-xl shadow-md p-3 md:p-4 lg:p-6 min-h-[400px] md:min-h-[600px]">
-            {activeSection === 'training' && <TrainingHub />}
-            {activeSection === 'leads' && <Leads />}
-            {activeSection === 'schedule' && <ScheduleCall />}
-            {activeSection === 'quickbooks' && <QuickBooks />}
-            {activeSection === 'insurance' && <Insurance />}
-            {activeSection === 'voiceai' && <VoiceAI />}
-            {activeSection === 'marketplace' && <Marketplace />}
+          <div className="bg-card border border-border/50 rounded-xl shadow-md overflow-hidden">
+            {activeSection === 'training' && (
+              <div className="p-3 md:p-4 lg:p-6 min-h-[400px] md:min-h-[600px]">
+                <TrainingHub />
+              </div>
+            )}
+            {activeSection === 'leads' && <CT1CRM />}
+            {activeSection === 'schedule' && (
+              <div className="p-3 md:p-4 lg:p-6 min-h-[400px] md:min-h-[600px]">
+                <ScheduleCall />
+              </div>
+            )}
+            {activeSection === 'quickbooks' && (
+              <div className="p-3 md:p-4 lg:p-6 min-h-[400px] md:min-h-[600px]">
+                <QuickBooks />
+              </div>
+            )}
+            {activeSection === 'insurance' && (
+              <div className="p-3 md:p-4 lg:p-6 min-h-[400px] md:min-h-[600px]">
+                <Insurance />
+              </div>
+            )}
+            {activeSection === 'voiceai' && (
+              <div className="p-3 md:p-4 lg:p-6 min-h-[400px] md:min-h-[600px]">
+                <VoiceAI />
+              </div>
+            )}
+            {activeSection === 'marketplace' && (
+              <div className="p-3 md:p-4 lg:p-6 min-h-[400px] md:min-h-[600px]">
+                <Marketplace />
+              </div>
+            )}
             {activeSection === 'account' && (
-              <div className="max-w-5xl mx-auto space-y-4 md:space-y-6">
+              <div className="p-3 md:p-4 lg:p-6 min-h-[400px] md:min-h-[600px]">
+                <div className="max-w-5xl mx-auto space-y-4 md:space-y-6">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4 md:mb-6">
                   <h2 className="text-2xl md:text-3xl font-bold">My Account</h2>
                   <Badge variant="outline" className="text-xs md:text-sm">
