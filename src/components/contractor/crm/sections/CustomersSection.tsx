@@ -16,37 +16,37 @@ export default function CustomersSection() {
 
   return (
     <div className="w-full h-full overflow-y-auto">
-      <div className="p-6 space-y-6 max-w-7xl mx-auto">
-        <div className="flex items-center justify-between">
+      <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 max-w-7xl mx-auto">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold">Customers</h1>
-          <p className="text-muted-foreground">Manage your customer database</p>
+          <h1 className="text-2xl sm:text-3xl font-bold">Customers</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Manage your customer database</p>
         </div>
-        <Button onClick={() => setIsAddDialogOpen(true)}>
+        <Button onClick={() => setIsAddDialogOpen(true)} className="w-full sm:w-auto">
           <Plus className="h-4 w-4 mr-2" />
           Add Customer
         </Button>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {customers.map((customer) => (
           <Card key={customer.id} className="hover:shadow-lg transition-shadow cursor-pointer">
-            <CardHeader className="pb-3">
+            <CardHeader className="pb-3 px-4 pt-4 sm:px-6 sm:pt-6">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
-                  <CardTitle className="text-lg truncate">{customer.name}</CardTitle>
+                  <CardTitle className="text-base sm:text-lg truncate">{customer.name}</CardTitle>
                   {customer.company && (
-                    <p className="text-sm text-muted-foreground truncate">{customer.company}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground truncate">{customer.company}</p>
                   )}
                 </div>
-                <Badge variant={customer.customer_type === 'commercial' ? 'default' : 'secondary'} className="shrink-0">
+                <Badge variant={customer.customer_type === 'commercial' ? 'default' : 'secondary'} className="shrink-0 text-xs">
                   {customer.customer_type}
                 </Badge>
               </div>
             </CardHeader>
-            <CardContent className="space-y-2">
+            <CardContent className="space-y-2 px-4 pb-4 sm:px-6 sm:pb-6">
               {customer.phone && (
-                <div className="flex items-center gap-2 text-sm min-w-0">
+                <div className="flex items-center gap-2 text-xs sm:text-sm min-w-0">
                   <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
                   <a href={`tel:${customer.phone}`} className="hover:underline truncate">
                     {customer.phone}
@@ -54,7 +54,7 @@ export default function CustomersSection() {
                 </div>
               )}
               {customer.email && (
-                <div className="flex items-center gap-2 text-sm min-w-0">
+                <div className="flex items-center gap-2 text-xs sm:text-sm min-w-0">
                   <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
                   <a href={`mailto:${customer.email}`} className="hover:underline truncate">
                     {customer.email}
@@ -62,7 +62,7 @@ export default function CustomersSection() {
                 </div>
               )}
               {customer.address && (
-                <div className="flex items-start gap-2 text-sm min-w-0">
+                <div className="flex items-start gap-2 text-xs sm:text-sm min-w-0">
                   <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
                   <span className="line-clamp-2">
                     {customer.address}

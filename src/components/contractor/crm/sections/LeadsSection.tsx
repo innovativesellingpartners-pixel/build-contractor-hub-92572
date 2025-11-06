@@ -35,43 +35,43 @@ export default function LeadsSection() {
 
   return (
     <div className="w-full h-full overflow-y-auto">
-      <div className="p-6 space-y-6 max-w-7xl mx-auto">
-        <div className="flex items-center justify-between">
+      <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 max-w-7xl mx-auto">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold">Leads</h1>
-          <p className="text-muted-foreground">Manage and track your leads</p>
+          <h1 className="text-2xl sm:text-3xl font-bold">Leads</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Manage and track your leads</p>
         </div>
         <AddLeadDialog onAdd={addLead} sources={sources} />
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {leads.map((lead) => (
           <Card key={lead.id} className="hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle className="text-lg">{lead.name}</CardTitle>
+            <CardHeader className="px-4 pt-4 sm:px-6 sm:pt-6">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <CardTitle className="text-base sm:text-lg truncate">{lead.name}</CardTitle>
                   {lead.company && (
-                    <p className="text-sm text-muted-foreground">{lead.company}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground truncate">{lead.company}</p>
                   )}
                 </div>
-                <Badge className={getStatusColor(lead.status)}>
+                <Badge className={`${getStatusColor(lead.status)} shrink-0 text-xs`}>
                   {lead.status}
                 </Badge>
               </div>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-3 px-4 pb-4 sm:px-6 sm:pb-6">
               {lead.project_type && (
-                <p className="text-sm">
+                <p className="text-xs sm:text-sm">
                   <span className="font-medium">Project:</span> {lead.project_type}
                 </p>
               )}
               {lead.value && (
-                <p className="text-sm font-semibold text-primary">
+                <p className="text-sm sm:text-base font-semibold text-primary">
                   ${lead.value.toLocaleString()}
                 </p>
               )}
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 {lead.phone && (
                   <Button variant="outline" size="sm" asChild>
                     <a href={`tel:${lead.phone}`}>

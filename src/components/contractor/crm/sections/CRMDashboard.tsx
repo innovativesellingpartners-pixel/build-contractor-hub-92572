@@ -55,22 +55,22 @@ export default function CRMDashboard() {
 
   return (
     <div className="w-full h-full overflow-y-auto">
-      <div className="p-6 space-y-6 max-w-7xl mx-auto">
+      <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 max-w-7xl mx-auto">
         <div>
-          <h1 className="text-3xl font-bold">CRM Dashboard</h1>
-          <p className="text-muted-foreground">Overview of your business pipeline</p>
+          <h1 className="text-2xl sm:text-3xl font-bold">CRM Dashboard</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Overview of your business pipeline</p>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
           <Card key={stat.title}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-              <stat.icon className="h-4 w-4 text-muted-foreground" />
+            <CardHeader className="flex flex-row items-center justify-between pb-2 px-4 pt-4 sm:px-6 sm:pt-6">
+              <CardTitle className="text-xs sm:text-sm font-medium">{stat.title}</CardTitle>
+              <stat.icon className="h-4 w-4 text-muted-foreground shrink-0" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
+            <CardContent className="px-4 pb-4 sm:px-6 sm:pb-6">
+              <div className="text-xl sm:text-2xl font-bold">{stat.value}</div>
               <p className="text-xs text-muted-foreground">{stat.description}</p>
             </CardContent>
           </Card>
@@ -79,20 +79,20 @@ export default function CRMDashboard() {
 
         {/* Recent Activity */}
         <Card>
-        <CardHeader>
-          <CardTitle>Recent Activity</CardTitle>
+        <CardHeader className="px-4 pt-4 sm:px-6 sm:pt-6">
+          <CardTitle className="text-lg sm:text-xl">Recent Activity</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
+        <CardContent className="px-4 pb-4 sm:px-6 sm:pb-6">
+          <div className="space-y-3 sm:space-y-4">
             {recentActivity.map((activity, index) => (
-              <div key={index} className="flex items-center justify-between border-b pb-2 last:border-0">
-                <div>
-                  <p className="font-medium">{activity.name}</p>
-                  <p className="text-sm text-muted-foreground">
+              <div key={index} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4 border-b pb-3 last:border-0">
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-sm sm:text-base truncate">{activity.name}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     {activity.type} • {activity.status}
                   </p>
                 </div>
-                <span className="text-sm text-muted-foreground">{activity.date}</span>
+                <span className="text-xs sm:text-sm text-muted-foreground shrink-0">{activity.date}</span>
               </div>
             ))}
           </div>

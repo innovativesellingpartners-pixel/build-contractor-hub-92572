@@ -72,14 +72,14 @@ export default function OpportunitiesSection() {
 
   return (
     <div className="w-full h-full overflow-y-auto">
-      <div className="p-6 space-y-6">
+      <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-bold">Sales Pipeline</h1>
-            <p className="text-muted-foreground">Track opportunities through 7-stage sales process</p>
+            <h1 className="text-2xl sm:text-3xl font-bold">Sales Pipeline</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">Track opportunities through 7-stage sales process</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <Button
               variant={viewMode === 'board' ? 'default' : 'outline'}
               size="sm"
@@ -101,36 +101,36 @@ export default function OpportunitiesSection() {
         </div>
 
         {/* Metrics */}
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-3">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Total Pipeline Value</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <CardHeader className="flex flex-row items-center justify-between pb-2 px-4 pt-4 sm:px-6 sm:pt-6">
+              <CardTitle className="text-xs sm:text-sm font-medium">Total Pipeline Value</CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground shrink-0" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">${totalValue.toLocaleString()}</div>
+            <CardContent className="px-4 pb-4 sm:px-6 sm:pb-6">
+              <div className="text-xl sm:text-2xl font-bold">${totalValue.toLocaleString()}</div>
               <p className="text-xs text-muted-foreground">{opportunities.length} opportunities</p>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Weighted Pipeline</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <CardHeader className="flex flex-row items-center justify-between pb-2 px-4 pt-4 sm:px-6 sm:pt-6">
+              <CardTitle className="text-xs sm:text-sm font-medium">Weighted Pipeline</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground shrink-0" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">${weightedValue.toLocaleString()}</div>
+            <CardContent className="px-4 pb-4 sm:px-6 sm:pb-6">
+              <div className="text-xl sm:text-2xl font-bold">${weightedValue.toLocaleString()}</div>
               <p className="text-xs text-muted-foreground">Based on probability</p>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Active Opportunities</CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
+            <CardHeader className="flex flex-row items-center justify-between pb-2 px-4 pt-4 sm:px-6 sm:pt-6">
+              <CardTitle className="text-xs sm:text-sm font-medium">Active Opportunities</CardTitle>
+              <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{activeCount}</div>
+            <CardContent className="px-4 pb-4 sm:px-6 sm:pb-6">
+              <div className="text-xl sm:text-2xl font-bold">{activeCount}</div>
               <p className="text-xs text-muted-foreground">In progress</p>
             </CardContent>
           </Card>
@@ -138,7 +138,7 @@ export default function OpportunitiesSection() {
 
         {/* Pipeline Board View */}
         {viewMode === 'board' && (
-          <div className="grid gap-4 grid-cols-1 lg:grid-cols-4 xl:grid-cols-7">
+          <div className="grid gap-3 sm:gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
             {stages.map((stage) => (
               <div
                 key={stage}
@@ -146,12 +146,12 @@ export default function OpportunitiesSection() {
                 onDragOver={handleDragOver}
                 onDrop={(e) => handleDrop(e, stage)}
               >
-                <div className="flex items-center justify-between sticky top-0 bg-background pb-2 z-10">
-                  <div className="flex items-center gap-2">
-                    <div className={`w-2 h-2 rounded-full ${stageConfig[stage].color}`} />
-                    <h3 className="font-semibold text-sm">{stageConfig[stage].label}</h3>
+                <div className="flex items-center justify-between sticky top-0 bg-background pb-2 z-10 px-1">
+                  <div className="flex items-center gap-1.5 sm:gap-2">
+                    <div className={`w-2 h-2 rounded-full ${stageConfig[stage].color} shrink-0`} />
+                    <h3 className="font-semibold text-xs sm:text-sm truncate">{stageConfig[stage].label}</h3>
                   </div>
-                  <Badge variant="secondary" className="text-xs">
+                  <Badge variant="secondary" className="text-xs shrink-0">
                     {getStageOpportunities(stage).length}
                   </Badge>
                 </div>
@@ -165,28 +165,28 @@ export default function OpportunitiesSection() {
                       onDragStart={(e) => handleDragStart(e, opp.id)}
                       onClick={() => setSelectedOpp(opp)}
                     >
-                      <CardContent className="p-3 space-y-2">
+                      <CardContent className="p-2 sm:p-3 space-y-2">
                         <div className="space-y-1">
-                          <h4 className="font-medium text-sm line-clamp-1">{opp.title}</h4>
+                          <h4 className="font-medium text-xs sm:text-sm line-clamp-2">{opp.title}</h4>
                           <p className="text-xs text-muted-foreground line-clamp-1">{opp.customer_name}</p>
                         </div>
 
                         {opp.estimated_value && (
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm font-semibold text-primary">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-xs sm:text-sm font-semibold text-primary truncate">
                               ${opp.estimated_value.toLocaleString()}
                             </span>
-                            <Badge variant="outline" className="text-xs">
+                            <Badge variant="outline" className="text-xs shrink-0">
                               {opp.probability_percent}%
                             </Badge>
                           </div>
                         )}
 
-                        <div className="flex items-center justify-between text-xs text-muted-foreground">
-                          <Badge variant="secondary" className="text-xs">
+                        <div className="flex items-center justify-between gap-1 text-xs text-muted-foreground">
+                          <Badge variant="secondary" className="text-xs truncate max-w-[100px]">
                             {opp.trade_type}
                           </Badge>
-                          <span>{getDaysInStage(opp.stage_entered_at)}d</span>
+                          <span className="shrink-0">{getDaysInStage(opp.stage_entered_at)}d</span>
                         </div>
 
                         {isOverdue(opp.next_action_date) && (
@@ -215,7 +215,7 @@ export default function OpportunitiesSection() {
           <Card>
             <CardContent className="p-0">
               <div className="overflow-x-auto">
-                <table className="w-full">
+                <table className="w-full min-w-[800px]">
                   <thead className="border-b">
                     <tr>
                       <th className="text-left p-4 font-medium">Customer</th>
