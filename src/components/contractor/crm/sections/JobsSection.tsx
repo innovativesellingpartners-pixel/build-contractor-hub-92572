@@ -1,11 +1,20 @@
+import { useState } from 'react';
 import { useJobs } from '@/hooks/useJobs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, MapPin, Calendar } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import JobDetailView from '../JobDetailView';
 
 export default function JobsSection() {
   const { jobs, loading } = useJobs();
+  const [selectedJob, setSelectedJob] = useState<any>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
+
+  const handleJobClick = (job: any) => {
+    setSelectedJob(job);
+    setDetailOpen(true);
+  };
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
@@ -37,7 +46,11 @@ export default function JobsSection() {
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {jobs.map((job) => (
-          <Card key={job.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+          <Card 
+            key={job.id} 
+            className="hover:shadow-lg transition-shadow cursor-pointer"
+            onClick={() => handleJobClick(job)}
+          >
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div>
@@ -81,6 +94,12 @@ export default function JobsSection() {
           </Card>
         ))}
       </div>
+
+      <JobDetailView
+        job={selectedJob}
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+      />
     </div>
   );
 }
