@@ -106,7 +106,7 @@ const handler = async (req: Request): Promise<Response> => {
           <body>
             <div class="container">
               <div class="header">
-                <img src="https://faqrzzodtmsybofakcvv.supabase.co/storage/v1/object/public/assets/ct1-logo-white.png" alt="CT1" class="logo" />
+                <img src="https://faqrzzodtmsybofakcvv.supabase.co/storage/v1/object/public/company-logos/ct1-logo-circle.png" alt="CT1" class="logo" />
                 <h1 class="header-title">Professional Estimate</h1>
                 <p class="header-subtitle">Estimate ${estimate.estimate_number || ''}</p>
               </div>
