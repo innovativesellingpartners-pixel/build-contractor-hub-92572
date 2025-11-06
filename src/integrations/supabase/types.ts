@@ -441,8 +441,11 @@ export type Database = {
           created_at: string
           customer_id: string | null
           description: string | null
+          email_provider_id: string | null
+          email_send_error: string | null
           estimate_number: string | null
           id: string
+          last_send_attempt: string | null
           line_items: Json | null
           opportunity_id: string | null
           paid_at: string | null
@@ -474,8 +477,11 @@ export type Database = {
           created_at?: string
           customer_id?: string | null
           description?: string | null
+          email_provider_id?: string | null
+          email_send_error?: string | null
           estimate_number?: string | null
           id?: string
+          last_send_attempt?: string | null
           line_items?: Json | null
           opportunity_id?: string | null
           paid_at?: string | null
@@ -507,8 +513,11 @@ export type Database = {
           created_at?: string
           customer_id?: string | null
           description?: string | null
+          email_provider_id?: string | null
+          email_send_error?: string | null
           estimate_number?: string | null
           id?: string
+          last_send_attempt?: string | null
           line_items?: Json | null
           opportunity_id?: string | null
           paid_at?: string | null

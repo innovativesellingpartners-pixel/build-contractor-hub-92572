@@ -195,15 +195,19 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    // Update estimate status
+    // Update estimate status with email provider ID
     console.log('Email sent successfully with ID:', emailResponse.data.id);
     console.log('Updating estimate status to sent...');
     
+    const now = new Date().toISOString();
     const { error: updateError } = await supabase
       .from('estimates')
       .update({ 
         status: 'sent',
-        sent_at: new Date().toISOString()
+        sent_at: now,
+        last_send_attempt: now,
+        email_provider_id: emailResponse.data.id,
+        email_send_error: null
       })
       .eq('id', estimateId);
 
@@ -228,6 +232,25 @@ const handler = async (req: Request): Promise<Response> => {
     });
   } catch (error: any) {
     console.error("Error in send-estimate function:", error);
+    
+    // Try to log the error in the estimate record
+    try {
+      const supabaseClient = createClient(supabaseUrl, supabaseServiceKey);
+      const body = await req.clone().json();
+      const { estimateId } = body;
+      if (estimateId) {
+        await supabaseClient
+          .from('estimates')
+          .update({ 
+            last_send_attempt: new Date().toISOString(),
+            email_send_error: error.message 
+          })
+          .eq('id', estimateId);
+      }
+    } catch (logError) {
+      console.error("Error logging send failure:", logError);
+    }
+    
     return new Response(
       JSON.stringify({ error: error.message }),
       {

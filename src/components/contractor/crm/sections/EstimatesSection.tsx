@@ -3,13 +3,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Plus, FileText, Calendar, DollarSign, Trash2, Eye, Send, CheckCircle, Clock } from 'lucide-react';
+import { Plus, FileText, Calendar, DollarSign, Trash2, Eye, Send, CheckCircle, Clock, AlertCircle, RefreshCw } from 'lucide-react';
 import { useEstimates } from '@/hooks/useEstimates';
 import EstimateForm from '../EstimateForm';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { MobileOptimizedWrapper, MobileCard, MobileGrid } from './MobileOptimizedWrapper';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function EstimatesSection() {
   const { estimates, isLoading, createEstimate, updateEstimate, deleteEstimate, sendEstimate, isSendingEstimate } = useEstimates();
@@ -148,27 +149,80 @@ export default function EstimatesSection() {
                   )}
                 </div>
 
-                {/* Status Indicators */}
-                {(estimate.sent_at || estimate.viewed_at || estimate.signed_at) && (
-                  <div className="flex flex-wrap gap-2 text-xs">
-                    {estimate.sent_at && (
-                      <Badge variant="outline" className="gap-1">
-                        <Send className="h-3 w-3" />
-                        Sent {format(new Date(estimate.sent_at), 'MMM dd')}
-                      </Badge>
+                {/* Delivery Status Panel */}
+                {(estimate.last_send_attempt || estimate.sent_at || estimate.viewed_at || estimate.signed_at) && (
+                  <div className="space-y-3">
+                    {/* Email Delivery Status */}
+                    {estimate.last_send_attempt && (
+                      <Alert className={estimate.email_send_error ? "border-destructive" : "border-primary"}>
+                        <AlertDescription className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2 text-xs font-medium">
+                                {estimate.email_send_error ? (
+                                  <>
+                                    <AlertCircle className="h-3 w-3 text-destructive" />
+                                    <span className="text-destructive">Send Failed</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <CheckCircle className="h-3 w-3 text-green-600" />
+                                    <span className="text-green-600">Delivered</span>
+                                  </>
+                                )}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                Last attempt: {format(new Date(estimate.last_send_attempt), 'MMM dd, yyyy h:mm a')}
+                              </div>
+                              {estimate.email_provider_id && (
+                                <div className="text-xs text-muted-foreground font-mono">
+                                  ID: {estimate.email_provider_id}
+                                </div>
+                              )}
+                              {estimate.email_send_error && (
+                                <div className="text-xs text-destructive mt-1">
+                                  Error: {estimate.email_send_error}
+                                </div>
+                              )}
+                            </div>
+                            {estimate.client_email && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleSendEstimate(estimate)}
+                                disabled={isSendingEstimate}
+                                className="gap-2"
+                              >
+                                <RefreshCw className={`h-3 w-3 ${isSendingEstimate ? 'animate-spin' : ''}`} />
+                                Resend
+                              </Button>
+                            )}
+                          </div>
+                        </AlertDescription>
+                      </Alert>
                     )}
-                    {estimate.viewed_at && (
-                      <Badge variant="outline" className="gap-1">
-                        <Eye className="h-3 w-3" />
-                        Viewed {format(new Date(estimate.viewed_at), 'MMM dd')}
-                      </Badge>
-                    )}
-                    {estimate.signed_at && (
-                      <Badge variant="outline" className="gap-1 border-green-600 text-green-600">
-                        <CheckCircle className="h-3 w-3" />
-                        Signed {format(new Date(estimate.signed_at), 'MMM dd')}
-                      </Badge>
-                    )}
+
+                    {/* Status Indicators */}
+                    <div className="flex flex-wrap gap-2 text-xs">
+                      {estimate.sent_at && (
+                        <Badge variant="outline" className="gap-1">
+                          <Send className="h-3 w-3" />
+                          Sent {format(new Date(estimate.sent_at), 'MMM dd')}
+                        </Badge>
+                      )}
+                      {estimate.viewed_at && (
+                        <Badge variant="outline" className="gap-1">
+                          <Eye className="h-3 w-3" />
+                          Viewed {format(new Date(estimate.viewed_at), 'MMM dd')}
+                        </Badge>
+                      )}
+                      {estimate.signed_at && (
+                        <Badge variant="outline" className="gap-1 border-green-600 text-green-600">
+                          <CheckCircle className="h-3 w-3" />
+                          Signed {format(new Date(estimate.signed_at), 'MMM dd')}
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                 )}
 
