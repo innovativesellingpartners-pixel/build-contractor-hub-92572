@@ -27,10 +27,10 @@ export function TierCheckout({ tier, isOpen, onClose, onPaymentSuccess }: TierCh
 
   const calculatePrice = () => {
     if (billingCycle === 'quarterly') {
-      return tier.price * 3;
+      return Math.round(tier.price * 3 * 100) / 100;
     }
     // Yearly gets 10% discount
-    return Math.floor(tier.price * 12 * 0.9);
+    return Math.round(tier.price * 12 * 0.9 * 100) / 100;
   };
 
   const handlePayment = async () => {
@@ -107,7 +107,7 @@ export function TierCheckout({ tier, isOpen, onClose, onPaymentSuccess }: TierCh
               <Label htmlFor="quarterly" className="flex-1 cursor-pointer">
                 <div className="font-semibold">Quarterly Billing</div>
                 <div className="text-sm text-muted-foreground">
-                  ${tier.price * 3} every 3 months
+                  ${Math.round(tier.price * 3 * 100) / 100} every 3 months
                 </div>
               </Label>
             </div>
@@ -122,7 +122,7 @@ export function TierCheckout({ tier, isOpen, onClose, onPaymentSuccess }: TierCh
                   </span>
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  ${Math.floor(tier.price * 12 * 0.9)} per year
+                  ${Math.round(tier.price * 12 * 0.9 * 100) / 100} per year
                 </div>
               </Label>
             </div>

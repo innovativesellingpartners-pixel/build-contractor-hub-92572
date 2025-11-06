@@ -8,8 +8,8 @@ const corsHeaders = {
 
 // Official pricing configuration - SERVER-SIDE SOURCE OF TRUTH
 const TIER_PRICING = {
-  launch: { monthly: 99, quarterly: 297, yearly: 1069 },
-  growth: { monthly: 149, quarterly: 447, yearly: 1609 },
+  launch: { monthly: 99.99, quarterly: 299.97, yearly: 1079.89 },
+  growth: { monthly: 250, quarterly: 750, yearly: 2700 },
   accel: { monthly: 199, quarterly: 597, yearly: 2149 }
 } as const;
 

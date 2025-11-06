@@ -26,45 +26,27 @@ export function Pricing() {
 
   const tiers = [
     {
-      id: "ct1bot",
-      name: "CT1Bot AI Assistant",
-      subtitle: "Starter Tier",
-      price: 10,
-      originalPrice: null,
-      description: "Your personal AI business assistant for daily contractor operations",
-      icon: <Bot className="h-8 w-8" />,
-      popular: false,
-      features: [
-        "24/7 AI Business Assistant (Pocket Bot)",
-        "Instant answers to business questions",
-        "Project estimation guidance",
-        "Scheduling and reminders",
-        "Basic document templates",
-        "Mobile and web access"
-      ]
-    },
-    {
       id: "launch",
       name: "CT1 LAUNCH Growth Starter",
       subtitle: "Tier 1",
-      price: 50,
+      price: 99.99,
       originalPrice: null,
       description: "Build your foundation with our training and management system",
       icon: <Star className="h-8 w-8" />,
       popular: false,
       features: [
-        "Everything in CT1Bot, plus:",
         "CT1 5-Star Contractor Business & Sales Training",
         "Full Customer & Jobs Management system",
         "1 personal monthly business training session",
-        "Marketplace access to vetted tech vendors"
+        "Marketplace access to vetted tech vendors",
+        "24/7 AI Business Assistant (Pocket Bot)"
       ]
     },
     {
       id: "growth",
       name: "CT1 - Growth Business Builder", 
       subtitle: "Tier 2",
-      price: 200,
+      price: 250,
       originalPrice: null,
       description: "Scale faster with AI tools and qualified leads",
       icon: <Zap className="h-8 w-8" />,
@@ -136,74 +118,9 @@ export function Pricing() {
       {/* Pricing Tiers */}
       <section className="py-12 sm:py-16 md:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* CT1Bot standalone tier */}
-          <div className="max-w-xl mx-auto mb-12">
-            {tiers.slice(0, 1).map((tier) => (
-              <Card 
-                key={tier.id} 
-                className="relative p-6 border-2 border-primary/30 bg-gradient-to-br from-primary/5 to-background"
-              >
-                <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-4 py-1">
-                  Best Value to Start
-                </Badge>
-                
-                <CardHeader className="text-center pb-6">
-                  <div className="flex justify-center mb-4">
-                    <div className="relative">
-                      <img src={ct1Logo} alt="CT1 Logo" className="h-16 w-16" />
-                      <div className="absolute -bottom-1 -right-1 bg-primary rounded-full p-1">
-                        <Bot className="h-4 w-4 text-primary-foreground" />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <p className="text-sm font-semibold text-primary">{tier.subtitle}</p>
-                    <CardTitle className="text-2xl font-bold">{tier.name}</CardTitle>
-                  </div>
-                  
-                  <div className="mt-4">
-                    <div className="text-center">
-                      <div className="flex items-center justify-center gap-2">
-                        <span className="text-4xl font-bold text-foreground">
-                          ${tier.price}
-                        </span>
-                        <span className="text-muted-foreground">/month</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-2">Your AI business partner, always ready</p>
-                    </div>
-                  </div>
-                  
-                  <p className="text-muted-foreground text-sm mt-4">
-                    {tier.description}
-                  </p>
-                </CardHeader>
-
-                <CardContent className="space-y-6">
-                  <ul className="space-y-3">
-                    {tier.features.map((feature, index) => (
-                      <li key={index} className="flex items-start gap-3">
-                        <CheckCircle className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                        <span className="text-sm text-foreground">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  <div className="pt-4">
-                    <Button 
-                      onClick={() => setSelectedTier({ id: tier.id, name: tier.name, price: tier.price })}
-                      className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700"
-                    >
-                      Get Started with CT1Bot
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {/* Next 2 tiers side by side */}
+          {/* First 2 tiers side by side */}
           <div className="grid sm:grid-cols-2 gap-6 sm:gap-8 mb-8">
-            {tiers.slice(1, 3).map((tier) => (
+            {tiers.slice(0, 2).map((tier) => (
               <Card 
                 key={tier.id} 
                 className={`relative p-6 ${
@@ -264,9 +181,9 @@ export function Pricing() {
             ))}
           </div>
 
-          {/* Fourth tier below */}
+          {/* Third tier below */}
           <div className="max-w-2xl mx-auto">
-            {tiers.slice(3).map((tier) => (
+            {tiers.slice(2).map((tier) => (
               <Card 
                 key={tier.id} 
                 className="relative p-6 opacity-75"
