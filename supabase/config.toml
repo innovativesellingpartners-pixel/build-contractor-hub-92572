@@ -20,3 +20,6 @@ verify_jwt = false
 
 [functions.create-first-admin]
 verify_jwt = false
+
+[functions.send-estimate]
+verify_jwt = false
