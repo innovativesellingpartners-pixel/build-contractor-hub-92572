@@ -31,6 +31,53 @@ interface JobDetailViewProps {
 
 export default function JobDetailView({ job, open, onOpenChange }: JobDetailViewProps) {
   const { updateJob } = useJobs();
+  const [isEditingStatus, setIsEditingStatus] = useState(false);
+  const [jobStatus, setJobStatus] = useState(job.job_status || 'scheduled');
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'scheduled':
+        return 'bg-blue-500';
+      case 'in_progress':
+        return 'bg-green-500';
+      case 'on_hold':
+        return 'bg-gray-500';
+      case 'inspection_pending':
+        return 'bg-orange-500';
+      case 'completed':
+        return 'bg-teal-500';
+      case 'closed':
+        return 'bg-slate-600';
+      default:
+        return 'bg-gray-400';
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'completed':
+      case 'closed':
+        return <CheckCircle className="h-5 w-5" />;
+      case 'on_hold':
+        return <AlertCircle className="h-5 w-5" />;
+      default:
+        return <Clock className="h-5 w-5" />;
+    }
+  };
+
+  const handleStatusUpdate = () => {
+    updateJob({
+      ...job,
+      id: job.id!,
+      job_status: jobStatus as any,
+    });
+    setIsEditingStatus(false);
+  };
+
+  const isOverBudget = (job.actual_cost || 0) > (job.budget_amount || 0);
+  const isDelayed = job.scheduled_end_date && new Date() > new Date(job.scheduled_end_date) && 
+                   job.job_status !== 'completed' && job.job_status !== 'closed';
+  const { updateJob } = useJobs();
   const { photos, uploading, uploadPhoto, deletePhoto } = useJobPhotos(job?.id);
   const { costs, totalCosts, addCost, deleteCost } = useJobCosts(job?.id);
   const { logs, addLog, deleteLog } = useDailyLogs(job?.id);

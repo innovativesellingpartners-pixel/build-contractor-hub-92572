@@ -1,0 +1,266 @@
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Plus, FileText, DollarSign, Trash2 } from 'lucide-react';
+import { useInvoices, Invoice } from '@/hooks/useInvoices';
+import { format } from 'date-fns';
+
+interface InvoicesTabProps {
+  jobId: string;
+  customerId?: string;
+}
+
+export default function InvoicesTab({ jobId, customerId }: InvoicesTabProps) {
+  const { invoices, isLoading, createInvoice, updateInvoice, deleteInvoice } = useInvoices(jobId);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
+
+  const [formData, setFormData] = useState<Invoice>({
+    job_id: jobId,
+    customer_id: customerId,
+    issue_date: new Date().toISOString().split('T')[0],
+    amount_due: 0,
+    amount_paid: 0,
+    status: 'draft',
+  });
+
+  const getStatusBadge = (status: string) => {
+    const variants: Record<string, any> = {
+      paid: 'default',
+      partial: 'default',
+      sent: 'secondary',
+      draft: 'secondary',
+      overdue: 'destructive',
+    };
+    return <Badge variant={variants[status]}>{status}</Badge>;
+  };
+
+  const handleSubmit = () => {
+    if (editingInvoice) {
+      updateInvoice({ ...formData, id: editingInvoice.id! });
+    } else {
+      createInvoice(formData);
+    }
+    setIsDialogOpen(false);
+    resetForm();
+  };
+
+  const resetForm = () => {
+    setFormData({
+      job_id: jobId,
+      customer_id: customerId,
+      issue_date: new Date().toISOString().split('T')[0],
+      amount_due: 0,
+      amount_paid: 0,
+      status: 'draft',
+    });
+    setEditingInvoice(null);
+  };
+
+  const handleEdit = (invoice: Invoice) => {
+    setEditingInvoice(invoice);
+    setFormData(invoice);
+    setIsDialogOpen(true);
+  };
+
+  const totalDue = invoices?.reduce((sum, inv) => sum + inv.amount_due, 0) || 0;
+  const totalPaid = invoices?.reduce((sum, inv) => sum + inv.amount_paid, 0) || 0;
+  const balance = totalDue - totalPaid;
+
+  if (isLoading) return <div className="p-4">Loading invoices...</div>;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <div>
+          <h3 className="text-lg font-semibold">Invoices</h3>
+          <div className="text-sm text-muted-foreground space-x-4">
+            <span>Total Due: <span className="font-semibold">${totalDue.toFixed(2)}</span></span>
+            <span>Paid: <span className="font-semibold text-green-600">${totalPaid.toFixed(2)}</span></span>
+            <span>Balance: <span className="font-semibold text-primary">${balance.toFixed(2)}</span></span>
+          </div>
+        </div>
+        <Button onClick={() => setIsDialogOpen(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          Create Invoice
+        </Button>
+      </div>
+
+      <div className="space-y-3">
+        {invoices && invoices.length > 0 ? (
+          invoices.map((invoice) => (
+            <Card key={invoice.id} className="hover:shadow-md transition-shadow">
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-start gap-3 flex-1">
+                    <FileText className="h-5 w-5 text-muted-foreground mt-0.5" />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <h4 className="font-medium">
+                          {invoice.invoice_number || `Invoice #${invoice.id?.slice(0, 8)}`}
+                        </h4>
+                        {getStatusBadge(invoice.status)}
+                      </div>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div>
+                          <span className="text-xs text-muted-foreground">Issue Date:</span>
+                          <p className="font-medium">{format(new Date(invoice.issue_date), 'MMM d, yyyy')}</p>
+                        </div>
+                        {invoice.due_date && (
+                          <div>
+                            <span className="text-xs text-muted-foreground">Due Date:</span>
+                            <p className="font-medium">{format(new Date(invoice.due_date), 'MMM d, yyyy')}</p>
+                          </div>
+                        )}
+                        <div>
+                          <span className="text-xs text-muted-foreground">Amount Due:</span>
+                          <p className="font-medium text-primary">${invoice.amount_due.toFixed(2)}</p>
+                        </div>
+                        <div>
+                          <span className="text-xs text-muted-foreground">Amount Paid:</span>
+                          <p className="font-medium text-green-600">${invoice.amount_paid.toFixed(2)}</p>
+                        </div>
+                      </div>
+                      {invoice.notes && (
+                        <p className="text-sm text-muted-foreground mt-2">{invoice.notes}</p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={() => handleEdit(invoice)}>
+                      Edit
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => deleteInvoice(invoice.id!)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          <Card>
+            <CardContent className="p-8 text-center text-muted-foreground">
+              No invoices yet. Create an invoice to bill for this job.
+            </CardContent>
+          </Card>
+        )}
+      </div>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{editingInvoice ? 'Edit Invoice' : 'Create New Invoice'}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="issue_date">Issue Date *</Label>
+                <Input
+                  id="issue_date"
+                  type="date"
+                  value={formData.issue_date}
+                  onChange={(e) => setFormData({ ...formData, issue_date: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="due_date">Due Date</Label>
+                <Input
+                  id="due_date"
+                  type="date"
+                  value={formData.due_date}
+                  onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="amount_due">Amount Due *</Label>
+                <Input
+                  id="amount_due"
+                  type="number"
+                  step="0.01"
+                  value={formData.amount_due}
+                  onChange={(e) => setFormData({ ...formData, amount_due: parseFloat(e.target.value) || 0 })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="amount_paid">Amount Paid</Label>
+                <Input
+                  id="amount_paid"
+                  type="number"
+                  step="0.01"
+                  value={formData.amount_paid}
+                  onChange={(e) => setFormData({ ...formData, amount_paid: parseFloat(e.target.value) || 0 })}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="status">Status</Label>
+              <Select
+                value={formData.status}
+                onValueChange={(value: any) => setFormData({ ...formData, status: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="sent">Sent</SelectItem>
+                  <SelectItem value="partial">Partially Paid</SelectItem>
+                  <SelectItem value="paid">Paid</SelectItem>
+                  <SelectItem value="overdue">Overdue</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="notes">Notes</Label>
+              <Textarea
+                id="notes"
+                value={formData.notes}
+                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                rows={3}
+              />
+            </div>
+
+            <div className="p-3 bg-muted rounded-md">
+              <p className="text-sm">
+                Balance Due: <span className="font-bold text-primary">
+                  ${((formData.amount_due || 0) - (formData.amount_paid || 0)).toFixed(2)}
+                </span>
+              </p>
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsDialogOpen(false);
+                  resetForm();
+                }}
+              >
+                Cancel
+              </Button>
+              <Button onClick={handleSubmit}>
+                {editingInvoice ? 'Update' : 'Create'} Invoice
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}

@@ -41,6 +41,65 @@ export type Database = {
         }
         Relationships: []
       }
+      change_orders: {
+        Row: {
+          additional_cost: number
+          approved_by: string | null
+          created_at: string
+          date_approved: string | null
+          date_requested: string
+          description: string
+          id: string
+          job_id: string
+          notes: string | null
+          reason: string | null
+          requested_by: string | null
+          status: Database["public"]["Enums"]["change_order_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          additional_cost?: number
+          approved_by?: string | null
+          created_at?: string
+          date_approved?: string | null
+          date_requested?: string
+          description: string
+          id?: string
+          job_id: string
+          notes?: string | null
+          reason?: string | null
+          requested_by?: string | null
+          status?: Database["public"]["Enums"]["change_order_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          additional_cost?: number
+          approved_by?: string | null
+          created_at?: string
+          date_approved?: string | null
+          date_requested?: string
+          description?: string
+          id?: string
+          job_id?: string
+          notes?: string | null
+          reason?: string | null
+          requested_by?: string | null
+          status?: Database["public"]["Enums"]["change_order_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "change_orders_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chatbot_usage: {
         Row: {
           created_at: string
@@ -161,6 +220,78 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      crew_assignments: {
+        Row: {
+          assigned_by: string | null
+          assigned_date: string
+          crew_member_id: string
+          id: string
+          job_id: string
+        }
+        Insert: {
+          assigned_by?: string | null
+          assigned_date?: string
+          crew_member_id: string
+          id?: string
+          job_id: string
+        }
+        Update: {
+          assigned_by?: string | null
+          assigned_date?: string
+          crew_member_id?: string
+          id?: string
+          job_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crew_assignments_crew_member_id_fkey"
+            columns: ["crew_member_id"]
+            isOneToOne: false
+            referencedRelation: "crew_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crew_assignments_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crew_members: {
+        Row: {
+          contact_info: Json | null
+          created_at: string
+          id: string
+          name: string
+          role: Database["public"]["Enums"]["crew_role"]
+          skills_trades: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          contact_info?: Json | null
+          created_at?: string
+          id?: string
+          name: string
+          role?: Database["public"]["Enums"]["crew_role"]
+          skills_trades?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          contact_info?: Json | null
+          created_at?: string
+          id?: string
+          name?: string
+          role?: Database["public"]["Enums"]["crew_role"]
+          skills_trades?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       customers: {
         Row: {
@@ -329,6 +460,72 @@ export type Database = {
           },
         ]
       }
+      invoices: {
+        Row: {
+          amount_due: number
+          amount_paid: number
+          created_at: string
+          customer_id: string | null
+          due_date: string | null
+          id: string
+          invoice_number: string | null
+          issue_date: string
+          job_id: string
+          line_items: Json | null
+          notes: string | null
+          status: Database["public"]["Enums"]["invoice_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_due?: number
+          amount_paid?: number
+          created_at?: string
+          customer_id?: string | null
+          due_date?: string | null
+          id?: string
+          invoice_number?: string | null
+          issue_date?: string
+          job_id: string
+          line_items?: Json | null
+          notes?: string | null
+          status?: Database["public"]["Enums"]["invoice_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_due?: number
+          amount_paid?: number
+          created_at?: string
+          customer_id?: string | null
+          due_date?: string | null
+          id?: string
+          invoice_number?: string | null
+          issue_date?: string
+          job_id?: string
+          line_items?: Json | null
+          notes?: string | null
+          status?: Database["public"]["Enums"]["invoice_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       job_costs: {
         Row: {
           amount: number
@@ -405,63 +602,134 @@ export type Database = {
           },
         ]
       }
+      job_status_history: {
+        Row: {
+          changed_at: string
+          id: string
+          job_id: string
+          new_status: string
+          old_status: string | null
+          reason: string | null
+          user_id: string
+        }
+        Insert: {
+          changed_at?: string
+          id?: string
+          job_id: string
+          new_status: string
+          old_status?: string | null
+          reason?: string | null
+          user_id: string
+        }
+        Update: {
+          changed_at?: string
+          id?: string
+          job_id?: string
+          new_status?: string
+          old_status?: string | null
+          reason?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_status_history_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       jobs: {
         Row: {
+          actual_cost: number | null
+          actual_end_date: string | null
+          actual_start_date: string | null
           address: string | null
+          adjusted_budget_amount: number | null
+          budget_amount: number | null
           city: string | null
           created_at: string
+          custom_fields: Json | null
           customer_id: string | null
           description: string | null
           end_date: string | null
           id: string
           job_number: string | null
+          job_status: Database["public"]["Enums"]["job_status"] | null
           name: string
           notes: string | null
           opportunity_id: string | null
+          scheduled_end_date: string | null
+          scheduled_start_date: string | null
           start_date: string | null
           state: string | null
           status: string
+          sub_trade: string | null
           total_cost: number | null
+          trade_type: string | null
           updated_at: string
           user_id: string
           zip_code: string | null
         }
         Insert: {
+          actual_cost?: number | null
+          actual_end_date?: string | null
+          actual_start_date?: string | null
           address?: string | null
+          adjusted_budget_amount?: number | null
+          budget_amount?: number | null
           city?: string | null
           created_at?: string
+          custom_fields?: Json | null
           customer_id?: string | null
           description?: string | null
           end_date?: string | null
           id?: string
           job_number?: string | null
+          job_status?: Database["public"]["Enums"]["job_status"] | null
           name: string
           notes?: string | null
           opportunity_id?: string | null
+          scheduled_end_date?: string | null
+          scheduled_start_date?: string | null
           start_date?: string | null
           state?: string | null
           status?: string
+          sub_trade?: string | null
           total_cost?: number | null
+          trade_type?: string | null
           updated_at?: string
           user_id: string
           zip_code?: string | null
         }
         Update: {
+          actual_cost?: number | null
+          actual_end_date?: string | null
+          actual_start_date?: string | null
           address?: string | null
+          adjusted_budget_amount?: number | null
+          budget_amount?: number | null
           city?: string | null
           created_at?: string
+          custom_fields?: Json | null
           customer_id?: string | null
           description?: string | null
           end_date?: string | null
           id?: string
           job_number?: string | null
+          job_status?: Database["public"]["Enums"]["job_status"] | null
           name?: string
           notes?: string | null
           opportunity_id?: string | null
+          scheduled_end_date?: string | null
+          scheduled_start_date?: string | null
           start_date?: string | null
           state?: string | null
           status?: string
+          sub_trade?: string | null
           total_cost?: number | null
+          trade_type?: string | null
           updated_at?: string
           user_id?: string
           zip_code?: string | null
@@ -739,6 +1007,68 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "marketplace_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      materials: {
+        Row: {
+          cost_per_unit: number | null
+          created_at: string
+          date_ordered: string | null
+          date_used: string | null
+          description: string
+          id: string
+          job_id: string
+          notes: string | null
+          quantity_ordered: number | null
+          quantity_used: number | null
+          supplier_name: string | null
+          total_cost: number | null
+          unit_type: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cost_per_unit?: number | null
+          created_at?: string
+          date_ordered?: string | null
+          date_used?: string | null
+          description: string
+          id?: string
+          job_id: string
+          notes?: string | null
+          quantity_ordered?: number | null
+          quantity_used?: number | null
+          supplier_name?: string | null
+          total_cost?: number | null
+          unit_type?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cost_per_unit?: number | null
+          created_at?: string
+          date_ordered?: string | null
+          date_used?: string | null
+          description?: string
+          id?: string
+          job_id?: string
+          notes?: string | null
+          quantity_ordered?: number | null
+          quantity_used?: number | null
+          supplier_name?: string | null
+          total_cost?: number | null
+          unit_type?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "materials_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
             referencedColumns: ["id"]
           },
         ]
@@ -1029,6 +1359,181 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      task_photos: {
+        Row: {
+          caption: string | null
+          created_at: string
+          gps_latitude: number | null
+          gps_longitude: number | null
+          id: string
+          photo_url: string
+          task_id: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          gps_latitude?: number | null
+          gps_longitude?: number | null
+          id?: string
+          photo_url: string
+          task_id: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          gps_latitude?: number | null
+          gps_longitude?: number | null
+          id?: string
+          photo_url?: string
+          task_id?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_photos_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tasks: {
+        Row: {
+          actual_end: string | null
+          actual_start: string | null
+          assigned_crew_member_id: string | null
+          created_at: string
+          description: string
+          id: string
+          is_blocking: boolean | null
+          job_id: string
+          notes: string | null
+          order_index: number | null
+          parent_task_id: string | null
+          scheduled_end: string | null
+          scheduled_start: string | null
+          status: Database["public"]["Enums"]["task_status"]
+          updated_at: string
+        }
+        Insert: {
+          actual_end?: string | null
+          actual_start?: string | null
+          assigned_crew_member_id?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          is_blocking?: boolean | null
+          job_id: string
+          notes?: string | null
+          order_index?: number | null
+          parent_task_id?: string | null
+          scheduled_end?: string | null
+          scheduled_start?: string | null
+          status?: Database["public"]["Enums"]["task_status"]
+          updated_at?: string
+        }
+        Update: {
+          actual_end?: string | null
+          actual_start?: string | null
+          assigned_crew_member_id?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          is_blocking?: boolean | null
+          job_id?: string
+          notes?: string | null
+          order_index?: number | null
+          parent_task_id?: string | null
+          scheduled_end?: string | null
+          scheduled_start?: string | null
+          status?: Database["public"]["Enums"]["task_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_assigned_crew_member_id_fkey"
+            columns: ["assigned_crew_member_id"]
+            isOneToOne: false
+            referencedRelation: "crew_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_parent_task_id_fkey"
+            columns: ["parent_task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      time_logs: {
+        Row: {
+          clock_in: string
+          clock_out: string | null
+          created_at: string
+          crew_member_id: string
+          hours_worked: number | null
+          id: string
+          job_id: string
+          notes: string | null
+          task_id: string | null
+        }
+        Insert: {
+          clock_in: string
+          clock_out?: string | null
+          created_at?: string
+          crew_member_id: string
+          hours_worked?: number | null
+          id?: string
+          job_id: string
+          notes?: string | null
+          task_id?: string | null
+        }
+        Update: {
+          clock_in?: string
+          clock_out?: string | null
+          created_at?: string
+          crew_member_id?: string
+          hours_worked?: number | null
+          id?: string
+          job_id?: string
+          notes?: string | null
+          task_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "time_logs_crew_member_id_fkey"
+            columns: ["crew_member_id"]
+            isOneToOne: false
+            referencedRelation: "crew_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "time_logs_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "time_logs_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       training_categories: {
         Row: {
@@ -1372,12 +1877,24 @@ export type Database = {
     }
     Functions: {
       generate_estimate_number: { Args: never; Returns: string }
+      generate_invoice_number: { Args: never; Returns: string }
       generate_job_number: { Args: never; Returns: string }
       get_user_tier: { Args: { user_id: string }; Returns: string }
       has_full_access: { Args: { user_id: string }; Returns: boolean }
       has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
     }
     Enums: {
+      change_order_status: "requested" | "approved" | "rejected"
+      crew_role: "office" | "dispatcher" | "field_crew_member" | "customer"
+      invoice_status: "draft" | "sent" | "partial" | "paid" | "overdue"
+      job_status:
+        | "scheduled"
+        | "in_progress"
+        | "on_hold"
+        | "inspection_pending"
+        | "completed"
+        | "closed"
+      task_status: "not_started" | "in_progress" | "completed" | "blocked"
       ticket_priority: "low" | "medium" | "high"
       ticket_status: "open" | "in_progress" | "resolved" | "closed"
     }
@@ -1507,6 +2024,18 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      change_order_status: ["requested", "approved", "rejected"],
+      crew_role: ["office", "dispatcher", "field_crew_member", "customer"],
+      invoice_status: ["draft", "sent", "partial", "paid", "overdue"],
+      job_status: [
+        "scheduled",
+        "in_progress",
+        "on_hold",
+        "inspection_pending",
+        "completed",
+        "closed",
+      ],
+      task_status: ["not_started", "in_progress", "completed", "blocked"],
       ticket_priority: ["low", "medium", "high"],
       ticket_status: ["open", "in_progress", "resolved", "closed"],
     },
