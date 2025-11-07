@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 import { PDFDocument, rgb, StandardFonts } from "https://esm.sh/pdf-lib@1.17.1";
 
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -230,7 +231,18 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const pdfBytes = await pdfDoc.save();
-    const base64Pdf = btoa(String.fromCharCode(...pdfBytes));
+    // Safe base64 encoding without spread to avoid call stack overflow
+    let binary = '';
+    const chunkSize = 0x8000; // 32KB
+    for (let i = 0; i < pdfBytes.length; i += chunkSize) {
+      const chunk = pdfBytes.subarray(i, i + chunkSize);
+      let chunkStr = '';
+      for (let j = 0; j < chunk.length; j++) {
+        chunkStr += String.fromCharCode(chunk[j]);
+      }
+      binary += chunkStr;
+    }
+    const base64Pdf = btoa(binary);
 
     return new Response(
       JSON.stringify({
