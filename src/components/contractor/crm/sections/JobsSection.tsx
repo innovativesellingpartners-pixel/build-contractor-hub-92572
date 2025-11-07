@@ -1,19 +1,75 @@
 import { useState } from 'react';
 import { useJobs } from '@/hooks/useJobs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MapPin, Calendar } from 'lucide-react';
+import { MapPin, Calendar, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import JobDetailView from '../JobDetailView';
 import { AddJobDialog } from '../AddJobDialog';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
-export default function JobsSection() {
-  const { jobs, loading, addJob } = useJobs();
+interface JobsSectionProps {
+  onSectionChange?: (section: string) => void;
+}
+
+export default function JobsSection({ onSectionChange }: JobsSectionProps) {
+  const { jobs, loading, addJob, refreshJobs } = useJobs();
+  const { user } = useAuth();
   const [selectedJob, setSelectedJob] = useState<any>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const [convertDialogOpen, setConvertDialogOpen] = useState(false);
+  const [jobToConvert, setJobToConvert] = useState<any>(null);
 
   const handleJobClick = (job: any) => {
     setSelectedJob(job);
     setDetailOpen(true);
+  };
+
+  const handleConvertToCustomer = async () => {
+    if (!jobToConvert || !user) return;
+
+    try {
+      const customerData = {
+        user_id: user.id,
+        name: jobToConvert.name,
+        email: '',
+        phone: '',
+        address: jobToConvert.address || '',
+        city: jobToConvert.city || '',
+        state: jobToConvert.state || '',
+        zip_code: jobToConvert.zip_code || '',
+        customer_type: 'residential' as const,
+        notes: jobToConvert.notes || '',
+        job_id: jobToConvert.id,
+      };
+
+      const { data: newCustomer, error: customerError } = await supabase
+        .from('customers')
+        .insert([customerData])
+        .select()
+        .single();
+
+      if (customerError) throw customerError;
+
+      await supabase
+        .from('jobs')
+        .update({
+          converted_at: new Date().toISOString(),
+          converted_to_customer_id: newCustomer.id,
+        })
+        .eq('id', jobToConvert.id);
+
+      toast.success('Job converted to customer successfully');
+      setConvertDialogOpen(false);
+      setJobToConvert(null);
+      refreshJobs();
+      if (onSectionChange) onSectionChange('customers');
+    } catch (error: any) {
+      toast.error('Failed to convert job to customer: ' + error.message);
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -46,12 +102,11 @@ export default function JobsSection() {
         {jobs.map((job) => (
           <Card 
             key={job.id} 
-            className="hover:shadow-lg transition-shadow cursor-pointer"
-            onClick={() => handleJobClick(job)}
+            className="hover:shadow-lg transition-shadow"
           >
             <CardHeader className="px-4 pt-4 sm:px-6 sm:pt-6">
               <div className="flex items-start justify-between gap-2">
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 cursor-pointer" onClick={() => handleJobClick(job)}>
                   <CardTitle className="text-base sm:text-lg truncate">{job.name}</CardTitle>
                   {job.job_number && (
                     <p className="text-xs sm:text-sm text-muted-foreground truncate">{job.job_number}</p>
@@ -63,31 +118,46 @@ export default function JobsSection() {
               </div>
             </CardHeader>
             <CardContent className="space-y-3 px-4 pb-4 sm:px-6 sm:pb-6">
-              {job.address && (
-                <div className="flex items-start gap-2 text-xs sm:text-sm">
-                  <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
-                  <span className="line-clamp-2">
-                    {job.address}
-                    {job.city && `, ${job.city}`}
-                    {job.state && `, ${job.state}`}
-                  </span>
-                </div>
-              )}
-              {(job.start_date || job.end_date) && (
-                <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
-                  <Calendar className="h-4 w-4 shrink-0" />
-                  <span className="truncate">
-                    {job.start_date && new Date(job.start_date).toLocaleDateString()}
-                    {job.start_date && job.end_date && ' - '}
-                    {job.end_date && new Date(job.end_date).toLocaleDateString()}
-                  </span>
-                </div>
-              )}
-              {job.total_cost > 0 && (
-                <p className="text-base sm:text-lg font-semibold text-primary">
-                  ${job.total_cost.toLocaleString()}
-                </p>
-              )}
+              <div className="cursor-pointer" onClick={() => handleJobClick(job)}>
+                {job.address && (
+                  <div className="flex items-start gap-2 text-xs sm:text-sm">
+                    <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
+                    <span className="line-clamp-2">
+                      {job.address}
+                      {job.city && `, ${job.city}`}
+                      {job.state && `, ${job.state}`}
+                    </span>
+                  </div>
+                )}
+                {(job.start_date || job.end_date) && (
+                  <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
+                    <Calendar className="h-4 w-4 shrink-0" />
+                    <span className="truncate">
+                      {job.start_date && new Date(job.start_date).toLocaleDateString()}
+                      {job.start_date && job.end_date && ' - '}
+                      {job.end_date && new Date(job.end_date).toLocaleDateString()}
+                    </span>
+                  </div>
+                )}
+                {job.total_cost > 0 && (
+                  <p className="text-base sm:text-lg font-semibold text-primary">
+                    ${job.total_cost.toLocaleString()}
+                  </p>
+                )}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full gap-2"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setJobToConvert(job);
+                  setConvertDialogOpen(true);
+                }}
+              >
+                <Users className="h-4 w-4" />
+                Convert to Customer
+              </Button>
             </CardContent>
             </Card>
           ))}
@@ -97,7 +167,26 @@ export default function JobsSection() {
           job={selectedJob}
           open={detailOpen}
           onOpenChange={setDetailOpen}
+          onConvertToCustomer={() => {
+            refreshJobs();
+            if (onSectionChange) onSectionChange('customers');
+          }}
         />
+
+        <AlertDialog open={convertDialogOpen} onOpenChange={setConvertDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Convert Job to Customer?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will create a new customer record from this job and mark the job as converted. This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setJobToConvert(null)}>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleConvertToCustomer}>Convert</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );

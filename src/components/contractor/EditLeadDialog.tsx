@@ -5,7 +5,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Lead, LeadSource } from '@/hooks/useLeads';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { Briefcase } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface EditLeadDialogProps {
   lead: Lead | null;
@@ -14,9 +19,12 @@ interface EditLeadDialogProps {
   onUpdate: (id: string, updates: Partial<Lead>) => Promise<any>;
   onDelete: (id: string) => Promise<void>;
   sources: LeadSource[];
+  onConvertToJob?: () => void;
 }
 
-export function EditLeadDialog({ lead, open, onOpenChange, onUpdate, onDelete, sources }: EditLeadDialogProps) {
+export function EditLeadDialog({ lead, open, onOpenChange, onUpdate, onDelete, sources, onConvertToJob }: EditLeadDialogProps) {
+  const { user } = useAuth();
+  const [convertDialogOpen, setConvertDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -78,6 +86,49 @@ export function EditLeadDialog({ lead, open, onOpenChange, onUpdate, onDelete, s
       } catch (error) {
         console.error('Error deleting lead:', error);
       }
+    }
+  };
+
+  const handleConvertToJob = async () => {
+    if (!lead || !user) return;
+
+    try {
+      const jobData = {
+        user_id: user.id,
+        name: lead.name,
+        description: lead.project_type || '',
+        address: lead.address || '',
+        city: lead.city || '',
+        state: lead.state || '',
+        zip_code: lead.zip_code || '',
+        status: 'scheduled',
+        total_cost: lead.value || 0,
+        notes: lead.notes || '',
+        lead_id: lead.id,
+      };
+
+      const { data: newJob, error: jobError } = await supabase
+        .from('jobs')
+        .insert([jobData])
+        .select()
+        .single();
+
+      if (jobError) throw jobError;
+
+      await supabase
+        .from('leads')
+        .update({
+          converted_at: new Date().toISOString(),
+          converted_to_job_id: newJob.id,
+        })
+        .eq('id', lead.id);
+
+      toast.success('Lead converted to job successfully');
+      setConvertDialogOpen(false);
+      onOpenChange(false);
+      if (onConvertToJob) onConvertToJob();
+    } catch (error: any) {
+      toast.error('Failed to convert lead to job: ' + error.message);
     }
   };
 
@@ -222,9 +273,31 @@ export function EditLeadDialog({ lead, open, onOpenChange, onUpdate, onDelete, s
             />
           </div>
           <div className="flex justify-between">
-            <Button type="button" variant="destructive" onClick={handleDelete}>
-              Delete Lead
-            </Button>
+            <div className="flex gap-2">
+              <Button type="button" variant="destructive" onClick={handleDelete}>
+                Delete Lead
+              </Button>
+              <AlertDialog open={convertDialogOpen} onOpenChange={setConvertDialogOpen}>
+                <AlertDialogTrigger asChild>
+                  <Button type="button" variant="outline" className="gap-2">
+                    <Briefcase className="h-4 w-4" />
+                    Convert to Job
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Convert Lead to Job?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will create a new job from this lead and mark the lead as converted. This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleConvertToJob}>Convert</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
             <div className="flex gap-2">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Cancel

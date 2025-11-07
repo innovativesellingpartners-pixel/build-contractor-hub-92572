@@ -15,7 +15,7 @@ interface LeadsSectionProps {
 }
 
 export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
-  const { leads, sources, loading, addLead, updateLead, deleteLead } = useLeads();
+  const { leads, sources, loading, addLead, updateLead, deleteLead, refreshLeads } = useLeads();
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<any>(null);
   const [convertingLead, setConvertingLead] = useState<any>(null);
@@ -174,12 +174,16 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
 
         {selectedLead && (
           <EditLeadDialog
-          lead={selectedLead}
-          open={editDialogOpen}
-          onOpenChange={setEditDialogOpen}
-          onUpdate={updateLead}
-          onDelete={deleteLead}
+            lead={selectedLead}
+            open={editDialogOpen}
+            onOpenChange={setEditDialogOpen}
+            onUpdate={updateLead}
+            onDelete={deleteLead}
             sources={sources}
+            onConvertToJob={() => {
+              refreshLeads();
+              if (onSectionChange) onSectionChange('jobs');
+            }}
           />
         )}
 

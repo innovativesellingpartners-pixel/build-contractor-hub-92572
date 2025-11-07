@@ -66,7 +66,7 @@ export default function CT1CRM() {
       case 'leads':
         return <LeadsSection onSectionChange={handleSectionChange} />;
       case 'jobs':
-        return <JobsSection />;
+        return <JobsSection onSectionChange={handleSectionChange} />;
       case 'customers':
         return <CustomersSection />;
       case 'calls':

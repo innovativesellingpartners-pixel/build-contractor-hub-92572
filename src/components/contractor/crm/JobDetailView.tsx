@@ -5,8 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { 
-  MapPin, Clock, TrendingUp, AlertCircle, CheckCircle, Edit, Briefcase 
+  MapPin, Clock, TrendingUp, AlertCircle, CheckCircle, Edit, Briefcase, Users 
 } from 'lucide-react';
 import { useJobs, Job } from '@/hooks/useJobs';
 import { useJobPhotos } from '@/hooks/useJobPhotos';
@@ -16,11 +17,15 @@ import MaterialsTab from './job/MaterialsTab';
 import ChangeOrdersTab from './job/ChangeOrdersTab';
 import InvoicesTab from './job/InvoicesTab';
 import { format } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface JobDetailViewProps {
   job: Job | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onConvertToCustomer?: () => void;
 }
 
 // Photos Tab Component
@@ -257,10 +262,12 @@ function DailyLogsTab({ jobId }: { jobId: string }) {
   );
 }
 
-export default function JobDetailView({ job, open, onOpenChange }: JobDetailViewProps) {
+export default function JobDetailView({ job, open, onOpenChange, onConvertToCustomer }: JobDetailViewProps) {
   const { updateJob } = useJobs();
+  const { user } = useAuth();
   const [isEditingStatus, setIsEditingStatus] = useState(false);
   const [jobStatus, setJobStatus] = useState<string>(job?.status || 'scheduled');
+  const [convertDialogOpen, setConvertDialogOpen] = useState(false);
 
   if (!job) return null;
 
@@ -300,6 +307,49 @@ export default function JobDetailView({ job, open, onOpenChange }: JobDetailView
     setIsEditingStatus(false);
   };
 
+  const handleConvertToCustomer = async () => {
+    if (!job || !user) return;
+
+    try {
+      const customerData = {
+        user_id: user.id,
+        name: job.name,
+        email: '',
+        phone: '',
+        address: job.address || '',
+        city: job.city || '',
+        state: job.state || '',
+        zip_code: job.zip_code || '',
+        customer_type: 'residential' as const,
+        notes: job.notes || '',
+        job_id: job.id,
+      };
+
+      const { data: newCustomer, error: customerError } = await supabase
+        .from('customers')
+        .insert([customerData])
+        .select()
+        .single();
+
+      if (customerError) throw customerError;
+
+      await supabase
+        .from('jobs')
+        .update({
+          converted_at: new Date().toISOString(),
+          converted_to_customer_id: newCustomer.id,
+        })
+        .eq('id', job.id);
+
+      toast.success('Job converted to customer successfully');
+      setConvertDialogOpen(false);
+      onOpenChange(false);
+      if (onConvertToCustomer) onConvertToCustomer();
+    } catch (error: any) {
+      toast.error('Failed to convert job to customer: ' + error.message);
+    }
+  };
+
   const isOverBudget = (job.total_cost || 0) > 0; // Simplified for now
   const isDelayed = job.end_date && new Date() > new Date(job.end_date) && 
                    job.status !== 'completed';
@@ -322,6 +372,26 @@ export default function JobDetailView({ job, open, onOpenChange }: JobDetailView
                   Delayed
                 </Badge>
               )}
+              <AlertDialog open={convertDialogOpen} onOpenChange={setConvertDialogOpen}>
+                <AlertDialogTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <Users className="h-4 w-4" />
+                    Convert to Customer
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Convert Job to Customer?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will create a new customer record from this job and mark the job as converted. This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleConvertToCustomer}>Convert</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
               {isEditingStatus ? (
                 <div className="flex items-center gap-2">
                   <Select value={jobStatus} onValueChange={(value) => setJobStatus(value)}>
