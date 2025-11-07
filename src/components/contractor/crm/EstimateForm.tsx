@@ -345,54 +345,29 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
 
       if (error) throw error;
 
-      if (data?.html) {
-        // Convert HTML to PDF using jsPDF
-        const { default: jsPDF } = await import('jspdf');
-        const { default: html2canvas } = await import('html2canvas');
-        
-        // Create a temporary container
-        const container = document.createElement('div');
-        container.innerHTML = data.html;
-        container.style.position = 'absolute';
-        container.style.left = '-9999px';
-        container.style.width = '800px';
-        document.body.appendChild(container);
-
-        // Convert to canvas then PDF
-        const canvas = await html2canvas(container, {
-          scale: 2,
-          useCORS: true,
-          logging: false,
-        });
-
-        document.body.removeChild(container);
-
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF({
-          orientation: 'portrait',
-          unit: 'mm',
-          format: 'a4',
-        });
-
-        const imgWidth = 210; // A4 width in mm
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-        let heightLeft = imgHeight;
-        let position = 0;
-
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= 297; // A4 height in mm
-
-        while (heightLeft > 0) {
-          position = heightLeft - imgHeight;
-          pdf.addPage();
-          pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-          heightLeft -= 297;
+      if (data?.pdfBase64) {
+        // Convert base64 to blob and download
+        const byteCharacters = atob(data.pdfBase64);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
         }
-
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'application/pdf' });
+        
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
         const filename = `Estimate_${initialData.estimate_number || initialData.id}_${initialData.client_name?.replace(/\s+/g, '_')}.pdf`;
-        pdf.save(filename);
+        link.setAttribute('download', filename);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
         
         toast.success('PDF downloaded successfully', { id: 'pdf-gen' });
+      } else {
+        throw new Error('PDF generation failed - no PDF data returned');
       }
     } catch (error: any) {
       console.error('Error generating PDF:', error);

@@ -70,25 +70,21 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     let attachments: any[] | undefined;
-    if (pdfData?.html && !pdfError) {
+    if (pdfData?.pdfBase64 && !pdfError) {
       try {
-        // For Resend email with PDF attachment, we need to convert HTML to PDF
-        // Using a simple base64 encoding of HTML for now
-        const pdfHtmlContent = pdfData.html;
-        const encoder = new TextEncoder();
-        const pdfBytes = encoder.encode(pdfHtmlContent);
-        const pdfBase64 = btoa(String.fromCharCode(...Array.from(pdfBytes)));
-        
+        console.log('Attaching PDF to email, size:', pdfData.pdfSize);
         attachments = [{
-          filename: `Estimate_${estimate.estimate_number || estimate.id}.pdf.html`,
-          content: pdfBase64,
+          filename: `Estimate_${estimate.estimate_number || estimate.id}.pdf`,
+          content: pdfData.pdfBase64,
         }];
       } catch (pdfConversionError) {
-        console.warn('Could not generate PDF attachment:', pdfConversionError);
+        console.warn('Could not attach PDF:', pdfConversionError);
       }
+    } else if (pdfError) {
+      console.error('PDF generation failed:', pdfError);
     }
 
-    let emailResponse = await resend.emails.send({
+    const emailData: any = {
       from: `${contractorName} <${effectiveFromEmail}>`,
       to: recipients,
       bcc,
@@ -204,7 +200,15 @@ const handler = async (req: Request): Promise<Response> => {
           </body>
         </html>
       `,
-    });
+    };
+
+    // Add PDF attachment if available
+    if (attachments && attachments.length > 0) {
+      emailData.attachments = attachments;
+      console.log('Email includes PDF attachment');
+    }
+
+    let emailResponse = await resend.emails.send(emailData);
 
     console.log('Resend API response:', JSON.stringify(emailResponse, null, 2));
 

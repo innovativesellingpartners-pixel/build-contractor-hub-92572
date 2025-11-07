@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4';
+import puppeteer from "https://deno.land/x/puppeteer@16.2.0/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -430,34 +431,55 @@ const handler = async (req: Request): Promise<Response> => {
       </html>
     `;
 
-    // Use Puppeteer or similar to convert HTML to PDF
-    // For now, return HTML that can be converted client-side or use a PDF service
-    // Using Deno's built-in fetch to call a HTML-to-PDF service
-    
-    // For production, you'd want to use a proper PDF generation service
-    // For now, we'll return the HTML and let the client handle PDF conversion
-    // Or use a service like pdf.co or similar
-
-    // Simple approach: Return base64 encoded HTML for now
-    // Client will need to handle PDF conversion
-    const encoder = new TextEncoder();
-    const htmlBytes = encoder.encode(htmlContent);
-    const base64Html = btoa(String.fromCharCode(...htmlBytes));
-
-    return new Response(JSON.stringify({
-      success: true,
-      html: htmlContent,
-      base64Html,
-      estimate: {
-        number: estimate.estimate_number,
-        title: estimate.title,
-        client_name: estimate.client_name,
-        total_amount: estimate.total_amount,
-      }
-    }), {
-      status: 200,
-      headers: { "Content-Type": "application/json", ...corsHeaders },
+    // Generate actual PDF using Puppeteer
+    console.log('Launching browser for PDF generation...');
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
+    
+    try {
+      const page = await browser.newPage();
+      await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+      
+      // Generate PDF buffer
+      const pdfBuffer = await page.pdf({
+        format: 'A4',
+        printBackground: true,
+        margin: {
+          top: '20px',
+          right: '20px',
+          bottom: '20px',
+          left: '20px'
+        }
+      });
+      
+      await browser.close();
+      console.log('PDF generated successfully, size:', pdfBuffer.length);
+      
+      // Convert to base64 for transmission
+      const base64Pdf = btoa(String.fromCharCode(...new Uint8Array(pdfBuffer)));
+      
+      return new Response(JSON.stringify({
+        success: true,
+        html: htmlContent,
+        pdfBase64: base64Pdf,
+        pdfSize: pdfBuffer.length,
+        estimate: {
+          number: estimate.estimate_number,
+          title: estimate.title,
+          client_name: estimate.client_name,
+          total_amount: estimate.total_amount,
+        }
+      }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    } catch (pdfError) {
+      console.error('PDF generation error:', pdfError);
+      await browser.close();
+      throw pdfError;
+    }
   } catch (error: any) {
     console.error("Error generating PDF:", error);
     return new Response(
