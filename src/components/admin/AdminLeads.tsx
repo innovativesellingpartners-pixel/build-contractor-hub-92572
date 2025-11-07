@@ -24,6 +24,7 @@ export const AdminLeads = () => {
             company_name
           )
         `)
+        .is('converted_to_job_id', null)
         .order('created_at', { ascending: false });
 
       if (error) throw error;

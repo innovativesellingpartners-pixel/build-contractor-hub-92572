@@ -27,6 +27,7 @@ export const AdminJobs = () => {
             name
           )
         `)
+        .is('converted_to_customer_id', null)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
