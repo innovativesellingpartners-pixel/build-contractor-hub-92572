@@ -2,17 +2,20 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, BookOpen, ShoppingCart, Activity } from 'lucide-react';
+import { Users, BookOpen, ShoppingCart, Activity, ClipboardList, Briefcase, UserCheck } from 'lucide-react';
 
 export const AdminDashboard = () => {
   const { data: stats, isLoading } = useQuery({
     queryKey: ['adminStats'],
     queryFn: async () => {
-      const [usersResult, coursesResult, servicesResult, profilesResult] = await Promise.all([
+      const [usersResult, coursesResult, servicesResult, profilesResult, leadsResult, jobsResult, customersResult] = await Promise.all([
         supabase.from('user_roles').select('id', { count: 'exact' }),
         supabase.from('training_courses').select('id', { count: 'exact' }),
         supabase.from('marketplace_services').select('id', { count: 'exact' }),
-        supabase.from('profiles').select('id', { count: 'exact' })
+        supabase.from('profiles').select('id', { count: 'exact' }),
+        supabase.from('leads').select('id', { count: 'exact' }),
+        supabase.from('jobs').select('id', { count: 'exact' }),
+        supabase.from('customers').select('id', { count: 'exact' })
       ]);
 
       return {
@@ -20,6 +23,9 @@ export const AdminDashboard = () => {
         totalCourses: coursesResult.count || 0,
         totalServices: servicesResult.count || 0,
         totalRoles: usersResult.count || 0,
+        totalLeads: leadsResult.count || 0,
+        totalJobs: jobsResult.count || 0,
+        totalCustomers: customersResult.count || 0,
       };
     },
   });
@@ -50,6 +56,24 @@ export const AdminDashboard = () => {
       description: 'Registered users',
     },
     {
+      title: 'Total Leads',
+      value: stats?.totalLeads || 0,
+      icon: ClipboardList,
+      description: 'All contractor leads',
+    },
+    {
+      title: 'Total Jobs',
+      value: stats?.totalJobs || 0,
+      icon: Briefcase,
+      description: 'Jobs across platform',
+    },
+    {
+      title: 'Total Customers',
+      value: stats?.totalCustomers || 0,
+      icon: UserCheck,
+      description: 'Customer accounts',
+    },
+    {
       title: 'Training Courses',
       value: stats?.totalCourses || 0,
       icon: BookOpen,
@@ -60,12 +84,6 @@ export const AdminDashboard = () => {
       value: stats?.totalServices || 0,
       icon: ShoppingCart,
       description: 'Listed services',
-    },
-    {
-      title: 'System Activity',
-      value: stats?.totalRoles || 0,
-      icon: Activity,
-      description: 'User roles assigned',
     },
   ];
 
@@ -78,7 +96,7 @@ export const AdminDashboard = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {statCards.map((stat) => (
           <Card key={stat.title}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

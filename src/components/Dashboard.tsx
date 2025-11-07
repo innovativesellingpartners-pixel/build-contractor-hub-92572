@@ -25,7 +25,8 @@ import {
   Award,
   DollarSign,
   Menu,
-  X
+  X,
+  BarChart3
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
@@ -43,8 +44,9 @@ import { ContactSupport } from "@/components/ContactSupport";
 import ct1Logo from "@/assets/ct1-logo-main.png";
 import { QuickBooks } from "@/components/contractor/QuickBooks";
 import { VoiceAI } from "@/components/contractor/VoiceAI";
+import Reporting from "@/pages/Reporting";
 
-type ActiveSection = 'training' | 'crm' | 'schedule' | 'marketplace' | 'leads' | 'quickbooks' | 'insurance' | 'account' | 'voiceai';
+type ActiveSection = 'training' | 'crm' | 'schedule' | 'marketplace' | 'leads' | 'quickbooks' | 'insurance' | 'account' | 'voiceai' | 'reporting';
 
 export function Dashboard() {
   const { user, profile, signOut } = useAuth();
@@ -279,6 +281,11 @@ export function Dashboard() {
             {activeSection === 'voiceai' && (
               <div className="p-3 md:p-4 lg:p-6 min-h-[400px] md:min-h-[600px]">
                 <VoiceAI />
+              </div>
+            )}
+            {activeSection === 'reporting' && (
+              <div className="p-3 md:p-4 lg:p-6 min-h-[400px] md:min-h-[600px]">
+                <Reporting />
               </div>
             )}
             {activeSection === 'marketplace' && (
@@ -623,6 +630,19 @@ function SidebarNav({ activeSection, setActiveSection, tierFeatures }: SidebarNa
           CRM/Jobs
         </Button>
       )}
+      
+      <Button
+        variant={activeSection === 'reporting' ? 'default' : 'ghost'}
+        className={`w-full justify-start transition-all ${
+          activeSection === 'reporting' 
+            ? 'shadow-md' 
+            : 'hover:bg-red-50 hover:border-red-500 hover:text-black border border-transparent'
+        }`}
+        onClick={() => setActiveSection('reporting')}
+      >
+        <BarChart3 className="h-4 w-4 mr-3" />
+        Reporting & Analytics
+      </Button>
       
       <Button
         variant={activeSection === 'quickbooks' ? 'default' : 'ghost'}
