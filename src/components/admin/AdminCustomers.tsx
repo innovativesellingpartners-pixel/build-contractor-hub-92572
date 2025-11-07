@@ -12,9 +12,10 @@ import { format } from 'date-fns';
 export const AdminCustomers = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
-  const { data: customers, isLoading } = useQuery({
+  const { data: customers, isLoading, error } = useQuery({
     queryKey: ['adminCustomers'],
     queryFn: async () => {
+      console.log('AdminCustomers: Fetching customers...');
       const { data, error } = await supabase
         .from('customers')
         .select(`
@@ -30,10 +31,18 @@ export const AdminCustomers = () => {
         `)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('AdminCustomers: Error fetching customers:', error);
+        throw error;
+      }
+      console.log('AdminCustomers: Fetched customers:', data);
       return data;
     },
   });
+
+  if (error) {
+    console.error('AdminCustomers: Query error:', error);
+  }
 
   const filteredCustomers = customers?.filter(customer =>
     customer.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||

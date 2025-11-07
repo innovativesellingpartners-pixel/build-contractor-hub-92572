@@ -12,9 +12,10 @@ import { format } from 'date-fns';
 export const AdminJobs = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
-  const { data: jobs, isLoading } = useQuery({
+  const { data: jobs, isLoading, error } = useQuery({
     queryKey: ['adminJobs'],
     queryFn: async () => {
+      console.log('AdminJobs: Fetching jobs...');
       const { data, error } = await supabase
         .from('jobs')
         .select(`
@@ -27,13 +28,20 @@ export const AdminJobs = () => {
             name
           )
         `)
-        .is('converted_to_customer_id', null)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('AdminJobs: Error fetching jobs:', error);
+        throw error;
+      }
+      console.log('AdminJobs: Fetched jobs:', data);
       return data;
     },
   });
+
+  if (error) {
+    console.error('AdminJobs: Query error:', error);
+  }
 
   const filteredJobs = jobs?.filter(job =>
     job.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
