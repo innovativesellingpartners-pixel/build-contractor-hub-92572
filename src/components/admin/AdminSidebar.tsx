@@ -3,19 +3,22 @@ import {
   Users, 
   BookOpen, 
   ShoppingCart, 
-  BarChart3, 
   Settings,
-  LifeBuoy
+  LifeBuoy,
+  ClipboardList,
+  Briefcase,
+  UserCheck
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ct1Logo from '@/assets/ct1-logo-main.png';
 
 const navItems = [
   { to: '/admin', icon: Users, label: 'User Management', end: true },
+  { to: '/admin/leads', icon: ClipboardList, label: 'Leads' },
+  { to: '/admin/jobs', icon: Briefcase, label: 'Jobs' },
+  { to: '/admin/customers', icon: UserCheck, label: 'Customers' },
   { to: '/admin/support', icon: LifeBuoy, label: 'Support Tickets' },
-  { to: '/admin/training', icon: BookOpen, label: 'Training Content' },
   { to: '/admin/marketplace', icon: ShoppingCart, label: 'Marketplace' },
-  { to: '/admin/analytics', icon: BarChart3, label: 'Analytics' },
   { to: '/admin/settings', icon: Settings, label: 'Settings' },
 ];
 
