@@ -21,6 +21,9 @@ verify_jwt = false
 [functions.quickbooks-oauth-callback]
 verify_jwt = false
 
+[functions.quickbooks-callback]
+verify_jwt = false
+
 [functions.admin-update-user-role]
 verify_jwt = true
 
