@@ -69,10 +69,10 @@ const handler = async (req: Request): Promise<Response> => {
     const fontReg = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
     // Header bar with gradient simulation
-    page.drawRectangle({ x: 0, y: height - 90, width, height: 90, color: rgb(0.88, 0.14, 0.14) });
-    page.drawRectangle({ x: 0, y: height - 90, width, height: 3, color: rgb(0.96, 0.24, 0.24) });
+    page.drawRectangle({ x: 0, y: height - 100, width, height: 100, color: rgb(0.88, 0.14, 0.14) });
+    page.drawRectangle({ x: 0, y: height - 100, width, height: 3, color: rgb(0.96, 0.24, 0.24) });
 
-    // Logo (if available)
+    // Logo (if available) - positioned on right side
     if (logoUrl) {
       try {
         const res = await fetch(logoUrl);
@@ -81,10 +81,10 @@ const handler = async (req: Request): Promise<Response> => {
         const isPng = logoUrl.toLowerCase().endsWith(".png");
         if (isPng) img = await pdfDoc.embedPng(buf);
         else img = await pdfDoc.embedJpg(buf);
-        const imgDims = img.scale(60 / img.height);
+        const imgDims = img.scale(50 / img.height);
         page.drawImage(img, {
           x: width - margin - imgDims.width,
-          y: height - 70,
+          y: height - 75,
           width: imgDims.width,
           height: imgDims.height,
         });
@@ -93,91 +93,95 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
-    // Company name
+    // Company name - left side
     page.drawText(companyName, {
       x: margin,
-      y: height - 60,
-      size: 22,
+      y: height - 65,
+      size: 20,
       font: fontBold,
       color: rgb(1, 1, 1),
     });
 
-    // Title and meta
-    cursorY = height - 130;
-    page.drawText("PROFESSIONAL ESTIMATE", { x: margin, y: cursorY, size: 28, font: fontBold, color: rgb(0.88, 0.14, 0.14) });
-    cursorY -= 22;
-    if (estimate.estimate_number) {
-      page.drawText(`#${estimate.estimate_number}`, { x: margin, y: cursorY, size: 12, font: fontReg, color: rgb(0.38, 0.38, 0.38) });
-      cursorY -= 18;
-    }
-    const issueDate = new Date(estimate.created_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
-    page.drawText(`Issue Date: ${issueDate}`, { x: margin, y: cursorY, size: 12, font: fontReg, color: rgb(0.38, 0.38, 0.38) });
-    cursorY -= 18;
-    if (estimate.valid_until) {
-      const valid = new Date(estimate.valid_until).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
-      page.drawText(`Valid Until: ${valid}`, { x: margin, y: cursorY, size: 12, font: fontReg, color: rgb(0.38, 0.38, 0.38) });
-      cursorY -= 18;
-    }
-
-    // Company contact box (right) with modern styling
-    const rightBoxX = width - margin - 230;
-    const rightBoxY = height - 210;
-    
-    // Shadow
-    page.drawRectangle({ x: rightBoxX + 3, y: rightBoxY - 3, width: 230, height: 90, color: rgb(0.92, 0.92, 0.92) });
-    
-    // Main box
-    page.drawRectangle({ x: rightBoxX, y: rightBoxY, width: 230, height: 90, borderColor: rgb(0.88, 0.14, 0.14), borderWidth: 1.5, color: rgb(0.99, 0.97, 0.97) });
-    
-    // Top accent bar
-    page.drawRectangle({ x: rightBoxX, y: rightBoxY + 90 - 5, width: 230, height: 5, color: rgb(0.88, 0.14, 0.14) });
-    
-    page.drawText("PREPARED BY", { x: rightBoxX + 12, y: rightBoxY + 68, size: 9, font: fontBold, color: rgb(0.88, 0.14, 0.14) });
-    page.drawText(companyName, { x: rightBoxX + 12, y: rightBoxY + 50, size: 13, font: fontBold, color: rgb(0.12, 0.12, 0.12) });
-    if (address) page.drawText(address.substring(0, 35), { x: rightBoxX + 12, y: rightBoxY + 32, size: 9, font: fontReg, color: rgb(0.35, 0.35, 0.35) });
-    if (phone) page.drawText(phone, { x: rightBoxX + 12, y: rightBoxY + 16, size: 10, font: fontBold, color: rgb(0.15, 0.15, 0.15) });
-
-    // Client section with modern styling
+    // Title and meta - start lower to avoid overlap
+    cursorY = height - 145;
+    page.drawText("PROFESSIONAL ESTIMATE", { x: margin, y: cursorY, size: 26, font: fontBold, color: rgb(0.88, 0.14, 0.14) });
     cursorY -= 20;
-    
-    // Client info box
-    const clientBoxY = cursorY - 75;
-    page.drawRectangle({ x: margin - 5, y: clientBoxY, width: 340, height: 80, color: rgb(0.98, 0.98, 0.99), borderWidth: 1, borderColor: rgb(0.9, 0.9, 0.92) });
-    
-    page.drawText("PREPARED FOR", { x: margin, y: cursorY, size: 9, font: fontBold, color: rgb(0.88, 0.14, 0.14) });
-    cursorY -= 18;
-    
-    if (estimate.client_name) {
-      page.drawText(estimate.client_name, { x: margin, y: cursorY, size: 14, font: fontBold, color: rgb(0.1, 0.1, 0.1) });
+    if (estimate.estimate_number) {
+      page.drawText(`#${estimate.estimate_number}`, { x: margin, y: cursorY, size: 11, font: fontReg, color: rgb(0.38, 0.38, 0.38) });
       cursorY -= 16;
     }
-    if (estimate.client_email) {
-      page.drawText(estimate.client_email, { x: margin, y: cursorY, size: 10, font: fontReg, color: rgb(0.3, 0.3, 0.3) });
+    const issueDate = new Date(estimate.created_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+    page.drawText(`Issue Date: ${issueDate}`, { x: margin, y: cursorY, size: 10, font: fontReg, color: rgb(0.38, 0.38, 0.38) });
+    cursorY -= 15;
+    if (estimate.valid_until) {
+      const valid = new Date(estimate.valid_until).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+      page.drawText(`Valid Until: ${valid}`, { x: margin, y: cursorY, size: 10, font: fontReg, color: rgb(0.38, 0.38, 0.38) });
+      cursorY -= 15;
+    }
+
+    // Company contact box (right) with modern styling - positioned to not overlap
+    const rightBoxX = width - margin - 220;
+    const rightBoxY = cursorY - 100;
+    
+    // Shadow
+    page.drawRectangle({ x: rightBoxX + 3, y: rightBoxY - 3, width: 220, height: 85, color: rgb(0.92, 0.92, 0.92) });
+    
+    // Main box
+    page.drawRectangle({ x: rightBoxX, y: rightBoxY, width: 220, height: 85, borderColor: rgb(0.88, 0.14, 0.14), borderWidth: 1.5, color: rgb(0.99, 0.97, 0.97) });
+    
+    // Top accent bar
+    page.drawRectangle({ x: rightBoxX, y: rightBoxY + 85 - 4, width: 220, height: 4, color: rgb(0.88, 0.14, 0.14) });
+    
+    page.drawText("PREPARED BY", { x: rightBoxX + 10, y: rightBoxY + 64, size: 8, font: fontBold, color: rgb(0.88, 0.14, 0.14) });
+    page.drawText(companyName.substring(0, 25), { x: rightBoxX + 10, y: rightBoxY + 48, size: 12, font: fontBold, color: rgb(0.12, 0.12, 0.12) });
+    if (address) page.drawText(address.substring(0, 32), { x: rightBoxX + 10, y: rightBoxY + 32, size: 8, font: fontReg, color: rgb(0.35, 0.35, 0.35) });
+    if (phone) page.drawText(phone, { x: rightBoxX + 10, y: rightBoxY + 18, size: 9, font: fontBold, color: rgb(0.15, 0.15, 0.15) });
+
+    // Update cursorY to be below the right box
+    cursorY = rightBoxY - 15;
+    
+    // Client info box - with proper spacing
+    const clientBoxHeight = 75;
+    const clientBoxY = cursorY - clientBoxHeight;
+    page.drawRectangle({ x: margin - 5, y: clientBoxY, width: 320, height: clientBoxHeight, color: rgb(0.98, 0.98, 0.99), borderWidth: 1, borderColor: rgb(0.9, 0.9, 0.92) });
+    
+    page.drawText("PREPARED FOR", { x: margin, y: cursorY, size: 9, font: fontBold, color: rgb(0.88, 0.14, 0.14) });
+    cursorY -= 16;
+    
+    if (estimate.client_name) {
+      page.drawText(estimate.client_name.substring(0, 40), { x: margin, y: cursorY, size: 13, font: fontBold, color: rgb(0.1, 0.1, 0.1) });
       cursorY -= 14;
     }
+    if (estimate.client_email) {
+      page.drawText(estimate.client_email.substring(0, 45), { x: margin, y: cursorY, size: 9, font: fontReg, color: rgb(0.3, 0.3, 0.3) });
+      cursorY -= 13;
+    }
     if (estimate.client_address) { 
-      page.drawText(estimate.client_address, { x: margin, y: cursorY, size: 10, font: fontReg, color: rgb(0.3, 0.3, 0.3) }); 
-      cursorY -= 14; 
+      page.drawText(estimate.client_address.substring(0, 50), { x: margin, y: cursorY, size: 9, font: fontReg, color: rgb(0.3, 0.3, 0.3) }); 
+      cursorY -= 13; 
     }
     if (estimate.site_address) { 
-      page.drawText(`📍 ${estimate.site_address}`, { x: margin, y: cursorY, size: 10, font: fontReg, color: rgb(0.88, 0.14, 0.14) }); 
-      cursorY -= 20; 
+      page.drawText(`Site: ${estimate.site_address.substring(0, 45)}`, { x: margin, y: cursorY, size: 9, font: fontReg, color: rgb(0.88, 0.14, 0.14) }); 
+      cursorY -= 18; 
     }
+    
+    // Move cursor below client box
+    cursorY = clientBoxY - 10;
 
     // Project description with modern styling
     if (estimate.project_description) {
-      cursorY -= 10;
+      cursorY -= 5;
       
       // Description box
-      const descHeight = Math.min(Math.ceil(String(estimate.project_description).length / 90) * 14 + 35, 120);
-      page.drawRectangle({ x: margin - 6, y: cursorY - descHeight + 8, width: width - margin * 2 + 12, height: descHeight, color: rgb(0.99, 0.97, 0.97), borderWidth: 1, borderColor: rgb(0.88, 0.14, 0.14) });
+      const descHeight = Math.min(Math.ceil(String(estimate.project_description).length / 95) * 12 + 30, 100);
+      page.drawRectangle({ x: margin - 5, y: cursorY - descHeight + 5, width: width - margin * 2 + 10, height: descHeight, color: rgb(0.99, 0.97, 0.97), borderWidth: 1, borderColor: rgb(0.88, 0.14, 0.14) });
       
-      page.drawText("PROJECT DETAILS", { x: margin, y: cursorY, size: 11, font: fontBold, color: rgb(0.88, 0.14, 0.14) });
-      cursorY -= 20;
+      page.drawText("PROJECT DETAILS", { x: margin, y: cursorY, size: 10, font: fontBold, color: rgb(0.88, 0.14, 0.14) });
+      cursorY -= 18;
       
       const desc = String(estimate.project_description);
-      page.drawText(desc.slice(0, 1800), { x: margin, y: cursorY, size: 10, font: fontReg, color: rgb(0.2, 0.2, 0.2), lineHeight: 13, maxWidth: width - margin * 2 });
-      cursorY -= descHeight - 20;
+      page.drawText(desc.slice(0, 1500), { x: margin, y: cursorY, size: 9, font: fontReg, color: rgb(0.2, 0.2, 0.2), lineHeight: 12, maxWidth: width - margin * 2 });
+      cursorY -= descHeight - 15;
     }
 
     // Line items table header with modern design

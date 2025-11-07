@@ -111,9 +111,13 @@ const handler = async (req: Request): Promise<Response> => {
               body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; background-color: #f3f4f6; }
               .email-wrapper { background-color: #f3f4f6; padding: 20px 0; }
               .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
-              .header { background: linear-gradient(135deg, #E02424 0%, #C01E1E 100%); padding: 50px 40px; text-align: center; }
-              .header-title { color: #ffffff; font-size: 32px; font-weight: 900; margin: 20px 0 10px 0; letter-spacing: -0.5px; }
-              .header-subtitle { color: rgba(255, 255, 255, 0.95); font-size: 18px; margin: 0; font-weight: 500; }
+              .header { background: linear-gradient(135deg, #E02424 0%, #C01E1E 100%); padding: 40px 40px; }
+              .header-content { display: table; width: 100%; }
+              .header-logo { display: table-cell; vertical-align: middle; width: 80px; padding-right: 20px; }
+              .header-logo img { max-width: 70px; height: auto; border-radius: 8px; display: block; }
+              .header-text { display: table-cell; vertical-align: middle; }
+              .header-title { color: #ffffff; font-size: 28px; font-weight: 900; margin: 0 0 8px 0; letter-spacing: -0.5px; }
+              .header-subtitle { color: rgba(255, 255, 255, 0.95); font-size: 16px; margin: 0; font-weight: 500; }
               .content { padding: 50px 40px; background: #ffffff; }
               .greeting { color: #111827; font-size: 20px; font-weight: 700; margin: 0 0 25px 0; }
               .message { color: #4b5563; font-size: 16px; line-height: 1.7; margin: 0 0 35px 0; }
@@ -139,10 +143,14 @@ const handler = async (req: Request): Promise<Response> => {
               .powered-by { color: #6b7280; font-size: 13px; margin: 0; font-weight: 600; }
               .powered-by strong { color: #E02424; }
               @media only screen and (max-width: 600px) {
-                .header { padding: 40px 25px; }
+                .header { padding: 30px 25px; }
                 .content { padding: 35px 25px; }
                 .footer { padding: 30px 25px; }
-                .header-title { font-size: 26px; }
+                .header-content { display: block; }
+                .header-logo { display: block; width: 100%; padding-right: 0; margin-bottom: 15px; text-align: center; }
+                .header-logo img { margin: 0 auto; }
+                .header-text { display: block; text-align: center; }
+                .header-title { font-size: 24px; }
                 .details-box { padding: 25px 20px; }
                 .cta-button { padding: 16px 35px; font-size: 16px; }
                 .total-amount { font-size: 30px; }
@@ -153,9 +161,15 @@ const handler = async (req: Request): Promise<Response> => {
             <div class="email-wrapper">
               <div class="container">
                 <div class="header">
-                  ${logoSrc ? `<img src="${logoSrc}" alt="${companyName} Logo" style="max-width:180px;height:auto;margin-bottom:12px;border-radius:8px;"/>` : `<img src="https://faqrzzodtmsybofakcvv.supabase.co/storage/v1/object/public/company-logos/ct1-logo-circle.png" alt="CT1 Logo" style="max-width:120px;height:auto;margin-bottom:12px;border-radius:8px;"/>`}
-                  <h1 class="header-title">Professional Estimate</h1>
-                  <p class="header-subtitle">${estimate.estimate_number ? `#${estimate.estimate_number}` : 'Your Project Estimate'}</p>
+                  <div class="header-content">
+                    <div class="header-logo">
+                      ${logoSrc ? `<img src="${logoSrc}" alt="${companyName} Logo"/>` : `<img src="https://faqrzzodtmsybofakcvv.supabase.co/storage/v1/object/public/company-logos/ct1-logo-circle.png" alt="CT1 Logo"/>`}
+                    </div>
+                    <div class="header-text">
+                      <h1 class="header-title">Professional Estimate</h1>
+                      <p class="header-subtitle">${estimate.estimate_number ? `#${estimate.estimate_number}` : 'Your Project Estimate'}</p>
+                    </div>
+                  </div>
                 </div>
                 
                 <div class="content">
