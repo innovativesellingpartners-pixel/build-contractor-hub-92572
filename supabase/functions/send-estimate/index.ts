@@ -60,6 +60,34 @@ const handler = async (req: Request): Promise<Response> => {
     const effectiveFromEmail = FROM_EMAIL;
     console.log('Attempting to send estimate email', { to: recipients, bcc, from: effectiveFromEmail, replyTo: contractorEmail || null });
     
+    // Use Resend attachments to attach PDF
+    // Generate PDF and attach to email
+    const { data: pdfData, error: pdfError } = await supabase.functions.invoke('generate-estimate-pdf', {
+      body: {
+        estimateId,
+        includePaymentLink: true,
+      },
+    });
+
+    let attachments: any[] | undefined;
+    if (pdfData?.html && !pdfError) {
+      try {
+        // For Resend email with PDF attachment, we need to convert HTML to PDF
+        // Using a simple base64 encoding of HTML for now
+        const pdfHtmlContent = pdfData.html;
+        const encoder = new TextEncoder();
+        const pdfBytes = encoder.encode(pdfHtmlContent);
+        const pdfBase64 = btoa(String.fromCharCode(...Array.from(pdfBytes)));
+        
+        attachments = [{
+          filename: `Estimate_${estimate.estimate_number || estimate.id}.pdf.html`,
+          content: pdfBase64,
+        }];
+      } catch (pdfConversionError) {
+        console.warn('Could not generate PDF attachment:', pdfConversionError);
+      }
+    }
+
     let emailResponse = await resend.emails.send({
       from: `${contractorName} <${effectiveFromEmail}>`,
       to: recipients,

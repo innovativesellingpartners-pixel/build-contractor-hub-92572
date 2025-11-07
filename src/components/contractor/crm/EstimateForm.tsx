@@ -11,12 +11,14 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Plus, Trash2, ChevronDown, Save, Send, FileText } from 'lucide-react';
+import { Plus, Trash2, ChevronDown, Save, Send, FileText, Download } from 'lucide-react';
 import SignatureCanvas from 'react-signature-canvas';
 import { EstimateLineItem } from '@/hooks/useEstimates';
 import { useCustomers } from '@/hooks/useCustomers';
 import AddCustomerDialog from './AddCustomerDialog';
 import EstimateAssistant from './EstimateAssistant';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const tradeTypes = [
   'General Remodel',
@@ -322,6 +324,79 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
         included: true,
       }));
       setLineItems([...lineItems, ...newItems]);
+    }
+  };
+
+  const handleDownloadPDF = async () => {
+    if (!initialData?.id) {
+      toast.error('Please save the estimate first before downloading PDF');
+      return;
+    }
+
+    try {
+      toast.loading('Generating PDF...', { id: 'pdf-gen' });
+      
+      const { data, error } = await supabase.functions.invoke('generate-estimate-pdf', {
+        body: {
+          estimateId: initialData.id,
+          includePaymentLink: true,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.html) {
+        // Convert HTML to PDF using jsPDF
+        const { default: jsPDF } = await import('jspdf');
+        const { default: html2canvas } = await import('html2canvas');
+        
+        // Create a temporary container
+        const container = document.createElement('div');
+        container.innerHTML = data.html;
+        container.style.position = 'absolute';
+        container.style.left = '-9999px';
+        container.style.width = '800px';
+        document.body.appendChild(container);
+
+        // Convert to canvas then PDF
+        const canvas = await html2canvas(container, {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+        });
+
+        document.body.removeChild(container);
+
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF({
+          orientation: 'portrait',
+          unit: 'mm',
+          format: 'a4',
+        });
+
+        const imgWidth = 210; // A4 width in mm
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        let heightLeft = imgHeight;
+        let position = 0;
+
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= 297; // A4 height in mm
+
+        while (heightLeft > 0) {
+          position = heightLeft - imgHeight;
+          pdf.addPage();
+          pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+          heightLeft -= 297;
+        }
+
+        const filename = `Estimate_${initialData.estimate_number || initialData.id}_${initialData.client_name?.replace(/\s+/g, '_')}.pdf`;
+        pdf.save(filename);
+        
+        toast.success('PDF downloaded successfully', { id: 'pdf-gen' });
+      }
+    } catch (error: any) {
+      console.error('Error generating PDF:', error);
+      toast.error('Failed to generate PDF: ' + error.message, { id: 'pdf-gen' });
     }
   };
 
@@ -889,6 +964,17 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
                 <Button type="button" variant="outline" onClick={onCancel} className="w-full sm:w-auto">
                   Cancel
                 </Button>
+                {initialData?.id && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleDownloadPDF}
+                    className="w-full sm:w-auto"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Download PDF
+                  </Button>
+                )}
                 <Button
                   type="button"
                   variant="outline"
