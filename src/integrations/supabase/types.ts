@@ -1450,6 +1450,12 @@ export type Database = {
           id: string
           logo_url: string | null
           phone: string | null
+          qb_access_token: string | null
+          qb_access_token_expires_at: string | null
+          qb_last_sync_at: string | null
+          qb_realm_id: string | null
+          qb_refresh_token: string | null
+          qb_refresh_token_expires_at: string | null
           state: string | null
           subscription_tier: string | null
           tax_id: string | null
@@ -1469,6 +1475,12 @@ export type Database = {
           id: string
           logo_url?: string | null
           phone?: string | null
+          qb_access_token?: string | null
+          qb_access_token_expires_at?: string | null
+          qb_last_sync_at?: string | null
+          qb_realm_id?: string | null
+          qb_refresh_token?: string | null
+          qb_refresh_token_expires_at?: string | null
           state?: string | null
           subscription_tier?: string | null
           tax_id?: string | null
@@ -1488,6 +1500,12 @@ export type Database = {
           id?: string
           logo_url?: string | null
           phone?: string | null
+          qb_access_token?: string | null
+          qb_access_token_expires_at?: string | null
+          qb_last_sync_at?: string | null
+          qb_realm_id?: string | null
+          qb_refresh_token?: string | null
+          qb_refresh_token_expires_at?: string | null
           state?: string | null
           subscription_tier?: string | null
           tax_id?: string | null
