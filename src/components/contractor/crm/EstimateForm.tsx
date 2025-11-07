@@ -16,6 +16,7 @@ import SignatureCanvas from 'react-signature-canvas';
 import { EstimateLineItem } from '@/hooks/useEstimates';
 import { useCustomers } from '@/hooks/useCustomers';
 import AddCustomerDialog from './AddCustomerDialog';
+import EstimateAssistant from './EstimateAssistant';
 
 const tradeTypes = [
   'General Remodel',
@@ -296,6 +297,34 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
     setLineItems([...lineItems, itemToDuplicate]);
   };
 
+  const handleAssistantData = (extractedData: any) => {
+    console.log('Extracted data:', extractedData);
+
+    // Populate basic fields
+    if (extractedData.title) setValue('title', extractedData.title);
+    if (extractedData.client_name) setValue('client_name', extractedData.client_name);
+    if (extractedData.client_email) setValue('client_email', extractedData.client_email);
+    if (extractedData.client_address) setValue('client_address', extractedData.client_address);
+    if (extractedData.site_address) setValue('site_address', extractedData.site_address);
+    if (extractedData.project_description) setValue('project_description', extractedData.project_description);
+    if (extractedData.trade_type) setValue('trade_type', extractedData.trade_type);
+    if (extractedData.assumptions_and_exclusions) setValue('assumptions_and_exclusions', extractedData.assumptions_and_exclusions);
+
+    // Add line items
+    if (extractedData.line_items && Array.isArray(extractedData.line_items)) {
+      const newItems = extractedData.line_items.map((item: any) => ({
+        category: item.category || 'Materials',
+        item_description: item.item_description || item.description || '',
+        quantity: item.quantity || 0,
+        unit_type: item.unit_type || item.unit || '',
+        unit_cost: item.unit_cost || item.material_cost || 0,
+        line_total: (item.quantity || 0) * (item.unit_cost || item.material_cost || 0),
+        included: true,
+      }));
+      setLineItems([...lineItems, ...newItems]);
+    }
+  };
+
   const handleFormSubmit = (data: EstimateFormData, isDraft: boolean) => {
     const formData = {
       ...data,
@@ -338,6 +367,12 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
     <ScrollArea className="h-[calc(100vh-8rem)]">
       <div className="p-6 space-y-4 max-w-5xl mx-auto">
         <form onSubmit={handleSubmit((data) => handleFormSubmit(data, false))} className="space-y-4">
+          {/* AI Assistant Section */}
+          <EstimateAssistant 
+            onDataExtracted={handleAssistantData}
+            currentFormData={watch()}
+          />
+
           {/* Project Info Section */}
           <Collapsible open={projectInfoOpen} onOpenChange={setProjectInfoOpen}>
             <Card>

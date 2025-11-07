@@ -12,6 +12,9 @@ verify_jwt = false
 [functions.estimate-payment-callback]
 verify_jwt = false
 
+[functions.estimate-assistant]
+verify_jwt = false
+
 [functions.quickbooks-oauth-callback]
 verify_jwt = false
 
