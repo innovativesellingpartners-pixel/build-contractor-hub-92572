@@ -74,8 +74,9 @@ const handler = async (req: Request): Promise<Response> => {
       try {
         console.log('Attaching PDF to email, size:', pdfData.pdfSize);
         attachments = [{
-          filename: `Estimate_${estimate.estimate_number || estimate.id}.pdf`,
+          filename: `Estimate-${estimate.estimate_number || estimate.id}.pdf`,
           content: pdfData.pdfBase64,
+          type: 'application/pdf',
         }];
       } catch (pdfConversionError) {
         console.warn('Could not attach PDF:', pdfConversionError);
@@ -97,104 +98,122 @@ const handler = async (req: Request): Promise<Response> => {
             <meta charset="utf-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <style>
-              body { margin: 0; padding: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; }
-              .container { max-width: 600px; margin: 0 auto; background: #ffffff; }
-              .header { background: linear-gradient(135deg, #E02424 0%, #C01E1E 100%); padding: 40px 30px; text-align: center; }
-              .logo { max-width: 180px; height: auto; margin-bottom: 20px; }
-              .header-title { color: #ffffff; font-size: 28px; font-weight: 700; margin: 0; }
-              .header-subtitle { color: #ffffff; opacity: 0.95; font-size: 16px; margin: 10px 0 0 0; }
-              .content { padding: 40px 30px; }
-              .greeting { color: #000000; font-size: 18px; font-weight: 600; margin: 0 0 20px 0; }
-              .message { color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 30px 0; }
-              .details-box { background: #F9FAFB; border-left: 4px solid #E02424; padding: 25px; border-radius: 8px; margin: 30px 0; }
-              .details-title { color: #000000; font-size: 20px; font-weight: 700; margin: 0 0 20px 0; }
-              .detail-row { margin: 12px 0; }
-              .detail-label { color: #6B7280; font-size: 14px; margin: 0 0 4px 0; }
-              .detail-value { color: #000000; font-size: 16px; font-weight: 600; margin: 0; }
-              .total-amount { color: #E02424; font-size: 28px; font-weight: 700; }
-              .cta-button { display: inline-block; background: #E02424; color: #ffffff !important; padding: 16px 40px; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 16px; margin: 30px 0; box-shadow: 0 4px 12px rgba(224, 36, 36, 0.3); }
-              .cta-button:hover { background: #C01E1E; }
-              .divider { border: none; border-top: 1px solid #E5E7EB; margin: 30px 0; }
-              .contact-info { color: #6B7280; font-size: 14px; line-height: 1.6; margin: 25px 0; padding: 20px; background: #F9FAFB; border-radius: 8px; }
-              .footer { background: #F9FAFB; padding: 30px; text-align: center; border-top: 1px solid #E5E7EB; }
-              .footer-text { color: #9CA3AF; font-size: 13px; line-height: 1.6; margin: 0; }
-              .powered-by { color: #6B7280; font-size: 12px; margin: 20px 0 0 0; }
+              body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; background-color: #f3f4f6; }
+              .email-wrapper { background-color: #f3f4f6; padding: 20px 0; }
+              .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
+              .header { background: linear-gradient(135deg, #E02424 0%, #C01E1E 100%); padding: 50px 40px; text-align: center; }
+              .header-title { color: #ffffff; font-size: 32px; font-weight: 900; margin: 20px 0 10px 0; letter-spacing: -0.5px; }
+              .header-subtitle { color: rgba(255, 255, 255, 0.95); font-size: 18px; margin: 0; font-weight: 500; }
+              .content { padding: 50px 40px; background: #ffffff; }
+              .greeting { color: #111827; font-size: 20px; font-weight: 700; margin: 0 0 25px 0; }
+              .message { color: #4b5563; font-size: 16px; line-height: 1.7; margin: 0 0 35px 0; }
+              .details-box { background: linear-gradient(to bottom, #fef2f2, #ffffff); border: 2px solid #fee2e2; border-radius: 12px; padding: 30px; margin: 35px 0; }
+              .details-title { color: #111827; font-size: 22px; font-weight: 900; margin: 0 0 25px 0; text-align: center; }
+              .detail-row { margin: 16px 0; padding: 12px 0; border-bottom: 1px solid #f3f4f6; }
+              .detail-row:last-child { border-bottom: none; padding-bottom: 0; }
+              .detail-label { color: #6b7280; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 6px 0; font-weight: 600; }
+              .detail-value { color: #111827; font-size: 17px; font-weight: 600; margin: 0; }
+              .total-section { background: linear-gradient(135deg, #E02424 0%, #C01E1E 100%); padding: 25px; border-radius: 8px; margin-top: 20px; text-align: center; }
+              .total-label { color: rgba(255, 255, 255, 0.9); font-size: 14px; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 8px 0; }
+              .total-amount { color: #ffffff; font-size: 36px; font-weight: 900; margin: 0; }
+              .cta-section { text-align: center; margin: 40px 0; }
+              .cta-button { display: inline-block; background: #E02424; color: #ffffff !important; padding: 18px 50px; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 17px; box-shadow: 0 6px 20px rgba(224, 36, 36, 0.4); transition: all 0.3s; }
+              .attachment-notice { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 20px; border-radius: 8px; margin: 30px 0; }
+              .attachment-notice p { color: #78350f; font-size: 14px; margin: 0; line-height: 1.6; }
+              .attachment-notice strong { color: #92400e; }
+              .contact-info { background: #f9fafb; padding: 25px; border-radius: 10px; margin: 35px 0; text-align: center; }
+              .contact-info p { color: #4b5563; font-size: 15px; margin: 8px 0; line-height: 1.6; }
+              .contact-info strong { color: #111827; font-size: 16px; }
+              .footer { background: #f9fafb; padding: 35px 40px; text-align: center; border-top: 2px solid #e5e7eb; }
+              .footer-text { color: #9ca3af; font-size: 13px; line-height: 1.7; margin: 0 0 15px 0; }
+              .powered-by { color: #6b7280; font-size: 13px; margin: 0; font-weight: 600; }
+              .powered-by strong { color: #E02424; }
               @media only screen and (max-width: 600px) {
-                .header { padding: 30px 20px; }
-                .content { padding: 30px 20px; }
-                .header-title { font-size: 24px; }
-                .cta-button { padding: 14px 30px; font-size: 15px; }
+                .header { padding: 40px 25px; }
+                .content { padding: 35px 25px; }
+                .footer { padding: 30px 25px; }
+                .header-title { font-size: 26px; }
+                .details-box { padding: 25px 20px; }
+                .cta-button { padding: 16px 35px; font-size: 16px; }
+                .total-amount { font-size: 30px; }
               }
             </style>
           </head>
           <body>
-            <div class="container">
-              <div class="header">
-                <img src="https://faqrzzodtmsybofakcvv.supabase.co/storage/v1/object/public/company-logos/ct1-logo-circle.png" alt="CT1" class="logo" />
-                <h1 class="header-title">Professional Estimate</h1>
-                <p class="header-subtitle">Estimate ${estimate.estimate_number || ''}</p>
-              </div>
-              
-              <div class="content">
-                <p class="greeting">Hello ${estimate.client_name},</p>
-                <p class="message">
-                  Thank you for the opportunity to work on your project. We've prepared a detailed estimate for 
-                  <strong>${estimate.title}</strong>. Please review the details below and sign digitally to proceed.
-                </p>
+            <div class="email-wrapper">
+              <div class="container">
+                <div class="header">
+                  <div style="font-size: 48px; margin-bottom: 15px;">📋</div>
+                  <h1 class="header-title">Professional Estimate</h1>
+                  <p class="header-subtitle">${estimate.estimate_number ? `#${estimate.estimate_number}` : 'Your Project Estimate'}</p>
+                </div>
                 
-                <div class="details-box">
-                  <h2 class="details-title">Estimate Summary</h2>
-                  <div class="detail-row">
-                    <p class="detail-label">Project</p>
-                    <p class="detail-value">${estimate.title}</p>
+                <div class="content">
+                  <p class="greeting">Hello ${estimate.client_name},</p>
+                  <p class="message">
+                    Thank you for considering <strong>${contractorName}</strong> for your project. We've prepared a comprehensive estimate for <strong>${estimate.title}</strong>. Please review the attached PDF for complete details, or click the button below to view, sign, and pay online.
+                  </p>
+                  
+                  <div class="attachment-notice">
+                    <p><strong>📎 PDF Attached</strong><br>
+                    A detailed estimate document is attached to this email. You can download it, review it at your convenience, and even sign and pay directly from the PDF link.</p>
                   </div>
-                  ${estimate.trade_type ? `
-                  <div class="detail-row">
-                    <p class="detail-label">Trade Type</p>
-                    <p class="detail-value">${estimate.trade_type}</p>
+                  
+                  <div class="details-box">
+                    <h2 class="details-title">Estimate Overview</h2>
+                    <div class="detail-row">
+                      <p class="detail-label">Project Name</p>
+                      <p class="detail-value">${estimate.title}</p>
+                    </div>
+                    ${estimate.trade_type ? `
+                    <div class="detail-row">
+                      <p class="detail-label">Trade Type</p>
+                      <p class="detail-value">${estimate.trade_type}</p>
+                    </div>
+                    ` : ''}
+                    ${estimate.site_address ? `
+                    <div class="detail-row">
+                      <p class="detail-label">Project Location</p>
+                      <p class="detail-value">${estimate.site_address}</p>
+                    </div>
+                    ` : ''}
+                    ${estimate.valid_until ? `
+                    <div class="detail-row">
+                      <p class="detail-label">Valid Until</p>
+                      <p class="detail-value">${new Date(estimate.valid_until).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                    </div>
+                    ` : ''}
+                    <div class="total-section">
+                      <p class="total-label">Total Investment</p>
+                      <p class="total-amount">$${estimate.total_amount?.toFixed(2) || '0.00'}</p>
+                    </div>
                   </div>
-                  ` : ''}
-                  ${estimate.site_address ? `
-                  <div class="detail-row">
-                    <p class="detail-label">Project Location</p>
-                    <p class="detail-value">${estimate.site_address}</p>
+
+                  <div class="cta-section">
+                    <a href="${publicUrl}" class="cta-button">
+                      🔗 View, Sign & Pay Online
+                    </a>
+                    <p style="color: #6b7280; font-size: 13px; margin-top: 15px;">
+                      Click the button above to review the full estimate online
+                    </p>
                   </div>
-                  ` : ''}
-                  ${estimate.valid_until ? `
-                  <div class="detail-row">
-                    <p class="detail-label">Valid Until</p>
-                    <p class="detail-value">${new Date(estimate.valid_until).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                  </div>
-                  ` : ''}
-                  <hr style="border: none; border-top: 1px solid #E5E7EB; margin: 20px 0;">
-                  <div class="detail-row">
-                    <p class="detail-label">Total Investment</p>
-                    <p class="total-amount">$${estimate.total_amount?.toFixed(2) || '0.00'}</p>
+
+                  <div class="contact-info">
+                    <p><strong>Questions? We're Here to Help!</strong></p>
+                    <p>📧 ${contractorEmail}</p>
+                    <p>Reply to this email or contact us directly</p>
                   </div>
                 </div>
 
-                <center>
-                  <a href="${publicUrl}" class="cta-button">
-                    View Full Estimate & Sign
-                  </a>
-                </center>
-
-                <div class="contact-info">
-                  <strong style="color: #000000;">Questions?</strong><br>
-                  We're here to help! Reply to this email or contact us directly:<br>
-                  📧 ${contractorEmail}<br>
-                  ${contractorName}
+                <div class="footer">
+                  <p class="footer-text">
+                    This estimate was prepared specifically for ${estimate.client_name}.<br>
+                    All pricing and terms are confidential and subject to the conditions outlined in the attached document.
+                  </p>
+                  <p class="powered-by">
+                    Powered by <strong>CT1 Constructeam</strong> - Professional Contractor Management
+                  </p>
                 </div>
-              </div>
-
-              <div class="footer">
-                <p class="footer-text">
-                  This estimate was prepared specifically for ${estimate.client_name}.<br>
-                  All pricing and terms are confidential.
-                </p>
-                <p class="powered-by">
-                  Powered by <strong>CT1</strong> - Professional Contractor Management
-                </p>
               </div>
             </div>
           </body>
