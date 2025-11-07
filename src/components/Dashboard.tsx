@@ -42,11 +42,11 @@ import { StarRating } from "@/components/contractor/StarRating";
 import { FloatingPocketbot } from "@/components/contractor/FloatingPocketbot";
 import { ContactSupport } from "@/components/ContactSupport";
 import ct1Logo from "@/assets/ct1-logo-main.png";
-import { QuickBooks } from "@/components/contractor/QuickBooks";
+
 import { VoiceAI } from "@/components/contractor/VoiceAI";
 import Reporting from "@/pages/Reporting";
 
-type ActiveSection = 'training' | 'crm' | 'schedule' | 'marketplace' | 'leads' | 'quickbooks' | 'insurance' | 'account' | 'voiceai' | 'reporting';
+type ActiveSection = 'training' | 'crm' | 'schedule' | 'marketplace' | 'leads' | 'insurance' | 'account' | 'voiceai' | 'reporting';
 
 export function Dashboard() {
   const { user, profile, signOut } = useAuth();
@@ -268,11 +268,6 @@ export function Dashboard() {
                 <ScheduleCall />
               </div>
             )}
-            {activeSection === 'quickbooks' && (
-              <div className="p-3 md:p-4 lg:p-6 min-h-[400px] md:min-h-[600px]">
-                <QuickBooks />
-              </div>
-            )}
             {activeSection === 'insurance' && (
               <div className="p-3 md:p-4 lg:p-6 min-h-[400px] md:min-h-[600px]">
                 <Insurance />
@@ -346,46 +341,6 @@ export function Dashboard() {
                       <ArrowUpCircle className="h-4 w-4 mr-2" />
                       View Plans
                     </Button>
-                  </div>
-                </div>
-                
-                {/* QuickBooks Integration Section */}
-                <div className="bg-gradient-to-br from-card to-muted/20 border border-border/50 rounded-xl shadow-md overflow-hidden">
-                  <div className="bg-primary/5 px-6 py-4 border-b border-border/50">
-                    <h3 className="text-lg font-semibold flex items-center gap-2">
-                      <FileText className="h-5 w-5 text-primary" />
-                      QuickBooks Integration
-                    </h3>
-                  </div>
-                  <div className="p-6 space-y-4">
-                    <p className="text-sm text-muted-foreground">
-                      Connect your QuickBooks account to sync your financial data, invoices, and expenses automatically.
-                    </p>
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                        <span className="text-sm font-medium">Status:</span>
-                        <Badge variant="outline" className="bg-yellow-500/10 text-yellow-600 border-yellow-500/30">
-                          Not Connected
-                        </Badge>
-                      </div>
-                      <Button 
-                        className="w-full shadow-md hover:shadow-lg transition-shadow" 
-                        size="lg"
-                        onClick={() => window.open('https://accounts.intuit.com/app/sign-in?app_group=QBO&asset_alias=Intuit.accounting.core.qbowebapp&app_environment=prod&intent=qbo', '_blank')}
-                      >
-                        <FileText className="h-4 w-4 mr-2" />
-                        Connect QuickBooks
-                      </Button>
-                    </div>
-                    <div className="text-xs text-muted-foreground pt-2 border-t border-border/50">
-                      <p>Benefits of connecting QuickBooks:</p>
-                      <ul className="list-disc list-inside mt-2 space-y-1 ml-2">
-                        <li>Automatic invoice syncing</li>
-                        <li>Real-time financial reporting</li>
-                        <li>Expense tracking integration</li>
-                        <li>Streamlined bookkeeping</li>
-                      </ul>
-                    </div>
                   </div>
                 </div>
                 
@@ -642,19 +597,6 @@ function SidebarNav({ activeSection, setActiveSection, tierFeatures }: SidebarNa
       >
         <BarChart3 className="h-4 w-4 mr-3" />
         Reporting & Analytics
-      </Button>
-      
-      <Button
-        variant={activeSection === 'quickbooks' ? 'default' : 'ghost'}
-        className={`w-full justify-start transition-all ${
-          activeSection === 'quickbooks' 
-            ? 'shadow-md' 
-            : 'hover:bg-red-50 hover:border-red-500 hover:text-black border border-transparent'
-        }`}
-        onClick={() => setActiveSection('quickbooks')}
-      >
-        <DollarSign className="h-4 w-4 mr-3" />
-        QuickBooks
       </Button>
       
       {tierFeatures.insurance && (

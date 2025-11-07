@@ -10,7 +10,9 @@ import {
   Menu,
   X,
   FileText,
-  BarChart2
+  BarChart2,
+  DollarSign,
+  Link as LinkIcon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -24,10 +26,12 @@ import CallsSection from './sections/CallsSection';
 import CalendarSection from './sections/CalendarSection';
 import EmailsSection from './sections/EmailsSection';
 import EstimatesSection from './sections/EstimatesSection';
+import FinancialsSection from './sections/FinancialsSection';
+import { QuickBooksIntegration } from '@/components/contractor/QuickBooksIntegration';
 import ct1Logo from '@/assets/ct1-logo-main.png';
 import Reporting from '@/pages/Reporting';
 
-type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calendar' | 'emails' | 'estimates' | 'reporting';
+type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calendar' | 'emails' | 'estimates' | 'reporting' | 'financials' | 'quickbooks';
 
 const navItems = [
   { id: 'dashboard' as Section, label: 'Dashboard', icon: LayoutDashboard },
@@ -35,7 +39,9 @@ const navItems = [
   { id: 'jobs' as Section, label: 'Jobs', icon: Briefcase },
   { id: 'customers' as Section, label: 'Customers', icon: Users },
   { id: 'estimates' as Section, label: 'Estimates', icon: FileText },
+  { id: 'financials' as Section, label: 'Financials', icon: DollarSign },
   { id: 'reporting' as Section, label: 'Reporting', icon: BarChart2 },
+  { id: 'quickbooks' as Section, label: 'QuickBooks', icon: LinkIcon },
   { id: 'calls' as Section, label: 'Calls', icon: Phone },
   { id: 'calendar' as Section, label: 'Calendar', icon: Calendar },
   { id: 'emails' as Section, label: 'Emails', icon: Mail },
@@ -80,6 +86,14 @@ export default function CT1CRM() {
         return <EmailsSection />;
       case 'estimates':
         return <EstimatesSection />;
+      case 'financials':
+        return <FinancialsSection />;
+      case 'quickbooks':
+        return (
+          <div className="p-6">
+            <QuickBooksIntegration />
+          </div>
+        );
       case 'reporting':
         return <Reporting />;
       default:

@@ -1,0 +1,197 @@
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Loader2, DollarSign, AlertCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+
+interface Invoice {
+  invoiceId: string;
+  docNumber: string;
+  customerName: string;
+  customerId: string | null;
+  totalAmount: number;
+  balance: number;
+  status: string;
+  invoiceDate: string | null;
+  dueDate: string | null;
+}
+
+export default function FinancialsSection() {
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(true);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [isConnected, setIsConnected] = useState(false);
+
+  useEffect(() => {
+    checkConnectionAndLoadInvoices();
+  }, []);
+
+  const checkConnectionAndLoadInvoices = async () => {
+    try {
+      setLoading(true);
+
+      // Check if QuickBooks is connected
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        throw new Error('Not authenticated');
+      }
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('qb_realm_id')
+        .eq('id', user.id)
+        .single();
+
+      if (!profile?.qb_realm_id) {
+        setIsConnected(false);
+        setLoading(false);
+        return;
+      }
+
+      setIsConnected(true);
+
+      // Load invoices
+      const { data, error } = await supabase.functions.invoke('quickbooks-invoices');
+
+      if (error) {
+        throw error;
+      }
+
+      if (data?.success && data?.invoices) {
+        setInvoices(data.invoices);
+      }
+    } catch (error) {
+      console.error('Error loading invoices:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to load invoices from QuickBooks.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    }).format(amount);
+  };
+
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!isConnected) {
+    return (
+      <div className="p-6">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-yellow-600" />
+              <CardTitle>QuickBooks Not Connected</CardTitle>
+            </div>
+            <CardDescription>
+              QuickBooks is not connected for your account. Go to Integrations and connect QuickBooks to view your invoices and financial data.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={() => window.location.href = '/crm?section=quickbooks'}>
+              Go to Integrations
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <DollarSign className="h-8 w-8 text-primary" />
+          <div>
+            <h2 className="text-2xl font-bold">Financials</h2>
+            <p className="text-sm text-muted-foreground">
+              View and manage your QuickBooks invoices
+            </p>
+          </div>
+        </div>
+        <Button onClick={checkConnectionAndLoadInvoices} variant="outline">
+          Refresh
+        </Button>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>QuickBooks Invoices</CardTitle>
+          <CardDescription>
+            {invoices.length > 0 
+              ? `Showing ${invoices.length} invoice${invoices.length !== 1 ? 's' : ''}`
+              : 'No invoices found'
+            }
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {invoices.length > 0 ? (
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Invoice #</TableHead>
+                    <TableHead>Customer</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Due Date</TableHead>
+                    <TableHead className="text-right">Total</TableHead>
+                    <TableHead className="text-right">Balance</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {invoices.map((invoice) => (
+                    <TableRow key={invoice.invoiceId}>
+                      <TableCell className="font-medium">{invoice.docNumber}</TableCell>
+                      <TableCell>{invoice.customerName}</TableCell>
+                      <TableCell>{formatDate(invoice.invoiceDate)}</TableCell>
+                      <TableCell>{formatDate(invoice.dueDate)}</TableCell>
+                      <TableCell className="text-right">{formatCurrency(invoice.totalAmount)}</TableCell>
+                      <TableCell className="text-right">{formatCurrency(invoice.balance)}</TableCell>
+                      <TableCell>
+                        <Badge variant={invoice.status === 'Paid' ? 'default' : 'secondary'}>
+                          {invoice.status}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          ) : (
+            <div className="text-center py-12 text-muted-foreground">
+              <DollarSign className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>No invoices found in QuickBooks</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

@@ -21,8 +21,17 @@ verify_jwt = false
 [functions.quickbooks-oauth-callback]
 verify_jwt = false
 
+[functions.quickbooks-connect]
+verify_jwt = true
+
 [functions.quickbooks-callback]
 verify_jwt = false
+
+[functions.quickbooks-disconnect]
+verify_jwt = true
+
+[functions.quickbooks-invoices]
+verify_jwt = true
 
 [functions.admin-update-user-role]
 verify_jwt = true
