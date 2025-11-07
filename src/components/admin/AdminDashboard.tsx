@@ -20,13 +20,13 @@ export const AdminDashboard = () => {
         jobsResult,
         customersResult,
       ] = await Promise.all([
-        supabase.from('user_roles').select('id', { count: 'exact', head: true }),
-        supabase.from('training_courses').select('id', { count: 'exact', head: true }),
-        supabase.from('marketplace_services').select('id', { count: 'exact', head: true }),
-        supabase.from('profiles').select('id', { count: 'exact', head: true }),
-        supabase.from('leads').select('id', { count: 'exact', head: true }),
-        supabase.from('jobs').select('id', { count: 'exact', head: true }),
-        supabase.from('customers').select('id', { count: 'exact', head: true })
+        supabase.from('user_roles').select('id', { count: 'exact' }).limit(1),
+        supabase.from('training_courses').select('id', { count: 'exact' }).limit(1),
+        supabase.from('marketplace_services').select('id', { count: 'exact' }).limit(1),
+        supabase.from('profiles').select('id', { count: 'exact' }).limit(1),
+        supabase.from('leads').select('id', { count: 'exact' }).limit(1),
+        supabase.from('jobs').select('id', { count: 'exact' }).limit(1),
+        supabase.from('customers').select('id', { count: 'exact' }).limit(1)
       ]);
 
       return {
