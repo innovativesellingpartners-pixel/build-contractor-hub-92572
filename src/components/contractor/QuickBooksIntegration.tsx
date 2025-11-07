@@ -192,7 +192,7 @@ export function QuickBooksIntegration() {
           <Button 
             variant="outline" 
             className="w-full justify-start"
-            onClick={() => window.open('https://quickbooks.intuit.com/contact/', '_blank')}
+            onClick={() => window.location.href = '/contact'}
           >
             <ExternalLink className="h-4 w-4 mr-2" />
             Contact QuickBooks Sales
