@@ -5,43 +5,102 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Refresh QuickBooks access token if expired
-async function refreshAccessToken(profile: any, supabaseClient: any): Promise<string> {
+interface ContractorProfile {
+  id: string;
+  qb_realm_id: string | null;
+  qb_access_token: string | null;
+  qb_refresh_token: string | null;
+  qb_access_token_expires_at: string | null;
+  qb_refresh_token_expires_at: string | null;
+}
+
+// Helper function to get valid QuickBooks access token with auto-refresh
+async function getValidQuickBooksAccessToken(contractorId: string): Promise<{ accessToken: string; realmId: string }> {
+  const supabaseClient = createClient(
+    Deno.env.get('SUPABASE_URL') ?? '',
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+  );
+
+  // Load contractor profile
+  const { data: profile, error: profileError } = await supabaseClient
+    .from('profiles')
+    .select('id, qb_realm_id, qb_access_token, qb_refresh_token, qb_access_token_expires_at, qb_refresh_token_expires_at')
+    .eq('id', contractorId)
+    .single();
+
+  if (profileError || !profile) {
+    console.error('Failed to load contractor profile:', profileError);
+    throw new Error('Contractor not found');
+  }
+
+  const contractor = profile as ContractorProfile;
+
+  // Check if QuickBooks is connected
+  if (!contractor.qb_realm_id || !contractor.qb_access_token || !contractor.qb_refresh_token) {
+    throw new Error('QuickBooks not connected for this contractor');
+  }
+
+  const realmId = contractor.qb_realm_id;
+
+  // Check if access token is still valid (with 5 minute safety buffer)
+  const expiresAt = new Date(contractor.qb_access_token_expires_at!);
+  const safetyBuffer = 5 * 60 * 1000; // 5 minutes in milliseconds
+  const now = new Date();
+
+  if (expiresAt.getTime() > now.getTime() + safetyBuffer) {
+    console.log('Using existing valid access token');
+    return { accessToken: contractor.qb_access_token, realmId };
+  }
+
+  // Access token expired or expiring soon - refresh it
+  console.log('Access token expired, refreshing...');
+
   const clientId = Deno.env.get('QUICKBOOKS_CLIENT_ID');
   const clientSecret = Deno.env.get('QUICKBOOKS_CLIENT_SECRET');
 
-  console.log('Refreshing QuickBooks access token for user:', profile.id);
-
-  const response = await fetch('https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer', {
+  const refreshResponse = await fetch('https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
       'Authorization': 'Basic ' + btoa(`${clientId}:${clientSecret}`),
+      'Accept': 'application/json',
     },
     body: new URLSearchParams({
       grant_type: 'refresh_token',
-      refresh_token: profile.qb_refresh_token,
+      refresh_token: contractor.qb_refresh_token,
     }).toString(),
   });
 
-  if (!response.ok) {
-    throw new Error('Failed to refresh access token');
+  if (!refreshResponse.ok) {
+    const errorText = await refreshResponse.text();
+    console.error('Token refresh failed:', errorText);
+    throw new Error('Failed to refresh QuickBooks access token. Please reconnect your QuickBooks account.');
   }
 
-  const data = await response.json();
-  const accessTokenExpiresAt = new Date(Date.now() + data.expires_in * 1000);
+  const tokenData = await refreshResponse.json();
+  console.log('Token refresh successful');
 
-  // Update profile with new access token
-  await supabaseClient
+  // Calculate new expiration times
+  const newAccessTokenExpiresAt = new Date(Date.now() + (tokenData.expires_in * 1000));
+  const newRefreshTokenExpiresAt = new Date(Date.now() + (tokenData.x_refresh_token_expires_in * 1000));
+
+  // Update contractor profile with new tokens
+  const { error: updateError } = await supabaseClient
     .from('profiles')
     .update({
-      qb_access_token: data.access_token,
-      qb_access_token_expires_at: accessTokenExpiresAt.toISOString(),
+      qb_access_token: tokenData.access_token,
+      qb_refresh_token: tokenData.refresh_token,
+      qb_access_token_expires_at: newAccessTokenExpiresAt.toISOString(),
+      qb_refresh_token_expires_at: newRefreshTokenExpiresAt.toISOString(),
     })
-    .eq('id', profile.id);
+    .eq('id', contractorId);
 
-  console.log('Access token refreshed successfully');
-  return data.access_token;
+  if (updateError) {
+    console.error('Failed to update tokens:', updateError);
+    throw new Error('Failed to save refreshed tokens');
+  }
+
+  return { accessToken: tokenData.access_token, realmId };
 }
 
 Deno.serve(async (req) => {
@@ -55,6 +114,7 @@ Deno.serve(async (req) => {
       throw new Error('No authorization header');
     }
 
+    // Get authenticated user - NEVER trust contractor ID from browser
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
@@ -63,115 +123,80 @@ Deno.serve(async (req) => {
 
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
     if (userError || !user) {
+      console.error('Authentication failed:', userError);
       throw new Error('Unauthorized');
     }
 
-    console.log('QuickBooks invoices request from user:', user.id);
+    const contractorId = user.id;
+    console.log('Fetching QuickBooks invoices for contractor:', contractorId);
 
-    // Get user's QuickBooks connection from profiles
-    const { data: profile, error: profileError } = await supabaseClient
-      .from('profiles')
-      .select('qb_realm_id, qb_access_token, qb_refresh_token, qb_access_token_expires_at')
-      .eq('id', user.id)
-      .single();
+    // Get valid access token (with auto-refresh if needed)
+    const { accessToken, realmId } = await getValidQuickBooksAccessToken(contractorId);
 
-    if (profileError || !profile || !profile.qb_realm_id) {
-      throw new Error('QuickBooks not connected');
-    }
+    // Query QuickBooks Online API for invoices
+    const qbQuery = 'SELECT * FROM Invoice STARTPOSITION 1 MAXRESULTS 50';
+    const qbUrl = `https://quickbooks.api.intuit.com/v3/company/${realmId}/query?query=${encodeURIComponent(qbQuery)}`;
 
-    // Check if token needs refresh
-    let accessToken = profile.qb_access_token;
-    const expiresAt = new Date(profile.qb_access_token_expires_at);
-    
-    if (expiresAt <= new Date()) {
-      accessToken = await refreshAccessToken(profile, supabaseClient);
-    }
+    console.log('Querying QuickBooks API for invoices...');
 
-    // Parse request body for action
-    const { action, invoiceData } = await req.json();
-    const realmId = profile.qb_realm_id;
-
-    console.log('QuickBooks API action:', action);
-
-    let qbResponse;
-
-    switch (action) {
-      case 'list':
-        // List invoices from QuickBooks
-        qbResponse = await fetch(
-          `https://quickbooks.api.intuit.com/v3/company/${realmId}/query?query=SELECT * FROM Invoice MAXRESULTS 100`,
-          {
-            headers: {
-              'Authorization': `Bearer ${accessToken}`,
-              'Accept': 'application/json',
-            },
-          }
-        );
-        break;
-
-      case 'create':
-        // Create invoice in QuickBooks
-        qbResponse = await fetch(
-          `https://quickbooks.api.intuit.com/v3/company/${realmId}/invoice`,
-          {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${accessToken}`,
-              'Content-Type': 'application/json',
-              'Accept': 'application/json',
-            },
-            body: JSON.stringify(invoiceData),
-          }
-        );
-        break;
-
-      case 'sync':
-        // Sync CT1 invoices to QuickBooks
-        const { data: ct1Invoices } = await supabaseClient
-          .from('invoices')
-          .select('*')
-          .eq('user_id', user.id);
-
-        console.log(`Syncing ${ct1Invoices?.length || 0} CT1 invoices to QuickBooks`);
-
-        // Update last sync timestamp
-        await supabaseClient
-          .from('profiles')
-          .update({ qb_last_sync_at: new Date().toISOString() })
-          .eq('id', user.id);
-
-        return new Response(
-          JSON.stringify({ 
-            success: true, 
-            syncedCount: ct1Invoices?.length || 0,
-            message: 'Sync initiated'
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-
-      default:
-        throw new Error('Invalid action');
-    }
+    const qbResponse = await fetch(qbUrl, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+    });
 
     if (!qbResponse.ok) {
       const errorText = await qbResponse.text();
       console.error('QuickBooks API error:', errorText);
-      throw new Error('QuickBooks API request failed');
+      throw new Error('Failed to fetch invoices from QuickBooks');
     }
 
-    const data = await qbResponse.json();
+    const qbData = await qbResponse.json();
     console.log('QuickBooks API request successful');
 
+    // Parse and clean the response
+    const invoices = (qbData.QueryResponse?.Invoice || []).map((inv: any) => ({
+      invoiceId: inv.Id,
+      docNumber: inv.DocNumber,
+      customerName: inv.CustomerRef?.name || 'Unknown',
+      customerId: inv.CustomerRef?.value || null,
+      totalAmount: parseFloat(inv.TotalAmt || '0'),
+      balance: parseFloat(inv.Balance || '0'),
+      status: inv.Balance > 0 ? 'Unpaid' : 'Paid',
+      invoiceDate: inv.TxnDate || null,
+      dueDate: inv.DueDate || null,
+      emailStatus: inv.EmailStatus || null,
+      printStatus: inv.PrintStatus || null,
+    }));
+
+    console.log(`Returning ${invoices.length} invoices`);
+
     return new Response(
-      JSON.stringify(data),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({ 
+        success: true,
+        invoices,
+        count: invoices.length 
+      }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200 
+      }
     );
   } catch (error) {
     console.error('Error in quickbooks-invoices:', error);
     const message = error instanceof Error ? error.message : 'An error occurred';
     return new Response(
-      JSON.stringify({ error: message }),
-      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({ 
+        success: false,
+        error: message 
+      }),
+      { 
+        status: 400, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
     );
   }
 });

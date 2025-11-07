@@ -1313,6 +1313,30 @@ export type Database = {
           },
         ]
       }
+      oauth_states: {
+        Row: {
+          contractor_id: string
+          created_at: string
+          expires_at: string
+          id: string
+          state_token: string
+        }
+        Insert: {
+          contractor_id: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          state_token: string
+        }
+        Update: {
+          contractor_id?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          state_token?: string
+        }
+        Relationships: []
+      }
       opportunities: {
         Row: {
           assigned_user_id: string | null
@@ -2250,6 +2274,7 @@ export type Database = {
           total_users: number
         }[]
       }
+      cleanup_expired_oauth_states: { Args: never; Returns: undefined }
       generate_estimate_number: { Args: never; Returns: string }
       generate_invoice_number: { Args: never; Returns: string }
       generate_job_number: { Args: never; Returns: string }
