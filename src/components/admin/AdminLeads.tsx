@@ -20,8 +20,8 @@ export const AdminLeads = () => {
         .select(`
           *,
           profiles:user_id (
-            full_name,
-            business_name
+            contact_name,
+            company_name
           )
         `)
         .order('created_at', { ascending: false });
@@ -111,7 +111,7 @@ export const AdminLeads = () => {
                   </TableCell>
                   <TableCell>
                     <div className="text-sm">
-                      {(lead.profiles as any)?.business_name || (lead.profiles as any)?.full_name || 'Unknown'}
+                      {(lead.profiles as any)?.company_name || (lead.profiles as any)?.contact_name || 'Unknown'}
                     </div>
                   </TableCell>
                   <TableCell>

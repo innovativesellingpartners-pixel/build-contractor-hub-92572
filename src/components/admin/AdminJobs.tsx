@@ -20,8 +20,8 @@ export const AdminJobs = () => {
         .select(`
           *,
           profiles:user_id (
-            full_name,
-            business_name
+            contact_name,
+            company_name
           ),
           leads:lead_id (
             name
@@ -106,7 +106,7 @@ export const AdminJobs = () => {
                   </TableCell>
                   <TableCell>
                     <div className="text-sm">
-                      {(job.profiles as any)?.business_name || (job.profiles as any)?.full_name || 'Unknown'}
+                      {(job.profiles as any)?.company_name || (job.profiles as any)?.contact_name || 'Unknown'}
                     </div>
                   </TableCell>
                   <TableCell>
