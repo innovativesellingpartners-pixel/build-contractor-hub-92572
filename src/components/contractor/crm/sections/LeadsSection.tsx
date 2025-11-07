@@ -2,15 +2,77 @@ import { useState } from 'react';
 import { useLeads } from '@/hooks/useLeads';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, Phone, Mail, Edit } from 'lucide-react';
+import { Plus, Phone, Mail, Edit, Briefcase } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { AddLeadDialog } from '../../AddLeadDialog';
 import { EditLeadDialog } from '../../EditLeadDialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
-export default function LeadsSection() {
+interface LeadsSectionProps {
+  onSectionChange?: (section: string) => void;
+}
+
+export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
   const { leads, sources, loading, addLead, updateLead, deleteLead } = useLeads();
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<any>(null);
+  const [convertingLead, setConvertingLead] = useState<any>(null);
+
+  const handleConvertToJob = async () => {
+    if (!convertingLead) return;
+
+    try {
+      toast.loading('Converting lead to job...', { id: 'convert-lead' });
+
+      // Get current user ID
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      // Create a new job from the lead - using raw insert with fields that exist
+      const { data: newJob, error: jobError } = await supabase
+        .from('jobs')
+        .insert([{
+          name: convertingLead.name + (convertingLead.project_type ? ` - ${convertingLead.project_type}` : ''),
+          user_id: user.id,
+          address: convertingLead.address || null,
+          city: convertingLead.city || null,
+          state: convertingLead.state || null,
+          zip_code: convertingLead.zip_code || null,
+          status: 'scheduled',
+          notes: convertingLead.notes || null,
+          lead_id: convertingLead.id,
+        }])
+        .select()
+        .single();
+
+      if (jobError) throw jobError;
+
+      // Update the lead to mark it as converted
+      const { error } = await supabase
+        .from('leads')
+        .update({
+          status: 'converted',
+          converted_at: new Date().toISOString(),
+          converted_to_job_id: newJob?.id,
+        })
+        .eq('id', convertingLead.id);
+
+      if (error) throw error;
+
+      toast.success('Lead converted to job successfully!', { id: 'convert-lead' });
+      setConvertingLead(null);
+
+      // Navigate to jobs section if available
+      if (onSectionChange) {
+        setTimeout(() => onSectionChange('jobs'), 500);
+      }
+    } catch (error: any) {
+      console.error('Error converting lead:', error);
+      toast.error('Failed to convert lead: ' + error.message, { id: 'convert-lead' });
+    }
+  };
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
@@ -72,6 +134,17 @@ export default function LeadsSection() {
                 </p>
               )}
               <div className="flex gap-2 flex-wrap">
+                {!(lead as any).converted_at && (
+                  <Button 
+                    variant="default" 
+                    size="sm"
+                    onClick={() => setConvertingLead(lead)}
+                    className="bg-primary hover:bg-primary/90"
+                  >
+                    <Briefcase className="h-4 w-4 mr-1" />
+                    <span className="hidden sm:inline">Convert to Job</span>
+                  </Button>
+                )}
                 {lead.phone && (
                   <Button variant="outline" size="sm" asChild>
                     <a href={`tel:${lead.phone}`}>
@@ -109,6 +182,24 @@ export default function LeadsSection() {
             sources={sources}
           />
         )}
+
+        <AlertDialog open={!!convertingLead} onOpenChange={() => setConvertingLead(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Convert Lead to Job?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will create a new job from the lead "{convertingLead?.name}" and mark the lead as converted.
+                The job will be created in "Scheduled" status and you can manage it from the Jobs section.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleConvertToJob}>
+                Convert to Job
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );

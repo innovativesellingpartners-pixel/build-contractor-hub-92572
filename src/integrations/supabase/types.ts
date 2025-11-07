@@ -302,6 +302,7 @@ export type Database = {
           customer_type: string | null
           email: string | null
           id: string
+          job_id: string | null
           name: string
           notes: string | null
           phone: string | null
@@ -318,6 +319,7 @@ export type Database = {
           customer_type?: string | null
           email?: string | null
           id?: string
+          job_id?: string | null
           name: string
           notes?: string | null
           phone?: string | null
@@ -334,6 +336,7 @@ export type Database = {
           customer_type?: string | null
           email?: string | null
           id?: string
+          job_id?: string | null
           name?: string
           notes?: string | null
           phone?: string | null
@@ -342,7 +345,15 @@ export type Database = {
           user_id?: string
           zip_code?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "customers_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       daily_logs: {
         Row: {
@@ -814,6 +825,8 @@ export type Database = {
           adjusted_budget_amount: number | null
           budget_amount: number | null
           city: string | null
+          converted_at: string | null
+          converted_to_customer_id: string | null
           created_at: string
           custom_fields: Json | null
           customer_id: string | null
@@ -822,6 +835,7 @@ export type Database = {
           id: string
           job_number: string | null
           job_status: Database["public"]["Enums"]["job_status"] | null
+          lead_id: string | null
           name: string
           notes: string | null
           opportunity_id: string | null
@@ -845,6 +859,8 @@ export type Database = {
           adjusted_budget_amount?: number | null
           budget_amount?: number | null
           city?: string | null
+          converted_at?: string | null
+          converted_to_customer_id?: string | null
           created_at?: string
           custom_fields?: Json | null
           customer_id?: string | null
@@ -853,6 +869,7 @@ export type Database = {
           id?: string
           job_number?: string | null
           job_status?: Database["public"]["Enums"]["job_status"] | null
+          lead_id?: string | null
           name: string
           notes?: string | null
           opportunity_id?: string | null
@@ -876,6 +893,8 @@ export type Database = {
           adjusted_budget_amount?: number | null
           budget_amount?: number | null
           city?: string | null
+          converted_at?: string | null
+          converted_to_customer_id?: string | null
           created_at?: string
           custom_fields?: Json | null
           customer_id?: string | null
@@ -884,6 +903,7 @@ export type Database = {
           id?: string
           job_number?: string | null
           job_status?: Database["public"]["Enums"]["job_status"] | null
+          lead_id?: string | null
           name?: string
           notes?: string | null
           opportunity_id?: string | null
@@ -901,10 +921,24 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "jobs_converted_to_customer_id_fkey"
+            columns: ["converted_to_customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "jobs_customer_id_fkey"
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "jobs_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
             referencedColumns: ["id"]
           },
         ]
@@ -967,6 +1001,8 @@ export type Database = {
           address: string | null
           city: string | null
           company: string | null
+          converted_at: string | null
+          converted_to_job_id: string | null
           created_at: string
           email: string | null
           id: string
@@ -987,6 +1023,8 @@ export type Database = {
           address?: string | null
           city?: string | null
           company?: string | null
+          converted_at?: string | null
+          converted_to_job_id?: string | null
           created_at?: string
           email?: string | null
           id?: string
@@ -1007,6 +1045,8 @@ export type Database = {
           address?: string | null
           city?: string | null
           company?: string | null
+          converted_at?: string | null
+          converted_to_job_id?: string | null
           created_at?: string
           email?: string | null
           id?: string
@@ -1024,6 +1064,13 @@ export type Database = {
           zip_code?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "leads_converted_to_job_id_fkey"
+            columns: ["converted_to_job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "leads_source_id_fkey"
             columns: ["source_id"]

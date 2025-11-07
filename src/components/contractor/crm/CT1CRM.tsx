@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { 
   LayoutDashboard, 
   ClipboardList, 
-  Target, 
   Briefcase, 
   Users, 
   Phone, 
@@ -18,7 +17,6 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
 import CRMDashboard from './sections/CRMDashboard';
 import LeadsSection from './sections/LeadsSection';
-import OpportunitiesSection from './sections/OpportunitiesSection';
 import JobsSection from './sections/JobsSection';
 import CustomersSection from './sections/CustomersSection';
 import CallsSection from './sections/CallsSection';
@@ -27,12 +25,11 @@ import EmailsSection from './sections/EmailsSection';
 import EstimatesSection from './sections/EstimatesSection';
 import ct1Logo from '@/assets/ct1-logo-main.png';
 
-type Section = 'dashboard' | 'leads' | 'opportunities' | 'jobs' | 'customers' | 'calls' | 'calendar' | 'emails' | 'estimates';
+type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calendar' | 'emails' | 'estimates';
 
 const navItems = [
   { id: 'dashboard' as Section, label: 'Dashboard', icon: LayoutDashboard },
   { id: 'leads' as Section, label: 'Leads', icon: ClipboardList },
-  { id: 'opportunities' as Section, label: 'Opportunities', icon: Target },
   { id: 'jobs' as Section, label: 'Jobs', icon: Briefcase },
   { id: 'customers' as Section, label: 'Customers', icon: Users },
   { id: 'estimates' as Section, label: 'Estimates', icon: FileText },
@@ -67,9 +64,7 @@ export default function CT1CRM() {
       case 'dashboard':
         return <CRMDashboard />;
       case 'leads':
-        return <LeadsSection />;
-      case 'opportunities':
-        return <OpportunitiesSection />;
+        return <LeadsSection onSectionChange={handleSectionChange} />;
       case 'jobs':
         return <JobsSection />;
       case 'customers':
