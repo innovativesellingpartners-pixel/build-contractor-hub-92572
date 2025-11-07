@@ -2185,6 +2185,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_get_stats: {
+        Args: never
+        Returns: {
+          total_courses: number
+          total_customers: number
+          total_jobs: number
+          total_leads: number
+          total_roles: number
+          total_services: number
+          total_users: number
+        }[]
+      }
       generate_estimate_number: { Args: never; Returns: string }
       generate_invoice_number: { Args: never; Returns: string }
       generate_job_number: { Args: never; Returns: string }

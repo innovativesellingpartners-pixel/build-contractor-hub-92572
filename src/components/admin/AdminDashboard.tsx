@@ -11,32 +11,29 @@ export const AdminDashboard = () => {
     queryKey: ['adminStats', user?.id],
     enabled: !!user?.id,
     queryFn: async () => {
-      const [
-        usersResult,
-        coursesResult,
-        servicesResult,
-        profilesResult,
-        leadsResult,
-        jobsResult,
-        customersResult,
-      ] = await Promise.all([
-        supabase.from('user_roles').select('id', { count: 'exact' }).limit(1),
-        supabase.from('training_courses').select('id', { count: 'exact' }).limit(1),
-        supabase.from('marketplace_services').select('id', { count: 'exact' }).limit(1),
-        supabase.from('profiles').select('id', { count: 'exact' }).limit(1),
-        supabase.from('leads').select('id', { count: 'exact' }).limit(1),
-        supabase.from('jobs').select('id', { count: 'exact' }).limit(1),
-        supabase.from('customers').select('id', { count: 'exact' }).limit(1)
-      ]);
+      const { data, error } = await supabase.rpc('admin_get_stats').single();
+
+      if (error) {
+        console.error('Admin stats error:', error);
+        return {
+          totalUsers: 0,
+          totalCourses: 0,
+          totalServices: 0,
+          totalRoles: 0,
+          totalLeads: 0,
+          totalJobs: 0,
+          totalCustomers: 0,
+        };
+      }
 
       return {
-        totalUsers: profilesResult.count || 0,
-        totalCourses: coursesResult.count || 0,
-        totalServices: servicesResult.count || 0,
-        totalRoles: usersResult.count || 0,
-        totalLeads: leadsResult.count || 0,
-        totalJobs: jobsResult.count || 0,
-        totalCustomers: customersResult.count || 0,
+        totalUsers: data?.total_users ?? 0,
+        totalCourses: data?.total_courses ?? 0,
+        totalServices: data?.total_services ?? 0,
+        totalRoles: data?.total_roles ?? 0,
+        totalLeads: data?.total_leads ?? 0,
+        totalJobs: data?.total_jobs ?? 0,
+        totalCustomers: data?.total_customers ?? 0,
       };
     },
   });
