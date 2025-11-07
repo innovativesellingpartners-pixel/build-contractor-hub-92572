@@ -49,6 +49,7 @@ import Platform from "./pages/Platform";
 import ForConsumers from "./pages/ForConsumers";
 import { CRMDashboard } from "@/pages/CRMDashboard";
 import PublicEstimate from "./pages/PublicEstimate";
+import Reporting from "./pages/Reporting";
 
 const queryClient = new QueryClient();
 
@@ -100,6 +101,11 @@ const App = () => (
             <Route path="/crm" element={
               <ProtectedRoute>
                 <CRMDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/reporting" element={
+              <ProtectedRoute>
+                <Reporting />
               </ProtectedRoute>
             } />
             <Route path="/dashboard/marketplace" element={
