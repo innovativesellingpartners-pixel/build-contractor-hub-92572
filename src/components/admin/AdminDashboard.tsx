@@ -1,21 +1,32 @@
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, BookOpen, ShoppingCart, Activity, ClipboardList, Briefcase, UserCheck } from 'lucide-react';
 
 export const AdminDashboard = () => {
+  const { user } = useAuth();
   const { data: stats, isLoading } = useQuery({
-    queryKey: ['adminStats'],
+    queryKey: ['adminStats', user?.id],
+    enabled: !!user?.id,
     queryFn: async () => {
-      const [usersResult, coursesResult, servicesResult, profilesResult, leadsResult, jobsResult, customersResult] = await Promise.all([
-        supabase.from('user_roles').select('id', { count: 'exact' }),
-        supabase.from('training_courses').select('id', { count: 'exact' }),
-        supabase.from('marketplace_services').select('id', { count: 'exact' }),
-        supabase.from('profiles').select('id', { count: 'exact' }),
-        supabase.from('leads').select('id', { count: 'exact' }),
-        supabase.from('jobs').select('id', { count: 'exact' }),
-        supabase.from('customers').select('id', { count: 'exact' })
+      const [
+        usersResult,
+        coursesResult,
+        servicesResult,
+        profilesResult,
+        leadsResult,
+        jobsResult,
+        customersResult,
+      ] = await Promise.all([
+        supabase.from('user_roles').select('id', { count: 'exact', head: true }),
+        supabase.from('training_courses').select('id', { count: 'exact', head: true }),
+        supabase.from('marketplace_services').select('id', { count: 'exact', head: true }),
+        supabase.from('profiles').select('id', { count: 'exact', head: true }),
+        supabase.from('leads').select('id', { count: 'exact', head: true }),
+        supabase.from('jobs').select('id', { count: 'exact', head: true }),
+        supabase.from('customers').select('id', { count: 'exact', head: true })
       ]);
 
       return {
