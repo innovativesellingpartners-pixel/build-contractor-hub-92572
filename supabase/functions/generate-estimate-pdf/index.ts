@@ -2,7 +2,6 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 import { PDFDocument, rgb, StandardFonts } from "https://esm.sh/pdf-lib@1.17.1";
 
-
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -56,23 +55,29 @@ const handler = async (req: Request): Promise<Response> => {
     const appUrl = Deno.env.get("APP_URL") || "https://yourapp.lovable.app";
     const publicUrl = `${appUrl}/estimate/${estimate.public_token}`;
 
-    // Build PDF with pdf-lib (Edge-compatible)
+    // Build PDF with pdf-lib
     const pdfDoc = await PDFDocument.create();
-    const page = pdfDoc.addPage([612, 792]); // US Letter portrait
+    const page = pdfDoc.addPage([612, 792]); // US Letter
     const { height, width } = page.getSize();
 
-    const margin = 40;
+    const margin = 50;
     let cursorY = height - margin;
 
     // Fonts
     const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
     const fontReg = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
-    // Header bar with gradient simulation
-    page.drawRectangle({ x: 0, y: height - 100, width, height: 100, color: rgb(0.88, 0.14, 0.14) });
-    page.drawRectangle({ x: 0, y: height - 100, width, height: 3, color: rgb(0.96, 0.24, 0.24) });
+    // ===== HEADER SECTION =====
+    // Company Name (Left)
+    page.drawText(companyName.substring(0, 35), {
+      x: margin,
+      y: cursorY,
+      size: 18,
+      font: fontBold,
+      color: rgb(0.1, 0.1, 0.1),
+    });
 
-    // Logo (if available) - positioned on right side
+    // Logo (Right, if available)
     if (logoUrl) {
       try {
         const res = await fetch(logoUrl);
@@ -81,235 +86,496 @@ const handler = async (req: Request): Promise<Response> => {
         const isPng = logoUrl.toLowerCase().endsWith(".png");
         if (isPng) img = await pdfDoc.embedPng(buf);
         else img = await pdfDoc.embedJpg(buf);
-        const imgDims = img.scale(50 / img.height);
+        const imgDims = img.scale(40 / img.height);
         page.drawImage(img, {
           x: width - margin - imgDims.width,
-          y: height - 75,
+          y: cursorY - 5,
           width: imgDims.width,
           height: imgDims.height,
         });
-      } catch (_) {
-        // ignore logo errors
+      } catch (e) {
+        console.log("Logo load error:", e);
       }
     }
 
-    // Company name - left side
-    page.drawText(companyName, {
+    cursorY -= 15;
+    if (address) {
+      page.drawText(address.substring(0, 60), {
+        x: margin,
+        y: cursorY,
+        size: 9,
+        font: fontReg,
+        color: rgb(0.4, 0.4, 0.4),
+      });
+    }
+    cursorY -= 30;
+
+    // ===== ESTIMATE TITLE & STATUS =====
+    // Title with status badge
+    page.drawText("ESTIMATE", {
       x: margin,
-      y: height - 65,
-      size: 20,
+      y: cursorY,
+      size: 24,
       font: fontBold,
-      color: rgb(1, 1, 1),
+      color: rgb(0.1, 0.1, 0.1),
     });
 
-    // Title and meta - start lower to avoid overlap
-    cursorY = height - 145;
-    page.drawText("PROFESSIONAL ESTIMATE", { x: margin, y: cursorY, size: 26, font: fontBold, color: rgb(0.88, 0.14, 0.14) });
-    cursorY -= 20;
-    if (estimate.estimate_number) {
-      page.drawText(`#${estimate.estimate_number}`, { x: margin, y: cursorY, size: 11, font: fontReg, color: rgb(0.38, 0.38, 0.38) });
+    // Status badge
+    const statusText = estimate.status === "draft" ? "Draft" : estimate.status === "sent" ? "Sent" : "Unpaid";
+    const badgeX = margin + 140;
+    const badgeY = cursorY - 2;
+    const badgeW = 70;
+    const badgeH = 22;
+    page.drawRectangle({
+      x: badgeX,
+      y: badgeY,
+      width: badgeW,
+      height: badgeH,
+      color: rgb(0.95, 0.95, 0.95),
+      borderColor: rgb(0.7, 0.7, 0.7),
+      borderWidth: 1,
+    });
+    page.drawText(statusText, {
+      x: badgeX + 12,
+      y: badgeY + 6,
+      size: 10,
+      font: fontBold,
+      color: rgb(0.3, 0.3, 0.3),
+    });
+
+    cursorY -= 40;
+
+    // ===== LEFT COLUMN: PRESENTED TO =====
+    const leftColX = margin;
+    const rightColX = width / 2 + 20;
+
+    page.drawText("Presented to:", {
+      x: leftColX,
+      y: cursorY,
+      size: 11,
+      font: fontBold,
+      color: rgb(0.1, 0.1, 0.1),
+    });
+    cursorY -= 18;
+
+    if (estimate.client_name) {
+      page.drawText(estimate.client_name.substring(0, 35), {
+        x: leftColX,
+        y: cursorY,
+        size: 12,
+        font: fontBold,
+        color: rgb(0.1, 0.1, 0.1),
+      });
       cursorY -= 16;
     }
-    const issueDate = new Date(estimate.created_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
-    page.drawText(`Issue Date: ${issueDate}`, { x: margin, y: cursorY, size: 10, font: fontReg, color: rgb(0.38, 0.38, 0.38) });
-    cursorY -= 15;
-    if (estimate.valid_until) {
-      const valid = new Date(estimate.valid_until).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
-      page.drawText(`Valid Until: ${valid}`, { x: margin, y: cursorY, size: 10, font: fontReg, color: rgb(0.38, 0.38, 0.38) });
-      cursorY -= 15;
-    }
 
-    // Company contact box (right) with modern styling - positioned to not overlap
-    const rightBoxX = width - margin - 220;
-    const rightBoxY = cursorY - 100;
-    
-    // Shadow
-    page.drawRectangle({ x: rightBoxX + 3, y: rightBoxY - 3, width: 220, height: 85, color: rgb(0.92, 0.92, 0.92) });
-    
-    // Main box
-    page.drawRectangle({ x: rightBoxX, y: rightBoxY, width: 220, height: 85, borderColor: rgb(0.88, 0.14, 0.14), borderWidth: 1.5, color: rgb(0.99, 0.97, 0.97) });
-    
-    // Top accent bar
-    page.drawRectangle({ x: rightBoxX, y: rightBoxY + 85 - 4, width: 220, height: 4, color: rgb(0.88, 0.14, 0.14) });
-    
-    page.drawText("PREPARED BY", { x: rightBoxX + 10, y: rightBoxY + 64, size: 8, font: fontBold, color: rgb(0.88, 0.14, 0.14) });
-    page.drawText(companyName.substring(0, 25), { x: rightBoxX + 10, y: rightBoxY + 48, size: 12, font: fontBold, color: rgb(0.12, 0.12, 0.12) });
-    if (address) page.drawText(address.substring(0, 32), { x: rightBoxX + 10, y: rightBoxY + 32, size: 8, font: fontReg, color: rgb(0.35, 0.35, 0.35) });
-    if (phone) page.drawText(phone, { x: rightBoxX + 10, y: rightBoxY + 18, size: 9, font: fontBold, color: rgb(0.15, 0.15, 0.15) });
-
-    // Update cursorY to be below the right box
-    cursorY = rightBoxY - 15;
-    
-    // Client info box - with proper spacing
-    const clientBoxHeight = 75;
-    const clientBoxY = cursorY - clientBoxHeight;
-    page.drawRectangle({ x: margin - 5, y: clientBoxY, width: 320, height: clientBoxHeight, color: rgb(0.98, 0.98, 0.99), borderWidth: 1, borderColor: rgb(0.9, 0.9, 0.92) });
-    
-    page.drawText("PREPARED FOR", { x: margin, y: cursorY, size: 9, font: fontBold, color: rgb(0.88, 0.14, 0.14) });
-    cursorY -= 16;
-    
-    if (estimate.client_name) {
-      page.drawText(estimate.client_name.substring(0, 40), { x: margin, y: cursorY, size: 13, font: fontBold, color: rgb(0.1, 0.1, 0.1) });
-      cursorY -= 14;
-    }
+    // Client contact
+    let leftCursorY = cursorY;
     if (estimate.client_email) {
-      page.drawText(estimate.client_email.substring(0, 45), { x: margin, y: cursorY, size: 9, font: fontReg, color: rgb(0.3, 0.3, 0.3) });
-      cursorY -= 13;
+      page.drawText(`E: ${estimate.client_email.substring(0, 30)}`, {
+        x: leftColX,
+        y: leftCursorY,
+        size: 9,
+        font: fontReg,
+        color: rgb(0.3, 0.3, 0.3),
+      });
+      leftCursorY -= 14;
     }
-    if (estimate.client_address) { 
-      page.drawText(estimate.client_address.substring(0, 50), { x: margin, y: cursorY, size: 9, font: fontReg, color: rgb(0.3, 0.3, 0.3) }); 
-      cursorY -= 13; 
+    if (estimate.client_address) {
+      page.drawText(estimate.client_address.substring(0, 35), {
+        x: leftColX,
+        y: leftCursorY,
+        size: 9,
+        font: fontReg,
+        color: rgb(0.3, 0.3, 0.3),
+      });
+      leftCursorY -= 14;
     }
-    if (estimate.site_address) { 
-      page.drawText(`Site: ${estimate.site_address.substring(0, 45)}`, { x: margin, y: cursorY, size: 9, font: fontReg, color: rgb(0.88, 0.14, 0.14) }); 
-      cursorY -= 18; 
+    if (estimate.site_address) {
+      page.drawText(`Site: ${estimate.site_address.substring(0, 30)}`, {
+        x: leftColX,
+        y: leftCursorY,
+        size: 9,
+        font: fontReg,
+        color: rgb(0.3, 0.3, 0.3),
+      });
+      leftCursorY -= 20;
     }
-    
-    // Move cursor below client box
-    cursorY = clientBoxY - 10;
 
-    // Project description with modern styling
-    if (estimate.project_description) {
-      cursorY -= 5;
-      
-      // Description box
-      const descHeight = Math.min(Math.ceil(String(estimate.project_description).length / 95) * 12 + 30, 100);
-      page.drawRectangle({ x: margin - 5, y: cursorY - descHeight + 5, width: width - margin * 2 + 10, height: descHeight, color: rgb(0.99, 0.97, 0.97), borderWidth: 1, borderColor: rgb(0.88, 0.14, 0.14) });
-      
-      page.drawText("PROJECT DETAILS", { x: margin, y: cursorY, size: 10, font: fontBold, color: rgb(0.88, 0.14, 0.14) });
-      cursorY -= 18;
-      
+    // ===== RIGHT COLUMN: ESTIMATE INFO =====
+    let rightCursorY = cursorY + 18;
+    
+    if (estimate.estimate_number) {
+      page.drawText("Estimate #", {
+        x: rightColX,
+        y: rightCursorY,
+        size: 9,
+        font: fontReg,
+        color: rgb(0.4, 0.4, 0.4),
+      });
+      page.drawText(estimate.estimate_number, {
+        x: rightColX + 80,
+        y: rightCursorY,
+        size: 10,
+        font: fontBold,
+        color: rgb(0.1, 0.1, 0.1),
+      });
+      rightCursorY -= 16;
+    }
+
+    const issueDate = new Date(estimate.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    page.drawText("Issue Date", {
+      x: rightColX,
+      y: rightCursorY,
+      size: 9,
+      font: fontReg,
+      color: rgb(0.4, 0.4, 0.4),
+    });
+    page.drawText(issueDate, {
+      x: rightColX + 80,
+      y: rightCursorY,
+      size: 10,
+      font: fontBold,
+      color: rgb(0.1, 0.1, 0.1),
+    });
+    rightCursorY -= 16;
+
+    if (estimate.valid_until) {
+      const validDate = new Date(estimate.valid_until).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+      page.drawText("Valid Until", {
+        x: rightColX,
+        y: rightCursorY,
+        size: 9,
+        font: fontReg,
+        color: rgb(0.4, 0.4, 0.4),
+      });
+      page.drawText(validDate, {
+        x: rightColX + 80,
+        y: rightCursorY,
+        size: 10,
+        font: fontBold,
+        color: rgb(0.1, 0.1, 0.1),
+      });
+      rightCursorY -= 16;
+    }
+
+    // Set cursorY to the lower of the two columns
+    cursorY = Math.min(leftCursorY, rightCursorY) - 20;
+
+    // ===== PROJECT DESCRIPTION =====
+    if (estimate.project_description && estimate.project_description.trim()) {
+      page.drawText("Project Description:", {
+        x: margin,
+        y: cursorY,
+        size: 11,
+        font: fontBold,
+        color: rgb(0.1, 0.1, 0.1),
+      });
+      cursorY -= 16;
+
       const desc = String(estimate.project_description);
-      page.drawText(desc.slice(0, 1500), { x: margin, y: cursorY, size: 9, font: fontReg, color: rgb(0.2, 0.2, 0.2), lineHeight: 12, maxWidth: width - margin * 2 });
-      cursorY -= descHeight - 15;
+      const descLines = [];
+      const maxCharsPerLine = 85;
+      for (let i = 0; i < desc.length; i += maxCharsPerLine) {
+        descLines.push(desc.substring(i, i + maxCharsPerLine));
+      }
+
+      for (const line of descLines.slice(0, 3)) {
+        page.drawText(line, {
+          x: margin,
+          y: cursorY,
+          size: 9,
+          font: fontReg,
+          color: rgb(0.3, 0.3, 0.3),
+        });
+        cursorY -= 12;
+      }
+      cursorY -= 10;
     }
 
-    // Line items table header with modern design
-    cursorY -= 15;
+    // ===== LINE ITEMS TABLE =====
     const tableX = margin;
-    const colQtyX = width - margin - 160;
-    const colPriceX = width - margin - 60;
     const tableWidth = width - margin * 2;
+    const colDescWidth = tableWidth - 140;
+    const colQtyX = tableX + colDescWidth + 10;
+    const colQtyWidth = 60;
+    const colPriceX = colQtyX + colQtyWidth + 10;
+    const colPriceWidth = 60;
 
-    // Header with gradient
-    page.drawRectangle({ x: tableX, y: cursorY - 26, width: tableWidth, height: 28, color: rgb(0.88, 0.14, 0.14) });
-    page.drawRectangle({ x: tableX, y: cursorY - 26, width: tableWidth, height: 2, color: rgb(0.96, 0.24, 0.24) });
-    
-    page.drawText("DESCRIPTION", { x: tableX + 12, y: cursorY - 8, size: 10, font: fontBold, color: rgb(1, 1, 1) });
-    page.drawText("QTY", { x: colQtyX + 12, y: cursorY - 8, size: 10, font: fontBold, color: rgb(1, 1, 1) });
-    page.drawText("AMOUNT", { x: colPriceX + 8, y: cursorY - 8, size: 10, font: fontBold, color: rgb(1, 1, 1) });
-    cursorY -= 34;
+    // Table header
+    const headerY = cursorY;
+    page.drawRectangle({
+      x: tableX,
+      y: headerY - 20,
+      width: tableWidth,
+      height: 20,
+      color: rgb(0.95, 0.95, 0.95),
+      borderColor: rgb(0.7, 0.7, 0.7),
+      borderWidth: 1,
+    });
 
+    page.drawText("DESCRIPTION", {
+      x: tableX + 8,
+      y: headerY - 14,
+      size: 9,
+      font: fontBold,
+      color: rgb(0.1, 0.1, 0.1),
+    });
+    page.drawText("QTY", {
+      x: colQtyX + 8,
+      y: headerY - 14,
+      size: 9,
+      font: fontBold,
+      color: rgb(0.1, 0.1, 0.1),
+    });
+    page.drawText("PRICE", {
+      x: colPriceX + 8,
+      y: headerY - 14,
+      size: 9,
+      font: fontBold,
+      color: rgb(0.1, 0.1, 0.1),
+    });
+
+    cursorY = headerY - 20;
+
+    // Table rows
     const lineItems = (estimate.line_items || []).filter((li: any) => li?.included !== false);
-    let rowIndex = 0;
     for (const item of lineItems) {
-      // Alternating row colors
-      const rowColor = rowIndex % 2 === 0 ? rgb(1, 1, 1) : rgb(0.98, 0.98, 0.99);
-      page.drawRectangle({ x: tableX, y: cursorY - 2, width: tableWidth, height: 20, color: rowColor });
-      
-      const desc = `${item.item_description || "Item"}`;
-      page.drawText(desc.slice(0, 70), { x: tableX + 12, y: cursorY + 2, size: 10, font: fontReg, color: rgb(0.15, 0.15, 0.15) });
-      page.drawText(String(item.quantity ?? ""), { x: colQtyX + 12, y: cursorY + 2, size: 10, font: fontReg, color: rgb(0.15, 0.15, 0.15) });
-      page.drawText(formatCurrency(item.line_total ?? (item.unit_cost || 0) * (item.quantity || 0)), { x: colPriceX + 8, y: cursorY + 2, size: 11, font: fontBold, color: rgb(0.88, 0.14, 0.14) });
-      
-      cursorY -= 20;
-      rowIndex++;
-      
-      if (cursorY < 140) {
-        // New page if needed
-        const p = pdfDoc.addPage([612, 792]);
+      cursorY -= 18;
+
+      // Row border
+      page.drawLine({
+        start: { x: tableX, y: cursorY },
+        end: { x: tableX + tableWidth, y: cursorY },
+        thickness: 0.5,
+        color: rgb(0.85, 0.85, 0.85),
+      });
+
+      const desc = String(item.item_description || "Item").substring(0, 60);
+      page.drawText(desc, {
+        x: tableX + 8,
+        y: cursorY + 4,
+        size: 9,
+        font: fontReg,
+        color: rgb(0.2, 0.2, 0.2),
+      });
+
+      page.drawText(String(item.quantity || ""), {
+        x: colQtyX + 8,
+        y: cursorY + 4,
+        size: 9,
+        font: fontReg,
+        color: rgb(0.2, 0.2, 0.2),
+      });
+
+      const lineTotal = item.line_total ?? (item.unit_cost || 0) * (item.quantity || 0);
+      page.drawText(formatCurrency(lineTotal), {
+        x: colPriceX + 8,
+        y: cursorY + 4,
+        size: 9,
+        font: fontReg,
+        color: rgb(0.2, 0.2, 0.2),
+      });
+
+      if (cursorY < 150) {
+        // Add new page if needed
+        const newPage = pdfDoc.addPage([612, 792]);
         cursorY = 792 - margin;
       }
     }
 
-    // Totals section with modern design - hide profit markup details
-    cursorY -= 20;
-    const boxW = 280;
-    const boxH = 70;
-    const boxX = width - margin - boxW;
-    const boxY = Math.max(cursorY - boxH - 10, 120);
-    
-    // Subtle shadow effect
-    page.drawRectangle({ x: boxX + 3, y: boxY - 3, width: boxW, height: boxH, color: rgb(0.92, 0.92, 0.92) });
-    page.drawRectangle({ x: boxX, y: boxY, width: boxW, height: boxH, borderWidth: 1, borderColor: rgb(0.88, 0.88, 0.88), color: rgb(1, 1, 1) });
+    // Bottom border of table
+    page.drawLine({
+      start: { x: tableX, y: cursorY },
+      end: { x: tableX + tableWidth, y: cursorY },
+      thickness: 1,
+      color: rgb(0.7, 0.7, 0.7),
+    });
 
-    // Subtotal row (only if we have line items detail)
-    let ty = boxY + boxH - 24;
+    // Left and right borders
+    page.drawLine({
+      start: { x: tableX, y: headerY - 20 },
+      end: { x: tableX, y: cursorY },
+      thickness: 1,
+      color: rgb(0.7, 0.7, 0.7),
+    });
+    page.drawLine({
+      start: { x: tableX + tableWidth, y: headerY - 20 },
+      end: { x: tableX + tableWidth, y: cursorY },
+      thickness: 1,
+      color: rgb(0.7, 0.7, 0.7),
+    });
+
+    cursorY -= 30;
+
+    // ===== TOTALS BOX =====
+    const totalsBoxX = width - margin - 200;
+    const totalsBoxY = cursorY - 60;
+    const totalsBoxW = 200;
+    const totalsBoxH = 60;
+
+    page.drawRectangle({
+      x: totalsBoxX,
+      y: totalsBoxY,
+      width: totalsBoxW,
+      height: totalsBoxH,
+      borderColor: rgb(0.7, 0.7, 0.7),
+      borderWidth: 1,
+    });
+
+    let totalsY = totalsBoxY + totalsBoxH - 20;
     const cs = estimate.cost_summary || {};
-    if (cs.subtotal && (cs.tax_and_fees && cs.tax_and_fees > 0)) {
-      page.drawText("Subtotal", { x: boxX + 18, y: ty, size: 11, font: fontReg, color: rgb(0.35, 0.35, 0.35) });
-      page.drawText(formatCurrency(cs.subtotal + (cs.profit_markup_amount || 0)), { x: boxX + boxW - 18 - 70, y: ty, size: 11, font: fontBold, color: rgb(0.15, 0.15, 0.15) });
-      ty -= 20;
-      
-      // Tax & Fees row
-      page.drawText("Tax & Fees", { x: boxX + 18, y: ty, size: 11, font: fontReg, color: rgb(0.35, 0.35, 0.35) });
-      page.drawText(formatCurrency(cs.tax_and_fees), { x: boxX + boxW - 18 - 70, y: ty, size: 11, font: fontBold, color: rgb(0.15, 0.15, 0.15) });
-      ty -= 4;
+
+    // Subtotal
+    if (cs.subtotal && cs.tax_and_fees && cs.tax_and_fees > 0) {
+      page.drawText("Subtotal", {
+        x: totalsBoxX + 12,
+        y: totalsY,
+        size: 10,
+        font: fontReg,
+        color: rgb(0.3, 0.3, 0.3),
+      });
+      page.drawText(formatCurrency(cs.subtotal + (cs.profit_markup_amount || 0)), {
+        x: totalsBoxX + totalsBoxW - 80,
+        y: totalsY,
+        size: 10,
+        font: fontReg,
+        color: rgb(0.1, 0.1, 0.1),
+      });
+      totalsY -= 16;
+
+      // Tax & Fees
+      page.drawText("Taxes", {
+        x: totalsBoxX + 12,
+        y: totalsY,
+        size: 10,
+        font: fontReg,
+        color: rgb(0.3, 0.3, 0.3),
+      });
+      page.drawText(formatCurrency(cs.tax_and_fees), {
+        x: totalsBoxX + totalsBoxW - 80,
+        y: totalsY,
+        size: 10,
+        font: fontReg,
+        color: rgb(0.1, 0.1, 0.1),
+      });
+      totalsY -= 6;
     }
 
     // Divider line
     page.drawLine({
-      start: { x: boxX + 14, y: boxY + 32 },
-      end: { x: boxX + boxW - 14, y: boxY + 32 },
+      start: { x: totalsBoxX + 10, y: totalsY },
+      end: { x: totalsBoxX + totalsBoxW - 10, y: totalsY },
       thickness: 1,
-      color: rgb(0.88, 0.14, 0.14),
+      color: rgb(0.7, 0.7, 0.7),
+    });
+    totalsY -= 12;
+
+    // Total
+    page.drawText("Total", {
+      x: totalsBoxX + 12,
+      y: totalsY,
+      size: 12,
+      font: fontBold,
+      color: rgb(0.1, 0.1, 0.1),
+    });
+    page.drawText(formatCurrency(estimate.total_amount || 0), {
+      x: totalsBoxX + totalsBoxW - 90,
+      y: totalsY,
+      size: 14,
+      font: fontBold,
+      color: rgb(0.1, 0.1, 0.1),
     });
 
-    // Grand total
-    page.drawText("TOTAL INVESTMENT", { x: boxX + 18, y: boxY + 14, size: 10, font: fontBold, color: rgb(0.88, 0.14, 0.14) });
-    page.drawText(formatCurrency(estimate.total_amount || 0), { x: boxX + boxW - 18 - 90, y: boxY + 12, size: 20, font: fontBold, color: rgb(0.1, 0.1, 0.1) });
+    cursorY = totalsBoxY - 30;
 
-    // Payment CTA button
+    // ===== PAYMENT BUTTON =====
     if (includePaymentLink) {
-      const ctaY = boxY - 60;
-      const buttonW = 240;
-      const buttonH = 38;
+      const buttonW = 220;
+      const buttonH = 36;
       const buttonX = (width - buttonW) / 2;
-      
-      // Button shadow
-      page.drawRectangle({ x: buttonX + 2, y: ctaY - buttonH - 2, width: buttonW, height: buttonH, color: rgb(0.85, 0.85, 0.85) });
-      
-      // Button background
-      page.drawRectangle({ x: buttonX, y: ctaY - buttonH, width: buttonW, height: buttonH, color: rgb(0.88, 0.14, 0.14) });
-      
-      // Button text
-      page.drawText("VIEW & ACCEPT ESTIMATE", { 
-        x: buttonX + 28, 
-        y: ctaY - buttonH / 2 - 5, 
-        size: 13, 
-        font: fontBold, 
-        color: rgb(1, 1, 1) 
-      });
-      
-      // URL below button (smaller, muted)
-      page.drawText("Secure payment link:", { x: buttonX, y: ctaY - buttonH - 20, size: 9, font: fontReg, color: rgb(0.5, 0.5, 0.5) });
-      const urlText = publicUrl.length > 60 ? publicUrl.substring(0, 57) + "..." : publicUrl;
-      page.drawText(urlText, { x: buttonX, y: ctaY - buttonH - 32, size: 8, font: fontReg, color: rgb(0.16, 0.4, 0.9) });
-    }
+      const buttonY = cursorY - buttonH;
 
-    // Notes with modern styling
-    if (estimate.assumptions_and_exclusions) {
-      const notesY = 70;
-      
-      // Notes box
-      page.drawRectangle({ x: margin - 4, y: notesY - 10, width: width - margin * 2 + 8, height: 60, color: rgb(0.99, 0.97, 0.95), borderWidth: 1, borderColor: rgb(0.9, 0.85, 0.8) });
-      
-      page.drawText("TERMS & CONDITIONS", { x: margin, y: notesY + 38, size: 10, font: fontBold, color: rgb(0.88, 0.14, 0.14) });
-      page.drawText(String(estimate.assumptions_and_exclusions).slice(0, 1200), {
+      // Button with border
+      page.drawRectangle({
+        x: buttonX,
+        y: buttonY,
+        width: buttonW,
+        height: buttonH,
+        color: rgb(0.2, 0.4, 0.8),
+        borderColor: rgb(0.15, 0.3, 0.7),
+        borderWidth: 2,
+      });
+
+      page.drawText("VIEW & ACCEPT ESTIMATE", {
+        x: buttonX + 20,
+        y: buttonY + buttonH / 2 - 6,
+        size: 12,
+        font: fontBold,
+        color: rgb(1, 1, 1),
+      });
+
+      cursorY = buttonY - 20;
+
+      // URL text
+      const urlText = publicUrl.length > 65 ? publicUrl.substring(0, 62) + "..." : publicUrl;
+      page.drawText(urlText, {
         x: margin,
-        y: notesY + 20,
+        y: cursorY,
         size: 8,
         font: fontReg,
-        color: rgb(0.3, 0.3, 0.3),
-        lineHeight: 10,
-        maxWidth: width - margin * 2,
+        color: rgb(0.4, 0.4, 0.8),
+      });
+
+      cursorY -= 25;
+    }
+
+    // ===== TERMS & CONDITIONS =====
+    if (estimate.assumptions_and_exclusions && estimate.assumptions_and_exclusions.trim()) {
+      page.drawText("Terms & Conditions:", {
+        x: margin,
+        y: cursorY,
+        size: 10,
+        font: fontBold,
+        color: rgb(0.1, 0.1, 0.1),
+      });
+      cursorY -= 14;
+
+      const terms = String(estimate.assumptions_and_exclusions);
+      const termLines = [];
+      const maxCharsPerLine = 90;
+      for (let i = 0; i < terms.length && termLines.length < 4; i += maxCharsPerLine) {
+        termLines.push(terms.substring(i, i + maxCharsPerLine));
+      }
+
+      for (const line of termLines) {
+        page.drawText(line, {
+          x: margin,
+          y: cursorY,
+          size: 8,
+          font: fontReg,
+          color: rgb(0.4, 0.4, 0.4),
+        });
+        cursorY -= 11;
+      }
+    }
+
+    // ===== FOOTER =====
+    if (phone) {
+      page.drawText(`Contact: ${phone}`, {
+        x: margin,
+        y: 30,
+        size: 8,
+        font: fontReg,
+        color: rgb(0.5, 0.5, 0.5),
       });
     }
 
     const pdfBytes = await pdfDoc.save();
-    // Safe base64 encoding without spread to avoid call stack overflow
+    
+    // Safe base64 encoding
     let binary = '';
-    const chunkSize = 0x8000; // 32KB
+    const chunkSize = 0x8000;
     for (let i = 0; i < pdfBytes.length; i += chunkSize) {
       const chunk = pdfBytes.subarray(i, i + chunkSize);
       let chunkStr = '';

@@ -113,8 +113,8 @@ const handler = async (req: Request): Promise<Response> => {
               .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
               .header { background: linear-gradient(135deg, #E02424 0%, #C01E1E 100%); padding: 40px 40px; }
               .header-content { display: table; width: 100%; }
-              .header-logo { display: table-cell; vertical-align: middle; width: 80px; padding-right: 20px; }
-              .header-logo img { max-width: 70px; height: auto; border-radius: 8px; display: block; }
+              .header-logo { display: table-cell; vertical-align: middle; width: 60px; padding-right: 20px; }
+              .header-logo img { max-width: 50px; height: auto; border-radius: 6px; display: block; }
               .header-text { display: table-cell; vertical-align: middle; }
               .header-title { color: #ffffff; font-size: 28px; font-weight: 900; margin: 0 0 8px 0; letter-spacing: -0.5px; }
               .header-subtitle { color: rgba(255, 255, 255, 0.95); font-size: 16px; margin: 0; font-weight: 500; }
