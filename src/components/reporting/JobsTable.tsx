@@ -46,18 +46,20 @@ export function JobsTable({ filters }: JobsTableProps) {
   const exportToCSV = () => {
     if (!jobs) return;
 
-    const headers = ["ID", "Date", "Customer", "Trade", "Status", "Contract", "Cost", "Profit", "Margin %"];
+    const headers = ["ID", "Date", "Customer", "Trade", "Status", "Budget", "Cost", "Profit", "Margin %"];
     const rows = jobs.map((j) => {
-      const profit = Number(j.paid_amount || 0) - Number(j.actual_cost || 0);
-      const margin = Number(j.paid_amount || 0) > 0 ? (profit / Number(j.paid_amount || 0)) * 100 : 0;
+      const budget = Number(j.budget_amount || 0);
+      const cost = Number(j.actual_cost || 0);
+      const profit = budget - cost;
+      const margin = budget > 0 ? (profit / budget) * 100 : 0;
       return [
         j.job_number || j.id.slice(0, 8),
         new Date(j.created_at).toLocaleDateString(),
-        j.client_name || "-",
+        "-",
         j.trade_type || "-",
         j.job_status,
-        j.contract_amount || 0,
-        j.actual_cost || 0,
+        budget,
+        cost,
         profit,
         margin.toFixed(1),
       ];
@@ -95,7 +97,7 @@ export function JobsTable({ filters }: JobsTableProps) {
               <TableHead>Customer</TableHead>
               <TableHead>Trade</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead className="text-right">Contract</TableHead>
+              <TableHead className="text-right">Budget</TableHead>
               <TableHead className="text-right">Cost</TableHead>
               <TableHead className="text-right">Profit</TableHead>
               <TableHead className="text-right">Margin</TableHead>
@@ -104,10 +106,10 @@ export function JobsTable({ filters }: JobsTableProps) {
           <TableBody>
             {jobs && jobs.length > 0 ? (
               jobs.map((job) => {
-                const profit = Number(job.paid_amount || 0) - Number(job.actual_cost || 0);
-                const margin = Number(job.paid_amount || 0) > 0 
-                  ? (profit / Number(job.paid_amount || 0)) * 100 
-                  : 0;
+                const budget = Number(job.budget_amount || 0);
+                const cost = Number(job.actual_cost || 0);
+                const profit = budget - cost;
+                const margin = budget > 0 ? (profit / budget) * 100 : 0;
 
                 return (
                   <TableRow key={job.id}>
@@ -117,7 +119,7 @@ export function JobsTable({ filters }: JobsTableProps) {
                     <TableCell>
                       {new Date(job.created_at).toLocaleDateString()}
                     </TableCell>
-                    <TableCell>{job.client_name || "-"}</TableCell>
+                    <TableCell>-</TableCell>
                     <TableCell>{job.trade_type || "-"}</TableCell>
                     <TableCell>
                       <Badge>{job.job_status}</Badge>
@@ -126,13 +128,13 @@ export function JobsTable({ filters }: JobsTableProps) {
                       {new Intl.NumberFormat("en-US", {
                         style: "currency",
                         currency: "USD",
-                      }).format(job.contract_amount || 0)}
+                      }).format(budget)}
                     </TableCell>
                     <TableCell className="text-right">
                       {new Intl.NumberFormat("en-US", {
                         style: "currency",
                         currency: "USD",
-                      }).format(job.actual_cost || 0)}
+                      }).format(cost)}
                     </TableCell>
                     <TableCell className="text-right">
                       {new Intl.NumberFormat("en-US", {

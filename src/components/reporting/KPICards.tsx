@@ -60,10 +60,10 @@ export function KPICards({ filters }: KPICardsProps) {
 
       const soldJobs = jobs?.filter((j) => j.job_status === "completed" || j.job_status === "in_progress") || [];
       const totalJobsSold = soldJobs.length;
-      const totalSoldValue = soldJobs.reduce((sum, j) => sum + (Number(j.contract_amount) || 0), 0);
+      const totalSoldValue = soldJobs.reduce((sum, j) => sum + (Number(j.budget_amount) || 0), 0);
       const conversionRate = totalEstimates > 0 ? (totalJobsSold / totalEstimates) * 100 : 0;
 
-      const totalRevenue = soldJobs.reduce((sum, j) => sum + (Number(j.paid_amount) || 0), 0);
+      const totalRevenue = totalSoldValue; // Using budget_amount as revenue proxy
       const totalCOGS = soldJobs.reduce(
         (sum, j) => sum + (Number(j.actual_cost) || 0),
         0
@@ -71,9 +71,8 @@ export function KPICards({ filters }: KPICardsProps) {
       const grossProfit = totalRevenue - totalCOGS;
       const profitMargin = totalRevenue > 0 ? (grossProfit / totalRevenue) * 100 : 0;
 
-      const jobsFullyPaid = soldJobs.filter(
-        (j) => Number(j.paid_amount) >= Number(j.contract_amount)
-      ).length;
+      // Payment tracking would need invoices table - simplify for now
+      const jobsFullyPaid = soldJobs.filter((j) => j.job_status === "completed").length;
       const jobsWithBalance = totalJobsSold - jobsFullyPaid;
 
       return {

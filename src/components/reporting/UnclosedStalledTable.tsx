@@ -41,7 +41,7 @@ export function UnclosedStalledTable({ filters }: UnclosedStalledTableProps) {
         .from("jobs")
         .select("*")
         .eq("user_id", user.id)
-        .in("job_status", ["on_hold", "cancelled", "lost"]);
+        .eq("job_status", "on_hold");
 
       if (filters.dateFrom) jobsQuery = jobsQuery.gte("created_at", filters.dateFrom);
       if (filters.dateTo) jobsQuery = jobsQuery.lte("created_at", filters.dateTo);
@@ -64,9 +64,9 @@ export function UnclosedStalledTable({ filters }: UnclosedStalledTableProps) {
         id: j.job_number || j.id.slice(0, 8),
         type: "Job",
         status: j.job_status,
-        value: j.contract_amount,
+        value: j.budget_amount,
         createdAt: j.created_at,
-        customer: j.client_name,
+        customer: "-",
       }));
 
       return [...estimateItems, ...jobItems].sort(

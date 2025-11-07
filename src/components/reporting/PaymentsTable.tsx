@@ -47,14 +47,14 @@ export function PaymentsTable({ filters }: PaymentsTableProps) {
   const exportToCSV = () => {
     if (!jobs) return;
 
-    const headers = ["Job ID", "Customer", "Contract Amount", "Paid Amount", "Balance", "Payment Status"];
+    const headers = ["Job ID", "Customer", "Budget Amount", "Status", "Balance", "Payment Status"];
     const rows = jobs.map((j) => [
       j.job_number || j.id.slice(0, 8),
-      j.client_name || "-",
-      j.contract_amount || 0,
-      j.paid_amount || 0,
-      Number(j.contract_amount || 0) - Number(j.paid_amount || 0),
-      Number(j.paid_amount || 0) >= Number(j.contract_amount || 0) ? "Paid" : "Outstanding",
+      "-",
+      j.budget_amount || 0,
+      j.job_status,
+      Number(j.budget_amount || 0),
+      j.job_status === "completed" ? "Completed" : "In Progress",
     ]);
 
     const csv = [headers, ...rows].map((row) => row.join(",")).join("\n");
@@ -82,45 +82,47 @@ export function PaymentsTable({ filters }: PaymentsTableProps) {
             <TableRow>
               <TableHead>Job ID</TableHead>
               <TableHead>Customer</TableHead>
-              <TableHead className="text-right">Contract Amount</TableHead>
-              <TableHead className="text-right">Paid Amount</TableHead>
-              <TableHead className="text-right">Balance</TableHead>
+              <TableHead className="text-right">Budget Amount</TableHead>
+              <TableHead className="text-right">Cost</TableHead>
+              <TableHead className="text-right">Profit</TableHead>
               <TableHead>Status</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {jobs && jobs.length > 0 ? (
               jobs.map((job) => {
-                const balance = Number(job.contract_amount || 0) - Number(job.paid_amount || 0);
-                const isPaid = Number(job.paid_amount || 0) >= Number(job.contract_amount || 0);
+                const budget = Number(job.budget_amount || 0);
+                const cost = Number(job.actual_cost || 0);
+                const profit = budget - cost;
+                const isCompleted = job.job_status === "completed";
 
                 return (
                   <TableRow key={job.id}>
                     <TableCell className="font-medium">
                       {job.job_number || job.id.slice(0, 8)}
                     </TableCell>
-                    <TableCell>{job.client_name || "-"}</TableCell>
+                    <TableCell>-</TableCell>
                     <TableCell className="text-right">
                       {new Intl.NumberFormat("en-US", {
                         style: "currency",
                         currency: "USD",
-                      }).format(job.contract_amount || 0)}
+                      }).format(budget)}
                     </TableCell>
                     <TableCell className="text-right">
                       {new Intl.NumberFormat("en-US", {
                         style: "currency",
                         currency: "USD",
-                      }).format(job.paid_amount || 0)}
+                      }).format(cost)}
                     </TableCell>
                     <TableCell className="text-right">
                       {new Intl.NumberFormat("en-US", {
                         style: "currency",
                         currency: "USD",
-                      }).format(balance)}
+                      }).format(profit)}
                     </TableCell>
                     <TableCell>
-                      <Badge variant={isPaid ? "default" : "destructive"}>
-                        {isPaid ? "Paid" : "Outstanding"}
+                      <Badge variant={isCompleted ? "default" : "secondary"}>
+                        {job.job_status}
                       </Badge>
                     </TableCell>
                   </TableRow>

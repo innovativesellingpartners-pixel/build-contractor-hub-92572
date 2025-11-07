@@ -17,7 +17,7 @@ export function SalesOverTimeChart({ filters }: SalesOverTimeChartProps) {
 
       let query = supabase
         .from("jobs")
-        .select("created_at, contract_amount, job_status")
+        .select("created_at, budget_amount, job_status")
         .eq("user_id", user.id)
         .in("job_status", ["completed", "in_progress"]);
 
@@ -34,7 +34,7 @@ export function SalesOverTimeChart({ filters }: SalesOverTimeChartProps) {
       jobs?.forEach((job) => {
         const date = new Date(job.created_at);
         const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-        groupedData[monthKey] = (groupedData[monthKey] || 0) + Number(job.contract_amount || 0);
+        groupedData[monthKey] = (groupedData[monthKey] || 0) + Number(job.budget_amount || 0);
       });
 
       return Object.entries(groupedData)

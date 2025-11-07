@@ -30,7 +30,7 @@ export function PerformanceByRepChart({ filters }: PerformanceByRepChartProps) {
 
       let jobsQuery = supabase
         .from("jobs")
-        .select("contract_amount, paid_amount, actual_cost, job_status")
+        .select("budget_amount, actual_cost, job_status")
         .eq("user_id", user.id)
         .in("job_status", ["completed", "in_progress"]);
 
@@ -51,7 +51,7 @@ export function PerformanceByRepChart({ filters }: PerformanceByRepChartProps) {
       const estimatesWritten = estimates?.length || 0;
       const estimateValue = estimates?.reduce((sum, e) => sum + Number(e.total_amount || 0), 0) || 0;
       const jobsSold = jobs?.length || 0;
-      const revenue = jobs?.reduce((sum, j) => sum + Number(j.paid_amount || 0), 0) || 0;
+      const revenue = jobs?.reduce((sum, j) => sum + Number(j.budget_amount || 0), 0) || 0;
       const cogs = jobs?.reduce((sum, j) => sum + Number(j.actual_cost || 0), 0) || 0;
       const profit = revenue - cogs;
       const margin = revenue > 0 ? (profit / revenue) * 100 : 0;

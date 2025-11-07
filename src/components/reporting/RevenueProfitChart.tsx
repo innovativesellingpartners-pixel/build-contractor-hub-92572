@@ -17,7 +17,7 @@ export function RevenueProfitChart({ filters }: RevenueProfitChartProps) {
 
       let query = supabase
         .from("jobs")
-        .select("created_at, paid_amount, actual_cost, contract_amount")
+        .select("created_at, budget_amount, actual_cost")
         .eq("user_id", user.id)
         .in("job_status", ["completed", "in_progress"]);
 
@@ -39,7 +39,7 @@ export function RevenueProfitChart({ filters }: RevenueProfitChartProps) {
           groupedData[monthKey] = { revenue: 0, cogs: 0, profit: 0 };
         }
         
-        const revenue = Number(job.paid_amount || 0);
+        const revenue = Number(job.budget_amount || 0);
         const cogs = Number(job.actual_cost || 0);
         
         groupedData[monthKey].revenue += revenue;
