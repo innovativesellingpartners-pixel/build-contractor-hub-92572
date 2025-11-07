@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4';
-import puppeteer from "https://deno.land/x/puppeteer@16.2.0/mod.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
+import { PDFDocument, rgb, StandardFonts } from "https://esm.sh/pdf-lib@1.17.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,483 +12,246 @@ interface GeneratePDFRequest {
   includePaymentLink?: boolean;
 }
 
+function formatCurrency(v: number | null | undefined) {
+  const n = Number(v || 0);
+  return n.toLocaleString("en-US", { style: "currency", currency: "USD" });
+}
+
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    
+
     const { estimateId, includePaymentLink = true }: GeneratePDFRequest = await req.json();
 
-    // Fetch estimate details
-    const { data: estimate, error: fetchError } = await supabase
-      .from('estimates')
-      .select('*')
-      .eq('id', estimateId)
+    // Fetch estimate
+    const { data: estimate, error: estimateError } = await supabase
+      .from("estimates")
+      .select("*")
+      .eq("id", estimateId)
       .single();
 
-    if (fetchError || !estimate) {
-      throw new Error('Estimate not found');
-    }
+    if (estimateError || !estimate) throw new Error("Estimate not found");
 
-    const lineItems = estimate.line_items || [];
-    const costSummary = estimate.cost_summary || {};
-    const appUrl = Deno.env.get('APP_URL') || 'https://yourapp.lovable.app';
+    // Fetch contractor profile for branding
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("company_name, logo_url, phone, business_address, city, state, zip_code")
+      .eq("user_id", estimate.user_id)
+      .single();
+
+    const companyName = profile?.company_name || "CT1 Constructeam";
+    const logoUrl = profile?.logo_url || null;
+    const phone = profile?.phone || "";
+    const address = [profile?.business_address, profile?.city, profile?.state, profile?.zip_code]
+      .filter(Boolean)
+      .join(", ");
+
+    const appUrl = Deno.env.get("APP_URL") || "https://yourapp.lovable.app";
     const publicUrl = `${appUrl}/estimate/${estimate.public_token}`;
 
-    // Generate HTML for PDF
-    const htmlContent = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="utf-8">
-        <style>
-          * { margin: 0; padding: 0; box-sizing: border-box; }
-          body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-            padding: 40px;
-            color: #1f2937;
-          }
-          .header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: flex-start;
-            margin-bottom: 40px;
-            padding-bottom: 30px;
-            border-bottom: 3px solid #E02424;
-          }
-          .company-info { flex: 1; }
-          .company-name { 
-            font-size: 28px; 
-            font-weight: 900; 
-            color: #E02424;
-            margin-bottom: 8px;
-          }
-          .company-tagline { 
-            font-size: 14px; 
-            color: #6B7280;
-            margin-bottom: 20px;
-          }
-          .estimate-info { 
-            text-align: right;
-            background: #F9FAFB;
-            padding: 20px;
-            border-radius: 8px;
-          }
-          .estimate-title {
-            font-size: 32px;
-            font-weight: 900;
-            color: #E02424;
-            margin-bottom: 10px;
-          }
-          .estimate-number {
-            font-size: 18px;
-            color: #6B7280;
-            margin-bottom: 10px;
-          }
-          .status-badge {
-            display: inline-block;
-            padding: 8px 16px;
-            background: ${estimate.status === 'sent' || estimate.status === 'viewed' ? '#FEF3C7' : '#DBEAFE'};
-            color: ${estimate.status === 'sent' || estimate.status === 'viewed' ? '#92400E' : '#1E40AF'};
-            border-radius: 6px;
-            font-weight: 700;
-            font-size: 12px;
-            text-transform: uppercase;
-          }
-          .client-section {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 40px;
-          }
-          .info-box {
-            background: #F9FAFB;
-            padding: 20px;
-            border-radius: 8px;
-            border-left: 4px solid #E02424;
-          }
-          .info-box h3 {
-            font-size: 14px;
-            color: #6B7280;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 12px;
-          }
-          .info-box p {
-            font-size: 16px;
-            color: #1f2937;
-            line-height: 1.6;
-            margin-bottom: 6px;
-          }
-          .info-box .highlight {
-            font-weight: 700;
-            font-size: 18px;
-          }
-          .project-description {
-            background: #FEF3F2;
-            border-left: 4px solid #E02424;
-            padding: 20px;
-            margin-bottom: 30px;
-            border-radius: 0 8px 8px 0;
-          }
-          .project-description h3 {
-            font-size: 16px;
-            font-weight: 700;
-            color: #E02424;
-            margin-bottom: 10px;
-          }
-          .project-description p {
-            font-size: 14px;
-            line-height: 1.6;
-            color: #374151;
-          }
-          table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 30px;
-            background: white;
-          }
-          thead {
-            background: #1f2937;
-            color: white;
-          }
-          th {
-            padding: 16px;
-            text-align: left;
-            font-weight: 700;
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-          }
-          td {
-            padding: 14px 16px;
-            border-bottom: 1px solid #E5E7EB;
-            font-size: 14px;
-          }
-          tbody tr:nth-child(even) {
-            background: #F9FAFB;
-          }
-          .category-badge {
-            display: inline-block;
-            padding: 4px 10px;
-            background: #DBEAFE;
-            color: #1E40AF;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: 600;
-          }
-          .item-desc {
-            font-weight: 600;
-            color: #1f2937;
-            margin-bottom: 4px;
-          }
-          .item-details {
-            font-size: 12px;
-            color: #6B7280;
-          }
-          .totals-section {
-            margin-top: 40px;
-            display: flex;
-            justify-content: flex-end;
-          }
-          .totals-box {
-            width: 400px;
-            background: white;
-            border: 2px solid #E5E7EB;
-            border-radius: 8px;
-            overflow: hidden;
-          }
-          .total-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 14px 20px;
-            border-bottom: 1px solid #E5E7EB;
-          }
-          .total-row:last-child {
-            border-bottom: none;
-          }
-          .total-row.grand-total {
-            background: linear-gradient(135deg, #E02424 0%, #C01E1E 100%);
-            color: white;
-            padding: 20px;
-          }
-          .total-row.grand-total .label {
-            font-size: 20px;
-            font-weight: 900;
-          }
-          .total-row.grand-total .amount {
-            font-size: 28px;
-            font-weight: 900;
-          }
-          .total-row .label {
-            font-size: 15px;
-            color: #6B7280;
-            font-weight: 500;
-          }
-          .total-row .amount {
-            font-size: 18px;
-            font-weight: 700;
-            color: #1f2937;
-          }
-          .payment-section {
-            margin-top: 40px;
-            background: linear-gradient(135deg, #FEF3F2 0%, #FEE2E2 100%);
-            border: 2px solid #E02424;
-            border-radius: 12px;
-            padding: 30px;
-            text-align: center;
-          }
-          .payment-section h3 {
-            font-size: 24px;
-            font-weight: 900;
-            color: #E02424;
-            margin-bottom: 15px;
-          }
-          .payment-section p {
-            font-size: 16px;
-            color: #374151;
-            margin-bottom: 20px;
-            line-height: 1.6;
-          }
-          .payment-link {
-            display: inline-block;
-            background: #E02424;
-            color: white;
-            padding: 16px 40px;
-            border-radius: 8px;
-            font-weight: 700;
-            font-size: 16px;
-            text-decoration: none;
-            box-shadow: 0 4px 12px rgba(224, 36, 36, 0.3);
-          }
-          .payment-url {
-            margin-top: 15px;
-            font-size: 12px;
-            color: #6B7280;
-            word-break: break-all;
-          }
-          .notes-section {
-            margin-top: 30px;
-            background: #FFFBEB;
-            border-left: 4px solid #F59E0B;
-            padding: 20px;
-            border-radius: 0 8px 8px 0;
-          }
-          .notes-section h3 {
-            font-size: 16px;
-            font-weight: 700;
-            color: #92400E;
-            margin-bottom: 10px;
-          }
-          .footer {
-            margin-top: 50px;
-            padding-top: 30px;
-            border-top: 2px solid #E5E7EB;
-            text-align: center;
-          }
-          .footer-text {
-            font-size: 12px;
-            color: #9CA3AF;
-            line-height: 1.8;
-          }
-          .powered-by {
-            font-size: 14px;
-            color: #6B7280;
-            margin-top: 15px;
-            font-weight: 600;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="header">
-          <div class="company-info">
-            <div class="company-name">CT1 Constructeam</div>
-            <div class="company-tagline">Professional Contractor Management</div>
-          </div>
-          <div class="estimate-info">
-            <div class="estimate-title">ESTIMATE</div>
-            ${estimate.estimate_number ? `<div class="estimate-number">#${estimate.estimate_number}</div>` : ''}
-            <span class="status-badge">${estimate.status === 'draft' ? 'Draft' : estimate.status === 'sent' ? 'Sent' : estimate.status === 'viewed' ? 'Viewed' : 'Pending'}</span>
-            <p style="margin-top: 15px; font-size: 13px; color: #6B7280;">
-              <strong>Issue Date:</strong> ${new Date(estimate.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-            </p>
-            ${estimate.valid_until ? `<p style="font-size: 13px; color: #6B7280;"><strong>Valid Until:</strong> ${new Date(estimate.valid_until).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>` : ''}
-          </div>
-        </div>
+    // Build PDF with pdf-lib (Edge-compatible)
+    const pdfDoc = await PDFDocument.create();
+    const page = pdfDoc.addPage([612, 792]); // US Letter portrait
+    const { height, width } = page.getSize();
 
-        <h2 style="font-size: 22px; font-weight: 900; margin-bottom: 20px; color: #1f2937;">${estimate.title}</h2>
+    const margin = 40;
+    let cursorY = height - margin;
 
-        <div class="client-section">
-          <div class="info-box">
-            <h3>Prepared For:</h3>
-            <p class="highlight">${estimate.client_name}</p>
-            ${estimate.client_email ? `<p>📧 ${estimate.client_email}</p>` : ''}
-            ${estimate.client_address ? `<p>📍 ${estimate.client_address}</p>` : ''}
-          </div>
-          
-          ${estimate.site_address ? `
-          <div class="info-box">
-            <h3>Project Location:</h3>
-            <p class="highlight">${estimate.site_address}</p>
-            ${estimate.trade_type ? `<p><strong>Trade:</strong> ${estimate.trade_type}</p>` : ''}
-          </div>
-          ` : `
-          <div class="info-box">
-            <h3>Project Details:</h3>
-            ${estimate.trade_type ? `<p><strong>Trade Type:</strong> ${estimate.trade_type}</p>` : ''}
-          </div>
-          `}
-        </div>
+    // Fonts
+    const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+    const fontReg = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
-        ${estimate.project_description ? `
-        <div class="project-description">
-          <h3>Project Description</h3>
-          <p>${estimate.project_description}</p>
-        </div>
-        ` : ''}
+    // Header bar
+    page.drawRectangle({ x: 0, y: height - 80, width, height: 80, color: rgb(0.88, 0.14, 0.14) });
 
-        <table>
-          <thead>
-            <tr>
-              <th>Description</th>
-              <th style="text-align: center;">Qty</th>
-              <th style="text-align: right;">Price</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${lineItems
-              .filter((item: any) => item.included)
-              .map((item: any) => `
-                <tr>
-                  <td>
-                    <div class="item-desc">${item.item_description}</div>
-                    <div class="item-details">${item.quantity} ${item.unit_type} × $${item.unit_cost.toFixed(2)}</div>
-                    <span class="category-badge">${item.category}</span>
-                  </td>
-                  <td style="text-align: center;">${item.quantity}</td>
-                  <td style="text-align: right; font-weight: 700;">$${item.line_total.toFixed(2)}</td>
-                </tr>
-              `).join('')}
-          </tbody>
-        </table>
+    // Logo (if available)
+    if (logoUrl) {
+      try {
+        const res = await fetch(logoUrl);
+        const buf = new Uint8Array(await res.arrayBuffer());
+        let img;
+        const isPng = logoUrl.toLowerCase().endsWith(".png");
+        if (isPng) img = await pdfDoc.embedPng(buf);
+        else img = await pdfDoc.embedJpg(buf);
+        const imgDims = img.scale(60 / img.height);
+        page.drawImage(img, {
+          x: width - margin - imgDims.width,
+          y: height - 70,
+          width: imgDims.width,
+          height: imgDims.height,
+        });
+      } catch (_) {
+        // ignore logo errors
+      }
+    }
 
-        <div class="totals-section">
-          <div class="totals-box">
-            ${costSummary.subtotal ? `
-            <div class="total-row">
-              <span class="label">Subtotal</span>
-              <span class="amount">$${costSummary.subtotal.toFixed(2)}</span>
-            </div>
-            ` : ''}
-            ${costSummary.profit_markup_percentage && costSummary.profit_markup_percentage > 0 ? `
-            <div class="total-row">
-              <span class="label">Profit/Markup (${costSummary.profit_markup_percentage}%)</span>
-              <span class="amount">$${costSummary.profit_markup_amount?.toFixed(2) || '0.00'}</span>
-            </div>
-            ` : ''}
-            ${costSummary.tax_and_fees && costSummary.tax_and_fees > 0 ? `
-            <div class="total-row">
-              <span class="label">Tax & Fees</span>
-              <span class="amount">$${costSummary.tax_and_fees.toFixed(2)}</span>
-            </div>
-            ` : ''}
-            <div class="total-row grand-total">
-              <span class="label">Total</span>
-              <span class="amount">$${estimate.total_amount?.toFixed(2) || '0.00'}</span>
-            </div>
-          </div>
-        </div>
-
-        ${includePaymentLink ? `
-        <div class="payment-section">
-          <h3>Ready to Get Started?</h3>
-          <p>Click the link below to review this estimate online, sign digitally, and proceed with payment to secure your project.</p>
-          <a href="${publicUrl}" class="payment-link">View & Accept Estimate</a>
-          <p class="payment-url">Or copy this link: ${publicUrl}</p>
-        </div>
-        ` : ''}
-
-        ${estimate.assumptions_and_exclusions ? `
-        <div class="notes-section">
-          <h3>Assumptions & Exclusions</h3>
-          <p style="font-size: 14px; line-height: 1.6; color: #374151;">${estimate.assumptions_and_exclusions}</p>
-        </div>
-        ` : ''}
-
-        <div class="footer">
-          <p class="footer-text">
-            This estimate is valid for the period specified above. All pricing and terms are subject to the conditions outlined.<br>
-            Thank you for considering us for your project!
-          </p>
-          <p class="powered-by">Powered by CT1 Constructeam - Professional Contractor Management</p>
-        </div>
-      </body>
-      </html>
-    `;
-
-    // Generate actual PDF using Puppeteer
-    console.log('Launching browser for PDF generation...');
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    // Company name
+    page.drawText(companyName, {
+      x: margin,
+      y: height - 55,
+      size: 20,
+      font: fontBold,
+      color: rgb(1, 1, 1),
     });
-    
-    try {
-      const page = await browser.newPage();
-      await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
-      
-      // Generate PDF buffer
-      const pdfBuffer = await page.pdf({
-        format: 'A4',
-        printBackground: true,
-        margin: {
-          top: '20px',
-          right: '20px',
-          bottom: '20px',
-          left: '20px'
-        }
+
+    // Title and meta
+    cursorY = height - 120;
+    page.drawText("ESTIMATE", { x: margin, y: cursorY, size: 26, font: fontBold, color: rgb(0.12, 0.12, 0.12) });
+    cursorY -= 22;
+    if (estimate.estimate_number) {
+      page.drawText(`#${estimate.estimate_number}`, { x: margin, y: cursorY, size: 12, font: fontReg, color: rgb(0.38, 0.38, 0.38) });
+      cursorY -= 18;
+    }
+    const issueDate = new Date(estimate.created_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+    page.drawText(`Issue Date: ${issueDate}`, { x: margin, y: cursorY, size: 12, font: fontReg, color: rgb(0.38, 0.38, 0.38) });
+    cursorY -= 18;
+    if (estimate.valid_until) {
+      const valid = new Date(estimate.valid_until).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+      page.drawText(`Valid Until: ${valid}`, { x: margin, y: cursorY, size: 12, font: fontReg, color: rgb(0.38, 0.38, 0.38) });
+      cursorY -= 18;
+    }
+
+    // Company contact box (right)
+    const rightBoxX = width - margin - 220;
+    const rightBoxY = height - 190;
+    page.drawRectangle({ x: rightBoxX, y: rightBoxY, width: 220, height: 80, borderColor: rgb(0.88, 0.14, 0.14), borderWidth: 2, color: rgb(0.98, 0.98, 0.98) });
+    page.drawText("Prepared by", { x: rightBoxX + 10, y: rightBoxY + 58, size: 10, font: fontReg, color: rgb(0.5, 0.5, 0.5) });
+    page.drawText(companyName, { x: rightBoxX + 10, y: rightBoxY + 40, size: 12, font: fontBold, color: rgb(0.12, 0.12, 0.12) });
+    if (address) page.drawText(address, { x: rightBoxX + 10, y: rightBoxY + 24, size: 10, font: fontReg, color: rgb(0.25, 0.25, 0.25) });
+    if (phone) page.drawText(phone, { x: rightBoxX + 10, y: rightBoxY + 10, size: 10, font: fontReg, color: rgb(0.25, 0.25, 0.25) });
+
+    // Client section
+    cursorY -= 16;
+    page.drawText("Prepared For", { x: margin, y: cursorY, size: 11, font: fontBold, color: rgb(0.5, 0.5, 0.5) });
+    cursorY -= 16;
+    if (estimate.client_name) page.drawText(estimate.client_name, { x: margin, y: cursorY, size: 13, font: fontBold });
+    if (estimate.client_email) page.drawText(estimate.client_email, { x: margin + 240, y: cursorY, size: 11, font: fontReg, color: rgb(0.25, 0.25, 0.25) });
+    cursorY -= 16;
+    if (estimate.client_address) { page.drawText(estimate.client_address, { x: margin, y: cursorY, size: 11, font: fontReg, color: rgb(0.25, 0.25, 0.25) }); cursorY -= 14; }
+    if (estimate.site_address) { page.drawText(`Project Location: ${estimate.site_address}`, { x: margin, y: cursorY, size: 11, font: fontReg, color: rgb(0.25, 0.25, 0.25) }); cursorY -= 14; }
+
+    // Project description
+    if (estimate.project_description) {
+      cursorY -= 8;
+      page.drawRectangle({ x: margin - 4, y: cursorY - 6, width: width - margin * 2 + 8, height: 22, color: rgb(1, 0.95, 0.95) });
+      page.drawText("Project Description", { x: margin, y: cursorY + 1, size: 12, font: fontBold, color: rgb(0.7, 0.1, 0.1) });
+      cursorY -= 26;
+      const desc = String(estimate.project_description);
+      page.drawText(desc.slice(0, 2000), { x: margin, y: cursorY, size: 11, font: fontReg, color: rgb(0.2, 0.2, 0.2), lineHeight: 14, maxWidth: width - margin * 2 });
+      cursorY -= Math.ceil(desc.length / 90) * 14 + 8;
+    }
+
+    // Line items table header
+    const tableX = margin;
+    const colQtyX = width - margin - 160;
+    const colPriceX = width - margin - 60;
+    const tableWidth = width - margin * 2;
+
+    page.drawRectangle({ x: tableX, y: cursorY - 22, width: tableWidth, height: 24, color: rgb(0.12, 0.16, 0.22) });
+    page.drawText("Description", { x: tableX + 8, y: cursorY - 6, size: 11, font: fontBold, color: rgb(1, 1, 1) });
+    page.drawText("Qty", { x: colQtyX + 8, y: cursorY - 6, size: 11, font: fontBold, color: rgb(1, 1, 1) });
+    page.drawText("Price", { x: colPriceX + 8, y: cursorY - 6, size: 11, font: fontBold, color: rgb(1, 1, 1) });
+    cursorY -= 30;
+
+    const lineItems = (estimate.line_items || []).filter((li: any) => li?.included !== false);
+    for (const item of lineItems) {
+      const desc = `${item.item_description || "Item"}`;
+      page.drawText(desc.slice(0, 80), { x: tableX + 8, y: cursorY, size: 11, font: fontReg, color: rgb(0.12, 0.12, 0.12) });
+      page.drawText(String(item.quantity ?? ""), { x: colQtyX + 8, y: cursorY, size: 11, font: fontReg, color: rgb(0.12, 0.12, 0.12) });
+      page.drawText(formatCurrency(item.line_total ?? (item.unit_cost || 0) * (item.quantity || 0)), { x: colPriceX + 8, y: cursorY, size: 11, font: fontBold, color: rgb(0.12, 0.12, 0.12) });
+      cursorY -= 18;
+      if (cursorY < 120) {
+        // New page if needed
+        const p = pdfDoc.addPage([612, 792]);
+        cursorY = 792 - margin;
+      }
+    }
+
+    // Totals
+    const boxW = 260;
+    const boxH = 110;
+    const boxX = width - margin - boxW;
+    const boxY = Math.max(cursorY - boxH - 10, 120);
+    page.drawRectangle({ x: boxX, y: boxY, width: boxW, height: boxH, borderWidth: 2, borderColor: rgb(0.9, 0.9, 0.9), color: rgb(1, 1, 1) });
+
+    let ty = boxY + boxH - 26;
+    const cs = estimate.cost_summary || {};
+    if (cs.subtotal) {
+      page.drawText("Subtotal", { x: boxX + 14, y: ty, size: 11, font: fontReg, color: rgb(0.4, 0.4, 0.4) });
+      page.drawText(formatCurrency(cs.subtotal), { x: boxX + boxW - 14 - 80, y: ty, size: 11, font: fontBold, color: rgb(0.1, 0.1, 0.1) });
+      ty -= 18;
+    }
+    if (cs.profit_markup_percentage && cs.profit_markup_percentage > 0) {
+      page.drawText(`Profit/Markup (${cs.profit_markup_percentage}%)`, { x: boxX + 14, y: ty, size: 11, font: fontReg, color: rgb(0.4, 0.4, 0.4) });
+      page.drawText(formatCurrency(cs.profit_markup_amount || 0), { x: boxX + boxW - 14 - 80, y: ty, size: 11, font: fontBold, color: rgb(0.1, 0.1, 0.1) });
+      ty -= 18;
+    }
+    if (cs.tax_and_fees && cs.tax_and_fees > 0) {
+      page.drawText("Tax & Fees", { x: boxX + 14, y: ty, size: 11, font: fontReg, color: rgb(0.4, 0.4, 0.4) });
+      page.drawText(formatCurrency(cs.tax_and_fees), { x: boxX + boxW - 14 - 80, y: ty, size: 11, font: fontBold, color: rgb(0.1, 0.1, 0.1) });
+      ty -= 18;
+    }
+
+    // Grand total band
+    page.drawRectangle({ x: boxX, y: boxY - 12, width: boxW, height: 36, color: rgb(0.88, 0.14, 0.14) });
+    page.drawText("Total", { x: boxX + 14, y: boxY - 4, size: 14, font: fontBold, color: rgb(1, 1, 1) });
+    page.drawText(formatCurrency(estimate.total_amount || 0), { x: boxX + boxW - 14 - 120, y: boxY - 6, size: 18, font: fontBold, color: rgb(1, 1, 1) });
+
+    // Payment CTA
+    if (includePaymentLink) {
+      const ctaY = boxY - 60;
+      page.drawText("View, sign and pay this estimate: ", { x: margin, y: ctaY, size: 12, font: fontReg, color: rgb(0.2, 0.2, 0.2) });
+      // Add a clickable link
+      page.drawText(publicUrl, { x: margin, y: ctaY - 16, size: 12, font: fontBold, color: rgb(0.16, 0.4, 0.9) });
+      // pdf-lib supports link annotations via 'link' option on drawText in recent versions
+      // @ts-ignore - link is supported at runtime
+      page.drawText(" ", { x: margin, y: ctaY - 16, size: 12, font: fontBold, color: rgb(0.16, 0.4, 0.9), link: publicUrl });
+    }
+
+    // Notes
+    if (estimate.assumptions_and_exclusions) {
+      const notesY = 80;
+      page.drawText("Assumptions & Exclusions", { x: margin, y: notesY + 30, size: 12, font: fontBold, color: rgb(0.58, 0.25, 0.05) });
+      page.drawText(String(estimate.assumptions_and_exclusions).slice(0, 1500), {
+        x: margin,
+        y: notesY + 12,
+        size: 10,
+        font: fontReg,
+        color: rgb(0.25, 0.25, 0.25),
+        lineHeight: 12,
+        maxWidth: width - margin * 2,
       });
-      
-      await browser.close();
-      console.log('PDF generated successfully, size:', pdfBuffer.length);
-      
-      // Convert to base64 for transmission
-      const base64Pdf = btoa(String.fromCharCode(...new Uint8Array(pdfBuffer)));
-      
-      return new Response(JSON.stringify({
+    }
+
+    const pdfBytes = await pdfDoc.save();
+    const base64Pdf = btoa(String.fromCharCode(...pdfBytes));
+
+    return new Response(
+      JSON.stringify({
         success: true,
-        html: htmlContent,
         pdfBase64: base64Pdf,
-        pdfSize: pdfBuffer.length,
+        pdfSize: pdfBytes.length,
         estimate: {
           number: estimate.estimate_number,
           title: estimate.title,
           client_name: estimate.client_name,
           total_amount: estimate.total_amount,
-        }
-      }), {
-        status: 200,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      });
-    } catch (pdfError) {
-      console.error('PDF generation error:', pdfError);
-      await browser.close();
-      throw pdfError;
-    }
+        },
+      }),
+      { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+    );
   } catch (error: any) {
     console.error("Error generating PDF:", error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      }
-    );
+    return new Response(JSON.stringify({ error: error.message || String(error) }), {
+      status: 500,
+      headers: { "Content-Type": "application/json", ...corsHeaders },
+    });
   }
 };
 

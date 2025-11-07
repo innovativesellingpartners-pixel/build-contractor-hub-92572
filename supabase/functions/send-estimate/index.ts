@@ -47,6 +47,16 @@ const handler = async (req: Request): Promise<Response> => {
     const appUrl = Deno.env.get('APP_URL') || 'https://yourapp.lovable.app';
     const publicUrl = `${appUrl}/estimate/${estimate.public_token}`;
 
+    // Fetch contractor profile for branding (company name, logo)
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('company_name, logo_url')
+      .eq('user_id', estimate.user_id)
+      .single();
+
+    const companyName = profile?.company_name || 'CT1 Constructeam';
+    const logoSrc = profile?.logo_url || '';
+
     // Send email to client
     const recipients = [estimate.client_email];
     const bcc: string[] | undefined = contractorEmail ? [contractorEmail] : undefined;
@@ -76,7 +86,7 @@ const handler = async (req: Request): Promise<Response> => {
         attachments = [{
           filename: `Estimate-${estimate.estimate_number || estimate.id}.pdf`,
           content: pdfData.pdfBase64,
-          type: 'application/pdf',
+          contentType: 'application/pdf',
         }];
       } catch (pdfConversionError) {
         console.warn('Could not attach PDF:', pdfConversionError);
@@ -143,7 +153,7 @@ const handler = async (req: Request): Promise<Response> => {
             <div class="email-wrapper">
               <div class="container">
                 <div class="header">
-                  <div style="font-size: 48px; margin-bottom: 15px;">📋</div>
+                  ${logoSrc ? `<img src="${logoSrc}" alt="${companyName} Logo" style="max-width:180px;height:auto;margin-bottom:12px;border-radius:8px;"/>` : `<img src="https://faqrzzodtmsybofakcvv.supabase.co/storage/v1/object/public/company-logos/ct1-logo-circle.png" alt="CT1 Logo" style="max-width:120px;height:auto;margin-bottom:12px;border-radius:8px;"/>`}
                   <h1 class="header-title">Professional Estimate</h1>
                   <p class="header-subtitle">${estimate.estimate_number ? `#${estimate.estimate_number}` : 'Your Project Estimate'}</p>
                 </div>
