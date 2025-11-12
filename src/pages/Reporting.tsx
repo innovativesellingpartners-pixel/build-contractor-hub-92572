@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ReportingFilters } from "@/components/reporting/ReportingFilters";
@@ -15,6 +15,9 @@ import { EstimatesTable } from "@/components/reporting/EstimatesTable";
 import { JobsTable } from "@/components/reporting/JobsTable";
 import { PaymentsTable } from "@/components/reporting/PaymentsTable";
 import { UnclosedStalledTable } from "@/components/reporting/UnclosedStalledTable";
+import { ReportExportActions } from "@/components/reporting/ReportExportActions";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface ReportingFilters {
   dateRange: string;
@@ -32,15 +35,66 @@ export default function Reporting() {
     dateRange: "this_month",
   });
 
+  // Fetch all report data for export
+  const { data: exportData } = useQuery({
+    queryKey: ["report-export-data", filters],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+
+      // Fetch estimates, jobs, and other data for export
+      const [estimates, jobs] = await Promise.all([
+        supabase.from("estimates").select("*").eq("user_id", user.id),
+        supabase.from("jobs").select("*").eq("user_id", user.id),
+      ]);
+
+      return { estimates: estimates.data || [], jobs: jobs.data || [] };
+    },
+  });
+
+  // Prepare report data for export
+  const reportData = useMemo(() => {
+    const dateRangeLabels: Record<string, string> = {
+      this_week: "This Week",
+      this_month: "This Month",
+      this_quarter: "This Quarter",
+      this_year: "This Year",
+      last_month: "Last Month",
+      last_quarter: "Last Quarter",
+      custom: filters.dateFrom && filters.dateTo 
+        ? `${filters.dateFrom} to ${filters.dateTo}` 
+        : "Custom Range",
+    };
+
+    return {
+      title: "Financial Report",
+      dateRange: dateRangeLabels[filters.dateRange] || "All Time",
+      sections: [
+        {
+          title: "Estimates",
+          data: exportData?.estimates || [],
+        },
+        {
+          title: "Jobs",
+          data: exportData?.jobs || [],
+        },
+      ],
+      summary: [],
+    };
+  }, [exportData, filters]);
+
   return (
     <div className="min-h-screen bg-background p-4 md:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Reporting & Analytics</h1>
-          <p className="text-muted-foreground mt-2">
-            Track sales performance, revenue, and job metrics
-          </p>
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Reporting & Analytics</h1>
+            <p className="text-muted-foreground mt-2">
+              Track sales performance, revenue, and job metrics
+            </p>
+          </div>
+          <ReportExportActions reportData={reportData} filters={filters} />
         </div>
 
         {/* Filters */}
