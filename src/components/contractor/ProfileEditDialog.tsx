@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { Pencil, Upload, Loader2, Check, X } from "lucide-react";
 
 type EditingField = 'company_name' | 'contact_name' | 'phone' | 'business_address' | 
@@ -14,6 +15,7 @@ type EditingField = 'company_name' | 'contact_name' | 'phone' | 'business_addres
 export function ProfileEditDialog() {
   const { profile, user } = useAuth();
   const { toast } = useToast();
+  const { isSuperAdmin } = useAdminAuth();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -107,19 +109,26 @@ export function ProfileEditDialog() {
 
     setLoading(true);
     try {
+      // Prepare update data - only include contractor number if user is super admin
+      const updateData: any = {
+        company_name: formData.company_name,
+        contact_name: formData.contact_name,
+        phone: formData.phone,
+        business_address: formData.business_address,
+        city: formData.city,
+        state: formData.state,
+        zip_code: formData.zip_code,
+        tax_id: formData.tax_id,
+      };
+
+      // Only super admins can update contractor number
+      if (isSuperAdmin) {
+        updateData.ct1_contractor_number = formData.ct1_contractor_number;
+      }
+
       const { error } = await supabase
         .from('profiles')
-        .update({
-          company_name: formData.company_name,
-          contact_name: formData.contact_name,
-          phone: formData.phone,
-          business_address: formData.business_address,
-          city: formData.city,
-          state: formData.state,
-          zip_code: formData.zip_code,
-          tax_id: formData.tax_id,
-          ct1_contractor_number: formData.ct1_contractor_number,
-        })
+        .update(updateData)
         .eq('user_id', user.id);
 
       if (error) throw error;
@@ -176,7 +185,8 @@ export function ProfileEditDialog() {
   const renderField = (
     field: EditingField,
     label: string,
-    type: string = "text"
+    type: string = "text",
+    disabled: boolean = false
   ) => {
     const value = formData[field as keyof typeof formData];
 
@@ -191,6 +201,8 @@ export function ProfileEditDialog() {
             value={value}
             onChange={handleChange}
             placeholder={`Enter ${label.toLowerCase()}`}
+            disabled={disabled}
+            className={disabled ? "bg-muted/50 text-muted-foreground cursor-not-allowed" : ""}
           />
         </div>
       </div>
@@ -252,7 +264,7 @@ export function ProfileEditDialog() {
             {renderField('company_name', 'Company Name')}
             {renderField('contact_name', 'Contact Name')}
             {renderField('phone', 'Phone Number', 'tel')}
-            {renderField('ct1_contractor_number', 'CT1 Contractor Number')}
+            {renderField('ct1_contractor_number', 'CT1 Contractor Number', 'text', !isSuperAdmin)}
           </div>
 
           <div className="space-y-4">
