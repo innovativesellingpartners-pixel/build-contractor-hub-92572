@@ -97,6 +97,7 @@ export const CoursePlayer = () => {
   const [noteContent, setNoteContent] = useState('');
   const [quizAnswers, setQuizAnswers] = useState<Record<string, string>>({});
   const [showQuizModal, setShowQuizModal] = useState(false);
+  const [hasWatchedVideo, setHasWatchedVideo] = useState(false);
 
   const course = courses?.find(c => c.id === courseId);
   const enrollment = enrollments?.find(e => e.course_id === courseId);
@@ -160,6 +161,7 @@ export const CoursePlayer = () => {
     setPdfError(null);
     setQuizAnswers({});
     setShowQuizModal(false);
+    setHasWatchedVideo(false);
     if (existingNote?.content) {
       setContent(existingNote.content);
       setNoteContent(existingNote.content);
@@ -169,6 +171,74 @@ export const CoursePlayer = () => {
     }
   }, [currentLesson?.id, existingNote, setContent]);
 
+  // Simulate video watching (track after 10 seconds)
+  useEffect(() => {
+    if (currentLesson?.lesson_type === 'video' && isPlaying) {
+      const timer = setTimeout(() => {
+        setHasWatchedVideo(true);
+      }, 10000); // 10 seconds
+      return () => clearTimeout(timer);
+    }
+  }, [currentLesson, isPlaying]);
+
+  // Helper: Get lesson status label
+  const getLessonStatus = (moduleIdx: number, lessonIdx: number, lesson: any) => {
+    const isCompleted = lessonProgress?.some(p => p.lesson_id === lesson.id && p.is_completed);
+    
+    if (isCompleted) return { label: 'Completed', variant: 'default' as const, className: 'bg-green-500 text-white' };
+    
+    // Check if this is the first uncompleted lesson
+    let isFirstIncomplete = true;
+    for (let mi = 0; mi < (course?.course_modules?.length || 0); mi++) {
+      const mod = course?.course_modules?.[mi];
+      if (!mod) continue;
+      for (let li = 0; li < mod.course_lessons.length; li++) {
+        const l = mod.course_lessons[li];
+        const completed = lessonProgress?.some(p => p.lesson_id === l.id && p.is_completed);
+        if (!completed) {
+          if (mi === moduleIdx && li === lessonIdx) {
+            return { 
+              label: isFirstIncomplete ? 'Start Here' : 'Watch Next', 
+              variant: 'default' as const,
+              className: isFirstIncomplete ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-primary'
+            };
+          }
+          isFirstIncomplete = false;
+        }
+      }
+    }
+    
+    return { label: 'Locked', variant: 'secondary' as const, className: '' };
+  };
+
+  // Helper: Check if lesson is accessible
+  const isLessonAccessible = (moduleIdx: number, lessonIdx: number, lesson: any) => {
+    const isCompleted = lessonProgress?.some(p => p.lesson_id === lesson.id && p.is_completed);
+    if (isCompleted) return true;
+
+    // Check if all previous lessons are completed
+    for (let mi = 0; mi < moduleIdx; mi++) {
+      const mod = course?.course_modules?.[mi];
+      if (!mod) continue;
+      for (const l of mod.course_lessons) {
+        const completed = lessonProgress?.some(p => p.lesson_id === l.id && p.is_completed);
+        if (!completed) return false;
+      }
+    }
+
+    // Check lessons in the same module before this one
+    const currentMod = course?.course_modules?.[moduleIdx];
+    if (currentMod) {
+      for (let li = 0; li < lessonIdx; li++) {
+        const l = currentMod.course_lessons[li];
+        const completed = lessonProgress?.some(p => p.lesson_id === l.id && p.is_completed);
+        if (!completed) return false;
+      }
+    }
+
+    return true;
+  };
+
   const handleEnroll = () => {
     if (courseId) {
       enrollInCourse(courseId);
@@ -176,16 +246,23 @@ export const CoursePlayer = () => {
   };
 
   const handleMarkComplete = () => {
-    // Check if there's a quiz for video lessons
-    if (currentLesson?.lesson_type === 'video' && quizQuestions && quizQuestions.length > 0) {
-      // Check if all questions are answered
-      const allQuestionsAnswered = quizQuestions.every(q => 
-        userQuizAnswers?.some(a => a.question_id === q.id && a.is_correct)
-      );
-      
-      if (!allQuestionsAnswered) {
-        setShowQuizModal(true);
+    // For video lessons, require watching and quiz completion
+    if (currentLesson?.lesson_type === 'video') {
+      if (!hasWatchedVideo) {
+        toast.error('Please watch the video before marking as complete');
         return;
+      }
+
+      if (quizQuestions && quizQuestions.length > 0) {
+        const allQuestionsAnswered = quizQuestions.every(q => 
+          userQuizAnswers?.some(a => a.question_id === q.id && a.is_correct)
+        );
+        
+        if (!allQuestionsAnswered) {
+          setShowQuizModal(true);
+          toast.info('Please complete the quiz to proceed');
+          return;
+        }
       }
     }
 
@@ -197,6 +274,7 @@ export const CoursePlayer = () => {
         isCompleted: true,
         timeSpentMinutes: currentLesson.duration_minutes || 0,
       });
+      toast.success('Lesson completed! 🎉');
     }
   };
 
@@ -455,36 +533,65 @@ export const CoursePlayer = () => {
           <div className="container mx-auto px-6 py-8">
             {/* Current Module Lessons Navigation */}
             <div className="mb-6">
-              <h2 className="text-lg font-semibold mb-3">Lessons in {currentModule?.title}</h2>
+              <h2 className="text-lg font-semibold mb-3">Course Progress Path</h2>
               <ScrollArea className="w-full">
                 <div className="flex gap-3 pb-4">
-                  {currentModule?.course_lessons.map((lesson, lessonIdx) => {
-                    const isCompleted = lessonProgress?.some(
-                      p => p.lesson_id === lesson.id && p.is_completed
-                    );
-                    const isCurrent = lessonIdx === currentLessonIndex;
-                    
-                    return (
-                      <Card 
-                        key={lesson.id} 
-                        className={`flex-shrink-0 w-48 cursor-pointer transition-all hover:border-primary ${
-                          isCurrent ? 'border-primary shadow-md' : ''
-                        }`}
-                        onClick={() => setCurrentLessonIndex(lessonIdx)}
-                      >
-                        <CardContent className="p-4">
-                          <div className="flex items-start gap-2 mb-2">
-                            {isCompleted ? (
-                              <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0 mt-0.5" />
-                            ) : (
-                              <div className="h-4 w-4 rounded-full border-2 border-muted-foreground flex-shrink-0 mt-0.5" />
+                  {course?.course_modules?.map((module, moduleIdx) => 
+                    module.course_lessons.map((lesson, lessonIdx) => {
+                      const isCompleted = lessonProgress?.some(
+                        p => p.lesson_id === lesson.id && p.is_completed
+                      );
+                      const isCurrent = moduleIdx === currentModuleIndex && lessonIdx === currentLessonIndex;
+                      const isAccessible = isLessonAccessible(moduleIdx, lessonIdx, lesson);
+                      const status = getLessonStatus(moduleIdx, lessonIdx, lesson);
+                      
+                      return (
+                        <Card 
+                          key={lesson.id} 
+                          className={`flex-shrink-0 w-52 transition-all ${
+                            isCurrent ? 'border-primary shadow-lg ring-2 ring-primary/20' : ''
+                          } ${
+                            isAccessible ? 'cursor-pointer hover:border-primary' : 'opacity-60 cursor-not-allowed'
+                          }`}
+                          onClick={() => {
+                            if (isAccessible) {
+                              setCurrentModuleIndex(moduleIdx);
+                              setCurrentLessonIndex(lessonIdx);
+                            }
+                          }}
+                        >
+                          <CardContent className="p-4 space-y-2">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex items-start gap-2 flex-1">
+                                {isCompleted ? (
+                                  <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                                ) : isAccessible ? (
+                                  <Play className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                                ) : (
+                                  <div className="h-5 w-5 rounded-full bg-muted flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <span className="text-xs text-muted-foreground">🔒</span>
+                                  </div>
+                                )}
+                                <span className="text-sm font-medium line-clamp-2">{lesson.title}</span>
+                              </div>
+                            </div>
+                            <Badge 
+                              variant={status.variant}
+                              className={`text-xs ${status.className}`}
+                            >
+                              {status.label}
+                            </Badge>
+                            {lesson.duration_minutes && (
+                              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                <Clock className="h-3 w-3" />
+                                {lesson.duration_minutes} min
+                              </div>
                             )}
-                            <span className="text-sm font-medium line-clamp-2">{lesson.title}</span>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
+                          </CardContent>
+                        </Card>
+                      );
+                    })
+                  )}
                 </div>
               </ScrollArea>
             </div>
@@ -515,38 +622,77 @@ export const CoursePlayer = () => {
                 <div className="space-y-6">
                   {/* Video Player */}
                   {currentLesson?.video_url && (
-                    <div className="aspect-video bg-black rounded-lg flex items-center justify-center">
-                      {isYouTubeUrl(currentLesson.video_url) ? (
-                          <iframe
-                            key={currentLesson.id}
-                            src={getYouTubeEmbedUrl(currentLesson.video_url)}
-                            className="w-full h-full rounded-lg"
-                            title={currentLesson.title}
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            referrerPolicy="strict-origin-when-cross-origin"
-                            allowFullScreen
-                          />
-                      ) : isGoogleDriveUrl(currentLesson.video_url) ? (
-                          <iframe
-                            key={currentLesson.id}
-                            src={currentLesson.video_url}
-                            className="w-full h-full rounded-lg"
-                            title={currentLesson.title}
-                            allow="autoplay"
-                            allowFullScreen
-                          />
-                      ) : (
-                            <video
-                              key={currentLesson.id}
-                              controls
-                              className="w-full h-full rounded-lg"
-                              src={signedVideoUrl || currentLesson.video_url}
-                              poster="/placeholder.svg"
-                              onError={() => setVideoError('Failed to load video. You can try downloading it below.')}
-                            >
-                              Your browser does not support the video tag.
-                            </video>
+                    <div className="space-y-4">
+                      {/* Video Watch Status */}
+                      {currentLesson.lesson_type === 'video' && !isLessonCompleted && (
+                        <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200">
+                          <CardContent className="p-4">
+                            <div className="flex items-start gap-3">
+                              <div className="flex-shrink-0 mt-0.5">
+                                {hasWatchedVideo ? (
+                                  <CheckCircle className="h-5 w-5 text-green-500" />
+                                ) : (
+                                  <Clock className="h-5 w-5 text-blue-500" />
+                                )}
+                              </div>
+                              <div className="flex-1">
+                                <h4 className="font-semibold text-sm mb-1">
+                                  {hasWatchedVideo ? '✓ Video Watched' : 'Watch the Video'}
+                                </h4>
+                                <p className="text-xs text-muted-foreground">
+                                  {hasWatchedVideo 
+                                    ? quizQuestions && quizQuestions.length > 0 
+                                      ? 'Now complete the quiz below to proceed'
+                                      : 'Click "Mark Complete" to finish this lesson'
+                                    : 'Watch for at least 10 seconds to unlock completion'}
+                                </p>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
                       )}
+
+                      <div 
+                        className="aspect-video bg-black rounded-lg flex items-center justify-center"
+                        onPlay={() => setIsPlaying(true)}
+                        onPause={() => setIsPlaying(false)}
+                      >
+                        {isYouTubeUrl(currentLesson.video_url) ? (
+                            <iframe
+                              key={currentLesson.id}
+                              src={getYouTubeEmbedUrl(currentLesson.video_url)}
+                              className="w-full h-full rounded-lg"
+                              title={currentLesson.title}
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              referrerPolicy="strict-origin-when-cross-origin"
+                              allowFullScreen
+                              onLoad={() => setIsPlaying(true)}
+                            />
+                        ) : isGoogleDriveUrl(currentLesson.video_url) ? (
+                            <iframe
+                              key={currentLesson.id}
+                              src={currentLesson.video_url}
+                              className="w-full h-full rounded-lg"
+                              title={currentLesson.title}
+                              allow="autoplay"
+                              allowFullScreen
+                              onLoad={() => setIsPlaying(true)}
+                            />
+                        ) : (
+                              <video
+                                key={currentLesson.id}
+                                controls
+                                className="w-full h-full rounded-lg"
+                                src={signedVideoUrl || currentLesson.video_url}
+                                poster="/placeholder.svg"
+                                onError={() => setVideoError('Failed to load video. You can try downloading it below.')}
+                                onPlay={() => setIsPlaying(true)}
+                                onPause={() => setIsPlaying(false)}
+                              >
+                                Your browser does not support the video tag.
+                              </video>
+                        )}
+                      </div>
                     </div>
                   )}
 
@@ -697,6 +843,105 @@ export const CoursePlayer = () => {
                      </div>
                    )}
 
+                   {/* Quiz Section - Inline */}
+                   {currentLesson?.lesson_type === 'video' && quizQuestions && quizQuestions.length > 0 && hasWatchedVideo && (
+                     <div className="pt-6 border-t space-y-4">
+                       <div className="flex items-center justify-between mb-4">
+                         <h3 className="text-lg font-semibold flex items-center gap-2">
+                           <HelpCircle className="h-5 w-5 text-primary" />
+                           Knowledge Check
+                         </h3>
+                         <Badge variant="outline">
+                           {quizQuestions.filter(q => userQuizAnswers?.some(a => a.question_id === q.id && a.is_correct)).length} / {quizQuestions.length} Complete
+                         </Badge>
+                       </div>
+                       <Card className="bg-primary/5">
+                         <CardContent className="p-4">
+                           <p className="text-sm text-muted-foreground">
+                             Complete all quiz questions correctly to mark this lesson as complete and unlock the next lesson.
+                           </p>
+                         </CardContent>
+                       </Card>
+                       <div className="space-y-6">
+                         {quizQuestions.map((question, idx) => {
+                           const userAnswer = userQuizAnswers?.find(a => a.question_id === question.id);
+                           const currentAnswer = quizAnswers[question.id];
+                           const isAnswered = userAnswer?.is_correct || false;
+                           
+                           return (
+                             <Card key={question.id} className={isAnswered ? 'border-green-500 bg-green-50 dark:bg-green-950/20' : 'border-2 border-dashed'}>
+                               <CardHeader>
+                                 <CardTitle className="text-base flex items-center justify-between">
+                                   <span>Question {idx + 1}: {question.question_text}</span>
+                                   {isAnswered && <CheckCircle className="h-5 w-5 text-green-500" />}
+                                 </CardTitle>
+                               </CardHeader>
+                               <CardContent className="space-y-4">
+                                 {question.question_type === 'multiple_choice' && question.options && (
+                                   <RadioGroup
+                                     value={currentAnswer || ''}
+                                     onValueChange={(value) => {
+                                       setQuizAnswers(prev => ({ ...prev, [question.id]: value }));
+                                     }}
+                                     disabled={isAnswered}
+                                   >
+                                     {question.options.map((option, optIdx) => (
+                                       <div key={optIdx} className="flex items-center space-x-2 p-2 rounded hover:bg-muted/50">
+                                         <RadioGroupItem value={option} id={`q-${question.id}-${optIdx}`} />
+                                         <Label htmlFor={`q-${question.id}-${optIdx}`} className="cursor-pointer flex-1">{option}</Label>
+                                       </div>
+                                     ))}
+                                   </RadioGroup>
+                                 )}
+                                 {question.question_type === 'true_false' && (
+                                   <RadioGroup
+                                     value={currentAnswer || ''}
+                                     onValueChange={(value) => {
+                                       setQuizAnswers(prev => ({ ...prev, [question.id]: value }));
+                                     }}
+                                     disabled={isAnswered}
+                                   >
+                                     <div className="flex items-center space-x-2 p-2 rounded hover:bg-muted/50">
+                                       <RadioGroupItem value="true" id={`q-${question.id}-true`} />
+                                       <Label htmlFor={`q-${question.id}-true`} className="cursor-pointer flex-1">True</Label>
+                                     </div>
+                                     <div className="flex items-center space-x-2 p-2 rounded hover:bg-muted/50">
+                                       <RadioGroupItem value="false" id={`q-${question.id}-false`} />
+                                       <Label htmlFor={`q-${question.id}-false`} className="cursor-pointer flex-1">False</Label>
+                                     </div>
+                                   </RadioGroup>
+                                 )}
+                                 {!isAnswered && currentAnswer && (
+                                   <Button 
+                                     onClick={() => {
+                                       submitQuizAnswer({
+                                         questionId: question.id,
+                                         userAnswer: currentAnswer,
+                                         correctAnswer: question.correct_answer,
+                                         lessonId: currentLesson.id,
+                                         enrollmentId: enrollment!.id,
+                                       });
+                                     }}
+                                     size="sm"
+                                     className="w-full"
+                                   >
+                                     Submit Answer
+                                   </Button>
+                                 )}
+                                 {isAnswered && (
+                                   <div className="flex items-center gap-2 text-sm text-green-600 font-medium">
+                                     <CheckCircle className="h-4 w-4" />
+                                     Correct! Well done.
+                                   </div>
+                                 )}
+                               </CardContent>
+                             </Card>
+                           );
+                         })}
+                       </div>
+                     </div>
+                   )}
+
                    {/* Lesson Navigation */}
                    <div className="flex justify-between items-center pt-6 border-t">
                      <Button 
@@ -705,26 +950,33 @@ export const CoursePlayer = () => {
                        disabled={currentModuleIndex === 0 && currentLessonIndex === 0}
                      >
                        <ChevronLeft className="h-4 w-4 mr-2" />
-                       Previous
+                       Previous Lesson
                      </Button>
 
-                     {!isLessonCompleted && (
-                       <Button onClick={handleMarkComplete}>
-                         <CheckCircle className="h-4 w-4 mr-2" />
-                         Mark Complete
-                       </Button>
-                     )}
-
-                     <Button 
-                       onClick={goToNextLesson}
-                       disabled={
-                         currentModuleIndex === (course?.course_modules?.length || 0) - 1 &&
-                         currentLessonIndex === (currentModule?.course_lessons.length || 0) - 1
-                       }
-                     >
-                       Next
-                       <ChevronRight className="h-4 w-4 ml-2" />
-                     </Button>
+                     <div className="flex gap-2">
+                       {!isLessonCompleted && (
+                         <Button 
+                           onClick={handleMarkComplete}
+                           variant="default"
+                           className="bg-green-600 hover:bg-green-700"
+                         >
+                           <CheckCircle className="h-4 w-4 mr-2" />
+                           Complete & Continue
+                         </Button>
+                       )}
+                       {isLessonCompleted && (
+                         <Button 
+                           onClick={goToNextLesson}
+                           disabled={
+                             currentModuleIndex === (course?.course_modules?.length || 0) - 1 &&
+                             currentLessonIndex === (currentModule?.course_lessons.length || 0) - 1
+                           }
+                         >
+                           Next Lesson
+                           <ChevronRight className="h-4 w-4 ml-2" />
+                         </Button>
+                       )}
+                     </div>
                     </div>
                  </div>
                </CardContent>
