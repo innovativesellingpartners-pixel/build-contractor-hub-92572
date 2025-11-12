@@ -1341,6 +1341,7 @@ export type Database = {
         Row: {
           assigned_user_id: string | null
           budget_confirmed: boolean | null
+          closed_at: string | null
           competing_options_description: string | null
           contract_document_url: string | null
           created_at: string
@@ -1373,10 +1374,13 @@ export type Database = {
           trade_type: string
           updated_at: string
           user_id: string
+          win_loss_details: string | null
+          win_loss_reason: string | null
         }
         Insert: {
           assigned_user_id?: string | null
           budget_confirmed?: boolean | null
+          closed_at?: string | null
           competing_options_description?: string | null
           contract_document_url?: string | null
           created_at?: string
@@ -1409,10 +1413,13 @@ export type Database = {
           trade_type: string
           updated_at?: string
           user_id: string
+          win_loss_details?: string | null
+          win_loss_reason?: string | null
         }
         Update: {
           assigned_user_id?: string | null
           budget_confirmed?: boolean | null
+          closed_at?: string | null
           competing_options_description?: string | null
           contract_document_url?: string | null
           created_at?: string
@@ -1445,6 +1452,8 @@ export type Database = {
           trade_type?: string
           updated_at?: string
           user_id?: string
+          win_loss_details?: string | null
+          win_loss_reason?: string | null
         }
         Relationships: [
           {

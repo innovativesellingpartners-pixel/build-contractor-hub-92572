@@ -17,6 +17,7 @@ import { PaymentsTable } from "@/components/reporting/PaymentsTable";
 import { UnclosedStalledTable } from "@/components/reporting/UnclosedStalledTable";
 import { ReportExportActions } from "@/components/reporting/ReportExportActions";
 import { ConversionAnalytics } from "@/components/reporting/ConversionAnalytics";
+import { WinLossAnalysis } from "@/components/reporting/WinLossAnalysis";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -106,6 +107,9 @@ export default function Reporting() {
 
         {/* Conversion Analytics */}
         <ConversionAnalytics filters={filters} />
+
+        {/* Win/Loss Analysis */}
+        <WinLossAnalysis filters={filters} />
 
         {/* Financial Statements */}
         <div className="grid gap-6">

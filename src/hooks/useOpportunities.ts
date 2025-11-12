@@ -53,6 +53,11 @@ export interface Opportunity {
   proposal_document_url?: string;
   contract_document_url?: string;
   
+  // Win/Loss tracking
+  win_loss_reason?: string;
+  win_loss_details?: string;
+  closed_at?: string;
+  
   // Assignment
   assigned_user_id?: string;
   

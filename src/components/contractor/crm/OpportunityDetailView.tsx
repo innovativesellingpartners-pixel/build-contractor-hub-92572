@@ -12,6 +12,7 @@ import { Opportunity, OpportunityStage, useOpportunities } from '@/hooks/useOppo
 import { ArrowLeft, Calendar, DollarSign, FileText, Phone, Mail, MapPin, User, TrendingUp, Clock, Upload } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import { WinLossReasonDialog } from './WinLossReasonDialog';
 
 interface OpportunityDetailViewProps {
   opportunity: Opportunity;
@@ -35,14 +36,44 @@ export default function OpportunityDetailView({ opportunity, onBack }: Opportuni
   const [editedOpp, setEditedOpp] = useState(opportunity);
   const [stageHistory, setStageHistory] = useState<any[]>([]);
   const [showHistory, setShowHistory] = useState(false);
+  const [showWinLossDialog, setShowWinLossDialog] = useState(false);
+  const [pendingStage, setPendingStage] = useState<OpportunityStage | null>(null);
 
   const handleStageChange = async (newStage: OpportunityStage) => {
+    // If closing (won) or losing the opportunity, prompt for win/loss reason
+    if ((newStage === 'close' || newStage === 'psfu') && opportunity.stage !== newStage) {
+      setPendingStage(newStage);
+      setShowWinLossDialog(true);
+      return;
+    }
+
     try {
       await updateOpportunity(opportunity.id, { stage: newStage });
       toast({
         title: 'Stage updated',
         description: `Opportunity moved to ${stageConfig[newStage].label}`,
       });
+    } catch (error) {
+      // Error handled by hook
+    }
+  };
+
+  const handleWinLossSubmit = async (reason: string, details: string) => {
+    if (!pendingStage) return;
+
+    try {
+      await updateOpportunity(opportunity.id, { 
+        stage: pendingStage,
+        win_loss_reason: reason,
+        win_loss_details: details,
+        closed_at: new Date().toISOString(),
+      });
+      toast({
+        title: pendingStage === 'close' ? 'Opportunity won!' : 'Opportunity closed',
+        description: `Marked as ${stageConfig[pendingStage].label}`,
+      });
+      setShowWinLossDialog(false);
+      setPendingStage(null);
     } catch (error) {
       // Error handled by hook
     }
@@ -343,6 +374,15 @@ export default function OpportunityDetailView({ opportunity, onBack }: Opportuni
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Win/Loss Reason Dialog */}
+        <WinLossReasonDialog
+          open={showWinLossDialog}
+          onOpenChange={setShowWinLossDialog}
+          opportunity={opportunity}
+          isWin={pendingStage === 'close'}
+          onSubmit={handleWinLossSubmit}
+        />
       </div>
     </div>
   );

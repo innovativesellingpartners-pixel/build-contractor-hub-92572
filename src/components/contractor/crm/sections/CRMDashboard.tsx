@@ -5,6 +5,7 @@ import { useJobs } from '@/hooks/useJobs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ClipboardList, Target, Briefcase, Users, DollarSign, TrendingUp } from 'lucide-react';
 import { ConversionAnalytics } from '@/components/reporting/ConversionAnalytics';
+import { WinLossAnalysis } from '@/components/reporting/WinLossAnalysis';
 
 export default function CRMDashboard() {
   const { leads } = useLeads();
@@ -64,6 +65,9 @@ export default function CRMDashboard() {
 
         {/* Conversion Analytics */}
         <ConversionAnalytics />
+
+        {/* Win/Loss Analysis */}
+        <WinLossAnalysis />
 
         {/* Stats Grid */}
         <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
