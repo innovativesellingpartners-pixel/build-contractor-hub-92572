@@ -7,6 +7,10 @@ import { SalesOverTimeChart } from "@/components/reporting/SalesOverTimeChart";
 import { EstimateFunnelChart } from "@/components/reporting/EstimateFunnelChart";
 import { RevenueProfitChart } from "@/components/reporting/RevenueProfitChart";
 import { PerformanceByRepChart } from "@/components/reporting/PerformanceByRepChart";
+import { ProfitLossStatement } from "@/components/reporting/ProfitLossStatement";
+import { ExpenseBreakdown } from "@/components/reporting/ExpenseBreakdown";
+import { JobProfitability } from "@/components/reporting/JobProfitability";
+import { CashFlowChart } from "@/components/reporting/CashFlowChart";
 import { EstimatesTable } from "@/components/reporting/EstimatesTable";
 import { JobsTable } from "@/components/reporting/JobsTable";
 import { PaymentsTable } from "@/components/reporting/PaymentsTable";
@@ -45,8 +49,23 @@ export default function Reporting() {
         {/* KPI Cards */}
         <KPICards filters={filters} />
 
+        {/* Financial Statements */}
+        <div className="grid gap-6">
+          <ProfitLossStatement filters={filters} />
+        </div>
+
         {/* Charts */}
         <div className="grid gap-6 md:grid-cols-2">
+          <Card className="p-6">
+            <h3 className="text-lg font-semibold mb-4">Cash Flow Analysis</h3>
+            <CashFlowChart filters={filters} />
+          </Card>
+
+          <Card className="p-6">
+            <h3 className="text-lg font-semibold mb-4">Expense Breakdown</h3>
+            <ExpenseBreakdown filters={filters} />
+          </Card>
+
           <Card className="p-6">
             <h3 className="text-lg font-semibold mb-4">Sales Over Time</h3>
             <SalesOverTimeChart filters={filters} />
@@ -58,7 +77,7 @@ export default function Reporting() {
           </Card>
 
           <Card className="p-6 md:col-span-2">
-            <h3 className="text-lg font-semibold mb-4">Revenue & Profit</h3>
+            <h3 className="text-lg font-semibold mb-4">Revenue & Profit Trend</h3>
             <RevenueProfitChart filters={filters} />
           </Card>
 
@@ -67,6 +86,12 @@ export default function Reporting() {
             <PerformanceByRepChart filters={filters} />
           </Card>
         </div>
+
+        {/* Job Profitability Analysis */}
+        <Card className="p-6">
+          <h3 className="text-lg font-semibold mb-4">Job Profitability Analysis</h3>
+          <JobProfitability filters={filters} />
+        </Card>
 
         {/* Data Tables */}
         <Tabs defaultValue="estimates" className="space-y-4">

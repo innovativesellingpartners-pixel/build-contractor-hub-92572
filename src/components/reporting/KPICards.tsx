@@ -63,13 +63,41 @@ export function KPICards({ filters }: KPICardsProps) {
       const totalSoldValue = soldJobs.reduce((sum, j) => sum + (Number(j.budget_amount) || 0), 0);
       const conversionRate = totalEstimates > 0 ? (totalJobsSold / totalEstimates) * 100 : 0;
 
-      const totalRevenue = totalSoldValue; // Using budget_amount as revenue proxy
-      const totalCOGS = soldJobs.reduce(
-        (sum, j) => sum + (Number(j.actual_cost) || 0),
-        0
-      );
-      const grossProfit = totalRevenue - totalCOGS;
-      const profitMargin = totalRevenue > 0 ? (grossProfit / totalRevenue) * 100 : 0;
+      // Get additional financial data
+      const { data: jobCosts } = await supabase
+        .from("job_costs")
+        .select("amount")
+        .eq("user_id", user.id);
+
+      const { data: materials } = await supabase
+        .from("materials")
+        .select("total_cost")
+        .eq("user_id", user.id);
+
+      const { data: invoices } = await supabase
+        .from("invoices")
+        .select("amount_due, amount_paid")
+        .eq("user_id", user.id);
+
+      const totalRevenue = totalSoldValue;
+      const totalCOGS = soldJobs.reduce((sum, j) => sum + (Number(j.actual_cost) || 0), 0);
+      const materialsCosts = materials?.reduce((sum, m) => sum + (Number(m.total_cost) || 0), 0) || 0;
+      const totalDirectCosts = totalCOGS + materialsCosts;
+      const grossProfit = totalRevenue - totalDirectCosts;
+      const grossMargin = totalRevenue > 0 ? (grossProfit / totalRevenue) * 100 : 0;
+
+      const operatingExpenses = jobCosts?.reduce((sum, c) => sum + (Number(c.amount) || 0), 0) || 0;
+      const operatingIncome = grossProfit - operatingExpenses;
+      const operatingMargin = totalRevenue > 0 ? (operatingIncome / totalRevenue) * 100 : 0;
+
+      const netIncome = operatingIncome;
+      const netMargin = totalRevenue > 0 ? (netIncome / totalRevenue) * 100 : 0;
+
+      const totalAR = invoices?.reduce((sum, inv) => {
+        const due = Number(inv.amount_due) || 0;
+        const paid = Number(inv.amount_paid) || 0;
+        return sum + Math.max(0, due - paid);
+      }, 0) || 0;
 
       // Payment tracking would need invoices table - simplify for now
       const jobsFullyPaid = soldJobs.filter((j) => j.job_status === "completed").length;
@@ -89,9 +117,17 @@ export function KPICards({ filters }: KPICardsProps) {
         },
         profitability: {
           revenue: totalRevenue,
-          cogs: totalCOGS,
+          cogs: totalDirectCosts,
           grossProfit,
-          margin: profitMargin,
+          grossMargin,
+          operatingExpenses,
+          operatingIncome,
+          operatingMargin,
+          netIncome,
+          netMargin,
+        },
+        financial: {
+          accountsReceivable: totalAR,
         },
         payments: {
           fullyPaid: jobsFullyPaid,
@@ -127,13 +163,98 @@ export function KPICards({ filters }: KPICardsProps) {
       <Card className="p-6">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-muted-foreground">Total Estimates</p>
-            <p className="text-2xl font-bold">{kpis?.estimates.total || 0}</p>
+            <p className="text-sm font-medium text-muted-foreground">Total Revenue</p>
+            <p className="text-2xl font-bold">
+              {formatCurrency(kpis?.profitability.revenue || 0)}
+            </p>
             <p className="text-xs text-muted-foreground mt-1">
-              {formatCurrency(kpis?.estimates.value || 0)}
+              {kpis?.sales.totalSold || 0} jobs
             </p>
           </div>
-          <FileText className="h-8 w-8 text-primary" />
+          <DollarSign className="h-8 w-8 text-green-600" />
+        </div>
+      </Card>
+
+      <Card className="p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-muted-foreground">Gross Profit</p>
+            <p className="text-2xl font-bold">
+              {formatCurrency(kpis?.profitability.grossProfit || 0)}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {formatPercent(kpis?.profitability.grossMargin || 0)} margin
+            </p>
+          </div>
+          <TrendingUp className="h-8 w-8 text-green-500" />
+        </div>
+      </Card>
+
+      <Card className="p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-muted-foreground">Operating Income</p>
+            <p className="text-2xl font-bold">
+              {formatCurrency(kpis?.profitability.operatingIncome || 0)}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {formatPercent(kpis?.profitability.operatingMargin || 0)} margin
+            </p>
+          </div>
+          <DollarSign className="h-8 w-8 text-blue-600" />
+        </div>
+      </Card>
+
+      <Card className="p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-muted-foreground">Net Income</p>
+            <p className="text-2xl font-bold">
+              {formatCurrency(kpis?.profitability.netIncome || 0)}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {formatPercent(kpis?.profitability.netMargin || 0)} margin
+            </p>
+          </div>
+          <TrendingUp className="h-8 w-8 text-primary" />
+        </div>
+      </Card>
+
+      <Card className="p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-muted-foreground">COGS</p>
+            <p className="text-2xl font-bold">
+              {formatCurrency(kpis?.profitability.cogs || 0)}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">Direct costs</p>
+          </div>
+          <AlertCircle className="h-8 w-8 text-orange-500" />
+        </div>
+      </Card>
+
+      <Card className="p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-muted-foreground">Operating Expenses</p>
+            <p className="text-2xl font-bold">
+              {formatCurrency(kpis?.profitability.operatingExpenses || 0)}
+            </p>
+          </div>
+          <AlertCircle className="h-8 w-8 text-red-500" />
+        </div>
+      </Card>
+
+      <Card className="p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-muted-foreground">Accounts Receivable</p>
+            <p className="text-2xl font-bold">
+              {formatCurrency(kpis?.financial.accountsReceivable || 0)}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">Outstanding</p>
+          </div>
+          <DollarSign className="h-8 w-8 text-orange-500" />
         </div>
       </Card>
 
@@ -145,85 +266,10 @@ export function KPICards({ filters }: KPICardsProps) {
               {formatPercent(kpis?.estimates.conversionRate || 0)}
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              {kpis?.sales.totalSold || 0} jobs sold
+              {kpis?.sales.totalSold || 0} of {kpis?.estimates.total || 0} estimates
             </p>
           </div>
-          <TrendingUp className="h-8 w-8 text-green-500" />
-        </div>
-      </Card>
-
-      <Card className="p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">Total Revenue</p>
-            <p className="text-2xl font-bold">
-              {formatCurrency(kpis?.profitability.revenue || 0)}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {formatCurrency(kpis?.sales.totalValue || 0)} contracted
-            </p>
-          </div>
-          <DollarSign className="h-8 w-8 text-green-600" />
-        </div>
-      </Card>
-
-      <Card className="p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">Profit Margin</p>
-            <p className="text-2xl font-bold">
-              {formatPercent(kpis?.profitability.margin || 0)}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {formatCurrency(kpis?.profitability.grossProfit || 0)} profit
-            </p>
-          </div>
-          <TrendingUp className="h-8 w-8 text-blue-500" />
-        </div>
-      </Card>
-
-      <Card className="p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">Avg Estimate</p>
-            <p className="text-2xl font-bold">
-              {formatCurrency(kpis?.estimates.average || 0)}
-            </p>
-          </div>
-          <FileText className="h-8 w-8 text-muted-foreground" />
-        </div>
-      </Card>
-
-      <Card className="p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">Avg Sale Value</p>
-            <p className="text-2xl font-bold">
-              {formatCurrency(kpis?.sales.averageValue || 0)}
-            </p>
-          </div>
-          <DollarSign className="h-8 w-8 text-muted-foreground" />
-        </div>
-      </Card>
-
-      <Card className="p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">Jobs Fully Paid</p>
-            <p className="text-2xl font-bold">{kpis?.payments.fullyPaid || 0}</p>
-          </div>
-          <CheckCircle className="h-8 w-8 text-green-500" />
-        </div>
-      </Card>
-
-      <Card className="p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">Outstanding Balance</p>
-            <p className="text-2xl font-bold">{kpis?.payments.withBalance || 0}</p>
-            <p className="text-xs text-muted-foreground mt-1">jobs</p>
-          </div>
-          <AlertCircle className="h-8 w-8 text-orange-500" />
+          <TrendingUp className="h-8 w-8 text-purple-500" />
         </div>
       </Card>
     </div>
