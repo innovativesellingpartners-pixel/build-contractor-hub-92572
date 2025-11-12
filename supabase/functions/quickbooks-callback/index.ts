@@ -76,26 +76,44 @@ Deno.serve(async (req) => {
     const tokenData = await tokenResponse.json();
     console.log('Token exchange successful');
 
-    // Calculate expiration times
-    const accessTokenExpiresAt = new Date(Date.now() + (tokenData.expires_in * 1000));
-    const refreshTokenExpiresAt = new Date(Date.now() + (tokenData.x_refresh_token_expires_in * 1000));
+    // Encrypt and store tokens securely
+    const encryptionKey = Deno.env.get('QUICKBOOKS_ENCRYPTION_KEY');
+    if (!encryptionKey) {
+      throw new Error('Encryption key not configured');
+    }
 
-    // Update contractor profile with QuickBooks connection data
+    const expiresAt = new Date(Date.now() + tokenData.expires_in * 1000);
+    const refreshExpiresAt = new Date(Date.now() + tokenData.x_refresh_token_expires_in * 1000);
+
+    // Store encrypted tokens in quickbooks_connections table
+    const { error: connectionError } = await supabaseClient.rpc('store_quickbooks_tokens', {
+      p_user_id: contractorId,
+      p_realm_id: realmId,
+      p_access_token: tokenData.access_token,
+      p_refresh_token: tokenData.refresh_token,
+      p_expires_at: expiresAt.toISOString(),
+      p_encryption_key: encryptionKey,
+    });
+
+    if (connectionError) {
+      console.error('Failed to store encrypted tokens:', connectionError);
+      throw new Error('Failed to save QuickBooks connection');
+    }
+
+    // Also update profiles table for backward compatibility
     const { error: updateError } = await supabaseClient
       .from('profiles')
       .update({
         qb_realm_id: realmId,
-        qb_access_token: tokenData.access_token,
-        qb_refresh_token: tokenData.refresh_token,
-        qb_access_token_expires_at: accessTokenExpiresAt.toISOString(),
-        qb_refresh_token_expires_at: refreshTokenExpiresAt.toISOString(),
+        qb_token_expires_at: expiresAt.toISOString(),
+        qb_refresh_token_expires_at: refreshExpiresAt.toISOString(),
         qb_last_sync_at: new Date().toISOString(),
       })
       .eq('id', contractorId);
 
     if (updateError) {
       console.error('Failed to update contractor profile:', updateError);
-      throw new Error('Failed to save QuickBooks connection');
+      // Don't throw - encryption is more important than profile update
     }
 
     console.log('QuickBooks connection saved successfully for contractor:', contractorId);

@@ -21,35 +21,32 @@ async function getValidQuickBooksAccessToken(contractorId: string): Promise<{ ac
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
   );
 
-  // Load contractor profile
-  const { data: profile, error: profileError } = await supabaseClient
-    .from('profiles')
-    .select('id, qb_realm_id, qb_access_token, qb_refresh_token, qb_access_token_expires_at, qb_refresh_token_expires_at')
-    .eq('id', contractorId)
-    .single();
-
-  if (profileError || !profile) {
-    console.error('Failed to load contractor profile:', profileError);
-    throw new Error('Contractor not found');
+  const encryptionKey = Deno.env.get('QUICKBOOKS_ENCRYPTION_KEY');
+  if (!encryptionKey) {
+    throw new Error('Encryption key not configured');
   }
 
-  const contractor = profile as ContractorProfile;
+  // Get encrypted tokens from secure storage
+  const { data: connectionData, error: connError } = await supabaseClient.rpc('get_quickbooks_tokens', {
+    p_user_id: contractorId,
+    p_encryption_key: encryptionKey,
+  });
 
-  // Check if QuickBooks is connected
-  if (!contractor.qb_realm_id || !contractor.qb_access_token || !contractor.qb_refresh_token) {
+  if (connError || !connectionData || connectionData.length === 0) {
     throw new Error('QuickBooks not connected for this contractor');
   }
 
-  const realmId = contractor.qb_realm_id;
+  const connection = connectionData[0];
+  const realmId = connection.realm_id;
 
   // Check if access token is still valid (with 5 minute safety buffer)
-  const expiresAt = new Date(contractor.qb_access_token_expires_at!);
+  const expiresAt = new Date(connection.expires_at);
   const safetyBuffer = 5 * 60 * 1000; // 5 minutes in milliseconds
   const now = new Date();
 
   if (expiresAt.getTime() > now.getTime() + safetyBuffer) {
     console.log('Using existing valid access token');
-    return { accessToken: contractor.qb_access_token, realmId };
+    return { accessToken: connection.access_token, realmId };
   }
 
   // Access token expired or expiring soon - refresh it
@@ -67,7 +64,7 @@ async function getValidQuickBooksAccessToken(contractorId: string): Promise<{ ac
     },
     body: new URLSearchParams({
       grant_type: 'refresh_token',
-      refresh_token: contractor.qb_refresh_token,
+      refresh_token: connection.refresh_token,
     }).toString(),
   });
 
@@ -80,23 +77,21 @@ async function getValidQuickBooksAccessToken(contractorId: string): Promise<{ ac
   const tokenData = await refreshResponse.json();
   console.log('Token refresh successful');
 
-  // Calculate new expiration times
-  const newAccessTokenExpiresAt = new Date(Date.now() + (tokenData.expires_in * 1000));
-  const newRefreshTokenExpiresAt = new Date(Date.now() + (tokenData.x_refresh_token_expires_in * 1000));
+  // Calculate new expiration time
+  const newExpiresAt = new Date(Date.now() + (tokenData.expires_in * 1000));
 
-  // Update contractor profile with new tokens
-  const { error: updateError } = await supabaseClient
-    .from('profiles')
-    .update({
-      qb_access_token: tokenData.access_token,
-      qb_refresh_token: tokenData.refresh_token,
-      qb_access_token_expires_at: newAccessTokenExpiresAt.toISOString(),
-      qb_refresh_token_expires_at: newRefreshTokenExpiresAt.toISOString(),
-    })
-    .eq('id', contractorId);
+  // Store new encrypted tokens
+  const { error: storeError } = await supabaseClient.rpc('store_quickbooks_tokens', {
+    p_user_id: contractorId,
+    p_realm_id: realmId,
+    p_access_token: tokenData.access_token,
+    p_refresh_token: tokenData.refresh_token,
+    p_expires_at: newExpiresAt.toISOString(),
+    p_encryption_key: encryptionKey,
+  });
 
-  if (updateError) {
-    console.error('Failed to update tokens:', updateError);
+  if (storeError) {
+    console.error('Failed to store refreshed tokens:', storeError);
     throw new Error('Failed to save refreshed tokens');
   }
 

@@ -1544,31 +1544,37 @@ export type Database = {
       quickbooks_connections: {
         Row: {
           access_token: string
+          access_token_encrypted: string | null
           created_at: string
           expires_at: string
           id: string
           realm_id: string
           refresh_token: string
+          refresh_token_encrypted: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
           access_token: string
+          access_token_encrypted?: string | null
           created_at?: string
           expires_at: string
           id?: string
           realm_id: string
           refresh_token: string
+          refresh_token_encrypted?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
           access_token?: string
+          access_token_encrypted?: string | null
           created_at?: string
           expires_at?: string
           id?: string
           realm_id?: string
           refresh_token?: string
+          refresh_token_encrypted?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -2275,12 +2281,34 @@ export type Database = {
         }[]
       }
       cleanup_expired_oauth_states: { Args: never; Returns: undefined }
+      drop_quickbooks_plaintext_columns: { Args: never; Returns: undefined }
       generate_estimate_number: { Args: never; Returns: string }
       generate_invoice_number: { Args: never; Returns: string }
       generate_job_number: { Args: never; Returns: string }
+      get_quickbooks_tokens: {
+        Args: { p_encryption_key: string; p_user_id: string }
+        Returns: {
+          access_token: string
+          expires_at: string
+          realm_id: string
+          refresh_token: string
+          user_id: string
+        }[]
+      }
       get_user_tier: { Args: { user_id: string }; Returns: string }
       has_full_access: { Args: { user_id: string }; Returns: boolean }
       has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
+      store_quickbooks_tokens: {
+        Args: {
+          p_access_token: string
+          p_encryption_key: string
+          p_expires_at: string
+          p_realm_id: string
+          p_refresh_token: string
+          p_user_id: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       change_order_status: "requested" | "approved" | "rejected"

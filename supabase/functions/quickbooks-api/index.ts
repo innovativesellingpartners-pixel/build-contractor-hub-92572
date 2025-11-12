@@ -5,9 +5,14 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-async function refreshToken(connection: any, supabaseClient: any) {
+async function refreshToken(connection: any, supabaseClient: any, decryptedRefreshToken: string) {
   const clientId = Deno.env.get('QUICKBOOKS_CLIENT_ID');
   const clientSecret = Deno.env.get('QUICKBOOKS_CLIENT_SECRET');
+  const encryptionKey = Deno.env.get('QUICKBOOKS_ENCRYPTION_KEY');
+
+  if (!encryptionKey) {
+    throw new Error('Encryption key not configured');
+  }
 
   const response = await fetch('https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer', {
     method: 'POST',
@@ -17,21 +22,22 @@ async function refreshToken(connection: any, supabaseClient: any) {
     },
     body: new URLSearchParams({
       grant_type: 'refresh_token',
-      refresh_token: connection.refresh_token,
+      refresh_token: decryptedRefreshToken,
     }).toString(),
   });
 
   const tokenData = await response.json();
   const expiresAt = new Date(Date.now() + tokenData.expires_in * 1000);
 
-  await supabaseClient
-    .from('quickbooks_connections')
-    .update({
-      access_token: tokenData.access_token,
-      refresh_token: tokenData.refresh_token,
-      expires_at: expiresAt.toISOString(),
-    })
-    .eq('user_id', connection.user_id);
+  // Re-encrypt and store new tokens using secure function
+  await supabaseClient.rpc('store_quickbooks_tokens', {
+    p_user_id: connection.user_id,
+    p_realm_id: connection.realm_id,
+    p_access_token: tokenData.access_token,
+    p_refresh_token: tokenData.refresh_token,
+    p_expires_at: expiresAt.toISOString(),
+    p_encryption_key: encryptionKey,
+  });
 
   return tokenData.access_token;
 }
@@ -58,16 +64,22 @@ Deno.serve(async (req) => {
       throw new Error('Unauthorized');
     }
 
-    // Get connection for this user
-    const { data: connection, error: connError } = await supabaseClient
-      .from('quickbooks_connections')
-      .select('*')
-      .eq('user_id', user.id)
-      .single();
+    // Get connection for this user with decrypted tokens
+    const encryptionKey = Deno.env.get('QUICKBOOKS_ENCRYPTION_KEY');
+    if (!encryptionKey) {
+      throw new Error('Encryption key not configured');
+    }
 
-    if (connError || !connection) {
+    const { data: connectionData, error: connError } = await supabaseClient.rpc('get_quickbooks_tokens', {
+      p_user_id: user.id,
+      p_encryption_key: encryptionKey,
+    });
+
+    if (connError || !connectionData || connectionData.length === 0) {
       throw new Error('QuickBooks not connected');
     }
+
+    const connection = connectionData[0];
 
     // Check if token needs refresh
     const expiresAt = new Date(connection.expires_at);
@@ -75,7 +87,7 @@ Deno.serve(async (req) => {
     
     if (expiresAt <= new Date()) {
       console.log('Token expired, refreshing...');
-      accessToken = await refreshToken(connection, supabaseClient);
+      accessToken = await refreshToken(connection, supabaseClient, connection.refresh_token);
     }
 
     const { endpoint } = await req.json();
