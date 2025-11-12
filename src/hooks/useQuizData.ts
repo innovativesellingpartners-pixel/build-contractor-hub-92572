@@ -9,7 +9,7 @@ export interface QuizQuestion {
   question_text: string;
   question_type: 'multiple_choice' | 'true_false' | 'short_answer';
   options: string[] | null;
-  correct_answer: string;
+  correct_answer?: string; // Optional - only available to admins
   order_index: number;
   points: number;
 }
@@ -31,9 +31,10 @@ export const useQuizQuestions = (lessonId: string) => {
     queryFn: async () => {
       if (!lessonId) return [];
 
+      // Don't request correct_answer - validate server-side
       const { data, error } = await supabase
         .from('lesson_quiz_questions')
-        .select('*')
+        .select('id, lesson_id, question_text, question_type, options, order_index, points, created_at, updated_at')
         .eq('lesson_id', lessonId)
         .order('order_index', { ascending: true });
 
@@ -76,17 +77,21 @@ export const useSubmitQuizAnswer = () => {
       lessonId,
       questionId,
       userAnswer,
-      correctAnswer,
     }: {
       enrollmentId: string;
       lessonId: string;
       questionId: string;
       userAnswer: string;
-      correctAnswer: string;
     }) => {
       if (!user?.id) throw new Error('User not authenticated');
 
-      const isCorrect = userAnswer.toLowerCase().trim() === correctAnswer.toLowerCase().trim();
+      // Validate answer server-side
+      const { data: validationResult, error: validationError } = await supabase.functions.invoke('validate-quiz-answer', {
+        body: { questionId, userAnswer }
+      });
+
+      if (validationError) throw validationError;
+      const isCorrect = validationResult?.isCorrect || false;
 
       const { data, error } = await supabase
         .from('user_quiz_answers')

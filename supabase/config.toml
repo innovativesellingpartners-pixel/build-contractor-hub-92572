@@ -13,7 +13,7 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.estimate-assistant]
-verify_jwt = false
+verify_jwt = true
 
 [functions.generate-estimate-pdf]
 verify_jwt = false
@@ -47,3 +47,9 @@ verify_jwt = false
 
 [functions.send-estimate]
 verify_jwt = false
+
+[functions.validate-quiz-answer]
+verify_jwt = true
+
+[functions.send-report-email]
+verify_jwt = true

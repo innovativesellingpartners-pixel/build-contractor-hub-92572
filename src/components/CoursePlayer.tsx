@@ -954,13 +954,12 @@ export const CoursePlayer = () => {
                                  {!isAnswered && currentAnswer && (
                                    <Button 
                                      onClick={() => {
-                                       submitQuizAnswer({
-                                         questionId: question.id,
-                                         userAnswer: currentAnswer,
-                                         correctAnswer: question.correct_answer,
-                                         lessonId: currentLesson.id,
-                                         enrollmentId: enrollment!.id,
-                                       });
+                                      submitQuizAnswer({
+                                          enrollmentId: enrollment!.id,
+                                          lessonId: currentLesson.id,
+                                          questionId: question.id,
+                                          userAnswer: currentAnswer,
+                                        });
                                      }}
                                      size="sm"
                                      className="w-full"
@@ -1189,15 +1188,14 @@ export const CoursePlayer = () => {
                        <Button
                          size="sm"
                          onClick={() => {
-                           if (currentAnswer && enrollment && currentLesson) {
-                             submitQuizAnswer({
-                               enrollmentId: enrollment.id,
-                               lessonId: currentLesson.id,
-                               questionId: question.id,
-                               userAnswer: currentAnswer,
-                               correctAnswer: question.correct_answer,
-                             });
-                           }
+                            if (currentAnswer && enrollment && currentLesson) {
+                              submitQuizAnswer({
+                                enrollmentId: enrollment.id,
+                                lessonId: currentLesson.id,
+                                questionId: question.id,
+                                userAnswer: currentAnswer,
+                              });
+                            }
                          }}
                          disabled={!currentAnswer}
                        >

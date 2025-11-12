@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "npm:resend@2.0.0";
+import { Resend } from 'https://esm.sh/resend@4.0.0';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -55,7 +55,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Generate HTML for sections
-    const sectionsHtml = reportData.sections.map(section => {
+    const sectionsHtml = reportData.sections.map((section: any) => {
       if (section.data.length === 0) return "";
       
       const columns = section.columns || Object.keys(section.data[0]);
@@ -64,13 +64,13 @@ const handler = async (req: Request): Promise<Response> => {
         <table style="width: 100%; border-collapse: collapse; margin: 10px 0;">
           <thead>
             <tr style="background-color: #f4f4f4;">
-              ${columns.map(col => `<th style="padding: 10px; text-align: left; border: 1px solid #ddd;">${col}</th>`).join("")}
+              ${columns.map((col: string) => `<th style="padding: 10px; text-align: left; border: 1px solid #ddd;">${col}</th>`).join("")}
             </tr>
           </thead>
           <tbody>
-            ${section.data.slice(0, 10).map(row => `
+            ${section.data.slice(0, 10).map((row: any) => `
               <tr>
-                ${columns.map(col => `<td style="padding: 10px; border: 1px solid #ddd;">${row[col] ?? ""}</td>`).join("")}
+                ${columns.map((col: string) => `<td style="padding: 10px; border: 1px solid #ddd;">${row[col] ?? ""}</td>`).join("")}
               </tr>
             `).join("")}
           </tbody>
