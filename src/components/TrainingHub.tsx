@@ -19,9 +19,12 @@ import {
   Mail,
   GraduationCap,
   TrendingUp,
-  ArrowLeft
+  ArrowLeft,
+  Download
 } from 'lucide-react';
 import { useTrainingCourses, useUserEnrollments, useUserCertificates } from '@/hooks/useTrainingData';
+import { useAuth } from '@/contexts/AuthContext';
+import { downloadCertificatePDF } from '@/lib/certificates';
 import communicationImg from '@/assets/training-communication.jpg';
 import leadershipImg from '@/assets/training-leadership.jpg';
 import performanceImg from '@/assets/training-performance.jpg';
@@ -34,6 +37,7 @@ type TrainingSection = 'courses' | 'progress' | 'certificates' | 'support';
 
 export const TrainingHub = () => {
   const navigate = useNavigate();
+  const { profile } = useAuth();
   const [activeSection, setActiveSection] = useState<TrainingSection>('courses');
   
   const { data: courses, isLoading: coursesLoading } = useTrainingCourses();
@@ -323,8 +327,18 @@ export const TrainingHub = () => {
                 <p className="text-sm text-muted-foreground mb-4">
                   Issued: {new Date(cert.issued_at).toLocaleDateString()}
                 </p>
-                <Button variant="outline" className="w-full">
-                  View Certificate
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => downloadCertificatePDF(
+                    cert.id,
+                    profile?.contact_name || profile?.company_name || 'Student',
+                    cert.training_courses?.title || 'Course',
+                    cert.issued_at
+                  )}
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Download PDF
                 </Button>
               </CardContent>
             </Card>

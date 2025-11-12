@@ -12,9 +12,10 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Plus, Edit, Trash2, Upload, Video, FileText, BookOpen, GripVertical, Save } from 'lucide-react';
+import { Plus, Edit, Trash2, Upload, Video, FileText, BookOpen, GripVertical, Save, HelpCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSignedUrl } from '@/hooks/useSignedUrl';
+import { QuizManagement } from './QuizManagement';
 
 type Course = {
   id: string;
@@ -86,6 +87,7 @@ export const CourseBuilder = ({ courseId, onClose }: CourseBuilderProps) => {
     is_required: true,
   };
   const [lessonDraft, setLessonDraft] = useState<LessonDraft>(emptyLessonDraft);
+  const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
   const queryClient = useQueryClient();
 
   const { data: course } = useQuery({
@@ -731,7 +733,15 @@ export const CourseBuilder = ({ courseId, onClose }: CourseBuilderProps) => {
                               <p className="text-xs text-muted-foreground line-clamp-2">{lesson.content}</p>
                             )}
                           </div>
-                          <div className="flex items-center gap-2">
+                           <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setSelectedLesson(lesson)}
+                            >
+                              <HelpCircle className="h-4 w-4 mr-2" />
+                              Manage Quiz
+                            </Button>
                             <Dialog onOpenChange={(open) => {
                               if (!open) {
                                 setEditingLesson(null);
@@ -745,7 +755,7 @@ export const CourseBuilder = ({ courseId, onClose }: CourseBuilderProps) => {
                                   onClick={() => {
                                     setEditingLesson(lesson);
                                     setLessonDraft({
-                                      title: lesson.title || '',
+                                      title: lesson.title,
                                       description: lesson.description || '',
                                       content: lesson.content || '',
                                       lesson_type: lesson.lesson_type || 'mixed',
@@ -797,6 +807,16 @@ export const CourseBuilder = ({ courseId, onClose }: CourseBuilderProps) => {
                     </div>
                   )}
                 </div>
+
+                {/* Quiz Management Section */}
+                {selectedLesson && (
+                  <div className="mt-8 pt-8 border-t">
+                    <QuizManagement 
+                      lessonId={selectedLesson.id} 
+                      lessonTitle={selectedLesson.title}
+                    />
+                  </div>
+                )}
               </ScrollArea>
             </>
           ) : (

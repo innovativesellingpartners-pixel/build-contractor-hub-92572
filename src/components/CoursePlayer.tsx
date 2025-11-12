@@ -21,19 +21,23 @@ import {
   Save, 
   Trash2,
   Award,
-  HelpCircle
+  HelpCircle,
+  Menu
 } from 'lucide-react';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Link } from 'react-router-dom';
 import { useTrainingCourses, useUserEnrollments, useEnrollInCourse, useUpdateLessonProgress, useLessonProgress } from '@/hooks/useTrainingData';
 import { useSignedUrl } from '@/hooks/useSignedUrl';
 import { useUserNotes, useAutoSaveNote, useDeleteNote } from '@/hooks/useNotes';
 import { useQuizQuestions, useUserQuizAnswers, useSubmitQuizAnswer } from '@/hooks/useQuizData';
+import { generateCertificate, downloadCertificatePDF } from '@/lib/certificates';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import ct1Logo from '@/assets/ct1-logo-main.png';
 // YouTube helpers
@@ -83,6 +87,7 @@ const isGoogleDriveUrl = (url: string): boolean => {
 export const CoursePlayer = () => {
   const { courseId } = useParams();
   const navigate = useNavigate();
+  const { user, profile } = useAuth();
   const { data: courses } = useTrainingCourses();
   const { data: enrollments } = useUserEnrollments();
   const { mutate: enrollInCourse } = useEnrollInCourse();
@@ -98,6 +103,7 @@ export const CoursePlayer = () => {
   const [quizAnswers, setQuizAnswers] = useState<Record<string, string>>({});
   const [showQuizModal, setShowQuizModal] = useState(false);
   const [hasWatchedVideo, setHasWatchedVideo] = useState(false);
+  const [open, setOpen] = useState(false);
 
   const course = courses?.find(c => c.id === courseId);
   const enrollment = enrollments?.find(e => e.course_id === courseId);
@@ -267,14 +273,36 @@ export const CoursePlayer = () => {
     }
 
     // Mark lesson as complete
-    if (currentLesson && enrollment) {
+    if (currentLesson && enrollment && user) {
       updateProgress({
         lessonId: currentLesson.id,
         enrollmentId: enrollment.id,
         isCompleted: true,
         timeSpentMinutes: currentLesson.duration_minutes || 0,
+      }, {
+        onSuccess: async () => {
+          toast.success('Lesson completed! 🎉');
+          
+          // Check if all lessons in the course are now completed
+          const allLessons = course?.course_modules?.flatMap(m => m.course_lessons) || [];
+          const completedLessonIds = new Set([
+            ...lessonProgress.filter(p => p.is_completed).map(p => p.lesson_id),
+            currentLesson.id
+          ]);
+          
+          const allCompleted = allLessons.every(l => completedLessonIds.has(l.id));
+          
+          if (allCompleted && course && profile) {
+            // Generate certificate
+            await generateCertificate(
+              user.id,
+              course.id,
+              course.title,
+              profile.contact_name || profile.company_name || 'Student'
+            );
+          }
+        }
       });
-      toast.success('Lesson completed! 🎉');
     }
   };
 
@@ -434,9 +462,9 @@ export const CoursePlayer = () => {
         </div>
       </div>
 
-      <div className="flex">
-        {/* Left Sidebar */}
-        <div className="w-80 border-r bg-card/50 backdrop-blur-sm min-h-screen overflow-y-auto">
+      <div className="flex flex-col lg:flex-row">
+        {/* Left Sidebar - Hidden on mobile, drawer on tablet/mobile */}
+        <div className="hidden lg:block lg:w-80 border-r bg-card/50 backdrop-blur-sm min-h-screen overflow-y-auto">
           <div className="p-6 space-y-6">
 
             {/* Course Progress Card */}
@@ -456,7 +484,7 @@ export const CoursePlayer = () => {
             {/* Quick Actions */}
             <div className="space-y-2">
               <Button variant="outline" className="w-full justify-start" asChild>
-                <Link to="/dashboard/training">
+                <Link to="/dashboard/training" onClick={() => setOpen(false)}>
                   <Award className="h-4 w-4 mr-2" />
                   My Certificates
                 </Link>
@@ -529,13 +557,25 @@ export const CoursePlayer = () => {
         </div>
 
         {/* Main Content Area */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="container mx-auto px-6 py-8">
+        <div className="flex-1 overflow-y-auto w-full">
+          <div className="container mx-auto px-4 lg:px-6 py-4 lg:py-8">
+            
+            {/* Mobile Progress Button */}
+            <div className="lg:hidden mb-4">
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => setOpen(true)}
+              >
+                <BookOpen className="h-4 w-4 mr-2" />
+                Course Progress ({Math.round(progressPercentage)}%)
+              </Button>
+            </div>
             {/* Current Module Lessons Navigation */}
             <div className="mb-6">
-              <h2 className="text-lg font-semibold mb-3">Course Progress Path</h2>
+              <h2 className="text-base lg:text-lg font-semibold mb-3">Course Progress Path</h2>
               <ScrollArea className="w-full">
-                <div className="flex gap-3 pb-4">
+                <div className="flex gap-2 lg:gap-3 pb-4">
                   {course?.course_modules?.map((module, moduleIdx) => 
                     module.course_lessons.map((lesson, lessonIdx) => {
                       const isCompleted = lessonProgress?.some(
@@ -548,7 +588,7 @@ export const CoursePlayer = () => {
                       return (
                         <Card 
                           key={lesson.id} 
-                          className={`flex-shrink-0 w-52 transition-all ${
+                          className={`flex-shrink-0 w-44 lg:w-52 transition-all ${
                             isCurrent ? 'border-primary shadow-lg ring-2 ring-primary/20' : ''
                           } ${
                             isAccessible ? 'cursor-pointer hover:border-primary' : 'opacity-60 cursor-not-allowed'
@@ -984,8 +1024,106 @@ export const CoursePlayer = () => {
            </div>
          </div>
        </div>
-     </div>
-     </div>
+      </div>
+      </div>
+
+      {/* Mobile Sidebar Sheet */}
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetContent side="left" className="w-80 overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>Course Progress</SheetTitle>
+          </SheetHeader>
+          <div className="py-6 space-y-6">
+            {/* Course Progress Card */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Course Progress</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Progress value={progressPercentage} className="h-2" />
+                <p className="text-sm text-muted-foreground">
+                  {completedLessons} of {totalLessons} lessons completed
+                </p>
+                <p className="text-2xl font-bold">{Math.round(progressPercentage)}%</p>
+              </CardContent>
+            </Card>
+
+            {/* Quick Actions */}
+            <div className="space-y-2">
+              <Button variant="outline" className="w-full justify-start" asChild>
+                <Link to="/dashboard/training" onClick={() => setOpen(false)}>
+                  <Award className="h-4 w-4 mr-2" />
+                  My Certificates
+                </Link>
+              </Button>
+              <Button variant="outline" className="w-full justify-start" asChild>
+                <a href="mailto:support@myct1.com">
+                  <HelpCircle className="h-4 w-4 mr-2" />
+                  Support
+                </a>
+              </Button>
+            </div>
+
+            {/* All Training Courses */}
+            <div>
+              <h3 className="font-semibold mb-3">All Courses</h3>
+              <ScrollArea className="h-[400px]">
+                <div className="space-y-3 pr-4">
+                  {courses?.map((c) => {
+                    const isCurrentCourse = c.id === courseId;
+                    const courseEnrollment = enrollments?.find(e => e.course_id === c.id);
+                    
+                    return (
+                      <Card 
+                        key={c.id} 
+                        className={`cursor-pointer transition-all hover:border-primary ${
+                          isCurrentCourse ? 'border-primary shadow-md' : ''
+                        }`}
+                        onClick={() => {
+                          if (!isCurrentCourse) {
+                            navigate(`/dashboard/training/course/${c.id}`);
+                            setOpen(false);
+                          }
+                        }}
+                      >
+                        <CardHeader className="p-3">
+                          <div className="flex items-start justify-between gap-2">
+                            <CardTitle className="text-sm font-medium line-clamp-2">
+                              {c.title}
+                            </CardTitle>
+                            {isCurrentCourse && (
+                              <Badge variant="default" className="text-xs flex-shrink-0">Active</Badge>
+                            )}
+                          </div>
+                        </CardHeader>
+                        <CardContent className="p-3 pt-0 space-y-2">
+                          <div className="flex flex-wrap gap-1">
+                            <Badge variant="secondary" className="text-xs">
+                              {c.training_categories?.name}
+                            </Badge>
+                            <Badge variant="outline" className="text-xs">
+                              {c.difficulty_level}
+                            </Badge>
+                          </div>
+                          {courseEnrollment && (
+                            <div className="space-y-1">
+                              <div className="flex items-center justify-between text-xs">
+                                <span className="text-muted-foreground">Progress</span>
+                                <span className="font-medium">{Math.round(courseEnrollment.progress_percentage)}%</span>
+                              </div>
+                              <Progress value={courseEnrollment.progress_percentage} className="h-1.5" />
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </ScrollArea>
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
 
      {/* Quiz Modal */}
      <Dialog open={showQuizModal} onOpenChange={setShowQuizModal}>

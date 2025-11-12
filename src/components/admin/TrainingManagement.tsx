@@ -14,6 +14,7 @@ import { Switch } from '@/components/ui/switch';
 import { BookOpen, Plus, Edit, Trash2, Eye, Settings } from 'lucide-react';
 import { toast } from 'sonner';
 import { CourseBuilder } from './CourseBuilder';
+import { QuizManagement } from './QuizManagement';
 
 type Course = {
   id: string;
