@@ -26,6 +26,26 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    
+    // SECURITY: Verify authentication
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized - No authentication header" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized - Invalid token" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const { estimateId, contractorName, contractorEmail }: SendEstimateRequest = await req.json();
 
     // Fetch estimate details
@@ -37,6 +57,14 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (fetchError || !estimate) {
       throw new Error('Estimate not found');
+    }
+
+    // SECURITY: Verify ownership - user must own this estimate
+    if (estimate.user_id !== user.id) {
+      return new Response(
+        JSON.stringify({ error: "Forbidden - You don't have access to this estimate" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     if (!estimate.client_email) {

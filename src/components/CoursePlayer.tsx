@@ -40,6 +40,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import ct1Logo from '@/assets/ct1-logo-main.png';
+import DOMPurify from 'dompurify';
 // YouTube helpers
 const isYouTubeUrl = (url: string): boolean => {
   if (!url) return false;
@@ -739,7 +740,12 @@ export const CoursePlayer = () => {
                   {/* Text Content */}
                   {currentLesson?.content && (
                     <div className="prose max-w-none">
-                      <div dangerouslySetInnerHTML={{ __html: currentLesson.content }} />
+                      <div dangerouslySetInnerHTML={{ 
+                        __html: DOMPurify.sanitize(currentLesson.content, {
+                          ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'a', 'blockquote', 'code', 'pre', 'hr', 'div', 'span'],
+                          ALLOWED_ATTR: ['href', 'target', 'rel', 'class']
+                        })
+                      }} />
                     </div>
                   )}
 

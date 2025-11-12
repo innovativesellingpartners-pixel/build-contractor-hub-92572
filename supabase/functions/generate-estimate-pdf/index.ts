@@ -29,6 +29,44 @@ const handler = async (req: Request): Promise<Response> => {
 
     const { estimateId, includePaymentLink = true }: GeneratePDFRequest = await req.json();
 
+    // SECURITY: Check if this is a public token request (no auth required)
+    const publicTokenParam = new URL(req.url).searchParams.get('public_token');
+    
+    if (!publicTokenParam) {
+      // SECURITY: Verify authentication for non-public requests
+      const authHeader = req.headers.get("Authorization");
+      if (!authHeader) {
+        return new Response(
+          JSON.stringify({ error: "Unauthorized - No authentication header" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const token = authHeader.replace("Bearer ", "");
+      const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+      
+      if (authError || !user) {
+        return new Response(
+          JSON.stringify({ error: "Unauthorized - Invalid token" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Verify ownership
+      const { data: estimate } = await supabase
+        .from("estimates")
+        .select("user_id")
+        .eq("id", estimateId)
+        .single();
+
+      if (!estimate || estimate.user_id !== user.id) {
+        return new Response(
+          JSON.stringify({ error: "Forbidden - You don't have access to this estimate" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+
     // Fetch estimate
     const { data: estimate, error: estimateError } = await supabase
       .from("estimates")
