@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useLeads } from '@/hooks/useLeads';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, Phone, Mail, Edit, Briefcase } from 'lucide-react';
+import { Plus, Phone, Mail, Edit, Briefcase, TrendingUp } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { AddLeadDialog } from '../../AddLeadDialog';
 import { EditLeadDialog } from '../../EditLeadDialog';
@@ -19,6 +19,7 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<any>(null);
   const [convertingLead, setConvertingLead] = useState<any>(null);
+  const [convertToOpportunityLead, setConvertToOpportunityLead] = useState<any>(null);
 
   const handleConvertToJob = async () => {
     if (!convertingLead) return;
@@ -86,6 +87,57 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
     return colors[status] || 'bg-gray-500';
   };
 
+  const handleConvertToOpportunity = async () => {
+    if (!convertToOpportunityLead) return;
+
+    try {
+      toast.loading('Converting lead to opportunity...', { id: 'convert-opportunity' });
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      // Create opportunity from lead
+      const { data: newOpportunity, error: opportunityError } = await supabase
+        .from('opportunities')
+        .insert([{
+          user_id: user.id,
+          lead_id: convertToOpportunityLead.id,
+          title: convertToOpportunityLead.name + (convertToOpportunityLead.project_type ? ` - ${convertToOpportunityLead.project_type}` : ''),
+          customer_name: convertToOpportunityLead.name,
+          trade_type: convertToOpportunityLead.project_type || 'General',
+          estimated_value: convertToOpportunityLead.value || null,
+          stage: 'qualification',
+          probability_percent: 25,
+        }])
+        .select()
+        .single();
+
+      if (opportunityError) throw opportunityError;
+
+      // Update lead to mark as converted
+      const { error } = await supabase
+        .from('leads')
+        .update({
+          status: 'converted',
+          converted_at: new Date().toISOString(),
+        })
+        .eq('id', convertToOpportunityLead.id);
+
+      if (error) throw error;
+
+      toast.success('Lead converted to opportunity successfully!', { id: 'convert-opportunity' });
+      setConvertToOpportunityLead(null);
+      refreshLeads();
+
+      if (onSectionChange) {
+        setTimeout(() => onSectionChange('dashboard'), 500);
+      }
+    } catch (error: any) {
+      console.error('Error converting lead:', error);
+      toast.error('Failed to convert lead: ' + error.message, { id: 'convert-opportunity' });
+    }
+  };
+
   const handleEditLead = (lead: any) => {
     setSelectedLead(lead);
     setEditDialogOpen(true);
@@ -135,15 +187,25 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
               )}
               <div className="flex gap-2 flex-wrap">
                 {!(lead as any).converted_at && (
-                  <Button 
-                    variant="default" 
-                    size="sm"
-                    onClick={() => setConvertingLead(lead)}
-                    className="bg-primary hover:bg-primary/90"
-                  >
-                    <Briefcase className="h-4 w-4 mr-1" />
-                    <span className="hidden sm:inline">Convert to Job</span>
-                  </Button>
+                  <>
+                    <Button 
+                      variant="default" 
+                      size="sm"
+                      onClick={() => setConvertToOpportunityLead(lead)}
+                      className="gap-1"
+                    >
+                      <TrendingUp className="h-4 w-4" />
+                      <span className="hidden sm:inline">Convert to Opportunity</span>
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setConvertingLead(lead)}
+                    >
+                      <Briefcase className="h-4 w-4" />
+                      <span className="hidden sm:inline">Convert to Job</span>
+                    </Button>
+                  </>
                 )}
                 {lead.phone && (
                   <Button variant="outline" size="sm" asChild>
@@ -200,6 +262,24 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction onClick={handleConvertToJob}>
                 Convert to Job
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <AlertDialog open={!!convertToOpportunityLead} onOpenChange={() => setConvertToOpportunityLead(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Convert Lead to Opportunity?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will create a new opportunity from the lead "{convertToOpportunityLead?.name}" and mark the lead as converted.
+                The opportunity will be created in "Qualification" stage and you can track it from the Dashboard.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleConvertToOpportunity}>
+                Convert to Opportunity
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
