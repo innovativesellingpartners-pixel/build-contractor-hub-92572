@@ -16,6 +16,7 @@ import { JobsTable } from "@/components/reporting/JobsTable";
 import { PaymentsTable } from "@/components/reporting/PaymentsTable";
 import { UnclosedStalledTable } from "@/components/reporting/UnclosedStalledTable";
 import { ReportExportActions } from "@/components/reporting/ReportExportActions";
+import { ConversionAnalytics } from "@/components/reporting/ConversionAnalytics";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -102,6 +103,9 @@ export default function Reporting() {
 
         {/* KPI Cards */}
         <KPICards filters={filters} />
+
+        {/* Conversion Analytics */}
+        <ConversionAnalytics filters={filters} />
 
         {/* Financial Statements */}
         <div className="grid gap-6">
