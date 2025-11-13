@@ -3,8 +3,8 @@ import { Mail } from 'lucide-react';
 
 export default function EmailsSection() {
   return (
-    <div className="w-full h-full overflow-y-auto">
-      <div className="p-6 space-y-6 max-w-7xl mx-auto">
+    <div className="w-full h-full overflow-y-auto overflow-x-hidden pb-20">
+      <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 w-full sm:max-w-7xl sm:mx-auto">
         <div>
           <h1 className="text-3xl font-bold">Emails</h1>
           <p className="text-muted-foreground">Manage your email communications</p>

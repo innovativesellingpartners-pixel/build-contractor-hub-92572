@@ -69,14 +69,14 @@ const secondaryFeatures = [
 
 export default function MoreSection({ onSectionChange }: MoreSectionProps) {
   return (
-    <div className="w-full h-full overflow-y-auto pb-20">
-      <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 max-w-7xl mx-auto">
+    <div className="w-full h-full overflow-y-auto overflow-x-hidden pb-20">
+      <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 w-full sm:max-w-7xl sm:mx-auto">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold">More Features</h1>
           <p className="text-sm sm:text-base text-muted-foreground">Access additional tools and features</p>
         </div>
 
-        <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-3 w-full">
           {secondaryFeatures.map((feature) => (
             <Card
               key={feature.id}
