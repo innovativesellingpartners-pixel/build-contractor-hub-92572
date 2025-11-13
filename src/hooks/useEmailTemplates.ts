@@ -39,7 +39,7 @@ export const useEmailTemplates = (entityType?: 'lead' | 'job' | 'customer') => {
       const { data, error } = await query.order('name', { ascending: true });
 
       if (error) throw error;
-      setTemplates((data as EmailTemplate[]) || []);
+      setTemplates((data as unknown as EmailTemplate[]) || []);
     } catch (error: any) {
       console.error('Error fetching templates:', error);
     } finally {
