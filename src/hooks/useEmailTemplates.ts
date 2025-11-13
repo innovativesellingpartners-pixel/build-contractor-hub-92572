@@ -26,14 +26,14 @@ export const useEmailTemplates = (entityType?: 'lead' | 'job' | 'customer') => {
     if (!user) return;
 
     try {
-      let query = supabase
-        .from('email_templates')
+      const query = supabase
+        .from('email_templates' as any)
         .select('*')
         .eq('user_id', user.id)
         .eq('is_active', true);
 
       if (entityType) {
-        query = query.eq('entity_type', entityType);
+        query.eq('entity_type', entityType);
       }
 
       const { data, error } = await query.order('name', { ascending: true });
