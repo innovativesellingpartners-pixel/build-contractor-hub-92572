@@ -13,7 +13,7 @@ import { ArrowLeft, Calendar, DollarSign, FileText, Phone, Mail, MapPin, User, T
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { WinLossReasonDialog } from './WinLossReasonDialog';
-import { SendEmailDialog } from './SendEmailDialog';
+
 
 interface OpportunityDetailViewProps {
   opportunity: Opportunity;
@@ -39,7 +39,7 @@ export default function OpportunityDetailView({ opportunity, onBack }: Opportuni
   const [showHistory, setShowHistory] = useState(false);
   const [showWinLossDialog, setShowWinLossDialog] = useState(false);
   const [pendingStage, setPendingStage] = useState<OpportunityStage | null>(null);
-  const [showEmailDialog, setShowEmailDialog] = useState(false);
+  
 
   const handleStageChange = async (newStage: OpportunityStage) => {
     // If closing (won) or losing the opportunity, prompt for win/loss reason
@@ -122,15 +122,6 @@ export default function OpportunityDetailView({ opportunity, onBack }: Opportuni
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowEmailDialog(true)}
-              disabled={!opportunity.customer_email}
-            >
-              <Send className="h-4 w-4 mr-2" />
-              Send Email
-            </Button>
             <Badge className={stageConfig[opportunity.stage].color}>
               {stageConfig[opportunity.stage].label}
             </Badge>
@@ -396,11 +387,6 @@ export default function OpportunityDetailView({ opportunity, onBack }: Opportuni
         />
 
         {/* Send Email Dialog */}
-        <SendEmailDialog
-          open={showEmailDialog}
-          onOpenChange={setShowEmailDialog}
-          opportunity={opportunity}
-        />
       </div>
     </div>
   );

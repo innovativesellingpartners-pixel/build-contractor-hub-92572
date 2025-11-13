@@ -5,18 +5,25 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
-import { Opportunity } from '@/hooks/useOpportunities';
 import { useEmailTemplates } from '@/hooks/useEmailTemplates';
 import { Mail, Loader2 } from 'lucide-react';
 
 interface SendEmailDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  opportunity: Opportunity | null;
+  entityType: 'lead' | 'job' | 'customer';
+  entity: {
+    id: string;
+    name?: string;
+    customer_name?: string;
+    email?: string;
+    customer_email?: string;
+    company_name?: string;
+  } | null;
 }
 
-export function SendEmailDialog({ open, onOpenChange, opportunity }: SendEmailDialogProps) {
-  const { templates, sendEmail } = useEmailTemplates();
+export function SendEmailDialog({ open, onOpenChange, entityType, entity }: SendEmailDialogProps) {
+  const { templates, sendEmail } = useEmailTemplates(entityType);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
   const [subject, setSubject] = useState('');
   const [body, setBody] = useState('');
@@ -32,20 +39,21 @@ export function SendEmailDialog({ open, onOpenChange, opportunity }: SendEmailDi
   };
 
   const handleSend = async () => {
-    if (!opportunity || !opportunity.customer_email) {
-      return;
-    }
+    if (!entity) return;
+
+    const recipientEmail = entity.email || entity.customer_email;
+    if (!recipientEmail) return;
 
     setSending(true);
     try {
       await sendEmail(
-        opportunity.id,
+        entityType,
+        entity.id,
         selectedTemplateId || undefined,
         subject,
         body
       );
       onOpenChange(false);
-      // Reset form
       setSelectedTemplateId('');
       setSubject('');
       setBody('');
@@ -56,12 +64,10 @@ export function SendEmailDialog({ open, onOpenChange, opportunity }: SendEmailDi
     }
   };
 
-  // Filter templates by current opportunity stage
-  const stageTemplates = templates.filter(t => 
-    !t.stage || t.stage === opportunity?.stage
-  );
+  if (!entity) return null;
 
-  if (!opportunity) return null;
+  const recipientName = entity.name || entity.customer_name || entity.company_name;
+  const recipientEmail = entity.email || entity.customer_email;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -72,13 +78,13 @@ export function SendEmailDialog({ open, onOpenChange, opportunity }: SendEmailDi
             Send Email
           </DialogTitle>
           <DialogDescription>
-            Send an email to {opportunity.customer_name} ({opportunity.customer_email || 'No email'})
+            Send an email to {recipientName} ({recipientEmail || 'No email'})
           </DialogDescription>
         </DialogHeader>
 
-        {!opportunity.customer_email && (
+        {!recipientEmail && (
           <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
-            This opportunity doesn't have an email address. Please add one to send emails.
+            This {entityType} doesn't have an email address. Please add one to send emails.
           </div>
         )}
 
@@ -90,21 +96,21 @@ export function SendEmailDialog({ open, onOpenChange, opportunity }: SendEmailDi
                 <SelectValue placeholder="Select a template or write custom email..." />
               </SelectTrigger>
               <SelectContent>
-                {stageTemplates.length > 0 ? (
-                  stageTemplates.map(template => (
+                {templates.length > 0 ? (
+                  templates.map(template => (
                     <SelectItem key={template.id} value={template.id}>
                       {template.name}
                     </SelectItem>
                   ))
                 ) : (
                   <SelectItem value="none" disabled>
-                    No templates available for this stage
+                    No templates available for {entityType}s
                   </SelectItem>
                 )}
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground">
-              Templates support variables like {'{{customer_name}}'}, {'{{company_name}}'}, {'{{estimated_value}}'}, etc.
+              Templates support variables like {'{{customer_name}}'}, {'{{company_name}}'}, {'{{value}}'}, etc.
             </p>
           </div>
 
@@ -131,12 +137,14 @@ export function SendEmailDialog({ open, onOpenChange, opportunity }: SendEmailDi
           </div>
 
           <div className="rounded-lg bg-muted p-3 text-sm space-y-1">
-            <p className="font-medium">Preview variables:</p>
+            <p className="font-medium">Available variables:</p>
             <p className="text-muted-foreground">
-              • Customer: {opportunity.customer_name}<br />
-              • Project: {opportunity.title}<br />
-              • Value: ${opportunity.estimated_value?.toLocaleString() || 'TBD'}<br />
-              • Stage: {opportunity.stage}
+              • {'{{customer_name}}'} - Recipient name<br />
+              • {'{{company_name}}'} - Your company name<br />
+              • {'{{user_name}}'} - Your name<br />
+              • {'{{value}}'} - Project/job value<br />
+              • {'{{address}}'} - Address<br />
+              • {'{{status}}'} - Current status
             </p>
           </div>
         </div>
@@ -147,7 +155,7 @@ export function SendEmailDialog({ open, onOpenChange, opportunity }: SendEmailDi
           </Button>
           <Button 
             onClick={handleSend} 
-            disabled={!opportunity.customer_email || !subject || !body || sending}
+            disabled={!recipientEmail || !subject || !body || sending}
           >
             {sending ? (
               <>
