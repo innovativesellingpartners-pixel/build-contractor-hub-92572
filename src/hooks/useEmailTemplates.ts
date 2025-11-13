@@ -7,6 +7,7 @@ export interface EmailTemplate {
   id: string;
   user_id: string;
   name: string;
+  entity_type: 'lead' | 'job' | 'customer';
   stage?: string;
   subject: string;
   body: string;
@@ -15,7 +16,7 @@ export interface EmailTemplate {
   updated_at: string;
 }
 
-export const useEmailTemplates = () => {
+export const useEmailTemplates = (entityType?: 'lead' | 'job' | 'customer') => {
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
@@ -25,15 +26,20 @@ export const useEmailTemplates = () => {
     if (!user) return;
 
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('email_templates')
         .select('*')
         .eq('user_id', user.id)
-        .eq('is_active', true)
-        .order('stage', { ascending: true });
+        .eq('is_active', true);
+
+      if (entityType) {
+        query = query.eq('entity_type', entityType);
+      }
+
+      const { data, error } = await query.order('name', { ascending: true });
 
       if (error) throw error;
-      setTemplates(data || []);
+      setTemplates((data as EmailTemplate[]) || []);
     } catch (error: any) {
       console.error('Error fetching templates:', error);
     } finally {
@@ -43,10 +49,11 @@ export const useEmailTemplates = () => {
 
   useEffect(() => {
     fetchTemplates();
-  }, [user]);
+  }, [user, entityType]);
 
   const sendEmail = async (
-    opportunityId: string,
+    entityType: 'lead' | 'job' | 'customer',
+    entityId: string,
     templateId?: string,
     customSubject?: string,
     customBody?: string
@@ -54,7 +61,8 @@ export const useEmailTemplates = () => {
     try {
       const { data, error } = await supabase.functions.invoke('send-stage-email', {
         body: {
-          opportunityId,
+          entityType,
+          entityId,
           templateId,
           customSubject,
           customBody,
@@ -84,4 +92,4 @@ export const useEmailTemplates = () => {
     sendEmail,
     refreshTemplates: fetchTemplates,
   };
-}
+};
