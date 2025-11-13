@@ -18,7 +18,13 @@ const navItems = [
 
 export function BottomNav({ activeSection, onSectionChange }: BottomNavProps) {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border safe-area-inset-bottom">
+    <nav className={cn(
+      "fixed bottom-0 left-0 right-0 z-50",
+      "bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800",
+      "border-t-2 border-slate-200 dark:border-slate-700",
+      "shadow-2xl shadow-slate-900/10",
+      "safe-area-inset-bottom"
+    )}>
       <div className="flex items-center justify-around h-16 max-w-screen-sm mx-auto px-2">
         {navItems.map((item) => {
           const isActive = activeSection === item.id;
@@ -27,17 +33,16 @@ export function BottomNav({ activeSection, onSectionChange }: BottomNavProps) {
               key={item.id}
               onClick={() => onSectionChange(item.id)}
               className={cn(
-                'flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-colors min-w-[64px]',
-                'active:scale-95 transition-transform',
+                'flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl transition-all duration-200 min-w-[64px]',
                 isActive
-                  ? 'text-primary'
-                  : 'text-muted-foreground hover:text-foreground'
+                  ? 'bg-primary text-white shadow-lg shadow-primary/30 scale-110'
+                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95'
               )}
               aria-label={item.label}
               aria-current={isActive ? 'page' : undefined}
             >
-              <item.icon className={cn('h-5 w-5', isActive && 'fill-primary/20')} />
-              <span className={cn('text-xs font-medium', isActive && 'font-semibold')}>
+              <item.icon className={cn('h-5 w-5', isActive && 'drop-shadow-sm')} />
+              <span className={cn('text-xs font-medium')}>
                 {item.label}
               </span>
             </button>

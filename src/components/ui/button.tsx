@@ -19,6 +19,10 @@ const buttonVariants = cva(
         hero: "bg-gradient-hero text-primary-foreground font-bold px-8 py-4 rounded-lg shadow-hero hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300",
         industrial: "bg-gradient-to-r from-construction-steel to-foreground text-white font-semibold border-2 border-primary hover:border-primary-hover hover:shadow-industrial",
         contractor: "bg-primary hover:bg-primary-hover text-primary-foreground font-semibold border border-primary/20 shadow-lg hover:shadow-xl transition-all",
+        // Vibrant status variants
+        success: "bg-success text-success-foreground hover:bg-success/90 shadow-lg shadow-success/30",
+        info: "bg-info text-info-foreground hover:bg-info/90 shadow-lg shadow-info/30",
+        warning: "bg-warning text-warning-foreground hover:bg-warning/90 shadow-lg shadow-warning/30",
       },
       size: {
         default: "h-10 px-4 py-2",

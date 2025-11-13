@@ -9,18 +9,67 @@ interface MoreSectionProps {
 }
 
 const secondaryFeatures = [
-  { id: 'estimates' as Section, label: 'Estimates', icon: FileText, color: 'text-blue-600', bgColor: 'bg-blue-50' },
-  { id: 'reporting' as Section, label: 'Reporting', icon: BarChart2, color: 'text-purple-600', bgColor: 'bg-purple-50' },
-  { id: 'financials' as Section, label: 'Financials', icon: DollarSign, color: 'text-green-600', bgColor: 'bg-green-50' },
-  { id: 'quickbooks' as Section, label: 'QuickBooks', icon: LinkIcon, color: 'text-indigo-600', bgColor: 'bg-indigo-50' },
-  { id: 'calls' as Section, label: 'Calls', icon: Phone, color: 'text-orange-600', bgColor: 'bg-orange-50' },
-  { id: 'calendar' as Section, label: 'Calendar', icon: Calendar, color: 'text-red-600', bgColor: 'bg-red-50' },
-  { id: 'emails' as Section, label: 'Emails', icon: Mail, color: 'text-cyan-600', bgColor: 'bg-cyan-50' },
+  { 
+    id: 'estimates' as Section, 
+    label: 'Estimates', 
+    icon: FileText, 
+    gradient: 'from-blue-500 to-blue-600',
+    borderColor: 'border-blue-400',
+    description: 'Create quotes'
+  },
+  { 
+    id: 'reporting' as Section, 
+    label: 'Reporting', 
+    icon: BarChart2, 
+    gradient: 'from-purple-500 to-purple-600',
+    borderColor: 'border-purple-400',
+    description: 'View insights'
+  },
+  { 
+    id: 'financials' as Section, 
+    label: 'Financials', 
+    icon: DollarSign, 
+    gradient: 'from-green-500 to-green-600',
+    borderColor: 'border-green-400',
+    description: 'Track money'
+  },
+  { 
+    id: 'quickbooks' as Section, 
+    label: 'QuickBooks', 
+    icon: LinkIcon, 
+    gradient: 'from-indigo-500 to-indigo-600',
+    borderColor: 'border-indigo-400',
+    description: 'Sync data'
+  },
+  { 
+    id: 'calls' as Section, 
+    label: 'Calls', 
+    icon: Phone, 
+    gradient: 'from-orange-500 to-orange-600',
+    borderColor: 'border-orange-400',
+    description: 'Call history'
+  },
+  { 
+    id: 'calendar' as Section, 
+    label: 'Calendar', 
+    icon: Calendar, 
+    gradient: 'from-red-500 to-red-600',
+    borderColor: 'border-red-400',
+    description: 'Schedule'
+  },
+  { 
+    id: 'emails' as Section, 
+    label: 'Emails', 
+    icon: Mail, 
+    gradient: 'from-cyan-500 to-cyan-600',
+    borderColor: 'border-cyan-400',
+    description: 'Messages'
+  },
 ];
 
 export default function MoreSection({ onSectionChange }: MoreSectionProps) {
   return (
-    <div className="w-full h-full overflow-y-auto">
+    <div className="w-full h-full overflow-y-auto pb-20">
       <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 max-w-7xl mx-auto">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold">More Features</h1>
@@ -31,14 +80,24 @@ export default function MoreSection({ onSectionChange }: MoreSectionProps) {
           {secondaryFeatures.map((feature) => (
             <Card
               key={feature.id}
-              className="cursor-pointer hover:shadow-lg transition-all active:scale-95"
+              className={cn(
+                'cursor-pointer transition-all duration-200',
+                'bg-gradient-to-br',
+                feature.gradient,
+                'border-2',
+                feature.borderColor,
+                'hover:shadow-2xl hover:scale-105',
+                'active:scale-95',
+                'text-white'
+              )}
               onClick={() => onSectionChange(feature.id)}
             >
               <CardContent className="p-6 flex flex-col items-center justify-center gap-3 min-h-[120px]">
-                <div className={cn('w-14 h-14 rounded-full flex items-center justify-center', feature.bgColor)}>
-                  <feature.icon className={cn('h-7 w-7', feature.color)} />
+                <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur flex items-center justify-center">
+                  <feature.icon className="h-7 w-7 text-white" />
                 </div>
-                <span className="font-semibold text-center text-sm sm:text-base">{feature.label}</span>
+                <span className="font-semibold text-center text-white">{feature.label}</span>
+                <p className="text-xs text-white/80 text-center">{feature.description}</p>
               </CardContent>
             </Card>
           ))}
