@@ -131,7 +131,7 @@ export default function CT1CRM() {
       {isMobile ? (
         <>
           {/* Mobile Header */}
-          <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between p-4 bg-card border-b">
+          <div className="sticky top-0 left-0 right-0 z-[5] flex items-center justify-between p-4 bg-card border-b">
             <div className="flex items-center gap-2">
               <img src={ct1Logo} alt="CT1" className="h-8 w-8" />
               <span className="font-semibold">CT1 CRM</span>
@@ -154,8 +154,8 @@ export default function CT1CRM() {
             </Sheet>
           </div>
 
-          {/* Main Content with padding for fixed header */}
-          <main className="flex-1 overflow-hidden pt-16 w-full">
+          {/* Main Content */}
+          <main className="flex-1 overflow-hidden w-full">
             <div className="h-full overflow-y-auto">
               {renderSection()}
             </div>
