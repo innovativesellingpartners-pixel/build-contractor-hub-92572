@@ -11,8 +11,9 @@
     /* CT1 Brand Colors - Neutral whites and grays with red accent */
     --background: 0 0% 100%;
     --foreground: 0 0% 0%;                /* Pure black */
-    --card: 0 0% 100%;
+    --card: 220 15% 98%;                  /* Subtle blue tint */
     --card-foreground: 0 0% 0%;
+    --card-hover: 220 20% 96%;            /* Slightly darker on hover */
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 0%;
 
@@ -35,8 +36,8 @@
     --destructive: 0 62.8% 40.6%;
     --destructive-foreground: 0 0% 100%;
     
-    --border: 0 0% 75%;                   /* Darker border for better field visibility */
-    --input: 0 0% 98%;                    /* Light neutral input bg */
+    --border: 220 13% 85%;                /* More visible borders with blue tint */
+    --input: 220 20% 97%;                 /* Slightly blue-tinted input */
     --ring: 0 70% 50%;                    /* Red focus ring */
 
     /* CT1 specific brand colors - neutral palette */
@@ -46,11 +47,40 @@
     --ct1-dark-red: 0 70% 40%;            /* Darker red variant */
     --ct1-light-red: 0 70% 60%;           /* Lighter red variant */
 
+    /* Vibrant accent colors */
+    --blue-vibrant: 217 91% 60%;          /* Electric blue */
+    --green-vibrant: 142 71% 45%;         /* Success green */
+    --purple-vibrant: 262 83% 58%;        /* Rich purple */
+    --orange-vibrant: 25 95% 53%;         /* Bright orange */
+    --yellow-vibrant: 45 93% 47%;         /* Golden yellow */
+    --cyan-vibrant: 189 94% 43%;          /* Bright cyan */
+    --pink-vibrant: 330 81% 60%;          /* Hot pink */
+    
+    /* Soft backgrounds (for cards) */
+    --bg-blue-soft: 217 91% 95%;
+    --bg-green-soft: 142 71% 95%;
+    --bg-purple-soft: 262 83% 96%;
+    --bg-orange-soft: 25 95% 95%;
+    --bg-cyan-soft: 189 94% 95%;
+    --bg-pink-soft: 330 81% 95%;
+
+    /* Success, info, warning colors */
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+    --info: 217 91% 60%;
+    --info-foreground: 0 0% 100%;
+    --warning: 25 95% 53%;
+    --warning-foreground: 0 0% 100%;
+
     /* Neutral gradients */
     --gradient-hero: linear-gradient(135deg, hsl(0 0% 0% / 0.6), hsl(0 0% 0% / 0.4)); /* Dark overlay for hero */
     --gradient-card: linear-gradient(180deg, hsl(var(--background)), hsl(var(--muted)));
     --gradient-red: linear-gradient(45deg, hsl(var(--ct1-red) / 0.1), hsl(var(--ct1-light-red) / 0.1));
     --gradient-black: linear-gradient(135deg, hsl(var(--ct1-black)), hsl(0 0% 15%));
+    
+    /* Colorful gradients */
+    --gradient-blue: linear-gradient(135deg, hsl(217 91% 60% / 0.1), hsl(262 83% 58% / 0.05));
+    --gradient-success: linear-gradient(135deg, hsl(142 71% 45% / 0.1), hsl(189 94% 43% / 0.05));
 
     /* Soft shadows */
     --shadow-soft: 0 4px 20px -4px hsl(0 0% 0% / 0.15);

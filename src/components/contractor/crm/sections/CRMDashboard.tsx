@@ -29,24 +29,40 @@ export default function CRMDashboard({ onSectionChange }: CRMDashboardProps) {
       value: leads.length,
       icon: ClipboardList,
       description: `${leads.filter(l => l.status === 'new').length} new`,
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-50',
+      borderColor: 'border-l-blue-500',
+      gradient: 'from-blue-50 to-blue-100',
     },
     {
       title: 'Active Opportunities',
       value: opportunities.filter(o => !['close', 'psfu'].includes(o.stage)).length,
       icon: Target,
       description: `$${opportunities.reduce((sum, o) => sum + (o.estimated_value || 0), 0).toLocaleString()} pipeline`,
+      color: 'text-green-600',
+      bgColor: 'bg-green-50',
+      borderColor: 'border-l-green-500',
+      gradient: 'from-green-50 to-green-100',
     },
     {
       title: 'Active Jobs',
       value: jobs.filter(j => ['scheduled', 'in_progress'].includes(j.status)).length,
       icon: Briefcase,
       description: `${jobs.filter(j => j.status === 'completed').length} completed`,
+      color: 'text-purple-600',
+      bgColor: 'bg-purple-50',
+      borderColor: 'border-l-purple-500',
+      gradient: 'from-purple-50 to-purple-100',
     },
     {
       title: 'Total Customers',
       value: customers.length,
       icon: Users,
       description: `${customers.filter(c => c.customer_type === 'commercial').length} commercial`,
+      color: 'text-orange-600',
+      bgColor: 'bg-orange-50',
+      borderColor: 'border-l-orange-500',
+      gradient: 'from-orange-50 to-orange-100',
     },
   ];
 
@@ -70,56 +86,58 @@ export default function CRMDashboard({ onSectionChange }: CRMDashboardProps) {
       id: 'leads' as Section, 
       label: 'New Lead', 
       icon: Plus, 
-      color: 'text-blue-600', 
-      bgColor: 'bg-blue-50',
+      gradient: 'from-blue-500 to-blue-600',
+      borderColor: 'border-blue-400',
       description: 'Add a new lead'
     },
     { 
       id: 'estimates' as Section, 
       label: 'Create Estimate', 
       icon: FileText, 
-      color: 'text-green-600', 
-      bgColor: 'bg-green-50',
+      gradient: 'from-green-500 to-green-600',
+      borderColor: 'border-green-400',
       description: 'Build a quote'
     },
     { 
       id: 'calendar' as Section, 
       label: 'Schedule', 
       icon: Calendar, 
-      color: 'text-purple-600', 
-      bgColor: 'bg-purple-50',
+      gradient: 'from-purple-500 to-purple-600',
+      borderColor: 'border-purple-400',
       description: 'Book appointment'
     },
     { 
       id: 'jobs' as Section, 
       label: 'View Jobs', 
       icon: Briefcase, 
-      color: 'text-orange-600', 
-      bgColor: 'bg-orange-50',
+      gradient: 'from-orange-500 to-orange-600',
+      borderColor: 'border-orange-400',
       description: 'Manage projects'
     },
   ];
 
   return (
-    <div className="w-full h-full overflow-y-auto">
+    <div className="w-full h-full overflow-y-auto pb-20">
       <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 max-w-7xl mx-auto">
-        {/* Mobile Quick Actions - Show only on mobile */}
+        {/* Mobile Quick Actions */}
         {isMobile && onSectionChange && (
           <div className="grid grid-cols-2 gap-3">
             {quickActions.map((action) => (
               <Card
                 key={action.id}
-                className="cursor-pointer hover:shadow-md active:scale-95 transition-all"
+                className={cn(
+                  'cursor-pointer transition-all duration-200 bg-gradient-to-br border-2',
+                  action.gradient, action.borderColor,
+                  'hover:shadow-2xl hover:scale-105 active:scale-95 text-white'
+                )}
                 onClick={() => onSectionChange(action.id)}
               >
-                <CardContent className="p-4 flex flex-col items-center gap-2 min-h-[100px] justify-center">
-                  <div className={cn('w-12 h-12 rounded-full flex items-center justify-center', action.bgColor)}>
-                    <action.icon className={cn('h-6 w-6', action.color)} />
+                <CardContent className="p-6 flex flex-col items-center justify-center gap-3 min-h-[120px]">
+                  <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur flex items-center justify-center">
+                    <action.icon className="h-7 w-7 text-white" />
                   </div>
-                  <div className="text-center">
-                    <p className="font-semibold text-sm">{action.label}</p>
-                    <p className="text-xs text-muted-foreground">{action.description}</p>
-                  </div>
+                  <span className="font-semibold text-center text-white">{action.label}</span>
+                  <p className="text-xs text-white/80 text-center">{action.description}</p>
                 </CardContent>
               </Card>
             ))}
@@ -127,53 +145,68 @@ export default function CRMDashboard({ onSectionChange }: CRMDashboardProps) {
         )}
 
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold">Dashboard</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">Overview of your business pipeline</p>
+          <h1 className="text-2xl sm:text-3xl font-bold">CRM Dashboard</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Overview of your business</p>
         </div>
 
-        {/* Conversion Analytics */}
-        <ConversionAnalytics />
-
-        {/* Win/Loss Analysis */}
-        <WinLossAnalysis />
-
-        {/* Stats Grid */}
-        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => (
-          <Card key={stat.title}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2 px-4 pt-4 sm:px-6 sm:pt-6">
-              <CardTitle className="text-xs sm:text-sm font-medium">{stat.title}</CardTitle>
-              <stat.icon className="h-4 w-4 text-muted-foreground shrink-0" />
-            </CardHeader>
-            <CardContent className="px-4 pb-4 sm:px-6 sm:pb-6">
-              <div className="text-xl sm:text-2xl font-bold">{stat.value}</div>
-              <p className="text-xs text-muted-foreground">{stat.description}</p>
-            </CardContent>
-          </Card>
-        ))}
-        </div>
-
-        {/* Recent Activity */}
-        <Card>
-        <CardHeader className="px-4 pt-4 sm:px-6 sm:pt-6">
-          <CardTitle className="text-lg sm:text-xl">Recent Activity</CardTitle>
-        </CardHeader>
-        <CardContent className="px-4 pb-4 sm:px-6 sm:pb-6">
-          <div className="space-y-3 sm:space-y-4">
-            {recentActivity.map((activity, index) => (
-              <div key={index} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4 border-b pb-3 last:border-0">
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm sm:text-base truncate">{activity.name}</p>
-                  <p className="text-xs sm:text-sm text-muted-foreground">
-                    {activity.type} • {activity.status}
-                  </p>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {stats.map((stat, index) => (
+            <Card key={index} className={cn('border-l-4', stat.borderColor, 'bg-gradient-to-br', stat.gradient, 'hover:shadow-xl transition-all duration-300')}>
+              <CardHeader className="pb-2">
+                <div className={cn('w-12 h-12 rounded-full flex items-center justify-center mb-2', stat.bgColor)}>
+                  <stat.icon className={cn('h-6 w-6', stat.color)} />
                 </div>
-                <span className="text-xs sm:text-sm text-muted-foreground shrink-0">{activity.date}</span>
-              </div>
-            ))}
-          </div>
+                <CardTitle className="text-lg">{stat.title}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold">{stat.value}</div>
+                <p className="text-xs text-muted-foreground">{stat.description}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        <div className="grid gap-4 lg:grid-cols-2">
+          <ConversionAnalytics />
+          <WinLossAnalysis />
+        </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Activity</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {recentActivity.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">No recent activity</p>
+              ) : (
+                recentActivity.map((activity, index) => (
+                  <div key={index} className="flex items-center justify-between border-b pb-2 last:border-0">
+                    <div>
+                      <p className="font-medium text-sm">{activity.name}</p>
+                      <p className="text-xs text-muted-foreground">{activity.type} • {activity.status}</p>
+                    </div>
+                    <div className="text-xs text-muted-foreground">{activity.date}</div>
+                  </div>
+                ))
+              )}
+            </div>
           </CardContent>
         </Card>
+
+        {!isMobile && onSectionChange && (
+          <Card>
+            <CardHeader><CardTitle>Quick Actions</CardTitle></CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-2">
+                <Button onClick={() => onSectionChange('leads')}><Plus className="h-4 w-4" />New Lead</Button>
+                <Button onClick={() => onSectionChange('estimates')} variant="secondary"><FileText className="h-4 w-4" />Create Estimate</Button>
+                <Button onClick={() => onSectionChange('calendar')} variant="outline"><Calendar className="h-4 w-4" />Schedule</Button>
+                <Button onClick={() => onSectionChange('jobs')} variant="outline"><Briefcase className="h-4 w-4" />View Jobs</Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

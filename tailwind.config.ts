@@ -50,6 +50,7 @@ export default {
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
+          hover: "hsl(var(--card-hover))",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
@@ -60,6 +61,38 @@ export default {
           "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
+        },
+        // Vibrant accent colors
+        blue: {
+          vibrant: "hsl(var(--blue-vibrant))",
+        },
+        green: {
+          vibrant: "hsl(var(--green-vibrant))",
+        },
+        purple: {
+          vibrant: "hsl(var(--purple-vibrant))",
+        },
+        orange: {
+          vibrant: "hsl(var(--orange-vibrant))",
+        },
+        cyan: {
+          vibrant: "hsl(var(--cyan-vibrant))",
+        },
+        pink: {
+          vibrant: "hsl(var(--pink-vibrant))",
+        },
+        // Status colors
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+        },
+        info: {
+          DEFAULT: "hsl(var(--info))",
+          foreground: "hsl(var(--info-foreground))",
+        },
+        warning: {
+          DEFAULT: "hsl(var(--warning))",
+          foreground: "hsl(var(--warning-foreground))",
         },
         // Construction-specific colors
         construction: {
