@@ -16,7 +16,7 @@ export function MobileOptimizedWrapper({
   className,
 }: MobileOptimizedWrapperProps) {
   return (
-    <div className={cn('w-full', className)}>
+    <div className={cn('w-full max-w-full overflow-x-hidden', className)}>
       {title && (
         <Card className="mb-4">
           <CardHeader className="pb-3">
@@ -34,7 +34,7 @@ export function MobileOptimizedWrapper({
 
 export function MobileCard({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <Card className={cn('hover:shadow-lg transition-shadow', className)}>
+    <Card className={cn('hover:shadow-lg transition-shadow w-full max-w-full', className)}>
       <CardContent className="p-4 sm:p-6">{children}</CardContent>
     </Card>
   );

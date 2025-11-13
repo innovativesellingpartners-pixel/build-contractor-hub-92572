@@ -117,11 +117,11 @@ export default function CRMDashboard({ onSectionChange }: CRMDashboardProps) {
   ];
 
   return (
-    <div className="w-full h-full overflow-y-auto pb-20">
-      <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 max-w-7xl mx-auto">
+    <div className="w-full h-full overflow-y-auto overflow-x-hidden pb-20">
+      <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 w-full sm:max-w-7xl sm:mx-auto">
         {/* Mobile Quick Actions */}
         {isMobile && onSectionChange && (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3 w-full">
             {quickActions.map((action) => (
               <Card
                 key={action.id}
@@ -149,7 +149,7 @@ export default function CRMDashboard({ onSectionChange }: CRMDashboardProps) {
           <p className="text-sm sm:text-base text-muted-foreground">Overview of your business</p>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 grid-cols-2 md:grid-cols-2 lg:grid-cols-4 w-full">
           {stats.map((stat, index) => (
             <Card key={index} className={cn('border-l-4', stat.borderColor, 'bg-gradient-to-br', stat.gradient, 'hover:shadow-xl transition-all duration-300')}>
               <CardHeader className="pb-2">

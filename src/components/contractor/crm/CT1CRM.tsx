@@ -130,7 +130,7 @@ export default function CT1CRM() {
   );
 
   return (
-    <div className="flex h-full w-full bg-background">
+    <div className={cn("flex h-full w-full bg-background", isMobile && "flex-col")}>
       {/* Mobile Navigation */}
       {isMobile ? (
         <>
@@ -144,8 +144,10 @@ export default function CT1CRM() {
 
           {/* Main Content with bottom padding for nav */}
           <main className="flex-1 overflow-hidden w-full pb-16">
-            <div className="h-full overflow-y-auto">
-              {renderSection()}
+            <div className="h-full overflow-y-auto overflow-x-hidden">
+              <div className="min-h-full w-full">
+                {renderSection()}
+              </div>
             </div>
           </main>
 
