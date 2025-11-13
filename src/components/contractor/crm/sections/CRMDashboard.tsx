@@ -3,11 +3,21 @@ import { useCustomers } from '@/hooks/useCustomers';
 import { useOpportunities } from '@/hooks/useOpportunities';
 import { useJobs } from '@/hooks/useJobs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ClipboardList, Target, Briefcase, Users, DollarSign, TrendingUp } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { ClipboardList, Target, Briefcase, Users, DollarSign, TrendingUp, Plus, FileText, Phone, Calendar } from 'lucide-react';
 import { ConversionAnalytics } from '@/components/reporting/ConversionAnalytics';
 import { WinLossAnalysis } from '@/components/reporting/WinLossAnalysis';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
 
-export default function CRMDashboard() {
+type Section = 'leads' | 'estimates' | 'calendar' | 'jobs';
+
+interface CRMDashboardProps {
+  onSectionChange?: (section: Section) => void;
+}
+
+export default function CRMDashboard({ onSectionChange }: CRMDashboardProps) {
+  const isMobile = useIsMobile();
   const { leads } = useLeads();
   const { customers } = useCustomers();
   const { opportunities } = useOpportunities();
@@ -55,11 +65,69 @@ export default function CRMDashboard() {
     })),
   ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5);
 
+  const quickActions = [
+    { 
+      id: 'leads' as Section, 
+      label: 'New Lead', 
+      icon: Plus, 
+      color: 'text-blue-600', 
+      bgColor: 'bg-blue-50',
+      description: 'Add a new lead'
+    },
+    { 
+      id: 'estimates' as Section, 
+      label: 'Create Estimate', 
+      icon: FileText, 
+      color: 'text-green-600', 
+      bgColor: 'bg-green-50',
+      description: 'Build a quote'
+    },
+    { 
+      id: 'calendar' as Section, 
+      label: 'Schedule', 
+      icon: Calendar, 
+      color: 'text-purple-600', 
+      bgColor: 'bg-purple-50',
+      description: 'Book appointment'
+    },
+    { 
+      id: 'jobs' as Section, 
+      label: 'View Jobs', 
+      icon: Briefcase, 
+      color: 'text-orange-600', 
+      bgColor: 'bg-orange-50',
+      description: 'Manage projects'
+    },
+  ];
+
   return (
     <div className="w-full h-full overflow-y-auto">
       <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 max-w-7xl mx-auto">
+        {/* Mobile Quick Actions - Show only on mobile */}
+        {isMobile && onSectionChange && (
+          <div className="grid grid-cols-2 gap-3">
+            {quickActions.map((action) => (
+              <Card
+                key={action.id}
+                className="cursor-pointer hover:shadow-md active:scale-95 transition-all"
+                onClick={() => onSectionChange(action.id)}
+              >
+                <CardContent className="p-4 flex flex-col items-center gap-2 min-h-[100px] justify-center">
+                  <div className={cn('w-12 h-12 rounded-full flex items-center justify-center', action.bgColor)}>
+                    <action.icon className={cn('h-6 w-6', action.color)} />
+                  </div>
+                  <div className="text-center">
+                    <p className="font-semibold text-sm">{action.label}</p>
+                    <p className="text-xs text-muted-foreground">{action.description}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold">CRM Dashboard</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">Dashboard</h1>
           <p className="text-sm sm:text-base text-muted-foreground">Overview of your business pipeline</p>
         </div>
 
