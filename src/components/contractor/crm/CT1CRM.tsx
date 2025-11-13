@@ -18,6 +18,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { BottomNav } from './BottomNav';
 import CRMDashboard from './sections/CRMDashboard';
 import LeadsSection from './sections/LeadsSection';
 import JobsSection from './sections/JobsSection';
@@ -27,11 +28,12 @@ import CalendarSection from './sections/CalendarSection';
 import EmailsSection from './sections/EmailsSection';
 import EstimatesSection from './sections/EstimatesSection';
 import FinancialsSection from './sections/FinancialsSection';
+import MoreSection from './sections/MoreSection';
 import { QuickBooksIntegration } from '@/components/contractor/QuickBooksIntegration';
 import ct1Logo from '@/assets/ct1-logo-main.png';
 import Reporting from '@/pages/Reporting';
 
-type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calendar' | 'emails' | 'estimates' | 'reporting' | 'financials' | 'quickbooks';
+type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calendar' | 'emails' | 'estimates' | 'reporting' | 'financials' | 'quickbooks' | 'more';
 
 const navItems = [
   { id: 'dashboard' as Section, label: 'Dashboard', icon: LayoutDashboard },
@@ -71,7 +73,7 @@ export default function CT1CRM() {
   const renderSection = () => {
     switch (activeSection) {
       case 'dashboard':
-        return <CRMDashboard />;
+        return <CRMDashboard onSectionChange={handleSectionChange} />;
       case 'leads':
         return <LeadsSection onSectionChange={handleSectionChange} />;
       case 'jobs':
@@ -96,8 +98,10 @@ export default function CT1CRM() {
         );
       case 'reporting':
         return <Reporting />;
+      case 'more':
+        return <MoreSection onSectionChange={handleSectionChange} />;
       default:
-        return <CRMDashboard />;
+        return <CRMDashboard onSectionChange={handleSectionChange} />;
     }
   };
 
@@ -131,35 +135,25 @@ export default function CT1CRM() {
       {isMobile ? (
         <>
           {/* Mobile Header */}
-          <div className="sticky top-0 left-0 right-0 z-[5] flex items-center justify-between p-4 bg-card border-b">
+          <div className="sticky top-0 left-0 right-0 z-10 flex items-center justify-center p-4 bg-card border-b">
             <div className="flex items-center gap-2">
               <img src={ct1Logo} alt="CT1" className="h-8 w-8" />
               <span className="font-semibold">CT1 CRM</span>
             </div>
-            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <Menu className="h-5 w-5" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-64 p-0">
-                <div className="flex flex-col h-full">
-                  <div className="flex items-center gap-2 p-4 border-b">
-                    <img src={ct1Logo} alt="CT1" className="h-8 w-8" />
-                    <span className="font-semibold">CT1 CRM</span>
-                  </div>
-                  <NavigationContent />
-                </div>
-              </SheetContent>
-            </Sheet>
           </div>
 
-          {/* Main Content */}
-          <main className="flex-1 overflow-hidden w-full">
+          {/* Main Content with bottom padding for nav */}
+          <main className="flex-1 overflow-hidden w-full pb-16">
             <div className="h-full overflow-y-auto">
               {renderSection()}
             </div>
           </main>
+
+          {/* Bottom Navigation */}
+          <BottomNav 
+            activeSection={activeSection} 
+            onSectionChange={handleSectionChange} 
+          />
         </>
       ) : (
         <>
