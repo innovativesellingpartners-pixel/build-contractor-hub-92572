@@ -157,6 +157,17 @@ export function NewLandingPage() {
         </div>
       </header>
 
+      {/* Mobile Contractor Login Button - Sticky below header */}
+      <div className="md:hidden sticky top-16 bg-primary z-40 border-b border-primary-foreground/20">
+        <div className="px-4 py-2">
+          <Link to="/auth" className="block">
+            <Button className="w-full bg-primary-foreground text-primary hover:bg-primary-foreground/90 font-bold text-lg py-6" size="lg">
+              Contractor Login
+            </Button>
+          </Link>
+        </div>
+      </div>
+
       {/* CT1 Pocketbot - Floating Button (Enlarged) */}
       <div className="fixed bottom-6 right-4 md:top-20 md:bottom-auto md:right-6 z-50">
         <div
