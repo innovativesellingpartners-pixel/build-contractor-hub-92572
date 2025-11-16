@@ -20,6 +20,15 @@ export function MobileNav({ onContactClick }: MobileNavProps) {
       </SheetTrigger>
       <SheetContent side="right" className="w-[80vw] sm:w-[350px]">
         <nav className="flex flex-col space-y-4 mt-8">
+          {/* Contractor Login at top for easy access */}
+          <Link to="/auth" onClick={() => setOpen(false)}>
+            <Button className="w-full text-lg font-medium" size="lg">
+              Contractor Login
+            </Button>
+          </Link>
+          
+          <div className="border-t border-border my-2" />
+          
           <Link 
             to="/what-we-do" 
             className="text-lg font-medium text-foreground hover:text-primary transition-colors py-2"
@@ -68,12 +77,6 @@ export function MobileNav({ onContactClick }: MobileNavProps) {
               Contact Sales
             </Button>
           )}
-          
-          <Link to="/auth" onClick={() => setOpen(false)}>
-            <Button className="w-full text-lg font-medium">
-              Contractor Login
-            </Button>
-          </Link>
         </nav>
       </SheetContent>
     </Sheet>

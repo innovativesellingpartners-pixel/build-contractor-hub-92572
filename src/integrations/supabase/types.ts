@@ -422,6 +422,95 @@ export type Database = {
           },
         ]
       }
+      email_logs: {
+        Row: {
+          body: string
+          entity_id: string
+          entity_type: string
+          error_message: string | null
+          id: string
+          recipient_email: string
+          sent_at: string
+          status: string
+          subject: string
+          template_id: string | null
+          user_id: string
+        }
+        Insert: {
+          body: string
+          entity_id: string
+          entity_type: string
+          error_message?: string | null
+          id?: string
+          recipient_email: string
+          sent_at?: string
+          status?: string
+          subject: string
+          template_id?: string | null
+          user_id: string
+        }
+        Update: {
+          body?: string
+          entity_id?: string
+          entity_type?: string
+          error_message?: string | null
+          id?: string
+          recipient_email?: string
+          sent_at?: string
+          status?: string
+          subject?: string
+          template_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_logs_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "email_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_templates: {
+        Row: {
+          body: string
+          created_at: string
+          entity_type: string
+          id: string
+          is_active: boolean
+          name: string
+          stage: string | null
+          subject: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          entity_type: string
+          id?: string
+          is_active?: boolean
+          name: string
+          stage?: string | null
+          subject: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          entity_type?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          stage?: string | null
+          subject?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       estimate_payment_sessions: {
         Row: {
           amount: number
