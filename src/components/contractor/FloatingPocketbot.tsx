@@ -3,9 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bot, Send, Loader2, Lock, Sparkles, X, Minimize2, Download } from "lucide-react";
+import { Bot, Send, Loader2, Lock, Sparkles, X, Minimize2, Download, GripVertical } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import ct1Logo from "@/assets/ct1-logo-main.png";
 
 interface Message {
@@ -23,6 +25,7 @@ interface FloatingPocketbotProps {
 }
 
 export function FloatingPocketbot({ onClose }: FloatingPocketbotProps) {
+  const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
@@ -31,13 +34,18 @@ export function FloatingPocketbot({ onClose }: FloatingPocketbotProps) {
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [hasFullAccess, setHasFullAccess] = useState(false);
   const [promptCount, setPromptCount] = useState(() => {
     const saved = localStorage.getItem('ct1_pocketbot_prompts');
     return saved ? parseInt(saved, 10) : 0;
   });
   const [showPaywall, setShowPaywall] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
+  const [position, setPosition] = useState({ x: 20, y: 20 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const scrollRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -45,6 +53,65 @@ export function FloatingPocketbot({ onClose }: FloatingPocketbotProps) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
+
+  useEffect(() => {
+    const checkFullAccess = async () => {
+      if (!user?.id) return;
+      
+      const { data } = await supabase
+        .from('profiles')
+        .select('pocketbot_full_access')
+        .eq('user_id', user.id)
+        .single();
+      
+      setHasFullAccess(data?.pocketbot_full_access || false);
+    };
+    
+    checkFullAccess();
+  }, [user?.id]);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDragging) return;
+      
+      const newX = e.clientX - dragOffset.x;
+      const newY = e.clientY - dragOffset.y;
+      
+      // Keep within viewport bounds
+      const maxX = window.innerWidth - (cardRef.current?.offsetWidth || 400);
+      const maxY = window.innerHeight - (cardRef.current?.offsetHeight || 600);
+      
+      setPosition({
+        x: Math.max(0, Math.min(newX, maxX)),
+        y: Math.max(0, Math.min(newY, maxY))
+      });
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging, dragOffset]);
+
+  const handleDragStart = (e: React.MouseEvent) => {
+    if (!cardRef.current) return;
+    
+    const rect = cardRef.current.getBoundingClientRect();
+    setDragOffset({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    });
+    setIsDragging(true);
+  };
 
   const handleSubscribe = () => {
     toast({
@@ -56,7 +123,7 @@ export function FloatingPocketbot({ onClose }: FloatingPocketbotProps) {
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
 
-    if (promptCount >= MAX_FREE_PROMPTS) {
+    if (!hasFullAccess && promptCount >= MAX_FREE_PROMPTS) {
       setShowPaywall(true);
       return;
     }
@@ -64,23 +131,27 @@ export function FloatingPocketbot({ onClose }: FloatingPocketbotProps) {
     const userMessage = input.trim();
     setInput("");
     
-    const newPromptCount = promptCount + 1;
-    setPromptCount(newPromptCount);
-    localStorage.setItem('ct1_pocketbot_prompts', newPromptCount.toString());
+    if (!hasFullAccess) {
+      const newPromptCount = promptCount + 1;
+      setPromptCount(newPromptCount);
+      localStorage.setItem('ct1_pocketbot_prompts', newPromptCount.toString());
+      
+      if (newPromptCount === MAX_FREE_PROMPTS) {
+        const newMessages = [...messages, { role: "user" as const, content: userMessage }];
+        setMessages(newMessages);
+        setIsLoading(false);
+        setMessages([...newMessages, {
+          role: "assistant",
+          content: "You've reached your free prompt limit. Subscribe for $10/month to continue using CT1 Pocketbot!"
+        }]);
+        setShowPaywall(true);
+        return;
+      }
+    }
     
     const newMessages = [...messages, { role: "user" as const, content: userMessage }];
     setMessages(newMessages);
     setIsLoading(true);
-
-    if (newPromptCount === MAX_FREE_PROMPTS) {
-      setIsLoading(false);
-      setMessages([...newMessages, {
-        role: "assistant",
-        content: "You've reached your free prompt limit. Subscribe for $10/month to continue using CT1 Pocketbot!"
-      }]);
-      setShowPaywall(true);
-      return;
-    }
 
     try {
       const response = await fetch(
