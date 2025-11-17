@@ -10,8 +10,9 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from '@/components/ui/dialog';
-import { Search, UserPlus, Edit, Trash2, Mail, Phone, Building2, User, Key, Upload, X } from 'lucide-react';
+import { Search, UserPlus, Edit, Trash2, Mail, Phone, Building2, User, Key, Upload, X, Bot } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 
 type UserWithProfile = {
@@ -26,6 +27,7 @@ type UserWithProfile = {
     contact_name?: string;
     ct1_contractor_number?: string;
     subscription_tier?: string;
+    pocketbot_full_access?: boolean;
   } | null;
   role: 'user' | 'admin' | 'super_admin';
 };
@@ -92,6 +94,7 @@ export const UserManagement = () => {
         ct1_contractor_number?: string;
         subscription_tier?: string;
         logo_url?: string;
+        pocketbot_full_access?: boolean;
       }
     }) => {
       const { error } = await supabase
@@ -260,6 +263,7 @@ export const UserManagement = () => {
         ct1_contractor_number: formData.get('ct1_contractor_number') as string,
         subscription_tier: formData.get('subscription_tier') as string,
         logo_url: logoPreview || undefined,
+        pocketbot_full_access: formData.get('pocketbot_full_access') === 'on',
       }
     });
   };
@@ -673,6 +677,26 @@ export const UserManagement = () => {
                     <SelectItem value="accel">Accel</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/50">
+                  <div className="flex items-center gap-3">
+                    <Bot className="h-5 w-5 text-primary" />
+                    <div>
+                      <Label htmlFor="pocketbot-access" className="text-sm font-medium">
+                        Full Pocketbot Access
+                      </Label>
+                      <p className="text-xs text-muted-foreground">
+                        Grant unlimited AI assistant access without subscription
+                      </p>
+                    </div>
+                  </div>
+                  <Switch 
+                    id="pocketbot-access"
+                    name="pocketbot_full_access"
+                    defaultChecked={(editingUser.profile as any)?.pocketbot_full_access || false}
+                  />
+                </div>
               </div>
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)}>

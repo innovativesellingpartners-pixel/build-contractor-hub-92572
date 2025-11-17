@@ -1572,6 +1572,7 @@ export type Database = {
           id: string
           logo_url: string | null
           phone: string | null
+          pocketbot_full_access: boolean
           qb_access_token: string | null
           qb_access_token_expires_at: string | null
           qb_last_sync_at: string | null
@@ -1597,6 +1598,7 @@ export type Database = {
           id: string
           logo_url?: string | null
           phone?: string | null
+          pocketbot_full_access?: boolean
           qb_access_token?: string | null
           qb_access_token_expires_at?: string | null
           qb_last_sync_at?: string | null
@@ -1622,6 +1624,7 @@ export type Database = {
           id?: string
           logo_url?: string | null
           phone?: string | null
+          pocketbot_full_access?: boolean
           qb_access_token?: string | null
           qb_access_token_expires_at?: string | null
           qb_last_sync_at?: string | null
