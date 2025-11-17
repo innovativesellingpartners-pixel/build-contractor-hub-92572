@@ -102,7 +102,7 @@ export function Dashboard() {
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex flex-col">
       {/* Top Navigation Bar */}
-      <div className="bg-card/80 backdrop-blur-sm border-b shadow-sm sticky top-0 z-10">
+      <div className="bg-card/80 backdrop-blur-sm border-b shadow-sm sticky top-0 z-40">
         <div className="container mx-auto px-4 md:px-6 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 md:gap-4">
@@ -137,7 +137,18 @@ export function Dashboard() {
                 <Building2 className="h-4 w-4 text-primary" />
                 <span className="font-semibold text-sm">{profile?.company_name || 'Your Company'}</span>
               </div>
-              <ProfileEditDialog />
+              
+              {/* Account Button - Always Visible */}
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => handleSectionChange('account')}
+                className="flex items-center gap-2 hover:bg-primary/10 transition-colors"
+              >
+                <User className="h-4 w-4" />
+                <span className="hidden sm:inline">Account</span>
+              </Button>
+              
               {isAdmin && (
                 <Button variant="outline" size="sm" asChild className="hover:bg-primary/10 transition-colors hidden sm:flex">
                   <Link to="/admin">Admin Dashboard</Link>
@@ -152,9 +163,10 @@ export function Dashboard() {
         </div>
       </div>
 
-      {/* Company Info Card */}
-      <div className="container mx-auto px-4 md:px-6 py-4 md:py-6">
-        <div className="bg-card border border-border/50 rounded-xl shadow-lg overflow-hidden transition-all hover:shadow-xl">
+      {/* Company Info Card - Hidden on Mobile */}
+      <div className="hidden md:block">
+        <div className="container mx-auto px-4 md:px-6 py-4 md:py-6">
+          <div className="bg-card border border-border/50 rounded-xl shadow-lg overflow-hidden transition-all hover:shadow-xl">
           <div className="p-4 md:p-6">
             <div className="flex flex-col md:flex-row items-start gap-4 md:gap-6">
               {/* Logo Section */}
@@ -244,6 +256,7 @@ export function Dashboard() {
           </div>
         </div>
       </div>
+      </div>
 
       {/* Main Content Area */}
       <div className="container mx-auto px-4 md:px-6 pb-6 flex-1 flex gap-6">
@@ -262,7 +275,7 @@ export function Dashboard() {
                 <TrainingHub />
               </div>
             )}
-            {activeSection === 'leads' && <CT1CRM />}
+            {activeSection === 'leads' && <CT1CRM onOpenPocketbot={() => setPocketbotOpen(true)} />}
             {activeSection === 'schedule' && (
               <div className="p-3 md:p-4 lg:p-6 min-h-[400px] md:min-h-[600px]">
                 <ScheduleCall />
