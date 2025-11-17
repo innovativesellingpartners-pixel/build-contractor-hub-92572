@@ -140,7 +140,7 @@ export function ConversionAnalytics({ filters }: ConversionAnalyticsProps) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-muted-foreground">Lead → Opportunity</p>
-              <p className="text-2xl font-bold mt-2">{formatPercent(metrics.leadToOpportunityRate)}</p>
+              <p className="text-xl font-bold mt-2">{formatPercent(metrics.leadToOpportunityRate)}</p>
               <p className="text-xs text-muted-foreground mt-1">
                 {metrics.convertedLeads} of {metrics.totalLeads} leads
               </p>
@@ -155,7 +155,7 @@ export function ConversionAnalytics({ filters }: ConversionAnalyticsProps) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-muted-foreground">Opportunity → Job</p>
-              <p className="text-2xl font-bold mt-2">{formatPercent(metrics.opportunityToJobRate)}</p>
+              <p className="text-xl font-bold mt-2">{formatPercent(metrics.opportunityToJobRate)}</p>
               <p className="text-xs text-muted-foreground mt-1">
                 {metrics.wonOpportunities} of {metrics.totalOpportunities} opportunities
               </p>
@@ -170,7 +170,7 @@ export function ConversionAnalytics({ filters }: ConversionAnalyticsProps) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-muted-foreground">Overall Conversion</p>
-              <p className="text-2xl font-bold mt-2">{formatPercent(metrics.overallConversionRate)}</p>
+              <p className="text-xl font-bold mt-2">{formatPercent(metrics.overallConversionRate)}</p>
               <p className="text-xs text-muted-foreground mt-1">
                 {metrics.totalJobs} jobs from {metrics.totalLeads} leads
               </p>
@@ -185,7 +185,7 @@ export function ConversionAnalytics({ filters }: ConversionAnalyticsProps) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-muted-foreground">Avg Deal Size</p>
-              <p className="text-2xl font-bold mt-2">{formatCurrency(metrics.avgDealSize)}</p>
+              <p className="text-xl font-bold mt-2">{formatCurrency(metrics.avgDealSize)}</p>
               <p className="text-xs text-muted-foreground mt-1">
                 Pipeline: {formatCurrency(metrics.totalPipelineValue)}
               </p>
