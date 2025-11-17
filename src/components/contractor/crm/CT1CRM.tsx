@@ -167,13 +167,6 @@ const navItems = [
       {/* Mobile Navigation */}
       {isMobile ? (
         <>
-          {/* Mobile Header */}
-          <div className="sticky top-0 left-0 right-0 z-10 flex items-center justify-center p-4 bg-card border-b">
-            <div className="flex items-center gap-2">
-              <img src={ct1Logo} alt="CT1" className="h-8 w-8" />
-              <span className="font-semibold">CT1 CRM</span>
-            </div>
-          </div>
 
           {/* Back to Home Button for Mobile */}
           {isMobile && !showMobileLanding && activeSection !== 'dashboard' && (
