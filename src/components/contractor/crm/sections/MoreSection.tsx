@@ -1,37 +1,69 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileText, BarChart2, DollarSign, Phone, Calendar, Mail, Link as LinkIcon } from 'lucide-react';
+import { FileText, BarChart2, DollarSign, Phone, Calendar, Mail, Link as LinkIcon, LayoutDashboard, ClipboardList, Briefcase, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-type Section = 'estimates' | 'reporting' | 'financials' | 'calls' | 'calendar' | 'emails' | 'quickbooks';
+type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'estimates' | 'reporting' | 'financials' | 'calls' | 'calendar' | 'emails' | 'quickbooks';
 
 interface MoreSectionProps {
   onSectionChange: (section: Section) => void;
 }
 
-const secondaryFeatures = [
+const allCRMFeatures = [
+  { 
+    id: 'dashboard' as Section, 
+    label: 'Dashboard', 
+    icon: LayoutDashboard, 
+    gradient: 'from-slate-500 to-slate-600',
+    borderColor: 'border-slate-400',
+    description: 'Overview & stats'
+  },
+  { 
+    id: 'leads' as Section, 
+    label: 'Leads', 
+    icon: ClipboardList, 
+    gradient: 'from-yellow-500 to-yellow-600',
+    borderColor: 'border-yellow-400',
+    description: 'New opportunities'
+  },
+  { 
+    id: 'jobs' as Section, 
+    label: 'Jobs', 
+    icon: Briefcase, 
+    gradient: 'from-purple-500 to-purple-600',
+    borderColor: 'border-purple-400',
+    description: 'Active projects'
+  },
+  { 
+    id: 'customers' as Section, 
+    label: 'Customers', 
+    icon: Users, 
+    gradient: 'from-blue-500 to-blue-600',
+    borderColor: 'border-blue-400',
+    description: 'Contact management'
+  },
   { 
     id: 'estimates' as Section, 
     label: 'Estimates', 
     icon: FileText, 
-    gradient: 'from-blue-500 to-blue-600',
-    borderColor: 'border-blue-400',
+    gradient: 'from-green-500 to-green-600',
+    borderColor: 'border-green-400',
     description: 'Create quotes'
-  },
-  { 
-    id: 'reporting' as Section, 
-    label: 'Reporting', 
-    icon: BarChart2, 
-    gradient: 'from-purple-500 to-purple-600',
-    borderColor: 'border-purple-400',
-    description: 'View insights'
   },
   { 
     id: 'financials' as Section, 
     label: 'Financials', 
     icon: DollarSign, 
-    gradient: 'from-green-500 to-green-600',
-    borderColor: 'border-green-400',
+    gradient: 'from-emerald-500 to-emerald-600',
+    borderColor: 'border-emerald-400',
     description: 'Track money'
+  },
+  { 
+    id: 'reporting' as Section, 
+    label: 'Reporting', 
+    icon: BarChart2, 
+    gradient: 'from-violet-500 to-violet-600',
+    borderColor: 'border-violet-400',
+    description: 'View insights'
   },
   { 
     id: 'quickbooks' as Section, 
@@ -39,7 +71,7 @@ const secondaryFeatures = [
     icon: LinkIcon, 
     gradient: 'from-indigo-500 to-indigo-600',
     borderColor: 'border-indigo-400',
-    description: 'Sync data'
+    description: 'Sync accounting'
   },
   { 
     id: 'calls' as Section, 
@@ -55,7 +87,7 @@ const secondaryFeatures = [
     icon: Calendar, 
     gradient: 'from-red-500 to-red-600',
     borderColor: 'border-red-400',
-    description: 'Schedule'
+    description: 'Schedule events'
   },
   { 
     id: 'emails' as Section, 
@@ -63,7 +95,7 @@ const secondaryFeatures = [
     icon: Mail, 
     gradient: 'from-cyan-500 to-cyan-600',
     borderColor: 'border-cyan-400',
-    description: 'Messages'
+    description: 'Message clients'
   },
 ];
 
@@ -72,12 +104,12 @@ export default function MoreSection({ onSectionChange }: MoreSectionProps) {
     <div className="w-full h-full overflow-y-auto overflow-x-hidden pb-20">
       <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 w-full sm:max-w-7xl sm:mx-auto">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold">More Features</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">Access additional tools and features</p>
+          <h1 className="text-2xl sm:text-3xl font-bold">All CRM Modules</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Access all features and tools</p>
         </div>
 
         <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-3 w-full">
-          {secondaryFeatures.map((feature) => (
+          {allCRMFeatures.map((feature) => (
             <Card
               key={feature.id}
               className={cn(
