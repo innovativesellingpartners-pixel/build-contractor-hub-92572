@@ -150,7 +150,7 @@ export function WinLossAnalysis({ filters }: WinLossAnalysisProps) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-muted-foreground">Win Rate</p>
-              <p className="text-2xl font-bold mt-2">{formatPercent(analysis.winRate)}</p>
+              <p className="text-xl font-bold mt-2">{formatPercent(analysis.winRate)}</p>
               <p className="text-xs text-muted-foreground mt-1">
                 {analysis.wins} won / {analysis.losses} lost
               </p>
@@ -165,7 +165,7 @@ export function WinLossAnalysis({ filters }: WinLossAnalysisProps) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-muted-foreground">Won Value</p>
-              <p className="text-2xl font-bold mt-2">{formatCurrency(analysis.totalWinValue)}</p>
+              <p className="text-xl font-bold mt-2">{formatCurrency(analysis.totalWinValue)}</p>
               <p className="text-xs text-muted-foreground mt-1">
                 Avg: {formatCurrency(analysis.avgWinValue)}
               </p>
@@ -180,7 +180,7 @@ export function WinLossAnalysis({ filters }: WinLossAnalysisProps) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-muted-foreground">Lost Value</p>
-              <p className="text-2xl font-bold mt-2">{formatCurrency(analysis.totalLossValue)}</p>
+              <p className="text-xl font-bold mt-2">{formatCurrency(analysis.totalLossValue)}</p>
               <p className="text-xs text-muted-foreground mt-1">
                 Avg: {formatCurrency(analysis.avgLossValue)}
               </p>
@@ -195,7 +195,7 @@ export function WinLossAnalysis({ filters }: WinLossAnalysisProps) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-muted-foreground">Total Closed</p>
-              <p className="text-2xl font-bold mt-2">{analysis.wins + analysis.losses}</p>
+              <p className="text-xl font-bold mt-2">{analysis.wins + analysis.losses}</p>
               <p className="text-xs text-muted-foreground mt-1">
                 {formatCurrency(analysis.totalWinValue + analysis.totalLossValue)} total
               </p>
