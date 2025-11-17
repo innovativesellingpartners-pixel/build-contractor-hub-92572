@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Plus, FileText, Calendar, DollarSign, Trash2, Eye, Send, CheckCircle, Clock, AlertCircle, RefreshCw } from 'lucide-react';
+import { Plus, FileText, Calendar, DollarSign, Trash2, Eye, Send, CheckCircle, Clock, AlertCircle, RefreshCw, Home } from 'lucide-react';
 import { useEstimates } from '@/hooks/useEstimates';
 import EstimateForm from '../EstimateForm';
 import { useAuth } from '@/contexts/AuthContext';
@@ -12,7 +12,7 @@ import { format } from 'date-fns';
 import { MobileOptimizedWrapper, MobileCard, MobileGrid } from './MobileOptimizedWrapper';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
-export default function EstimatesSection() {
+export default function EstimatesSection({ onSectionChange }: { onSectionChange?: (section: string) => void }) {
   const { estimates, isLoading, createEstimate, createEstimateAsync, updateEstimate, updateEstimateAsync, deleteEstimate, sendEstimate, sendEstimateAsync, isSendingEstimate } = useEstimates();
   const { user } = useAuth();
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -95,6 +95,7 @@ export default function EstimatesSection() {
   return (
     <MobileOptimizedWrapper
       title="Estimates"
+      onBackClick={() => onSectionChange?.('dashboard')}
       actions={
         <Button onClick={handleNew} className="w-full sm:w-auto">
           <Plus className="h-4 w-4 mr-2" />

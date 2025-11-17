@@ -4,7 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, DollarSign, AlertCircle } from 'lucide-react';
+import { Loader2, DollarSign, AlertCircle, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface Invoice {
@@ -19,7 +19,11 @@ interface Invoice {
   dueDate: string | null;
 }
 
-export default function FinancialsSection() {
+interface FinancialsSectionProps {
+  onSectionChange?: (section: string) => void;
+}
+
+export default function FinancialsSection({ onSectionChange }: FinancialsSectionProps) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -125,6 +129,16 @@ export default function FinancialsSection() {
 
   return (
     <div className="p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold">Financials</h1>
+          <p className="text-sm text-muted-foreground">QuickBooks invoice overview</p>
+        </div>
+        <Button variant="outline" size="sm" onClick={() => onSectionChange?.('dashboard')}>
+          <Home className="h-4 w-4 mr-2" />
+          <span className="hidden sm:inline">Contractor Hub</span>
+        </Button>
+      </div>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <DollarSign className="h-8 w-8 text-primary" />
