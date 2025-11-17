@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { NewLandingPage } from "@/components/NewLandingPage";
 import { About } from "@/pages/About";
 import { Contact } from "@/pages/Contact";
@@ -100,7 +100,7 @@ const App = () => (
             } />
             <Route path="/crm" element={
               <ProtectedRoute>
-                <CRMDashboard />
+                <Navigate to="/dashboard" replace />
               </ProtectedRoute>
             } />
             <Route path="/reporting" element={

@@ -56,8 +56,13 @@ export function Dashboard() {
   
   // Persist active section in sessionStorage
   const getInitialSection = (): ActiveSection => {
-    const saved = sessionStorage.getItem('dashboardActiveSection');
-    return (saved as ActiveSection) || 'leads';
+    const saved = sessionStorage.getItem('dashboardActiveSection') as ActiveSection | null;
+    // Remap old 'training' value to 'leads' for mobile 4-tile landing
+    if (saved === 'training') {
+      sessionStorage.removeItem('dashboardActiveSection');
+      return 'leads';
+    }
+    return saved || 'leads';
   };
   
   const [activeSection, setActiveSection] = useState<ActiveSection>(getInitialSection);

@@ -61,8 +61,9 @@ const navItems = [
 
   // Persist active section in sessionStorage
   const getInitialSection = (): Section => {
-    const saved = sessionStorage.getItem('ct1CrmActiveSection');
-    return (saved as Section) || 'dashboard';
+    const saved = sessionStorage.getItem('ct1CrmActiveSection') as Section | null;
+    // Default to 'dashboard' for mobile 4-tile landing
+    return saved || 'dashboard';
   };
   
   const [activeSection, setActiveSection] = useState<Section>(getInitialSection);
