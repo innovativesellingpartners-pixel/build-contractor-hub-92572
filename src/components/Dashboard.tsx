@@ -57,7 +57,7 @@ export function Dashboard() {
   // Persist active section in sessionStorage
   const getInitialSection = (): ActiveSection => {
     const saved = sessionStorage.getItem('dashboardActiveSection');
-    return (saved as ActiveSection) || 'training';
+    return (saved as ActiveSection) || 'leads';
   };
   
   const [activeSection, setActiveSection] = useState<ActiveSection>(getInitialSection);

@@ -1,4 +1,4 @@
-import { LayoutDashboard, ClipboardList, Phone, Mail } from 'lucide-react';
+import { LayoutDashboard, ClipboardList, Phone, Mail, MoreHorizontal } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calendar' | 'emails' | 'estimates' | 'reporting' | 'financials' | 'quickbooks' | 'more';
@@ -13,6 +13,7 @@ const navItems = [
   { id: 'emails' as Section, label: 'Emails', icon: Mail },
   { id: 'leads' as Section, label: 'Leads', icon: ClipboardList },
   { id: 'calls' as Section, label: 'Calls', icon: Phone },
+  { id: 'more' as Section, label: 'More', icon: MoreHorizontal },
 ];
 
 export function BottomNav({ activeSection, onSectionChange }: BottomNavProps) {
