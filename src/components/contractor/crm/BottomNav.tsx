@@ -10,9 +10,9 @@ interface BottomNavProps {
 
 const navItems = [
   { id: 'dashboard' as Section, label: 'CRM', icon: LayoutDashboard },
+  { id: 'calls' as Section, label: 'Calls', icon: Phone },
   { id: 'emails' as Section, label: 'Emails', icon: Mail },
   { id: 'leads' as Section, label: 'Leads', icon: ClipboardList },
-  { id: 'calls' as Section, label: 'Calls', icon: Phone },
   { id: 'more' as Section, label: 'More', icon: MoreHorizontal },
 ];
 

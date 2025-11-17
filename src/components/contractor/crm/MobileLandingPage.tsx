@@ -66,16 +66,6 @@ export function MobileLandingPage({
   return (
     <div className="w-full h-full overflow-y-auto overflow-x-hidden pb-20 bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       <div className="p-4 sm:p-6 space-y-6 w-full max-w-lg mx-auto">
-        {/* Header */}
-        <div className="text-center py-6">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent mb-2">
-            CT1 Contractor Hub
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Select a module to get started
-          </p>
-        </div>
-        
         {/* 2x2 Grid of Module Cards */}
         <div className="grid grid-cols-2 gap-4 w-full">
           {mobileModules.map((module) => (
