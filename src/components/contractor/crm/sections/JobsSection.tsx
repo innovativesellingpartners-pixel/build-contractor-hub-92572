@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useJobs } from '@/hooks/useJobs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MapPin, Calendar, Users } from 'lucide-react';
+import { MapPin, Calendar, Users, Home } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
@@ -91,11 +91,17 @@ export default function JobsSection({ onSectionChange }: JobsSectionProps) {
     <div className="w-full h-full overflow-y-auto overflow-x-hidden pb-20">
       <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 w-full sm:max-w-7xl sm:mx-auto">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
+        <div className="flex-1">
           <h1 className="text-2xl sm:text-3xl font-bold">Jobs</h1>
           <p className="text-sm sm:text-base text-muted-foreground">Manage your active and completed jobs</p>
         </div>
-        <AddJobDialog onAdd={addJob} />
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => onSectionChange?.('dashboard')}>
+            <Home className="h-4 w-4 mr-2" />
+            <span className="hidden sm:inline">Contractor Hub</span>
+          </Button>
+          <AddJobDialog onAdd={addJob} />
+        </div>
         </div>
 
         <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">

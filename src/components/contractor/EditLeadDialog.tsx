@@ -9,7 +9,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Lead, LeadSource } from '@/hooks/useLeads';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Briefcase } from 'lucide-react';
+import { Users } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface EditLeadDialogProps {
@@ -19,10 +19,10 @@ interface EditLeadDialogProps {
   onUpdate: (id: string, updates: Partial<Lead>) => Promise<any>;
   onDelete: (id: string) => Promise<void>;
   sources: LeadSource[];
-  onConvertToJob?: () => void;
+  onConvertToCustomer?: () => void;
 }
 
-export function EditLeadDialog({ lead, open, onOpenChange, onUpdate, onDelete, sources, onConvertToJob }: EditLeadDialogProps) {
+export function EditLeadDialog({ lead, open, onOpenChange, onUpdate, onDelete, sources, onConvertToCustomer }: EditLeadDialogProps) {
   const { user } = useAuth();
   const [convertDialogOpen, setConvertDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -89,46 +89,46 @@ export function EditLeadDialog({ lead, open, onOpenChange, onUpdate, onDelete, s
     }
   };
 
-  const handleConvertToJob = async () => {
+  const handleConvertToCustomer = async () => {
     if (!lead || !user) return;
 
     try {
-      const jobData = {
+      const customerData = {
         user_id: user.id,
         name: lead.name,
-        description: lead.project_type || '',
-        address: lead.address || '',
-        city: lead.city || '',
-        state: lead.state || '',
-        zip_code: lead.zip_code || '',
-        status: 'scheduled',
-        total_cost: lead.value || 0,
-        notes: lead.notes || '',
-        lead_id: lead.id,
+        email: lead.email || null,
+        phone: lead.phone || null,
+        company: lead.company || null,
+        address: lead.address || null,
+        city: lead.city || null,
+        state: lead.state || null,
+        zip_code: lead.zip_code || null,
+        notes: lead.notes || null,
+        customer_type: 'residential',
       };
 
-      const { data: newJob, error: jobError } = await supabase
-        .from('jobs')
-        .insert([jobData])
+      const { data: newCustomer, error: customerError } = await supabase
+        .from('customers')
+        .insert([customerData])
         .select()
         .single();
 
-      if (jobError) throw jobError;
+      if (customerError) throw customerError;
 
       await supabase
         .from('leads')
         .update({
+          status: 'converted',
           converted_at: new Date().toISOString(),
-          converted_to_job_id: newJob.id,
         })
         .eq('id', lead.id);
 
-      toast.success('Lead converted to job successfully');
+      toast.success('Lead converted to customer successfully');
       setConvertDialogOpen(false);
       onOpenChange(false);
-      if (onConvertToJob) onConvertToJob();
+      if (onConvertToCustomer) onConvertToCustomer();
     } catch (error: any) {
-      toast.error('Failed to convert lead to job: ' + error.message);
+      toast.error('Failed to convert lead to customer: ' + error.message);
     }
   };
 
@@ -280,20 +280,20 @@ export function EditLeadDialog({ lead, open, onOpenChange, onUpdate, onDelete, s
               <AlertDialog open={convertDialogOpen} onOpenChange={setConvertDialogOpen}>
                 <AlertDialogTrigger asChild>
                   <Button type="button" variant="outline" className="gap-2">
-                    <Briefcase className="h-4 w-4" />
-                    Convert to Job
+                    <Users className="h-4 w-4" />
+                    Convert to Customer
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Convert Lead to Job?</AlertDialogTitle>
+                    <AlertDialogTitle>Convert Lead to Customer?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      This will create a new job from this lead and mark the lead as converted. This action cannot be undone.
+                      This will create a new customer from this lead and mark the lead as converted. This action cannot be undone.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleConvertToJob}>Convert</AlertDialogAction>
+                    <AlertDialogAction onClick={handleConvertToCustomer}>Convert</AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>

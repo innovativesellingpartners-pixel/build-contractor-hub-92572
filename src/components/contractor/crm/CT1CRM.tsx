@@ -111,17 +111,17 @@ const navItems = [
       case 'jobs':
         return <JobsSection onSectionChange={handleSectionChange} />;
       case 'customers':
-        return <CustomersSection />;
+        return <CustomersSection onSectionChange={handleSectionChange} />;
       case 'calls':
-        return <CallsSection />;
+        return <CallsSection onSectionChange={handleSectionChange} />;
       case 'calendar':
-        return <CalendarSection />;
+        return <CalendarSection onSectionChange={handleSectionChange} />;
       case 'emails':
-        return <EmailsSection />;
+        return <EmailsSection onSectionChange={handleSectionChange} />;
       case 'estimates':
-        return <EstimatesSection />;
+        return <EstimatesSection onSectionChange={handleSectionChange} />;
       case 'financials':
-        return <FinancialsSection />;
+        return <FinancialsSection onSectionChange={handleSectionChange} />;
       case 'quickbooks':
         return (
           <div className="p-6">

@@ -1,5 +1,7 @@
 import { ReactNode } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Home } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface MobileOptimizedWrapperProps {
@@ -7,6 +9,7 @@ interface MobileOptimizedWrapperProps {
   title?: string;
   actions?: ReactNode;
   className?: string;
+  onBackClick?: () => void;
 }
 
 export function MobileOptimizedWrapper({
@@ -14,6 +17,7 @@ export function MobileOptimizedWrapper({
   title,
   actions,
   className,
+  onBackClick,
 }: MobileOptimizedWrapperProps) {
   return (
     <div className={cn('w-full max-w-full overflow-x-hidden', className)}>
@@ -22,7 +26,15 @@ export function MobileOptimizedWrapper({
           <CardHeader className="pb-3">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <CardTitle className="text-xl sm:text-2xl">{title}</CardTitle>
-              {actions && <div className="flex gap-2">{actions}</div>}
+              <div className="flex gap-2">
+                {onBackClick && (
+                  <Button variant="outline" size="sm" onClick={onBackClick}>
+                    <Home className="h-4 w-4 mr-2" />
+                    <span className="hidden sm:inline">Contractor Hub</span>
+                  </Button>
+                )}
+                {actions}
+              </div>
             </div>
           </CardHeader>
         </Card>

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useLeads } from '@/hooks/useLeads';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, Phone, Mail, Edit, Briefcase, TrendingUp } from 'lucide-react';
+import { Plus, Phone, Mail, Edit, Users, TrendingUp, Home } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { AddLeadDialog } from '../../AddLeadDialog';
 import { EditLeadDialog } from '../../EditLeadDialog';
@@ -21,34 +21,36 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
   const [convertingLead, setConvertingLead] = useState<any>(null);
   const [convertToOpportunityLead, setConvertToOpportunityLead] = useState<any>(null);
 
-  const handleConvertToJob = async () => {
+  const handleConvertToCustomer = async () => {
     if (!convertingLead) return;
 
     try {
-      toast.loading('Converting lead to job...', { id: 'convert-lead' });
+      toast.loading('Converting lead to customer...', { id: 'convert-lead' });
 
       // Get current user ID
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      // Create a new job from the lead - using raw insert with fields that exist
-      const { data: newJob, error: jobError } = await supabase
-        .from('jobs')
+      // Create a new customer from the lead
+      const { data: newCustomer, error: customerError } = await supabase
+        .from('customers')
         .insert([{
-          name: convertingLead.name + (convertingLead.project_type ? ` - ${convertingLead.project_type}` : ''),
+          name: convertingLead.name,
           user_id: user.id,
+          email: convertingLead.email || null,
+          phone: convertingLead.phone || null,
+          company: convertingLead.company || null,
           address: convertingLead.address || null,
           city: convertingLead.city || null,
           state: convertingLead.state || null,
           zip_code: convertingLead.zip_code || null,
-          status: 'scheduled',
           notes: convertingLead.notes || null,
-          lead_id: convertingLead.id,
+          customer_type: 'residential', // Default type
         }])
         .select()
         .single();
 
-      if (jobError) throw jobError;
+      if (customerError) throw customerError;
 
       // Update the lead to mark it as converted
       const { error } = await supabase
@@ -56,18 +58,17 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
         .update({
           status: 'converted',
           converted_at: new Date().toISOString(),
-          converted_to_job_id: newJob?.id,
         })
         .eq('id', convertingLead.id);
 
       if (error) throw error;
 
-      toast.success('Lead converted to job successfully!', { id: 'convert-lead' });
+      toast.success('Lead converted to customer successfully!', { id: 'convert-lead' });
       setConvertingLead(null);
 
-      // Navigate to jobs section if available
+      // Navigate to customers section if available
       if (onSectionChange) {
-        setTimeout(() => onSectionChange('jobs'), 500);
+        setTimeout(() => onSectionChange('customers'), 500);
       }
     } catch (error: any) {
       console.error('Error converting lead:', error);
@@ -202,8 +203,8 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
                       size="sm"
                       onClick={() => setConvertingLead(lead)}
                     >
-                      <Briefcase className="h-4 w-4" />
-                      <span className="hidden sm:inline">Convert to Job</span>
+                      <Users className="h-4 w-4" />
+                      <span className="hidden sm:inline">Convert to Customer</span>
                     </Button>
                   </>
                 )}
@@ -242,9 +243,9 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
             onUpdate={updateLead}
             onDelete={deleteLead}
             sources={sources}
-            onConvertToJob={() => {
+            onConvertToCustomer={() => {
               refreshLeads();
-              if (onSectionChange) onSectionChange('jobs');
+              if (onSectionChange) onSectionChange('customers');
             }}
           />
         )}
@@ -252,16 +253,16 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
         <AlertDialog open={!!convertingLead} onOpenChange={() => setConvertingLead(null)}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Convert Lead to Job?</AlertDialogTitle>
+              <AlertDialogTitle>Convert Lead to Customer?</AlertDialogTitle>
               <AlertDialogDescription>
-                This will create a new job from the lead "{convertingLead?.name}" and mark the lead as converted.
-                The job will be created in "Scheduled" status and you can manage it from the Jobs section.
+                This will create a new customer from the lead "{convertingLead?.name}" and mark the lead as converted.
+                You can then create jobs for this customer from the Customers section.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleConvertToJob}>
-                Convert to Job
+              <AlertDialogAction onClick={handleConvertToCustomer}>
+                Convert to Customer
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
