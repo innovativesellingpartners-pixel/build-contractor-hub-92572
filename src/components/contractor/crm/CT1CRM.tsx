@@ -12,7 +12,8 @@ import {
   FileText,
   BarChart2,
   DollarSign,
-  Link as LinkIcon
+  Link as LinkIcon,
+  ArrowLeft
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -32,8 +33,15 @@ import MoreSection from './sections/MoreSection';
 import { QuickBooksIntegration } from '@/components/contractor/QuickBooksIntegration';
 import ct1Logo from '@/assets/ct1-logo-main.png';
 import Reporting from '@/pages/Reporting';
+import { MobileLandingPage } from './MobileLandingPage';
 
 type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calendar' | 'emails' | 'estimates' | 'reporting' | 'financials' | 'quickbooks' | 'more';
+
+interface CT1CRMProps {
+  onOpenPocketbot?: () => void;
+}
+
+export default function CT1CRM({ onOpenPocketbot }: CT1CRMProps = {}) {
 
 const navItems = [
   { id: 'dashboard' as Section, label: 'Dashboard', icon: LayoutDashboard },
@@ -49,7 +57,8 @@ const navItems = [
   { id: 'emails' as Section, label: 'Emails', icon: Mail },
 ];
 
-export default function CT1CRM() {
+// Component moved to accept props - see above
+
   // Persist active section in sessionStorage
   const getInitialSection = (): Section => {
     const saved = sessionStorage.getItem('ct1CrmActiveSection');
@@ -59,18 +68,41 @@ export default function CT1CRM() {
   const [activeSection, setActiveSection] = useState<Section>(getInitialSection);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showMobileLanding, setShowMobileLanding] = useState(true);
   const isMobile = useIsMobile();
 
   // Save active section to sessionStorage whenever it changes
   const handleSectionChange = (section: Section) => {
     setActiveSection(section);
     sessionStorage.setItem('ct1CrmActiveSection', section);
+    
+    // Hide mobile landing when navigating to any section
+    if (isMobile && showMobileLanding) {
+      setShowMobileLanding(false);
+    }
+    
     if (isMobile) {
       setMobileMenuOpen(false);
     }
   };
 
   const renderSection = () => {
+    // Show mobile landing page on mobile when on dashboard AND landing is active
+    if (isMobile && showMobileLanding && activeSection === 'dashboard') {
+      return (
+        <MobileLandingPage 
+          onNavigateToJobs={() => handleSectionChange('jobs')}
+          onNavigateToEstimates={() => handleSectionChange('estimates')}
+          onNavigateToCustomers={() => handleSectionChange('customers')}
+          onOpenPocketbot={() => {
+            if (onOpenPocketbot) {
+              onOpenPocketbot();
+            }
+          }}
+        />
+      );
+    }
+    
     switch (activeSection) {
       case 'dashboard':
         return <CRMDashboard onSectionChange={handleSectionChange} />;
@@ -141,6 +173,25 @@ export default function CT1CRM() {
               <span className="font-semibold">CT1 CRM</span>
             </div>
           </div>
+
+          {/* Back to Home Button for Mobile */}
+          {isMobile && !showMobileLanding && activeSection !== 'dashboard' && (
+            <div className="border-b bg-card px-4 py-2">
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => {
+                  setActiveSection('dashboard');
+                  setShowMobileLanding(true);
+                  sessionStorage.setItem('ct1CrmActiveSection', 'dashboard');
+                }}
+                className="flex items-center gap-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back to Home
+              </Button>
+            </div>
+          )}
 
           {/* Main Content with bottom padding for nav */}
           <main className="flex-1 overflow-hidden w-full pb-16">

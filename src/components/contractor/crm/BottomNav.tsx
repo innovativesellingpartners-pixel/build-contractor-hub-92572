@@ -1,4 +1,4 @@
-import { LayoutDashboard, ClipboardList, Briefcase, Users, MoreHorizontal } from 'lucide-react';
+import { LayoutDashboard, ClipboardList, Phone, Mail } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calendar' | 'emails' | 'estimates' | 'reporting' | 'financials' | 'quickbooks' | 'more';
@@ -9,11 +9,10 @@ interface BottomNavProps {
 }
 
 const navItems = [
-  { id: 'dashboard' as Section, label: 'Home', icon: LayoutDashboard },
+  { id: 'dashboard' as Section, label: 'CRM', icon: LayoutDashboard },
+  { id: 'emails' as Section, label: 'Emails', icon: Mail },
   { id: 'leads' as Section, label: 'Leads', icon: ClipboardList },
-  { id: 'jobs' as Section, label: 'Jobs', icon: Briefcase },
-  { id: 'customers' as Section, label: 'People', icon: Users },
-  { id: 'more' as Section, label: 'More', icon: MoreHorizontal },
+  { id: 'calls' as Section, label: 'Calls', icon: Phone },
 ];
 
 export function BottomNav({ activeSection, onSectionChange }: BottomNavProps) {
