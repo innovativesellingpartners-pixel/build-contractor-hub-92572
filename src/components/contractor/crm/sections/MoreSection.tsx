@@ -101,7 +101,7 @@ const allCRMFeatures = [
 
 export default function MoreSection({ onSectionChange }: MoreSectionProps) {
   return (
-    <div className="w-full h-full overflow-y-auto overflow-x-hidden pb-20">
+    <div className="w-full h-full overflow-y-auto overflow-x-hidden pb-20 bg-background">
       <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 w-full sm:max-w-7xl sm:mx-auto">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold">All CRM Modules</h1>
