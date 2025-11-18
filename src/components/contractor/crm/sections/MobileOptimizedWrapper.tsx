@@ -20,7 +20,7 @@ export function MobileOptimizedWrapper({
   onBackClick,
 }: MobileOptimizedWrapperProps) {
   return (
-    <div className={cn('w-full max-w-full overflow-x-hidden', className)}>
+    <div className={cn('w-full max-w-full overflow-x-hidden bg-background', className)}>
       {title && (
         <Card className="mb-4">
           <CardHeader className="pb-3">
