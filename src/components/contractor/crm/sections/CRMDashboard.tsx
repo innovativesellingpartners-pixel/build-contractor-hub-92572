@@ -29,40 +29,40 @@ export default function CRMDashboard({ onSectionChange }: CRMDashboardProps) {
       value: leads.length,
       icon: ClipboardList,
       description: `${leads.filter(l => l.status === 'new').length} new`,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50',
-      borderColor: 'border-l-blue-500',
-      gradient: 'from-blue-50 to-blue-100',
+      color: 'text-blue-vibrant',
+      bgColor: 'bg-blue-vibrant/10',
+      borderColor: 'border-l-blue-vibrant',
+      gradient: 'from-card to-card',
     },
     {
       title: 'Active Opportunities',
       value: opportunities.filter(o => !['close', 'psfu'].includes(o.stage)).length,
       icon: Target,
       description: `$${opportunities.reduce((sum, o) => sum + (o.estimated_value || 0), 0).toLocaleString()} pipeline`,
-      color: 'text-green-600',
-      bgColor: 'bg-green-50',
-      borderColor: 'border-l-green-500',
-      gradient: 'from-green-50 to-green-100',
+      color: 'text-green-vibrant',
+      bgColor: 'bg-green-vibrant/10',
+      borderColor: 'border-l-green-vibrant',
+      gradient: 'from-card to-card',
     },
     {
       title: 'Active Jobs',
       value: jobs.filter(j => ['scheduled', 'in_progress'].includes(j.status)).length,
       icon: Briefcase,
       description: `${jobs.filter(j => j.status === 'completed').length} completed`,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50',
-      borderColor: 'border-l-purple-500',
-      gradient: 'from-purple-50 to-purple-100',
+      color: 'text-purple-vibrant',
+      bgColor: 'bg-purple-vibrant/10',
+      borderColor: 'border-l-purple-vibrant',
+      gradient: 'from-card to-card',
     },
     {
       title: 'Total Customers',
       value: customers.length,
       icon: Users,
       description: `${customers.filter(c => c.customer_type === 'commercial').length} commercial`,
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-50',
-      borderColor: 'border-l-orange-500',
-      gradient: 'from-orange-50 to-orange-100',
+      color: 'text-orange-vibrant',
+      bgColor: 'bg-orange-vibrant/10',
+      borderColor: 'border-l-orange-vibrant',
+      gradient: 'from-card to-card',
     },
   ];
 
@@ -159,8 +159,8 @@ export default function CRMDashboard({ onSectionChange }: CRMDashboardProps) {
                 <CardTitle className="text-lg">{stat.title}</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold">{stat.value}</div>
-                <p className="text-xs text-muted-foreground">{stat.description}</p>
+                <div className="text-2xl font-bold text-foreground">{stat.value}</div>
+                <p className="text-xs text-muted-foreground mt-1">{stat.description}</p>
               </CardContent>
             </Card>
           ))}
