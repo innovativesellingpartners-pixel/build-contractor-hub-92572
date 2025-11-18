@@ -8,44 +8,44 @@
 
 @layer base {
   :root {
-    /* CT1 Brand Colors - Neutral whites and grays with red accent */
-    --background: 0 0% 100%;
-    --foreground: 0 0% 0%;                /* Pure black */
-    --card: 220 15% 98%;                  /* Subtle blue tint */
-    --card-foreground: 0 0% 0%;
-    --card-hover: 220 20% 96%;            /* Slightly darker on hover */
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 0%;
+    /* CT1 Brand Colors - Dark theme with grays, lighter reds, and blacks */
+    --background: 0 0% 8%;                /* Dark charcoal background */
+    --foreground: 0 0% 92%;               /* Light gray text */
+    --card: 0 0% 12%;                     /* Dark gray cards */
+    --card-foreground: 0 0% 92%;          /* Light text on cards */
+    --card-hover: 0 0% 15%;               /* Slightly lighter on hover */
+    --popover: 0 0% 10%;                  /* Dark popover */
+    --popover-foreground: 0 0% 92%;       /* Light text */
 
-    /* Primary: CT1 Red */
-    --primary: 0 70% 50%;                 /* CT1 red */
+    /* Primary: Lighter CT1 Red */
+    --primary: 0 70% 60%;                 /* Lighter red */
     --primary-foreground: 0 0% 100%;      /* White text on red */
-    --primary-hover: 0 70% 45%;           /* Darker red on hover */
+    --primary-hover: 0 70% 55%;           /* Slightly darker on hover */
 
-    /* Secondary: Neutral Gray */
-    --secondary: 0 0% 96%;                /* Light neutral gray */
-    --secondary-foreground: 0 0% 15%;     /* Dark text on light */
+    /* Secondary: Dark Gray */
+    --secondary: 0 0% 18%;                /* Dark gray */
+    --secondary-foreground: 0 0% 85%;     /* Light text on dark */
     
-    --muted: 0 0% 98%;                    /* Very light neutral */
-    --muted-foreground: 0 0% 35%;         /* Medium gray text */
+    --muted: 0 0% 15%;                    /* Dark muted background */
+    --muted-foreground: 0 0% 60%;         /* Medium gray text */
     
-    /* Accent: CT1 Red */
-    --accent: 0 70% 50%;                  /* CT1 red accent */
+    /* Accent: Lighter CT1 Red */
+    --accent: 0 70% 60%;                  /* Lighter red accent */
     --accent-foreground: 0 0% 100%;       /* White on red */
     
-    --destructive: 0 62.8% 40.6%;
+    --destructive: 0 62.8% 50%;           /* Slightly lighter destructive */
     --destructive-foreground: 0 0% 100%;
     
-    --border: 220 13% 85%;                /* More visible borders with blue tint */
-    --input: 220 20% 97%;                 /* Slightly blue-tinted input */
-    --ring: 0 70% 50%;                    /* Red focus ring */
+    --border: 0 0% 22%;                   /* Dark gray borders */
+    --input: 0 0% 15%;                    /* Dark input background */
+    --ring: 0 70% 60%;                    /* Lighter red focus ring */
 
-    /* CT1 specific brand colors - neutral palette */
-    --ct1-red: 0 70% 50%;                 /* Main brand red */
-    --ct1-black: 0 0% 0%;                 /* Pure black */
-    --ct1-white: 0 0% 100%;               /* Pure white */
-    --ct1-dark-red: 0 70% 40%;            /* Darker red variant */
-    --ct1-light-red: 0 70% 60%;           /* Lighter red variant */
+    /* CT1 specific brand colors - dark palette */
+    --ct1-red: 0 70% 60%;                 /* Lighter brand red */
+    --ct1-black: 0 0% 8%;                 /* Dark charcoal */
+    --ct1-white: 0 0% 92%;                /* Off-white */
+    --ct1-dark-red: 0 70% 50%;            /* Standard red variant */
+    --ct1-light-red: 0 70% 70%;           /* Even lighter red variant */
 
     /* Vibrant accent colors */
     --blue-vibrant: 217 91% 60%;          /* Electric blue */
@@ -72,34 +72,34 @@
     --warning: 25 95% 53%;
     --warning-foreground: 0 0% 100%;
 
-    /* Neutral gradients */
-    --gradient-hero: linear-gradient(135deg, hsl(0 0% 0% / 0.6), hsl(0 0% 0% / 0.4)); /* Dark overlay for hero */
-    --gradient-card: linear-gradient(180deg, hsl(var(--background)), hsl(var(--muted)));
-    --gradient-red: linear-gradient(45deg, hsl(var(--ct1-red) / 0.1), hsl(var(--ct1-light-red) / 0.1));
-    --gradient-black: linear-gradient(135deg, hsl(var(--ct1-black)), hsl(0 0% 15%));
+    /* Dark gradients */
+    --gradient-hero: linear-gradient(135deg, hsl(0 0% 5%), hsl(0 0% 10%));
+    --gradient-card: linear-gradient(180deg, hsl(var(--card)), hsl(var(--muted)));
+    --gradient-red: linear-gradient(45deg, hsl(var(--ct1-red) / 0.15), hsl(var(--ct1-light-red) / 0.1));
+    --gradient-black: linear-gradient(135deg, hsl(0 0% 8%), hsl(0 0% 15%));
     
     /* Colorful gradients */
     --gradient-blue: linear-gradient(135deg, hsl(217 91% 60% / 0.1), hsl(262 83% 58% / 0.05));
     --gradient-success: linear-gradient(135deg, hsl(142 71% 45% / 0.1), hsl(189 94% 43% / 0.05));
 
-    /* Soft shadows */
-    --shadow-soft: 0 4px 20px -4px hsl(0 0% 0% / 0.15);
-    --shadow-card: 0 2px 12px -2px hsl(var(--foreground) / 0.08);
-    --shadow-red-glow: 0 0 30px hsl(var(--ct1-red) / 0.2);
+    /* Soft shadows for dark theme */
+    --shadow-soft: 0 4px 20px -4px hsl(0 0% 0% / 0.5);
+    --shadow-card: 0 2px 12px -2px hsl(0 0% 0% / 0.3);
+    --shadow-red-glow: 0 0 30px hsl(var(--ct1-red) / 0.3);
 
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
     
     --radius: 0.375rem;
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 0 0% 10%;
+    --sidebar-foreground: 0 0% 85%;
+    --sidebar-primary: 0 70% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 15%;
+    --sidebar-accent-foreground: 0 0% 90%;
+    --sidebar-border: 0 0% 20%;
+    --sidebar-ring: 0 70% 60%;
   }
 
   .dark {
