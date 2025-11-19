@@ -153,6 +153,62 @@ export type Database = {
           },
         ]
       }
+      call_sessions: {
+        Row: {
+          action_taken: string | null
+          ai_summary: string | null
+          call_sid: string
+          contractor_id: string | null
+          conversation_history: Json | null
+          created_at: string
+          from_number: string
+          id: string
+          outcome: string | null
+          status: string
+          tenant_id: string | null
+          to_number: string
+          updated_at: string
+        }
+        Insert: {
+          action_taken?: string | null
+          ai_summary?: string | null
+          call_sid: string
+          contractor_id?: string | null
+          conversation_history?: Json | null
+          created_at?: string
+          from_number: string
+          id?: string
+          outcome?: string | null
+          status?: string
+          tenant_id?: string | null
+          to_number: string
+          updated_at?: string
+        }
+        Update: {
+          action_taken?: string | null
+          ai_summary?: string | null
+          call_sid?: string
+          contractor_id?: string | null
+          conversation_history?: Json | null
+          created_at?: string
+          from_number?: string
+          id?: string
+          outcome?: string | null
+          status?: string
+          tenant_id?: string | null
+          to_number?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "call_sessions_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       calls: {
         Row: {
           ai_backup_triggered: boolean | null
@@ -170,6 +226,7 @@ export type Database = {
           from_number: string
           id: string
           message_type: string | null
+          outcome: string | null
           recording_sid: string | null
           recording_url: string | null
           routing_status: string
@@ -194,6 +251,7 @@ export type Database = {
           from_number: string
           id?: string
           message_type?: string | null
+          outcome?: string | null
           recording_sid?: string | null
           recording_url?: string | null
           routing_status?: string
@@ -218,6 +276,7 @@ export type Database = {
           from_number?: string
           id?: string
           message_type?: string | null
+          outcome?: string | null
           recording_sid?: string | null
           recording_url?: string | null
           routing_status?: string
