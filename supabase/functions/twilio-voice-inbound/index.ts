@@ -1,9 +1,9 @@
 /**
  * Twilio Voice Webhook - Inbound Calls
  * 
- * This endpoint receives voice webhooks from Twilio when a call is forwarded
- * from the pilot phone number. It logs the call to the database and responds
- * with TwiML to record a voicemail.
+ * This endpoint receives voice webhooks from Twilio when a call comes in to any
+ * CT1 contractor's Twilio number. It looks up the contractor by phone number,
+ * logs the call to the database, and responds with TwiML to record a voicemail.
  * 
  * Future enhancement: This will be upgraded to a streaming AI voice assistant
  * that can handle calls in real-time.
@@ -18,6 +18,44 @@ const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+/**
+ * Normalize phone number to E.164 format
+ * Twilio sends numbers in E.164, but this helper ensures consistency
+ */
+function normalizePhoneNumber(phone: string): string {
+  // Remove all non-digit characters except leading +
+  let cleaned = phone.replace(/[^\d+]/g, '');
+  
+  // Ensure it starts with +
+  if (!cleaned.startsWith('+')) {
+    // Assume US number if no country code
+    cleaned = '+1' + cleaned;
+  }
+  
+  return cleaned;
+}
+
+/**
+ * Look up contractor by Twilio phone number
+ */
+async function lookupContractorByPhoneNumber(supabase: any, toNumber: string) {
+  const normalizedTo = normalizePhoneNumber(toNumber);
+  
+  const { data, error } = await supabase
+    .from('phone_numbers')
+    .select('contractor_id, tenant_id, twilio_phone_number')
+    .eq('twilio_phone_number', normalizedTo)
+    .eq('active', true)
+    .single();
+  
+  if (error) {
+    console.log('No phone number record found for:', normalizedTo, error);
+    return null;
+  }
+  
+  return data;
+}
 
 serve(async (req) => {
   // Handle CORS preflight
@@ -56,6 +94,22 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    // Look up contractor by phone number
+    const phoneNumberRecord = await lookupContractorByPhoneNumber(supabase, to);
+    
+    let contractorId = null;
+    let tenantId = null;
+    let routingStatus = 'ok';
+    
+    if (phoneNumberRecord) {
+      contractorId = phoneNumberRecord.contractor_id;
+      tenantId = phoneNumberRecord.tenant_id;
+      console.log('Call routed to contractor:', contractorId);
+    } else {
+      routingStatus = 'unassigned_number';
+      console.warn('No contractor found for phone number:', to);
+    }
+
     // Log the call to the database
     const { error: insertError } = await supabase
       .from('calls')
@@ -64,7 +118,9 @@ serve(async (req) => {
         to_number: to,
         call_sid: callSid,
         call_status: callStatus,
-        contractor_id: null, // Placeholder until contractor mapping is wired
+        contractor_id: contractorId,
+        tenant_id: tenantId,
+        routing_status: routingStatus,
       });
 
     if (insertError) {
