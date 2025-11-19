@@ -20,13 +20,15 @@ interface CallsSectionProps {
 
 export default function CallsSection({ onSectionChange }: CallsSectionProps) {
   const { data: phoneNumber, isLoading: phoneLoading } = usePhoneNumber();
-  const { subscription, isLoading: tierLoading } = useUserTier();
+  const { subscription, hasFullAccess, isLoading: tierLoading } = useUserTier();
   const provisionMutation = useProvisionPhoneNumber();
   const [isGuideOpen, setIsGuideOpen] = useState(false);
 
-  const hasActivePaidSubscription = subscription?.status === 'active' && 
+  // Check for active paid subscription - either from subscriptions table or profile tier
+  const hasActivePaidSubscription = hasFullAccess || 
+    (subscription?.status === 'active' && 
     subscription?.tier_id !== 'trial' && 
-    subscription?.tier_id !== 'bot_user';
+    subscription?.tier_id !== 'bot_user');
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
