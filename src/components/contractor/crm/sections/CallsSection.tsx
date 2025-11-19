@@ -1,9 +1,9 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Phone, Copy, CheckCircle2, AlertCircle, Loader2, PhoneForwarded } from 'lucide-react';
+import { Phone, Copy, AlertCircle, Loader2, ChevronDown, Plus } from 'lucide-react';
 import { usePhoneNumber, useProvisionPhoneNumber } from '@/hooks/usePhoneNumbers';
 import { useUserTier } from '@/hooks/useUserTier';
 import { toast } from 'sonner';
@@ -16,8 +16,6 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { ChevronDown, Plus } from 'lucide-react';
-import { AlertTitle } from '@/components/ui/alert';
 
 interface CallsSectionProps {
   onSectionChange?: (section: string) => void;
@@ -63,7 +61,6 @@ export default function CallsSection({ onSectionChange }: CallsSectionProps) {
     },
   });
 
-  // Check for active paid subscription - either from subscriptions table or profile tier
   const hasActivePaidSubscription = hasFullAccess || 
     (subscription?.status === 'active' && 
     subscription?.tier_id !== 'trial' && 
@@ -136,7 +133,7 @@ export default function CallsSection({ onSectionChange }: CallsSectionProps) {
                 </div>
 
                 <Alert>
-                  <PhoneForwarded className="h-4 w-4" />
+                  <AlertCircle className="h-4 w-4" />
                   <AlertDescription>
                     Calls to this number will go to voicemail. Set up call forwarding from your cell phone to receive calls directly.
                   </AlertDescription>
@@ -322,76 +319,17 @@ export default function CallsSection({ onSectionChange }: CallsSectionProps) {
                   <AlertCircle className="h-4 w-4" />
                   <AlertTitle>Subscription Required</AlertTitle>
                   <AlertDescription>
-                    A paid subscription is required to get a dedicated phone number. 
+                    A paid subscription is required to get a dedicated phone number.{' '}
                     <Button
                       variant="link"
-                      className="h-auto p-0 ml-1"
+                      className="h-auto p-0"
                       onClick={() => onSectionChange?.('account')}
                     >
                       Upgrade your account
                     </Button>
-                    {" "}to unlock this feature.
+                    {' '}to unlock this feature.
                   </AlertDescription>
                 </Alert>
-              )}
-            </CardContent>
-          </Card>
-        )}
-                  
-                  <div className="space-y-3 text-sm text-muted-foreground">
-                    <p className="font-semibold text-foreground">What you'll get:</p>
-                    <ul className="space-y-2">
-                      <li className="flex items-start gap-2">
-                        <CheckCircle2 className="h-4 w-4 mt-0.5 flex-shrink-0 text-green-500" />
-                        <span>A local phone number for your business</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <CheckCircle2 className="h-4 w-4 mt-0.5 flex-shrink-0 text-green-500" />
-                        <span>Professional voicemail system</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <CheckCircle2 className="h-4 w-4 mt-0.5 flex-shrink-0 text-green-500" />
-                        <span>Call forwarding to your cell phone</span>
-                      </li>
-                    </ul>
-                  </div>
-
-                  <Button 
-                    onClick={handleProvision}
-                    disabled={provisionMutation.isPending}
-                    className="w-full"
-                    size="lg"
-                  >
-                    {provisionMutation.isPending ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Provisioning...
-                      </>
-                    ) : (
-                      <>
-                        <Phone className="h-4 w-4 mr-2" />
-                        Generate my CT1 phone number
-                      </>
-                    )}
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Alert variant="destructive">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>
-                      A paid subscription is required to get a dedicated phone number.
-                    </AlertDescription>
-                  </Alert>
-                  
-                  <Button 
-                    variant="default"
-                    className="w-full"
-                    onClick={() => onSectionChange?.('account')}
-                  >
-                    Upgrade to Get Phone Number
-                  </Button>
-                </>
               )}
             </CardContent>
           </Card>
