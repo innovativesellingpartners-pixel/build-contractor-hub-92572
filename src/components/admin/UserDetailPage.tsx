@@ -1,4 +1,4 @@
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,11 +8,21 @@ import { ArrowLeft } from 'lucide-react';
 import { VoiceAISettings } from './VoiceAISettings';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { Navigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 
 export const UserDetailPage = () => {
   const { userId } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState('profile');
   const { isAdmin, isLoading: authLoading } = useAdminAuth();
+
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab === 'voice-ai') {
+      setActiveTab('voice-ai');
+    }
+  }, [searchParams]);
 
   const { data: user, isLoading: userLoading } = useQuery({
     queryKey: ['adminUser', userId],
@@ -64,7 +74,7 @@ export const UserDetailPage = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="profile" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="profile">Profile</TabsTrigger>
               <TabsTrigger value="voice-ai">Voice AI</TabsTrigger>
