@@ -112,8 +112,18 @@ serve(async (req) => {
 
     console.log('Subscription check:', { subscription, profileTier: profile?.subscription_tier, userEmail: user.email });
 
-    // Allow if they have active subscription OR have subscription tier in profile OR @myct1.com email
-    const hasAccess = subscription || 
+    // Check if user is admin or super_admin to allow internal testing without subscription
+    const { data: roleRow } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', contractorId)
+      .maybeSingle();
+
+    const isAdmin = roleRow?.role === 'admin' || roleRow?.role === 'super_admin';
+
+    // Allow if admin/super_admin, or they have active subscription, or profile tier, or @myct1.com email
+    const hasAccess = isAdmin ||
+                      subscription || 
                       (profile?.subscription_tier && profile.subscription_tier !== 'trial') ||
                       user.email?.endsWith('@myct1.com');
 
