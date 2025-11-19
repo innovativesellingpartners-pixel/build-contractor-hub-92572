@@ -194,8 +194,30 @@ serve(async (req) => {
     if (!purchaseResponse.ok) {
       const errorText = await purchaseResponse.text();
       console.error('Failed to purchase number:', errorText);
+
+      // Try to parse Twilio error for clearer messaging
+      try {
+        const twilioError = JSON.parse(errorText);
+        if (
+          twilioError?.code === 21404 &&
+          typeof twilioError?.message === 'string' &&
+          twilioError.message.includes('Trial accounts are allowed only one Twilio number')
+        ) {
+          return new Response(
+            JSON.stringify({
+              error: 'twilio_trial_limit',
+              message:
+                'Your Twilio trial account can only have one phone number. Release your existing trial number in Twilio or upgrade your Twilio account to add another.',
+            }),
+            { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      } catch (_) {
+        // fall through to generic error
+      }
+
       return new Response(
-        JSON.stringify({ error: 'Failed to purchase phone number' }),
+        JSON.stringify({ error: 'Failed to purchase phone number', details: errorText }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
