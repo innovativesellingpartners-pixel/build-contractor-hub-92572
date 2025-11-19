@@ -29,6 +29,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
 import { UserManagement } from "@/components/admin/UserManagement";
+import { UserDetailPage } from "@/components/admin/UserDetailPage";
 import { TrainingManagement } from "@/components/admin/TrainingManagement";
 import { MarketplaceManagement } from "@/components/admin/MarketplaceManagement";
 import { SupportTickets } from "@/components/admin/SupportTickets";
@@ -132,7 +133,8 @@ const App = () => (
             {/* Admin Routes */}
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<UserManagement />} />
-              <Route path="users" element={<UserManagement />} />
+              <Route path="users/:userId" element={<UserDetailPage />} />
+              <Route path="ai-profiles" element={<PocketbotAccessManagement />} />
               <Route path="leads" element={<AdminLeads />} />
               <Route path="jobs" element={<AdminJobs />} />
               <Route path="customers" element={<AdminCustomers />} />

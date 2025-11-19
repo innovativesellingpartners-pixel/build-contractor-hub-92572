@@ -10,10 +10,11 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from '@/components/ui/dialog';
-import { Search, UserPlus, Edit, Trash2, Mail, Phone, Building2, User, Key, Upload, X, Bot } from 'lucide-react';
+import { Search, UserPlus, Edit, Trash2, Mail, Phone, Building2, User, Key, Upload, X, Bot, Eye } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 type UserWithProfile = {
   id: string;
@@ -33,6 +34,7 @@ type UserWithProfile = {
 };
 
 export const UserManagement = () => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRole, setSelectedRole] = useState<string>('all');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -519,6 +521,14 @@ export const UserManagement = () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => navigate(`/admin/users/${user.id}`)}
+                          title="View Details"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
                         <Select
                           value={user.role}
                           onValueChange={(value) => 
