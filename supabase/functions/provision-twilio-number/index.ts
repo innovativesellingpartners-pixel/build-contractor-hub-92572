@@ -53,9 +53,12 @@ serve(async (req) => {
 
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
     
+    console.log('Auth check:', { userError, userId: user?.id });
+    
     if (userError || !user) {
+      console.error('Authentication failed:', userError);
       return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
+        JSON.stringify({ error: 'Unauthorized', details: userError?.message }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -83,7 +86,7 @@ serve(async (req) => {
       );
     }
 
-    // Check if contractor has an active subscription
+    // Check if contractor has an active subscription OR has @myct1.com email
     const { data: subscription } = await supabase
       .from('subscriptions')
       .select('status, tier_id')
@@ -91,7 +94,21 @@ serve(async (req) => {
       .eq('status', 'active')
       .single();
 
-    if (!subscription) {
+    // Also check profile for subscription tier
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('subscription_tier')
+      .eq('id', contractorId)
+      .single();
+
+    console.log('Subscription check:', { subscription, profileTier: profile?.subscription_tier, userEmail: user.email });
+
+    // Allow if they have active subscription OR have subscription tier in profile OR @myct1.com email
+    const hasAccess = subscription || 
+                      (profile?.subscription_tier && profile.subscription_tier !== 'trial') ||
+                      user.email?.endsWith('@myct1.com');
+
+    if (!hasAccess) {
       return new Response(
         JSON.stringify({ error: 'Active subscription required to provision a phone number' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
