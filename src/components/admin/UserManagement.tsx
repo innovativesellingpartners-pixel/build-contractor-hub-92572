@@ -15,6 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import contractorIcon from '@/assets/contractor-icon.png';
 
 type UserWithProfile = {
   id: string;
@@ -537,7 +538,7 @@ export const UserManagement = () => {
                           onClick={() => navigate(`/admin/users/${user.id}`)}
                           title="View Profile"
                         >
-                          <Eye className="h-4 w-4" />
+                          <img src={contractorIcon} alt="" className="h-4 w-4" />
                         </Button>
                         <Select
                           value={user.role}
