@@ -16,6 +16,8 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { useCallSessions } from '@/hooks/useCallSessions';
+import { CallLogItem } from '../CallLogItem';
 
 interface CallsSectionProps {
   onSectionChange?: (section: string) => void;
@@ -31,6 +33,7 @@ export default function CallsSection({ onSectionChange }: CallsSectionProps) {
   const [showManualEntry, setShowManualEntry] = useState(false);
   const [manualNumber, setManualNumber] = useState('');
   const [manualSid, setManualSid] = useState('');
+  const { callSessions, isLoading: isLoadingCalls } = useCallSessions();
 
   const registerExistingNumber = useMutation({
     mutationFn: async () => {
@@ -183,13 +186,39 @@ export default function CallsSection({ onSectionChange }: CallsSectionProps) {
 
             <Card>
               <CardHeader>
-                <CardTitle>Recent Calls</CardTitle>
-                <CardDescription>Your call history will appear here</CardDescription>
+                <CardTitle className="flex items-center justify-between">
+                  Recent Calls
+                  {callSessions.length > 0 && (
+                    <span className="text-sm font-normal text-muted-foreground">
+                      {callSessions.length} total
+                    </span>
+                  )}
+                </CardTitle>
+                <CardDescription>
+                  View your call history and AI-handled conversations
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-8 text-muted-foreground">
-                  No calls yet
-                </div>
+                {isLoadingCalls ? (
+                  <div className="space-y-3">
+                    {[1, 2, 3].map((i) => (
+                      <Skeleton key={i} className="h-32 w-full" />
+                    ))}
+                  </div>
+                ) : callSessions.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Phone className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
+                    <p className="text-muted-foreground">
+                      No calls yet. Your call history will appear here once you receive calls.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {callSessions.map((call) => (
+                      <CallLogItem key={call.id} call={call} />
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
