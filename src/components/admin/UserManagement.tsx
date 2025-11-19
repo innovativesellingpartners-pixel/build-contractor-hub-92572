@@ -477,7 +477,7 @@ export const UserManagement = () => {
                   <TableHead>Tier</TableHead>
                   <TableHead>Role</TableHead>
                   <TableHead>Last Sign In</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -520,12 +520,22 @@ export const UserManagement = () => {
                       }
                     </TableCell>
                     <TableCell>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 justify-end">
+                        <Button 
+                          variant="default" 
+                          size="sm"
+                          onClick={() => navigate(`/admin/users/${user.id}?tab=voice-ai`)}
+                          title="Configure Voice AI"
+                          className="gap-2"
+                        >
+                          <Bot className="h-4 w-4" />
+                          Voice AI
+                        </Button>
                         <Button 
                           variant="outline" 
                           size="sm"
                           onClick={() => navigate(`/admin/users/${user.id}`)}
-                          title="View Details"
+                          title="View Profile"
                         >
                           <Eye className="h-4 w-4" />
                         </Button>
