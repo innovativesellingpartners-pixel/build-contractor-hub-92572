@@ -19,11 +19,9 @@ import {
   Palette,
   Users,
   Zap,
-  Globe,
-  Bot
+  Globe
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { PocketbotAccessManagement } from './PocketbotAccessManagement';
 
 export const AdminSettings = () => {
   const [saving, setSaving] = useState(false);
@@ -57,10 +55,6 @@ export const AdminSettings = () => {
           <TabsTrigger value="documents">Documents</TabsTrigger>
           <TabsTrigger value="integrations">Integrations</TabsTrigger>
           <TabsTrigger value="branding">Branding</TabsTrigger>
-          <TabsTrigger value="pocketbot">
-            <Bot className="h-4 w-4 mr-1" />
-            Pocketbot
-          </TabsTrigger>
           <TabsTrigger value="advanced">Advanced</TabsTrigger>
         </TabsList>
 
@@ -765,10 +759,6 @@ export const AdminSettings = () => {
           </Card>
         </TabsContent>
 
-        {/* Pocketbot Access Management */}
-        <TabsContent value="pocketbot">
-          <PocketbotAccessManagement />
-        </TabsContent>
       </Tabs>
     </div>
   );
