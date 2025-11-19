@@ -33,7 +33,7 @@ export const VoiceAISettings = ({ contractorId }: VoiceAISettingsProps) => {
   const queryClient = useQueryClient();
   const [isSaving, setIsSaving] = useState(false);
 
-  const { data: profile, isLoading } = useQuery({
+  const { data: profile, isLoading, error } = useQuery({
     queryKey: ['voiceAIProfile', contractorId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -142,8 +142,34 @@ export const VoiceAISettings = ({ contractorId }: VoiceAISettingsProps) => {
     toast.info('Changes discarded');
   };
 
-  if (isLoading || !formData) {
-    return <div>Loading...</div>;
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-8 text-muted-foreground">
+        Loading Voice AI settings...
+      </div>
+    );
+  }
+
+  if (error) {
+    console.error('Error loading Voice AI profile:', error);
+    return (
+      <div className="space-y-2 text-sm p-4">
+        <p className="text-red-600">
+          There was a problem loading Voice AI settings for this user.
+        </p>
+        <p className="text-xs text-muted-foreground">
+          Try refreshing the page. If this continues, check the AI configuration for this account.
+        </p>
+      </div>
+    );
+  }
+
+  if (!formData) {
+    return (
+      <div className="text-sm text-muted-foreground p-4">
+        No Voice AI settings found for this user.
+      </div>
+    );
   }
 
   const updateField = (field: string, value: any) => {
