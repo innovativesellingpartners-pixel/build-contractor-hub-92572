@@ -22,9 +22,10 @@ const SUBSCRIPTION_PRICE = 10;
 
 interface FloatingPocketbotProps {
   onClose: () => void;
+  onPositionChange?: (position: string) => void;
 }
 
-export function FloatingPocketbot({ onClose }: FloatingPocketbotProps) {
+export function FloatingPocketbot({ onClose, onPositionChange }: FloatingPocketbotProps) {
   const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -41,7 +42,10 @@ export function FloatingPocketbot({ onClose }: FloatingPocketbotProps) {
   });
   const [showPaywall, setShowPaywall] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
-  const [position, setPosition] = useState({ x: 20, y: 20 });
+  const [verticalPosition, setVerticalPosition] = useState(() => {
+    const saved = localStorage.getItem('ct1_pocketbot_position');
+    return saved ? parseInt(saved, 10) : 20;
+  });
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -71,20 +75,30 @@ export function FloatingPocketbot({ onClose }: FloatingPocketbotProps) {
   }, [user?.id]);
 
   useEffect(() => {
+    // Initialize position on mount
+    if (onPositionChange) {
+      onPositionChange(`${verticalPosition}px`);
+    }
+  }, []);
+
+  useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!isDragging) return;
       
-      const newX = e.clientX - dragOffset.x;
-      const newY = e.clientY - dragOffset.y;
+      // Calculate position from bottom of viewport
+      const bottomPosition = window.innerHeight - e.clientY - dragOffset.y;
       
-      // Keep within viewport bounds
-      const maxX = window.innerWidth - (cardRef.current?.offsetWidth || 400);
-      const maxY = window.innerHeight - (cardRef.current?.offsetHeight || 600);
+      // Constrain within bounds (min 0, max viewport height - widget height - 80px for nav)
+      const minBottom = 0;
+      const maxBottom = window.innerHeight - (cardRef.current?.offsetHeight || 600) - 80;
+      const constrainedBottom = Math.max(minBottom, Math.min(bottomPosition, maxBottom));
       
-      setPosition({
-        x: Math.max(0, Math.min(newX, maxX)),
-        y: Math.max(0, Math.min(newY, maxY))
-      });
+      setVerticalPosition(constrainedBottom);
+      localStorage.setItem('ct1_pocketbot_position', constrainedBottom.toString());
+      
+      if (onPositionChange) {
+        onPositionChange(`${constrainedBottom}px`);
+      }
     };
 
     const handleMouseUp = () => {
@@ -100,15 +114,52 @@ export function FloatingPocketbot({ onClose }: FloatingPocketbotProps) {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isDragging, dragOffset]);
+  }, [isDragging, dragOffset, onPositionChange]);
 
-  const handleDragStart = (e: React.MouseEvent) => {
+  useEffect(() => {
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!isDragging) return;
+      e.preventDefault();
+      
+      const touch = e.touches[0];
+      const bottomPosition = window.innerHeight - touch.clientY - dragOffset.y;
+      
+      const minBottom = 0;
+      const maxBottom = window.innerHeight - (cardRef.current?.offsetHeight || 600) - 80;
+      const constrainedBottom = Math.max(minBottom, Math.min(bottomPosition, maxBottom));
+      
+      setVerticalPosition(constrainedBottom);
+      localStorage.setItem('ct1_pocketbot_position', constrainedBottom.toString());
+      
+      if (onPositionChange) {
+        onPositionChange(`${constrainedBottom}px`);
+      }
+    };
+
+    const handleTouchEnd = () => {
+      setIsDragging(false);
+    };
+
+    if (isDragging) {
+      document.addEventListener('touchmove', handleTouchMove, { passive: false });
+      document.addEventListener('touchend', handleTouchEnd);
+    }
+
+    return () => {
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [isDragging, dragOffset, onPositionChange]);
+
+  const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
     if (!cardRef.current) return;
     
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
     const rect = cardRef.current.getBoundingClientRect();
+    
     setDragOffset({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
+      x: 0,
+      y: clientY - rect.top
     });
     setIsDragging(true);
   };
@@ -278,9 +329,14 @@ export function FloatingPocketbot({ onClose }: FloatingPocketbotProps) {
 
   if (isMinimized) {
     return (
-      <Card className="w-80 shadow-2xl border-2 border-primary/20">
-        <div className="bg-gradient-to-r from-primary/10 to-primary/5 p-3 flex items-center justify-between border-b border-primary/20">
+      <Card ref={cardRef} className="w-80 shadow-2xl border-2 border-primary/20">
+        <div 
+          className="bg-gradient-to-r from-primary/10 to-primary/5 p-3 flex items-center justify-between border-b border-primary/20 cursor-move"
+          onMouseDown={handleDragStart}
+          onTouchStart={handleDragStart}
+        >
           <div className="flex items-center gap-2">
+            <GripVertical className="h-4 w-4 text-muted-foreground mr-1" />
             <img src={ct1Logo} alt="CT1" className="h-6 w-6" />
             <span className="font-semibold text-sm">CT1 Pocketbot</span>
           </div>
@@ -298,9 +354,17 @@ export function FloatingPocketbot({ onClose }: FloatingPocketbotProps) {
   }
 
   return (
-    <Card className="h-full flex flex-col shadow-2xl border-2 border-primary/20">
+    <Card ref={cardRef} className="h-full flex flex-col shadow-2xl border-2 border-primary/20">
       {/* Header */}
-      <div className="bg-gradient-to-r from-primary/10 to-primary/5 p-3 md:p-4 border-b border-primary/20 flex-shrink-0">
+      <div 
+        className="bg-gradient-to-r from-primary/10 to-primary/5 p-3 md:p-4 border-b border-primary/20 flex-shrink-0 cursor-move"
+        onMouseDown={handleDragStart}
+        onTouchStart={handleDragStart}
+      >
+        <div className="flex justify-center mb-2">
+          <GripVertical className="h-4 w-4 text-muted-foreground" />
+        </div>
+        
         {/* Signup Banner */}
         <div className="mb-3 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-lg p-2 text-center">
           <p className="text-xs font-semibold mb-1">Want unlimited access?</p>

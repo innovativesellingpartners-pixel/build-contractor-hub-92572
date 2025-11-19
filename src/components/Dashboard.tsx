@@ -68,6 +68,7 @@ export function Dashboard() {
   const [activeSection, setActiveSection] = useState<ActiveSection>(getInitialSection);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [pocketbotOpen, setPocketbotOpen] = useState(false);
+  const [pocketbotPosition, setPocketbotPosition] = useState('20px');
   const [contactSupportOpen, setContactSupportOpen] = useState(false);
   const [upgradePlanOpen, setUpgradePlanOpen] = useState(false);
 
@@ -467,8 +468,8 @@ export function Dashboard() {
 
       {/* Floating Pocketbot Widget */}
       {pocketbotOpen && (
-        <div className="fixed bottom-20 right-4 md:bottom-24 md:right-6 w-[calc(100vw-2rem)] md:w-[450px] h-[600px] z-[99] animate-in slide-in-from-bottom-4 duration-300">
-          <FloatingPocketbot onClose={() => setPocketbotOpen(false)} />
+        <div className="fixed right-4 md:right-6 w-[calc(100vw-2rem)] md:w-[450px] h-[600px] z-[99] animate-in slide-in-from-bottom-4 duration-300" style={{ bottom: pocketbotPosition }}>
+          <FloatingPocketbot onClose={() => setPocketbotOpen(false)} onPositionChange={setPocketbotPosition} />
         </div>
       )}
       
