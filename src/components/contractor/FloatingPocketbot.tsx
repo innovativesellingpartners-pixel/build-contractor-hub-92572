@@ -74,6 +74,14 @@ export function FloatingPocketbot({ onClose, onPositionChange }: FloatingPocketb
     checkFullAccess();
   }, [user?.id]);
 
+  // Reset prompt counter when user gains full access
+  useEffect(() => {
+    if (hasFullAccess) {
+      setPromptCount(0);
+      localStorage.removeItem('ct1_pocketbot_prompts');
+    }
+  }, [hasFullAccess]);
+
   useEffect(() => {
     // Initialize position on mount
     if (onPositionChange) {
@@ -365,18 +373,20 @@ export function FloatingPocketbot({ onClose, onPositionChange }: FloatingPocketb
           <GripVertical className="h-4 w-4 text-muted-foreground" />
         </div>
         
-        {/* Signup Banner */}
-        <div className="mb-3 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-lg p-2 text-center">
-          <p className="text-xs font-semibold mb-1">Want unlimited access?</p>
-          <Button 
-            variant="secondary" 
-            size="sm" 
-            className="h-7 text-xs px-3 w-full"
-            onClick={() => window.location.href = '/bot-signup'}
-          >
-            Sign up today
-          </Button>
-        </div>
+        {/* Signup Banner - only show for non-full-access users */}
+        {!hasFullAccess && (
+          <div className="mb-3 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-lg p-2 text-center">
+            <p className="text-xs font-semibold mb-1">Want unlimited access?</p>
+            <Button 
+              variant="secondary" 
+              size="sm" 
+              className="h-7 text-xs px-3 w-full"
+              onClick={() => window.location.href = '/bot-signup'}
+            >
+              Sign up today
+            </Button>
+          </div>
+        )}
         
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -387,10 +397,10 @@ export function FloatingPocketbot({ onClose, onPositionChange }: FloatingPocketb
                 <Sparkles className="h-3 w-3 md:h-4 md:w-4 text-primary" />
               </div>
               <Badge 
-                variant={promptCount >= MAX_FREE_PROMPTS ? "destructive" : "secondary"}
+                variant={hasFullAccess ? "default" : (promptCount >= MAX_FREE_PROMPTS ? "destructive" : "secondary")}
                 className="text-xs mt-0.5"
               >
-                {promptCount}/{MAX_FREE_PROMPTS} Free
+                {hasFullAccess ? "Full Version" : `${promptCount}/${MAX_FREE_PROMPTS} Free`}
               </Badge>
             </div>
           </div>
@@ -405,7 +415,7 @@ export function FloatingPocketbot({ onClose, onPositionChange }: FloatingPocketb
         </div>
       </div>
 
-      {showPaywall ? (
+      {(!hasFullAccess && showPaywall) ? (
         <CardContent className="flex-1 flex items-center justify-center p-4 overflow-y-auto">
           <div className="text-center space-y-4 max-w-sm w-full">
             <div className="mx-auto w-16 h-16 bg-gradient-to-br from-primary/20 to-primary/10 rounded-full flex items-center justify-center border-2 border-primary/30">
