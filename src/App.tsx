@@ -36,6 +36,7 @@ import { AdminLeads } from "@/components/admin/AdminLeads";
 import { AdminJobs } from "@/components/admin/AdminJobs";
 import { AdminCustomers } from "@/components/admin/AdminCustomers";
 import { AdminSettings } from "@/components/admin/AdminSettings";
+import { PocketbotAccessManagement } from "@/components/admin/PocketbotAccessManagement";
 import { BusinessSuite } from "@/pages/BusinessSuite";
 import { Training } from "@/pages/features/Training";
 import { CRM } from "@/pages/features/CRM";

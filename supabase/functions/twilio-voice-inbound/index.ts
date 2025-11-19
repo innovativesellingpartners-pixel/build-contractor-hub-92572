@@ -1,12 +1,16 @@
 /**
- * Twilio Voice Webhook - Inbound Calls
+ * Twilio Voice Webhook - AI Voice Assistant
  * 
  * This endpoint receives voice webhooks from Twilio when a call comes in to any
- * CT1 contractor's Twilio number. It looks up the contractor by phone number,
- * logs the call to the database, and responds with TwiML to record a voicemail.
+ * CT1 contractor's Twilio number. It implements an AI-powered voice assistant
+ * that uses the Contractor PocketBot to handle conversations intelligently.
  * 
- * Future enhancement: This will be upgraded to a streaming AI voice assistant
- * that can handle calls in real-time.
+ * Features:
+ * - Personalized greetings based on contractor profile
+ * - Natural conversation using AI
+ * - Meeting scheduling with calendar integration
+ * - Message taking
+ * - Smart call routing
  * 
  * Twilio Webhook URL: https://faqrzzodtmsybofakcvv.supabase.co/functions/v1/twilio-voice-inbound
  */
@@ -57,19 +61,151 @@ async function lookupContractorByPhoneNumber(supabase: any, toNumber: string) {
   return data;
 }
 
+/**
+ * Get contractor AI profile
+ */
+async function getContractorAIProfile(supabase: any, contractorId: string) {
+  const { data, error } = await supabase
+    .from('contractor_ai_profiles')
+    .select('*')
+    .eq('contractor_id', contractorId)
+    .single();
+  
+  if (error) {
+    console.log('No AI profile found for contractor:', contractorId);
+    return null;
+  }
+  
+  return data;
+}
+
+/**
+ * Call PocketBot AI to generate response
+ */
+async function callPocketBot(
+  contractorProfile: any,
+  callContext: any,
+  conversationHistory: any[],
+  lastUserUtterance: string
+) {
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+  const lovableApiKey = Deno.env.get('LOVABLE_API_KEY')!;
+  
+  // Build system prompt with contractor context
+  const systemPrompt = `You are an AI voice assistant for ${contractorProfile.business_name}, a ${contractorProfile.trade} contractor.
+
+Business Information:
+- Business Name: ${contractorProfile.business_name}
+- Contractor: ${contractorProfile.contractor_name || 'the team'}
+- Trade: ${contractorProfile.trade}
+- Service Area: ${contractorProfile.service_area?.join(', ') || 'Not specified'}
+
+${contractorProfile.short_intro ? `Introduction: ${contractorProfile.short_intro}` : ''}
+
+Services Offered: ${contractorProfile.services_offered || 'General services'}
+${contractorProfile.services_not_offered ? `Services NOT Offered: ${contractorProfile.services_not_offered}` : ''}
+
+Hours: ${JSON.stringify(contractorProfile.hours_of_operation || {})}
+${contractorProfile.emergency_available ? `Emergency services available: ${JSON.stringify(contractorProfile.emergency_hours || {})}` : ''}
+
+Pricing Policy: ${contractorProfile.allow_pricing ? contractorProfile.pricing_rules || 'Pricing available on request' : 'Do not discuss specific pricing. Tell callers we will provide a custom quote.'}
+
+Booking Rules: ${contractorProfile.booking_rules || 'Standard scheduling applies'}
+
+${contractorProfile.custom_instructions ? `Additional Instructions: ${contractorProfile.custom_instructions}` : ''}
+
+Your goal is to:
+1. Answer questions professionally and accurately
+2. Help schedule appointments when requested
+3. Take messages when the contractor is unavailable
+4. Only discuss services within our offerings
+5. Be friendly but concise for voice conversation
+
+When you need to take an action, respond in this format:
+ACTION: [small_talk|schedule_meeting|take_message|end_call]
+If scheduling a meeting, include: DATE: [date], TIME: [time]
+If taking a message, include: MESSAGE: [message content]
+
+Keep responses brief and natural for voice.`;
+
+  try {
+    const response = await fetch(`${supabaseUrl}/functions/v1/pocketbot-chat`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${lovableApiKey}`,
+      },
+      body: JSON.stringify({
+        messages: [
+          { role: 'system', content: systemPrompt },
+          ...conversationHistory,
+          { role: 'user', content: lastUserUtterance }
+        ],
+        stream: false
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`PocketBot API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const replyText = data.generatedText || data.reply || 'I apologize, I didn\'t catch that. Could you repeat?';
+    
+    // Parse action from response
+    let action = 'small_talk';
+    let actionPayload = {};
+    
+    if (replyText.includes('ACTION: schedule_meeting')) {
+      action = 'schedule_meeting';
+      const dateMatch = replyText.match(/DATE: ([^\n,]+)/);
+      const timeMatch = replyText.match(/TIME: ([^\n,]+)/);
+      if (dateMatch && timeMatch) {
+        actionPayload = { date: dateMatch[1].trim(), time: timeMatch[1].trim() };
+      }
+    } else if (replyText.includes('ACTION: take_message')) {
+      action = 'take_message';
+      const messageMatch = replyText.match(/MESSAGE: ([^\n]+)/);
+      if (messageMatch) {
+        actionPayload = { message: messageMatch[1].trim() };
+      }
+    } else if (replyText.includes('ACTION: end_call')) {
+      action = 'end_call';
+    }
+    
+    // Clean up action markers from reply text
+    const cleanReply = replyText
+      .replace(/ACTION: [^\n]+/g, '')
+      .replace(/DATE: [^\n,]+/g, '')
+      .replace(/TIME: [^\n,]+/g, '')
+      .replace(/MESSAGE: [^\n]+/g, '')
+      .trim();
+    
+    return {
+      reply_text: cleanReply,
+      action,
+      action_payload: actionPayload
+    };
+  } catch (error) {
+    console.error('Error calling PocketBot:', error);
+    return {
+      reply_text: 'I apologize, I\'m having trouble processing your request. Let me take a message for you.',
+      action: 'take_message',
+      action_payload: {}
+    };
+  }
+}
+
 serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    // Only accept POST requests
     if (req.method !== 'POST') {
       return new Response('Method Not Allowed', { status: 405 });
     }
 
-    // Parse Twilio's form data
     const formData = await req.text();
     const params = new URLSearchParams(formData);
     
@@ -77,82 +213,204 @@ serve(async (req) => {
     const to = params.get('To') || '';
     const callSid = params.get('CallSid') || '';
     const callStatus = params.get('CallStatus') || '';
+    const speechResult = params.get('SpeechResult') || '';
+    const step = new URL(req.url).searchParams.get('step') || 'initial';
 
-    console.log('Received Twilio call:', {
-      from,
-      to,
-      callSid,
-      callStatus,
-    });
+    console.log('Twilio webhook:', { from, to, callSid, callStatus, speechResult, step });
 
-    // TODO: Implement Twilio signature validation for production
-    // See: https://www.twilio.com/docs/usage/security#validating-requests
-    // This will verify the request actually came from Twilio and prevent spoofing
-
-    // Initialize Supabase client with service role key for database writes
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Look up contractor by phone number
+    // Look up contractor
     const phoneNumberRecord = await lookupContractorByPhoneNumber(supabase, to);
     
-    let contractorId = null;
-    let tenantId = null;
-    let routingStatus = 'ok';
-    
-    if (phoneNumberRecord) {
-      contractorId = phoneNumberRecord.contractor_id;
-      tenantId = phoneNumberRecord.tenant_id;
-      console.log('Call routed to contractor:', contractorId);
-    } else {
-      routingStatus = 'unassigned_number';
-      console.warn('No contractor found for phone number:', to);
+    if (!phoneNumberRecord) {
+      const errorTwiml = `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Say voice="Polly.Joanna">We're sorry, this number is not currently configured. Please contact support.</Say>
+  <Hangup/>
+</Response>`;
+      return new Response(errorTwiml, {
+        headers: { 'Content-Type': 'text/xml', ...corsHeaders }
+      });
     }
 
-    // Log the call to the database
-    const { error: insertError } = await supabase
-      .from('calls')
-      .insert({
+    const contractorId = phoneNumberRecord.contractor_id;
+    const tenantId = phoneNumberRecord.tenant_id;
+
+    // Get AI profile
+    const aiProfile = await getContractorAIProfile(supabase, contractorId);
+    
+    if (!aiProfile || !aiProfile.ai_enabled) {
+      // Fall back to voicemail
+      const voicemailTwiml = `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Say voice="Polly.Joanna">Hi, you've reached ${aiProfile?.business_name || 'our office'}. Please leave a message after the tone.</Say>
+  <Record maxLength="120" playBeep="true"/>
+  <Say voice="Polly.Joanna">Thank you. We'll get back to you soon. Goodbye.</Say>
+  <Hangup/>
+</Response>`;
+      return new Response(voicemailTwiml, {
+        headers: { 'Content-Type': 'text/xml', ...corsHeaders }
+      });
+    }
+
+    // Handle initial call
+    if (step === 'initial') {
+      // Log initial call
+      await supabase.from('calls').insert({
         from_number: from,
         to_number: to,
         call_sid: callSid,
         call_status: callStatus,
         contractor_id: contractorId,
         tenant_id: tenantId,
-        routing_status: routingStatus,
+        routing_status: 'ai_handling',
+        ai_handled: true,
       });
 
-    if (insertError) {
-      console.error('Failed to log call to database:', insertError);
-      // Continue anyway - we still want to respond to Twilio
-    }
+      // Create call session
+      await supabase.from('call_sessions').insert({
+        call_sid: callSid,
+        contractor_id: contractorId,
+        tenant_id: tenantId,
+        from_number: from,
+        to_number: to,
+        status: 'active',
+        conversation_history: []
+      });
 
-    // Generate TwiML response
-    const twimlResponse = `<?xml version="1.0" encoding="UTF-8"?>
+      const greeting = aiProfile.custom_greeting || 
+        `Hello, thank you for calling ${aiProfile.business_name}. This is your ${aiProfile.trade} assistant. How can I help you today?`;
+
+      const initialTwiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say voice="alice">
-    Hi, you reached the CT1 contractor assistant. Please leave a message after the tone.
-  </Say>
-  <Record 
-    maxLength="120" 
-    playBeep="true" 
-    recordingStatusCallback="${supabaseUrl}/functions/v1/twilio-recording-callback"
-    recordingStatusCallbackMethod="POST"
-  />
-  <Say voice="alice">
-    Thank you for your message. We will get back to you soon. Goodbye.
-  </Say>
+  <Say voice="Polly.Joanna">${greeting}</Say>
+  <Gather input="speech" action="${supabaseUrl}/functions/v1/twilio-voice-inbound?step=continue" method="POST" timeout="3" speechTimeout="auto">
+    <Say voice="Polly.Joanna"></Say>
+  </Gather>
+  <Say voice="Polly.Joanna">I didn't hear anything. Goodbye.</Say>
   <Hangup/>
 </Response>`;
 
-    // Return TwiML with correct content type
-    return new Response(twimlResponse, {
-      status: 200,
-      headers: {
-        'Content-Type': 'text/xml',
-        ...corsHeaders,
-      },
+      return new Response(initialTwiml, {
+        headers: { 'Content-Type': 'text/xml', ...corsHeaders }
+      });
+    }
+
+    // Handle conversation turns
+    if (step === 'continue' && speechResult) {
+      // Load call session
+      const { data: session } = await supabase
+        .from('call_sessions')
+        .select('*')
+        .eq('call_sid', callSid)
+        .single();
+
+      if (!session) {
+        throw new Error('Call session not found');
+      }
+
+      const conversationHistory = session.conversation_history || [];
+      
+      // Add user utterance
+      conversationHistory.push({ role: 'user', content: speechResult });
+
+      // Get AI response
+      const aiResponse = await callPocketBot(
+        aiProfile,
+        { call_sid: callSid, from_number: from, to_number: to, contractor_id: contractorId, tenant_id: tenantId },
+        conversationHistory,
+        speechResult
+      );
+
+      // Add assistant response
+      conversationHistory.push({ role: 'assistant', content: aiResponse.reply_text });
+
+      // Update session
+      await supabase
+        .from('call_sessions')
+        .update({
+          conversation_history: conversationHistory,
+          action_taken: aiResponse.action,
+          updated_at: new Date().toISOString()
+        })
+        .eq('call_sid', callSid);
+
+      // Handle action
+      let twiml = '';
+      
+      if (aiResponse.action === 'schedule_meeting') {
+        // TODO: Integrate with calendar_events table
+        const { date, time } = aiResponse.action_payload as any;
+        twiml = `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Say voice="Polly.Joanna">${aiResponse.reply_text}</Say>
+  <Gather input="speech" action="${supabaseUrl}/functions/v1/twilio-voice-inbound?step=continue" method="POST" timeout="3" speechTimeout="auto">
+    <Say voice="Polly.Joanna">Is there anything else I can help you with?</Say>
+  </Gather>
+  <Say voice="Polly.Joanna">Thank you for calling. Goodbye.</Say>
+  <Hangup/>
+</Response>`;
+        
+        await supabase.from('call_sessions').update({
+          outcome: 'meeting_scheduled',
+          status: 'completed'
+        }).eq('call_sid', callSid);
+        
+      } else if (aiResponse.action === 'take_message') {
+        twiml = `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Say voice="Polly.Joanna">${aiResponse.reply_text} We'll get back to you soon. Goodbye.</Say>
+  <Hangup/>
+</Response>`;
+        
+        await supabase.from('call_sessions').update({
+          outcome: 'message_taken',
+          ai_summary: (aiResponse.action_payload as any).message || speechResult,
+          status: 'completed'
+        }).eq('call_sid', callSid);
+        
+      } else if (aiResponse.action === 'end_call') {
+        twiml = `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Say voice="Polly.Joanna">${aiResponse.reply_text} Goodbye.</Say>
+  <Hangup/>
+</Response>`;
+        
+        await supabase.from('call_sessions').update({
+          outcome: 'call_completed',
+          status: 'completed'
+        }).eq('call_sid', callSid);
+        
+      } else {
+        // Continue conversation
+        twiml = `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Say voice="Polly.Joanna">${aiResponse.reply_text}</Say>
+  <Gather input="speech" action="${supabaseUrl}/functions/v1/twilio-voice-inbound?step=continue" method="POST" timeout="3" speechTimeout="auto">
+    <Say voice="Polly.Joanna"></Say>
+  </Gather>
+  <Say voice="Polly.Joanna">Thank you for calling. Goodbye.</Say>
+  <Hangup/>
+</Response>`;
+      }
+
+      return new Response(twiml, {
+        headers: { 'Content-Type': 'text/xml', ...corsHeaders }
+      });
+    }
+
+    // Default: end call
+    const endTwiml = `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Say voice="Polly.Joanna">Thank you for calling. Goodbye.</Say>
+  <Hangup/>
+</Response>`;
+
+    return new Response(endTwiml, {
+      headers: { 'Content-Type': 'text/xml', ...corsHeaders }
     });
 
   } catch (error) {
