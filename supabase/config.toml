@@ -50,3 +50,6 @@ verify_jwt = true
 
 [functions.send-report-email]
 verify_jwt = true
+
+[functions.twilio-voice-inbound]
+verify_jwt = false

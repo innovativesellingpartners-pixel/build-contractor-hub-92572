@@ -41,6 +41,48 @@ export type Database = {
         }
         Relationships: []
       }
+      calls: {
+        Row: {
+          call_sid: string
+          call_status: string
+          contractor_id: string | null
+          created_at: string
+          duration: number | null
+          from_number: string
+          id: string
+          recording_sid: string | null
+          recording_url: string | null
+          to_number: string
+          updated_at: string
+        }
+        Insert: {
+          call_sid: string
+          call_status: string
+          contractor_id?: string | null
+          created_at?: string
+          duration?: number | null
+          from_number: string
+          id?: string
+          recording_sid?: string | null
+          recording_url?: string | null
+          to_number: string
+          updated_at?: string
+        }
+        Update: {
+          call_sid?: string
+          call_status?: string
+          contractor_id?: string | null
+          created_at?: string
+          duration?: number | null
+          from_number?: string
+          id?: string
+          recording_sid?: string | null
+          recording_url?: string | null
+          to_number?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       change_orders: {
         Row: {
           additional_cost: number
