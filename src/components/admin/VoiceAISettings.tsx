@@ -88,7 +88,7 @@ export const VoiceAISettings = ({ contractorId }: VoiceAISettingsProps) => {
     if (profile && !formData) {
       setFormData(profile);
     }
-  }, [profile, formData]);
+  }, [profile]);
 
   const updateProfile = useMutation({
     mutationFn: async (data: any) => {

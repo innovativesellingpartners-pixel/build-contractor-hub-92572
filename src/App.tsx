@@ -134,7 +134,6 @@ const App = () => (
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<UserManagement />} />
               <Route path="users/:userId" element={<UserDetailPage />} />
-              <Route path="ai-profiles" element={<PocketbotAccessManagement />} />
               <Route path="leads" element={<AdminLeads />} />
               <Route path="jobs" element={<AdminJobs />} />
               <Route path="customers" element={<AdminCustomers />} />
