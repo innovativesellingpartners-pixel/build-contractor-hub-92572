@@ -45,12 +45,17 @@ serve(async (req) => {
       );
     }
 
-    // Create client with the user's JWT token to authenticate
+    const jwt = authHeader.replace('Bearer ', '').trim();
+
+    // Create Supabase client in non-persistent server mode
     const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } }
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+      },
     });
 
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    const { data: { user }, error: userError } = await supabase.auth.getUser(jwt);
     
     console.log('Auth check result:', { 
       hasUser: !!user, 
