@@ -160,116 +160,104 @@ export function KPICards({ filters }: KPICardsProps) {
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      <Card className="p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">Total Revenue</p>
-            <p className="text-2xl font-bold">
-              {formatCurrency(kpis?.profitability.revenue || 0)}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {kpis?.sales.totalSold || 0} jobs
-            </p>
+      <Card className="p-4 border-l-4 border-l-green-600/20">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide truncate">Total Revenue</p>
+            <p className="text-2xl font-bold mt-1 break-words">{formatCurrency(kpis?.profitability.revenue || 0)}</p>
+            <p className="text-xs text-muted-foreground mt-1 truncate">{kpis?.sales.totalSold || 0} jobs</p>
           </div>
-          <DollarSign className="h-8 w-8 text-green-600" />
+          <div className="h-8 w-8 rounded-md bg-green-600/10 flex items-center justify-center flex-shrink-0">
+            <DollarSign className="h-4 w-4 text-green-600" />
+          </div>
         </div>
       </Card>
 
-      <Card className="p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">Gross Profit</p>
-            <p className="text-2xl font-bold">
-              {formatCurrency(kpis?.profitability.grossProfit || 0)}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {formatPercent(kpis?.profitability.grossMargin || 0)} margin
-            </p>
+      <Card className="p-4 border-l-4 border-l-green-500/20">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide truncate">Gross Profit</p>
+            <p className="text-2xl font-bold mt-1 break-words">{formatCurrency(kpis?.profitability.grossProfit || 0)}</p>
+            <p className="text-xs text-muted-foreground mt-1 truncate">{formatPercent(kpis?.profitability.grossMargin || 0)}</p>
           </div>
-          <TrendingUp className="h-8 w-8 text-green-500" />
+          <div className="h-8 w-8 rounded-md bg-green-500/10 flex items-center justify-center flex-shrink-0">
+            <TrendingUp className="h-4 w-4 text-green-500" />
+          </div>
         </div>
       </Card>
 
-      <Card className="p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">Operating Income</p>
-            <p className="text-2xl font-bold">
-              {formatCurrency(kpis?.profitability.operatingIncome || 0)}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {formatPercent(kpis?.profitability.operatingMargin || 0)} margin
-            </p>
+      <Card className="p-4 border-l-4 border-l-blue-600/20">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide truncate">Operating Income</p>
+            <p className="text-2xl font-bold mt-1 break-words">{formatCurrency(kpis?.profitability.operatingIncome || 0)}</p>
+            <p className="text-xs text-muted-foreground mt-1 truncate">{formatPercent(kpis?.profitability.operatingMargin || 0)}</p>
           </div>
-          <DollarSign className="h-8 w-8 text-blue-600" />
+          <div className="h-8 w-8 rounded-md bg-blue-600/10 flex items-center justify-center flex-shrink-0">
+            <DollarSign className="h-4 w-4 text-blue-600" />
+          </div>
         </div>
       </Card>
 
-      <Card className="p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">Net Income</p>
-            <p className="text-2xl font-bold">
-              {formatCurrency(kpis?.profitability.netIncome || 0)}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {formatPercent(kpis?.profitability.netMargin || 0)} margin
-            </p>
+      <Card className="p-4 border-l-4 border-l-primary/20">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide truncate">Net Income</p>
+            <p className="text-2xl font-bold mt-1 break-words">{formatCurrency(kpis?.profitability.netIncome || 0)}</p>
+            <p className="text-xs text-muted-foreground mt-1 truncate">{formatPercent(kpis?.profitability.netMargin || 0)}</p>
           </div>
-          <TrendingUp className="h-8 w-8 text-primary" />
+          <div className="h-8 w-8 rounded-md bg-primary/10 flex items-center justify-center flex-shrink-0">
+            <TrendingUp className="h-4 w-4 text-primary" />
+          </div>
         </div>
       </Card>
 
-      <Card className="p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">COGS</p>
-            <p className="text-2xl font-bold">
-              {formatCurrency(kpis?.profitability.cogs || 0)}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">Direct costs</p>
+      <Card className="p-4 border-l-4 border-l-orange-500/20">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide truncate">COGS</p>
+            <p className="text-2xl font-bold mt-1 break-words">{formatCurrency(kpis?.profitability.cogs || 0)}</p>
           </div>
-          <AlertCircle className="h-8 w-8 text-orange-500" />
+          <div className="h-8 w-8 rounded-md bg-orange-500/10 flex items-center justify-center flex-shrink-0">
+            <AlertCircle className="h-4 w-4 text-orange-500" />
+          </div>
         </div>
       </Card>
 
-      <Card className="p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">Operating Expenses</p>
-            <p className="text-2xl font-bold">
-              {formatCurrency(kpis?.profitability.operatingExpenses || 0)}
-            </p>
+      <Card className="p-4 border-l-4 border-l-red-500/20">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide truncate">Operating Expenses</p>
+            <p className="text-2xl font-bold mt-1 break-words">{formatCurrency(kpis?.profitability.operatingExpenses || 0)}</p>
           </div>
-          <AlertCircle className="h-8 w-8 text-red-500" />
+          <div className="h-8 w-8 rounded-md bg-red-500/10 flex items-center justify-center flex-shrink-0">
+            <AlertCircle className="h-4 w-4 text-red-500" />
+          </div>
         </div>
       </Card>
 
-      <Card className="p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">Accounts Receivable</p>
-            <p className="text-2xl font-bold">
-              {formatCurrency(kpis?.financial.accountsReceivable || 0)}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">Outstanding</p>
+      <Card className="p-4 border-l-4 border-l-orange-500/20">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide truncate">Accounts Receivable</p>
+            <p className="text-2xl font-bold mt-1 break-words">{formatCurrency(kpis?.financial.accountsReceivable || 0)}</p>
           </div>
-          <DollarSign className="h-8 w-8 text-orange-500" />
+          <div className="h-8 w-8 rounded-md bg-orange-500/10 flex items-center justify-center flex-shrink-0">
+            <DollarSign className="h-4 w-4 text-orange-500" />
+          </div>
         </div>
       </Card>
 
-      <Card className="p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">Conversion Rate</p>
-            <p className="text-2xl font-bold">
-              {formatPercent(kpis?.estimates.conversionRate || 0)}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {kpis?.sales.totalSold || 0} of {kpis?.estimates.total || 0} estimates
-            </p>
+      <Card className="p-4 border-l-4 border-l-purple-500/20">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide truncate">Conversion Rate</p>
+            <p className="text-2xl font-bold mt-1 break-words">{formatPercent(kpis?.estimates.conversionRate || 0)}</p>
+            <p className="text-xs text-muted-foreground mt-1 truncate">{kpis?.sales.totalSold || 0} sold</p>
           </div>
-          <TrendingUp className="h-8 w-8 text-purple-500" />
+          <div className="h-8 w-8 rounded-md bg-purple-500/10 flex items-center justify-center flex-shrink-0">
+            <CheckCircle className="h-4 w-4 text-purple-500" />
+          </div>
         </div>
       </Card>
     </div>
