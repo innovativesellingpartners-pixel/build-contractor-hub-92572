@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { 
-  MapPin, Clock, TrendingUp, AlertCircle, CheckCircle, Edit, Briefcase, Users 
+  MapPin, Clock, TrendingUp, AlertCircle, CheckCircle, Edit, Briefcase, Users, Calculator 
 } from 'lucide-react';
 import { useJobs, Job } from '@/hooks/useJobs';
 import { useJobPhotos } from '@/hooks/useJobPhotos';
@@ -16,6 +16,7 @@ import TasksTab from './job/TasksTab';
 import MaterialsTab from './job/MaterialsTab';
 import ChangeOrdersTab from './job/ChangeOrdersTab';
 import InvoicesTab from './job/InvoicesTab';
+import { JobFinancialSummary } from './JobFinancialSummary';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -513,6 +514,14 @@ export default function JobDetailView({ job, open, onOpenChange, onConvertToCust
                     </CardContent>
                   </Card>
                 </div>
+              </TabsContent>
+
+              <TabsContent value="financials" className="mt-4">
+                <JobFinancialSummary 
+                  jobId={job.id!} 
+                  estimatedCost={job.total_cost || 0}
+                  actualCost={0}
+                />
               </TabsContent>
 
               <TabsContent value="tasks" className="mt-4">
