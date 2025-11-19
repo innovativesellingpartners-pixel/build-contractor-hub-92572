@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -84,11 +84,11 @@ export const VoiceAISettings = ({ contractorId }: VoiceAISettingsProps) => {
   const [formData, setFormData] = useState<any>(null);
 
   // Initialize form data when profile loads
-  useState(() => {
+  useEffect(() => {
     if (profile && !formData) {
       setFormData(profile);
     }
-  });
+  }, [profile, formData]);
 
   const updateProfile = useMutation({
     mutationFn: async (data: any) => {
