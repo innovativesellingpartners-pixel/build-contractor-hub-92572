@@ -57,5 +57,8 @@ verify_jwt = false
 [functions.twilio-stream-handler]
 verify_jwt = false
 
+[functions.extract-job-details]
+verify_jwt = true
+
 [functions.provision-twilio-number]
 verify_jwt = true
