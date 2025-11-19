@@ -41,50 +41,189 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_call_actions: {
+        Row: {
+          action_data: Json
+          action_type: string
+          call_id: string
+          completed: boolean | null
+          completed_at: string | null
+          contractor_id: string
+          created_at: string | null
+          id: string
+          lead_id: string | null
+          opportunity_id: string | null
+        }
+        Insert: {
+          action_data: Json
+          action_type: string
+          call_id: string
+          completed?: boolean | null
+          completed_at?: string | null
+          contractor_id: string
+          created_at?: string | null
+          id?: string
+          lead_id?: string | null
+          opportunity_id?: string | null
+        }
+        Update: {
+          action_data?: Json
+          action_type?: string
+          call_id?: string
+          completed?: boolean | null
+          completed_at?: string | null
+          contractor_id?: string
+          created_at?: string | null
+          id?: string
+          lead_id?: string | null
+          opportunity_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_call_actions_call_id_fkey"
+            columns: ["call_id"]
+            isOneToOne: false
+            referencedRelation: "calls"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_call_actions_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_call_actions_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_call_actions_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      calendar_events: {
+        Row: {
+          contractor_id: string
+          created_at: string | null
+          end_time: string
+          event_id: string
+          event_type: string | null
+          id: string
+          is_busy: boolean | null
+          start_time: string
+          synced_at: string | null
+        }
+        Insert: {
+          contractor_id: string
+          created_at?: string | null
+          end_time: string
+          event_id: string
+          event_type?: string | null
+          id?: string
+          is_busy?: boolean | null
+          start_time: string
+          synced_at?: string | null
+        }
+        Update: {
+          contractor_id?: string
+          created_at?: string | null
+          end_time?: string
+          event_id?: string
+          event_type?: string | null
+          id?: string
+          is_busy?: boolean | null
+          start_time?: string
+          synced_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendar_events_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       calls: {
         Row: {
+          ai_backup_triggered: boolean | null
+          ai_handled: boolean | null
+          ai_summary: string | null
           call_sid: string
           call_status: string
+          contractor_answered: boolean | null
           contractor_id: string | null
           created_at: string
+          customer_info: Json | null
           duration: number | null
+          follow_up_action: string | null
+          forwarded_to_contractor: boolean | null
           from_number: string
           id: string
+          message_type: string | null
           recording_sid: string | null
           recording_url: string | null
           routing_status: string
           tenant_id: string | null
           to_number: string
+          transcript: string | null
           updated_at: string
         }
         Insert: {
+          ai_backup_triggered?: boolean | null
+          ai_handled?: boolean | null
+          ai_summary?: string | null
           call_sid: string
           call_status: string
+          contractor_answered?: boolean | null
           contractor_id?: string | null
           created_at?: string
+          customer_info?: Json | null
           duration?: number | null
+          follow_up_action?: string | null
+          forwarded_to_contractor?: boolean | null
           from_number: string
           id?: string
+          message_type?: string | null
           recording_sid?: string | null
           recording_url?: string | null
           routing_status?: string
           tenant_id?: string | null
           to_number: string
+          transcript?: string | null
           updated_at?: string
         }
         Update: {
+          ai_backup_triggered?: boolean | null
+          ai_handled?: boolean | null
+          ai_summary?: string | null
           call_sid?: string
           call_status?: string
+          contractor_answered?: boolean | null
           contractor_id?: string | null
           created_at?: string
+          customer_info?: Json | null
           duration?: number | null
+          follow_up_action?: string | null
+          forwarded_to_contractor?: boolean | null
           from_number?: string
           id?: string
+          message_type?: string | null
           recording_sid?: string | null
           recording_url?: string | null
           routing_status?: string
           tenant_id?: string | null
           to_number?: string
+          transcript?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -174,6 +313,101 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      contractor_ai_profiles: {
+        Row: {
+          ai_enabled: boolean | null
+          business_hours: Json | null
+          business_name: string
+          contractor_id: string
+          contractor_name: string
+          created_at: string | null
+          custom_greeting: string | null
+          custom_instructions: string | null
+          emergency_availability: boolean | null
+          emergency_hours: Json | null
+          forward_attempts: number | null
+          forward_timeout_seconds: number | null
+          google_access_token: string | null
+          google_calendar_enabled: boolean | null
+          google_calendar_id: string | null
+          google_refresh_token: string | null
+          google_token_expires_at: string | null
+          id: string
+          license_number: string | null
+          pricing_rules: string | null
+          service_area: string[] | null
+          service_description: string | null
+          services_not_offered: string[] | null
+          services_offered: string[] | null
+          trade: string
+          updated_at: string | null
+        }
+        Insert: {
+          ai_enabled?: boolean | null
+          business_hours?: Json | null
+          business_name: string
+          contractor_id: string
+          contractor_name: string
+          created_at?: string | null
+          custom_greeting?: string | null
+          custom_instructions?: string | null
+          emergency_availability?: boolean | null
+          emergency_hours?: Json | null
+          forward_attempts?: number | null
+          forward_timeout_seconds?: number | null
+          google_access_token?: string | null
+          google_calendar_enabled?: boolean | null
+          google_calendar_id?: string | null
+          google_refresh_token?: string | null
+          google_token_expires_at?: string | null
+          id?: string
+          license_number?: string | null
+          pricing_rules?: string | null
+          service_area?: string[] | null
+          service_description?: string | null
+          services_not_offered?: string[] | null
+          services_offered?: string[] | null
+          trade: string
+          updated_at?: string | null
+        }
+        Update: {
+          ai_enabled?: boolean | null
+          business_hours?: Json | null
+          business_name?: string
+          contractor_id?: string
+          contractor_name?: string
+          created_at?: string | null
+          custom_greeting?: string | null
+          custom_instructions?: string | null
+          emergency_availability?: boolean | null
+          emergency_hours?: Json | null
+          forward_attempts?: number | null
+          forward_timeout_seconds?: number | null
+          google_access_token?: string | null
+          google_calendar_enabled?: boolean | null
+          google_calendar_id?: string | null
+          google_refresh_token?: string | null
+          google_token_expires_at?: string | null
+          id?: string
+          license_number?: string | null
+          pricing_rules?: string | null
+          service_area?: string[] | null
+          service_description?: string | null
+          services_not_offered?: string[] | null
+          services_offered?: string[] | null
+          trade?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contractor_ai_profiles_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       course_lessons: {
         Row: {
