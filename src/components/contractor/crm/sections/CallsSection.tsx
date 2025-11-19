@@ -7,12 +7,17 @@ import { Phone, Copy, CheckCircle2, AlertCircle, Loader2, PhoneForwarded } from 
 import { usePhoneNumber, useProvisionPhoneNumber } from '@/hooks/usePhoneNumbers';
 import { useUserTier } from '@/hooks/useUserTier';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { useState } from 'react';
+import { ChevronDown, Plus } from 'lucide-react';
+import { AlertTitle } from '@/components/ui/alert';
 
 interface CallsSectionProps {
   onSectionChange?: (section: string) => void;
@@ -22,7 +27,41 @@ export default function CallsSection({ onSectionChange }: CallsSectionProps) {
   const { data: phoneNumber, isLoading: phoneLoading } = usePhoneNumber();
   const { subscription, hasFullAccess, isLoading: tierLoading } = useUserTier();
   const provisionMutation = useProvisionPhoneNumber();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [isGuideOpen, setIsGuideOpen] = useState(false);
+  const [showManualEntry, setShowManualEntry] = useState(false);
+  const [manualNumber, setManualNumber] = useState('');
+  const [manualSid, setManualSid] = useState('');
+
+  const registerExistingNumber = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase
+        .from('phone_numbers')
+        .insert({
+          contractor_id: user?.id,
+          twilio_phone_number: manualNumber,
+          twilio_sid: manualSid,
+          active: true,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['phone-number', user?.id] });
+      toast.success('Phone number registered successfully!');
+      setShowManualEntry(false);
+      setManualNumber('');
+      setManualSid('');
+    },
+    onError: (error: any) => {
+      console.error('Error registering phone number:', error);
+      toast.error(error.message || 'Failed to register phone number');
+    },
+  });
 
   // Check for active paid subscription - either from subscriptions table or profile tier
   const hasActivePaidSubscription = hasFullAccess || 
@@ -165,18 +204,139 @@ export default function CallsSection({ onSectionChange }: CallsSectionProps) {
                 Get Your CT1 Phone Number
               </CardTitle>
               <CardDescription>
-                Never miss a call with your dedicated business line
+                {hasActivePaidSubscription
+                  ? "Register your existing Twilio number or generate a new one"
+                  : "Upgrade to access dedicated phone number"}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {hasActivePaidSubscription ? (
                 <>
-                  <Alert>
-                    <CheckCircle2 className="h-4 w-4" />
-                    <AlertDescription>
-                      Your subscription includes a dedicated phone number with voicemail.
-                    </AlertDescription>
-                  </Alert>
+                  {!showManualEntry ? (
+                    <div className="space-y-4">
+                      <div className="text-center space-y-2 py-4">
+                        <Phone className="h-12 w-12 mx-auto text-muted-foreground" />
+                        <h3 className="font-semibold">No Phone Number Yet</h3>
+                        <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                          Register your existing Twilio number or generate a new CT1 phone number 
+                          with AI-powered call handling.
+                        </p>
+                      </div>
+                      <div className="grid gap-3">
+                        <Button
+                          onClick={() => setShowManualEntry(true)}
+                          variant="default"
+                          className="w-full"
+                        >
+                          <Phone className="mr-2 h-4 w-4" />
+                          Register Existing Twilio Number
+                        </Button>
+                        <Button
+                          onClick={handleProvision}
+                          disabled={provisionMutation.isPending}
+                          variant="outline"
+                          className="w-full"
+                        >
+                          {provisionMutation.isPending ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Provisioning Number...
+                            </>
+                          ) : (
+                            <>
+                              <Plus className="mr-2 h-4 w-4" />
+                              Generate New CT1 Number
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setShowManualEntry(false)}
+                          className="mb-4"
+                        >
+                          <ChevronDown className="mr-2 h-4 w-4 rotate-90" />
+                          Back
+                        </Button>
+                        <h3 className="font-semibold mb-2">Register Existing Twilio Number</h3>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Enter your Twilio phone number and SID to register it with CT1.
+                        </p>
+                      </div>
+                      <div className="space-y-3">
+                        <div>
+                          <label className="text-sm font-medium mb-1.5 block">
+                            Phone Number
+                          </label>
+                          <input
+                            type="tel"
+                            placeholder="+1234567890"
+                            value={manualNumber}
+                            onChange={(e) => setManualNumber(e.target.value)}
+                            className="w-full px-3 py-2 border rounded-md bg-background"
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Include country code (e.g., +1 for US)
+                          </p>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium mb-1.5 block">
+                            Twilio SID
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="PNxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                            value={manualSid}
+                            onChange={(e) => setManualSid(e.target.value)}
+                            className="w-full px-3 py-2 border rounded-md bg-background"
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Find this in your Twilio console under Phone Numbers
+                          </p>
+                        </div>
+                        <Button
+                          onClick={() => registerExistingNumber.mutate()}
+                          disabled={!manualNumber || !manualSid || registerExistingNumber.isPending}
+                          className="w-full"
+                        >
+                          {registerExistingNumber.isPending ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Registering...
+                            </>
+                          ) : (
+                            'Register Number'
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <Alert>
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Subscription Required</AlertTitle>
+                  <AlertDescription>
+                    A paid subscription is required to get a dedicated phone number. 
+                    <Button
+                      variant="link"
+                      className="h-auto p-0 ml-1"
+                      onClick={() => onSectionChange?.('account')}
+                    >
+                      Upgrade your account
+                    </Button>
+                    {" "}to unlock this feature.
+                  </AlertDescription>
+                </Alert>
+              )}
+            </CardContent>
+          </Card>
+        )}
                   
                   <div className="space-y-3 text-sm text-muted-foreground">
                     <p className="font-semibold text-foreground">What you'll get:</p>
