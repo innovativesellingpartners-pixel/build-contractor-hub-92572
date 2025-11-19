@@ -10,18 +10,18 @@ interface MobileLandingPageProps {
 
 const mobileModules = [
   { 
-    id: 'jobs',
-    title: 'Jobs',
-    description: 'Manage active jobs',
-    icon: Briefcase,
-    gradient: 'from-purple-500 via-purple-600 to-purple-700',
-  },
-  { 
     id: 'estimates',
     title: 'Estimates',
     description: 'Create & send quotes',
     icon: FileText,
     gradient: 'from-green-500 via-green-600 to-green-700',
+  },
+  { 
+    id: 'jobs',
+    title: 'Jobs',
+    description: 'Manage active jobs',
+    icon: Briefcase,
+    gradient: 'from-purple-500 via-purple-600 to-purple-700',
   },
   { 
     id: 'customers',
@@ -48,11 +48,11 @@ export function MobileLandingPage({
   
   const handleModuleClick = (id: string) => {
     switch (id) {
-      case 'jobs':
-        onNavigateToJobs();
-        break;
       case 'estimates':
         onNavigateToEstimates();
+        break;
+      case 'jobs':
+        onNavigateToJobs();
         break;
       case 'customers':
         onNavigateToCustomers();
@@ -105,8 +105,43 @@ export function MobileLandingPage({
           ))}
         </div>
 
-        {/* Quick Stats or Info Section */}
-        <div className="mt-6 p-4 bg-card rounded-lg border shadow-sm">
+        {/* Quick Actions Section */}
+        <div className="mt-6 space-y-3">
+          <h3 className="text-sm font-semibold text-foreground px-1">Quick Actions</h3>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={() => onNavigateToLeads()}
+              className="p-3 bg-card rounded-lg border shadow-sm hover:shadow-md transition-shadow text-left"
+            >
+              <p className="text-xs font-medium text-foreground">New Lead</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Add opportunity</p>
+            </button>
+            <button
+              onClick={() => onNavigateToEstimates()}
+              className="p-3 bg-card rounded-lg border shadow-sm hover:shadow-md transition-shadow text-left"
+            >
+              <p className="text-xs font-medium text-foreground">Create Estimate</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Send quote</p>
+            </button>
+            <button
+              onClick={() => onNavigateToCustomers()}
+              className="p-3 bg-card rounded-lg border shadow-sm hover:shadow-md transition-shadow text-left"
+            >
+              <p className="text-xs font-medium text-foreground">Add Customer</p>
+              <p className="text-xs text-muted-foreground mt-0.5">New contact</p>
+            </button>
+            <button
+              onClick={() => onNavigateToJobs()}
+              className="p-3 bg-card rounded-lg border shadow-sm hover:shadow-md transition-shadow text-left"
+            >
+              <p className="text-xs font-medium text-foreground">View Jobs</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Active projects</p>
+            </button>
+          </div>
+        </div>
+
+        {/* Tip Section */}
+        <div className="mt-4 p-4 bg-card rounded-lg border shadow-sm">
           <p className="text-xs text-center text-muted-foreground">
             💡 Tip: Use the bottom navigation to access more features
           </p>
