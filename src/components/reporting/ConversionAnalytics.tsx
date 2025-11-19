@@ -138,14 +138,14 @@ export function ConversionAnalytics({ filters }: ConversionAnalyticsProps) {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card className="p-6">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Lead → Opportunity</p>
-              <p className="text-xl font-bold mt-2">{formatPercent(metrics.leadToOpportunityRate)}</p>
-              <p className="text-xs text-muted-foreground mt-1">
+            <div className="flex-1 min-w-0 pr-4">
+              <p className="text-sm font-medium text-muted-foreground truncate">Lead → Opportunity</p>
+              <p className="text-xl font-bold mt-2 break-words">{formatPercent(metrics.leadToOpportunityRate)}</p>
+              <p className="text-xs text-muted-foreground mt-1 break-words">
                 {metrics.convertedLeads} of {metrics.totalLeads} leads
               </p>
             </div>
-            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
               <TrendingUp className="h-6 w-6 text-primary" />
             </div>
           </div>
@@ -153,14 +153,14 @@ export function ConversionAnalytics({ filters }: ConversionAnalyticsProps) {
 
         <Card className="p-6">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Opportunity → Job</p>
-              <p className="text-xl font-bold mt-2">{formatPercent(metrics.opportunityToJobRate)}</p>
-              <p className="text-xs text-muted-foreground mt-1">
+            <div className="flex-1 min-w-0 pr-4">
+              <p className="text-sm font-medium text-muted-foreground truncate">Opportunity → Job</p>
+              <p className="text-xl font-bold mt-2 break-words">{formatPercent(metrics.opportunityToJobRate)}</p>
+              <p className="text-xs text-muted-foreground mt-1 break-words">
                 {metrics.wonOpportunities} of {metrics.totalOpportunities} opportunities
               </p>
             </div>
-            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
               <Target className="h-6 w-6 text-primary" />
             </div>
           </div>
@@ -168,14 +168,14 @@ export function ConversionAnalytics({ filters }: ConversionAnalyticsProps) {
 
         <Card className="p-6">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Overall Conversion</p>
-              <p className="text-xl font-bold mt-2">{formatPercent(metrics.overallConversionRate)}</p>
-              <p className="text-xs text-muted-foreground mt-1">
+            <div className="flex-1 min-w-0 pr-4">
+              <p className="text-sm font-medium text-muted-foreground truncate">Overall Conversion</p>
+              <p className="text-xl font-bold mt-2 break-words">{formatPercent(metrics.overallConversionRate)}</p>
+              <p className="text-xs text-muted-foreground mt-1 break-words">
                 {metrics.totalJobs} jobs from {metrics.totalLeads} leads
               </p>
             </div>
-            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
               <Users className="h-6 w-6 text-primary" />
             </div>
           </div>
@@ -183,14 +183,14 @@ export function ConversionAnalytics({ filters }: ConversionAnalyticsProps) {
 
         <Card className="p-6">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Avg Deal Size</p>
-              <p className="text-xl font-bold mt-2">{formatCurrency(metrics.avgDealSize)}</p>
-              <p className="text-xs text-muted-foreground mt-1">
+            <div className="flex-1 min-w-0 pr-4">
+              <p className="text-sm font-medium text-muted-foreground truncate">Avg Deal Size</p>
+              <p className="text-xl font-bold mt-2 break-words">{formatCurrency(metrics.avgDealSize)}</p>
+              <p className="text-xs text-muted-foreground mt-1 break-words">
                 Pipeline: {formatCurrency(metrics.totalPipelineValue)}
               </p>
             </div>
-            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
               <DollarSign className="h-6 w-6 text-primary" />
             </div>
           </div>
