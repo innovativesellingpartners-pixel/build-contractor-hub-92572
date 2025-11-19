@@ -33,14 +33,27 @@ export const VoiceAISettings = ({ contractorId }: VoiceAISettingsProps) => {
   const queryClient = useQueryClient();
   const [isSaving, setIsSaving] = useState(false);
 
-  const { data: profile, isLoading, error } = useQuery({
+  const { data: profile, isLoading, error } = useQuery<any>({
     queryKey: ['voiceAIProfile', contractorId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('contractor_ai_profiles')
-        .select('*, phone_numbers(twilio_phone_number)')
+        .select('*')
         .eq('contractor_id', contractorId)
         .maybeSingle();
+
+      // Fetch Twilio phone number separately since there's no direct relationship
+      const { data: phoneNumber, error: phoneError } = await supabase
+        .from('phone_numbers')
+        .select('twilio_phone_number')
+        .eq('contractor_id', contractorId)
+        .eq('active', true)
+        .maybeSingle();
+
+      if (phoneError && phoneError.code !== 'PGRST116') {
+        console.error('Error loading phone number for contractor:', phoneError);
+      }
+
 
       if (error && error.code !== 'PGRST116') throw error;
       
@@ -77,7 +90,12 @@ export const VoiceAISettings = ({ contractorId }: VoiceAISettingsProps) => {
         data.custom_instructions = DEFAULT_ASSISTANT_PROMPT(data);
       }
 
-      return data;
+      const result: any = {
+        ...data,
+        phone_numbers: phoneNumber ? [phoneNumber] : [],
+      };
+
+      return result;
     },
   });
 
