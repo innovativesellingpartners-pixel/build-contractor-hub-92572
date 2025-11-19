@@ -77,8 +77,8 @@ const navItems = [
     setActiveSection(section);
     sessionStorage.setItem('ct1CrmActiveSection', section);
     
-    // Hide mobile landing when navigating to any section
-    if (isMobile && showMobileLanding) {
+    // Hide landing page when navigating to any section
+    if (showMobileLanding) {
       setShowMobileLanding(false);
     }
     
@@ -88,18 +88,14 @@ const navItems = [
   };
 
   const renderSection = () => {
-    // Show mobile landing page on mobile when on dashboard AND landing is active
-    if (isMobile && showMobileLanding && activeSection === 'dashboard') {
+    // Show landing page on both mobile and desktop when on dashboard AND landing is active
+    if (showMobileLanding && activeSection === 'dashboard') {
       return (
         <MobileLandingPage 
           onNavigateToJobs={() => handleSectionChange('jobs')}
           onNavigateToEstimates={() => handleSectionChange('estimates')}
           onNavigateToCustomers={() => handleSectionChange('customers')}
-          onOpenPocketbot={() => {
-            if (onOpenPocketbot) {
-              onOpenPocketbot();
-            }
-          }}
+          onNavigateToLeads={() => handleSectionChange('leads')}
         />
       );
     }

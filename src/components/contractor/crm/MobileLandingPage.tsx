@@ -1,11 +1,11 @@
-import { Briefcase, FileText, Users, Bot } from 'lucide-react';
+import { Briefcase, FileText, Users, ClipboardList } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 
 interface MobileLandingPageProps {
   onNavigateToJobs: () => void;
   onNavigateToEstimates: () => void;
   onNavigateToCustomers: () => void;
-  onOpenPocketbot: () => void;
+  onNavigateToLeads: () => void;
 }
 
 const mobileModules = [
@@ -31,10 +31,10 @@ const mobileModules = [
     gradient: 'from-blue-500 via-blue-600 to-blue-700',
   },
   { 
-    id: 'pocketbot',
-    title: 'CT1 Pocketbot',
-    description: 'AI Assistant',
-    icon: Bot,
+    id: 'leads',
+    title: 'Leads',
+    description: 'Track opportunities',
+    icon: ClipboardList,
     gradient: 'from-orange-500 via-orange-600 to-orange-700',
   },
 ];
@@ -43,7 +43,7 @@ export function MobileLandingPage({
   onNavigateToJobs, 
   onNavigateToEstimates, 
   onNavigateToCustomers, 
-  onOpenPocketbot 
+  onNavigateToLeads 
 }: MobileLandingPageProps) {
   
   const handleModuleClick = (id: string) => {
@@ -57,8 +57,8 @@ export function MobileLandingPage({
       case 'customers':
         onNavigateToCustomers();
         break;
-      case 'pocketbot':
-        onOpenPocketbot();
+      case 'leads':
+        onNavigateToLeads();
         break;
     }
   };
