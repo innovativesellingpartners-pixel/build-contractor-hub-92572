@@ -136,62 +136,54 @@ export function ConversionAnalytics({ filters }: ConversionAnalyticsProps) {
     <div className="space-y-6">
       {/* Key Conversion Metrics */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex-1 min-w-0 pr-4">
-              <p className="text-sm font-medium text-muted-foreground truncate">Lead → Opportunity</p>
-              <p className="text-xl font-bold mt-2 break-words">{formatPercent(metrics.leadToOpportunityRate)}</p>
-              <p className="text-xs text-muted-foreground mt-1 break-words">
-                {metrics.convertedLeads} of {metrics.totalLeads} leads
-              </p>
+        <Card className="p-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide truncate">Lead → Opp</p>
+              <p className="text-2xl font-bold mt-1 break-words">{formatPercent(metrics.leadToOpportunityRate)}</p>
+              <p className="text-xs text-muted-foreground mt-1 truncate">{metrics.convertedLeads} leads</p>
             </div>
-            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <TrendingUp className="h-6 w-6 text-primary" />
+            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <TrendingUp className="h-5 w-5 text-primary" />
             </div>
           </div>
         </Card>
 
-        <Card className="p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex-1 min-w-0 pr-4">
-              <p className="text-sm font-medium text-muted-foreground truncate">Opportunity → Job</p>
-              <p className="text-xl font-bold mt-2 break-words">{formatPercent(metrics.opportunityToJobRate)}</p>
-              <p className="text-xs text-muted-foreground mt-1 break-words">
-                {metrics.wonOpportunities} of {metrics.totalOpportunities} opportunities
-              </p>
+        <Card className="p-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide truncate">Opp → Job</p>
+              <p className="text-2xl font-bold mt-1 break-words">{formatPercent(metrics.opportunityToJobRate)}</p>
+              <p className="text-xs text-muted-foreground mt-1 truncate">{metrics.wonOpportunities} won</p>
             </div>
-            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <Target className="h-6 w-6 text-primary" />
+            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <Target className="h-5 w-5 text-primary" />
             </div>
           </div>
         </Card>
 
-        <Card className="p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex-1 min-w-0 pr-4">
-              <p className="text-sm font-medium text-muted-foreground truncate">Overall Conversion</p>
-              <p className="text-xl font-bold mt-2 break-words">{formatPercent(metrics.overallConversionRate)}</p>
-              <p className="text-xs text-muted-foreground mt-1 break-words">
-                {metrics.totalJobs} jobs from {metrics.totalLeads} leads
-              </p>
+        <Card className="p-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide truncate">Overall</p>
+              <p className="text-2xl font-bold mt-1 break-words">{formatPercent(metrics.overallConversionRate)}</p>
+              <p className="text-xs text-muted-foreground mt-1 truncate">{metrics.totalJobs} jobs</p>
             </div>
-            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <Users className="h-6 w-6 text-primary" />
+            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <Users className="h-5 w-5 text-primary" />
             </div>
           </div>
         </Card>
 
-        <Card className="p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex-1 min-w-0 pr-4">
-              <p className="text-sm font-medium text-muted-foreground truncate">Avg Deal Size</p>
-              <p className="text-xl font-bold mt-2 break-words">{formatCurrency(metrics.avgDealSize)}</p>
-              <p className="text-xs text-muted-foreground mt-1 break-words">
-                Pipeline: {formatCurrency(metrics.totalPipelineValue)}
-              </p>
+        <Card className="p-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide truncate">Avg Deal</p>
+              <p className="text-2xl font-bold mt-1 break-words">{formatCurrency(metrics.avgDealSize)}</p>
+              <p className="text-xs text-muted-foreground mt-1 truncate">Pipeline: {formatCurrency(metrics.totalPipelineValue)}</p>
             </div>
-            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <DollarSign className="h-6 w-6 text-primary" />
+            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <DollarSign className="h-5 w-5 text-primary" />
             </div>
           </div>
         </Card>

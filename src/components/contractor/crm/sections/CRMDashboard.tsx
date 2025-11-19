@@ -151,17 +151,21 @@ export default function CRMDashboard({ onSectionChange }: CRMDashboardProps) {
 
         <div className="grid gap-4 grid-cols-2 md:grid-cols-2 lg:grid-cols-4 w-full">
           {stats.map((stat, index) => (
-            <Card key={index} className={cn('border-l-4', stat.borderColor, 'bg-gradient-to-br', stat.gradient, 'hover:shadow-xl transition-all duration-300')}>
-              <CardHeader className="pb-2">
-                <div className={cn('w-12 h-12 rounded-full flex items-center justify-center mb-2', stat.bgColor)}>
-                  <stat.icon className={cn('h-6 w-6', stat.color)} />
+            <Card key={index} className={cn('p-4 border-l-4', stat.borderColor)}>
+              <div className="flex items-center justify-between">
+                <div className="flex-1 min-w-0 pr-3">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide truncate">
+                    {stat.title}
+                  </p>
+                  <p className="text-3xl font-bold mt-1">{stat.value}</p>
+                  {stat.description && (
+                    <p className="text-xs text-muted-foreground mt-1 truncate">{stat.description}</p>
+                  )}
                 </div>
-                <CardTitle className="text-lg">{stat.title}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-foreground">{stat.value}</div>
-                <p className="text-xs text-muted-foreground mt-1">{stat.description}</p>
-              </CardContent>
+                <div className={cn('h-10 w-10 rounded-lg flex items-center justify-center flex-shrink-0', stat.bgColor)}>
+                  <stat.icon className={cn('h-5 w-5', stat.color)} />
+                </div>
+              </div>
             </Card>
           ))}
         </div>
@@ -171,22 +175,22 @@ export default function CRMDashboard({ onSectionChange }: CRMDashboardProps) {
           <WinLossAnalysis />
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
+        <Card className="p-4">
+          <CardHeader className="p-0 pb-4">
+            <CardTitle className="text-base">Recent Activity</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
+          <CardContent className="p-0">
+            <div className="space-y-3">
               {recentActivity.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-8">No recent activity</p>
+                <p className="text-xs text-muted-foreground text-center py-6">No recent activity</p>
               ) : (
                 recentActivity.map((activity, index) => (
-                  <div key={index} className="flex items-center justify-between border-b pb-2 last:border-0">
-                    <div>
-                      <p className="font-medium text-sm">{activity.name}</p>
-                      <p className="text-xs text-muted-foreground">{activity.type} • {activity.status}</p>
+                  <div key={index} className="flex items-center justify-between gap-3 border-b pb-2 last:border-0">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm truncate">{activity.name}</p>
+                      <p className="text-xs text-muted-foreground truncate">{activity.type}</p>
                     </div>
-                    <div className="text-xs text-muted-foreground">{activity.date}</div>
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-muted flex-shrink-0">{activity.status}</span>
                   </div>
                 ))
               )}
