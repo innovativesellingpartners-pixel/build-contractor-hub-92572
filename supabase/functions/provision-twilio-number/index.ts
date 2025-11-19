@@ -112,17 +112,11 @@ serve(async (req) => {
 
     console.log('Subscription check:', { subscription, profileTier: profile?.subscription_tier, userEmail: user.email });
 
-    // Check if user is admin or super_admin to allow internal testing without subscription
-    const { data: roleRow } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', contractorId)
-      .maybeSingle();
+    // TEMPORARY: Allow internal/testing accounts by email domain
+    const isInternalTester = user.email?.endsWith('@innovativesellingpartners.com');
 
-    const isAdmin = roleRow?.role === 'admin' || roleRow?.role === 'super_admin';
-
-    // Allow if admin/super_admin, or they have active subscription, or profile tier, or @myct1.com email
-    const hasAccess = isAdmin ||
+    // Allow if internal tester, they have active subscription, profile tier (non-trial), or @myct1.com email
+    const hasAccess = isInternalTester ||
                       subscription || 
                       (profile?.subscription_tier && profile.subscription_tier !== 'trial') ||
                       user.email?.endsWith('@myct1.com');
