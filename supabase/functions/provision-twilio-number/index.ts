@@ -32,41 +32,45 @@ serve(async (req) => {
       );
     }
 
-    // Get authenticated user
+    // Get authenticated user from JWT
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const authHeader = req.headers.get('Authorization');
     
     if (!authHeader) {
+      console.error('Missing authorization header');
       return new Response(
         JSON.stringify({ error: 'Missing authorization header' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Create client with user's token for auth check
-    const supabaseClient = createClient(
-      supabaseUrl,
-      Deno.env.get('SUPABASE_ANON_KEY')!,
-      { global: { headers: { Authorization: authHeader } } }
-    );
+    // Create service role client to verify the user
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      global: { headers: { Authorization: authHeader } }
+    });
 
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
     
-    console.log('Auth check:', { userError, userId: user?.id });
+    console.log('Auth check result:', { 
+      hasUser: !!user, 
+      userId: user?.id, 
+      error: userError?.message 
+    });
     
     if (userError || !user) {
       console.error('Authentication failed:', userError);
       return new Response(
-        JSON.stringify({ error: 'Unauthorized', details: userError?.message }),
+        JSON.stringify({ 
+          error: 'Unauthorized', 
+          details: userError?.message || 'No user found'
+        }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     const contractorId = user.id;
-
-    // Use service role client for database operations
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    console.log('Authenticated user:', contractorId);
 
     // Check if contractor already has a phone number
     const { data: existingNumber } = await supabase
