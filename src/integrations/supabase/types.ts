@@ -376,13 +376,19 @@ export type Database = {
       contractor_ai_profiles: {
         Row: {
           ai_enabled: boolean | null
+          allow_pricing: boolean | null
+          booking_buffer_minutes: number | null
           business_hours: Json | null
           business_name: string
+          calendar_email: string | null
+          calendar_type: string | null
+          confirmation_message_template: string | null
           contractor_id: string
           contractor_name: string
           created_at: string | null
           custom_greeting: string | null
           custom_instructions: string | null
+          default_meeting_length: number | null
           emergency_availability: boolean | null
           emergency_hours: Json | null
           forward_attempts: number | null
@@ -393,7 +399,10 @@ export type Database = {
           google_refresh_token: string | null
           google_token_expires_at: string | null
           id: string
+          inbound_call_mode: string | null
+          internal_notes: string | null
           license_number: string | null
+          preferred_meeting_types: string[] | null
           pricing_rules: string | null
           service_area: string[] | null
           service_description: string | null
@@ -401,16 +410,23 @@ export type Database = {
           services_offered: string[] | null
           trade: string
           updated_at: string | null
+          voice_id: string | null
         }
         Insert: {
           ai_enabled?: boolean | null
+          allow_pricing?: boolean | null
+          booking_buffer_minutes?: number | null
           business_hours?: Json | null
           business_name: string
+          calendar_email?: string | null
+          calendar_type?: string | null
+          confirmation_message_template?: string | null
           contractor_id: string
           contractor_name: string
           created_at?: string | null
           custom_greeting?: string | null
           custom_instructions?: string | null
+          default_meeting_length?: number | null
           emergency_availability?: boolean | null
           emergency_hours?: Json | null
           forward_attempts?: number | null
@@ -421,7 +437,10 @@ export type Database = {
           google_refresh_token?: string | null
           google_token_expires_at?: string | null
           id?: string
+          inbound_call_mode?: string | null
+          internal_notes?: string | null
           license_number?: string | null
+          preferred_meeting_types?: string[] | null
           pricing_rules?: string | null
           service_area?: string[] | null
           service_description?: string | null
@@ -429,16 +448,23 @@ export type Database = {
           services_offered?: string[] | null
           trade: string
           updated_at?: string | null
+          voice_id?: string | null
         }
         Update: {
           ai_enabled?: boolean | null
+          allow_pricing?: boolean | null
+          booking_buffer_minutes?: number | null
           business_hours?: Json | null
           business_name?: string
+          calendar_email?: string | null
+          calendar_type?: string | null
+          confirmation_message_template?: string | null
           contractor_id?: string
           contractor_name?: string
           created_at?: string | null
           custom_greeting?: string | null
           custom_instructions?: string | null
+          default_meeting_length?: number | null
           emergency_availability?: boolean | null
           emergency_hours?: Json | null
           forward_attempts?: number | null
@@ -449,7 +475,10 @@ export type Database = {
           google_refresh_token?: string | null
           google_token_expires_at?: string | null
           id?: string
+          inbound_call_mode?: string | null
+          internal_notes?: string | null
           license_number?: string | null
+          preferred_meeting_types?: string[] | null
           pricing_rules?: string | null
           service_area?: string[] | null
           service_description?: string | null
@@ -457,6 +486,7 @@ export type Database = {
           services_offered?: string[] | null
           trade?: string
           updated_at?: string | null
+          voice_id?: string | null
         }
         Relationships: [
           {

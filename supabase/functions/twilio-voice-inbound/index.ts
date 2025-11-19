@@ -92,7 +92,7 @@ async function callPocketBot(
   const lovableApiKey = Deno.env.get('LOVABLE_API_KEY')!;
   
   // Build system prompt with contractor context
-  const systemPrompt = `You are an AI voice assistant for ${contractorProfile.business_name}, a ${contractorProfile.trade} contractor.
+  const systemPrompt = contractorProfile.custom_instructions || `You are an AI voice assistant for ${contractorProfile.business_name}, a ${contractorProfile.trade} contractor.
 
 Business Information:
 - Business Name: ${contractorProfile.business_name}
@@ -100,19 +100,17 @@ Business Information:
 - Trade: ${contractorProfile.trade}
 - Service Area: ${contractorProfile.service_area?.join(', ') || 'Not specified'}
 
-${contractorProfile.short_intro ? `Introduction: ${contractorProfile.short_intro}` : ''}
+${contractorProfile.service_description ? `About Us: ${contractorProfile.service_description}` : ''}
 
-Services Offered: ${contractorProfile.services_offered || 'General services'}
-${contractorProfile.services_not_offered ? `Services NOT Offered: ${contractorProfile.services_not_offered}` : ''}
+Services Offered: ${contractorProfile.services_offered?.join(', ') || 'General services'}
+${contractorProfile.services_not_offered?.length ? `Services NOT Offered: ${contractorProfile.services_not_offered.join(', ')}` : ''}
 
-Hours: ${JSON.stringify(contractorProfile.hours_of_operation || {})}
-${contractorProfile.emergency_available ? `Emergency services available: ${JSON.stringify(contractorProfile.emergency_hours || {})}` : ''}
+Hours: ${JSON.stringify(contractorProfile.business_hours || {})}
+${contractorProfile.emergency_availability ? `Emergency services available: ${JSON.stringify(contractorProfile.emergency_hours || {})}` : ''}
 
 Pricing Policy: ${contractorProfile.allow_pricing ? contractorProfile.pricing_rules || 'Pricing available on request' : 'Do not discuss specific pricing. Tell callers we will provide a custom quote.'}
 
-Booking Rules: ${contractorProfile.booking_rules || 'Standard scheduling applies'}
-
-${contractorProfile.custom_instructions ? `Additional Instructions: ${contractorProfile.custom_instructions}` : ''}
+Scheduling: ${contractorProfile.calendar_type ? `Calendar type: ${contractorProfile.calendar_type}, Default meeting length: ${contractorProfile.default_meeting_length || 30} minutes, Buffer: ${contractorProfile.booking_buffer_minutes || 15} minutes, Preferred types: ${contractorProfile.preferred_meeting_types?.join(', ')}` : 'Standard scheduling applies'}
 
 Your goal is to:
 1. Answer questions professionally and accurately
@@ -242,7 +240,8 @@ serve(async (req) => {
     // Get AI profile
     const aiProfile = await getContractorAIProfile(supabase, contractorId);
     
-    if (!aiProfile || !aiProfile.ai_enabled) {
+    // Check if AI is enabled and mode is set to ai_assistant
+    if (!aiProfile || !aiProfile.ai_enabled || aiProfile.inbound_call_mode === 'voicemail_only') {
       // Fall back to voicemail
       const voicemailTwiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
