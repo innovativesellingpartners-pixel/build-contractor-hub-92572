@@ -110,16 +110,10 @@ serve(async (req) => {
       .eq('id', contractorId)
       .single();
 
-    console.log('Subscription check:', { subscription, profileTier: profile?.subscription_tier, userEmail: user.email });
+    console.log('Subscription check (temporarily bypassed for testing):', { subscription, profileTier: profile?.subscription_tier, userEmail: user.email });
 
-    // TEMPORARY: Allow internal/testing accounts by email domain
-    const isInternalTester = user.email?.endsWith('@innovativesellingpartners.com');
-
-    // Allow if internal tester, they have active subscription, profile tier (non-trial), or @myct1.com email
-    const hasAccess = isInternalTester ||
-                      subscription || 
-                      (profile?.subscription_tier && profile.subscription_tier !== 'trial') ||
-                      user.email?.endsWith('@myct1.com');
+    // TEMPORARY: Bypass subscription checks so we can test Twilio provisioning for any logged-in user
+    const hasAccess = true;
 
     if (!hasAccess) {
       return new Response(
