@@ -52,6 +52,8 @@ export type Database = {
           id: string
           recording_sid: string | null
           recording_url: string | null
+          routing_status: string
+          tenant_id: string | null
           to_number: string
           updated_at: string
         }
@@ -65,6 +67,8 @@ export type Database = {
           id?: string
           recording_sid?: string | null
           recording_url?: string | null
+          routing_status?: string
+          tenant_id?: string | null
           to_number: string
           updated_at?: string
         }
@@ -78,6 +82,8 @@ export type Database = {
           id?: string
           recording_sid?: string | null
           recording_url?: string | null
+          routing_status?: string
+          tenant_id?: string | null
           to_number?: string
           updated_at?: string
         }
@@ -1599,6 +1605,44 @@ export type Database = {
             columns: ["lead_id"]
             isOneToOne: false
             referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      phone_numbers: {
+        Row: {
+          active: boolean
+          contractor_id: string
+          created_at: string
+          id: string
+          tenant_id: string | null
+          twilio_phone_number: string
+          twilio_sid: string
+        }
+        Insert: {
+          active?: boolean
+          contractor_id: string
+          created_at?: string
+          id?: string
+          tenant_id?: string | null
+          twilio_phone_number: string
+          twilio_sid: string
+        }
+        Update: {
+          active?: boolean
+          contractor_id?: string
+          created_at?: string
+          id?: string
+          tenant_id?: string | null
+          twilio_phone_number?: string
+          twilio_sid?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "phone_numbers_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
