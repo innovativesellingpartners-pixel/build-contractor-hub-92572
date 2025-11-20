@@ -16,6 +16,10 @@ export type CallSession = {
   action_taken: string | null;
   created_at: string;
   updated_at: string;
+  recording_url: string | null;
+  recording_sid: string | null;
+  recording_duration: number | null;
+  recording_status: string | null;
 };
 
 export const useCallSessions = () => {
