@@ -14,46 +14,61 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabaseClient = createClient(supabaseUrl, supabaseServiceKey);
-
-    // Verify the requesting user is an admin
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    
+    // Create a client with the user's JWT for authentication
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       throw new Error("No authorization header");
     }
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
+    
+    // Create client with anon key to verify the user's token
+    const userClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: {
+        headers: { Authorization: authHeader }
+      }
+    });
+    
+    const { data: { user }, error: authError } = await userClient.auth.getUser();
     
     if (authError || !user) {
+      console.error("Auth error:", authError);
       throw new Error("Unauthorized");
     }
 
-    // Check if user is admin
-    const { data: roleData } = await supabaseClient
+    console.log("Authenticated user:", user.id, user.email);
+
+    // Check if user is admin using service role client
+    const serviceClient = createClient(supabaseUrl, supabaseServiceKey);
+    const { data: roleData, error: roleError } = await serviceClient
       .from("user_roles")
       .select("role")
       .eq("user_id", user.id)
-      .single();
+      .maybeSingle();
+
+    console.log("Role check:", roleData, roleError);
 
     if (!roleData || !['admin', 'super_admin'].includes(roleData.role)) {
       throw new Error("Insufficient permissions");
     }
 
-    // Get all users from auth.users
-    const { data: { users }, error: usersError } = await supabaseClient.auth.admin.listUsers();
+    // Get all users from auth.users using service client
+    const { data: { users }, error: usersError } = await serviceClient.auth.admin.listUsers();
     
     if (usersError) {
+      console.error("Error fetching users:", usersError);
       throw usersError;
     }
 
-    // Get profiles
-    const { data: profiles } = await supabaseClient
+    // Get profiles using service client
+    const { data: profiles } = await serviceClient
       .from("profiles")
       .select("*");
 
-    // Get roles
-    const { data: roles } = await supabaseClient
+    // Get roles using service client
+    const { data: roles } = await serviceClient
       .from("user_roles")
       .select("*");
 
