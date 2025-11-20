@@ -243,8 +243,8 @@ const handler = async (req: Request): Promise<Response> => {
                   </div>
 
                   <div class="cta-section">
-                    <a href="${publicUrl}" class="cta-button">
-                      🔗 View, Sign & Pay Online
+                    <a href="${publicUrl.replace(/^https?:\/\//, 'https://')}" class="cta-button">
+                      View, Sign &amp; Pay Online
                     </a>
                     <p style="color: #6b7280; font-size: 13px; margin-top: 15px;">
                       Click the button above to review the full estimate online
