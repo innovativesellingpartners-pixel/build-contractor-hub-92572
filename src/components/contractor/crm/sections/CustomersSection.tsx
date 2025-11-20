@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useCustomers } from '@/hooks/useCustomers';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, Phone, Mail, MapPin, Briefcase, Home } from 'lucide-react';
+import { Plus, Phone, Mail, MapPin, Briefcase, Home, FileText } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import AddCustomerDialog from '../AddCustomerDialog';
@@ -17,6 +17,7 @@ export default function CustomersSection({ onSectionChange }: CustomersSectionPr
   const { customers, loading } = useCustomers();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [convertingCustomer, setConvertingCustomer] = useState<any>(null);
+  const [buildingEstimateFor, setBuildingEstimateFor] = useState<any>(null);
 
   const handleConvertToJob = async () => {
     if (!convertingCustomer) return;
@@ -56,6 +57,48 @@ export default function CustomersSection({ onSectionChange }: CustomersSectionPr
     } catch (error: any) {
       console.error('Error creating job:', error);
       toast.error('Failed to create job: ' + error.message, { id: 'convert-customer' });
+    }
+  };
+
+  const handleBuildEstimate = async () => {
+    if (!buildingEstimateFor) return;
+
+    try {
+      toast.loading('Creating estimate for customer...', { id: 'build-estimate' });
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      // Create a new estimate from the customer
+      const { data: newEstimate, error: estimateError } = await supabase
+        .from('estimates')
+        .insert([{
+          title: `Estimate for ${buildingEstimateFor.name}`,
+          user_id: user.id,
+          customer_id: buildingEstimateFor.id,
+          client_name: buildingEstimateFor.name,
+          client_email: buildingEstimateFor.email || null,
+          client_address: buildingEstimateFor.address 
+            ? `${buildingEstimateFor.address}${buildingEstimateFor.city ? `, ${buildingEstimateFor.city}` : ''}${buildingEstimateFor.state ? `, ${buildingEstimateFor.state}` : ''}${buildingEstimateFor.zip_code ? ` ${buildingEstimateFor.zip_code}` : ''}`.trim()
+            : null,
+          status: 'draft',
+          total_amount: 0,
+        }])
+        .select()
+        .single();
+
+      if (estimateError) throw estimateError;
+
+      toast.success('Estimate created successfully!', { id: 'build-estimate' });
+      setBuildingEstimateFor(null);
+
+      // Navigate to estimates section if available
+      if (onSectionChange) {
+        setTimeout(() => onSectionChange('estimates'), 500);
+      }
+    } catch (error: any) {
+      console.error('Error creating estimate:', error);
+      toast.error('Failed to create estimate: ' + error.message, { id: 'build-estimate' });
     }
   };
 
@@ -126,15 +169,24 @@ export default function CustomersSection({ onSectionChange }: CustomersSectionPr
                   </span>
                 </div>
               )}
-              <div className="pt-2">
+              <div className="pt-2 flex gap-2">
                 <Button 
                   size="sm" 
                   variant="outline"
                   onClick={() => setConvertingCustomer(customer)}
-                  className="w-full"
+                  className="flex-1"
                 >
                   <Briefcase className="h-4 w-4 mr-2" />
                   <span className="text-xs sm:text-sm">Create Job</span>
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  onClick={() => setBuildingEstimateFor(customer)}
+                  className="flex-1"
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  <span className="text-xs sm:text-sm">Build Estimate</span>
                 </Button>
               </div>
             </CardContent>
@@ -161,6 +213,24 @@ export default function CustomersSection({ onSectionChange }: CustomersSectionPr
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleConvertToJob}>
               Create Job
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Build Estimate Dialog */}
+      <AlertDialog open={!!buildingEstimateFor} onOpenChange={() => setBuildingEstimateFor(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Build Estimate for Customer?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will create a new estimate for {buildingEstimateFor?.name}. You can add line items and details to the estimate next.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleBuildEstimate}>
+              Build Estimate
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
