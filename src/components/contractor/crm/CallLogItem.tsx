@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Phone, Calendar, MessageSquare, Info, ChevronDown, ChevronUp } from 'lucide-react';
+import { Phone, Calendar, MessageSquare, Info, ChevronDown, ChevronUp, Voicemail } from 'lucide-react';
 import { formatPhoneNumber, calculateCallDuration, formatDuration } from '@/lib/phoneUtils';
 import { format } from 'date-fns';
 import { CallConversationDialog } from './CallConversationDialog';
@@ -46,6 +46,9 @@ export const CallLogItem = ({ call }: CallLogItemProps) => {
     return <Info className="h-4 w-4" />;
   };
 
+  const hasVoicemail = call.recording_url && call.recording_status === 'completed';
+  const hasTranscript = call.conversation_history && Array.isArray(call.conversation_history) && call.conversation_history.length > 0;
+
   return (
     <>
       <Card className="p-4 hover:bg-accent/50 transition-colors">
@@ -75,27 +78,58 @@ export const CallLogItem = ({ call }: CallLogItemProps) => {
           </div>
 
           {/* Date/Time */}
-          <div className="text-sm text-muted-foreground">
-            {format(new Date(call.created_at), 'MMM d, yyyy \'at\' h:mm a')}
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">
+              {format(new Date(call.created_at), 'MMM d, yyyy \'at\' h:mm a')}
+            </span>
+            {hasVoicemail && (
+              <Badge variant="outline" className="text-xs flex items-center gap-1">
+                <Voicemail className="h-3 w-3" />
+                Voicemail
+              </Badge>
+            )}
+          </div>
+
+          {/* Quick Action Buttons */}
+          <div className="flex gap-2 pt-1">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="flex-1"
+            >
+              {isExpanded ? (
+                <>
+                  <ChevronUp className="h-4 w-4 mr-2" />
+                  Hide Details
+                </>
+              ) : (
+                <>
+                  <Info className="h-4 w-4 mr-2" />
+                  See Details
+                </>
+              )}
+            </Button>
+            {hasTranscript && (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setShowConversation(true)}
+                className="flex-1"
+              >
+                <MessageSquare className="h-4 w-4 mr-2" />
+                View Transcript
+              </Button>
+            )}
           </div>
 
           {/* AI Summary */}
-          {call.ai_summary && (
-            <div className="space-y-2">
+          {call.ai_summary && !isExpanded && (
+            <div className="space-y-2 pt-2 border-t">
               <div className="text-sm font-medium">AI Summary:</div>
               <p className="text-sm text-muted-foreground line-clamp-2">
                 {call.ai_summary}
               </p>
-              {!isExpanded && (
-                <Button
-                  variant="link"
-                  size="sm"
-                  onClick={() => setIsExpanded(true)}
-                  className="h-auto p-0 text-xs"
-                >
-                  Show more <ChevronDown className="ml-1 h-3 w-3" />
-                </Button>
-              )}
             </div>
           )}
 
@@ -157,19 +191,23 @@ export const CallLogItem = ({ call }: CallLogItemProps) => {
 
               <div className="flex gap-2 pt-2">
                 <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowConversation(true)}
-                >
-                  View Full Conversation
-                </Button>
-                <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setIsExpanded(false)}
                 >
-                  <ChevronUp className="h-4 w-4" />
+                  <ChevronUp className="h-4 w-4 mr-2" />
+                  Hide Details
                 </Button>
+                {hasTranscript && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setShowConversation(true)}
+                  >
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    View Full Transcript
+                  </Button>
+                )}
               </div>
             </div>
           )}
