@@ -52,6 +52,7 @@ import ForConsumers from "./pages/ForConsumers";
 import { CRMDashboard } from "@/pages/CRMDashboard";
 import PublicEstimate from "./pages/PublicEstimate";
 import Reporting from "./pages/Reporting";
+import AppInstall from "./pages/AppInstall";
 
 const queryClient = new QueryClient();
 
@@ -100,6 +101,7 @@ const App = () => (
                 <Dashboard />
               </ProtectedRoute>
             } />
+            <Route path="/app-install" element={<AppInstall />} />
             <Route path="/crm" element={
               <ProtectedRoute>
                 <Navigate to="/dashboard" replace />

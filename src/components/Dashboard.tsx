@@ -26,7 +26,8 @@ import {
   DollarSign,
   Menu,
   X,
-  BarChart3
+  BarChart3,
+  Smartphone
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
@@ -248,6 +249,19 @@ export function Dashboard() {
               >
                 <User className="h-4 w-4" />
                 <span className="hidden sm:inline">Account</span>
+              </Button>
+              
+              {/* Get App Button */}
+              <Button 
+                variant="outline" 
+                size="sm"
+                asChild
+                className="flex items-center gap-2 hover:bg-primary/10 transition-colors"
+              >
+                <Link to="/app-install">
+                  <Smartphone className="h-4 w-4" />
+                  <span className="hidden sm:inline">Get App</span>
+                </Link>
               </Button>
               
               {isAdmin && (
