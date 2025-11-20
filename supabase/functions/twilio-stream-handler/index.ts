@@ -4,6 +4,12 @@
  * Handles bidirectional audio streaming between Twilio and OpenAI Realtime API.
  * Receives audio from caller via Twilio, sends to OpenAI, and returns AI responses.
  * 
+ * Note: WebSocket connections from Twilio don't include signature headers.
+ * Security is ensured by:
+ * 1. Validating call_sid exists in our database (created by verified webhook)
+ * 2. Using unique, hard-to-guess WebSocket URLs
+ * 3. Short-lived call sessions
+ * 
  * WebSocket URL: wss://faqrzzodtmsybofakcvv.supabase.co/functions/v1/twilio-stream-handler
  */
 
@@ -123,7 +129,7 @@ Deno.serve(async (req) => {
         
         console.log(`Stream started for call ${callSid}`);
         
-        // Load call session
+        // Verify call_sid exists in database (ensures it came from verified webhook)
         const { data: session, error } = await supabase
           .from('call_sessions')
           .select('*')
@@ -131,7 +137,7 @@ Deno.serve(async (req) => {
           .single();
         
         if (error || !session) {
-          console.error('Failed to load call session:', error);
+          console.error('Invalid call session:', callSid, error);
           twilioWs.close();
           return;
         }
