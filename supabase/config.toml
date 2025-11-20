@@ -63,6 +63,9 @@ verify_jwt = false
 [functions.twilio-voice-fallback]
 verify_jwt = false
 
+[functions.twilio-voice-status]
+verify_jwt = false
+
 [functions.twilio-stream-handler]
 verify_jwt = false
 
