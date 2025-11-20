@@ -48,13 +48,24 @@ function mulawToPCM16(mulawData: Uint8Array): string {
     pcm8k[i] = Math.max(-32768, Math.min(32767, sample));
   }
   
-  // Upsample from 8kHz to 24kHz (repeat each sample 3 times)
+  // Upsample from 8kHz to 24kHz using linear interpolation
   const pcm24k = new Int16Array(pcm8k.length * 3);
-  for (let i = 0; i < pcm8k.length; i++) {
-    const sample = pcm8k[i];
-    pcm24k[i * 3] = sample;
-    pcm24k[i * 3 + 1] = sample;
-    pcm24k[i * 3 + 2] = sample;
+  for (let i = 0; i < pcm8k.length - 1; i++) {
+    const current = pcm8k[i];
+    const next = pcm8k[i + 1];
+    
+    // First sample is the original
+    pcm24k[i * 3] = current;
+    // Interpolate two samples between current and next
+    pcm24k[i * 3 + 1] = Math.round(current + (next - current) / 3);
+    pcm24k[i * 3 + 2] = Math.round(current + (next - current) * 2 / 3);
+  }
+  // Handle last sample
+  if (pcm8k.length > 0) {
+    const lastIdx = pcm8k.length - 1;
+    pcm24k[lastIdx * 3] = pcm8k[lastIdx];
+    pcm24k[lastIdx * 3 + 1] = pcm8k[lastIdx];
+    pcm24k[lastIdx * 3 + 2] = pcm8k[lastIdx];
   }
   
   // Convert to base64
@@ -92,10 +103,12 @@ function pcm16ToMulaw(base64PCM: string): Uint8Array {
     }
   }
   
-  // Downsample from 24kHz to 8kHz (take every 3rd sample)
+  // Downsample from 24kHz to 8kHz using averaging for anti-aliasing
   const pcm8k: number[] = [];
   for (let i = 0; i < pcm24k.length; i += 3) {
-    pcm8k.push(pcm24k[i]);
+    // Average 3 samples to reduce aliasing
+    const avg = Math.round((pcm24k[i] + (pcm24k[i + 1] || pcm24k[i]) + (pcm24k[i + 2] || pcm24k[i])) / 3);
+    pcm8k.push(avg);
   }
   
   // Convert PCM16 to mulaw
