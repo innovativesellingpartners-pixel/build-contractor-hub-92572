@@ -22,6 +22,62 @@ const corsHeaders = {
 };
 
 /**
+ * Verify Twilio webhook signature using Web Crypto API
+ */
+async function verifyTwilioSignature(
+  authToken: string,
+  signature: string,
+  url: string,
+  params: URLSearchParams
+): Promise<boolean> {
+  try {
+    // Build the signature string: URL + sorted params
+    let signatureString = url;
+    
+    // Sort parameters alphabetically and append
+    const sortedKeys = Array.from(params.keys()).sort();
+    for (const key of sortedKeys) {
+      signatureString += key + params.get(key);
+    }
+    
+    // Create HMAC-SHA1 signature using Web Crypto API
+    const encoder = new TextEncoder();
+    const keyData = encoder.encode(authToken);
+    const messageData = encoder.encode(signatureString);
+    
+    const cryptoKey = await crypto.subtle.importKey(
+      'raw',
+      keyData,
+      { name: 'HMAC', hash: 'SHA-1' },
+      false,
+      ['sign']
+    );
+    
+    const signatureBuffer = await crypto.subtle.sign(
+      'HMAC',
+      cryptoKey,
+      messageData
+    );
+    
+    // Convert to base64
+    const signatureArray = new Uint8Array(signatureBuffer);
+    const expectedSignature = btoa(String.fromCharCode(...signatureArray));
+    
+    console.log('Signature verification:', {
+      url,
+      expected: expectedSignature,
+      received: signature,
+      match: expectedSignature === signature
+    });
+    
+    return expectedSignature === signature;
+  } catch (error) {
+    console.error('Error verifying signature:', error);
+    return false;
+  }
+}
+
+/**
  * Normalize phone number to E.164 format
  */
 function normalizePhoneNumber(phone: string): string {
@@ -81,15 +137,34 @@ serve(async (req) => {
       return new Response('Method Not Allowed', { status: 405 });
     }
 
+    // Verify Twilio signature
+    const twilioSignature = req.headers.get('X-Twilio-Signature');
+    const twilioAuthToken = Deno.env.get('TWILIO_AUTH_TOKEN');
+    
+    if (!twilioAuthToken) {
+      console.error('TWILIO_AUTH_TOKEN not configured');
+      return new Response('Server configuration error', { status: 500 });
+    }
+
     const formData = await req.text();
     const params = new URLSearchParams(formData);
+    
+    // Construct the full URL
+    const url = new URL(req.url);
+    const fullUrl = `https://${url.host}${url.pathname}`;
+    
+    // Verify signature
+    if (!twilioSignature || !(await verifyTwilioSignature(twilioAuthToken, twilioSignature, fullUrl, params))) {
+      console.error('Invalid Twilio signature');
+      return new Response('Unauthorized', { status: 401 });
+    }
     
     const from = params.get('From') || '';
     const to = params.get('To') || '';
     const callSid = params.get('CallSid') || '';
     const callStatus = params.get('CallStatus') || '';
 
-    console.log('Twilio webhook:', { from, to, callSid, callStatus });
+    console.log('Verified Twilio webhook:', { from, to, callSid, callStatus });
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
