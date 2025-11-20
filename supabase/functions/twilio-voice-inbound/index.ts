@@ -176,10 +176,26 @@ serve(async (req) => {
     
     console.log('Signature verification:', { signatureValid, validUrl, hasSignature: !!twilioSignature });
     
-    // For now, log but don't block on signature verification to avoid breaking calls
-    // TODO: Re-enable strict verification once Twilio webhook URL is confirmed
-    if (!signatureValid && twilioSignature) {
-      console.warn('Signature verification failed, but allowing request. Check Twilio webhook URL configuration.');
+    // Strict signature verification enabled for security
+    if (!twilioSignature) {
+      console.error('Missing Twilio signature header');
+      const errorTwiml = `<?xml version="1.0" encoding="UTF-8"?><Response><Say>Unauthorized request. Missing signature.</Say></Response>`;
+      return new Response(errorTwiml, { 
+        status: 403,
+        headers: { 'Content-Type': 'application/xml' }
+      });
+    }
+    
+    if (!signatureValid) {
+      console.error('Invalid Twilio signature', { 
+        attemptedUrls: possibleUrls,
+        hint: 'Verify Twilio webhook URL is set to: https://faqrzzodtmsybofakcvv.supabase.co/functions/v1/twilio-voice-inbound'
+      });
+      const errorTwiml = `<?xml version="1.0" encoding="UTF-8"?><Response><Say>Unauthorized request. Invalid signature.</Say></Response>`;
+      return new Response(errorTwiml, { 
+        status: 403,
+        headers: { 'Content-Type': 'application/xml' }
+      });
     }
     
     const from = params.get('From') || '';
