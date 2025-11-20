@@ -109,6 +109,42 @@ export type Database = {
           },
         ]
       }
+      calendar_connections: {
+        Row: {
+          access_token_encrypted: string
+          calendar_email: string
+          created_at: string | null
+          expires_at: string
+          id: string
+          provider: string
+          refresh_token_encrypted: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          access_token_encrypted: string
+          calendar_email: string
+          created_at?: string | null
+          expires_at: string
+          id?: string
+          provider: string
+          refresh_token_encrypted: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          access_token_encrypted?: string
+          calendar_email?: string
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          provider?: string
+          refresh_token_encrypted?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       calendar_events: {
         Row: {
           contractor_id: string
@@ -807,6 +843,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      email_connections: {
+        Row: {
+          access_token_encrypted: string
+          created_at: string | null
+          email_address: string
+          expires_at: string
+          id: string
+          provider: string
+          refresh_token_encrypted: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          access_token_encrypted: string
+          created_at?: string | null
+          email_address: string
+          expires_at: string
+          id?: string
+          provider: string
+          refresh_token_encrypted: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          access_token_encrypted?: string
+          created_at?: string | null
+          email_address?: string
+          expires_at?: string
+          id?: string
+          provider?: string
+          refresh_token_encrypted?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       email_logs: {
         Row: {
@@ -2823,6 +2895,30 @@ export type Database = {
       get_user_tier: { Args: { user_id: string }; Returns: string }
       has_full_access: { Args: { user_id: string }; Returns: boolean }
       has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
+      store_calendar_tokens: {
+        Args: {
+          p_access_token: string
+          p_email: string
+          p_encryption_key: string
+          p_expires_at: string
+          p_provider: string
+          p_refresh_token: string
+          p_user_id: string
+        }
+        Returns: undefined
+      }
+      store_email_tokens: {
+        Args: {
+          p_access_token: string
+          p_email: string
+          p_encryption_key: string
+          p_expires_at: string
+          p_provider: string
+          p_refresh_token: string
+          p_user_id: string
+        }
+        Returns: undefined
+      }
       store_quickbooks_tokens: {
         Args: {
           p_access_token: string
