@@ -16,7 +16,7 @@ export default function CRMDashboard({ onSectionChange }: CRMDashboardProps) {
   const { leads } = useLeads();
   const { customers } = useCustomers();
 
-  const navigationTiles = [
+  const mainModules = [
     { 
       id: 'estimates' as Section, 
       label: 'Estimates', 
@@ -49,6 +49,9 @@ export default function CRMDashboard({ onSectionChange }: CRMDashboardProps) {
       borderColor: 'border-orange-400',
       description: 'New prospects'
     },
+  ];
+
+  const communicationModules = [
     { 
       id: 'calls' as Section, 
       label: 'Calls', 
@@ -91,29 +94,57 @@ export default function CRMDashboard({ onSectionChange }: CRMDashboardProps) {
           <p className="text-sm sm:text-base text-muted-foreground">Navigate to your workspace</p>
         </div>
 
-        {/* Navigation Tiles */}
+        {/* Main Navigation Tiles */}
         {onSectionChange && (
-          <div className="grid grid-cols-2 gap-3 w-full">
-            {navigationTiles.map((tile) => (
-              <Card
-                key={tile.id}
-                className={cn(
-                  'cursor-pointer transition-all duration-200 bg-gradient-to-br border-2',
-                  tile.gradient, tile.borderColor,
-                  'hover:shadow-2xl hover:scale-105 active:scale-95 text-white'
-                )}
-                onClick={() => onSectionChange(tile.id)}
-              >
-                <CardContent className="p-6 flex flex-col items-center justify-center gap-3 min-h-[120px]">
-                  <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur flex items-center justify-center">
-                    <tile.icon className="h-7 w-7 text-white" />
-                  </div>
-                  <span className="font-semibold text-center text-white">{tile.label}</span>
-                  <p className="text-xs text-white/80 text-center">{tile.description}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-2 gap-3 w-full">
+              {mainModules.map((tile) => (
+                <Card
+                  key={tile.id}
+                  className={cn(
+                    'cursor-pointer transition-all duration-200 bg-gradient-to-br border-2',
+                    tile.gradient, tile.borderColor,
+                    'hover:shadow-2xl hover:scale-105 active:scale-95 text-white'
+                  )}
+                  onClick={() => onSectionChange(tile.id)}
+                >
+                  <CardContent className="p-6 flex flex-col items-center justify-center gap-3 min-h-[120px]">
+                    <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur flex items-center justify-center">
+                      <tile.icon className="h-7 w-7 text-white" />
+                    </div>
+                    <span className="font-semibold text-center text-white">{tile.label}</span>
+                    <p className="text-xs text-white/80 text-center">{tile.description}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Communication & Financial Modules */}
+            <div className="mt-6">
+              <h2 className="text-lg sm:text-xl font-semibold mb-3">Communication & Financials</h2>
+              <div className="grid grid-cols-2 gap-3 w-full">
+                {communicationModules.map((tile) => (
+                  <Card
+                    key={tile.id}
+                    className={cn(
+                      'cursor-pointer transition-all duration-200 bg-gradient-to-br border-2',
+                      tile.gradient, tile.borderColor,
+                      'hover:shadow-2xl hover:scale-105 active:scale-95 text-white'
+                    )}
+                    onClick={() => onSectionChange(tile.id)}
+                  >
+                    <CardContent className="p-6 flex flex-col items-center justify-center gap-3 min-h-[120px]">
+                      <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur flex items-center justify-center">
+                        <tile.icon className="h-7 w-7 text-white" />
+                      </div>
+                      <span className="font-semibold text-center text-white">{tile.label}</span>
+                      <p className="text-xs text-white/80 text-center">{tile.description}</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          </>
         )}
       </div>
     </div>
