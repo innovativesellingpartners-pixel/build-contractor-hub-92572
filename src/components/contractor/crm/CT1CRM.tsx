@@ -62,13 +62,15 @@ const navItems = [
   // Persist active section in sessionStorage
   const getInitialSection = (): Section => {
     const saved = sessionStorage.getItem('ct1CrmActiveSection') as Section | null;
-    // Always default to 'dashboard' to show 6-module view
+    // Default to 'dashboard' for 4-tile landing
     return saved || 'dashboard';
   };
   
   const getInitialLandingState = (): boolean => {
-    // Never show the mobile landing page - always show the 6-module dashboard
-    return false;
+    const saved = sessionStorage.getItem('ct1CrmShowLanding');
+    // Show landing by default if on dashboard
+    if (saved === null) return true;
+    return saved === 'true';
   };
   
   const [activeSection, setActiveSection] = useState<Section>(getInitialSection);
@@ -82,9 +84,15 @@ const navItems = [
     setActiveSection(section);
     sessionStorage.setItem('ct1CrmActiveSection', section);
     
-    // Never show mobile landing page - always show dashboard with 6 modules
-    setShowMobileLanding(false);
-    sessionStorage.setItem('ct1CrmShowLanding', 'false');
+    // Hide landing page when navigating to any non-dashboard section
+    if (section !== 'dashboard' && showMobileLanding) {
+      setShowMobileLanding(false);
+      sessionStorage.setItem('ct1CrmShowLanding', 'false');
+    } else if (section === 'dashboard') {
+      // Show landing page when explicitly navigating back to dashboard
+      setShowMobileLanding(true);
+      sessionStorage.setItem('ct1CrmShowLanding', 'true');
+    }
     
     if (isMobile) {
       setMobileMenuOpen(false);

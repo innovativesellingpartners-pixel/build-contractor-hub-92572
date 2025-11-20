@@ -98,9 +98,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (error) {
         console.error('Error getting session:', error);
-        // Even on error, ensure loading is complete
-        setLoading(false);
-        return;
       }
       console.log('Initial session check:', { hasSession: !!session, hasUser: !!session?.user });
       
@@ -116,24 +113,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(false);
     });
 
-    // Handle app resume for PWA (e.g., when app comes back from background)
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible' && isPWA) {
-        supabase.auth.getSession().then(({ data: { session } }) => {
-          if (session) {
-            setSession(session);
-            setUser(session.user);
-          }
-        });
-      }
-    };
-    
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    return () => {
-      subscription.unsubscribe();
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
+    return () => subscription.unsubscribe();
   }, []);
 
   const signIn = async (email: string, password: string, rememberMe: boolean = false) => {
