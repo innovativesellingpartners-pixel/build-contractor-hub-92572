@@ -1,5 +1,18 @@
-const CACHE_NAME = "ct1-static-v1";
+const CACHE_NAME = "ct1-static-v2";
 const URLS_TO_CACHE = ["/", "/offline.html"];
+
+// Don't cache these - they need fresh auth tokens
+const EXCLUDED_URLS = [
+  'supabase.co',
+  '/auth/',
+  '/rest/v1/',
+  '/storage/v1/',
+  '/functions/v1/'
+];
+
+function shouldBypassCache(url) {
+  return EXCLUDED_URLS.some(excluded => url.includes(excluded));
+}
 
 self.addEventListener("install", event => {
   event.waitUntil(
@@ -7,6 +20,7 @@ self.addEventListener("install", event => {
       return cache.addAll(URLS_TO_CACHE);
     })
   );
+  self.skipWaiting();
 });
 
 self.addEventListener("activate", event => {
@@ -19,15 +33,26 @@ self.addEventListener("activate", event => {
       );
     })
   );
+  self.clients.claim();
 });
 
 self.addEventListener("fetch", event => {
+  const url = event.request.url;
+  
+  // Always bypass cache for auth-related requests
+  if (shouldBypassCache(url)) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
+  // For other requests, try network first, then cache
   event.respondWith(
-    fetch(event.request).catch(() => {
-      return caches.match(event.request).then(response => {
-        if (response) return response;
-        return caches.match("/offline.html");
-      });
-    })
+    fetch(event.request)
+      .catch(() => {
+        return caches.match(event.request).then(response => {
+          if (response) return response;
+          return caches.match("/offline.html");
+        });
+      })
   );
 });
