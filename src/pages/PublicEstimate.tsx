@@ -41,24 +41,25 @@ export default function PublicEstimate() {
 
   const fetchEstimate = async () => {
     try {
-      const { data, error } = await supabase
-        .from('estimates')
-        .select('*')
-        .eq('public_token', token)
-        .single();
+      const { data, error } = await supabase.functions.invoke('get-public-estimate', {
+        body: { token }
+      });
 
       if (error) throw error;
       
-      setEstimate(data);
-      setSigned(!!data.signed_at);
-
-      // Update viewed_at if not already viewed
-      if (!data.viewed_at) {
-        await supabase
-          .from('estimates')
-          .update({ viewed_at: new Date().toISOString() })
-          .eq('id', data.id);
+      if (data.rate_limited) {
+        toast.error('Too many requests. Please try again in an hour.');
+        setLoading(false);
+        return;
       }
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+      
+      const estimateData = data.estimate;
+      setEstimate(estimateData);
+      setSigned(!!estimateData.signed_at);
     } catch (error) {
       console.error('Error fetching estimate:', error);
       toast.error('Failed to load estimate');
@@ -68,14 +69,7 @@ export default function PublicEstimate() {
   };
 
   const logView = async () => {
-    try {
-      await supabase.from('estimate_views').insert({
-        estimate_id: estimate?.id,
-        user_agent: navigator.userAgent,
-      });
-    } catch (error) {
-      console.error('Error logging view:', error);
-    }
+    // View logging is now handled by the edge function
   };
 
   const handleSign = async () => {

@@ -13,9 +13,31 @@ serve(async (req) => {
   try {
     const { prompt } = await req.json();
 
-    if (!prompt) {
-      throw new Error('Prompt is required');
+    // Input validation
+    if (!prompt || typeof prompt !== 'string') {
+      return new Response(
+        JSON.stringify({ error: 'Invalid prompt format' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
+
+    if (prompt.length > 5000) {
+      return new Response(
+        JSON.stringify({ error: 'Prompt exceeds 5000 character limit' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const trimmedPrompt = prompt.trim();
+    if (trimmedPrompt.length === 0) {
+      return new Response(
+        JSON.stringify({ error: 'Prompt cannot be empty' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Sanitize: remove control characters
+    const sanitizedPrompt = trimmedPrompt.replace(/[\x00-\x1F\x7F]/g, '');
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
@@ -50,7 +72,7 @@ For costs, convert phrases like "25k", "$25,000", "twenty-five thousand" to nume
           },
           {
             role: 'user',
-            content: prompt
+            content: sanitizedPrompt
           }
         ],
         tools: [
