@@ -24,7 +24,7 @@ export const AdminLayout = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b bg-card px-6 py-4">
+      <header className="border-b bg-card px-6 py-4" style={{ paddingTop: "env(safe-area-inset-top)" }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img src={ct1Logo} alt="CT1 Logo" className="h-10 w-10" />
