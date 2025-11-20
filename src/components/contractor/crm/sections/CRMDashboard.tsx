@@ -53,17 +53,25 @@ export default function CRMDashboard({ onSectionChange }: CRMDashboardProps) {
       id: 'emails' as Section, 
       label: 'Email', 
       icon: Mail, 
-      gradient: 'from-cyan-500 to-cyan-600',
-      borderColor: 'border-cyan-400',
+      gradient: 'from-yellow-500 to-yellow-600',
+      borderColor: 'border-yellow-400',
       description: 'Email communications'
     },
     { 
       id: 'financials' as Section, 
       label: 'Financials', 
       icon: DollarSign, 
-      gradient: 'from-emerald-500 to-emerald-600',
-      borderColor: 'border-emerald-400',
+      gradient: 'from-amber-600 to-amber-700',
+      borderColor: 'border-amber-500',
       description: 'Reports & analytics'
+    },
+    { 
+      id: 'calendar' as Section, 
+      label: 'Calendar', 
+      icon: Calendar, 
+      gradient: 'from-yellow-600 to-amber-600',
+      borderColor: 'border-yellow-500',
+      description: 'Schedule & events'
     },
   ];
 
