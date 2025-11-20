@@ -15,8 +15,18 @@ serve(async (req) => {
   }
 
   try {
+    // Support both query param (GET) and JSON body (POST via supabase.functions.invoke)
     const url = new URL(req.url);
-    const token = url.searchParams.get('token');
+    let token = url.searchParams.get('token');
+
+    if (!token && req.method === 'POST') {
+      try {
+        const body = await req.json();
+        token = body?.token || null;
+      } catch (_) {
+        // ignore body parse errors for non-JSON requests
+      }
+    }
     
     if (!token) {
       return new Response(
