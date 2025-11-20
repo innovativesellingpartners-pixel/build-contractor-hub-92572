@@ -693,6 +693,20 @@ function SidebarNav({ activeSection, setActiveSection, tierFeatures }: SidebarNa
         </Button>
       )}
       
+      {tierFeatures.aiAssistant && (
+        <Button
+          variant={activeSection === 'voiceai' ? 'default' : 'ghost'}
+          className={`w-full justify-start transition-all ${
+            activeSection === 'voiceai' 
+              ? 'shadow-md' 
+              : 'hover:bg-red-50 hover:border-red-500 hover:text-black border border-transparent'
+          }`}
+          onClick={() => setActiveSection('voiceai')}
+        >
+          <Bot className="h-4 w-4 mr-3" />
+          AI Voice Assistant
+        </Button>
+      )}
       
       {tierFeatures.leads && (
         <Button

@@ -162,7 +162,7 @@ Deno.serve(async (req) => {
   }
 
   const { socket: twilioWs, response } = Deno.upgradeWebSocket(req);
-  let openaiWs: any = null;
+  let openaiWs: WebSocket | null = null;
   let callSid = '';
   let streamSid = '';
   let callSession: CallSession | null = null;
@@ -258,149 +258,172 @@ Deno.serve(async (req) => {
           console.log(`Unsupported voice_id '${voiceId}', defaulting to 'alloy'`);
           voiceId = 'alloy';
         }
-
-        // Prefer a warmer, more upbeat female voice when using the default
-        if (voiceId === 'alloy') {
-          console.log('Using default voice; switching to more upbeat "verse" voice for a friendlier tone');
-          voiceId = 'verse';
-        }
         
-        // Connect directly to OpenAI Realtime API using API key
-        if (!OPENAI_API_KEY) {
-          console.error('OPENAI_API_KEY is not configured');
+        // Get ephemeral token from OpenAI for Realtime API
+        // This allows WebSocket connection without custom headers
+        console.log('Requesting ephemeral token from OpenAI...');
+        const tokenResponse = await fetch('https://api.openai.com/v1/realtime/sessions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${OPENAI_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'gpt-4o-realtime-preview-2024-12-17',
+            voice: voiceId,
+          })
+        });
+
+        if (!tokenResponse.ok) {
+          const errorText = await tokenResponse.text();
+          console.error('Failed to get ephemeral token:', errorText);
           twilioWs.close();
           return;
         }
 
-        const model = 'gpt-4o-realtime-preview-2024-12-17';
-        console.log('Connecting to OpenAI Realtime API...');
+        const tokenData = await tokenResponse.json();
+        const ephemeralKey = tokenData.client_secret.value;
+        console.log('Ephemeral token obtained');
 
-        try {
-          // Use query param "authorization" since we can't set headers on WebSocket
-          // Format: authorization=Bearer <API_KEY>
-          const authParam = encodeURIComponent(`Bearer ${OPENAI_API_KEY}`);
-          openaiWs = new WebSocket(
-            `wss://api.openai.com/v1/realtime?model=${model}&authorization=${authParam}`
-          );
-
-          openaiWs.onopen = () => {
-            console.log('Connected to OpenAI Realtime API');
-          };
-
-          openaiWs.onmessage = async (openaiEvent: MessageEvent) => {
-            const openaiMessage = JSON.parse(openaiEvent.data);
-
-            // Handle session.created - configure session
-            if (openaiMessage.type === 'session.created') {
-              console.log('OpenAI session created, configuring...');
-
-              openaiWs!.send(JSON.stringify({
-                type: 'session.update',
-                session: {
-                  modalities: ['text', 'audio'],
-                  instructions: `${config.system_prompt || ''}\n\nSpeaking style: You are "Sarah", a warm, upbeat and highly personable assistant.\n- Sound clear and confident, with a friendly tone.\n- Be empathetic and conversational, like a great office receptionist.\n- Do NOT interrupt the caller right after saying "tell me what's going on" – always wait for them to finish.\n- Avoid over‑apologizing; only say "I'm sorry" when something truly went wrong.`,
-                  voice: voiceId,
-                  input_audio_format: 'pcm16',
-                  output_audio_format: 'pcm16',
-                  input_audio_transcription: {
-                    model: 'whisper-1'
-                  },
-                  turn_detection: {
-                    type: 'server_vad',
-                    threshold: 0.6,
-                    prefix_padding_ms: 500,
-                    silence_duration_ms: 2500
-                  },
-                  temperature: 0.8,
-                  max_response_output_tokens: 'inf'
-                }
-              }));
-            }
-
-            // Handle session.updated - send greeting
-            if (openaiMessage.type === 'session.updated' && !hasGreeted) {
-              hasGreeted = true;
-              console.log('Session configured, sending greeting');
-
-              openaiWs!.send(JSON.stringify({
-                type: 'conversation.item.create',
-                item: {
-                  type: 'message',
-                  role: 'user',
-                  content: [{
-                    type: 'input_text',
-                    text: '[System: Start the conversation by greeting the caller with: ' + config.greeting + ']'
-                  }]
-                }
-              }));
-
-              openaiWs!.send(JSON.stringify({
-                type: 'response.create'
-              }));
-            }
-
-            // Handle audio output from AI
-            if (openaiMessage.type === 'response.audio.delta') {
-              const mulawData = pcm16ToMulaw(openaiMessage.delta);
-              const base64Mulaw = btoa(String.fromCharCode(...mulawData));
-
-              twilioWs.send(JSON.stringify({
-                event: 'media',
-                streamSid: streamSid,
-                media: {
-                  payload: base64Mulaw
-                }
-              }));
-            }
-
-            // Log transcripts
-            if (openaiMessage.type === 'conversation.item.input_audio_transcription.completed') {
-              console.log('User said:', openaiMessage.transcript);
-
-              if (callSession) {
-                const history = callSession.conversation_history || [];
-                history.push({ role: 'user', content: openaiMessage.transcript });
-                await supabase
-                  .from('call_sessions')
-                  .update({ conversation_history: history })
-                  .eq('call_sid', callSid);
+        // Connect to OpenAI using ephemeral token as WebSocket subprotocol
+        // This is the correct way for Deno's WebSocket constructor
+        const openaiUrl = `wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-12-17`;
+        
+        console.log('Connecting to OpenAI WebSocket...');
+        openaiWs = new WebSocket(openaiUrl, [
+          'realtime',
+          `openai-insecure-api-key.${ephemeralKey}`,
+          'openai-beta.realtime-v1'
+        ]);
+        
+        // Store session config for later use
+        const sessionConfig = {
+          system_prompt: config.system_prompt,
+          voice_id: voiceId,
+          greeting: config.greeting
+        };
+        
+        openaiWs.onopen = () => {
+          console.log('OpenAI WebSocket connected');
+        };
+        
+        openaiWs.onmessage = async (openaiEvent) => {
+          const openaiMessage = JSON.parse(openaiEvent.data);
+          
+          // Handle session.created - configure session
+          if (openaiMessage.type === 'session.created') {
+            console.log('OpenAI session created, configuring...');
+            
+            // Send session configuration
+            openaiWs!.send(JSON.stringify({
+              type: 'session.update',
+              session: {
+                modalities: ['text', 'audio'],
+                instructions: config.system_prompt,
+                voice: voiceId,
+                input_audio_format: 'pcm16',
+                output_audio_format: 'pcm16',
+                input_audio_transcription: {
+                  model: 'whisper-1'
+                },
+                turn_detection: {
+                  type: 'server_vad',
+                  threshold: 0.6,              // Less sensitive - won't cut off as easily
+                  prefix_padding_ms: 500,      // Capture more at the start
+                  silence_duration_ms: 2500    // Wait 2.5s before assuming user is done
+                },
+                temperature: 0.8,
+                max_response_output_tokens: 'inf'
               }
-            }
-
-            if (openaiMessage.type === 'response.audio_transcript.done') {
-              console.log('AI said:', openaiMessage.transcript);
-
-              if (callSession) {
-                const history = callSession.conversation_history || [];
-                history.push({ role: 'assistant', content: openaiMessage.transcript });
-                await supabase
-                  .from('call_sessions')
-                  .update({ conversation_history: history })
-                  .eq('call_sid', callSid);
+            }));
+          }
+          
+          // Handle session.updated - send greeting
+          if (openaiMessage.type === 'session.updated' && !hasGreeted) {
+            hasGreeted = true;
+            console.log('Session configured, sending greeting');
+            
+            // Send greeting as a conversation item
+            openaiWs!.send(JSON.stringify({
+              type: 'conversation.item.create',
+              item: {
+                type: 'message',
+                role: 'user',
+                content: [{
+                  type: 'input_text',
+                  text: '[System: Start the conversation by greeting the caller with: ' + config.greeting + ']'
+                }]
               }
+            }));
+            
+            // Trigger response
+            openaiWs!.send(JSON.stringify({
+              type: 'response.create'
+            }));
+          }
+          
+          // Handle audio output from AI
+          if (openaiMessage.type === 'response.audio.delta') {
+            // Convert PCM16 to mulaw and send to Twilio
+            const mulawData = pcm16ToMulaw(openaiMessage.delta);
+            const base64Mulaw = btoa(String.fromCharCode(...mulawData));
+            
+            twilioWs.send(JSON.stringify({
+              event: 'media',
+              streamSid: streamSid,
+              media: {
+                payload: base64Mulaw
+              }
+            }));
+          }
+          
+          // Log transcripts
+          if (openaiMessage.type === 'conversation.item.input_audio_transcription.completed') {
+            console.log('User said:', openaiMessage.transcript);
+            
+            // Store in conversation history
+            if (callSession) {
+              const history = callSession.conversation_history || [];
+              history.push({ role: 'user', content: openaiMessage.transcript });
+              await supabase
+                .from('call_sessions')
+                .update({ conversation_history: history })
+                .eq('call_sid', callSid);
             }
-
-            if (openaiMessage.type === 'error') {
-              console.error('OpenAI error:', openaiMessage);
+          }
+          
+          if (openaiMessage.type === 'response.audio_transcript.done') {
+            console.log('AI said:', openaiMessage.transcript);
+            
+            // Store in conversation history
+            if (callSession) {
+              const history = callSession.conversation_history || [];
+              history.push({ role: 'assistant', content: openaiMessage.transcript });
+              await supabase
+                .from('call_sessions')
+                .update({ conversation_history: history })
+                .eq('call_sid', callSid);
             }
-          };
-
-          openaiWs.onerror = (error: unknown) => {
-            console.error('OpenAI WebSocket error:', error);
-          };
-
-          openaiWs.onclose = () => {
-            console.log('OpenAI WebSocket closed');
-          };
-        } catch (error) {
-          console.error('Failed to connect to OpenAI Realtime API:', error);
-          twilioWs.close();
-          return;
-        }
+          }
+          
+          // Log errors
+          if (openaiMessage.type === 'error') {
+            console.error('OpenAI error:', openaiMessage);
+          }
+        };
+        
+        openaiWs.onerror = (error) => {
+          console.error('OpenAI WebSocket error:', error);
+        };
+        
+        openaiWs.onclose = () => {
+          console.log('OpenAI WebSocket closed');
+        };
       }
       
       // Handle incoming audio from caller
       if (message.event === 'media' && openaiWs && openaiWs.readyState === WebSocket.OPEN) {
+        // Decode mulaw audio from Twilio
         const mulawBase64 = message.media.payload;
         const mulawBinary = atob(mulawBase64);
         const mulawData = new Uint8Array(mulawBinary.length);
@@ -408,6 +431,7 @@ Deno.serve(async (req) => {
           mulawData[i] = mulawBinary.charCodeAt(i);
         }
         
+        // Convert to PCM16 and send to OpenAI
         const pcm16Base64 = mulawToPCM16(mulawData);
         
         openaiWs.send(JSON.stringify({
@@ -423,6 +447,7 @@ Deno.serve(async (req) => {
           openaiWs.close();
         }
         
+        // Update call session
         await supabase
           .from('call_sessions')
           .update({ status: 'completed' })
@@ -437,13 +462,13 @@ Deno.serve(async (req) => {
   twilioWs.onerror = (error) => {
     console.error('Twilio WebSocket error:', error);
   };
-  
+
   twilioWs.onclose = () => {
     console.log('Twilio WebSocket closed');
     if (openaiWs) {
       openaiWs.close();
     }
   };
-  
+
   return response;
 });
