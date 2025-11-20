@@ -154,6 +154,38 @@ serve(async (req) => {
     }
 
     const { messages } = await req.json();
+    
+    // Input validation for messages
+    if (!messages || !Array.isArray(messages)) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid messages format' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (messages.length > 50) {
+      return new Response(
+        JSON.stringify({ error: 'Message history exceeds 50 messages limit' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate and sanitize each message
+    const sanitizedMessages = messages.slice(-20).map((msg: any) => {
+      if (!msg.role || !msg.content || typeof msg.content !== 'string') {
+        throw new Error('Invalid message structure');
+      }
+      
+      if (msg.content.length > 10000) {
+        throw new Error('Individual message exceeds 10000 character limit');
+      }
+      
+      return {
+        role: msg.role,
+        content: msg.content.replace(/[\x00-\x1F\x7F]/g, '').substring(0, 10000)
+      };
+    });
+    
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {
@@ -203,7 +235,7 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You are CT1 Pocketbot, an expert AI assistant specializing in helping contractors grow their business. 
+            content: `You are CT1 Pocketbot, an expert AI assistant specializing in helping contractors grow their business.
 
 IMPORTANT: You ONLY provide guidance on these specific topics:
 - Trades and construction work
