@@ -204,7 +204,10 @@ export function Dashboard() {
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex flex-col">
       {/* Top Navigation Bar */}
-      <div className="bg-card/80 backdrop-blur-sm border-b shadow-sm sticky top-0 z-40">
+      <div
+        className="bg-card/80 backdrop-blur-sm border-b shadow-sm sticky top-0 z-40"
+        style={{ paddingTop: "env(safe-area-inset-top)" }}
+      >
         <div className="container mx-auto px-4 md:px-6 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 md:gap-4">
