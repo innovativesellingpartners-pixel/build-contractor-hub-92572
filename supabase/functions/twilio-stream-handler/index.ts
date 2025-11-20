@@ -298,13 +298,7 @@ Deno.serve(async (req) => {
         // Connect to OpenAI Realtime API with ephemeral token
         const model = 'gpt-4o-realtime-preview-2024-12-17';
         openaiWs = new WebSocket(
-          `wss://api.openai.com/v1/realtime?model=${model}`,
-          {
-            headers: {
-              'Authorization': `Bearer ${ephemeralKey}`,
-              'OpenAI-Beta': 'realtime=v1'
-            }
-          }
+          `wss://api.openai.com/v1/realtime?model=${model}&api_key=${ephemeralKey}`
         );
         
         openaiWs.onopen = () => {
