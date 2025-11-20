@@ -251,8 +251,11 @@ export function Dashboard() {
               </Button>
               
               {isAdmin && (
-                <Button variant="outline" size="sm" asChild className="hover:bg-primary/10 transition-colors hidden sm:flex">
-                  <Link to="/admin">Admin Dashboard</Link>
+                <Button variant="outline" size="sm" asChild className="hover:bg-primary/10 transition-colors">
+                  <Link to="/admin">
+                    <Shield className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Admin Dashboard</span>
+                  </Link>
                 </Button>
               )}
               <Button variant="ghost" size="sm" onClick={handleLogout} className="hover:bg-destructive/10 hover:text-destructive transition-colors">
