@@ -266,7 +266,6 @@ Deno.serve(async (req) => {
         }
         
         // Get ephemeral token from OpenAI for Realtime API
-        // This allows WebSocket connection without custom headers
         console.log('Requesting ephemeral token from OpenAI...');
         const tokenResponse = await fetch('https://api.openai.com/v1/realtime/sessions', {
           method: 'POST',
@@ -279,8 +278,40 @@ Deno.serve(async (req) => {
             voice: voiceId,
           })
         });
+        
+        if (!tokenResponse.ok) {
+          const errorText = await tokenResponse.text();
+          console.error('Failed to get ephemeral token:', errorText);
+          twilioWs.close();
+          return;
+        }
+        
+        const tokenData = await tokenResponse.json();
+        const ephemeralKey = tokenData.client_secret?.value;
+        
+        if (!ephemeralKey) {
+          console.error('No ephemeral key in response');
+          twilioWs.close();
+          return;
+        }
+        
+        // Connect to OpenAI Realtime API with ephemeral token
+        const model = 'gpt-4o-realtime-preview-2024-12-17';
+        openaiWs = new WebSocket(
+          `wss://api.openai.com/v1/realtime?model=${model}`,
+          {
+            headers: {
+              'Authorization': `Bearer ${ephemeralKey}`,
+              'OpenAI-Beta': 'realtime=v1'
+            }
+          }
+        );
+        
+        openaiWs.onopen = () => {
+          console.log('Connected to OpenAI Realtime API');
+        };
  
-         openaiWs.onmessage = async (openaiEvent: MessageEvent) => {
+        openaiWs.onmessage = async (openaiEvent: MessageEvent) => {
            const openaiMessage = JSON.parse(openaiEvent.data);
            
            // Handle session.created - configure session
