@@ -468,9 +468,7 @@ export function Dashboard() {
 
       {/* Floating Pocketbot Widget */}
       {pocketbotOpen && (
-        <div className="fixed right-4 md:right-6 w-[calc(100vw-2rem)] md:w-[450px] h-[600px] z-[99] animate-in slide-in-from-bottom-4 duration-300" style={{ bottom: pocketbotPosition }}>
-          <FloatingPocketbot onClose={() => setPocketbotOpen(false)} onPositionChange={setPocketbotPosition} />
-        </div>
+        <FloatingPocketbot onClose={() => setPocketbotOpen(false)} onPositionChange={setPocketbotPosition} />
       )}
       
       {/* Contact Support Dialog */}

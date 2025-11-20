@@ -42,9 +42,35 @@ export function FloatingPocketbot({ onClose, onPositionChange }: FloatingPocketb
   });
   const [showPaywall, setShowPaywall] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
-  const [verticalPosition, setVerticalPosition] = useState(() => {
+  const [position, setPosition] = useState(() => {
     const saved = localStorage.getItem('ct1_pocketbot_position');
-    return saved ? parseInt(saved, 10) : 20;
+    let initialPosition = { x: window.innerWidth - 400, y: 20 };
+    
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        // Validate that saved position is still within viewport
+        const isMobile = window.innerWidth < 768;
+        const cardWidth = isMobile ? window.innerWidth - 32 : 380;
+        const maxX = window.innerWidth - cardWidth;
+        const maxY = window.innerHeight - 200; // Approximate min height
+        
+        // If saved position is valid, use it; otherwise use default
+        if (parsed.x >= 0 && parsed.x <= maxX && parsed.y >= 0 && parsed.y <= maxY) {
+          initialPosition = parsed;
+        } else {
+          // Reset to default for current screen size
+          initialPosition = { 
+            x: isMobile ? 16 : Math.max(0, window.innerWidth - 400), 
+            y: 20 
+          };
+        }
+      } catch {
+        // Keep default position on parse error
+      }
+    }
+    
+    return initialPosition;
   });
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
@@ -85,27 +111,36 @@ export function FloatingPocketbot({ onClose, onPositionChange }: FloatingPocketb
   useEffect(() => {
     // Initialize position on mount
     if (onPositionChange) {
-      onPositionChange(`${verticalPosition}px`);
+      onPositionChange(`${position.y}px`);
     }
   }, []);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      if (!isDragging) return;
+      if (!isDragging || !cardRef.current) return;
       
-      // Calculate position from bottom of viewport
-      const bottomPosition = window.innerHeight - e.clientY - dragOffset.y;
+      const cardWidth = cardRef.current.offsetWidth;
+      const cardHeight = cardRef.current.offsetHeight;
       
-      // Constrain within bounds (min 0, max viewport height - widget height - 80px for nav)
-      const minBottom = 0;
-      const maxBottom = window.innerHeight - (cardRef.current?.offsetHeight || 600) - 80;
-      const constrainedBottom = Math.max(minBottom, Math.min(bottomPosition, maxBottom));
+      // Calculate new position
+      const newX = e.clientX - dragOffset.x;
+      const newY = e.clientY - dragOffset.y;
       
-      setVerticalPosition(constrainedBottom);
-      localStorage.setItem('ct1_pocketbot_position', constrainedBottom.toString());
+      // Constrain within viewport bounds
+      const minX = 0;
+      const maxX = window.innerWidth - cardWidth;
+      const minY = 0;
+      const maxY = window.innerHeight - cardHeight;
+      
+      const constrainedX = Math.max(minX, Math.min(newX, maxX));
+      const constrainedY = Math.max(minY, Math.min(newY, maxY));
+      
+      const newPosition = { x: constrainedX, y: constrainedY };
+      setPosition(newPosition);
+      localStorage.setItem('ct1_pocketbot_position', JSON.stringify(newPosition));
       
       if (onPositionChange) {
-        onPositionChange(`${constrainedBottom}px`);
+        onPositionChange(`${constrainedY}px`);
       }
     };
 
@@ -126,21 +161,32 @@ export function FloatingPocketbot({ onClose, onPositionChange }: FloatingPocketb
 
   useEffect(() => {
     const handleTouchMove = (e: TouchEvent) => {
-      if (!isDragging) return;
+      if (!isDragging || !cardRef.current) return;
       e.preventDefault();
       
       const touch = e.touches[0];
-      const bottomPosition = window.innerHeight - touch.clientY - dragOffset.y;
+      const cardWidth = cardRef.current.offsetWidth;
+      const cardHeight = cardRef.current.offsetHeight;
       
-      const minBottom = 0;
-      const maxBottom = window.innerHeight - (cardRef.current?.offsetHeight || 600) - 80;
-      const constrainedBottom = Math.max(minBottom, Math.min(bottomPosition, maxBottom));
+      // Calculate new position
+      const newX = touch.clientX - dragOffset.x;
+      const newY = touch.clientY - dragOffset.y;
       
-      setVerticalPosition(constrainedBottom);
-      localStorage.setItem('ct1_pocketbot_position', constrainedBottom.toString());
+      // Constrain within viewport bounds
+      const minX = 0;
+      const maxX = window.innerWidth - cardWidth;
+      const minY = 0;
+      const maxY = window.innerHeight - cardHeight;
+      
+      const constrainedX = Math.max(minX, Math.min(newX, maxX));
+      const constrainedY = Math.max(minY, Math.min(newY, maxY));
+      
+      const newPosition = { x: constrainedX, y: constrainedY };
+      setPosition(newPosition);
+      localStorage.setItem('ct1_pocketbot_position', JSON.stringify(newPosition));
       
       if (onPositionChange) {
-        onPositionChange(`${constrainedBottom}px`);
+        onPositionChange(`${constrainedY}px`);
       }
     };
 
@@ -162,11 +208,12 @@ export function FloatingPocketbot({ onClose, onPositionChange }: FloatingPocketb
   const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
     if (!cardRef.current) return;
     
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
     const rect = cardRef.current.getBoundingClientRect();
     
     setDragOffset({
-      x: 0,
+      x: clientX - rect.left,
       y: clientY - rect.top
     });
     setIsDragging(true);
@@ -337,7 +384,15 @@ export function FloatingPocketbot({ onClose, onPositionChange }: FloatingPocketb
 
   if (isMinimized) {
     return (
-      <Card ref={cardRef} className="w-80 shadow-2xl border-2 border-primary/20">
+      <Card 
+        ref={cardRef} 
+        className="w-80 shadow-2xl border-2 border-primary/20 fixed z-50"
+        style={{
+          left: `${position.x}px`,
+          top: `${position.y}px`,
+          touchAction: 'none'
+        }}
+      >
         <div 
           className="bg-gradient-to-r from-primary/10 to-primary/5 p-3 flex items-center justify-between border-b border-primary/20 cursor-move"
           onMouseDown={handleDragStart}
@@ -362,7 +417,17 @@ export function FloatingPocketbot({ onClose, onPositionChange }: FloatingPocketb
   }
 
   return (
-    <Card ref={cardRef} className="h-full flex flex-col shadow-2xl border-2 border-primary/20">
+    <Card 
+      ref={cardRef} 
+      className="h-full flex flex-col shadow-2xl border-2 border-primary/20 fixed z-50"
+      style={{
+        left: `${position.x}px`,
+        top: `${position.y}px`,
+        maxHeight: 'calc(100vh - 40px)',
+        width: window.innerWidth < 768 ? 'calc(100vw - 32px)' : '380px',
+        touchAction: 'none'
+      }}
+    >
       {/* Header */}
       <div 
         className="bg-gradient-to-r from-primary/10 to-primary/5 p-3 md:p-4 border-b border-primary/20 flex-shrink-0 cursor-move"
