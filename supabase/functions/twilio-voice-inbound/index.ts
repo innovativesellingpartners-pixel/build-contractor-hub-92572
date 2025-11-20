@@ -219,7 +219,7 @@ serve(async (req) => {
   <Hangup/>
 </Response>`;
       return new Response(errorTwiml, {
-        headers: { 'Content-Type': 'text/xml', ...corsHeaders }
+        headers: { 'Content-Type': 'application/xml', ...corsHeaders }
       });
     }
 
@@ -239,7 +239,7 @@ serve(async (req) => {
   <Hangup/>
 </Response>`;
       return new Response(voicemailTwiml, {
-        headers: { 'Content-Type': 'text/xml', ...corsHeaders }
+        headers: { 'Content-Type': 'application/xml', ...corsHeaders }
       });
     }
 
@@ -345,8 +345,13 @@ Keep responses concise and conversational. This is a phone call.`;
     const greeting = aiProfile.custom_greeting || 
       `Hello, thank you for calling ${aiProfile.business_name}. This is your ${aiProfile.trade} assistant. How can I help you today?`;
 
-    // Get voice ID (default to 'alloy' if not set)
-    const voiceId = aiProfile.voice_id || 'alloy';
+    // Get voice ID and ensure it's one of the supported OpenAI voices
+    const supportedVoices = ['alloy', 'ash', 'ballad', 'coral', 'echo', 'sage', 'shimmer', 'verse', 'marin', 'cedar'];
+    let voiceId = aiProfile.voice_id || 'alloy';
+    if (!supportedVoices.includes(voiceId)) {
+      console.log(`Unsupported voice_id '${voiceId}' in AI profile, defaulting to 'alloy'`);
+      voiceId = 'alloy';
+    }
 
     // Store configuration in session for WebSocket handler
     await supabase.from('call_sessions').update({
@@ -374,7 +379,7 @@ Keep responses concise and conversational. This is a phone call.`;
 
     console.log('Returning streaming TwiML for call:', callSid);
     return new Response(streamTwiml, {
-      headers: { 'Content-Type': 'text/xml', ...corsHeaders }
+      headers: { 'Content-Type': 'application/xml', ...corsHeaders }
     });
 
   } catch (error) {
@@ -387,7 +392,7 @@ Keep responses concise and conversational. This is a phone call.`;
 </Response>`;
     
     return new Response(errorTwiml, {
-      headers: { 'Content-Type': 'text/xml', ...corsHeaders }
+      headers: { 'Content-Type': 'application/xml', ...corsHeaders }
     });
   }
 });
