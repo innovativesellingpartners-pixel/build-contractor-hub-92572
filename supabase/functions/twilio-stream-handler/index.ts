@@ -315,9 +315,9 @@ Deno.serve(async (req) => {
                 },
                 turn_detection: {
                   type: 'server_vad',
-                  threshold: 0.5,
-                  prefix_padding_ms: 300,
-                  silence_duration_ms: 1000
+                  threshold: 0.6,              // Less sensitive - won't cut off as easily
+                  prefix_padding_ms: 500,      // Capture more at the start
+                  silence_duration_ms: 2500    // Wait 2.5s before assuming user is done
                 },
                 temperature: 0.8,
                 max_response_output_tokens: 'inf'
