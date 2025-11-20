@@ -74,9 +74,13 @@ function PhotosTab({ jobId }: { jobId: string }) {
           photos.map((photo) => (
             <Card key={photo.id} className="overflow-hidden">
               <img
-                src={photo.photo_url}
+                src={photo.signed_url || photo.photo_url}
                 alt={photo.caption || 'Job photo'}
                 className="w-full h-48 object-cover"
+                onError={(e) => {
+                  console.error('Failed to load photo:', photo.id);
+                  e.currentTarget.src = '/placeholder.svg';
+                }}
               />
               <CardContent className="p-3">
                 {photo.caption && <p className="text-sm">{photo.caption}</p>}
