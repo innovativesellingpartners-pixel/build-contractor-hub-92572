@@ -88,8 +88,8 @@ export function MobileLandingPage({
   };
 
   return (
-    <div className="w-full h-full overflow-y-auto overflow-x-hidden pb-20 bg-gradient-to-br from-background via-muted/30 to-background pt-safe">
-      <div className="p-4 sm:p-6 pt-28 w-full max-w-lg mx-auto">
+    <div className="w-full h-full overflow-y-auto overflow-x-hidden pb-20 bg-gradient-to-br from-background via-muted/30 to-background">
+      <div className="p-4 sm:p-6 pt-16 w-full max-w-lg mx-auto">
         {/* 2x2 Grid of Module Cards */}
         <div className="grid grid-cols-2 gap-4 w-full">
           {mobileModules.map((module) => (
