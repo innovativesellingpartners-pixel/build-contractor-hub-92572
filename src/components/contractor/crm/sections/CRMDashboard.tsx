@@ -1,7 +1,7 @@
 import { useLeads } from '@/hooks/useLeads';
 import { useCustomers } from '@/hooks/useCustomers';
 import { Card, CardContent } from '@/components/ui/card';
-import { FileText, Briefcase, Users, ClipboardList, Phone, Mail, Calendar, DollarSign } from 'lucide-react';
+import { FileText, Briefcase, Users, Phone, Mail, Calendar, DollarSign } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 
@@ -64,14 +64,6 @@ export default function CRMDashboard({ onSectionChange }: CRMDashboardProps) {
       gradient: 'from-indigo-500 to-indigo-600',
       borderColor: 'border-indigo-400',
       description: 'Calendar & events'
-    },
-    { 
-      id: 'leads' as Section, 
-      label: 'Leads', 
-      icon: ClipboardList, 
-      gradient: 'from-orange-500 to-orange-600',
-      borderColor: 'border-orange-400',
-      description: 'New prospects'
     },
   ];
 

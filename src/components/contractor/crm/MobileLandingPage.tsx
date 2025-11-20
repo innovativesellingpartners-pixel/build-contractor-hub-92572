@@ -1,4 +1,4 @@
-import { Briefcase, FileText, Users, ClipboardList, Phone, Mail, Calendar, DollarSign } from 'lucide-react';
+import { Briefcase, FileText, Users, Phone, Mail, Calendar } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 
 interface MobileLandingPageProps {
@@ -55,13 +55,6 @@ const mobileModules = [
     icon: Calendar,
     gradient: 'from-indigo-500 via-indigo-600 to-indigo-700',
   },
-  { 
-    id: 'leads',
-    title: 'Leads',
-    description: 'Track opportunities',
-    icon: ClipboardList,
-    gradient: 'from-orange-500 via-orange-600 to-orange-700',
-  },
 ];
 
 export function MobileLandingPage({ 
@@ -94,9 +87,6 @@ export function MobileLandingPage({
         break;
       case 'schedule':
         onNavigateToSchedule?.();
-        break;
-      case 'leads':
-        onNavigateToLeads();
         break;
     }
   };
