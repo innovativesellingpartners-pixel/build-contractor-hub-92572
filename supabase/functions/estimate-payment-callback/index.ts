@@ -22,8 +22,7 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const frontendUrl = Deno.env.get('SUPABASE_URL')?.replace('.supabase.co', '.lovable.app') || 
-                        'https://lovable.app';
+    const frontendUrl = Deno.env.get('APP_URL') || 'https://myct1.com';
 
     if (status === 'success' && sessionId) {
       // Find the payment session
@@ -73,8 +72,7 @@ serve(async (req) => {
     }
   } catch (error) {
     console.error('Callback error:', error);
-    const frontendUrl = Deno.env.get('SUPABASE_URL')?.replace('.supabase.co', '.lovable.app') || 
-                        'https://lovable.app';
+    const frontendUrl = Deno.env.get('APP_URL') || 'https://myct1.com';
     return Response.redirect(
       `${frontendUrl}?payment=error`,
       302
