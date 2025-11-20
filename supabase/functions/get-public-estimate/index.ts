@@ -23,12 +23,16 @@ serve(async (req) => {
       try {
         const body = await req.json();
         token = body?.token || null;
-      } catch (_) {
-        // ignore body parse errors for non-JSON requests
+        console.log('get-public-estimate: token from body', token);
+      } catch (e) {
+        console.error('get-public-estimate: failed to parse body', e);
       }
+    } else {
+      console.log('get-public-estimate: token from query', token);
     }
     
     if (!token) {
+      console.warn('get-public-estimate: missing token');
       return new Response(
         JSON.stringify({ error: 'Token is required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
