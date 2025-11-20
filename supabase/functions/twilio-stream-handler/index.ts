@@ -145,6 +145,14 @@ Deno.serve(async (req) => {
         callSession = session as CallSession;
         const config = callSession.conversation_history[0];
         
+        // Validate and normalize voice_id (same logic as twilio-voice-inbound)
+        const supportedVoices = ['alloy', 'ash', 'ballad', 'coral', 'echo', 'sage', 'shimmer', 'verse', 'marin', 'cedar'];
+        let voiceId = config.voice_id || 'alloy';
+        if (!supportedVoices.includes(voiceId)) {
+          console.log(`Unsupported voice_id '${voiceId}', defaulting to 'alloy'`);
+          voiceId = 'alloy';
+        }
+        
         // Get ephemeral token from OpenAI for Realtime API
         // This allows WebSocket connection without custom headers
         console.log('Requesting ephemeral token from OpenAI...');
@@ -156,7 +164,7 @@ Deno.serve(async (req) => {
           },
           body: JSON.stringify({
             model: 'gpt-4o-realtime-preview-2024-12-17',
-            voice: config.voice_id || 'alloy',
+            voice: voiceId,
           })
         });
 
@@ -182,7 +190,7 @@ Deno.serve(async (req) => {
         // Store session config for later use
         const sessionConfig = {
           system_prompt: config.system_prompt,
-          voice_id: config.voice_id || 'alloy',
+          voice_id: voiceId,
           greeting: config.greeting
         };
         
@@ -203,7 +211,7 @@ Deno.serve(async (req) => {
               session: {
                 modalities: ['text', 'audio'],
                 instructions: config.system_prompt,
-                voice: config.voice_id || 'alloy',
+                voice: voiceId,
                 input_audio_format: 'pcm16',
                 output_audio_format: 'pcm16',
                 input_audio_transcription: {
