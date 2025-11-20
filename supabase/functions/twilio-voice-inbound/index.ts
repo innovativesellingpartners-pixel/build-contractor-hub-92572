@@ -277,10 +277,11 @@ serve(async (req) => {
       // Return TwiML that dials contractor with timeout, then fallback to AI
       const fallbackUrl = `https://faqrzzodtmsybofakcvv.supabase.co/functions/v1/twilio-voice-fallback`;
       
+      // Use the Twilio number as caller ID to avoid carrier blocking
       const dialTwiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Dial timeout="${forwardTimeout}" action="${fallbackUrl}">
-    <Number>${contractorPhone}</Number>
+  <Dial timeout="${forwardTimeout}" action="${fallbackUrl}" callerId="${to}">
+    <Number statusCallbackEvent="initiated ringing answered completed" statusCallback="https://faqrzzodtmsybofakcvv.supabase.co/functions/v1/twilio-voice-status" statusCallbackMethod="POST">${contractorPhone}</Number>
   </Dial>
 </Response>`;
       
