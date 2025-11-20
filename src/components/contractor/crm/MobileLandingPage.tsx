@@ -5,7 +5,6 @@ interface MobileLandingPageProps {
   onNavigateToJobs: () => void;
   onNavigateToEstimates: () => void;
   onNavigateToCustomers: () => void;
-  onNavigateToLeads: () => void;
   onNavigateToEmails: () => void;
   onNavigateToFinancials: () => void;
   onNavigateToCalendar: () => void;
@@ -33,19 +32,12 @@ const mobileModules = [
     icon: Users,
     gradient: 'from-blue-500 via-blue-600 to-blue-700',
   },
-  { 
-    id: 'leads',
-    title: 'Leads',
-    description: 'Track opportunities',
-    icon: ClipboardList,
-    gradient: 'from-orange-500 via-orange-600 to-orange-700',
-  },
   {
     id: 'emails',
     title: 'Emails',
     description: 'Inbox & follow-ups',
     icon: ClipboardList,
-    gradient: 'from-yellow-500 via-yellow-600 to-amber-600',
+    gradient: 'from-orange-500 via-orange-600 to-orange-700',
   },
   {
     id: 'financials',
@@ -66,8 +58,7 @@ const mobileModules = [
 export function MobileLandingPage({ 
   onNavigateToJobs, 
   onNavigateToEstimates, 
-  onNavigateToCustomers, 
-  onNavigateToLeads,
+  onNavigateToCustomers,
   onNavigateToEmails,
   onNavigateToFinancials,
   onNavigateToCalendar,
@@ -83,9 +74,6 @@ export function MobileLandingPage({
         break;
       case 'customers':
         onNavigateToCustomers();
-        break;
-      case 'leads':
-        onNavigateToLeads();
         break;
       case 'emails':
         onNavigateToEmails();
@@ -146,11 +134,11 @@ export function MobileLandingPage({
           <h3 className="text-sm font-semibold text-foreground px-1">Quick Actions</h3>
           <div className="grid grid-cols-2 gap-3">
             <button
-              onClick={() => onNavigateToLeads()}
+              onClick={() => onNavigateToEmails()}
               className="p-3 bg-card rounded-lg border shadow-sm hover:shadow-md transition-shadow text-left"
             >
-              <p className="text-xs font-medium text-foreground">New Lead</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Add opportunity</p>
+              <p className="text-xs font-medium text-foreground">View Emails</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Inbox & follow-ups</p>
             </button>
             <button
               onClick={() => onNavigateToEstimates()}
