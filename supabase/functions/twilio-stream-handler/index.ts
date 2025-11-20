@@ -162,7 +162,7 @@ Deno.serve(async (req) => {
   }
 
   const { socket: twilioWs, response } = Deno.upgradeWebSocket(req);
-  let openaiWs: WebSocket | null = null;
+  let openaiWs: any = null;
   let callSid = '';
   let streamSid = '';
   let callSession: CallSession | null = null;
@@ -258,6 +258,12 @@ Deno.serve(async (req) => {
           console.log(`Unsupported voice_id '${voiceId}', defaulting to 'alloy'`);
           voiceId = 'alloy';
         }
+
+        // Prefer a warmer, more upbeat female voice when using the default
+        if (voiceId === 'alloy') {
+          console.log('Using default voice; switching to more upbeat "verse" voice for a friendlier tone');
+          voiceId = 'verse';
+        }
         
         // Get ephemeral token from OpenAI for Realtime API
         // This allows WebSocket connection without custom headers
@@ -273,70 +279,37 @@ Deno.serve(async (req) => {
             voice: voiceId,
           })
         });
-
-        if (!tokenResponse.ok) {
-          const errorText = await tokenResponse.text();
-          console.error('Failed to get ephemeral token:', errorText);
-          twilioWs.close();
-          return;
-        }
-
-        const tokenData = await tokenResponse.json();
-        const ephemeralKey = tokenData.client_secret.value;
-        console.log('Ephemeral token obtained');
-
-        // Connect to OpenAI using ephemeral token as WebSocket subprotocol
-        // This is the correct way for Deno's WebSocket constructor
-        const openaiUrl = `wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-12-17`;
-        
-        console.log('Connecting to OpenAI WebSocket...');
-        openaiWs = new WebSocket(openaiUrl, [
-          'realtime',
-          `openai-insecure-api-key.${ephemeralKey}`,
-          'openai-beta.realtime-v1'
-        ]);
-        
-        // Store session config for later use
-        const sessionConfig = {
-          system_prompt: config.system_prompt,
-          voice_id: voiceId,
-          greeting: config.greeting
-        };
-        
-        openaiWs.onopen = () => {
-          console.log('OpenAI WebSocket connected');
-        };
-        
-        openaiWs.onmessage = async (openaiEvent) => {
-          const openaiMessage = JSON.parse(openaiEvent.data);
-          
-          // Handle session.created - configure session
-          if (openaiMessage.type === 'session.created') {
-            console.log('OpenAI session created, configuring...');
-            
-            // Send session configuration
-            openaiWs!.send(JSON.stringify({
-              type: 'session.update',
-              session: {
-                modalities: ['text', 'audio'],
-                instructions: config.system_prompt,
-                voice: voiceId,
-                input_audio_format: 'pcm16',
-                output_audio_format: 'pcm16',
-                input_audio_transcription: {
-                  model: 'whisper-1'
-                },
-                turn_detection: {
-                  type: 'server_vad',
-                  threshold: 0.6,              // Less sensitive - won't cut off as easily
-                  prefix_padding_ms: 500,      // Capture more at the start
-                  silence_duration_ms: 2500    // Wait 2.5s before assuming user is done
-                },
-                temperature: 0.8,
-                max_response_output_tokens: 'inf'
-              }
-            }));
-          }
+ 
+         openaiWs.onmessage = async (openaiEvent: MessageEvent) => {
+           const openaiMessage = JSON.parse(openaiEvent.data);
+           
+           // Handle session.created - configure session
+           if (openaiMessage.type === 'session.created') {
+             console.log('OpenAI session created, configuring...');
+             
+             // Send session configuration
+             openaiWs!.send(JSON.stringify({
+               type: 'session.update',
+               session: {
+                 modalities: ['text', 'audio'],
+                 instructions: `${config.system_prompt || ''}\n\nSpeaking style: You are "Sarah", a warm, upbeat and highly personable assistant.\n- Sound clear and confident, with a friendly tone.\n- Be empathetic and conversational, like a great office receptionist.\n- Do NOT interrupt the caller right after saying "tell me what's going on" – always wait for them to finish.\n- Avoid over‑apologizing; only say "I'm sorry" when something truly went wrong.`,
+                 voice: voiceId,
+                 input_audio_format: 'pcm16',
+                 output_audio_format: 'pcm16',
+                 input_audio_transcription: {
+                   model: 'whisper-1'
+                 },
+                 turn_detection: {
+                   type: 'server_vad',
+                   threshold: 0.6,              // Less sensitive - won't cut off as easily
+                   prefix_padding_ms: 500,      // Capture more at the start
+                   silence_duration_ms: 2500    // Wait 2.5s before assuming user is done
+                 },
+                 temperature: 0.8,
+                 max_response_output_tokens: 'inf'
+               }
+             }));
+           }
           
           // Handle session.updated - send greeting
           if (openaiMessage.type === 'session.updated' && !hasGreeted) {
@@ -412,7 +385,7 @@ Deno.serve(async (req) => {
           }
         };
         
-        openaiWs.onerror = (error) => {
+        openaiWs.onerror = (error: unknown) => {
           console.error('OpenAI WebSocket error:', error);
         };
         
