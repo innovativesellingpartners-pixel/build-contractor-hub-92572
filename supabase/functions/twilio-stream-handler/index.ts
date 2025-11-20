@@ -179,12 +179,16 @@ Deno.serve(async (req) => {
         const ephemeralKey = tokenData.client_secret.value;
         console.log('Ephemeral token obtained');
 
-        // Connect to OpenAI using ephemeral token as query parameter
-        // Deno's WebSocket doesn't support custom headers, so we pass the token in the URL
-        const openaiUrl = `wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-12-17&authorization=Bearer%20${encodeURIComponent(ephemeralKey)}`;
+        // Connect to OpenAI using ephemeral token as WebSocket subprotocol
+        // This is the correct way for Deno's WebSocket constructor
+        const openaiUrl = `wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-12-17`;
         
         console.log('Connecting to OpenAI WebSocket...');
-        openaiWs = new WebSocket(openaiUrl);
+        openaiWs = new WebSocket(openaiUrl, [
+          'realtime',
+          `openai-insecure-api-key.${ephemeralKey}`,
+          'openai-beta.realtime-v1'
+        ]);
         
         // Store session config for later use
         const sessionConfig = {
