@@ -96,11 +96,16 @@ const App = () => (
               </ProtectedRoute>
             } />
             <Route path="/subscribe" element={<Subscribe />} />
-            <Route path="/dashboard" element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            } />
+          <Route path="/dashboard" element={
+            <ProtectedRoute>
+              <CRMDashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/crm" element={
+            <ProtectedRoute>
+              <CRMDashboard />
+            </ProtectedRoute>
+          } />
             <Route path="/app-install" element={<AppInstall />} />
             <Route path="/crm" element={
               <ProtectedRoute>

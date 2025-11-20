@@ -1,7 +1,7 @@
 {
   "name": "CT1 Contractor Hub",
   "short_name": "CT1",
-  "start_url": "/?source=pwa",
+  "start_url": "/dashboard?source=pwa",
   "scope": "/",
   "display": "standalone",
   "background_color": "#ffffff",
