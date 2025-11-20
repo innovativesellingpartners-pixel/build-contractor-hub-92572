@@ -145,14 +145,46 @@ Deno.serve(async (req) => {
         callSession = session as CallSession;
         const config = callSession.conversation_history[0];
         
-        // Connect to OpenAI Realtime API
-        const openaiUrl = `wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-12-17`;
-        openaiWs = new WebSocket(openaiUrl, {
+        // Get ephemeral token from OpenAI for Realtime API
+        // This allows WebSocket connection without custom headers
+        console.log('Requesting ephemeral token from OpenAI...');
+        const tokenResponse = await fetch('https://api.openai.com/v1/realtime/sessions', {
+          method: 'POST',
           headers: {
             'Authorization': `Bearer ${OPENAI_API_KEY}`,
-            'OpenAI-Beta': 'realtime=v1'
-          }
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'gpt-4o-realtime-preview-2024-12-17',
+            voice: config.voice_id || 'alloy',
+          })
         });
+
+        if (!tokenResponse.ok) {
+          const errorText = await tokenResponse.text();
+          console.error('Failed to get ephemeral token:', errorText);
+          twilioWs.close();
+          return;
+        }
+
+        const tokenData = await tokenResponse.json();
+        const ephemeralKey = tokenData.client_secret.value;
+        console.log('Ephemeral token obtained');
+
+        // Connect using ephemeral token as subprotocol
+        // This is a standard way to authenticate WebSockets without custom headers
+        const openaiUrl = `wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-12-17`;
+        
+        console.log('Connecting to OpenAI WebSocket...');
+        // Pass auth as subprotocol - OpenAI Realtime API supports this
+        openaiWs = new WebSocket(openaiUrl, [`Authorization.Bearer.${ephemeralKey}`, 'realtime-v1']);
+        
+        // Store session config for later use
+        const sessionConfig = {
+          system_prompt: config.system_prompt,
+          voice_id: config.voice_id || 'alloy',
+          greeting: config.greeting
+        };
         
         openaiWs.onopen = () => {
           console.log('OpenAI WebSocket connected');
