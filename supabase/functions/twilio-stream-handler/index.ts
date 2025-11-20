@@ -26,13 +26,13 @@ interface CallSession {
 }
 
 /**
- * Convert Twilio's mulaw audio to base64 PCM16
+ * Convert Twilio's mulaw (8kHz) to OpenAI's PCM16 (24kHz)
  */
 function mulawToPCM16(mulawData: Uint8Array): string {
   const MULAW_BIAS = 0x84;
-  const MULAW_MAX = 0x1FFF;
   
-  const pcm16 = new Int16Array(mulawData.length);
+  // Decode mulaw to PCM16 at 8kHz
+  const pcm8k = new Int16Array(mulawData.length);
   
   for (let i = 0; i < mulawData.length; i++) {
     let mulaw = mulawData[i];
@@ -45,11 +45,20 @@ function mulawToPCM16(mulawData: Uint8Array): string {
     let sample = ((mantissa << 3) + MULAW_BIAS) << exponent;
     sample = sign * sample;
     
-    pcm16[i] = Math.max(-32768, Math.min(32767, sample));
+    pcm8k[i] = Math.max(-32768, Math.min(32767, sample));
+  }
+  
+  // Upsample from 8kHz to 24kHz (repeat each sample 3 times)
+  const pcm24k = new Int16Array(pcm8k.length * 3);
+  for (let i = 0; i < pcm8k.length; i++) {
+    const sample = pcm8k[i];
+    pcm24k[i * 3] = sample;
+    pcm24k[i * 3 + 1] = sample;
+    pcm24k[i * 3 + 2] = sample;
   }
   
   // Convert to base64
-  const uint8 = new Uint8Array(pcm16.buffer);
+  const uint8 = new Uint8Array(pcm24k.buffer);
   let binary = '';
   const chunkSize = 0x8000;
   
@@ -62,7 +71,7 @@ function mulawToPCM16(mulawData: Uint8Array): string {
 }
 
 /**
- * Convert OpenAI's PCM16 audio to Twilio's mulaw
+ * Convert OpenAI's PCM16 audio (24kHz) to Twilio's mulaw (8kHz)
  */
 function pcm16ToMulaw(base64PCM: string): Uint8Array {
   // Decode base64
@@ -72,22 +81,28 @@ function pcm16ToMulaw(base64PCM: string): Uint8Array {
     bytes[i] = binaryString.charCodeAt(i);
   }
   
-  // Convert bytes to Int16 PCM samples (little-endian)
-  const pcm16Array: number[] = [];
+  // Convert bytes to Int16 PCM samples (little-endian) at 24kHz
+  const pcm24k: number[] = [];
   for (let i = 0; i < bytes.length; i += 2) {
     if (i + 1 < bytes.length) {
       // Little-endian: low byte first, high byte second
       const sample = bytes[i] | (bytes[i + 1] << 8);
       // Convert unsigned to signed
-      pcm16Array.push(sample > 32767 ? sample - 65536 : sample);
+      pcm24k.push(sample > 32767 ? sample - 65536 : sample);
     }
   }
   
-  // Convert PCM16 to mulaw
-  const mulaw = new Uint8Array(pcm16Array.length);
+  // Downsample from 24kHz to 8kHz (take every 3rd sample)
+  const pcm8k: number[] = [];
+  for (let i = 0; i < pcm24k.length; i += 3) {
+    pcm8k.push(pcm24k[i]);
+  }
   
-  for (let i = 0; i < pcm16Array.length; i++) {
-    let sample = pcm16Array[i];
+  // Convert PCM16 to mulaw
+  const mulaw = new Uint8Array(pcm8k.length);
+  
+  for (let i = 0; i < pcm8k.length; i++) {
+    let sample = pcm8k[i];
     
     // Get sign and absolute value
     const sign = (sample < 0) ? 0x80 : 0x00;
