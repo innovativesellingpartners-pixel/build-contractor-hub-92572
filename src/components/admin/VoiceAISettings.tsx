@@ -81,6 +81,8 @@ export const VoiceAISettings = ({ contractorId }: VoiceAISettingsProps) => {
           custom_instructions: DEFAULT_ASSISTANT_PROMPT(null),
           confirmation_message_template: '',
           internal_notes: '',
+          contractor_phone: '',
+          forward_timeout_seconds: 0,
           phone_numbers: []
         };
       }
@@ -239,6 +241,35 @@ export const VoiceAISettings = ({ contractorId }: VoiceAISettingsProps) => {
           <div className="space-y-2">
             <Label>Twilio Number</Label>
             <Input value={twilioNumber} disabled className="bg-muted" />
+          </div>
+
+          <Separator />
+
+          <div className="space-y-2">
+            <Label>Contractor Phone (Forward To)</Label>
+            <Input
+              value={formData.contractor_phone || ''}
+              onChange={(e) => updateField('contractor_phone', e.target.value)}
+              placeholder="+1234567890"
+            />
+            <p className="text-xs text-muted-foreground">
+              Phone number to ring before AI picks up (E.164 format)
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Ring Timeout (seconds)</Label>
+            <Input
+              type="number"
+              value={formData.forward_timeout_seconds || 0}
+              onChange={(e) => updateField('forward_timeout_seconds', parseInt(e.target.value) || 0)}
+              placeholder="0"
+              min="0"
+              max="60"
+            />
+            <p className="text-xs text-muted-foreground">
+              How long to ring contractor's phone before AI answers (0 = immediate AI, 15-20 ≈ 3 rings)
+            </p>
           </div>
         </CardContent>
       </Card>
