@@ -69,6 +69,9 @@ verify_jwt = false
 [functions.twilio-stream-handler]
 verify_jwt = false
 
+[functions.twilio-recording-callback]
+verify_jwt = false
+
 [functions.extract-job-details]
 verify_jwt = true
 

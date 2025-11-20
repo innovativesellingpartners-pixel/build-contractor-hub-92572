@@ -164,6 +164,10 @@ export type Database = {
           from_number: string
           id: string
           outcome: string | null
+          recording_duration: number | null
+          recording_sid: string | null
+          recording_status: string | null
+          recording_url: string | null
           status: string
           tenant_id: string | null
           to_number: string
@@ -179,6 +183,10 @@ export type Database = {
           from_number: string
           id?: string
           outcome?: string | null
+          recording_duration?: number | null
+          recording_sid?: string | null
+          recording_status?: string | null
+          recording_url?: string | null
           status?: string
           tenant_id?: string | null
           to_number: string
@@ -194,6 +202,10 @@ export type Database = {
           from_number?: string
           id?: string
           outcome?: string | null
+          recording_duration?: number | null
+          recording_sid?: string | null
+          recording_status?: string | null
+          recording_url?: string | null
           status?: string
           tenant_id?: string | null
           to_number?: string

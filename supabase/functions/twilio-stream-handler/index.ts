@@ -154,8 +154,55 @@ Deno.serve(async (req) => {
   let streamSid = '';
   let callSession: CallSession | null = null;
   let hasGreeted = false;
+  let recordingStarted = false;
 
   const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_KEY!);
+
+  // Function to start Twilio recording
+  const startRecording = async (sid: string) => {
+    if (recordingStarted) return;
+    recordingStarted = true;
+
+    try {
+      const accountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
+      const authToken = Deno.env.get('TWILIO_AUTH_TOKEN');
+      const projectId = Deno.env.get('SUPABASE_PROJECT_ID') || 'faqrzzodtmsybofakcvv';
+      
+      console.log(`[Recording] Starting recording for call ${sid}`);
+      
+      const response = await fetch(
+        `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Calls/${sid}/Recordings.json`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Authorization': 'Basic ' + btoa(`${accountSid}:${authToken}`)
+          },
+          body: new URLSearchParams({
+            RecordingStatusCallback: `https://${projectId}.supabase.co/functions/v1/twilio-recording-callback`,
+            RecordingStatusCallbackEvent: 'completed',
+            RecordingChannels: 'dual'
+          })
+        }
+      );
+      
+      const data = await response.json();
+      console.log('[Recording] Started:', data);
+      
+      // Update call_sessions with recording_sid
+      await supabase
+        .from('call_sessions')
+        .update({ 
+          recording_sid: data.sid, 
+          recording_status: 'in-progress' 
+        })
+        .eq('call_sid', sid);
+        
+      console.log('[Recording] Database updated with recording_sid');
+    } catch (error) {
+      console.error('[Recording] Failed to start recording:', error);
+    }
+  };
 
   twilioWs.onopen = () => {
     console.log('Twilio WebSocket connected');
@@ -171,6 +218,9 @@ Deno.serve(async (req) => {
         streamSid = message.start.streamSid;
         
         console.log(`Stream started for call ${callSid}`);
+        
+        // Start recording the call
+        startRecording(callSid);
         
         // Verify call_sid exists in database (ensures it came from verified webhook)
         const { data: session, error } = await supabase

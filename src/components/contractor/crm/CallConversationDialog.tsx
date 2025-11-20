@@ -46,7 +46,13 @@ export const CallConversationDialog = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Phone className="h-5 w-5" />
-            Call with {formatPhoneNumber(call.from_number)}
+            Call with{' '}
+            <a 
+              href={`tel:${call.from_number}`}
+              className="text-primary hover:underline cursor-pointer"
+            >
+              {formatPhoneNumber(call.from_number)}
+            </a>
           </DialogTitle>
           <DialogDescription>
             {format(new Date(call.created_at), 'MMMM d, yyyy \'at\' h:mm a')}

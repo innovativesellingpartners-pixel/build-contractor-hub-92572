@@ -54,7 +54,13 @@ export const CallLogItem = ({ call }: CallLogItemProps) => {
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-2">
               <Phone className="h-4 w-4 text-muted-foreground" />
-              <span className="font-medium">{formatPhoneNumber(call.from_number)}</span>
+              <a 
+                href={`tel:${call.from_number}`}
+                className="font-medium text-primary hover:underline cursor-pointer"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {formatPhoneNumber(call.from_number)}
+              </a>
             </div>
             <div className="flex items-center gap-2">
               <Badge variant={getStatusBadgeVariant(call.status)}>
@@ -117,6 +123,35 @@ export const CallLogItem = ({ call }: CallLogItemProps) => {
                     <span className="text-sm font-medium">Action:</span>
                     <p className="text-sm text-muted-foreground">{call.action_taken}</p>
                   </div>
+                </div>
+              )}
+
+              {/* Audio Recording Playback */}
+              {call.recording_url && call.recording_status === 'completed' && (
+                <div className="space-y-2 pt-3 border-t">
+                  <div className="flex items-center gap-2">
+                    <Phone className="h-4 w-4" />
+                    <span className="text-sm font-medium">Call Recording</span>
+                    {call.recording_duration && (
+                      <Badge variant="outline" className="text-xs">
+                        {formatDuration(call.recording_duration)}
+                      </Badge>
+                    )}
+                  </div>
+                  <audio 
+                    controls 
+                    className="w-full h-10"
+                    preload="metadata"
+                  >
+                    <source src={call.recording_url} type="audio/mpeg" />
+                    Your browser does not support the audio element.
+                  </audio>
+                </div>
+              )}
+
+              {call.recording_status === 'in-progress' && (
+                <div className="text-sm text-muted-foreground italic pt-2 border-t">
+                  Recording in progress...
                 </div>
               )}
 
