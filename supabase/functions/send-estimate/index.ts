@@ -99,11 +99,12 @@ const handler = async (req: Request): Promise<Response> => {
     console.log('Attempting to send estimate email', { to: recipients, bcc, from: effectiveFromEmail, replyTo: contractorEmail || null });
     
     // Use Resend attachments to attach PDF
-    // Generate PDF and attach to email
+    // Generate PDF and attach to email (with auth bypass for public function)
     const { data: pdfData, error: pdfError } = await supabase.functions.invoke('generate-estimate-pdf', {
       body: {
         estimateId,
         includePaymentLink: true,
+        public_token: estimate.public_token, // Pass token for public access
       },
     });
 

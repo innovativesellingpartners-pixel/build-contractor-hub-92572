@@ -27,12 +27,10 @@ const handler = async (req: Request): Promise<Response> => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { estimateId, includePaymentLink = true }: GeneratePDFRequest = await req.json();
+    const { estimateId, includePaymentLink = true, public_token }: GeneratePDFRequest & { public_token?: string } = await req.json();
 
     // SECURITY: Check if this is a public token request (no auth required)
-    const publicTokenParam = new URL(req.url).searchParams.get('public_token');
-    
-    if (!publicTokenParam) {
+    if (!public_token) {
       // SECURITY: Verify authentication for non-public requests
       const authHeader = req.headers.get("Authorization");
       if (!authHeader) {
