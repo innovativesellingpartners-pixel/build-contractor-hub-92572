@@ -24,14 +24,14 @@ const navItems = [
 
 export const AdminSidebar = () => {
   return (
-    <aside className="w-64 bg-card border-r min-h-screen">
-      <div className="p-4 border-b">
+    <aside className="w-16 sm:w-48 md:w-64 bg-card border-r min-h-screen">
+      <div className="p-2 sm:p-4 border-b">
         <div className="flex items-center gap-2">
-          <img src={ct1Logo} alt="CT1 Logo" className="h-8 w-8" />
-          <span className="font-semibold text-sm">Admin Portal</span>
+          <img src={ct1Logo} alt="CT1 Logo" className="h-8 w-8 mx-auto sm:mx-0" />
+          <span className="font-semibold text-sm hidden sm:inline">Admin Portal</span>
         </div>
       </div>
-      <nav className="p-4 space-y-2">
+      <nav className="p-2 sm:p-4 space-y-2">
         {navItems.map((item) => (
           <NavLink
             key={item.to}
@@ -39,7 +39,7 @@ export const AdminSidebar = () => {
             end={item.end}
             className={({ isActive }) =>
               cn(
-                'flex items-center gap-3 px-4 py-3 rounded-lg transition-colors',
+                'flex items-center gap-3 px-2 sm:px-4 py-3 rounded-lg transition-colors justify-center sm:justify-start',
                 'hover:bg-accent hover:text-accent-foreground',
                 isActive 
                   ? 'bg-primary text-primary-foreground' 
@@ -47,8 +47,8 @@ export const AdminSidebar = () => {
               )
             }
           >
-            <item.icon className="h-5 w-5" />
-            {item.label}
+            <item.icon className="h-5 w-5 flex-shrink-0" />
+            <span className="hidden sm:inline">{item.label}</span>
           </NavLink>
         ))}
       </nav>
