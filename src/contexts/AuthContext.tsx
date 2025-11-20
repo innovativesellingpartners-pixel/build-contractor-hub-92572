@@ -68,9 +68,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    // Set up auth state listener
+    // Check if running as PWA
+    const isPWA = window.matchMedia('(display-mode: standalone)').matches || 
+                  (window.navigator as any).standalone === true;
+    
+    console.log('Auth initialization:', { isPWA, hasLocalStorage: !!window.localStorage });
+
+    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log('Auth state changed:', event, { hasSession: !!session, hasUser: !!session?.user });
         setSession(session);
         setUser(session?.user ?? null);
         
@@ -87,8 +94,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     );
 
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.error('Error getting session:', error);
+      }
+      console.log('Initial session check:', { hasSession: !!session, hasUser: !!session?.user });
+      
       setSession(session);
       setUser(session?.user ?? null);
       
@@ -137,7 +149,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signOut = async () => {
+    console.log('Signing out...');
     await supabase.auth.signOut();
+    setProfile(null);
+    localStorage.removeItem('rememberMe');
+    console.log('Sign out complete');
   };
 
   const resetPassword = async (email: string) => {

@@ -1,11 +1,14 @@
 {
   "name": "CT1 Contractor Hub",
   "short_name": "CT1",
-  "start_url": "/",
+  "start_url": "/?source=pwa",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#111827",
   "description": "One-Up the Competition with CT1 Contractor Business Suite",
+  "orientation": "portrait-primary",
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "/icons/icon-192.png",
