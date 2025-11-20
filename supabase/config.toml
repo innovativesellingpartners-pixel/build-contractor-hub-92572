@@ -72,6 +72,9 @@ verify_jwt = false
 [functions.twilio-recording-callback]
 verify_jwt = false
 
+[functions.twilio-recording-proxy]
+verify_jwt = false
+
 [functions.extract-job-details]
 verify_jwt = true
 

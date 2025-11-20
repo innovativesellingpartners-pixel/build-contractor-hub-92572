@@ -177,7 +177,10 @@ export const CallLogItem = ({ call }: CallLogItemProps) => {
                     className="w-full h-10"
                     preload="metadata"
                   >
-                    <source src={call.recording_url} type="audio/mpeg" />
+                    <source 
+                      src={`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/twilio-recording-proxy?url=${encodeURIComponent(call.recording_url)}`} 
+                      type="audio/mpeg" 
+                    />
                     Your browser does not support the audio element.
                   </audio>
                 </div>
