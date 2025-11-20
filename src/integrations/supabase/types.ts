@@ -385,6 +385,7 @@ export type Database = {
           confirmation_message_template: string | null
           contractor_id: string
           contractor_name: string
+          contractor_phone: string | null
           created_at: string | null
           custom_greeting: string | null
           custom_instructions: string | null
@@ -423,6 +424,7 @@ export type Database = {
           confirmation_message_template?: string | null
           contractor_id: string
           contractor_name: string
+          contractor_phone?: string | null
           created_at?: string | null
           custom_greeting?: string | null
           custom_instructions?: string | null
@@ -461,6 +463,7 @@ export type Database = {
           confirmation_message_template?: string | null
           contractor_id?: string
           contractor_name?: string
+          contractor_phone?: string | null
           created_at?: string | null
           custom_greeting?: string | null
           custom_instructions?: string | null
