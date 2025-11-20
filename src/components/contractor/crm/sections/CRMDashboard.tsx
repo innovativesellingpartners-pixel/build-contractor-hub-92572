@@ -21,8 +21,8 @@ export default function CRMDashboard({ onSectionChange }: CRMDashboardProps) {
       id: 'estimates' as Section, 
       label: 'Estimates', 
       icon: FileText, 
-      gradient: 'from-blue-500 to-blue-600',
-      borderColor: 'border-blue-400',
+      gradient: 'from-green-500 to-green-600',
+      borderColor: 'border-green-400',
       description: 'View & create quotes'
     },
     { 
@@ -37,9 +37,33 @@ export default function CRMDashboard({ onSectionChange }: CRMDashboardProps) {
       id: 'customers' as Section, 
       label: 'Customers', 
       icon: Users, 
-      gradient: 'from-green-500 to-green-600',
-      borderColor: 'border-green-400',
+      gradient: 'from-blue-500 to-blue-600',
+      borderColor: 'border-blue-400',
       description: 'Customer list'
+    },
+    { 
+      id: 'calls' as Section, 
+      label: 'Calls', 
+      icon: Phone, 
+      gradient: 'from-pink-500 to-pink-600',
+      borderColor: 'border-pink-400',
+      description: 'Call history'
+    },
+    { 
+      id: 'emails' as Section, 
+      label: 'Emails', 
+      icon: Mail, 
+      gradient: 'from-cyan-500 to-cyan-600',
+      borderColor: 'border-cyan-400',
+      description: 'Email communications'
+    },
+    { 
+      id: 'calendar' as Section, 
+      label: 'Schedule', 
+      icon: Calendar, 
+      gradient: 'from-indigo-500 to-indigo-600',
+      borderColor: 'border-indigo-400',
+      description: 'Calendar & events'
     },
     { 
       id: 'leads' as Section, 
@@ -51,31 +75,7 @@ export default function CRMDashboard({ onSectionChange }: CRMDashboardProps) {
     },
   ];
 
-  const communicationModules = [
-    { 
-      id: 'calls' as Section, 
-      label: 'Calls', 
-      icon: Phone, 
-      gradient: 'from-pink-500 to-pink-600',
-      borderColor: 'border-pink-400',
-      description: 'Call history'
-    },
-    { 
-      id: 'emails' as Section, 
-      label: 'Email', 
-      icon: Mail, 
-      gradient: 'from-cyan-500 to-cyan-600',
-      borderColor: 'border-cyan-400',
-      description: 'Email communications'
-    },
-    { 
-      id: 'calendar' as Section, 
-      label: 'Calendar', 
-      icon: Calendar, 
-      gradient: 'from-indigo-500 to-indigo-600',
-      borderColor: 'border-indigo-400',
-      description: 'Schedule & events'
-    },
+  const financialsModule = [
     { 
       id: 'financials' as Section, 
       label: 'Financials', 
@@ -87,8 +87,8 @@ export default function CRMDashboard({ onSectionChange }: CRMDashboardProps) {
   ];
 
   return (
-    <div className="w-full h-full overflow-y-auto overflow-x-hidden pb-20 bg-background">
-      <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 w-full sm:max-w-7xl sm:mx-auto">
+    <div className="w-full h-full overflow-y-auto overflow-x-hidden pb-20 bg-background pt-safe">
+      <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 w-full sm:max-w-7xl sm:mx-auto mt-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold">CRM Dashboard</h1>
           <p className="text-sm sm:text-base text-muted-foreground">Navigate to your workspace</p>
@@ -119,11 +119,11 @@ export default function CRMDashboard({ onSectionChange }: CRMDashboardProps) {
               ))}
             </div>
 
-            {/* Communication & Financial Modules */}
+            {/* Financial Module */}
             <div className="mt-6">
-              <h2 className="text-lg sm:text-xl font-semibold mb-3">Communication & Financials</h2>
-              <div className="grid grid-cols-2 gap-3 w-full">
-                {communicationModules.map((tile) => (
+              <h2 className="text-lg sm:text-xl font-semibold mb-3">Financials</h2>
+              <div className="grid grid-cols-1 gap-3 w-full">
+                {financialsModule.map((tile) => (
                   <Card
                     key={tile.id}
                     className={cn(
