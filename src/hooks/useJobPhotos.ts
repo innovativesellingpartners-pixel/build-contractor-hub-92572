@@ -10,6 +10,7 @@ export interface JobPhoto {
   photo_url: string;
   caption?: string;
   created_at: string;
+  signed_url?: string; // Temporary signed URL for display
 }
 
 export const useJobPhotos = (jobId?: string) => {
@@ -30,7 +31,36 @@ export const useJobPhotos = (jobId?: string) => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setPhotos((data || []) as JobPhoto[]);
+      
+      // Generate signed URLs for each photo (valid for 1 hour)
+      const photosWithSignedUrls = await Promise.all(
+        (data || []).map(async (photo: JobPhoto) => {
+          try {
+            // Extract file path from stored URL
+            const urlParts = photo.photo_url.split('/job-photos/');
+            const filePath = urlParts.length > 1 ? urlParts[1] : photo.photo_url;
+            
+            const { data: signedData, error: signedError } = await supabase.storage
+              .from('job-photos')
+              .createSignedUrl(filePath, 3600); // 1 hour expiry
+
+            if (signedError) {
+              console.error('Error creating signed URL:', signedError);
+              return photo;
+            }
+
+            return {
+              ...photo,
+              signed_url: signedData.signedUrl,
+            };
+          } catch (err) {
+            console.error('Error processing photo:', err);
+            return photo;
+          }
+        })
+      );
+      
+      setPhotos(photosWithSignedUrls as JobPhoto[]);
     } catch (error: any) {
       toast({
         title: 'Error fetching photos',
@@ -51,7 +81,7 @@ export const useJobPhotos = (jobId?: string) => {
 
     setUploading(true);
     try {
-      // Upload file to storage
+      // Upload file to storage with user-scoped path
       const fileExt = file.name.split('.').pop();
       const fileName = `${user.id}/${jobId}/${Date.now()}.${fileExt}`;
       
@@ -61,10 +91,8 @@ export const useJobPhotos = (jobId?: string) => {
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('job-photos')
-        .getPublicUrl(fileName);
+      // Store the file path (not public URL since bucket is now private)
+      const filePath = fileName;
 
       // Save to database
       const { data, error } = await supabase
@@ -72,7 +100,7 @@ export const useJobPhotos = (jobId?: string) => {
         .insert([{
           job_id: jobId,
           user_id: user.id,
-          photo_url: publicUrl,
+          photo_url: filePath, // Store path, not public URL
           caption,
         }])
         .select()
@@ -80,12 +108,22 @@ export const useJobPhotos = (jobId?: string) => {
 
       if (error) throw error;
 
-      setPhotos([data as JobPhoto, ...photos]);
+      // Generate signed URL for immediate display
+      const { data: signedData } = await supabase.storage
+        .from('job-photos')
+        .createSignedUrl(filePath, 3600);
+
+      const photoWithSignedUrl = {
+        ...(data as JobPhoto),
+        signed_url: signedData?.signedUrl,
+      };
+
+      setPhotos([photoWithSignedUrl, ...photos]);
       toast({
         title: 'Photo uploaded',
         description: 'Photo has been added to the job successfully',
       });
-      return data as JobPhoto;
+      return photoWithSignedUrl as JobPhoto;
     } catch (error: any) {
       toast({
         title: 'Error uploading photo',
@@ -100,18 +138,17 @@ export const useJobPhotos = (jobId?: string) => {
 
   const deletePhoto = async (photoId: string, photoUrl: string) => {
     try {
-      // Extract file path from URL
-      const urlParts = photoUrl.split('/job-photos/');
-      if (urlParts.length > 1) {
-        const filePath = urlParts[1];
-        
-        // Delete from storage
-        const { error: storageError } = await supabase.storage
-          .from('job-photos')
-          .remove([filePath]);
+      // photoUrl now contains the file path, not a full URL
+      const filePath = photoUrl.includes('/job-photos/') 
+        ? photoUrl.split('/job-photos/')[1]
+        : photoUrl;
+      
+      // Delete from storage
+      const { error: storageError } = await supabase.storage
+        .from('job-photos')
+        .remove([filePath]);
 
-        if (storageError) console.error('Storage deletion error:', storageError);
-      }
+      if (storageError) console.error('Storage deletion error:', storageError);
 
       // Delete from database
       const { error } = await supabase
