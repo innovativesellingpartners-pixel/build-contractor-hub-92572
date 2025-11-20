@@ -102,6 +102,7 @@ const App = () => (
               </ProtectedRoute>
             } />
             <Route path="/app-install" element={<AppInstall />} />
+            <Route path="/crm-dashboard" element={<CRMDashboard />} />
             <Route path="/crm" element={
               <ProtectedRoute>
                 <Navigate to="/dashboard" replace />
