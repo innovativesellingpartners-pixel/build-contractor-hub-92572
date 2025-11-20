@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -71,6 +71,101 @@ export function Dashboard() {
   const [pocketbotPosition, setPocketbotPosition] = useState('20px');
   const [contactSupportOpen, setContactSupportOpen] = useState(false);
   const [upgradePlanOpen, setUpgradePlanOpen] = useState(false);
+  const [chatButtonPosition, setChatButtonPosition] = useState<{ x: number; y: number } | null>(null);
+  const [isDraggingChatButton, setIsDraggingChatButton] = useState(false);
+  const [chatButtonDragOffset, setChatButtonDragOffset] = useState({ x: 0, y: 0 });
+  const chatButtonRef = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    if (!chatButtonRef.current || chatButtonPosition) return;
+
+    const button = chatButtonRef.current;
+    const rect = button.getBoundingClientRect();
+    setChatButtonPosition({
+      x: window.innerWidth - rect.width - 24,
+      y: window.innerHeight - rect.height - 24,
+    });
+  }, [chatButtonPosition]);
+
+  useEffect(() => {
+    const handleMove = (e: MouseEvent | TouchEvent) => {
+      if (!isDraggingChatButton || !chatButtonRef.current) return;
+
+      const point =
+        e instanceof TouchEvent ? e.touches[0] : (e as MouseEvent);
+
+      const newX = point.clientX - chatButtonDragOffset.x;
+      const newY = point.clientY - chatButtonDragOffset.y;
+
+      const button = chatButtonRef.current;
+      const rect = button.getBoundingClientRect();
+      const minX = 0;
+      const maxX = window.innerWidth - rect.width;
+      const minY = 0;
+      const maxY = window.innerHeight - rect.height;
+
+      const constrainedX = Math.max(minX, Math.min(newX, maxX));
+      const constrainedY = Math.max(minY, Math.min(newY, maxY));
+
+      setChatButtonPosition({ x: constrainedX, y: constrainedY });
+    };
+
+    const handleUp = () => {
+      if (!isDraggingChatButton) return;
+      setIsDraggingChatButton(false);
+      if (chatButtonPosition) {
+        localStorage.setItem(
+          'ct1_chat_button_position',
+          JSON.stringify(chatButtonPosition)
+        );
+      }
+    };
+
+    if (isDraggingChatButton) {
+      document.addEventListener('mousemove', handleMove);
+      document.addEventListener('touchmove', handleMove, { passive: false });
+      document.addEventListener('mouseup', handleUp);
+      document.addEventListener('touchend', handleUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMove);
+      document.removeEventListener('touchmove', handleMove);
+      document.removeEventListener('mouseup', handleUp);
+      document.removeEventListener('touchend', handleUp);
+    };
+  }, [isDraggingChatButton, chatButtonDragOffset, chatButtonPosition]);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('ct1_chat_button_position');
+    if (!saved) return;
+    try {
+      const parsed = JSON.parse(saved);
+      if (
+        typeof parsed.x === 'number' &&
+        typeof parsed.y === 'number'
+      ) {
+        setChatButtonPosition(parsed);
+      }
+    } catch {
+      // ignore bad data
+    }
+  }, []);
+
+  const handleChatButtonDragStart = (
+    e: React.MouseEvent<HTMLButtonElement> | React.TouchEvent<HTMLButtonElement>
+  ) => {
+    if (!chatButtonRef.current) return;
+
+    const point = 'touches' in e ? e.touches[0] : (e as React.MouseEvent);
+    const rect = chatButtonRef.current.getBoundingClientRect();
+
+    setChatButtonDragOffset({
+      x: point.clientX - rect.left,
+      y: point.clientY - rect.top,
+    });
+    setIsDraggingChatButton(true);
+  };
 
   // Save active section to sessionStorage whenever it changes
   const handleSectionChange = (section: ActiveSection) => {
@@ -519,8 +614,16 @@ export function Dashboard() {
       
       {/* Floating Chat Button */}
       <button
+        ref={chatButtonRef}
         onClick={() => setPocketbotOpen(!pocketbotOpen)}
-        className="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-[100] group cursor-pointer"
+        onMouseDown={handleChatButtonDragStart}
+        onTouchStart={handleChatButtonDragStart}
+        className="fixed z-[100] group cursor-pointer"
+        style={
+          chatButtonPosition
+            ? { left: chatButtonPosition.x, top: chatButtonPosition.y }
+            : { bottom: 24, right: 24 }
+        }
         aria-label="Open CT1 Pocketbot"
       >
         <div className="bg-foreground/95 backdrop-blur-md text-background p-3 md:p-4 rounded-full shadow-2xl hover:shadow-primary/50 transition-all duration-300 hover:scale-105 border-2 border-primary/30">
