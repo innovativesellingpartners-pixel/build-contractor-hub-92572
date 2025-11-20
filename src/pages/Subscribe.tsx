@@ -118,9 +118,9 @@ export function Subscribe() {
     );
   }
   return (
-    <div className="min-h-screen bg-concrete-gray">
+    <div className="min-h-screen bg-background">
       {/* Professional Header */}
-      <header className="bg-white border-b border-construction shadow-sm">
+      <header className="bg-card border-b border-border shadow-sm sticky top-0 z-50 backdrop-blur-sm bg-background/95">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <Link to="/" className="flex items-center space-x-3">
             <img src={constructeamLogo} alt="CONSTRUCTEAM CT1" className="h-10 w-10" />
@@ -352,95 +352,112 @@ export function Subscribe() {
           {/* Plans Section */}
           <div className="lg:col-span-2 grid md:grid-cols-2 gap-6">
             {/* LAUNCH Growth Starter */}
-            <Card className="card-industrial relative bg-white border-construction shadow-lg">
+            <Card className="relative bg-card border-border hover:border-primary/50 transition-all duration-300 shadow-lg hover:shadow-xl">
               <CardHeader className="text-center pb-6">
-                <CardTitle className="text-2xl mb-2 text-steel">LAUNCH Growth Starter</CardTitle>
-                <CardDescription className="text-lg text-steel-light">Perfect for new or small contractors</CardDescription>
-                <div className="mt-4">
-                  <span className="text-4xl font-bold text-steel">$50</span>
-                  <span className="text-steel-light ml-2">/month</span>
-                  <div className="text-xs text-muted-foreground mt-1">
-                    $135/quarter or $540/year
+                <div className="flex items-center justify-center mb-4">
+                  <div className="p-3 bg-primary/10 rounded-xl">
+                    <CheckCircle className="h-8 w-8 text-primary" />
                   </div>
                 </div>
-                <div className="text-xs text-primary font-medium mt-2">Tier 1</div>
+                <div className="inline-block px-3 py-1 bg-primary/10 text-primary text-xs font-semibold rounded-full mb-3">
+                  Tier 1
+                </div>
+                <CardTitle className="text-2xl mb-2">CT1 LAUNCH Growth Starter</CardTitle>
+                <CardDescription className="text-base">Build your foundation with our training and management system</CardDescription>
+                <div className="mt-6">
+                  <div className="flex items-baseline justify-center gap-1">
+                    <span className="text-5xl font-bold">$99</span>
+                    <span className="text-muted-foreground">.99/mo</span>
+                  </div>
+                  <div className="text-sm text-muted-foreground mt-2">
+                    $299.97/quarter or $1,079/year (10% off)
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-3 mb-8">
-                  <li className="flex items-center">
-                    <CheckCircle className="h-4 w-4 text-primary mr-3" />
-                    <span className="text-steel-light">CT1's 5-Star Contractor Business & Sales Training</span>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                    <span className="text-sm">CT1 5-Star Contractor Business & Sales Training</span>
                   </li>
-                  <li className="flex items-center">
-                    <CheckCircle className="h-4 w-4 text-primary mr-3" />
-                    <span className="text-steel-light">Full Customer & Jobs Management system</span>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                    <span className="text-sm">Full Customer & Jobs Management system</span>
                   </li>
-                  <li className="flex items-center">
-                    <CheckCircle className="h-4 w-4 text-primary mr-3" />
-                    <span className="text-steel-light">1 personal, monthly business training session</span>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                    <span className="text-sm">1 personal monthly business training session</span>
                   </li>
-                  <li className="flex items-center">
-                    <CheckCircle className="h-4 w-4 text-primary mr-3" />
-                    <span className="text-steel-light">Marketplace access to vetted tech vendors</span>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                    <span className="text-sm">Marketplace access to vetted tech vendors</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                    <span className="text-sm">24/7 AI Business Assistant (Pocket Bot)</span>
                   </li>
                 </ul>
-                <Button className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-3">
+                <Button className="w-full" size="lg">
                   Start Free Trial
                 </Button>
               </CardContent>
             </Card>
 
             {/* Growth Business Builder */}
-            <Card className="card-industrial relative border-2 border-primary bg-white shadow-xl">
-              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                <span className="bg-primary text-white px-4 py-2 rounded-full text-sm font-semibold">
+            <Card className="relative bg-card border-2 border-primary shadow-xl hover:shadow-2xl transition-all duration-300 scale-105">
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
+                <span className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground px-6 py-2 rounded-full text-sm font-bold shadow-lg">
                   MOST POPULAR
                 </span>
               </div>
-              <CardHeader className="text-center pb-6">
-                <CardTitle className="text-2xl mb-2 text-steel">Growth Business Builder</CardTitle>
-                <CardDescription className="text-lg text-steel-light">For growing contractors</CardDescription>
-                <div className="mt-4">
-                  <span className="text-4xl font-bold text-steel">$200</span>
-                  <span className="text-steel-light ml-2">/month</span>
-                  <div className="text-xs text-muted-foreground mt-1">
-                    $540/quarter or $2,160/year
+              <CardHeader className="text-center pb-6 pt-8">
+                <div className="flex items-center justify-center mb-4">
+                  <div className="p-3 bg-primary/10 rounded-xl">
+                    <CheckCircle className="h-8 w-8 text-primary" />
                   </div>
                 </div>
-                <div className="text-xs text-primary font-medium mt-2">Tier 2</div>
+                <div className="inline-block px-3 py-1 bg-primary/10 text-primary text-xs font-semibold rounded-full mb-3">
+                  Tier 2
+                </div>
+                <CardTitle className="text-2xl mb-2">CT1 Growth Business Builder</CardTitle>
+                <CardDescription className="text-base">Scale faster with AI tools and qualified leads</CardDescription>
+                <div className="mt-6">
+                  <div className="flex items-baseline justify-center gap-1">
+                    <span className="text-5xl font-bold">$250</span>
+                    <span className="text-muted-foreground">/mo</span>
+                  </div>
+                  <div className="text-sm text-muted-foreground mt-2">
+                    $750/quarter or $2,700/year (10% off)
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
+                <div className="mb-4 p-3 bg-primary/5 rounded-lg border border-primary/20">
+                  <p className="text-sm font-medium text-center">Everything in LAUNCH, plus:</p>
+                </div>
                 <ul className="space-y-3 mb-8">
-                  <li className="flex items-center">
-                    <CheckCircle className="h-4 w-4 text-primary mr-3" />
-                    <span className="text-steel-light">CT1's 5-Star Contractor Business & Sales Training</span>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                    <span className="text-sm">AI Phone Assistant for call answering and screening</span>
                   </li>
-                  <li className="flex items-center">
-                    <CheckCircle className="h-4 w-4 text-primary mr-3" />
-                    <span className="text-steel-light">Full Customer & Jobs Management system</span>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                    <span className="text-sm">2 personal monthly business training sessions</span>
                   </li>
-                  <li className="flex items-center">
-                    <CheckCircle className="h-4 w-4 text-primary mr-3" />
-                    <span className="text-steel-light">AI Phone Assistant for call answering and screening</span>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                    <span className="text-sm">5 qualified leads per month</span>
                   </li>
-                  <li className="flex items-center">
-                    <CheckCircle className="h-4 w-4 text-primary mr-3" />
-                    <span className="text-steel-light">2 personal, monthly business training sessions</span>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                    <span className="text-sm">Complete AI toolset (Pocket Bot, Sales Bot, Project Manager Bot, Admin Bot)</span>
                   </li>
-                  <li className="flex items-center">
-                    <CheckCircle className="h-4 w-4 text-primary mr-3" />
-                    <span className="text-steel-light">5 qualified leads per month</span>
-                  </li>
-                  <li className="flex items-center">
-                    <CheckCircle className="h-4 w-4 text-primary mr-3" />
-                    <span className="text-steel-light">Complete AI toolset (Pocket Bot, Sales Bot, Project Manager Bot, Admin Bot)</span>
-                  </li>
-                  <li className="flex items-center">
-                    <CheckCircle className="h-4 w-4 text-primary mr-3" />
-                    <span className="text-steel-light">Marketplace access to vetted vendors</span>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                    <span className="text-sm">Priority marketplace support</span>
                   </li>
                 </ul>
-                <Button className="w-full bg-steel hover:bg-steel/90 text-white font-semibold py-3">
+                <Button className="w-full bg-primary hover:bg-primary/90" size="lg">
                   Get Started Now
                 </Button>
               </CardContent>
@@ -449,76 +466,64 @@ export function Subscribe() {
 
           {/* Accel! Market Dominator - Full Width Below */}
           <div className="lg:col-span-3 mt-6">
-            <Card className="card-industrial relative bg-gradient-to-br from-primary/5 to-primary/10 border-2 border-primary shadow-xl">
-              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                <span className="bg-gradient-to-r from-primary to-steel text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg">
-                  🚀 ACCEL! MARKET DOMINATOR
+            <Card className="relative bg-gradient-to-br from-muted/30 to-muted/10 border-2 border-muted shadow-xl">
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
+                <span className="bg-gradient-to-r from-muted to-muted-foreground/80 text-background px-6 py-2 rounded-full text-sm font-bold shadow-lg">
+                  🚀 COMING SOON
                 </span>
               </div>
               <CardHeader className="text-center pb-6 pt-8">
-                <CardTitle className="text-3xl mb-2 text-steel">Accel! Market Dominator</CardTitle>
-                <CardDescription className="text-xl text-steel-light">Coming Soon - Currently On Hold</CardDescription>
-                <div className="mt-4">
-                  <span className="text-5xl font-bold text-muted-foreground">$TBD</span>
-                  <span className="text-steel-light ml-2 text-lg">/month</span>
+                <div className="flex items-center justify-center mb-4">
+                  <div className="p-3 bg-muted/20 rounded-xl">
+                    <CheckCircle className="h-8 w-8 text-muted-foreground" />
+                  </div>
                 </div>
-                <div className="text-sm text-primary font-medium mt-2">Tier 3 - Premium tier for established contractors</div>
+                <div className="inline-block px-3 py-1 bg-muted/20 text-muted-foreground text-xs font-semibold rounded-full mb-3">
+                  Tier 3
+                </div>
+                <CardTitle className="text-3xl mb-2">CT1 Market Dominator</CardTitle>
+                <CardDescription className="text-xl">Premium lead generation and weekly coaching for market leaders</CardDescription>
+                <div className="mt-4">
+                  <span className="text-5xl font-bold text-muted-foreground">Pricing TBD</span>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="grid md:grid-cols-2 gap-6 mb-8">
                   <div>
-                    <h4 className="font-semibold text-steel mb-3">Premium Lead Generation:</h4>
-                    <ul className="space-y-2">
-                      <li className="flex items-center">
-                        <CheckCircle className="h-4 w-4 text-primary mr-2 flex-shrink-0" />
-                        <span className="text-steel-light text-sm">High-intent or "closed job" leads delivered weekly</span>
+                    <h4 className="font-semibold mb-3">Premium Features:</h4>
+                    <ul className="space-y-3">
+                      <li className="flex items-start gap-3">
+                        <CheckCircle className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                        <span className="text-sm">Premium lead generation</span>
                       </li>
-                      <li className="flex items-center">
-                        <CheckCircle className="h-4 w-4 text-primary mr-2 flex-shrink-0" />
-                        <span className="text-steel-light text-sm">80/20 Split on delivered leads</span>
+                      <li className="flex items-start gap-3">
+                        <CheckCircle className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                        <span className="text-sm">High-intent or closed job leads weekly (80/20 split)</span>
                       </li>
-                    </ul>
-                    <h4 className="font-semibold text-steel mb-3 mt-4">Comprehensive AI Toolset:</h4>
-                    <ul className="space-y-2">
-                      <li className="flex items-center">
-                        <CheckCircle className="h-4 w-4 text-primary mr-2 flex-shrink-0" />
-                        <span className="text-steel-light text-sm">Full access to Project Manager Bot</span>
-                      </li>
-                      <li className="flex items-center">
-                        <CheckCircle className="h-4 w-4 text-primary mr-2 flex-shrink-0" />
-                        <span className="text-steel-light text-sm">Sales Bot and Admin Bot</span>
+                      <li className="flex items-start gap-3">
+                        <CheckCircle className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                        <span className="text-sm">Full AI toolset (Project Manager Bot, Sales Bot, Admin Bot)</span>
                       </li>
                     </ul>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-steel mb-3">Advanced Support:</h4>
-                    <ul className="space-y-2">
-                      <li className="flex items-center">
-                        <CheckCircle className="h-4 w-4 text-primary mr-2 flex-shrink-0" />
-                        <span className="text-steel-light text-sm">Weekly one-on-one training</span>
+                    <h4 className="font-semibold mb-3">Elite Support:</h4>
+                    <ul className="space-y-3">
+                      <li className="flex items-start gap-3">
+                        <CheckCircle className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                        <span className="text-sm">Weekly one-on-one growth & leadership coaching</span>
                       </li>
-                      <li className="flex items-center">
-                        <CheckCircle className="h-4 w-4 text-primary mr-2 flex-shrink-0" />
-                        <span className="text-steel-light text-sm">Focus on growth, profitability, and leadership</span>
-                      </li>
-                    </ul>
-                    <h4 className="font-semibold text-steel mb-3 mt-4">Enhanced AI Phone Assistant:</h4>
-                    <ul className="space-y-2">
-                      <li className="flex items-center">
-                        <CheckCircle className="h-4 w-4 text-primary mr-2 flex-shrink-0" />
-                        <span className="text-steel-light text-sm">Fully integrated with lead qualification</span>
-                      </li>
-                      <li className="flex items-center">
-                        <CheckCircle className="h-4 w-4 text-primary mr-2 flex-shrink-0" />
-                        <span className="text-steel-light text-sm">Scheduling capabilities</span>
+                      <li className="flex items-start gap-3">
+                        <CheckCircle className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                        <span className="text-sm">Enhanced AI Phone Assistant with qualification & scheduling</span>
                       </li>
                     </ul>
                   </div>
                 </div>
-                <div className="flex justify-center">
-                  <Button disabled className="bg-muted text-muted-foreground font-bold py-4 px-12 text-lg" variant="outline">
-                    Coming Soon
-                  </Button>
+                <div className="bg-muted/20 p-4 rounded-lg border border-muted text-center">
+                  <p className="text-sm text-muted-foreground">
+                    This premium tier is currently under development. Contact us to join the waitlist.
+                  </p>
                 </div>
               </CardContent>
             </Card>
