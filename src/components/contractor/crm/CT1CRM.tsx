@@ -108,6 +108,9 @@ const navItems = [
           onNavigateToEstimates={() => handleSectionChange('estimates')}
           onNavigateToCustomers={() => handleSectionChange('customers')}
           onNavigateToLeads={() => handleSectionChange('leads')}
+          onNavigateToEmails={() => handleSectionChange('emails')}
+          onNavigateToFinancials={() => handleSectionChange('financials')}
+          onNavigateToCalendar={() => handleSectionChange('calendar')}
         />
       );
     }
