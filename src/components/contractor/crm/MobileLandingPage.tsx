@@ -6,6 +6,9 @@ interface MobileLandingPageProps {
   onNavigateToEstimates: () => void;
   onNavigateToCustomers: () => void;
   onNavigateToLeads: () => void;
+  onNavigateToEmails: () => void;
+  onNavigateToFinancials: () => void;
+  onNavigateToCalendar: () => void;
 }
 
 const mobileModules = [
@@ -37,13 +40,37 @@ const mobileModules = [
     icon: ClipboardList,
     gradient: 'from-orange-500 via-orange-600 to-orange-700',
   },
+  {
+    id: 'emails',
+    title: 'Emails',
+    description: 'Inbox & follow-ups',
+    icon: ClipboardList,
+    gradient: 'from-yellow-500 via-yellow-600 to-amber-600',
+  },
+  {
+    id: 'financials',
+    title: 'Financials',
+    description: 'Cash flow & profit',
+    icon: ClipboardList,
+    gradient: 'from-amber-700 via-amber-800 to-stone-800',
+  },
+  {
+    id: 'calendar',
+    title: 'Calendar',
+    description: 'Schedule & tasks',
+    icon: ClipboardList,
+    gradient: 'from-yellow-600 via-amber-700 to-stone-700',
+  },
 ];
 
 export function MobileLandingPage({ 
   onNavigateToJobs, 
   onNavigateToEstimates, 
   onNavigateToCustomers, 
-  onNavigateToLeads 
+  onNavigateToLeads,
+  onNavigateToEmails,
+  onNavigateToFinancials,
+  onNavigateToCalendar,
 }: MobileLandingPageProps) {
   
   const handleModuleClick = (id: string) => {
@@ -59,6 +86,15 @@ export function MobileLandingPage({
         break;
       case 'leads':
         onNavigateToLeads();
+        break;
+      case 'emails':
+        onNavigateToEmails();
+        break;
+      case 'financials':
+        onNavigateToFinancials();
+        break;
+      case 'calendar':
+        onNavigateToCalendar();
         break;
     }
   };
