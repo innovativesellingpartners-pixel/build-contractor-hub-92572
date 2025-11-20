@@ -534,44 +534,44 @@ export function Subscribe() {
 
         {/* Trust Indicators */}
         <div className="grid md:grid-cols-3 gap-8 mb-12">
-          <div className="text-center bg-white rounded-lg p-6 border border-construction shadow-sm">
-            <Shield className="h-12 w-12 text-primary mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2 text-steel">Enterprise Security</h3>
-            <p className="text-steel-light text-sm">SOC 2 Type II compliant with 256-bit SSL encryption and regular security audits</p>
+          <div className="text-center bg-zinc-900 rounded-lg p-6 border border-white/10 shadow-sm">
+            <Shield className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2 text-white">Enterprise Security</h3>
+            <p className="text-gray-400 text-sm">SOC 2 Type II compliant with 256-bit SSL encryption and regular security audits</p>
           </div>
-          <div className="text-center bg-white rounded-lg p-6 border border-construction shadow-sm">
-            <Users className="h-12 w-12 text-primary mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2 text-steel">Industry Leading</h3>
-            <p className="text-steel-light text-sm">Trusted by 15,000+ contractors with 99.9% uptime SLA guarantee</p>
+          <div className="text-center bg-zinc-900 rounded-lg p-6 border border-white/10 shadow-sm">
+            <Users className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2 text-white">Industry Leading</h3>
+            <p className="text-gray-400 text-sm">Trusted by 15,000+ contractors with 99.9% uptime SLA guarantee</p>
           </div>
-          <div className="text-center bg-white rounded-lg p-6 border border-construction shadow-sm">
-            <Clock className="h-12 w-12 text-primary mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2 text-steel">24/7 Support</h3>
-            <p className="text-steel-light text-sm">Round-the-clock technical support with average response time under 2 hours</p>
+          <div className="text-center bg-zinc-900 rounded-lg p-6 border border-white/10 shadow-sm">
+            <Clock className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2 text-white">24/7 Support</h3>
+            <p className="text-gray-400 text-sm">Round-the-clock technical support with average response time under 2 hours</p>
           </div>
         </div>
 
-        <div className="text-center bg-white rounded-lg p-8 border border-construction shadow-sm">
-          <h3 className="text-2xl font-semibold mb-4 text-steel">Ready to Transform Your Business?</h3>
-          <p className="text-steel-light mb-6 max-w-2xl mx-auto">
+        <div className="text-center bg-zinc-900 rounded-lg p-8 border border-white/10 shadow-sm">
+          <h3 className="text-2xl font-semibold mb-4 text-white">Ready to Transform Your Business?</h3>
+          <p className="text-gray-400 mb-6 max-w-2xl mx-auto">
             Join the thousands of contractors who have increased their revenue by an average of 40% within 6 months using our platform.
           </p>
           <div className="flex justify-center items-center space-x-8 mb-6">
             <div className="flex items-center">
-              <Lock className="h-5 w-5 text-primary mr-2" />
-              <span className="text-sm text-steel-light">30-day money-back guarantee</span>
+              <Lock className="h-5 w-5 text-red-500 mr-2" />
+              <span className="text-sm text-gray-400">30-day money-back guarantee</span>
             </div>
             <div className="flex items-center">
-              <UserCheck className="h-5 w-5 text-primary mr-2" />
-              <span className="text-sm text-steel-light">No setup fees</span>
+              <UserCheck className="h-5 w-5 text-red-500 mr-2" />
+              <span className="text-sm text-gray-400">No setup fees</span>
             </div>
             <div className="flex items-center">
-              <Shield className="h-5 w-5 text-primary mr-2" />
-              <span className="text-sm text-steel-light">Cancel anytime</span>
+              <Shield className="h-5 w-5 text-red-500 mr-2" />
+              <span className="text-sm text-gray-400">Cancel anytime</span>
             </div>
           </div>
           <Link to="/subscribe">
-            <Button variant="outline" className="border-construction text-steel hover:bg-primary hover:text-white">
+            <Button variant="outline" className="border-white/20 text-white hover:bg-red-600 hover:border-red-600">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Login
             </Button>
