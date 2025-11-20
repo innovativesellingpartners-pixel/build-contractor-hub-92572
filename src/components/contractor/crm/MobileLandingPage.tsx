@@ -1,4 +1,4 @@
-import { Briefcase, FileText, Users, ClipboardList } from 'lucide-react';
+import { Briefcase, FileText, Users, ClipboardList, Phone, Mail, Calendar, DollarSign } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 
 interface MobileLandingPageProps {
@@ -6,6 +6,10 @@ interface MobileLandingPageProps {
   onNavigateToEstimates: () => void;
   onNavigateToCustomers: () => void;
   onNavigateToLeads: () => void;
+  onNavigateToCalls?: () => void;
+  onNavigateToEmails?: () => void;
+  onNavigateToSchedule?: () => void;
+  onNavigateToFinancials?: () => void;
 }
 
 const mobileModules = [
@@ -31,6 +35,27 @@ const mobileModules = [
     gradient: 'from-blue-500 via-blue-600 to-blue-700',
   },
   { 
+    id: 'calls',
+    title: 'Calls',
+    description: 'Call history & logs',
+    icon: Phone,
+    gradient: 'from-pink-500 via-pink-600 to-pink-700',
+  },
+  { 
+    id: 'emails',
+    title: 'Emails',
+    description: 'Email communications',
+    icon: Mail,
+    gradient: 'from-cyan-500 via-cyan-600 to-cyan-700',
+  },
+  { 
+    id: 'schedule',
+    title: 'Schedule',
+    description: 'Calendar & events',
+    icon: Calendar,
+    gradient: 'from-indigo-500 via-indigo-600 to-indigo-700',
+  },
+  { 
     id: 'leads',
     title: 'Leads',
     description: 'Track opportunities',
@@ -43,7 +68,11 @@ export function MobileLandingPage({
   onNavigateToJobs, 
   onNavigateToEstimates, 
   onNavigateToCustomers, 
-  onNavigateToLeads 
+  onNavigateToLeads,
+  onNavigateToCalls,
+  onNavigateToEmails,
+  onNavigateToSchedule,
+  onNavigateToFinancials,
 }: MobileLandingPageProps) {
   
   const handleModuleClick = (id: string) => {
@@ -57,6 +86,15 @@ export function MobileLandingPage({
       case 'customers':
         onNavigateToCustomers();
         break;
+      case 'calls':
+        onNavigateToCalls?.();
+        break;
+      case 'emails':
+        onNavigateToEmails?.();
+        break;
+      case 'schedule':
+        onNavigateToSchedule?.();
+        break;
       case 'leads':
         onNavigateToLeads();
         break;
@@ -64,9 +102,9 @@ export function MobileLandingPage({
   };
 
   return (
-    <div className="w-full h-full overflow-y-auto overflow-x-hidden pb-20 bg-gradient-to-br from-background via-muted/30 to-background">
-      <div className="p-4 sm:p-6 space-y-6 w-full max-w-lg mx-auto">
-        {/* 2x2 Grid of Module Cards */}
+    <div className="w-full h-full overflow-y-auto overflow-x-hidden pb-20 bg-gradient-to-br from-background via-muted/30 to-background pt-safe">
+      <div className="p-4 sm:p-6 space-y-6 w-full max-w-lg mx-auto mt-4">
+        {/* Grid of Module Cards */}
         <div className="grid grid-cols-2 gap-4 w-full">
           {mobileModules.map((module) => (
             <Card 
