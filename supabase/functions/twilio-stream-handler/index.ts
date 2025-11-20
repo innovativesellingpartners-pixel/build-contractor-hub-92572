@@ -276,8 +276,11 @@ Deno.serve(async (req) => {
         console.log('Connecting to OpenAI Realtime API...');
 
         try {
+          // Use query param "authorization" since we can't set headers on WebSocket
+          // Format: authorization=Bearer <API_KEY>
+          const authParam = encodeURIComponent(`Bearer ${OPENAI_API_KEY}`);
           openaiWs = new WebSocket(
-            `wss://api.openai.com/v1/realtime?model=${model}&api_key=${OPENAI_API_KEY}`
+            `wss://api.openai.com/v1/realtime?model=${model}&authorization=${authParam}`
           );
 
           openaiWs.onopen = () => {
