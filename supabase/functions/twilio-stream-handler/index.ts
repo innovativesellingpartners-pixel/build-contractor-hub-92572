@@ -27,6 +27,7 @@ interface CallSession {
 
 /**
  * Convert Twilio's mulaw (8kHz) to OpenAI's PCM16 (24kHz)
+ * Uses cubic interpolation for smoother upsampling
  */
 function mulawToPCM16(mulawData: Uint8Array): string {
   const MULAW_BIAS = 0x84;
@@ -48,24 +49,34 @@ function mulawToPCM16(mulawData: Uint8Array): string {
     pcm8k[i] = Math.max(-32768, Math.min(32767, sample));
   }
   
-  // Upsample from 8kHz to 24kHz using linear interpolation
+  // Upsample from 8kHz to 24kHz using cubic interpolation for better quality
   const pcm24k = new Int16Array(pcm8k.length * 3);
-  for (let i = 0; i < pcm8k.length - 1; i++) {
-    const current = pcm8k[i];
-    const next = pcm8k[i + 1];
+  
+  for (let i = 0; i < pcm8k.length; i++) {
+    const p0 = pcm8k[Math.max(0, i - 1)];
+    const p1 = pcm8k[i];
+    const p2 = pcm8k[Math.min(pcm8k.length - 1, i + 1)];
+    const p3 = pcm8k[Math.min(pcm8k.length - 1, i + 2)];
     
-    // First sample is the original
-    pcm24k[i * 3] = current;
-    // Interpolate two samples between current and next
-    pcm24k[i * 3 + 1] = Math.round(current + (next - current) / 3);
-    pcm24k[i * 3 + 2] = Math.round(current + (next - current) * 2 / 3);
-  }
-  // Handle last sample
-  if (pcm8k.length > 0) {
-    const lastIdx = pcm8k.length - 1;
-    pcm24k[lastIdx * 3] = pcm8k[lastIdx];
-    pcm24k[lastIdx * 3 + 1] = pcm8k[lastIdx];
-    pcm24k[lastIdx * 3 + 2] = pcm8k[lastIdx];
+    // Original sample
+    pcm24k[i * 3] = p1;
+    
+    // Cubic interpolation for the two intermediate samples
+    for (let j = 1; j < 3; j++) {
+      const t = j / 3;
+      const t2 = t * t;
+      const t3 = t2 * t;
+      
+      // Catmull-Rom spline interpolation
+      const v = 0.5 * (
+        (2 * p1) +
+        (-p0 + p2) * t +
+        (2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 +
+        (-p0 + 3 * p1 - 3 * p2 + p3) * t3
+      );
+      
+      pcm24k[i * 3 + j] = Math.round(Math.max(-32768, Math.min(32767, v)));
+    }
   }
   
   // Convert to base64
@@ -83,6 +94,7 @@ function mulawToPCM16(mulawData: Uint8Array): string {
 
 /**
  * Convert OpenAI's PCM16 audio (24kHz) to Twilio's mulaw (8kHz)
+ * Uses low-pass filtering before downsampling to reduce aliasing
  */
 function pcm16ToMulaw(base64PCM: string): Uint8Array {
   // Decode base64
@@ -96,19 +108,25 @@ function pcm16ToMulaw(base64PCM: string): Uint8Array {
   const pcm24k: number[] = [];
   for (let i = 0; i < bytes.length; i += 2) {
     if (i + 1 < bytes.length) {
-      // Little-endian: low byte first, high byte second
       const sample = bytes[i] | (bytes[i + 1] << 8);
-      // Convert unsigned to signed
       pcm24k.push(sample > 32767 ? sample - 65536 : sample);
     }
   }
   
-  // Downsample from 24kHz to 8kHz using averaging for anti-aliasing
+  // Apply simple low-pass filter before downsampling (weighted moving average)
+  const filtered: number[] = [];
+  for (let i = 0; i < pcm24k.length; i++) {
+    const prev = pcm24k[Math.max(0, i - 1)];
+    const curr = pcm24k[i];
+    const next = pcm24k[Math.min(pcm24k.length - 1, i + 1)];
+    // Weighted average: 25% prev, 50% curr, 25% next
+    filtered[i] = Math.round((prev * 0.25 + curr * 0.5 + next * 0.25));
+  }
+  
+  // Downsample from 24kHz to 8kHz (take every 3rd sample after filtering)
   const pcm8k: number[] = [];
-  for (let i = 0; i < pcm24k.length; i += 3) {
-    // Average 3 samples to reduce aliasing
-    const avg = Math.round((pcm24k[i] + (pcm24k[i + 1] || pcm24k[i]) + (pcm24k[i + 2] || pcm24k[i])) / 3);
-    pcm8k.push(avg);
+  for (let i = 0; i < filtered.length; i += 3) {
+    pcm8k.push(filtered[i]);
   }
   
   // Convert PCM16 to mulaw
@@ -117,15 +135,12 @@ function pcm16ToMulaw(base64PCM: string): Uint8Array {
   for (let i = 0; i < pcm8k.length; i++) {
     let sample = pcm8k[i];
     
-    // Get sign and absolute value
     const sign = (sample < 0) ? 0x80 : 0x00;
     if (sample < 0) sample = -sample;
     
-    // Add bias
     sample += 132;
     if (sample > 32767) sample = 32767;
     
-    // Find exponent and mantissa
     let exponent = 7;
     for (let exp = 0; exp < 8; exp++) {
       if (sample <= (0x1F << (exp + 3))) {
@@ -135,8 +150,6 @@ function pcm16ToMulaw(base64PCM: string): Uint8Array {
     }
     
     const mantissa = (sample >> (exponent + 3)) & 0x0F;
-    
-    // Compose mulaw byte and invert
     mulaw[i] = ~(sign | (exponent << 4) | mantissa);
   }
   
