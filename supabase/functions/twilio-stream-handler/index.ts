@@ -72,19 +72,32 @@ function pcm16ToMulaw(base64PCM: string): Uint8Array {
     bytes[i] = binaryString.charCodeAt(i);
   }
   
-  // Convert Int16 PCM to mulaw
-  const pcm16 = new Int16Array(bytes.buffer);
-  const mulaw = new Uint8Array(pcm16.length);
+  // Convert bytes to Int16 PCM samples (little-endian)
+  const pcm16Array: number[] = [];
+  for (let i = 0; i < bytes.length; i += 2) {
+    if (i + 1 < bytes.length) {
+      // Little-endian: low byte first, high byte second
+      const sample = bytes[i] | (bytes[i + 1] << 8);
+      // Convert unsigned to signed
+      pcm16Array.push(sample > 32767 ? sample - 65536 : sample);
+    }
+  }
   
-  for (let i = 0; i < pcm16.length; i++) {
-    let sample = pcm16[i];
+  // Convert PCM16 to mulaw
+  const mulaw = new Uint8Array(pcm16Array.length);
+  
+  for (let i = 0; i < pcm16Array.length; i++) {
+    let sample = pcm16Array[i];
+    
+    // Get sign and absolute value
     const sign = (sample < 0) ? 0x80 : 0x00;
-    
     if (sample < 0) sample = -sample;
-    sample += 0x84;
     
-    if (sample > 0x7FFF) sample = 0x7FFF;
+    // Add bias
+    sample += 132;
+    if (sample > 32767) sample = 32767;
     
+    // Find exponent and mantissa
     let exponent = 7;
     for (let exp = 0; exp < 8; exp++) {
       if (sample <= (0x1F << (exp + 3))) {
@@ -94,6 +107,8 @@ function pcm16ToMulaw(base64PCM: string): Uint8Array {
     }
     
     const mantissa = (sample >> (exponent + 3)) & 0x0F;
+    
+    // Compose mulaw byte and invert
     mulaw[i] = ~(sign | (exponent << 4) | mantissa);
   }
   
