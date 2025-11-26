@@ -390,26 +390,16 @@ export default function JobDetailView({ job, open, onOpenChange, onConvertToCust
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-7xl h-[90vh] p-0">
-        <DialogHeader className="px-6 pt-6 pb-4 border-b">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <DialogTitle className="text-2xl font-bold mb-2">{job.name}</DialogTitle>
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+      <DialogContent className="max-w-full sm:max-w-7xl h-[90vh] p-0">
+        <DialogHeader className="px-4 sm:px-6 pt-4 sm:pt-6 pb-4 border-b space-y-3">
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex-1 min-w-0">
+              <DialogTitle className="text-xl sm:text-2xl font-bold mb-1">{job.name}</DialogTitle>
+              <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
                 <span className="font-medium">{job.job_number}</span>
               </div>
-              {getFullAddress() && (
-                <Button
-                  onClick={handleNavigate}
-                  className="mt-3 w-full sm:w-auto bg-orange-500 hover:bg-orange-600 text-white font-medium gap-2 justify-start whitespace-normal text-left"
-                  size="lg"
-                >
-                  <Navigation className="h-4 w-4 flex-shrink-0" />
-                  <span className="break-words leading-snug">{getFullAddress()}</span>
-                </Button>
-              )}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-shrink-0">
               {isDelayed && (
                 <Badge variant="destructive">
                   <AlertCircle className="h-3 w-3 mr-1" />
@@ -418,9 +408,9 @@ export default function JobDetailView({ job, open, onOpenChange, onConvertToCust
               )}
               <AlertDialog open={convertDialogOpen} onOpenChange={setConvertDialogOpen}>
                 <AlertDialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-2">
+                  <Button variant="outline" size="sm" className="gap-2 hidden sm:flex">
                     <Users className="h-4 w-4" />
-                    Convert to Customer
+                    <span>Convert to Customer</span>
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
@@ -439,7 +429,7 @@ export default function JobDetailView({ job, open, onOpenChange, onConvertToCust
               {isEditingStatus ? (
                 <div className="flex items-center gap-2">
                   <Select value={jobStatus} onValueChange={(value) => setJobStatus(value)}>
-                    <SelectTrigger className="w-[160px]">
+                    <SelectTrigger className="w-[120px] sm:w-[160px]">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -456,7 +446,7 @@ export default function JobDetailView({ job, open, onOpenChange, onConvertToCust
                 <Button
                   variant="outline"
                   size="sm"
-                  className={`${getStatusColor(job.status)} text-white hover:opacity-90`}
+                  className={`${getStatusColor(job.status)} text-white hover:opacity-90 hidden sm:flex`}
                   onClick={() => {
                     setJobStatus(job.status);
                     setIsEditingStatus(true);
@@ -469,10 +459,20 @@ export default function JobDetailView({ job, open, onOpenChange, onConvertToCust
               )}
             </div>
           </div>
+          
+          {getFullAddress() && (
+            <Button
+              onClick={handleNavigate}
+              className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold gap-2 h-12"
+            >
+              <Navigation className="h-5 w-5 flex-shrink-0" />
+              <span className="truncate">{getFullAddress()}</span>
+            </Button>
+          )}
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto">
-          <div className="px-6 py-4 grid grid-cols-1 md:grid-cols-3 gap-4 bg-muted/30">
+          <div className="px-4 sm:px-6 py-4 grid grid-cols-1 md:grid-cols-3 gap-4 bg-muted/30">
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">Total Cost</CardTitle>
@@ -503,16 +503,16 @@ export default function JobDetailView({ job, open, onOpenChange, onConvertToCust
             </Card>
           </div>
 
-          <div className="px-6 py-4">
+          <div className="px-4 sm:px-6 py-4">
             <Tabs defaultValue="overview" className="w-full">
-              <TabsList className="grid w-full grid-cols-7">
-                <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="tasks">Tasks</TabsTrigger>
-                <TabsTrigger value="materials">Materials</TabsTrigger>
-                <TabsTrigger value="change-orders">Changes</TabsTrigger>
-                <TabsTrigger value="invoices">Invoices</TabsTrigger>
-                <TabsTrigger value="photos">Photos</TabsTrigger>
-                <TabsTrigger value="logs">Logs</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-4 sm:grid-cols-7">
+                <TabsTrigger value="overview" className="text-xs sm:text-sm">Overview</TabsTrigger>
+                <TabsTrigger value="tasks" className="text-xs sm:text-sm">Tasks</TabsTrigger>
+                <TabsTrigger value="materials" className="text-xs sm:text-sm">Materials</TabsTrigger>
+                <TabsTrigger value="change-orders" className="text-xs sm:text-sm">Changes</TabsTrigger>
+                <TabsTrigger value="invoices" className="hidden sm:inline-flex">Invoices</TabsTrigger>
+                <TabsTrigger value="photos" className="hidden sm:inline-flex">Photos</TabsTrigger>
+                <TabsTrigger value="logs" className="hidden sm:inline-flex">Logs</TabsTrigger>
               </TabsList>
 
               <TabsContent value="overview" className="space-y-4 mt-4">
