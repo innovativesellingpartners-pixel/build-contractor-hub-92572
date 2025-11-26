@@ -5,12 +5,17 @@ import { toast } from 'sonner';
 
 export interface EstimateLineItem {
   id?: string;
-  category: string;
-  item_description: string;
+  itemNumber?: string;
+  category?: string;
+  item_description?: string;
+  description?: string;
   quantity: number;
-  unit_type: string;
-  unit_cost: number;
-  line_total: number;
+  unit?: string;
+  unit_type?: string;
+  unitPrice?: number;
+  unit_cost?: number;
+  totalPrice?: number;
+  line_total?: number;
   included: boolean;
 }
 
@@ -22,22 +27,64 @@ export interface Estimate {
   opportunity_id?: string;
   title: string;
   description?: string;
-  status: 'draft' | 'sent' | 'accepted' | 'rejected';
+  status: 'draft' | 'sent' | 'accepted' | 'rejected' | 'pending' | 'sold' | 'lost' | 'cancelled';
   total_amount: number;
   valid_until?: string;
   line_items?: EstimateLineItem[];
+  
+  // Header fields
+  date_issued?: string;
+  prepared_by?: string;
+  project_name?: string;
+  project_address?: string;
+  referred_by?: string;
+  
+  // Client details
+  client_name?: string;
+  client_phone?: string;
+  client_email?: string;
+  client_address?: string;
+  site_address?: string;
+  
+  // Scope of work
+  scope_objective?: string;
+  scope_key_deliverables?: string[];
+  scope_exclusions?: string[];
+  scope_timeline?: string;
+  
+  // Financial summary
+  subtotal?: number;
+  tax_rate?: number;
+  tax_amount?: number;
+  permit_fee?: number;
+  grand_total?: number;
+  required_deposit?: number;
+  balance_due?: number;
+  
+  // Terms and conditions
+  terms_validity?: string;
+  terms_payment_schedule?: string;
+  terms_change_orders?: string;
+  terms_insurance?: string;
+  terms_warranty_years?: number;
+  
+  // Signatures
+  contractor_signature?: string;
+  contractor_printed_name?: string;
+  contractor_acceptance_date?: string;
+  client_signature?: string;
+  client_printed_name?: string;
+  client_acceptance_date?: string;
+  
+  // Legacy/compatibility
   trade_type?: string;
   project_description?: string;
   assumptions_and_exclusions?: string;
-  client_name?: string;
-  client_address?: string;
-  client_email?: string;
-  site_address?: string;
   cost_summary?: any;
   trade_specific?: any;
   attachments?: any;
-  contractor_signature?: string;
-  client_signature?: string;
+  
+  // System fields
   created_at?: string;
   updated_at?: string;
   sent_at?: string;
@@ -92,17 +139,57 @@ export function useEstimates() {
           total_amount: estimate.total_amount,
           valid_until: estimate.valid_until,
           line_items: estimate.line_items as any || [],
+          
+          // Header fields
+          date_issued: estimate.date_issued,
+          prepared_by: estimate.prepared_by,
+          project_name: estimate.project_name,
+          project_address: estimate.project_address,
+          referred_by: estimate.referred_by,
+          
+          // Client details
           client_name: estimate.client_name,
+          client_phone: estimate.client_phone,
           client_email: estimate.client_email,
           client_address: estimate.client_address,
           site_address: estimate.site_address,
+          
+          // Scope of work
+          scope_objective: estimate.scope_objective,
+          scope_key_deliverables: estimate.scope_key_deliverables as any,
+          scope_exclusions: estimate.scope_exclusions as any,
+          scope_timeline: estimate.scope_timeline,
+          
+          // Financial summary
+          subtotal: estimate.subtotal,
+          tax_rate: estimate.tax_rate,
+          tax_amount: estimate.tax_amount,
+          permit_fee: estimate.permit_fee,
+          grand_total: estimate.grand_total,
+          required_deposit: estimate.required_deposit,
+          balance_due: estimate.balance_due,
+          
+          // Terms
+          terms_validity: estimate.terms_validity,
+          terms_payment_schedule: estimate.terms_payment_schedule,
+          terms_change_orders: estimate.terms_change_orders,
+          terms_insurance: estimate.terms_insurance,
+          terms_warranty_years: estimate.terms_warranty_years,
+          
+          // Signatures
+          contractor_signature: estimate.contractor_signature,
+          contractor_printed_name: estimate.contractor_printed_name,
+          contractor_acceptance_date: estimate.contractor_acceptance_date,
+          client_signature: estimate.client_signature,
+          client_printed_name: estimate.client_printed_name,
+          client_acceptance_date: estimate.client_acceptance_date,
+          
+          // Legacy fields
           trade_type: estimate.trade_type,
           project_description: estimate.project_description,
           assumptions_and_exclusions: estimate.assumptions_and_exclusions,
           cost_summary: estimate.cost_summary as any,
           trade_specific: estimate.trade_specific as any,
-          contractor_signature: estimate.contractor_signature,
-          client_signature: estimate.client_signature,
         }])
         .select()
         .single();
@@ -130,17 +217,57 @@ export function useEstimates() {
           total_amount: estimate.total_amount,
           valid_until: estimate.valid_until,
           line_items: estimate.line_items as any || [],
+          
+          // Header fields
+          date_issued: estimate.date_issued,
+          prepared_by: estimate.prepared_by,
+          project_name: estimate.project_name,
+          project_address: estimate.project_address,
+          referred_by: estimate.referred_by,
+          
+          // Client details
           client_name: estimate.client_name,
+          client_phone: estimate.client_phone,
           client_email: estimate.client_email,
           client_address: estimate.client_address,
           site_address: estimate.site_address,
+          
+          // Scope of work
+          scope_objective: estimate.scope_objective,
+          scope_key_deliverables: estimate.scope_key_deliverables as any,
+          scope_exclusions: estimate.scope_exclusions as any,
+          scope_timeline: estimate.scope_timeline,
+          
+          // Financial summary
+          subtotal: estimate.subtotal,
+          tax_rate: estimate.tax_rate,
+          tax_amount: estimate.tax_amount,
+          permit_fee: estimate.permit_fee,
+          grand_total: estimate.grand_total,
+          required_deposit: estimate.required_deposit,
+          balance_due: estimate.balance_due,
+          
+          // Terms
+          terms_validity: estimate.terms_validity,
+          terms_payment_schedule: estimate.terms_payment_schedule,
+          terms_change_orders: estimate.terms_change_orders,
+          terms_insurance: estimate.terms_insurance,
+          terms_warranty_years: estimate.terms_warranty_years,
+          
+          // Signatures
+          contractor_signature: estimate.contractor_signature,
+          contractor_printed_name: estimate.contractor_printed_name,
+          contractor_acceptance_date: estimate.contractor_acceptance_date,
+          client_signature: estimate.client_signature,
+          client_printed_name: estimate.client_printed_name,
+          client_acceptance_date: estimate.client_acceptance_date,
+          
+          // Legacy fields
           trade_type: estimate.trade_type,
           project_description: estimate.project_description,
           assumptions_and_exclusions: estimate.assumptions_and_exclusions,
           cost_summary: estimate.cost_summary as any,
           trade_specific: estimate.trade_specific as any,
-          contractor_signature: estimate.contractor_signature,
-          client_signature: estimate.client_signature,
         })
         .eq('id', id)
         .select()
