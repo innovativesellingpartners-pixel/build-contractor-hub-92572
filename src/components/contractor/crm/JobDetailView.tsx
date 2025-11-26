@@ -463,17 +463,17 @@ export default function JobDetailView({ job, open, onOpenChange, onConvertToCust
           {getFullAddress() && (
             <Button
               onClick={handleNavigate}
-              className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold gap-2 h-12"
+              className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold gap-2 h-12 text-base justify-center"
             >
               <Navigation className="h-5 w-5 flex-shrink-0" />
-              <span className="truncate">{getFullAddress()}</span>
+              <span>START TRAVEL</span>
             </Button>
           )}
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto">
-          <div className="px-4 sm:px-6 py-4 grid grid-cols-1 md:grid-cols-3 gap-4 bg-muted/30">
-            <Card>
+          <div className="px-3 sm:px-6 py-4 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 bg-muted/30">
+            <Card className="w-full">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">Total Cost</CardTitle>
               </CardHeader>
@@ -481,7 +481,7 @@ export default function JobDetailView({ job, open, onOpenChange, onConvertToCust
                 <div className="text-2xl font-bold text-primary">${(job.total_cost || 0).toFixed(0)}</div>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="w-full">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">Start Date</CardTitle>
               </CardHeader>
@@ -491,7 +491,7 @@ export default function JobDetailView({ job, open, onOpenChange, onConvertToCust
                 </div>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="w-full">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">End Date</CardTitle>
               </CardHeader>
@@ -503,13 +503,13 @@ export default function JobDetailView({ job, open, onOpenChange, onConvertToCust
             </Card>
           </div>
 
-          <div className="px-4 sm:px-6 py-4">
+          <div className="px-3 sm:px-6 py-4">
             <Tabs defaultValue="overview" className="w-full">
-              <TabsList className="grid w-full grid-cols-4 sm:grid-cols-7">
-                <TabsTrigger value="overview" className="text-xs sm:text-sm">Overview</TabsTrigger>
-                <TabsTrigger value="tasks" className="text-xs sm:text-sm">Tasks</TabsTrigger>
-                <TabsTrigger value="materials" className="text-xs sm:text-sm">Materials</TabsTrigger>
-                <TabsTrigger value="change-orders" className="text-xs sm:text-sm">Changes</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-4 sm:grid-cols-7 gap-1">
+                <TabsTrigger value="overview" className="text-xs sm:text-sm px-2">Overview</TabsTrigger>
+                <TabsTrigger value="tasks" className="text-xs sm:text-sm px-2">Tasks</TabsTrigger>
+                <TabsTrigger value="materials" className="text-xs sm:text-sm px-2">Materials</TabsTrigger>
+                <TabsTrigger value="change-orders" className="text-xs sm:text-sm px-2">Changes</TabsTrigger>
                 <TabsTrigger value="invoices" className="hidden sm:inline-flex">Invoices</TabsTrigger>
                 <TabsTrigger value="photos" className="hidden sm:inline-flex">Photos</TabsTrigger>
                 <TabsTrigger value="logs" className="hidden sm:inline-flex">Logs</TabsTrigger>
