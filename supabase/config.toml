@@ -98,3 +98,6 @@ verify_jwt = true
 
 [functions.provision-twilio-number]
 verify_jwt = true
+
+[functions.pocketbot-chat]
+verify_jwt = true
