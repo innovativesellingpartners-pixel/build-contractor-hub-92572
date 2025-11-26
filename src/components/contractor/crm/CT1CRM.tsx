@@ -13,7 +13,8 @@ import {
   BarChart2,
   DollarSign,
   Link as LinkIcon,
-  ArrowLeft
+  ArrowLeft,
+  CreditCard
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -50,6 +51,7 @@ const navItems = [
   { id: 'jobs' as Section, label: 'Jobs', icon: Briefcase },
   { id: 'customers' as Section, label: 'Customers', icon: Users },
   { id: 'estimates' as Section, label: 'Estimates', icon: FileText },
+  { id: 'payments' as Section, label: 'Payments', icon: CreditCard },
   { id: 'financials' as Section, label: 'Financials', icon: DollarSign },
   { id: 'reporting' as Section, label: 'Reporting', icon: BarChart2 },
   { id: 'quickbooks' as Section, label: 'QuickBooks', icon: LinkIcon },
