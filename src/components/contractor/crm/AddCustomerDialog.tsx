@@ -33,7 +33,6 @@ const customerSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   email: z.string().email('Invalid email').optional().or(z.literal('')),
   phone: z.string().optional(),
-  company: z.string().optional(),
   address: z.string().optional(),
   city: z.string().optional(),
   state: z.string().optional(),
@@ -59,7 +58,6 @@ export default function AddCustomerDialog({ open, onOpenChange }: AddCustomerDia
       name: '',
       email: '',
       phone: '',
-      company: '',
       address: '',
       city: '',
       state: '',
@@ -78,7 +76,6 @@ export default function AddCustomerDialog({ open, onOpenChange }: AddCustomerDia
         customer_type: data.customer_type,
         email: data.email || undefined,
         phone: data.phone || undefined,
-        company: data.company || undefined,
         address: data.address || undefined,
         city: data.city || undefined,
         state: data.state || undefined,
@@ -166,20 +163,6 @@ export default function AddCustomerDialog({ open, onOpenChange }: AddCustomerDia
                     <FormLabel>Phone</FormLabel>
                     <FormControl>
                       <Input {...field} placeholder="(555) 123-4567" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="company"
-                render={({ field }) => (
-                  <FormItem className="md:col-span-2">
-                    <FormLabel>Company</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="ABC Construction" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
