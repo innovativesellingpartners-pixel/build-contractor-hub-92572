@@ -34,8 +34,9 @@ import { QuickBooksIntegration } from '@/components/contractor/QuickBooksIntegra
 import ct1Logo from '@/assets/ct1-logo-main.png';
 import Reporting from '@/pages/Reporting';
 import { MobileLandingPage } from './MobileLandingPage';
+import { PaymentsBankingSection } from './sections/PaymentsBankingSection';
 
-type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calendar' | 'emails' | 'estimates' | 'reporting' | 'financials' | 'quickbooks' | 'more';
+type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calendar' | 'emails' | 'estimates' | 'reporting' | 'financials' | 'quickbooks' | 'more' | 'payments';
 
 interface CT1CRMProps {
   onOpenPocketbot?: () => void;
@@ -143,6 +144,8 @@ const navItems = [
         return <Reporting />;
       case 'more':
         return <MoreSection onSectionChange={handleSectionChange} />;
+      case 'payments':
+        return <PaymentsBankingSection />;
       default:
         return <CRMDashboard onSectionChange={handleSectionChange} />;
     }

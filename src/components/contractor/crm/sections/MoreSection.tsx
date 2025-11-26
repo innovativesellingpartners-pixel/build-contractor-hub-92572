@@ -1,8 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileText, BarChart2, DollarSign, Phone, Calendar, Mail, Link as LinkIcon, LayoutDashboard, ClipboardList, Briefcase, Users } from 'lucide-react';
+import { FileText, BarChart2, DollarSign, Phone, Calendar, Mail, Link as LinkIcon, LayoutDashboard, ClipboardList, Briefcase, Users, CreditCard } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'estimates' | 'reporting' | 'financials' | 'calls' | 'calendar' | 'emails' | 'quickbooks';
+type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'estimates' | 'reporting' | 'financials' | 'calls' | 'calendar' | 'emails' | 'quickbooks' | 'payments';
 
 interface MoreSectionProps {
   onSectionChange: (section: Section) => void;
@@ -16,6 +16,14 @@ const allCRMFeatures = [
     gradient: 'from-slate-500 to-slate-600',
     borderColor: 'border-slate-400',
     description: 'Overview & stats'
+  },
+  { 
+    id: 'payments' as Section, 
+    label: 'Payments', 
+    icon: CreditCard, 
+    gradient: 'from-emerald-500 to-emerald-600',
+    borderColor: 'border-emerald-400',
+    description: 'Stripe & Banking'
   },
   { 
     id: 'leads' as Section, 

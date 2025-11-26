@@ -1,5 +1,23 @@
 project_id = "faqrzzodtmsybofakcvv"
 
+[functions.stripe-ensure-customer]
+verify_jwt = true
+
+[functions.stripe-create-checkout]
+verify_jwt = true
+
+[functions.stripe-webhook]
+verify_jwt = false
+
+[functions.plaid-create-link-token]
+verify_jwt = true
+
+[functions.plaid-exchange-token]
+verify_jwt = true
+
+[functions.plaid-transactions-sync]
+verify_jwt = true
+
 [functions.cleanup-oauth-states]
 verify_jwt = false
 

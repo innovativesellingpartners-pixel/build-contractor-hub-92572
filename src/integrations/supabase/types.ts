@@ -109,6 +109,39 @@ export type Database = {
           },
         ]
       }
+      bank_account_links: {
+        Row: {
+          created_at: string | null
+          id: string
+          plaid_access_token_encrypted: string
+          plaid_institution_name: string | null
+          plaid_item_id: string
+          status: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          plaid_access_token_encrypted: string
+          plaid_institution_name?: string | null
+          plaid_item_id: string
+          status?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          plaid_access_token_encrypted?: string
+          plaid_institution_name?: string | null
+          plaid_item_id?: string
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       calendar_connections: {
         Row: {
           access_token_encrypted: string
@@ -2071,6 +2104,7 @@ export type Database = {
           contact_name: string | null
           created_at: string
           ct1_contractor_number: string | null
+          default_currency: string | null
           id: string
           logo_url: string | null
           phone: string | null
@@ -2082,6 +2116,8 @@ export type Database = {
           qb_refresh_token: string | null
           qb_refresh_token_expires_at: string | null
           state: string | null
+          stripe_connect_account_id: string | null
+          stripe_customer_id: string | null
           subscription_tier: string | null
           tax_id: string | null
           trade: string | null
@@ -2097,6 +2133,7 @@ export type Database = {
           contact_name?: string | null
           created_at?: string
           ct1_contractor_number?: string | null
+          default_currency?: string | null
           id: string
           logo_url?: string | null
           phone?: string | null
@@ -2108,6 +2145,8 @@ export type Database = {
           qb_refresh_token?: string | null
           qb_refresh_token_expires_at?: string | null
           state?: string | null
+          stripe_connect_account_id?: string | null
+          stripe_customer_id?: string | null
           subscription_tier?: string | null
           tax_id?: string | null
           trade?: string | null
@@ -2123,6 +2162,7 @@ export type Database = {
           contact_name?: string | null
           created_at?: string
           ct1_contractor_number?: string | null
+          default_currency?: string | null
           id?: string
           logo_url?: string | null
           phone?: string | null
@@ -2134,6 +2174,8 @@ export type Database = {
           qb_refresh_token?: string | null
           qb_refresh_token_expires_at?: string | null
           state?: string | null
+          stripe_connect_account_id?: string | null
+          stripe_customer_id?: string | null
           subscription_tier?: string | null
           tax_id?: string | null
           trade?: string | null
@@ -2258,6 +2300,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      stripe_payment_sessions: {
+        Row: {
+          amount_cents: number
+          completed_at: string | null
+          created_at: string | null
+          currency: string | null
+          description: string | null
+          id: string
+          status: string | null
+          stripe_session_id: string
+          user_id: string
+        }
+        Insert: {
+          amount_cents: number
+          completed_at?: string | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          id?: string
+          status?: string | null
+          stripe_session_id: string
+          user_id: string
+        }
+        Update: {
+          amount_cents?: number
+          completed_at?: string | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          id?: string
+          status?: string | null
+          stripe_session_id?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       subscriptions: {
         Row: {
