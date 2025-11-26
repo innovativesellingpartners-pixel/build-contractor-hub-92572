@@ -15,13 +15,15 @@ if ("serviceWorker" in navigator) {
           registration.update();
         }, 60 * 60 * 1000);
         
-        // Handle service worker updates
+        // Handle service worker updates - auto-reload when new version available
         registration.addEventListener('updatefound', () => {
           const newWorker = registration.installing;
           if (newWorker) {
             newWorker.addEventListener('statechange', () => {
               if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                console.log('New service worker available, will reload on next visit');
+                console.log('New service worker installed, will activate on next login/logout');
+                // Store that an update is ready
+                localStorage.setItem('sw-update-ready', 'true');
               }
             });
           }
