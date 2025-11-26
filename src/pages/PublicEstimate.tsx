@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CheckCircle, FileText, Loader2, CreditCard, Building2, Calendar, DollarSign } from 'lucide-react';
 import SignatureCanvas from 'react-signature-canvas';
+import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import ct1Logo from '@/assets/ct1-logo-circle.png';
 
@@ -17,6 +18,7 @@ export default function PublicEstimate() {
   const [loading, setLoading] = useState(true);
   const [signing, setSigning] = useState(false);
   const [signed, setSigned] = useState(false);
+  const [agreementAccepted, setAgreementAccepted] = useState(false);
   const clientSigRef = useRef<SignatureCanvas>(null);
 
   useEffect(() => {
@@ -73,6 +75,11 @@ export default function PublicEstimate() {
   };
 
   const handleSign = async () => {
+    if (!agreementAccepted) {
+      toast.error('Please accept the payment agreement to proceed');
+      return;
+    }
+
     if (!clientSigRef.current?.toDataURL()) {
       toast.error('Please provide your signature');
       return;
@@ -380,6 +387,44 @@ export default function PublicEstimate() {
                   this estimate into an active project.
                 </AlertDescription>
               </Alert>
+
+              {/* Payment Agreement */}
+              <Card className="border-2 border-primary/30 bg-gradient-to-br from-background to-primary/5">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <FileText className="h-5 w-5 text-primary" />
+                    Payment Agreement
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="bg-background/80 p-4 rounded-lg border border-primary/20">
+                    <p className="text-sm leading-relaxed text-foreground">
+                      This estimate constitutes a binding agreement between the customer and the contractor. 
+                      By accepting this proposal, the customer acknowledges that they have read, understood, 
+                      and agreed to all terms, conditions, and pricing stated herein, and accepts full legal 
+                      responsibility for payment in accordance with the agreed terms. The contractor provides 
+                      a minimum two (2) year labor warranty covering workmanship under normal use and conditions; 
+                      this warranty excludes damage caused by misuse, neglect, alteration, or acts of nature.
+                    </p>
+                  </div>
+                  
+                  <div className="flex items-start space-x-3 bg-primary/5 p-4 rounded-lg border-2 border-primary/20">
+                    <Checkbox
+                      id="payment-agreement"
+                      checked={agreementAccepted}
+                      onCheckedChange={(checked) => setAgreementAccepted(checked as boolean)}
+                      className="mt-1"
+                    />
+                    <label
+                      htmlFor="payment-agreement"
+                      className="text-sm font-medium leading-relaxed cursor-pointer text-foreground"
+                    >
+                      I have read and agree to the payment agreement above. I understand that by signing, 
+                      I accept full legal responsibility for payment according to the terms stated in this estimate.
+                    </label>
+                  </div>
+                </CardContent>
+              </Card>
               
               <div className="bg-muted/30 p-6 rounded-lg border-2 border-primary/20">
                 <label className="block text-base font-bold text-foreground mb-4 flex items-center gap-2">
@@ -408,8 +453,8 @@ export default function PublicEstimate() {
                 </Button>
                 <Button
                   onClick={handleSign}
-                  disabled={signing}
-                  className="flex-1 h-14 text-lg font-bold bg-gradient-to-r from-primary to-primary-hover shadow-lg hover:shadow-xl"
+                  disabled={signing || !agreementAccepted}
+                  className="flex-1 h-14 text-lg font-bold bg-gradient-to-r from-primary to-primary-hover shadow-lg hover:shadow-xl disabled:opacity-50"
                   size="lg"
                 >
                   {signing && <Loader2 className="h-5 w-5 mr-2 animate-spin" />}
