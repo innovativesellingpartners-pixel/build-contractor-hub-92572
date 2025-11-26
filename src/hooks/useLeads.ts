@@ -22,6 +22,8 @@ export interface Lead {
   created_at: string;
   updated_at: string;
   last_contact_date?: string;
+  customer_id?: string;
+  converted_to_customer?: boolean;
 }
 
 export interface LeadSource {
@@ -161,6 +163,31 @@ export const useLeads = () => {
     return updateLead(id, { status, last_contact_date: new Date().toISOString() });
   };
 
+  const convertToCustomer = async (id: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('convert-lead-to-customer', {
+        body: { leadId: id },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: 'Lead converted',
+        description: 'Lead has been converted to customer successfully',
+      });
+
+      fetchLeads();
+      return data.customer;
+    } catch (error: any) {
+      toast({
+        title: 'Error converting lead',
+        description: error.message,
+        variant: 'destructive',
+      });
+      throw error;
+    }
+  };
+
   return {
     leads,
     sources,
@@ -169,6 +196,7 @@ export const useLeads = () => {
     updateLead,
     deleteLead,
     updateLeadStatus,
+    convertToCustomer,
     refreshLeads: fetchLeads,
   };
 };

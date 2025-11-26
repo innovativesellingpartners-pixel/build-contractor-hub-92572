@@ -22,6 +22,13 @@ export interface Job {
   notes?: string;
   created_at: string;
   updated_at: string;
+  original_estimate_id?: string;
+  contract_value?: number;
+  change_orders_total?: number;
+  total_contract_value?: number;
+  payments_collected?: number;
+  expenses_total?: number;
+  profit?: number;
 }
 
 export const useJobs = () => {

@@ -101,3 +101,12 @@ verify_jwt = true
 
 [functions.pocketbot-chat]
 verify_jwt = true
+
+[functions.convert-lead-to-customer]
+verify_jwt = true
+
+[functions.convert-estimate-to-job]
+verify_jwt = true
+
+[functions.process-payment-webhook]
+verify_jwt = false

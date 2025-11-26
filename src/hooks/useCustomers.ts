@@ -18,6 +18,7 @@ export interface Customer {
   customer_type: 'residential' | 'commercial';
   created_at: string;
   updated_at: string;
+  lifetime_value?: number;
 }
 
 export const useCustomers = () => {
