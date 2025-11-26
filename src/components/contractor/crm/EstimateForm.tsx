@@ -19,6 +19,7 @@ import AddCustomerDialog from './AddCustomerDialog';
 import EstimateAssistant from './EstimateAssistant';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useOpportunities } from '@/hooks/useOpportunities';
 
 const tradeTypes = [
   'General Remodel',
@@ -87,6 +88,10 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
   const { customers, refreshCustomers } = useCustomers();
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | undefined>(undefined);
   const [isAddCustomerOpen, setIsAddCustomerOpen] = useState(false);
+
+  // Opportunities for job location
+  const { opportunities } = useOpportunities();
+  const [sameAsJobLocation, setSameAsJobLocation] = useState(false);
 
   const contractorSigRef = useRef<SignatureCanvas>(null);
   const clientSigRef = useRef<SignatureCanvas>(null);
@@ -517,8 +522,34 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="site_address">Site Address</Label>
-                      <Input id="site_address" {...register('site_address')} />
+                      <div className="flex items-center justify-between mb-2">
+                        <Label htmlFor="site_address">Site Address</Label>
+                        {initialData?.opportunity_id && (
+                          <div className="flex items-center gap-2">
+                            <Checkbox 
+                              id="same-as-job"
+                              checked={sameAsJobLocation}
+                              onCheckedChange={(checked) => {
+                                setSameAsJobLocation(checked as boolean);
+                                if (checked) {
+                                  const opportunity = opportunities?.find(o => o.id === initialData.opportunity_id);
+                                  if (opportunity?.job_address) {
+                                    setValue('site_address', opportunity.job_address);
+                                  }
+                                }
+                              }}
+                            />
+                            <Label htmlFor="same-as-job" className="text-sm font-normal cursor-pointer">
+                              Same as job location
+                            </Label>
+                          </div>
+                        )}
+                      </div>
+                      <Input 
+                        id="site_address" 
+                        {...register('site_address')} 
+                        disabled={sameAsJobLocation}
+                      />
                     </div>
 
                     <div className="space-y-2">
