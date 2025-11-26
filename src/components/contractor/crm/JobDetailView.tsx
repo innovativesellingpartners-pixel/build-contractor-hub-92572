@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { 
-  MapPin, Clock, TrendingUp, AlertCircle, CheckCircle, Edit, Briefcase, Users, Calculator 
+  MapPin, Clock, TrendingUp, AlertCircle, CheckCircle, Edit, Briefcase, Users, Calculator, Navigation 
 } from 'lucide-react';
 import { useJobs, Job } from '@/hooks/useJobs';
 import { useJobPhotos } from '@/hooks/useJobPhotos';
@@ -359,6 +359,35 @@ export default function JobDetailView({ job, open, onOpenChange, onConvertToCust
   const isDelayed = job.end_date && new Date() > new Date(job.end_date) && 
                    job.status !== 'completed';
 
+  const getFullAddress = () => {
+    const parts = [job.address, job.city, job.state, job.zip_code].filter(Boolean);
+    return parts.join(', ');
+  };
+
+  const handleNavigate = () => {
+    const address = getFullAddress();
+    if (!address) {
+      toast.error('No address available for this job');
+      return;
+    }
+    
+    // Use geo: URL for mobile devices, opens default navigation app
+    const encodedAddress = encodeURIComponent(address);
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    
+    if (isMobile) {
+      // For iOS and Android, use platform-specific URL schemes
+      const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+      const url = isIOS 
+        ? `maps://maps.apple.com/?q=${encodedAddress}`
+        : `geo:0,0?q=${encodedAddress}`;
+      window.location.href = url;
+    } else {
+      // For desktop, open Google Maps in new tab
+      window.open(`https://www.google.com/maps/search/?api=1&query=${encodedAddress}`, '_blank');
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-7xl h-[90vh] p-0">
@@ -369,6 +398,17 @@ export default function JobDetailView({ job, open, onOpenChange, onConvertToCust
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <span className="font-medium">{job.job_number}</span>
               </div>
+              
+              {getFullAddress() && (
+                <Button
+                  onClick={handleNavigate}
+                  className="mt-3 w-full sm:w-auto bg-orange-500 hover:bg-orange-600 text-white font-medium gap-2"
+                  size="lg"
+                >
+                  <Navigation className="h-4 w-4" />
+                  {getFullAddress()}
+                </Button>
+              )}
             </div>
             <div className="flex items-center gap-2">
               {isDelayed && (
