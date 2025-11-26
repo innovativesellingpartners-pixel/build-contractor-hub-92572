@@ -523,47 +523,54 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
                       {errors.client_email && <p className="text-sm text-destructive">{errors.client_email.message}</p>}
                     </div>
 
+                    {/* Same as Job Location Checkbox */}
+                    {selectedCustomerId && (
+                      <div className="flex items-center gap-2 py-2">
+                        <Checkbox 
+                          id="same-as-job"
+                          checked={sameAsJobLocation}
+                          onCheckedChange={(checked) => {
+                            setSameAsJobLocation(checked as boolean);
+                            if (checked) {
+                              // Try to get address from opportunity first, then customer
+                              const opportunity = opportunities?.find(o => o.id === initialData?.opportunity_id);
+                              if (opportunity?.job_address) {
+                                setValue('client_address', opportunity.job_address);
+                                setValue('site_address', opportunity.job_address);
+                              } else {
+                                // Get address from selected customer
+                                const customer = customers.find(c => c.id === selectedCustomerId);
+                                if (customer) {
+                                  const addr = [customer.address, customer.city, customer.state, customer.zip_code]
+                                    .filter(Boolean)
+                                    .join(', ');
+                                  setValue('client_address', addr);
+                                  setValue('site_address', addr);
+                                }
+                              }
+                            } else {
+                              setValue('client_address', '');
+                              setValue('site_address', '');
+                            }
+                          }}
+                        />
+                        <Label htmlFor="same-as-job" className="text-sm font-medium cursor-pointer">
+                          Same as job location
+                        </Label>
+                      </div>
+                    )}
+
                     <div className="space-y-2">
                       <Label htmlFor="client_address">Client Address</Label>
-                      <Input id="client_address" {...register('client_address')} />
+                      <Input 
+                        id="client_address" 
+                        {...register('client_address')} 
+                        disabled={sameAsJobLocation}
+                      />
                     </div>
 
                     <div className="space-y-2">
-                      <div className="flex items-center justify-between mb-2">
-                        <Label htmlFor="site_address">Site Address</Label>
-                        {selectedCustomerId && (
-                          <div className="flex items-center gap-2">
-                            <Checkbox 
-                              id="same-as-job"
-                              checked={sameAsJobLocation}
-                              onCheckedChange={(checked) => {
-                                setSameAsJobLocation(checked as boolean);
-                                if (checked) {
-                                  // Try to get address from opportunity first, then customer
-                                  const opportunity = opportunities?.find(o => o.id === initialData?.opportunity_id);
-                                  if (opportunity?.job_address) {
-                                    setValue('site_address', opportunity.job_address);
-                                  } else {
-                                    // Get address from selected customer
-                                    const customer = customers.find(c => c.id === selectedCustomerId);
-                                    if (customer) {
-                                      const addr = [customer.address, customer.city, customer.state, customer.zip_code]
-                                        .filter(Boolean)
-                                        .join(', ');
-                                      setValue('site_address', addr);
-                                    }
-                                  }
-                                } else {
-                                  setValue('site_address', '');
-                                }
-                              }}
-                            />
-                            <Label htmlFor="same-as-job" className="text-sm font-normal cursor-pointer">
-                              Same as job location
-                            </Label>
-                          </div>
-                        )}
-                      </div>
+                      <Label htmlFor="site_address">Site Address</Label>
                       <Input 
                         id="site_address" 
                         {...register('site_address')} 
