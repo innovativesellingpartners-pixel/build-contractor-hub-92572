@@ -398,15 +398,14 @@ export default function JobDetailView({ job, open, onOpenChange, onConvertToCust
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <span className="font-medium">{job.job_number}</span>
               </div>
-              
               {getFullAddress() && (
                 <Button
                   onClick={handleNavigate}
-                  className="mt-3 w-full sm:w-auto bg-orange-500 hover:bg-orange-600 text-white font-medium gap-2"
+                  className="mt-3 w-full sm:w-auto bg-orange-500 hover:bg-orange-600 text-white font-medium gap-2 justify-start whitespace-normal text-left"
                   size="lg"
                 >
-                  <Navigation className="h-4 w-4" />
-                  {getFullAddress()}
+                  <Navigation className="h-4 w-4 flex-shrink-0" />
+                  <span className="break-words leading-snug">{getFullAddress()}</span>
                 </Button>
               )}
             </div>
