@@ -55,12 +55,7 @@ serve(async (req) => {
   }
 
   try {
-    // Initialize Supabase client with service role for rate limiting
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-    // Get user from auth header
+    // Get user from auth header first
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       return new Response(
@@ -72,10 +67,18 @@ serve(async (req) => {
       );
     }
 
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    // Initialize Supabase client with user's auth token
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+    const userSupabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } }
+    });
+
+    // Verify the user
+    const { data: { user }, error: authError } = await userSupabase.auth.getUser();
     
     if (authError || !user) {
+      console.error('Auth error:', authError);
       return new Response(
         JSON.stringify({ error: "Invalid authentication" }),
         {
@@ -84,6 +87,10 @@ serve(async (req) => {
         }
       );
     }
+
+    // Initialize service role client for rate limiting operations
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Check if user has a paid subscription for bot access
     const { data: subscription } = await supabase
