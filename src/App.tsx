@@ -86,7 +86,8 @@ const App = () => (
             <Route path="/legal/privacy" element={<Privacy />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/estimate/:token" element={<PublicEstimate />} />
+          <Route path="/estimate/:token" element={<PublicEstimate />} />
+          <Route path="/p/estimate/:token" element={<PublicEstimate />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/trial-signup" element={<TrialSignup />} />
             <Route path="/bot-signup" element={<BotSignup />} />

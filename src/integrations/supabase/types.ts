@@ -1078,18 +1078,26 @@ export type Database = {
       estimates: {
         Row: {
           assumptions_and_exclusions: string | null
+          balance_due: number | null
+          client_acceptance_date: string | null
           client_address: string | null
           client_email: string | null
           client_name: string | null
+          client_phone: string | null
+          client_printed_name: string | null
           client_signature: string | null
+          contractor_acceptance_date: string | null
+          contractor_printed_name: string | null
           contractor_signature: string | null
           cost_summary: Json | null
           created_at: string
           customer_id: string | null
+          date_issued: string | null
           description: string | null
           email_provider_id: string | null
           email_send_error: string | null
           estimate_number: string | null
+          grand_total: number | null
           id: string
           last_send_attempt: string | null
           line_items: Json | null
@@ -1098,13 +1106,31 @@ export type Database = {
           payment_amount: number | null
           payment_method: string | null
           payment_status: string | null
+          permit_fee: number | null
+          prepared_by: string | null
+          project_address: string | null
           project_description: string | null
+          project_name: string | null
           public_token: string | null
+          referred_by: string | null
+          required_deposit: number | null
+          scope_exclusions: Json | null
+          scope_key_deliverables: Json | null
+          scope_objective: string | null
+          scope_timeline: string | null
           sent_at: string | null
           signed_at: string | null
           site_address: string | null
           status: string
           stripe_payment_link: string | null
+          subtotal: number | null
+          tax_amount: number | null
+          tax_rate: number | null
+          terms_change_orders: string | null
+          terms_insurance: string | null
+          terms_payment_schedule: string | null
+          terms_validity: string | null
+          terms_warranty_years: number | null
           title: string
           total_amount: number
           trade_specific: Json | null
@@ -1116,18 +1142,26 @@ export type Database = {
         }
         Insert: {
           assumptions_and_exclusions?: string | null
+          balance_due?: number | null
+          client_acceptance_date?: string | null
           client_address?: string | null
           client_email?: string | null
           client_name?: string | null
+          client_phone?: string | null
+          client_printed_name?: string | null
           client_signature?: string | null
+          contractor_acceptance_date?: string | null
+          contractor_printed_name?: string | null
           contractor_signature?: string | null
           cost_summary?: Json | null
           created_at?: string
           customer_id?: string | null
+          date_issued?: string | null
           description?: string | null
           email_provider_id?: string | null
           email_send_error?: string | null
           estimate_number?: string | null
+          grand_total?: number | null
           id?: string
           last_send_attempt?: string | null
           line_items?: Json | null
@@ -1136,13 +1170,31 @@ export type Database = {
           payment_amount?: number | null
           payment_method?: string | null
           payment_status?: string | null
+          permit_fee?: number | null
+          prepared_by?: string | null
+          project_address?: string | null
           project_description?: string | null
+          project_name?: string | null
           public_token?: string | null
+          referred_by?: string | null
+          required_deposit?: number | null
+          scope_exclusions?: Json | null
+          scope_key_deliverables?: Json | null
+          scope_objective?: string | null
+          scope_timeline?: string | null
           sent_at?: string | null
           signed_at?: string | null
           site_address?: string | null
           status?: string
           stripe_payment_link?: string | null
+          subtotal?: number | null
+          tax_amount?: number | null
+          tax_rate?: number | null
+          terms_change_orders?: string | null
+          terms_insurance?: string | null
+          terms_payment_schedule?: string | null
+          terms_validity?: string | null
+          terms_warranty_years?: number | null
           title: string
           total_amount?: number
           trade_specific?: Json | null
@@ -1154,18 +1206,26 @@ export type Database = {
         }
         Update: {
           assumptions_and_exclusions?: string | null
+          balance_due?: number | null
+          client_acceptance_date?: string | null
           client_address?: string | null
           client_email?: string | null
           client_name?: string | null
+          client_phone?: string | null
+          client_printed_name?: string | null
           client_signature?: string | null
+          contractor_acceptance_date?: string | null
+          contractor_printed_name?: string | null
           contractor_signature?: string | null
           cost_summary?: Json | null
           created_at?: string
           customer_id?: string | null
+          date_issued?: string | null
           description?: string | null
           email_provider_id?: string | null
           email_send_error?: string | null
           estimate_number?: string | null
+          grand_total?: number | null
           id?: string
           last_send_attempt?: string | null
           line_items?: Json | null
@@ -1174,13 +1234,31 @@ export type Database = {
           payment_amount?: number | null
           payment_method?: string | null
           payment_status?: string | null
+          permit_fee?: number | null
+          prepared_by?: string | null
+          project_address?: string | null
           project_description?: string | null
+          project_name?: string | null
           public_token?: string | null
+          referred_by?: string | null
+          required_deposit?: number | null
+          scope_exclusions?: Json | null
+          scope_key_deliverables?: Json | null
+          scope_objective?: string | null
+          scope_timeline?: string | null
           sent_at?: string | null
           signed_at?: string | null
           site_address?: string | null
           status?: string
           stripe_payment_link?: string | null
+          subtotal?: number | null
+          tax_amount?: number | null
+          tax_rate?: number | null
+          terms_change_orders?: string | null
+          terms_insurance?: string | null
+          terms_payment_schedule?: string | null
+          terms_validity?: string | null
+          terms_warranty_years?: number | null
           title?: string
           total_amount?: number
           trade_specific?: Json | null
