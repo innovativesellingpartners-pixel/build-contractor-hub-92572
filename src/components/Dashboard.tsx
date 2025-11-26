@@ -294,7 +294,7 @@ export function Dashboard() {
       >
         <div className="container mx-auto px-4 md:px-6">
           <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
-            {profile?.contact_name || profile?.company_name || 'Contractor'}
+            {profile?.company_name || 'Company'}
           </h2>
         </div>
       </div>
