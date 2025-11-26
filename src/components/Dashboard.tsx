@@ -284,10 +284,16 @@ export function Dashboard() {
         </div>
       </div>
 
-      {/* Contractor Name Banner */}
-      <div className="bg-black text-white">
-        <div className="container mx-auto px-4 md:px-6 py-4">
-          <h2 className="text-xl md:text-2xl font-semibold">
+      {/* Contractor Name Banner - Mobile Optimized */}
+      <div 
+        className="bg-black text-white"
+        style={{ 
+          paddingTop: "max(1rem, env(safe-area-inset-top))",
+          paddingBottom: "1rem"
+        }}
+      >
+        <div className="container mx-auto px-4 md:px-6">
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
             {profile?.contact_name || profile?.company_name || 'Contractor'}
           </h2>
         </div>
