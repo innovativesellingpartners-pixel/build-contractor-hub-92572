@@ -288,8 +288,8 @@ export function Dashboard() {
       <div 
         className="bg-black text-white"
         style={{ 
-          paddingTop: "max(0.75rem, env(safe-area-inset-top))",
-          paddingBottom: "0.75rem"
+          paddingTop: "max(0.5rem, env(safe-area-inset-top))",
+          paddingBottom: "0.5rem"
         }}
       >
         <div className="container mx-auto px-4 md:px-6">
@@ -300,7 +300,7 @@ export function Dashboard() {
       </div>
 
       {/* Main Content Area */}
-      <div className="container mx-auto px-4 md:px-6 pt-2 pb-6 flex-1 flex gap-6">
+      <div className="container mx-auto px-4 md:px-6 pt-0 pb-6 flex-1 flex gap-6">
         {/* Left Sidebar Navigation - Hidden on mobile */}
         <div className="hidden lg:block w-64 flex-shrink-0">
           <div className="bg-card border border-border/50 rounded-xl shadow-md p-3 sticky top-24">
