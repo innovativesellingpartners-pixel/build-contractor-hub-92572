@@ -524,7 +524,7 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
                     <div className="space-y-2">
                       <div className="flex items-center justify-between mb-2">
                         <Label htmlFor="site_address">Site Address</Label>
-                        {initialData?.opportunity_id && (
+                        {selectedCustomerId && (
                           <div className="flex items-center gap-2">
                             <Checkbox 
                               id="same-as-job"
@@ -532,10 +532,22 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
                               onCheckedChange={(checked) => {
                                 setSameAsJobLocation(checked as boolean);
                                 if (checked) {
-                                  const opportunity = opportunities?.find(o => o.id === initialData.opportunity_id);
+                                  // Try to get address from opportunity first, then customer
+                                  const opportunity = opportunities?.find(o => o.id === initialData?.opportunity_id);
                                   if (opportunity?.job_address) {
                                     setValue('site_address', opportunity.job_address);
+                                  } else {
+                                    // Get address from selected customer
+                                    const customer = customers.find(c => c.id === selectedCustomerId);
+                                    if (customer) {
+                                      const addr = [customer.address, customer.city, customer.state, customer.zip_code]
+                                        .filter(Boolean)
+                                        .join(', ');
+                                      setValue('site_address', addr);
+                                    }
                                   }
+                                } else {
+                                  setValue('site_address', '');
                                 }
                               }}
                             />
