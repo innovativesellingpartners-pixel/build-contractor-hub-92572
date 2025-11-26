@@ -66,6 +66,13 @@ interface EstimateFormProps {
 }
 
 export default function EstimateForm({ onSubmit, onCancel, initialData }: EstimateFormProps) {
+  // Calculate default valid_until date (30 days from now)
+  const getDefaultValidUntil = () => {
+    const date = new Date();
+    date.setDate(date.getDate() + 30);
+    return date.toISOString().split('T')[0];
+  };
+
   const [lineItems, setLineItems] = useState<EstimateLineItem[]>([
     {
       category: 'Materials',
@@ -114,7 +121,7 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
       trade_type: '',
       project_description: '',
       assumptions_and_exclusions: '',
-      valid_until: '',
+      valid_until: getDefaultValidUntil(),
       profit_markup_percentage: 15,
       tax_and_fees: 0,
     },
@@ -145,7 +152,7 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
         trade_type: initialData.trade_type || '',
         project_description: initialData.project_description || '',
         assumptions_and_exclusions: initialData.assumptions_and_exclusions || '',
-        valid_until: initialData.valid_until || '',
+        valid_until: initialData.valid_until || getDefaultValidUntil(),
         profit_markup_percentage: initialData.cost_summary?.profit_markup_percentage || 15,
         tax_and_fees: initialData.cost_summary?.tax_and_fees || 0,
       };
@@ -203,7 +210,7 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
         trade_type: '',
         project_description: '',
         assumptions_and_exclusions: '',
-        valid_until: '',
+        valid_until: getDefaultValidUntil(),
         profit_markup_percentage: 15,
         tax_and_fees: 0,
       });
