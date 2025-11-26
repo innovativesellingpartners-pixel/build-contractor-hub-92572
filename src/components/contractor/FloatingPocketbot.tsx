@@ -260,13 +260,21 @@ export function FloatingPocketbot({ onClose, onPositionChange }: FloatingPocketb
     setIsLoading(true);
 
     try {
+      // Ensure user is authenticated and get their access token
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      const accessToken = sessionData?.session?.access_token;
+
+      if (sessionError || !accessToken) {
+        throw new Error("You must be signed in to use CT1 Pocketbot.");
+      }
+
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/pocketbot-chat`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            Authorization: `Bearer ${accessToken}`,
           },
           body: JSON.stringify({ messages: newMessages }),
         }
