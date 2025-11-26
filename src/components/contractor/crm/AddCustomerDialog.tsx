@@ -38,6 +38,8 @@ const customerSchema = z.object({
   state: z.string().optional(),
   zip_code: z.string().optional(),
   customer_type: z.enum(['residential', 'commercial']),
+  referral_source: z.string().optional(),
+  referral_source_other: z.string().optional(),
   notes: z.string().optional(),
 });
 
@@ -51,6 +53,7 @@ interface AddCustomerDialogProps {
 export default function AddCustomerDialog({ open, onOpenChange }: AddCustomerDialogProps) {
   const { addCustomer } = useCustomers();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showOtherInput, setShowOtherInput] = useState(false);
 
   const form = useForm<CustomerFormData>({
     resolver: zodResolver(customerSchema),
@@ -63,6 +66,8 @@ export default function AddCustomerDialog({ open, onOpenChange }: AddCustomerDia
       state: '',
       zip_code: '',
       customer_type: 'residential',
+      referral_source: '',
+      referral_source_other: '',
       notes: '',
     },
   });
@@ -80,10 +85,13 @@ export default function AddCustomerDialog({ open, onOpenChange }: AddCustomerDia
         city: data.city || undefined,
         state: data.state || undefined,
         zip_code: data.zip_code || undefined,
+        referral_source: data.referral_source || undefined,
+        referral_source_other: data.referral_source_other || undefined,
         notes: data.notes || undefined,
       };
       await addCustomer(customerData);
       form.reset();
+      setShowOtherInput(false);
       onOpenChange(false);
     } catch (error) {
       console.error('Error adding customer:', error);
@@ -168,6 +176,59 @@ export default function AddCustomerDialog({ open, onOpenChange }: AddCustomerDia
                   </FormItem>
                 )}
               />
+
+              <FormField
+                control={form.control}
+                name="referral_source"
+                render={({ field }) => (
+                  <FormItem className="md:col-span-2">
+                    <FormLabel>Referred By / How did you hear about us?</FormLabel>
+                    <Select 
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        setShowOtherInput(value === 'Other');
+                        if (value !== 'Other') {
+                          form.setValue('referral_source_other', '');
+                        }
+                      }} 
+                      value={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select source" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Google">Google</SelectItem>
+                        <SelectItem value="Facebook">Facebook</SelectItem>
+                        <SelectItem value="Social Media">Social Media</SelectItem>
+                        <SelectItem value="CT1">CT1</SelectItem>
+                        <SelectItem value="Friend">Friend</SelectItem>
+                        <SelectItem value="Former Customer">Former Customer</SelectItem>
+                        <SelectItem value="Family Member">Family Member</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {showOtherInput && (
+                <FormField
+                  control={form.control}
+                  name="referral_source_other"
+                  render={({ field }) => (
+                    <FormItem className="md:col-span-2">
+                      <FormLabel>Please specify</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="Enter custom referral source" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
 
               <FormField
                 control={form.control}
