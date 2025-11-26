@@ -1,4 +1,4 @@
-const CACHE_NAME = "ct1-static-v2";
+const CACHE_NAME = "ct1-static-v3";
 const URLS_TO_CACHE = ["/", "/offline.html"];
 
 // Don't cache these - they need fresh auth tokens
@@ -20,6 +20,7 @@ self.addEventListener("install", event => {
       return cache.addAll(URLS_TO_CACHE);
     })
   );
+  // Force the waiting service worker to become the active service worker
   self.skipWaiting();
 });
 
@@ -33,7 +34,15 @@ self.addEventListener("activate", event => {
       );
     })
   );
+  // Take control of all clients immediately
   self.clients.claim();
+});
+
+// Listen for skip waiting message
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener("fetch", event => {

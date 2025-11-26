@@ -116,17 +116,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => subscription.unsubscribe();
   }, []);
 
+  const checkForUpdates = async () => {
+    // Check if there's a service worker update ready
+    if ('serviceWorker' in navigator && localStorage.getItem('sw-update-ready') === 'true') {
+      console.log('Service worker update detected, reloading...');
+      localStorage.removeItem('sw-update-ready');
+      
+      // Get the waiting service worker and activate it
+      const registration = await navigator.serviceWorker.getRegistration();
+      if (registration?.waiting) {
+        registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+        // Reload after a short delay to let the new SW activate
+        setTimeout(() => window.location.reload(), 100);
+      }
+    }
+  };
+
   const signIn = async (email: string, password: string, rememberMe: boolean = false) => {
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
     
-    // Store remember me preference
-    if (!error && rememberMe) {
-      localStorage.setItem('rememberMe', 'true');
-    } else {
-      localStorage.removeItem('rememberMe');
+    // Store remember me preference and check for updates
+    if (!error) {
+      if (rememberMe) {
+        localStorage.setItem('rememberMe', 'true');
+      } else {
+        localStorage.removeItem('rememberMe');
+      }
+      // Check for PWA updates after successful login
+      await checkForUpdates();
     }
     
     return { error };
@@ -154,6 +174,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setProfile(null);
     localStorage.removeItem('rememberMe');
     console.log('Sign out complete');
+    
+    // Check for PWA updates after logout
+    await checkForUpdates();
   };
 
   const resetPassword = async (email: string) => {
