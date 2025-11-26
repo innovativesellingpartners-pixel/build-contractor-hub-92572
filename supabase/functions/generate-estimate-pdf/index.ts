@@ -594,7 +594,39 @@ const handler = async (req: Request): Promise<Response> => {
         });
         cursorY -= 11;
       }
+      cursorY -= 10;
     }
+
+    // ===== PAYMENT AGREEMENT =====
+    page.drawText("Payment Agreement:", {
+      x: margin,
+      y: cursorY,
+      size: 10,
+      font: fontBold,
+      color: rgb(0.1, 0.1, 0.1),
+    });
+    cursorY -= 14;
+
+    const agreementText = "This estimate constitutes a binding agreement between the customer and the contractor. By accepting this proposal, the customer acknowledges that they have read, understood, and agreed to all terms, conditions, and pricing stated herein, and accepts full legal responsibility for payment in accordance with the agreed terms. The contractor provides a minimum two (2) year labor warranty covering workmanship under normal use and conditions; this warranty excludes damage caused by misuse, neglect, alteration, or acts of nature.";
+    
+    const agreementLines = [];
+    const maxCharsPerLine = 90;
+    for (let i = 0; i < agreementText.length; i += maxCharsPerLine) {
+      agreementLines.push(agreementText.substring(i, i + maxCharsPerLine));
+    }
+
+    for (const line of agreementLines) {
+      page.drawText(line, {
+        x: margin,
+        y: cursorY,
+        size: 8,
+        font: fontReg,
+        color: rgb(0.2, 0.2, 0.2),
+      });
+      cursorY -= 11;
+    }
+
+    cursorY -= 10;
 
     // ===== FOOTER =====
     if (phone) {
