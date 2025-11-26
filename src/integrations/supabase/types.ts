@@ -758,6 +758,7 @@ export type Database = {
           email: string | null
           id: string
           job_id: string | null
+          lifetime_value: number | null
           name: string
           notes: string | null
           phone: string | null
@@ -777,6 +778,7 @@ export type Database = {
           email?: string | null
           id?: string
           job_id?: string | null
+          lifetime_value?: number | null
           name: string
           notes?: string | null
           phone?: string | null
@@ -796,6 +798,7 @@ export type Database = {
           email?: string | null
           id?: string
           job_id?: string | null
+          lifetime_value?: number | null
           name?: string
           notes?: string | null
           phone?: string | null
@@ -1100,6 +1103,7 @@ export type Database = {
           grand_total: number | null
           id: string
           last_send_attempt: string | null
+          lead_id: string | null
           line_items: Json | null
           opportunity_id: string | null
           paid_at: string | null
@@ -1164,6 +1168,7 @@ export type Database = {
           grand_total?: number | null
           id?: string
           last_send_attempt?: string | null
+          lead_id?: string | null
           line_items?: Json | null
           opportunity_id?: string | null
           paid_at?: string | null
@@ -1228,6 +1233,7 @@ export type Database = {
           grand_total?: number | null
           id?: string
           last_send_attempt?: string | null
+          lead_id?: string | null
           line_items?: Json | null
           opportunity_id?: string | null
           paid_at?: string | null
@@ -1274,6 +1280,66 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estimates_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      expenses: {
+        Row: {
+          amount: number
+          category: string
+          contractor_id: string
+          created_at: string | null
+          date: string
+          description: string | null
+          id: string
+          job_id: string | null
+          notes: string | null
+          plaid_transaction_id: string | null
+          receipt_url: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          category: string
+          contractor_id: string
+          created_at?: string | null
+          date?: string
+          description?: string | null
+          id?: string
+          job_id?: string | null
+          notes?: string | null
+          plaid_transaction_id?: string | null
+          receipt_url?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          category?: string
+          contractor_id?: string
+          created_at?: string | null
+          date?: string
+          description?: string | null
+          id?: string
+          job_id?: string | null
+          notes?: string | null
+          plaid_transaction_id?: string | null
+          receipt_url?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expenses_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
             referencedColumns: ["id"]
           },
         ]
@@ -1514,7 +1580,9 @@ export type Database = {
           address: string | null
           adjusted_budget_amount: number | null
           budget_amount: number | null
+          change_orders_total: number | null
           city: string | null
+          contract_value: number | null
           converted_at: string | null
           converted_to_customer_id: string | null
           created_at: string
@@ -1522,6 +1590,7 @@ export type Database = {
           customer_id: string | null
           description: string | null
           end_date: string | null
+          expenses_total: number | null
           id: string
           job_number: string | null
           job_status: Database["public"]["Enums"]["job_status"] | null
@@ -1529,12 +1598,16 @@ export type Database = {
           name: string
           notes: string | null
           opportunity_id: string | null
+          original_estimate_id: string | null
+          payments_collected: number | null
+          profit: number | null
           scheduled_end_date: string | null
           scheduled_start_date: string | null
           start_date: string | null
           state: string | null
           status: string
           sub_trade: string | null
+          total_contract_value: number | null
           total_cost: number | null
           trade_type: string | null
           updated_at: string
@@ -1548,7 +1621,9 @@ export type Database = {
           address?: string | null
           adjusted_budget_amount?: number | null
           budget_amount?: number | null
+          change_orders_total?: number | null
           city?: string | null
+          contract_value?: number | null
           converted_at?: string | null
           converted_to_customer_id?: string | null
           created_at?: string
@@ -1556,6 +1631,7 @@ export type Database = {
           customer_id?: string | null
           description?: string | null
           end_date?: string | null
+          expenses_total?: number | null
           id?: string
           job_number?: string | null
           job_status?: Database["public"]["Enums"]["job_status"] | null
@@ -1563,12 +1639,16 @@ export type Database = {
           name: string
           notes?: string | null
           opportunity_id?: string | null
+          original_estimate_id?: string | null
+          payments_collected?: number | null
+          profit?: number | null
           scheduled_end_date?: string | null
           scheduled_start_date?: string | null
           start_date?: string | null
           state?: string | null
           status?: string
           sub_trade?: string | null
+          total_contract_value?: number | null
           total_cost?: number | null
           trade_type?: string | null
           updated_at?: string
@@ -1582,7 +1662,9 @@ export type Database = {
           address?: string | null
           adjusted_budget_amount?: number | null
           budget_amount?: number | null
+          change_orders_total?: number | null
           city?: string | null
+          contract_value?: number | null
           converted_at?: string | null
           converted_to_customer_id?: string | null
           created_at?: string
@@ -1590,6 +1672,7 @@ export type Database = {
           customer_id?: string | null
           description?: string | null
           end_date?: string | null
+          expenses_total?: number | null
           id?: string
           job_number?: string | null
           job_status?: Database["public"]["Enums"]["job_status"] | null
@@ -1597,12 +1680,16 @@ export type Database = {
           name?: string
           notes?: string | null
           opportunity_id?: string | null
+          original_estimate_id?: string | null
+          payments_collected?: number | null
+          profit?: number | null
           scheduled_end_date?: string | null
           scheduled_start_date?: string | null
           start_date?: string | null
           state?: string | null
           status?: string
           sub_trade?: string | null
+          total_contract_value?: number | null
           total_cost?: number | null
           trade_type?: string | null
           updated_at?: string
@@ -1636,6 +1723,13 @@ export type Database = {
             columns: ["lead_id"]
             isOneToOne: false
             referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "jobs_original_estimate_id_fkey"
+            columns: ["original_estimate_id"]
+            isOneToOne: false
+            referencedRelation: "estimates"
             referencedColumns: ["id"]
           },
           {
@@ -1706,8 +1800,10 @@ export type Database = {
           city: string | null
           company: string | null
           converted_at: string | null
+          converted_to_customer: boolean | null
           converted_to_job_id: string | null
           created_at: string
+          customer_id: string | null
           email: string | null
           id: string
           last_contact_date: string | null
@@ -1728,8 +1824,10 @@ export type Database = {
           city?: string | null
           company?: string | null
           converted_at?: string | null
+          converted_to_customer?: boolean | null
           converted_to_job_id?: string | null
           created_at?: string
+          customer_id?: string | null
           email?: string | null
           id?: string
           last_contact_date?: string | null
@@ -1750,8 +1848,10 @@ export type Database = {
           city?: string | null
           company?: string | null
           converted_at?: string | null
+          converted_to_customer?: boolean | null
           converted_to_job_id?: string | null
           created_at?: string
+          customer_id?: string | null
           email?: string | null
           id?: string
           last_contact_date?: string | null
@@ -1773,6 +1873,13 @@ export type Database = {
             columns: ["converted_to_job_id"]
             isOneToOne: false
             referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leads_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
             referencedColumns: ["id"]
           },
           {

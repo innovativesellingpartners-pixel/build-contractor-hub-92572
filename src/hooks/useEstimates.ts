@@ -25,6 +25,8 @@ export interface Estimate {
   user_id?: string;
   customer_id?: string;
   opportunity_id?: string;
+  lead_id?: string;
+  job_id?: string;
   title: string;
   description?: string;
   status: 'draft' | 'sent' | 'accepted' | 'rejected' | 'pending' | 'sold' | 'lost' | 'cancelled';
@@ -133,6 +135,8 @@ export function useEstimates() {
           user_id: user.id,
           customer_id: estimate.customer_id,
           opportunity_id: estimate.opportunity_id,
+          lead_id: estimate.lead_id,
+          job_id: estimate.job_id,
           title: estimate.title,
           description: estimate.description,
           status: estimate.status || 'draft',
@@ -211,6 +215,8 @@ export function useEstimates() {
       const { data, error } = await supabase
         .from('estimates')
         .update({
+          lead_id: estimate.lead_id,
+          job_id: estimate.job_id,
           title: estimate.title,
           description: estimate.description,
           status: estimate.status,
