@@ -1104,6 +1104,7 @@ export type Database = {
           signed_at: string | null
           site_address: string | null
           status: string
+          stripe_payment_link: string | null
           title: string
           total_amount: number
           trade_specific: Json | null
@@ -1141,6 +1142,7 @@ export type Database = {
           signed_at?: string | null
           site_address?: string | null
           status?: string
+          stripe_payment_link?: string | null
           title: string
           total_amount?: number
           trade_specific?: Json | null
@@ -1178,6 +1180,7 @@ export type Database = {
           signed_at?: string | null
           site_address?: string | null
           status?: string
+          stripe_payment_link?: string | null
           title?: string
           total_amount?: number
           trade_specific?: Json | null
@@ -1240,6 +1243,7 @@ export type Database = {
         Row: {
           amount_due: number
           amount_paid: number
+          balance_due: number | null
           created_at: string
           customer_id: string | null
           due_date: string | null
@@ -1250,12 +1254,15 @@ export type Database = {
           line_items: Json | null
           notes: string | null
           status: Database["public"]["Enums"]["invoice_status"]
+          stripe_payment_id: string | null
+          stripe_payment_link: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
           amount_due?: number
           amount_paid?: number
+          balance_due?: number | null
           created_at?: string
           customer_id?: string | null
           due_date?: string | null
@@ -1266,12 +1273,15 @@ export type Database = {
           line_items?: Json | null
           notes?: string | null
           status?: Database["public"]["Enums"]["invoice_status"]
+          stripe_payment_id?: string | null
+          stripe_payment_link?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
           amount_due?: number
           amount_paid?: number
+          balance_due?: number | null
           created_at?: string
           customer_id?: string | null
           due_date?: string | null
@@ -1282,6 +1292,8 @@ export type Database = {
           line_items?: Json | null
           notes?: string | null
           status?: Database["public"]["Enums"]["invoice_status"]
+          stripe_payment_id?: string | null
+          stripe_payment_link?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -2058,6 +2070,96 @@ export type Database = {
           },
         ]
       }
+      payments: {
+        Row: {
+          amount: number
+          contractor_id: string
+          created_at: string
+          customer_id: string | null
+          estimate_id: string | null
+          id: string
+          invoice_id: string | null
+          job_id: string | null
+          notes: string | null
+          payment_date: string
+          payment_method: string | null
+          status: string
+          stripe_payment_id: string | null
+          stripe_payment_intent_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          contractor_id: string
+          created_at?: string
+          customer_id?: string | null
+          estimate_id?: string | null
+          id?: string
+          invoice_id?: string | null
+          job_id?: string | null
+          notes?: string | null
+          payment_date?: string
+          payment_method?: string | null
+          status?: string
+          stripe_payment_id?: string | null
+          stripe_payment_intent_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          contractor_id?: string
+          created_at?: string
+          customer_id?: string | null
+          estimate_id?: string | null
+          id?: string
+          invoice_id?: string | null
+          job_id?: string | null
+          notes?: string | null
+          payment_date?: string
+          payment_method?: string | null
+          status?: string
+          stripe_payment_id?: string | null
+          stripe_payment_intent_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_contractor_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_estimate_id_fkey"
+            columns: ["estimate_id"]
+            isOneToOne: false
+            referencedRelation: "estimates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       phone_numbers: {
         Row: {
           active: boolean
@@ -2092,6 +2194,85 @@ export type Database = {
             columns: ["contractor_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      plaid_transactions: {
+        Row: {
+          amount: number
+          bank_account_link_id: string | null
+          category: string | null
+          contractor_id: string
+          created_at: string
+          description: string | null
+          id: string
+          is_expense: boolean | null
+          is_reimbursable: boolean | null
+          job_id: string | null
+          notes: string | null
+          plaid_transaction_id: string
+          receipt_url: string | null
+          transaction_date: string
+          updated_at: string
+          vendor: string | null
+        }
+        Insert: {
+          amount: number
+          bank_account_link_id?: string | null
+          category?: string | null
+          contractor_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_expense?: boolean | null
+          is_reimbursable?: boolean | null
+          job_id?: string | null
+          notes?: string | null
+          plaid_transaction_id: string
+          receipt_url?: string | null
+          transaction_date: string
+          updated_at?: string
+          vendor?: string | null
+        }
+        Update: {
+          amount?: number
+          bank_account_link_id?: string | null
+          category?: string | null
+          contractor_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_expense?: boolean | null
+          is_reimbursable?: boolean | null
+          job_id?: string | null
+          notes?: string | null
+          plaid_transaction_id?: string
+          receipt_url?: string | null
+          transaction_date?: string
+          updated_at?: string
+          vendor?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plaid_transactions_bank_account_link_id_fkey"
+            columns: ["bank_account_link_id"]
+            isOneToOne: false
+            referencedRelation: "bank_account_links"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plaid_transactions_contractor_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plaid_transactions_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
             referencedColumns: ["id"]
           },
         ]
@@ -2297,6 +2478,47 @@ export type Database = {
             columns: ["opportunity_id"]
             isOneToOne: false
             referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stripe_accounts: {
+        Row: {
+          charges_enabled: boolean | null
+          contractor_id: string
+          created_at: string
+          id: string
+          onboarding_complete: boolean | null
+          payouts_enabled: boolean | null
+          stripe_account_id: string
+          updated_at: string
+        }
+        Insert: {
+          charges_enabled?: boolean | null
+          contractor_id: string
+          created_at?: string
+          id?: string
+          onboarding_complete?: boolean | null
+          payouts_enabled?: boolean | null
+          stripe_account_id: string
+          updated_at?: string
+        }
+        Update: {
+          charges_enabled?: boolean | null
+          contractor_id?: string
+          created_at?: string
+          id?: string
+          onboarding_complete?: boolean | null
+          payouts_enabled?: boolean | null
+          stripe_account_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stripe_accounts_contractor_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
