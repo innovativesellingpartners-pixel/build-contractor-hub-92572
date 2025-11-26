@@ -284,99 +284,13 @@ export function Dashboard() {
         </div>
       </div>
 
-      {/* Company Info Card - Hidden on Mobile */}
-      <div className="hidden md:block">
-        <div className="container mx-auto px-4 md:px-6 py-4 md:py-6">
-          <div className="bg-card border border-border/50 rounded-xl shadow-lg overflow-hidden transition-all hover:shadow-xl">
-          <div className="p-4 md:p-6">
-            <div className="flex flex-col md:flex-row items-start gap-4 md:gap-6">
-              {/* Logo Section */}
-              <div className="relative group mx-auto md:mx-0">
-                {profile?.logo_url ? (
-                  <img 
-                    src={profile.logo_url} 
-                    alt="Company Logo" 
-                    className="h-20 w-20 md:h-24 md:w-24 rounded-xl object-cover border border-border shadow-md group-hover:shadow-lg transition-shadow"
-                  />
-                ) : (
-                  <div className="h-20 w-20 md:h-24 md:w-24 bg-gradient-to-br from-primary/20 to-primary/10 rounded-xl flex items-center justify-center border border-border shadow-md group-hover:shadow-lg transition-shadow">
-                    <Building2 className="h-10 w-10 md:h-12 md:w-12 text-primary" />
-                  </div>
-                )}
-                <Badge className={`${getTierBadgeColor(profile?.subscription_tier)} text-white absolute -bottom-2 left-1/2 -translate-x-1/2 shadow-md text-xs`}>
-                  {getTierLabel(profile?.subscription_tier).split(' ')[0]}
-                </Badge>
-              </div>
-
-              {/* Company Details */}
-              <div className="flex-1 space-y-3 md:space-y-4 text-center md:text-left">
-                <div>
-                  <div className="flex flex-col md:flex-row items-center md:items-center gap-2 md:gap-3 mb-2">
-                    <h2 className="text-xl md:text-2xl font-bold">{profile?.company_name || 'Your Company'}</h2>
-                    {profile?.ct1_contractor_number && (
-                      <Badge variant="outline" className="text-xs font-mono">
-                        CT1 #{profile.ct1_contractor_number}
-                      </Badge>
-                    )}
-                  </div>
-                  
-                  <div className="flex items-center justify-center md:justify-start gap-2 mb-3">
-                    <span className="text-sm text-muted-foreground">5-Star Training:</span>
-                    <StarRating level={profile?.training_level || 0} />
-                  </div>
-                </div>
-                
-                <div className="grid sm:grid-cols-2 gap-x-4 md:gap-x-8 gap-y-2 text-sm">
-                  {profile?.contact_name && (
-                    <div className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50 transition-colors">
-                      <User className="h-4 w-4 text-primary" />
-                      <span className="text-muted-foreground">Contact:</span>
-                      <span className="font-medium">{profile.contact_name}</span>
-                    </div>
-                  )}
-                  {profile?.phone && (
-                    <div className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50 transition-colors">
-                      <Phone className="h-4 w-4 text-primary" />
-                      <span className="font-medium">{profile.phone}</span>
-                    </div>
-                  )}
-                  {user?.email && (
-                    <div className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50 transition-colors">
-                      <Mail className="h-4 w-4 text-primary" />
-                      <span className="font-medium">{user.email}</span>
-                    </div>
-                  )}
-                  {profile?.business_address && (
-                    <div className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50 transition-colors">
-                      <MapPin className="h-4 w-4 text-primary" />
-                      <span className="text-sm">
-                        {profile.business_address}
-                        {profile.city && profile.state && (
-                          <>, {profile.city}, {profile.state} {profile.zip_code}</>
-                        )}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex flex-row md:flex-col gap-2 w-full md:w-auto">
-                <ProfileEditDialog />
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="hover:bg-primary/10 transition-colors flex-1 md:flex-none"
-                  onClick={() => setContactSupportOpen(true)}
-                >
-                  <HelpCircle className="h-4 w-4 mr-2" />
-                  Support
-                </Button>
-              </div>
-            </div>
-          </div>
+      {/* Contractor Name Banner */}
+      <div className="bg-black text-white">
+        <div className="container mx-auto px-4 md:px-6 py-4">
+          <h2 className="text-xl md:text-2xl font-semibold">
+            {profile?.contact_name || profile?.company_name || 'Contractor'}
+          </h2>
         </div>
-      </div>
       </div>
 
       {/* Main Content Area */}
