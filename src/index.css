@@ -168,6 +168,23 @@
   h1, h2, h3, h4, h5, h6 {
     @apply font-semibold tracking-tight;
   }
+
+  /* Auto-capitalize first letter in text inputs */
+  input[type="text"],
+  input:not([type]),
+  textarea {
+    text-transform: capitalize;
+  }
+
+  /* Don't capitalize email, password, url, search, tel inputs */
+  input[type="email"],
+  input[type="password"],
+  input[type="url"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="number"] {
+    text-transform: none;
+  }
 }
 
 @layer components {
