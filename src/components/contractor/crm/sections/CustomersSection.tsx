@@ -133,9 +133,6 @@ export default function CustomersSection({ onSectionChange }: CustomersSectionPr
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
                   <CardTitle className="text-base sm:text-lg truncate">{customer.name}</CardTitle>
-                  {customer.company && (
-                    <p className="text-xs sm:text-sm text-muted-foreground truncate">{customer.company}</p>
-                  )}
                 </div>
                 <Badge variant={customer.customer_type === 'commercial' ? 'default' : 'secondary'} className="shrink-0 text-xs">
                   {customer.customer_type}
