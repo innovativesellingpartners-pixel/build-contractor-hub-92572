@@ -46,8 +46,9 @@ import ct1Logo from "@/assets/ct1-logo-main.png";
 
 import { VoiceAI } from "@/components/contractor/VoiceAI";
 import Reporting from "@/pages/Reporting";
+import Accounting from "@/pages/Accounting";
 
-type ActiveSection = 'training' | 'crm' | 'schedule' | 'marketplace' | 'leads' | 'insurance' | 'account' | 'voiceai' | 'reporting';
+type ActiveSection = 'training' | 'crm' | 'schedule' | 'marketplace' | 'leads' | 'insurance' | 'account' | 'voiceai' | 'reporting' | 'accounting';
 
 export function Dashboard() {
   const { user, profile, signOut } = useAuth();
@@ -335,6 +336,11 @@ export function Dashboard() {
             {activeSection === 'reporting' && (
               <div className="p-3 md:p-4 lg:p-6 min-h-[400px] md:min-h-[600px]">
                 <Reporting />
+              </div>
+            )}
+            {activeSection === 'accounting' && (
+              <div className="p-3 md:p-4 lg:p-6 min-h-[400px] md:min-h-[600px]">
+                <Accounting />
               </div>
             )}
             {activeSection === 'marketplace' && (
@@ -657,6 +663,19 @@ function SidebarNav({ activeSection, setActiveSection, tierFeatures }: SidebarNa
       >
         <BarChart3 className="h-4 w-4 mr-3" />
         Reporting & Analytics
+      </Button>
+      
+      <Button
+        variant={activeSection === 'accounting' ? 'default' : 'ghost'}
+        className={`w-full justify-start transition-all ${
+          activeSection === 'accounting' 
+            ? 'shadow-md' 
+            : 'hover:bg-red-50 hover:border-red-500 hover:text-black border border-transparent'
+        }`}
+        onClick={() => setActiveSection('accounting')}
+      >
+        <DollarSign className="h-4 w-4 mr-3" />
+        Accounting
       </Button>
       
       {tierFeatures.insurance && (
