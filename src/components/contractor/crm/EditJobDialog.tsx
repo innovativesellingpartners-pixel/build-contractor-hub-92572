@@ -100,7 +100,7 @@ export function EditJobDialog({ job, open, onOpenChange, onUpdate }: EditJobDial
           duration_minutes: meeting.duration_minutes,
           location: meeting.location || jobLocation,
           notes: meeting.notes,
-        }, job.name, jobLocation);
+        }, job.name, jobLocation, job.job_number);
       }
       
       onOpenChange(false);
