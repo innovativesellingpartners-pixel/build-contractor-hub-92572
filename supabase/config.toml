@@ -40,7 +40,7 @@ verify_jwt = false
 verify_jwt = true
 
 [functions.generate-estimate-pdf]
-verify_jwt = false  # Public token access allowed, auth checked in function
+verify_jwt = false
 
 [functions.quickbooks-oauth-callback]
 verify_jwt = false
@@ -122,3 +122,6 @@ verify_jwt = true
 
 [functions.outlook-oauth-callback]
 verify_jwt = false
+
+[functions.create-calendar-event]
+verify_jwt = true
