@@ -1,16 +1,29 @@
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Mail, Plug, Check, Loader2, X } from 'lucide-react';
+import { Mail, Plug, Check, Loader2, X, RefreshCw, Circle } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { format, parseISO } from 'date-fns';
 
 interface EmailConnection {
   id: string;
   provider: string;
   email_address: string;
   created_at: string;
+}
+
+interface Email {
+  id: string;
+  threadId: string;
+  snippet: string;
+  from: string;
+  subject: string;
+  date: string;
+  isUnread: boolean;
+  provider: string;
+  email_account: string;
 }
 
 interface EmailsSectionProps {
@@ -20,7 +33,9 @@ interface EmailsSectionProps {
 export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
   const { user } = useAuth();
   const [connections, setConnections] = useState<EmailConnection[]>([]);
+  const [emails, setEmails] = useState<Email[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingEmails, setLoadingEmails] = useState(false);
   const [connecting, setConnecting] = useState<string | null>(null);
 
   useEffect(() => {
@@ -55,10 +70,35 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
 
       if (error) throw error;
       setConnections(data || []);
+      
+      // If there are connections, fetch emails
+      if (data && data.length > 0) {
+        fetchEmails();
+      }
     } catch (error) {
       console.error('Error fetching connections:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchEmails = async () => {
+    setLoadingEmails(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const { data, error } = await supabase.functions.invoke('fetch-emails', {
+        headers: { Authorization: `Bearer ${session.access_token}` }
+      });
+
+      if (error) throw error;
+      setEmails(data?.emails || []);
+    } catch (error: any) {
+      console.error('Error fetching emails:', error);
+      toast.error('Failed to fetch emails');
+    } finally {
+      setLoadingEmails(false);
     }
   };
 
@@ -80,7 +120,6 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
       );
 
       if (error) throw error;
-      
       window.location.href = data.url;
     } catch (error: any) {
       console.error('Connect error:', error);
@@ -100,6 +139,7 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
       
       toast.success(`${provider === 'google' ? 'Gmail' : 'Outlook'} disconnected`);
       setConnections(prev => prev.filter(c => c.id !== connectionId));
+      setEmails([]);
     } catch (error: any) {
       toast.error('Failed to disconnect');
     }
@@ -107,6 +147,31 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
 
   const googleConnected = connections.find(c => c.provider === 'google');
   const outlookConnected = connections.find(c => c.provider === 'outlook');
+
+  const formatEmailDate = (dateStr: string) => {
+    try {
+      // Gmail date format can vary, try parsing
+      const date = new Date(dateStr);
+      const now = new Date();
+      const isToday = date.toDateString() === now.toDateString();
+      
+      if (isToday) {
+        return format(date, 'h:mm a');
+      }
+      return format(date, 'MMM d');
+    } catch {
+      return dateStr;
+    }
+  };
+
+  const extractSenderName = (from: string) => {
+    // Extract name from "Name <email@example.com>" format
+    const match = from?.match(/^([^<]+)/);
+    if (match) {
+      return match[1].trim().replace(/"/g, '');
+    }
+    return from || 'Unknown';
+  };
 
   return (
     <div className="w-full h-full overflow-y-auto overflow-x-hidden pb-20 bg-background">
@@ -116,6 +181,17 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
             <h1 className="text-3xl font-bold">Emails</h1>
             <p className="text-muted-foreground">Connect and manage your email accounts</p>
           </div>
+          {connections.length > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={fetchEmails}
+              disabled={loadingEmails}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${loadingEmails ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+          )}
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
@@ -219,6 +295,56 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
             </div>
           </Card>
         </div>
+
+        {/* Emails List */}
+        {connections.length > 0 && (
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold">Recent Emails</h2>
+            
+            {loadingEmails ? (
+              <Card className="p-8 text-center">
+                <Loader2 className="h-8 w-8 mx-auto mb-4 animate-spin text-muted-foreground" />
+                <p className="text-muted-foreground">Loading emails...</p>
+              </Card>
+            ) : emails.length === 0 ? (
+              <Card className="p-8 text-center">
+                <Mail className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                <p className="text-muted-foreground">No recent emails found</p>
+              </Card>
+            ) : (
+              <div className="space-y-2">
+                {emails.map((email) => (
+                  <Card 
+                    key={email.id} 
+                    className={`p-4 hover:bg-muted/50 cursor-pointer transition-colors ${email.isUnread ? 'border-l-4 border-l-primary' : ''}`}
+                  >
+                    <div className="flex items-start gap-3">
+                      {email.isUnread && (
+                        <Circle className="h-2 w-2 fill-primary text-primary mt-2 flex-shrink-0" />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className={`truncate ${email.isUnread ? 'font-semibold' : 'font-medium'}`}>
+                            {extractSenderName(email.from)}
+                          </p>
+                          <span className="text-xs text-muted-foreground flex-shrink-0">
+                            {formatEmailDate(email.date)}
+                          </span>
+                        </div>
+                        <p className={`text-sm truncate ${email.isUnread ? 'font-medium' : ''}`}>
+                          {email.subject || '(No subject)'}
+                        </p>
+                        <p className="text-sm text-muted-foreground truncate mt-1">
+                          {email.snippet}
+                        </p>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {connections.length === 0 && !loading && (
           <Card className="p-12 text-center">

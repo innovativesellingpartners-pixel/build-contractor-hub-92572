@@ -1,16 +1,28 @@
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar, Plug, Check, Loader2, X } from 'lucide-react';
+import { Calendar, Plug, Check, Loader2, X, RefreshCw, Clock, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { format, parseISO } from 'date-fns';
 
 interface CalendarConnection {
   id: string;
   provider: string;
   calendar_email: string;
   created_at: string;
+}
+
+interface CalendarEvent {
+  id: string;
+  summary?: string;
+  description?: string;
+  location?: string;
+  start?: { dateTime?: string; date?: string };
+  end?: { dateTime?: string; date?: string };
+  provider: string;
+  calendar_email: string;
 }
 
 interface CalendarSectionProps {
@@ -20,7 +32,9 @@ interface CalendarSectionProps {
 export default function CalendarSection({ onSectionChange }: CalendarSectionProps) {
   const { user } = useAuth();
   const [connections, setConnections] = useState<CalendarConnection[]>([]);
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingEvents, setLoadingEvents] = useState(false);
   const [connecting, setConnecting] = useState<string | null>(null);
 
   useEffect(() => {
@@ -39,7 +53,6 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
     if (oauthSuccess === 'calendar') {
       toast.success(`${provider === 'google' ? 'Google' : 'Outlook'} Calendar connected successfully!`);
       fetchConnections();
-      // Clean URL
       window.history.replaceState({}, '', window.location.pathname);
     } else if (oauthError) {
       toast.error(`Connection failed: ${oauthError}`);
@@ -56,10 +69,35 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
 
       if (error) throw error;
       setConnections(data || []);
+      
+      // If there are connections, fetch events
+      if (data && data.length > 0) {
+        fetchEvents();
+      }
     } catch (error) {
       console.error('Error fetching connections:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchEvents = async () => {
+    setLoadingEvents(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const { data, error } = await supabase.functions.invoke('fetch-calendar-events', {
+        headers: { Authorization: `Bearer ${session.access_token}` }
+      });
+
+      if (error) throw error;
+      setEvents(data?.events || []);
+    } catch (error: any) {
+      console.error('Error fetching events:', error);
+      toast.error('Failed to fetch calendar events');
+    } finally {
+      setLoadingEvents(false);
     }
   };
 
@@ -81,8 +119,6 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
       );
 
       if (error) throw error;
-      
-      // Redirect to OAuth provider
       window.location.href = data.url;
     } catch (error: any) {
       console.error('Connect error:', error);
@@ -102,6 +138,7 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
       
       toast.success(`${provider === 'google' ? 'Google' : 'Outlook'} Calendar disconnected`);
       setConnections(prev => prev.filter(c => c.id !== connectionId));
+      setEvents([]);
     } catch (error: any) {
       toast.error('Failed to disconnect');
     }
@@ -109,6 +146,32 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
 
   const googleConnected = connections.find(c => c.provider === 'google');
   const outlookConnected = connections.find(c => c.provider === 'outlook');
+
+  const formatEventTime = (event: CalendarEvent) => {
+    const start = event.start?.dateTime || event.start?.date;
+    const end = event.end?.dateTime || event.end?.date;
+    
+    if (!start) return '';
+    
+    try {
+      const startDate = parseISO(start);
+      const isAllDay = !event.start?.dateTime;
+      
+      if (isAllDay) {
+        return format(startDate, 'MMM d, yyyy') + ' (All Day)';
+      }
+      
+      const formattedStart = format(startDate, 'MMM d, yyyy h:mm a');
+      if (end) {
+        const endDate = parseISO(end);
+        const formattedEnd = format(endDate, 'h:mm a');
+        return `${formattedStart} - ${formattedEnd}`;
+      }
+      return formattedStart;
+    } catch {
+      return start;
+    }
+  };
 
   return (
     <div className="w-full h-full overflow-y-auto overflow-x-hidden pb-20 bg-background">
@@ -118,6 +181,17 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
             <h1 className="text-3xl font-bold">Calendar</h1>
             <p className="text-muted-foreground">Connect and sync your calendars</p>
           </div>
+          {connections.length > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={fetchEvents}
+              disabled={loadingEvents}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${loadingEvents ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+          )}
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
@@ -225,6 +299,53 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
             </div>
           </Card>
         </div>
+
+        {/* Calendar Events */}
+        {connections.length > 0 && (
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold">Upcoming Events</h2>
+            
+            {loadingEvents ? (
+              <Card className="p-8 text-center">
+                <Loader2 className="h-8 w-8 mx-auto mb-4 animate-spin text-muted-foreground" />
+                <p className="text-muted-foreground">Loading calendar events...</p>
+              </Card>
+            ) : events.length === 0 ? (
+              <Card className="p-8 text-center">
+                <Calendar className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                <p className="text-muted-foreground">No upcoming events in the next 30 days</p>
+              </Card>
+            ) : (
+              <div className="space-y-3">
+                {events.map((event) => (
+                  <Card key={event.id} className="p-4">
+                    <div className="flex items-start gap-4">
+                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <Calendar className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold truncate">{event.summary || 'Untitled Event'}</h3>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                          <Clock className="h-4 w-4 flex-shrink-0" />
+                          <span>{formatEventTime(event)}</span>
+                        </div>
+                        {event.location && (
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                            <MapPin className="h-4 w-4 flex-shrink-0" />
+                            <span className="truncate">{event.location}</span>
+                          </div>
+                        )}
+                        <p className="text-xs text-muted-foreground mt-2">
+                          From: {event.calendar_email}
+                        </p>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {connections.length === 0 && !loading && (
           <Card className="p-12 text-center">
