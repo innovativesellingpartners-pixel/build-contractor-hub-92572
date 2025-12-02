@@ -1,17 +1,32 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 
+// Helper function to ensure URL has https://
+function ensureHttps(url: string): string {
+  if (!url) return 'https://myct1.com';
+  // Fix common typos
+  if (url.startsWith('ttps://')) {
+    url = 'h' + url;
+  }
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    url = 'https://' + url;
+  }
+  return url;
+}
+
 // Helper function to create a reliable HTML redirect
 function createRedirectResponse(url: string, message: string = "Connection Successful!"): Response {
-  console.log('Creating redirect to:', url);
+  const safeUrl = ensureHttps(url);
+  console.log('Creating redirect to:', safeUrl);
+  
   const html = `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="0;url=${url}">
+  <meta http-equiv="refresh" content="0;url=${safeUrl}">
   <title>Redirecting...</title>
   <script>
-    window.location.replace("${url}");
+    window.location.replace("${safeUrl}");
   </script>
   <style>
     body { font-family: system-ui, -apple-system, sans-serif; text-align: center; padding: 50px; background: #f9fafb; margin: 0; }
@@ -30,7 +45,7 @@ function createRedirectResponse(url: string, message: string = "Connection Succe
     <h2>${message}</h2>
     <p>Redirecting you back to your dashboard...</p>
     <p style="margin-top: 20px; font-size: 14px;">
-      <a href="${url}">Click here if not redirected automatically</a>
+      <a href="${safeUrl}">Click here if not redirected automatically</a>
     </p>
   </div>
 </body>
@@ -52,9 +67,10 @@ serve(async (req) => {
     const OUTLOOK_CLIENT_SECRET = Deno.env.get('OUTLOOK_CLIENT_SECRET');
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
     const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    const APP_URL = Deno.env.get('APP_URL') || 'https://myct1.com';
+    const APP_URL = ensureHttps(Deno.env.get('APP_URL') || 'https://myct1.com');
 
     console.log('Outlook OAuth callback received:', { code: !!code, state, error });
+    console.log('APP_URL:', APP_URL);
 
     if (error) {
       console.error('OAuth error from Outlook:', error);
@@ -122,20 +138,29 @@ serve(async (req) => {
 
     if (stateData.type === 'calendar') {
       console.log('Saving calendar connection for user:', stateData.user_id);
-      const { error: upsertError } = await supabase
+      
+      // First delete any existing connection
+      await supabase
         .from('calendar_connections')
-        .upsert({
+        .delete()
+        .eq('user_id', stateData.user_id)
+        .eq('provider', 'outlook');
+      
+      const { error: insertError } = await supabase
+        .from('calendar_connections')
+        .insert({
           user_id: stateData.user_id,
           provider: 'outlook',
           calendar_email: userInfo.mail || userInfo.userPrincipalName,
           access_token_encrypted: tokens.access_token,
           refresh_token_encrypted: tokens.refresh_token,
           expires_at: expiresAt,
+          created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
-        }, { onConflict: 'user_id,provider' });
+        });
 
-      if (upsertError) {
-        console.error('Failed to save calendar connection:', upsertError);
+      if (insertError) {
+        console.error('Failed to save calendar connection:', insertError);
         return createRedirectResponse(`${APP_URL}/dashboard?oauth_error=save_failed`, "Connection Failed");
       }
 
@@ -143,20 +168,29 @@ serve(async (req) => {
       return createRedirectResponse(`${APP_URL}/dashboard?oauth_success=calendar&provider=outlook&crm_section=calendar`, "Outlook Calendar Connected!");
     } else {
       console.log('Saving email connection for user:', stateData.user_id);
-      const { error: upsertError } = await supabase
+      
+      // First delete any existing connection
+      await supabase
         .from('email_connections')
-        .upsert({
+        .delete()
+        .eq('user_id', stateData.user_id)
+        .eq('provider', 'outlook');
+      
+      const { error: insertError } = await supabase
+        .from('email_connections')
+        .insert({
           user_id: stateData.user_id,
           provider: 'outlook',
           email_address: userInfo.mail || userInfo.userPrincipalName,
           access_token_encrypted: tokens.access_token,
           refresh_token_encrypted: tokens.refresh_token,
           expires_at: expiresAt,
+          created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
-        }, { onConflict: 'user_id,provider' });
+        });
 
-      if (upsertError) {
-        console.error('Failed to save email connection:', upsertError);
+      if (insertError) {
+        console.error('Failed to save email connection:', insertError);
         return createRedirectResponse(`${APP_URL}/dashboard?oauth_error=save_failed`, "Connection Failed");
       }
 
@@ -165,7 +199,7 @@ serve(async (req) => {
     }
   } catch (error) {
     console.error('Outlook OAuth callback error:', error);
-    const APP_URL = Deno.env.get('APP_URL') || 'https://myct1.com';
+    const APP_URL = ensureHttps(Deno.env.get('APP_URL') || 'https://myct1.com');
     return createRedirectResponse(`${APP_URL}/dashboard?oauth_error=server_error`, "Connection Failed");
   }
 });

@@ -23,7 +23,7 @@ serve(async (req) => {
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
     const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     
-    // Create client with user's auth token
+    // Create client with service role for DB access
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
     
     // Get user from auth token
@@ -42,11 +42,12 @@ serve(async (req) => {
 
     console.log('Fetching calendar events for user:', user.id);
 
-    // Get calendar connections for this user
+    // Get calendar connections for this user - get most recent one
     const { data: connections, error: connError } = await supabase
       .from('calendar_connections')
       .select('*')
-      .eq('user_id', user.id);
+      .eq('user_id', user.id)
+      .order('updated_at', { ascending: false });
 
     if (connError) {
       console.error('Error fetching connections:', connError);
@@ -66,31 +67,26 @@ serve(async (req) => {
     const allEvents: any[] = [];
 
     for (const connection of connections) {
-      let accessToken = connection.access_token_encrypted;
-      
       console.log('Processing connection:', connection.id, 'email:', connection.calendar_email);
       console.log('Token expires at:', connection.expires_at, 'Current time:', new Date().toISOString());
+      console.log('Stored access token length:', connection.access_token_encrypted?.length);
+      console.log('Stored refresh token length:', connection.refresh_token_encrypted?.length);
       
-      // Check if token is expired or expiring within 5 minutes
-      const expiresAt = new Date(connection.expires_at);
-      const bufferTime = new Date(Date.now() + 5 * 60 * 1000);
+      // Always try to refresh the token first to ensure we have valid credentials
+      let accessToken = connection.access_token_encrypted;
       
-      if (expiresAt > bufferTime) {
-        // Token is still valid, use it directly
-        console.log('Token still valid, using stored access token');
-      } else {
-        // Token expired or expiring soon, try to refresh
-        console.log('Token expired or expiring soon, refreshing...');
+      if (connection.provider === 'google') {
+        // Try to refresh the token to ensure it's valid
+        console.log('Attempting token refresh for fresh credentials...');
         const refreshedToken = await refreshGoogleToken(connection, supabase);
+        
         if (refreshedToken) {
           accessToken = refreshedToken;
-          console.log('Token refreshed successfully');
+          console.log('Using refreshed token');
         } else {
-          console.log('Token refresh failed, will try with stored token anyway');
+          console.log('Refresh failed, trying stored token');
         }
-      }
-
-      if (connection.provider === 'google') {
+        
         console.log('Fetching Google Calendar events with token length:', accessToken?.length);
         const events = await fetchGoogleCalendarEvents(accessToken);
         console.log('Fetched', events.length, 'events');
@@ -130,7 +126,6 @@ async function refreshGoogleToken(connection: any, supabase: any): Promise<strin
     const GOOGLE_CLIENT_SECRET = Deno.env.get('GOOGLE_CLIENT_SECRET');
 
     console.log('Attempting to refresh token for:', connection.calendar_email);
-    console.log('Refresh token length:', connection.refresh_token_encrypted?.length);
 
     if (!connection.refresh_token_encrypted) {
       console.error('No refresh token available');
@@ -188,24 +183,27 @@ async function fetchGoogleCalendarEvents(accessToken: string): Promise<any[]> {
     const timeMin = now.toISOString();
     const timeMax = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
 
-    const response = await fetch(
-      `https://www.googleapis.com/calendar/v3/calendars/primary/events?` +
+    const url = `https://www.googleapis.com/calendar/v3/calendars/primary/events?` +
       `timeMin=${encodeURIComponent(timeMin)}&` +
       `timeMax=${encodeURIComponent(timeMax)}&` +
       `singleEvents=true&` +
       `orderBy=startTime&` +
-      `maxResults=50`,
-      {
-        headers: { Authorization: `Bearer ${accessToken}` }
-      }
-    );
+      `maxResults=50`;
+      
+    console.log('Calling Google Calendar API...');
+
+    const response = await fetch(url, {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
 
     if (!response.ok) {
-      console.error('Google Calendar API error:', response.status, await response.text());
+      const errorText = await response.text();
+      console.error('Google Calendar API error:', response.status, errorText);
       return [];
     }
 
     const data = await response.json();
+    console.log('Google Calendar API success, items count:', data.items?.length || 0);
     return data.items || [];
   } catch (error) {
     console.error('Error fetching Google Calendar events:', error);

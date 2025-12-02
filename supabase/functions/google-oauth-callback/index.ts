@@ -1,17 +1,33 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 
+// Helper function to ensure URL has https://
+function ensureHttps(url: string): string {
+  if (!url) return 'https://myct1.com';
+  // Fix common typos
+  if (url.startsWith('ttps://')) {
+    url = 'h' + url;
+  }
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    url = 'https://' + url;
+  }
+  return url;
+}
+
 // Helper function to create a reliable HTML redirect
 function createRedirectResponse(url: string, message: string = "Connection Successful!"): Response {
-  console.log('Creating redirect to:', url);
+  // Ensure URL is valid
+  const safeUrl = ensureHttps(url);
+  console.log('Creating redirect to:', safeUrl);
+  
   const html = `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="0;url=${url}">
+  <meta http-equiv="refresh" content="0;url=${safeUrl}">
   <title>Redirecting...</title>
   <script>
-    window.location.replace("${url}");
+    window.location.replace("${safeUrl}");
   </script>
   <style>
     body { font-family: system-ui, -apple-system, sans-serif; text-align: center; padding: 50px; background: #f9fafb; margin: 0; }
@@ -30,7 +46,7 @@ function createRedirectResponse(url: string, message: string = "Connection Succe
     <h2>${message}</h2>
     <p>Redirecting you back to your dashboard...</p>
     <p style="margin-top: 20px; font-size: 14px;">
-      <a href="${url}">Click here if not redirected automatically</a>
+      <a href="${safeUrl}">Click here if not redirected automatically</a>
     </p>
   </div>
 </body>
@@ -52,9 +68,10 @@ serve(async (req) => {
     const GOOGLE_CLIENT_SECRET = Deno.env.get('GOOGLE_CLIENT_SECRET');
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
     const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    const APP_URL = Deno.env.get('APP_URL') || 'https://myct1.com';
+    const APP_URL = ensureHttps(Deno.env.get('APP_URL') || 'https://myct1.com');
 
     console.log('Google OAuth callback received:', { code: !!code, state, error });
+    console.log('APP_URL:', APP_URL);
 
     if (error) {
       console.error('OAuth error from Google:', error);
@@ -129,6 +146,9 @@ serve(async (req) => {
     }
 
     console.log('Token exchange successful');
+    console.log('Access token length:', tokens.access_token?.length);
+    console.log('Refresh token present:', !!tokens.refresh_token);
+    console.log('Expires in:', tokens.expires_in);
 
     // Get user info
     const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
@@ -142,20 +162,29 @@ serve(async (req) => {
     // Store connection based on type
     if (stateData.type === 'calendar') {
       console.log('Saving calendar connection for user:', stateData.contractor_id);
-      const { error: upsertError } = await supabase
+      
+      // First delete any existing connection to ensure clean state
+      await supabase
         .from('calendar_connections')
-        .upsert({
+        .delete()
+        .eq('user_id', stateData.contractor_id)
+        .eq('provider', 'google');
+      
+      const { error: insertError } = await supabase
+        .from('calendar_connections')
+        .insert({
           user_id: stateData.contractor_id,
           provider: 'google',
           calendar_email: userInfo.email,
           access_token_encrypted: tokens.access_token,
           refresh_token_encrypted: tokens.refresh_token,
           expires_at: expiresAt,
+          created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
-        }, { onConflict: 'user_id,provider' });
+        });
 
-      if (upsertError) {
-        console.error('Failed to save calendar connection:', upsertError);
+      if (insertError) {
+        console.error('Failed to save calendar connection:', insertError);
         return createRedirectResponse(`${APP_URL}/dashboard?oauth_error=save_failed`, "Connection Failed");
       }
 
@@ -163,20 +192,29 @@ serve(async (req) => {
       return createRedirectResponse(`${APP_URL}/dashboard?oauth_success=calendar&provider=google&crm_section=calendar`, "Google Calendar Connected!");
     } else {
       console.log('Saving email connection for user:', stateData.contractor_id);
-      const { error: upsertError } = await supabase
+      
+      // First delete any existing connection to ensure clean state
+      await supabase
         .from('email_connections')
-        .upsert({
+        .delete()
+        .eq('user_id', stateData.contractor_id)
+        .eq('provider', 'google');
+      
+      const { error: insertError } = await supabase
+        .from('email_connections')
+        .insert({
           user_id: stateData.contractor_id,
           provider: 'google',
           email_address: userInfo.email,
           access_token_encrypted: tokens.access_token,
           refresh_token_encrypted: tokens.refresh_token,
           expires_at: expiresAt,
+          created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
-        }, { onConflict: 'user_id,provider' });
+        });
 
-      if (upsertError) {
-        console.error('Failed to save email connection:', upsertError);
+      if (insertError) {
+        console.error('Failed to save email connection:', insertError);
         return createRedirectResponse(`${APP_URL}/dashboard?oauth_error=save_failed`, "Connection Failed");
       }
 
@@ -185,7 +223,7 @@ serve(async (req) => {
     }
   } catch (error) {
     console.error('Google OAuth callback error:', error);
-    const APP_URL = Deno.env.get('APP_URL') || 'https://myct1.com';
+    const APP_URL = ensureHttps(Deno.env.get('APP_URL') || 'https://myct1.com');
     return createRedirectResponse(`${APP_URL}/dashboard?oauth_error=server_error`, "Connection Failed");
   }
 });
