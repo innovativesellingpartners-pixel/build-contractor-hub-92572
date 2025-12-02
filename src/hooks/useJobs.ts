@@ -82,21 +82,26 @@ export const useJobs = () => {
       const newJob = data as Job;
       setJobs([newJob, ...jobs]);
       
-      // Create calendar event for the job (non-blocking)
-      supabase.functions.invoke('create-calendar-event', {
-        body: {
-          jobId: newJob.id,
-          jobName: newJob.name,
-          description: newJob.description,
-          startDate: newJob.start_date,
-          endDate: newJob.end_date,
-          address: newJob.address,
-          city: newJob.city,
-          state: newJob.state,
-        },
-      }).then(({ error: calError }) => {
-        if (calError) {
-          console.log('Calendar event creation skipped or failed:', calError);
+      // Create calendar event for the job (non-blocking) - pass auth token
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) {
+          supabase.functions.invoke('create-calendar-event', {
+            body: {
+              jobId: newJob.id,
+              jobName: newJob.name,
+              description: newJob.description,
+              startDate: newJob.start_date,
+              endDate: newJob.end_date,
+              address: newJob.address,
+              city: newJob.city,
+              state: newJob.state,
+            },
+            headers: { Authorization: `Bearer ${session.access_token}` }
+          }).then(({ error: calError }) => {
+            if (calError) {
+              console.log('Calendar event creation skipped or failed:', calError);
+            }
+          });
         }
       });
 
@@ -201,6 +206,30 @@ export const useJobs = () => {
 
       const newJob = data as Job;
       setJobs([newJob, ...jobs]);
+      
+      // Create calendar event for duplicated job (non-blocking) - pass auth token
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) {
+          supabase.functions.invoke('create-calendar-event', {
+            body: {
+              jobId: newJob.id,
+              jobName: newJob.name,
+              description: newJob.description,
+              startDate: newJob.start_date,
+              endDate: newJob.end_date,
+              address: newJob.address,
+              city: newJob.city,
+              state: newJob.state,
+            },
+            headers: { Authorization: `Bearer ${session.access_token}` }
+          }).then(({ error: calError }) => {
+            if (calError) {
+              console.log('Calendar event creation skipped or failed:', calError);
+            }
+          });
+        }
+      });
+      
       toast({
         title: 'Job duplicated',
         description: 'Job has been duplicated successfully',
