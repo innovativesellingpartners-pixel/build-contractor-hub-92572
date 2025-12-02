@@ -15,12 +15,15 @@ import { Plus, Trash2, ChevronDown, Save, Send, FileText, Download } from 'lucid
 import SignatureCanvas from 'react-signature-canvas';
 import { EstimateLineItem } from '@/hooks/useEstimates';
 import { useCustomers } from '@/hooks/useCustomers';
+import { useContractorProfile } from '@/hooks/useContractorProfile';
 import AddCustomerDialog from './AddCustomerDialog';
 import EstimateAssistant from './EstimateAssistant';
+import ScopeOfWorkSection from './estimate/ScopeOfWorkSection';
+import TermsConditionsSection from './estimate/TermsConditionsSection';
+import FinancialSummarySection from './estimate/FinancialSummarySection';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useOpportunities } from '@/hooks/useOpportunities';
-
 const tradeTypes = [
   'General Remodel',
   'Roofing',
@@ -91,10 +94,32 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
   const [summaryOpen, setSummaryOpen] = useState(true);
   const [tradeSpecificOpen, setTradeSpecificOpen] = useState(false);
 
+  // Scope of work state
+  const [scopeObjective, setScopeObjective] = useState('');
+  const [scopeKeyDeliverables, setScopeKeyDeliverables] = useState<string[]>([]);
+  const [scopeExclusions, setScopeExclusions] = useState<string[]>([]);
+  const [scopeTimeline, setScopeTimeline] = useState('');
+
+  // Terms state
+  const [validityDays, setValidityDays] = useState(30);
+  const [paymentScheduleText, setPaymentScheduleText] = useState('');
+  const [changeOrderText, setChangeOrderText] = useState('');
+  const [insuranceText, setInsuranceText] = useState('');
+  const [warrantyYears, setWarrantyYears] = useState(2);
+  const [warrantyText, setWarrantyText] = useState('');
+
+  // Financial state
+  const [salesTaxRatePercent, setSalesTaxRatePercent] = useState(6.0);
+  const [permitFeeSurcharge, setPermitFeeSurcharge] = useState(0);
+  const [requiredDepositPercent, setRequiredDepositPercent] = useState(30.0);
+
   // Customers
   const { customers, refreshCustomers } = useCustomers();
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | undefined>(undefined);
   const [isAddCustomerOpen, setIsAddCustomerOpen] = useState(false);
+
+  // Contractor profile for defaults
+  const { profile, getEstimateDefaults, getBusinessInfo } = useContractorProfile();
 
   // Opportunities for job location
   const { opportunities } = useOpportunities();
@@ -102,6 +127,16 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
 
   const contractorSigRef = useRef<SignatureCanvas>(null);
   const clientSigRef = useRef<SignatureCanvas>(null);
+
+  // Load profile defaults on mount
+  useEffect(() => {
+    if (profile && !initialData) {
+      const defaults = getEstimateDefaults();
+      setSalesTaxRatePercent(defaults.salesTaxRate);
+      setRequiredDepositPercent(defaults.depositPercent);
+      setWarrantyYears(defaults.warrantyYears);
+    }
+  }, [profile]);
 
   const {
     register,
@@ -192,6 +227,24 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
         setTradeSpecific({});
       }
 
+      // Load scope of work
+      setScopeObjective(initialData.scope_objective || '');
+      setScopeKeyDeliverables(initialData.scope_key_deliverables || []);
+      setScopeExclusions(initialData.scope_exclusions || []);
+      setScopeTimeline(initialData.scope_timeline || '');
+
+      // Load financial settings
+      setSalesTaxRatePercent(initialData.sales_tax_rate_percent || initialData.tax_rate || 6.0);
+      setPermitFeeSurcharge(initialData.permit_fee || 0);
+      setRequiredDepositPercent(initialData.required_deposit_percent || 30.0);
+
+      // Load terms
+      setValidityDays(30);
+      setPaymentScheduleText(initialData.terms_payment_schedule || '');
+      setChangeOrderText(initialData.terms_change_orders || '');
+      setInsuranceText(initialData.terms_insurance || '');
+      setWarrantyYears(initialData.terms_warranty_years || 2);
+
       // Load signatures if they exist
       if (initialData.contractor_signature && contractorSigRef.current) {
         contractorSigRef.current.fromDataURL(initialData.contractor_signature);
@@ -224,6 +277,10 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
         included: true,
       }]);
       setTradeSpecific({});
+      setScopeObjective('');
+      setScopeKeyDeliverables([]);
+      setScopeExclusions([]);
+      setScopeTimeline('');
       contractorSigRef.current?.clear();
       clientSigRef.current?.clear();
     }
@@ -388,10 +445,35 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
   };
 
   const handleFormSubmit = (data: EstimateFormData, isDraft: boolean) => {
+    // Calculate financial summary with new fields
+    const salesTaxAmount = totals.subtotal * (salesTaxRatePercent / 100);
+    const grandTotal = totals.subtotal + totals.profitMarkupAmount + salesTaxAmount + permitFeeSurcharge;
+    const requiredDepositAmount = grandTotal * (requiredDepositPercent / 100);
+    const balanceDue = grandTotal - requiredDepositAmount;
+
     const formData = {
       ...data,
       customer_id: selectedCustomerId,
       line_items: lineItems,
+      
+      // Scope of work
+      scope_objective: scopeObjective,
+      scope_key_deliverables: scopeKeyDeliverables,
+      scope_exclusions: scopeExclusions,
+      scope_timeline: scopeTimeline,
+      
+      // Financial summary
+      subtotal: totals.subtotal,
+      sales_tax_rate_percent: salesTaxRatePercent,
+      tax_rate: salesTaxRatePercent,
+      tax_amount: salesTaxAmount,
+      permit_fee: permitFeeSurcharge,
+      grand_total: grandTotal,
+      required_deposit_percent: requiredDepositPercent,
+      required_deposit: requiredDepositAmount,
+      balance_due: balanceDue,
+      
+      // Legacy cost_summary for backward compatibility
       cost_summary: {
         materials_total: totals.materialsTotal,
         labour_total: totals.labourTotal,
@@ -402,14 +484,22 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
         subtotal: totals.subtotal,
         profit_markup_percentage: profitMarkupPercentage,
         profit_markup_amount: totals.profitMarkupAmount,
-        tax_and_fees: taxAndFees,
-        grand_total: totals.grandTotal,
+        tax_and_fees: salesTaxAmount + permitFeeSurcharge,
+        grand_total: grandTotal,
       },
+      
+      // Terms
+      terms_validity: `This estimate is valid for ${validityDays} days from date issued.`,
+      terms_payment_schedule: paymentScheduleText,
+      terms_change_orders: changeOrderText,
+      terms_insurance: insuranceText,
+      terms_warranty_years: warrantyYears,
+      
       trade_specific: tradeSpecific,
       contractor_signature: contractorSigRef.current?.toDataURL(),
       client_signature: clientSigRef.current?.toDataURL(),
       status: isDraft ? 'draft' : (initialData?.status || 'draft'),
-      total_amount: totals.grandTotal,
+      total_amount: grandTotal,
     };
 
     onSubmit(formData, isDraft);

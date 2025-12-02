@@ -1119,6 +1119,8 @@ export type Database = {
           public_token: string | null
           referred_by: string | null
           required_deposit: number | null
+          required_deposit_percent: number | null
+          sales_tax_rate_percent: number | null
           scope_exclusions: Json | null
           scope_key_deliverables: Json | null
           scope_objective: string | null
@@ -1185,6 +1187,8 @@ export type Database = {
           public_token?: string | null
           referred_by?: string | null
           required_deposit?: number | null
+          required_deposit_percent?: number | null
+          sales_tax_rate_percent?: number | null
           scope_exclusions?: Json | null
           scope_key_deliverables?: Json | null
           scope_objective?: string | null
@@ -1251,6 +1255,8 @@ export type Database = {
           public_token?: string | null
           referred_by?: string | null
           required_deposit?: number | null
+          required_deposit_percent?: number | null
+          sales_tax_rate_percent?: number | null
           scope_exclusions?: Json | null
           scope_key_deliverables?: Json | null
           scope_objective?: string | null
@@ -2481,13 +2487,18 @@ export type Database = {
       profiles: {
         Row: {
           business_address: string | null
+          business_email: string | null
           city: string | null
           company_name: string | null
           contact_name: string | null
           created_at: string
           ct1_contractor_number: string | null
           default_currency: string | null
+          default_deposit_percent: number | null
+          default_sales_tax_rate: number | null
+          default_warranty_years: number | null
           id: string
+          license_number: string | null
           logo_url: string | null
           phone: string | null
           pocketbot_full_access: boolean
@@ -2506,17 +2517,23 @@ export type Database = {
           updated_at: string
           user_id: string
           username: string | null
+          website_url: string | null
           zip_code: string | null
         }
         Insert: {
           business_address?: string | null
+          business_email?: string | null
           city?: string | null
           company_name?: string | null
           contact_name?: string | null
           created_at?: string
           ct1_contractor_number?: string | null
           default_currency?: string | null
+          default_deposit_percent?: number | null
+          default_sales_tax_rate?: number | null
+          default_warranty_years?: number | null
           id: string
+          license_number?: string | null
           logo_url?: string | null
           phone?: string | null
           pocketbot_full_access?: boolean
@@ -2535,17 +2552,23 @@ export type Database = {
           updated_at?: string
           user_id: string
           username?: string | null
+          website_url?: string | null
           zip_code?: string | null
         }
         Update: {
           business_address?: string | null
+          business_email?: string | null
           city?: string | null
           company_name?: string | null
           contact_name?: string | null
           created_at?: string
           ct1_contractor_number?: string | null
           default_currency?: string | null
+          default_deposit_percent?: number | null
+          default_sales_tax_rate?: number | null
+          default_warranty_years?: number | null
           id?: string
+          license_number?: string | null
           logo_url?: string | null
           phone?: string | null
           pocketbot_full_access?: boolean
@@ -2564,6 +2587,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
           username?: string | null
+          website_url?: string | null
           zip_code?: string | null
         }
         Relationships: []
