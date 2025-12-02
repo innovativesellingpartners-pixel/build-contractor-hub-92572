@@ -275,6 +275,15 @@ export const Privacy = () => {
               <li><strong>Mailing Address:</strong> 31780 Groesbeck Hwy, Fraser, MI 48026</li>
             </ul>
           </section>
+
+          {/* Link to Terms */}
+          <section className="pt-4">
+            <p>
+              Please also review our{' '}
+              <Link to="/legal/terms" className="text-primary hover:underline">Terms of Service</Link>{' '}
+              for information on the terms and conditions governing your use of CT1.
+            </p>
+          </section>
         </div>
 
         <div className="mt-12 pt-8 border-t">
