@@ -20,13 +20,24 @@ serve(async (req) => {
       throw new Error('GOOGLE_CLIENT_ID not configured');
     }
 
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
+      throw new Error('Supabase configuration missing');
+    }
+
     // Get user from auth header
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       throw new Error('Missing authorization header');
     }
 
-    const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_KEY!);
+    // Create service role client to bypass RLS
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
+    
     const { data: { user }, error: authError } = await supabase.auth.getUser(
       authHeader.replace('Bearer ', '')
     );
@@ -58,8 +69,10 @@ serve(async (req) => {
     // Create state token for security
     const state = crypto.randomUUID();
     
+    console.log('Creating oauth state for user:', user.id, 'type:', type, 'state:', state);
+    
     // Store state in database for verification
-    await supabase
+    const { error: insertError } = await supabase
       .from('oauth_states')
       .insert({
         state,
@@ -69,6 +82,13 @@ serve(async (req) => {
         created_at: new Date().toISOString(),
         expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString() // 10 min expiry
       });
+
+    if (insertError) {
+      console.error('Failed to insert oauth state:', insertError);
+      throw new Error('Failed to create oauth state: ' + insertError.message);
+    }
+
+    console.log('OAuth state created successfully');
 
     const redirectUri = `${SUPABASE_URL}/functions/v1/google-oauth-callback`;
     
