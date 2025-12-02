@@ -14,46 +14,19 @@ function ensureHttps(url: string): string {
   return url;
 }
 
-// Helper function to create a reliable HTML redirect
-function createRedirectResponse(url: string, message: string = "Connection Successful!"): Response {
+// Helper function to create a direct HTTP redirect
+function createRedirectResponse(url: string, _message: string = "Connection Successful!"): Response {
   // Ensure URL is valid
   const safeUrl = ensureHttps(url);
   console.log('Creating redirect to:', safeUrl);
   
-  const html = `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="0;url=${safeUrl}">
-  <title>Redirecting...</title>
-  <script>
-    window.location.replace("${safeUrl}");
-  </script>
-  <style>
-    body { font-family: system-ui, -apple-system, sans-serif; text-align: center; padding: 50px; background: #f9fafb; margin: 0; }
-    .container { max-width: 400px; margin: 0 auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-    .spinner { width: 40px; height: 40px; border: 3px solid #e5e7eb; border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    h2 { color: #111827; margin: 0 0 10px; }
-    p { color: #6b7280; margin: 10px 0; }
-    a { color: #3b82f6; text-decoration: none; }
-    a:hover { text-decoration: underline; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="spinner"></div>
-    <h2>${message}</h2>
-    <p>Redirecting you back to your dashboard...</p>
-    <p style="margin-top: 20px; font-size: 14px;">
-      <a href="${safeUrl}">Click here if not redirected automatically</a>
-    </p>
-  </div>
-</body>
-</html>`;
-  return new Response(html, {
-    status: 200,
-    headers: { 'Content-Type': 'text/html; charset=utf-8' },
+  // Use a 302 redirect which is more reliable than HTML-based redirects
+  return new Response(null, {
+    status: 302,
+    headers: { 
+      'Location': safeUrl,
+      'Cache-Control': 'no-cache, no-store, must-revalidate'
+    },
   });
 }
 
