@@ -142,7 +142,7 @@ serve(async (req) => {
       }
 
       console.log('Calendar connection saved successfully');
-      return createRedirectResponse(`${APP_URL}/dashboard?oauth_success=calendar&provider=google`);
+      return createRedirectResponse(`${APP_URL}/dashboard?oauth_success=calendar&provider=google&crm_section=calendar`);
     } else {
       console.log('Saving email connection for user:', stateData.contractor_id);
       const { error: upsertError } = await supabase
@@ -163,7 +163,7 @@ serve(async (req) => {
       }
 
       console.log('Email connection saved successfully');
-      return createRedirectResponse(`${APP_URL}/dashboard?oauth_success=email&provider=google`);
+      return createRedirectResponse(`${APP_URL}/dashboard?oauth_success=email&provider=google&crm_section=emails`);
     }
   } catch (error) {
     console.error('Google OAuth callback error:', error);
