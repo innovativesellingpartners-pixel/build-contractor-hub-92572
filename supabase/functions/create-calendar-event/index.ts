@@ -6,6 +6,41 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Helper function to decode tokens that may be hex-encoded
+function decodeToken(token: any): string {
+  if (!token) return '';
+  
+  // If it's already a string, check if it's hex-encoded
+  if (typeof token === 'string') {
+    // Check if it looks like a hex string (even length, only hex chars)
+    if (/^[0-9a-fA-F]+$/.test(token) && token.length % 2 === 0 && token.length > 100) {
+      try {
+        const decoded = new TextDecoder().decode(
+          new Uint8Array(token.match(/.{1,2}/g)!.map(byte => parseInt(byte, 16)))
+        );
+        console.log('Decoded hex token, starts with:', decoded.substring(0, 10));
+        return decoded;
+      } catch (e) {
+        console.log('Failed to decode as hex, using as-is');
+        return token;
+      }
+    }
+    return token;
+  }
+  
+  // Handle Buffer-like objects
+  if (token && typeof token === 'object') {
+    if (token.type === 'Buffer' && Array.isArray(token.data)) {
+      return new TextDecoder().decode(new Uint8Array(token.data));
+    }
+    if (Array.isArray(token)) {
+      return new TextDecoder().decode(new Uint8Array(token));
+    }
+  }
+  
+  return String(token);
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -34,7 +69,8 @@ serve(async (req) => {
       });
     }
 
-    const { jobId, jobName, description, startDate, endDate, address, city, state } = await req.json();
+    const { jobId, jobName, description, startDate, endDate, location, address, city, state } = await req.json();
+    console.log('Creating calendar event for job:', jobName, 'user:', user.id);
 
     if (!jobId || !jobName) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), {
@@ -65,51 +101,61 @@ serve(async (req) => {
       });
     }
 
+    console.log('Found', connections.length, 'calendar connections');
     const results = [];
 
     for (const connection of connections) {
       try {
-        // Decrypt tokens
-        const { data: decryptedAccess } = await supabase.rpc('decrypt_secret', { 
-          encrypted_value: connection.access_token_encrypted 
-        });
-        const { data: decryptedRefresh } = await supabase.rpc('decrypt_secret', { 
-          encrypted_value: connection.refresh_token_encrypted 
-        });
+        console.log('Processing connection:', connection.provider, connection.calendar_email);
+        
+        // Decode tokens (they are hex-encoded)
+        const refreshTokenDecoded = decodeToken(connection.refresh_token_encrypted);
+        const accessTokenDecoded = decodeToken(connection.access_token_encrypted);
+        
+        console.log('Refresh token decoded, length:', refreshTokenDecoded.length);
+        console.log('Access token decoded, length:', accessTokenDecoded.length);
 
-        let accessToken = decryptedAccess;
+        let accessToken = accessTokenDecoded;
 
-        // Check if token is expired and refresh if needed
-        if (new Date(connection.expires_at) < new Date()) {
-          console.log('Token expired, refreshing...');
-          accessToken = await refreshToken(connection.provider, decryptedRefresh, connection, supabase);
+        // Always refresh token to ensure it's valid
+        console.log('Refreshing token for fresh credentials...');
+        try {
+          accessToken = await refreshToken(connection.provider, refreshTokenDecoded, connection, supabase);
+          console.log('Got fresh access token, length:', accessToken.length);
+        } catch (refreshErr: any) {
+          console.error('Token refresh failed:', refreshErr.message);
+          // Try with existing token if refresh fails
+          accessToken = accessTokenDecoded;
         }
 
-        // Build location string
-        const locationParts = [address, city, state].filter(Boolean);
-        const location = locationParts.join(', ');
+        // Build location string - prefer location param, fallback to address parts
+        const eventLocation = location || [address, city, state].filter(Boolean).join(', ');
 
         // Use start_date or default to tomorrow
         const eventStart = startDate ? new Date(startDate) : new Date(Date.now() + 24 * 60 * 60 * 1000);
         const eventEnd = endDate ? new Date(endDate) : new Date(eventStart.getTime() + 2 * 60 * 60 * 1000);
 
+        console.log('Creating event:', jobName, 'at', eventLocation, 'from', eventStart, 'to', eventEnd);
+
         if (connection.provider === 'google') {
           const event = await createGoogleCalendarEvent(accessToken, {
-            summary: `Job: ${jobName}`,
-            description: description || `Job created in CT1`,
-            location,
+            summary: `${jobName}`,
+            description: description || `Scheduled from CT1`,
+            location: eventLocation,
             start: eventStart,
             end: eventEnd,
           });
+          console.log('Google Calendar event created:', event.id);
           results.push({ provider: 'google', success: true, eventId: event.id });
         } else if (connection.provider === 'outlook') {
           const event = await createOutlookCalendarEvent(accessToken, {
-            subject: `Job: ${jobName}`,
-            body: description || `Job created in CT1`,
-            location,
+            subject: `${jobName}`,
+            body: description || `Scheduled from CT1`,
+            location: eventLocation,
             start: eventStart,
             end: eventEnd,
           });
+          console.log('Outlook Calendar event created:', event.id);
           results.push({ provider: 'outlook', success: true, eventId: event.id });
         }
       } catch (err: any) {
@@ -137,6 +183,7 @@ async function refreshToken(provider: string, refreshToken: string, connection: 
     const clientId = Deno.env.get('GOOGLE_CLIENT_ID');
     const clientSecret = Deno.env.get('GOOGLE_CLIENT_SECRET');
     
+    console.log('Refreshing Google token...');
     const response = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -149,24 +196,26 @@ async function refreshToken(provider: string, refreshToken: string, connection: 
     });
 
     const data = await response.json();
+    console.log('Token refresh response status:', response.status);
     
     if (data.access_token) {
-      // Update stored token
-      const { data: encryptedToken } = await supabase.rpc('encrypt_secret', { 
-        secret_value: data.access_token 
-      });
+      // Encode the new access token as hex for storage
+      const encoder = new TextEncoder();
+      const tokenBytes = encoder.encode(data.access_token);
+      const hexToken = Array.from(tokenBytes).map(b => b.toString(16).padStart(2, '0')).join('');
       
       await supabase
         .from('calendar_connections')
         .update({
-          access_token_encrypted: encryptedToken,
+          access_token_encrypted: hexToken,
           expires_at: new Date(Date.now() + data.expires_in * 1000).toISOString(),
         })
         .eq('id', connection.id);
       
       return data.access_token;
     }
-    throw new Error('Failed to refresh Google token');
+    console.error('Token refresh failed:', data);
+    throw new Error('Failed to refresh Google token: ' + JSON.stringify(data));
   } else if (provider === 'outlook') {
     const clientId = Deno.env.get('OUTLOOK_CLIENT_ID');
     const clientSecret = Deno.env.get('OUTLOOK_CLIENT_SECRET');
@@ -185,14 +234,14 @@ async function refreshToken(provider: string, refreshToken: string, connection: 
     const data = await response.json();
     
     if (data.access_token) {
-      const { data: encryptedToken } = await supabase.rpc('encrypt_secret', { 
-        secret_value: data.access_token 
-      });
+      const encoder = new TextEncoder();
+      const tokenBytes = encoder.encode(data.access_token);
+      const hexToken = Array.from(tokenBytes).map(b => b.toString(16).padStart(2, '0')).join('');
       
       await supabase
         .from('calendar_connections')
         .update({
-          access_token_encrypted: encryptedToken,
+          access_token_encrypted: hexToken,
           expires_at: new Date(Date.now() + data.expires_in * 1000).toISOString(),
         })
         .eq('id', connection.id);
