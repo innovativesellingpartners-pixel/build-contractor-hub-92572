@@ -1102,6 +1102,7 @@ export type Database = {
           estimate_number: string | null
           grand_total: number | null
           id: string
+          job_id: string | null
           last_send_attempt: string | null
           lead_id: string | null
           line_items: Json | null
@@ -1167,6 +1168,7 @@ export type Database = {
           estimate_number?: string | null
           grand_total?: number | null
           id?: string
+          job_id?: string | null
           last_send_attempt?: string | null
           lead_id?: string | null
           line_items?: Json | null
@@ -1232,6 +1234,7 @@ export type Database = {
           estimate_number?: string | null
           grand_total?: number | null
           id?: string
+          job_id?: string | null
           last_send_attempt?: string | null
           lead_id?: string | null
           line_items?: Json | null
@@ -1280,6 +1283,13 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estimates_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
             referencedColumns: ["id"]
           },
           {
@@ -2262,10 +2272,12 @@ export type Database = {
           created_at: string
           customer_id: string | null
           estimate_id: string | null
+          fee_amount: number | null
           id: string
           invoice_id: string | null
           job_id: string | null
           notes: string | null
+          paid_at: string | null
           payment_date: string
           payment_method: string | null
           status: string
@@ -2279,10 +2291,12 @@ export type Database = {
           created_at?: string
           customer_id?: string | null
           estimate_id?: string | null
+          fee_amount?: number | null
           id?: string
           invoice_id?: string | null
           job_id?: string | null
           notes?: string | null
+          paid_at?: string | null
           payment_date?: string
           payment_method?: string | null
           status?: string
@@ -2296,10 +2310,12 @@ export type Database = {
           created_at?: string
           customer_id?: string | null
           estimate_id?: string | null
+          fee_amount?: number | null
           id?: string
           invoice_id?: string | null
           job_id?: string | null
           notes?: string | null
+          paid_at?: string | null
           payment_date?: string
           payment_method?: string | null
           status?: string

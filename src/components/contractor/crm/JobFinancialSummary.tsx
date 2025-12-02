@@ -14,6 +14,14 @@ interface JobFinancialSummaryProps {
 }
 
 interface FinancialData {
+  // Job-level aggregates (from database triggers)
+  paymentsCollected: number;
+  expensesTotal: number;
+  profit: number;
+  contractValue: number;
+  changeOrdersTotal: number;
+  totalContractValue: number;
+  // Detailed breakdowns
   totalMaterialsCost: number;
   totalChangeOrdersCost: number;
   totalInvoiced: number;
@@ -27,6 +35,12 @@ interface FinancialData {
 export function JobFinancialSummary({ jobId, estimatedCost = 0, actualCost = 0 }: JobFinancialSummaryProps) {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<FinancialData>({
+    paymentsCollected: 0,
+    expensesTotal: 0,
+    profit: 0,
+    contractValue: 0,
+    changeOrdersTotal: 0,
+    totalContractValue: 0,
     totalMaterialsCost: 0,
     totalChangeOrdersCost: 0,
     totalInvoiced: 0,
@@ -40,7 +54,16 @@ export function JobFinancialSummary({ jobId, estimatedCost = 0, actualCost = 0 }
   const loadFinancialData = async () => {
     setLoading(true);
     try {
-      // Load materials
+      // Load job-level financial data (maintained by database triggers)
+      const { data: job, error: jobError } = await supabase
+        .from('jobs')
+        .select('contract_value, change_orders_total, total_contract_value, payments_collected, expenses_total, profit')
+        .eq('id', jobId)
+        .single();
+
+      if (jobError) throw jobError;
+
+      // Load materials for detailed breakdown
       const { data: materials, error: materialsError } = await supabase
         .from('materials')
         .select('total_cost')
@@ -48,7 +71,7 @@ export function JobFinancialSummary({ jobId, estimatedCost = 0, actualCost = 0 }
 
       if (materialsError) throw materialsError;
 
-      // Load change orders
+      // Load change orders for detailed breakdown
       const { data: changeOrders, error: changeOrdersError } = await supabase
         .from('change_orders')
         .select('additional_cost, status')
@@ -56,7 +79,7 @@ export function JobFinancialSummary({ jobId, estimatedCost = 0, actualCost = 0 }
 
       if (changeOrdersError) throw changeOrdersError;
 
-      // Load invoices
+      // Load invoices for detailed breakdown
       const { data: invoices, error: invoicesError } = await supabase
         .from('invoices')
         .select('amount_due, amount_paid, status')
@@ -64,7 +87,7 @@ export function JobFinancialSummary({ jobId, estimatedCost = 0, actualCost = 0 }
 
       if (invoicesError) throw invoicesError;
 
-      // Calculate totals
+      // Calculate detailed totals
       const totalMaterialsCost = materials?.reduce((sum, m) => sum + (m.total_cost || 0), 0) || 0;
       
       const approvedChangeOrders = changeOrders?.filter(co => co.status === 'approved') || [];
@@ -75,6 +98,14 @@ export function JobFinancialSummary({ jobId, estimatedCost = 0, actualCost = 0 }
       const totalPending = totalInvoiced - totalPaid;
 
       setData({
+        // Job-level aggregates from triggers
+        paymentsCollected: job?.payments_collected || 0,
+        expensesTotal: job?.expenses_total || 0,
+        profit: job?.profit || 0,
+        contractValue: job?.contract_value || 0,
+        changeOrdersTotal: job?.change_orders_total || 0,
+        totalContractValue: job?.total_contract_value || 0,
+        // Detailed breakdowns
         totalMaterialsCost,
         totalChangeOrdersCost,
         totalInvoiced,
@@ -96,10 +127,11 @@ export function JobFinancialSummary({ jobId, estimatedCost = 0, actualCost = 0 }
     loadFinancialData();
   }, [jobId]);
 
-  const totalCosts = data.totalMaterialsCost + data.totalChangeOrdersCost + actualCost;
-  const totalRevenue = data.totalPaid;
-  const projectedProfit = totalRevenue - totalCosts;
-  const profitMargin = totalRevenue > 0 ? (projectedProfit / totalRevenue) * 100 : 0;
+  // Use job-level aggregates (maintained by triggers) for primary display
+  const totalCosts = data.expensesTotal || (data.totalMaterialsCost + data.totalChangeOrdersCost + actualCost);
+  const totalRevenue = data.paymentsCollected || data.totalPaid;
+  const jobProfit = data.profit || (totalRevenue - totalCosts);
+  const profitMargin = totalRevenue > 0 ? (jobProfit / totalRevenue) * 100 : 0;
 
   if (loading) {
     return (
@@ -131,20 +163,47 @@ export function JobFinancialSummary({ jobId, estimatedCost = 0, actualCost = 0 }
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Contract Value Section */}
+        {data.totalContractValue > 0 && (
+          <>
+            <div className="space-y-2">
+              <h4 className="text-sm font-semibold flex items-center gap-2">
+                <DollarSign className="h-4 w-4" />
+                Contract Value
+              </h4>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground">Original Contract</p>
+                  <p className="text-lg font-bold">${data.contractValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground">Change Orders</p>
+                  <p className="text-lg font-bold text-blue-600">+${data.changeOrdersTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                </div>
+                <div className="space-y-1 col-span-2">
+                  <p className="text-xs text-muted-foreground">Total Contract Value</p>
+                  <p className="text-xl font-bold text-primary">${data.totalContractValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                </div>
+              </div>
+            </div>
+            <Separator />
+          </>
+        )}
+
         {/* Revenue Section */}
         <div className="space-y-2">
           <h4 className="text-sm font-semibold text-primary flex items-center gap-2">
             <TrendingUp className="h-4 w-4" />
-            Revenue
+            Payments Collected
           </h4>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <p className="text-xs text-muted-foreground">Total Invoiced</p>
-              <p className="text-lg font-bold">${data.totalInvoiced.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+              <p className="text-xs text-muted-foreground">Total Collected</p>
+              <p className="text-xl font-bold text-green-600">${data.paymentsCollected.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
             </div>
             <div className="space-y-1">
-              <p className="text-xs text-muted-foreground">Paid</p>
-              <p className="text-lg font-bold text-green-600">${data.totalPaid.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+              <p className="text-xs text-muted-foreground">Total Invoiced</p>
+              <p className="text-lg font-bold">${data.totalInvoiced.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
             </div>
             <div className="space-y-1">
               <p className="text-xs text-muted-foreground">Pending</p>
@@ -159,20 +218,20 @@ export function JobFinancialSummary({ jobId, estimatedCost = 0, actualCost = 0 }
 
         <Separator />
 
-        {/* Costs Section */}
+        {/* Costs/Expenses Section */}
         <div className="space-y-2">
           <h4 className="text-sm font-semibold text-destructive flex items-center gap-2">
             <TrendingDown className="h-4 w-4" />
-            Costs
+            Expenses
           </h4>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <p className="text-xs text-muted-foreground">Estimated Budget</p>
-              <p className="text-lg font-bold">${estimatedCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+              <p className="text-xs text-muted-foreground">Total Expenses</p>
+              <p className="text-xl font-bold text-destructive">${data.expensesTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
             </div>
             <div className="space-y-1">
-              <p className="text-xs text-muted-foreground">Actual Costs</p>
-              <p className="text-lg font-bold">${actualCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+              <p className="text-xs text-muted-foreground">Estimated Budget</p>
+              <p className="text-lg font-bold">${estimatedCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
             </div>
             <div className="space-y-1">
               <p className="text-xs text-muted-foreground">Materials ({data.materialsCount})</p>
@@ -181,10 +240,6 @@ export function JobFinancialSummary({ jobId, estimatedCost = 0, actualCost = 0 }
             <div className="space-y-1">
               <p className="text-xs text-muted-foreground">Change Orders ({data.changeOrdersCount})</p>
               <p className="text-sm font-semibold">${data.totalChangeOrdersCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-            </div>
-            <div className="space-y-1 col-span-2">
-              <p className="text-xs text-muted-foreground">Total Costs</p>
-              <p className="text-xl font-bold text-destructive">${totalCosts.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
             </div>
           </div>
         </div>
@@ -195,13 +250,13 @@ export function JobFinancialSummary({ jobId, estimatedCost = 0, actualCost = 0 }
         <div className="space-y-2">
           <h4 className="text-sm font-semibold flex items-center gap-2">
             <DollarSign className="h-4 w-4" />
-            Profit Analysis
+            Profit
           </h4>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <p className="text-xs text-muted-foreground">Projected Profit</p>
-              <p className={`text-xl font-bold ${projectedProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                ${Math.abs(projectedProfit).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              <p className="text-xs text-muted-foreground">Job Profit</p>
+              <p className={`text-xl font-bold ${jobProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {jobProfit < 0 ? '-' : ''}${Math.abs(jobProfit).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
             </div>
             <div className="space-y-1">
