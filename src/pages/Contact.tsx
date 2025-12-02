@@ -307,8 +307,8 @@ export function Contact() {
           <div className="border-t border-muted mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
             <p className="text-sm text-muted">© 2024 CT1. All rights reserved.</p>
             <div className="flex space-x-6 mt-4 md:mt-0">
-              <Link to="/privacy" className="text-sm text-muted hover:text-primary transition-colors">Privacy Policy</Link>
-              <Link to="/terms" className="text-sm text-muted hover:text-primary transition-colors">Terms of Service</Link>
+              <Link to="/legal/privacy" className="text-sm text-muted hover:text-primary transition-colors">Privacy Policy</Link>
+              <Link to="/legal/terms" className="text-sm text-muted hover:text-primary transition-colors">Terms of Service</Link>
               <a href="#" className="text-sm text-muted hover:text-primary transition-colors">Sitemap</a>
             </div>
           </div>
