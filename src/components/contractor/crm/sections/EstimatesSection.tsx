@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Plus, FileText, Calendar, DollarSign, Trash2, Eye, Send, CheckCircle, Clock, AlertCircle, RefreshCw, Home } from 'lucide-react';
+import { Plus, FileText, Calendar, DollarSign, Trash2, Eye, Send, CheckCircle, Clock, AlertCircle, RefreshCw, Home, Briefcase } from 'lucide-react';
 import { useEstimates } from '@/hooks/useEstimates';
 import EstimateForm from '../EstimateForm';
 import { useAuth } from '@/contexts/AuthContext';
@@ -11,12 +11,39 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { MobileOptimizedWrapper, MobileCard, MobileGrid } from './MobileOptimizedWrapper';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function EstimatesSection({ onSectionChange }: { onSectionChange?: (section: string) => void }) {
   const { estimates, isLoading, createEstimate, createEstimateAsync, updateEstimate, updateEstimateAsync, deleteEstimate, sendEstimate, sendEstimateAsync, isSendingEstimate } = useEstimates();
   const { user } = useAuth();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedEstimate, setSelectedEstimate] = useState<any>(null);
+  const [isConverting, setIsConverting] = useState<string | null>(null);
+
+  const handleConvertToJob = async (estimate: any) => {
+    if (estimate.job_id) {
+      toast.info('This estimate has already been converted to a job');
+      return;
+    }
+
+    setIsConverting(estimate.id);
+    try {
+      const { data, error } = await supabase.functions.invoke('convert-estimate-to-job', {
+        body: { estimateId: estimate.id }
+      });
+
+      if (error) throw error;
+
+      toast.success('Estimate converted to job successfully!');
+      // Navigate to jobs section
+      onSectionChange?.('jobs');
+    } catch (error: any) {
+      console.error('Error converting estimate to job:', error);
+      toast.error(`Failed to convert estimate: ${error.message}`);
+    } finally {
+      setIsConverting(null);
+    }
+  };
 
   const handleSubmit = async (data: any, isDraft: boolean) => {
     try {
@@ -271,6 +298,30 @@ export default function EstimatesSection({ onSectionChange }: { onSectionChange?
                         </Button>
                       )}
                     </>
+                  )}
+                  {/* Convert to Job button - show when estimate is accepted/signed and not already converted */}
+                  {(estimate.status === 'accepted' || estimate.status === 'sold' || estimate.signed_at) && !estimate.job_id && (
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={() => handleConvertToJob(estimate)}
+                      disabled={isConverting === estimate.id}
+                      className="flex-1 min-w-[140px] bg-green-600 hover:bg-green-700"
+                    >
+                      {isConverting === estimate.id ? (
+                        <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <Briefcase className="h-4 w-4 mr-2" />
+                      )}
+                      Convert to Job
+                    </Button>
+                  )}
+                  {/* Show linked job indicator */}
+                  {estimate.job_id && (
+                    <Badge variant="outline" className="gap-1 border-green-600 text-green-600">
+                      <Briefcase className="h-3 w-3" />
+                      Job Created
+                    </Badge>
                   )}
                   <Button
                     variant="destructive"
