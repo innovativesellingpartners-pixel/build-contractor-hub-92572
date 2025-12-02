@@ -110,3 +110,15 @@ verify_jwt = true
 
 [functions.process-payment-webhook]
 verify_jwt = false
+
+[functions.google-oauth-init]
+verify_jwt = true
+
+[functions.google-oauth-callback]
+verify_jwt = false
+
+[functions.outlook-oauth-init]
+verify_jwt = true
+
+[functions.outlook-oauth-callback]
+verify_jwt = false
