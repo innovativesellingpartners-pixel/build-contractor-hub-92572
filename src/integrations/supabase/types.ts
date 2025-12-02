@@ -1622,6 +1622,62 @@ export type Database = {
           },
         ]
       }
+      job_meetings: {
+        Row: {
+          calendar_event_id: string | null
+          created_at: string
+          duration_minutes: number | null
+          id: string
+          job_id: string
+          location: string | null
+          meeting_type: string
+          notes: string | null
+          scheduled_date: string
+          scheduled_time: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          calendar_event_id?: string | null
+          created_at?: string
+          duration_minutes?: number | null
+          id?: string
+          job_id: string
+          location?: string | null
+          meeting_type?: string
+          notes?: string | null
+          scheduled_date: string
+          scheduled_time?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          calendar_event_id?: string | null
+          created_at?: string
+          duration_minutes?: number | null
+          id?: string
+          job_id?: string
+          location?: string | null
+          meeting_type?: string
+          notes?: string | null
+          scheduled_date?: string
+          scheduled_time?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_meetings_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       job_photos: {
         Row: {
           caption: string | null
