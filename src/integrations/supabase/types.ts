@@ -3526,6 +3526,7 @@ export type Database = {
       }
       cleanup_expired_oauth_states: { Args: never; Returns: undefined }
       drop_quickbooks_plaintext_columns: { Args: never; Returns: undefined }
+      generate_contractor_number: { Args: never; Returns: string }
       generate_estimate_number: { Args: never; Returns: string }
       generate_invoice_number: { Args: never; Returns: string }
       generate_job_number: { Args: never; Returns: string }

@@ -1,23 +1,50 @@
 import { useState } from 'react';
-import { useJobs } from '@/hooks/useJobs';
+import { useJobs, Job } from '@/hooks/useJobs';
 import { Card, CardContent } from '@/components/ui/card';
 import { MapPin, Home, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import JobDetailView from '../JobDetailView';
 import { AddJobDialog } from '../AddJobDialog';
+import { EditJobDialog } from '../EditJobDialog';
 
 interface JobsSectionProps {
   onSectionChange?: (section: string) => void;
 }
 
 export default function JobsSection({ onSectionChange }: JobsSectionProps) {
-  const { jobs, loading, addJob, refreshJobs, duplicateJob } = useJobs();
-  const [selectedJob, setSelectedJob] = useState<any>(null);
+  const { jobs, loading, addJob, updateJob, refreshJobs, duplicateJob } = useJobs();
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editingJob, setEditingJob] = useState<Job | null>(null);
 
-  const handleJobClick = (job: any) => {
+  const handleJobClick = (job: Job) => {
     setSelectedJob(job);
     setDetailOpen(true);
+  };
+
+  const handleEditJob = (job: Job) => {
+    setEditingJob(job);
+    setEditOpen(true);
+  };
+
+  const handleDuplicateJob = async (jobId: string): Promise<Job | undefined> => {
+    const newJob = await duplicateJob(jobId);
+    if (newJob) {
+      // Update selected job to the new one and open detail view
+      setSelectedJob(newJob);
+      setDetailOpen(true);
+    }
+    return newJob;
+  };
+
+  const handleUpdateJob = async (id: string, updates: Partial<Job>) => {
+    const updatedJob = await updateJob(id, updates);
+    // Update selected job if it's the one being edited
+    if (selectedJob?.id === id) {
+      setSelectedJob(updatedJob);
+    }
+    return updatedJob;
   };
 
   if (loading) {
@@ -93,6 +120,15 @@ export default function JobsSection({ onSectionChange }: JobsSectionProps) {
             refreshJobs();
             if (onSectionChange) onSectionChange('estimates');
           }}
+          onEditJob={handleEditJob}
+          onDuplicateJob={handleDuplicateJob}
+        />
+
+        <EditJobDialog
+          job={editingJob}
+          open={editOpen}
+          onOpenChange={setEditOpen}
+          onUpdate={handleUpdateJob}
         />
       </div>
     </div>

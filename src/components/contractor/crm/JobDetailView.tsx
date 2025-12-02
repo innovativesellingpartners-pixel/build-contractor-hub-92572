@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { 
-  MapPin, Clock, TrendingUp, AlertCircle, CheckCircle, Edit, Briefcase, FileText, Calculator, Navigation 
+  MapPin, Clock, TrendingUp, AlertCircle, CheckCircle, Edit, Briefcase, FileText, Calculator, Navigation, Copy, Pencil 
 } from 'lucide-react';
 import { useJobs, Job } from '@/hooks/useJobs';
 import { useJobPhotos } from '@/hooks/useJobPhotos';
@@ -27,6 +27,8 @@ interface JobDetailViewProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onCreateEstimate?: () => void;
+  onEditJob?: (job: Job) => void;
+  onDuplicateJob?: (jobId: string) => Promise<Job | undefined>;
 }
 
 // Photos Tab Component
@@ -267,12 +269,34 @@ function DailyLogsTab({ jobId }: { jobId: string }) {
   );
 }
 
-export default function JobDetailView({ job, open, onOpenChange, onCreateEstimate }: JobDetailViewProps) {
+export default function JobDetailView({ job, open, onOpenChange, onCreateEstimate, onEditJob, onDuplicateJob }: JobDetailViewProps) {
   const { updateJob } = useJobs();
   const { user } = useAuth();
   const [isEditingStatus, setIsEditingStatus] = useState(false);
   const [jobStatus, setJobStatus] = useState<string>(job?.status || 'scheduled');
   const [convertDialogOpen, setConvertDialogOpen] = useState(false);
+  const [isDuplicating, setIsDuplicating] = useState(false);
+
+  const handleDuplicateJob = async () => {
+    if (!job || !onDuplicateJob) return;
+    setIsDuplicating(true);
+    try {
+      const newJob = await onDuplicateJob(job.id!);
+      if (newJob) {
+        toast.success('Job duplicated! Opening the new job...');
+        // Close current dialog and open the new job
+        onOpenChange(false);
+        // Small delay to allow dialog to close before opening new one
+        setTimeout(() => {
+          if (onEditJob) onEditJob(newJob);
+        }, 300);
+      }
+    } catch (error) {
+      // Error toast already handled in useJobs
+    } finally {
+      setIsDuplicating(false);
+    }
+  };
 
   if (!job) return null;
 
@@ -445,6 +469,29 @@ export default function JobDetailView({ job, open, onOpenChange, onCreateEstimat
                   {getStatusIcon(job.status)}
                   <span className="ml-2 capitalize">{job.status.replace('_', ' ')}</span>
                   <Edit className="h-3 w-3 ml-2" />
+                </Button>
+              )}
+              {onEditJob && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2"
+                  onClick={() => onEditJob(job)}
+                >
+                  <Pencil className="h-4 w-4" />
+                  <span className="hidden sm:inline">Edit Job</span>
+                </Button>
+              )}
+              {onDuplicateJob && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2"
+                  onClick={handleDuplicateJob}
+                  disabled={isDuplicating}
+                >
+                  <Copy className="h-4 w-4" />
+                  <span className="hidden sm:inline">{isDuplicating ? 'Duplicating...' : 'Duplicate'}</span>
                 </Button>
               )}
             </div>
