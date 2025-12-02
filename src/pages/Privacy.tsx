@@ -278,9 +278,9 @@ export const Privacy = () => {
         </div>
 
         <div className="mt-12 pt-8 border-t">
-          <Link to="/contact">
+          <a href="mailto:sales@myct1.com">
             <Button>Contact Us</Button>
-          </Link>
+          </a>
         </div>
       </div>
 
