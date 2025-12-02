@@ -6,6 +6,38 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Decode token from various formats (hex-encoded, Buffer, or plain string)
+function decodeToken(token: any): string {
+  if (!token) return '';
+  
+  // If it's a string
+  if (typeof token === 'string') {
+    // Check if it's PostgreSQL hex-encoded bytea (starts with \x)
+    if (token.startsWith('\\x')) {
+      const hex = token.slice(2);
+      let str = '';
+      for (let i = 0; i < hex.length; i += 2) {
+        str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+      }
+      console.log('Decoded hex token, starts with:', str.substring(0, 10));
+      return str;
+    }
+    return token;
+  }
+  
+  // If it's a Buffer-like object
+  if (token?.data) {
+    const decoded = new TextDecoder().decode(new Uint8Array(token.data));
+    // Check if the decoded result is also hex-encoded
+    if (decoded.startsWith('\\x')) {
+      return decodeToken(decoded);
+    }
+    return decoded;
+  }
+  
+  return String(token);
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -72,13 +104,8 @@ serve(async (req) => {
       console.log('Stored access token length:', connection.access_token_encrypted?.length);
       console.log('Stored refresh token length:', connection.refresh_token_encrypted?.length);
       
-      // Always try to refresh the token first to ensure we have valid credentials
-      // Handle case where token might be stored as Buffer or string
-      let accessToken = typeof connection.access_token_encrypted === 'string' 
-        ? connection.access_token_encrypted 
-        : (connection.access_token_encrypted?.data 
-            ? new TextDecoder().decode(new Uint8Array(connection.access_token_encrypted.data))
-            : String(connection.access_token_encrypted));
+      // Decode the access token (handles hex-encoded, Buffer, or plain string)
+      let accessToken = decodeToken(connection.access_token_encrypted);
       
       console.log('Decoded access token preview:', accessToken?.substring(0, 20) + '...');
       
@@ -139,12 +166,8 @@ async function refreshGoogleToken(connection: any, supabase: any): Promise<strin
       return null;
     }
 
-    // Handle case where refresh token might be stored as Buffer or string
-    const refreshToken = typeof connection.refresh_token_encrypted === 'string'
-      ? connection.refresh_token_encrypted
-      : (connection.refresh_token_encrypted?.data
-          ? new TextDecoder().decode(new Uint8Array(connection.refresh_token_encrypted.data))
-          : String(connection.refresh_token_encrypted));
+    // Decode the refresh token (handles hex-encoded, Buffer, or plain string)
+    const refreshToken = decodeToken(connection.refresh_token_encrypted);
 
     console.log('Using refresh token preview:', refreshToken?.substring(0, 20) + '...');
 
