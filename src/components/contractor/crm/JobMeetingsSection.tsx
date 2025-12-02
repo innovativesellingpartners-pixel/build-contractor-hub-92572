@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Calendar, Clock, Plus, Trash2, MapPin } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -34,6 +35,7 @@ const MEETING_TYPES = [
 
 export function JobMeetingsSection({ meetings, onAddMeeting, onRemoveMeeting, jobLocation }: JobMeetingsSectionProps) {
   const [showForm, setShowForm] = useState(false);
+  const [sameAsJob, setSameAsJob] = useState(true);
   const [formData, setFormData] = useState<MeetingFormData>({
     title: '',
     meeting_type: 'site_visit',
@@ -43,6 +45,13 @@ export function JobMeetingsSection({ meetings, onAddMeeting, onRemoveMeeting, jo
     location: jobLocation || '',
     notes: '',
   });
+
+  // Update location when sameAsJob changes or jobLocation changes
+  useEffect(() => {
+    if (sameAsJob && jobLocation) {
+      setFormData(prev => ({ ...prev, location: jobLocation }));
+    }
+  }, [sameAsJob, jobLocation]);
 
   const handleAdd = () => {
     if (!formData.title || !formData.scheduled_date) return;
@@ -56,6 +65,7 @@ export function JobMeetingsSection({ meetings, onAddMeeting, onRemoveMeeting, jo
       location: jobLocation || '',
       notes: '',
     });
+    setSameAsJob(true);
     setShowForm(false);
   };
 
@@ -186,11 +196,37 @@ export function JobMeetingsSection({ meetings, onAddMeeting, onRemoveMeeting, jo
 
           <div className="space-y-2">
             <Label htmlFor="meeting_location">Location</Label>
+            {jobLocation && (
+              <div className="flex items-center space-x-2 mb-2">
+                <Checkbox
+                  id="same_as_job"
+                  checked={sameAsJob}
+                  onCheckedChange={(checked) => {
+                    setSameAsJob(checked === true);
+                    if (checked) {
+                      setFormData(prev => ({ ...prev, location: jobLocation }));
+                    }
+                  }}
+                />
+                <label
+                  htmlFor="same_as_job"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                >
+                  Same as job location
+                </label>
+              </div>
+            )}
             <Input
               id="meeting_location"
               value={formData.location}
-              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-              placeholder="Meeting location (defaults to job address)"
+              onChange={(e) => {
+                setFormData({ ...formData, location: e.target.value });
+                if (e.target.value !== jobLocation) {
+                  setSameAsJob(false);
+                }
+              }}
+              placeholder={sameAsJob ? "Using job address" : "Enter custom location"}
+              disabled={sameAsJob && !!jobLocation}
             />
           </div>
 

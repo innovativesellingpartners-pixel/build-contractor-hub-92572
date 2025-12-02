@@ -98,7 +98,7 @@ export default function JobsSection({ onSectionChange }: JobsSectionProps) {
                     size="sm"
                     onClick={(e) => {
                       e.stopPropagation();
-                      duplicateJob(job.id);
+                      handleDuplicateJob(job.id);
                     }}
                     aria-label="Duplicate job"
                     title="Duplicate job"
