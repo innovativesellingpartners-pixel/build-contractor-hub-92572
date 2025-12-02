@@ -1,11 +1,15 @@
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Mail, Plug, Check, Loader2, X, RefreshCw, Circle } from 'lucide-react';
+import { Mail, Plug, Check, Loader2, X, RefreshCw, Circle, ArrowLeft, Reply, Send, ChevronDown, ChevronUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface EmailConnection {
   id: string;
@@ -24,6 +28,7 @@ interface Email {
   isUnread: boolean;
   provider: string;
   email_account: string;
+  body?: string;
 }
 
 interface EmailsSectionProps {
@@ -37,6 +42,17 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
   const [loading, setLoading] = useState(true);
   const [loadingEmails, setLoadingEmails] = useState(false);
   const [connecting, setConnecting] = useState<string | null>(null);
+  const [connectionsExpanded, setConnectionsExpanded] = useState(false);
+  
+  // Email detail view state
+  const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
+  const [loadingEmailBody, setLoadingEmailBody] = useState(false);
+  const [emailBody, setEmailBody] = useState<string>('');
+  
+  // Reply state
+  const [showReplyDialog, setShowReplyDialog] = useState(false);
+  const [replyBody, setReplyBody] = useState('');
+  const [sending, setSending] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -145,12 +161,74 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
     }
   };
 
+  const handleOpenEmail = async (email: Email) => {
+    setSelectedEmail(email);
+    setLoadingEmailBody(true);
+    setEmailBody('');
+    
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const { data, error } = await supabase.functions.invoke('fetch-email-body', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+        body: { emailId: email.id, provider: email.provider }
+      });
+
+      if (error) throw error;
+      setEmailBody(data?.body || email.snippet);
+    } catch (error: any) {
+      console.error('Error fetching email body:', error);
+      setEmailBody(email.snippet);
+    } finally {
+      setLoadingEmailBody(false);
+    }
+  };
+
+  const handleReply = () => {
+    setReplyBody('');
+    setShowReplyDialog(true);
+  };
+
+  const handleSendReply = async () => {
+    if (!selectedEmail || !replyBody.trim()) return;
+    
+    setSending(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const { error } = await supabase.functions.invoke('send-email-reply', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+        body: {
+          provider: selectedEmail.provider,
+          threadId: selectedEmail.threadId,
+          to: selectedEmail.from,
+          subject: `Re: ${selectedEmail.subject}`,
+          body: replyBody,
+          inReplyTo: selectedEmail.id,
+        }
+      });
+
+      if (error) throw error;
+      
+      toast.success('Reply sent successfully');
+      setShowReplyDialog(false);
+      setReplyBody('');
+    } catch (error: any) {
+      console.error('Error sending reply:', error);
+      toast.error('Failed to send reply');
+    } finally {
+      setSending(false);
+    }
+  };
+
   const googleConnected = connections.find(c => c.provider === 'google');
   const outlookConnected = connections.find(c => c.provider === 'outlook');
+  const hasAnyConnection = connections.length > 0;
 
   const formatEmailDate = (dateStr: string) => {
     try {
-      // Gmail date format can vary, try parsing
       const date = new Date(dateStr);
       const now = new Date();
       const isToday = date.toDateString() === now.toDateString();
@@ -165,7 +243,6 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
   };
 
   const extractSenderName = (from: string) => {
-    // Extract name from "Name <email@example.com>" format
     const match = from?.match(/^([^<]+)/);
     if (match) {
       return match[1].trim().replace(/"/g, '');
@@ -173,155 +250,328 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
     return from || 'Unknown';
   };
 
+  const extractSenderEmail = (from: string) => {
+    const match = from?.match(/<([^>]+)>/);
+    return match ? match[1] : from;
+  };
+
+  // Email detail view
+  if (selectedEmail) {
+    return (
+      <div className="w-full h-full overflow-y-auto overflow-x-hidden pb-20 bg-background">
+        <div className="p-4 sm:p-6 space-y-4 w-full sm:max-w-4xl sm:mx-auto">
+          {/* Header */}
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="sm" onClick={() => setSelectedEmail(null)}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back
+            </Button>
+          </div>
+
+          {/* Email Content */}
+          <Card className="p-6">
+            <div className="space-y-4">
+              <h1 className="text-xl font-semibold">{selectedEmail.subject || '(No subject)'}</h1>
+              
+              <div className="flex items-start justify-between border-b pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <span className="text-primary font-semibold">
+                      {extractSenderName(selectedEmail.from).charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="font-medium">{extractSenderName(selectedEmail.from)}</p>
+                    <p className="text-sm text-muted-foreground">{extractSenderEmail(selectedEmail.from)}</p>
+                  </div>
+                </div>
+                <span className="text-sm text-muted-foreground">
+                  {formatEmailDate(selectedEmail.date)}
+                </span>
+              </div>
+
+              <div className="min-h-[200px]">
+                {loadingEmailBody ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                  </div>
+                ) : (
+                  <div 
+                    className="prose prose-sm max-w-none dark:prose-invert"
+                    dangerouslySetInnerHTML={{ __html: emailBody || selectedEmail.snippet }}
+                  />
+                )}
+              </div>
+
+              <div className="flex gap-2 pt-4 border-t">
+                <Button onClick={handleReply}>
+                  <Reply className="h-4 w-4 mr-2" />
+                  Reply
+                </Button>
+              </div>
+            </div>
+          </Card>
+
+          {/* Reply Dialog */}
+          <Dialog open={showReplyDialog} onOpenChange={setShowReplyDialog}>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Reply to {extractSenderName(selectedEmail.from)}</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="text-sm text-muted-foreground">
+                  To: {selectedEmail.from}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  Subject: Re: {selectedEmail.subject}
+                </div>
+                <Textarea
+                  placeholder="Write your reply..."
+                  value={replyBody}
+                  onChange={(e) => setReplyBody(e.target.value)}
+                  className="min-h-[200px]"
+                />
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={() => setShowReplyDialog(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleSendReply} disabled={sending || !replyBody.trim()}>
+                    {sending ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4 mr-2" />
+                    )}
+                    Send Reply
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full h-full overflow-y-auto overflow-x-hidden pb-20 bg-background">
       <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 w-full sm:max-w-7xl sm:mx-auto">
+        {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold">Emails</h1>
-            <p className="text-muted-foreground">Connect and manage your email accounts</p>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+              Emails
+            </h1>
+            <p className="text-muted-foreground text-sm">Read and respond to your emails</p>
           </div>
-          {connections.length > 0 && (
+          {hasAnyConnection && (
             <Button
               variant="outline"
               size="sm"
               onClick={fetchEmails}
               disabled={loadingEmails}
+              className="gap-2"
             >
-              <RefreshCw className={`h-4 w-4 mr-2 ${loadingEmails ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`h-4 w-4 ${loadingEmails ? 'animate-spin' : ''}`} />
               Refresh
             </Button>
           )}
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          {/* Gmail */}
-          <Card className="p-6">
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                <svg className="w-6 h-6" viewBox="0 0 24 24">
-                  <path fill="#EA4335" d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z"/>
-                </svg>
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold">Gmail</h3>
-                {googleConnected ? (
-                  <div className="mt-2">
-                    <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
-                      <Check className="h-4 w-4" />
-                      Connected: {googleConnected.email_address}
+        {/* Connected Accounts Summary - Compact when connected */}
+        {hasAnyConnection ? (
+          <Collapsible open={connectionsExpanded} onOpenChange={setConnectionsExpanded}>
+            <Card className="p-3 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 border-blue-500/20">
+              <CollapsibleTrigger asChild>
+                <div className="flex items-center justify-between cursor-pointer">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
+                      <Check className="h-4 w-4 text-blue-600" />
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="mt-3"
-                      onClick={() => handleDisconnect(googleConnected.id, 'google')}
-                    >
-                      <X className="h-4 w-4 mr-2" />
-                      Disconnect
-                    </Button>
+                    <div>
+                      <p className="font-medium text-sm">
+                        {connections.length} Email Account{connections.length > 1 ? 's' : ''} Connected
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {connections.map(c => c.email_address).join(', ')}
+                      </p>
+                    </div>
                   </div>
-                ) : (
-                  <>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Read, send, and manage emails from Gmail
-                    </p>
-                    <Button
-                      className="mt-3"
-                      size="sm"
-                      onClick={() => handleConnect('google')}
-                      disabled={connecting === 'google'}
-                    >
-                      {connecting === 'google' ? (
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      ) : (
-                        <Plug className="h-4 w-4 mr-2" />
-                      )}
-                      Connect Gmail
-                    </Button>
-                  </>
-                )}
-              </div>
-            </div>
-          </Card>
+                  <Button variant="ghost" size="sm" className="gap-1">
+                    {connectionsExpanded ? (
+                      <>Collapse <ChevronUp className="h-4 w-4" /></>
+                    ) : (
+                      <>Manage <ChevronDown className="h-4 w-4" /></>
+                    )}
+                  </Button>
+                </div>
+              </CollapsibleTrigger>
+              
+              <CollapsibleContent className="mt-4 space-y-3">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {/* Gmail */}
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-background/50 border">
+                    <div className="flex items-center gap-3">
+                      <svg className="w-5 h-5" viewBox="0 0 24 24">
+                        <path fill="#EA4335" d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z"/>
+                      </svg>
+                      <div>
+                        <p className="text-sm font-medium">Gmail</p>
+                        {googleConnected ? (
+                          <p className="text-xs text-green-600">{googleConnected.email_address}</p>
+                        ) : (
+                          <p className="text-xs text-muted-foreground">Not connected</p>
+                        )}
+                      </div>
+                    </div>
+                    {googleConnected ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDisconnect(googleConnected.id, 'google')}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    ) : (
+                      <Button size="sm" variant="outline" onClick={() => handleConnect('google')} disabled={connecting === 'google'}>
+                        {connecting === 'google' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plug className="h-4 w-4" />}
+                      </Button>
+                    )}
+                  </div>
 
-          {/* Outlook */}
-          <Card className="p-6">
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                <svg className="w-6 h-6" viewBox="0 0 24 24">
-                  <path fill="#0078D4" d="M7.88 12.04q0 .45-.11.87-.1.41-.33.74-.22.33-.58.52-.37.2-.87.2t-.85-.2q-.35-.21-.57-.55-.22-.33-.33-.75-.1-.42-.1-.86t.1-.87q.1-.43.34-.76.22-.34.59-.54.36-.2.87-.2t.86.2q.35.21.57.55.22.34.31.77.1.43.1.88zM24 12v9.38q0 .46-.33.8-.33.32-.8.32H7.13q-.46 0-.8-.33-.32-.33-.32-.8V18H1q-.41 0-.7-.3-.3-.29-.3-.7V7q0-.41.3-.7Q.58 6 1 6h6.5V2.55q0-.44.3-.75.3-.3.75-.3h12.9q.44 0 .75.3.3.3.3.75V12zm-6-8.25v3h3v-3zm0 4.5v3h3v-3zm0 4.5v1.83l3.05-1.83zm-5.25-9v3h3.75v-3zm0 4.5v3h3.75v-3zm0 4.5v2.03l2.41 1.5 1.34-.8v-2.73zM9 3.75V6h2l.13.01.12.04v-2.3zM5.98 15.98q.9 0 1.6-.3.7-.32 1.19-.86.48-.55.73-1.28.25-.74.25-1.61 0-.83-.25-1.55-.24-.71-.71-1.24t-1.15-.83q-.68-.3-1.55-.3-.92 0-1.64.3-.71.3-1.2.85-.5.54-.75 1.3-.25.74-.25 1.63 0 .85.26 1.56.26.72.74 1.23.48.52 1.17.81.69.3 1.56.3zM7.5 21h12.39L12 16.08V17q0 .41-.3.7-.29.3-.7.3H7.5zm15-.13v-7.24l-5.9 3.54Z"/>
-                </svg>
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold">Outlook</h3>
-                {outlookConnected ? (
-                  <div className="mt-2">
-                    <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
-                      <Check className="h-4 w-4" />
-                      Connected: {outlookConnected.email_address}
+                  {/* Outlook */}
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-background/50 border">
+                    <div className="flex items-center gap-3">
+                      <svg className="w-5 h-5" viewBox="0 0 24 24">
+                        <path fill="#0078D4" d="M7.88 12.04q0 .45-.11.87-.1.41-.33.74-.22.33-.58.52-.37.2-.87.2t-.85-.2q-.35-.21-.57-.55-.22-.33-.33-.75-.1-.42-.1-.86t.1-.87q.1-.43.34-.76.22-.34.59-.54.36-.2.87-.2t.86.2q.35.21.57.55.22.34.31.77.1.43.1.88zM24 12v9.38q0 .46-.33.8-.33.32-.8.32H7.13q-.46 0-.8-.33-.32-.33-.32-.8V18H1q-.41 0-.7-.3-.3-.29-.3-.7V7q0-.41.3-.7Q.58 6 1 6h6.5V2.55q0-.44.3-.75.3-.3.75-.3h12.9q.44 0 .75.3.3.3.3.75V12z"/>
+                      </svg>
+                      <div>
+                        <p className="text-sm font-medium">Outlook</p>
+                        {outlookConnected ? (
+                          <p className="text-xs text-green-600">{outlookConnected.email_address}</p>
+                        ) : (
+                          <p className="text-xs text-muted-foreground">Not connected</p>
+                        )}
+                      </div>
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="mt-3"
-                      onClick={() => handleDisconnect(outlookConnected.id, 'outlook')}
-                    >
-                      <X className="h-4 w-4 mr-2" />
-                      Disconnect
-                    </Button>
+                    {outlookConnected ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDisconnect(outlookConnected.id, 'outlook')}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    ) : (
+                      <Button size="sm" variant="outline" onClick={() => handleConnect('outlook')} disabled={connecting === 'outlook'}>
+                        {connecting === 'outlook' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plug className="h-4 w-4" />}
+                      </Button>
+                    )}
                   </div>
-                ) : (
-                  <>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Read, send, and manage emails from Outlook
-                    </p>
-                    <Button
-                      className="mt-3"
-                      size="sm"
-                      onClick={() => handleConnect('outlook')}
-                      disabled={connecting === 'outlook'}
-                    >
-                      {connecting === 'outlook' ? (
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      ) : (
-                        <Plug className="h-4 w-4 mr-2" />
-                      )}
-                      Connect Outlook
-                    </Button>
-                  </>
-                )}
+                </div>
+              </CollapsibleContent>
+            </Card>
+          </Collapsible>
+        ) : (
+          /* Full connection UI when no accounts connected */
+          <div className="grid gap-4 md:grid-cols-2">
+            {/* Gmail Card */}
+            <Card className="p-6 hover:shadow-lg transition-shadow border-2 hover:border-primary/30">
+              <div className="flex items-start gap-4">
+                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-red-100 to-orange-100 dark:from-red-900/30 dark:to-orange-900/30 flex items-center justify-center shadow-sm">
+                  <svg className="w-7 h-7" viewBox="0 0 24 24">
+                    <path fill="#EA4335" d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z"/>
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-lg">Gmail</h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Read, send, and manage emails from Gmail
+                  </p>
+                  <Button
+                    className="mt-4 w-full sm:w-auto"
+                    onClick={() => handleConnect('google')}
+                    disabled={connecting === 'google'}
+                  >
+                    {connecting === 'google' ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Plug className="h-4 w-4 mr-2" />
+                    )}
+                    Connect Gmail
+                  </Button>
+                </div>
               </div>
-            </div>
-          </Card>
-        </div>
+            </Card>
+
+            {/* Outlook Card */}
+            <Card className="p-6 hover:shadow-lg transition-shadow border-2 hover:border-primary/30">
+              <div className="flex items-start gap-4">
+                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/30 dark:to-blue-800/30 flex items-center justify-center shadow-sm">
+                  <svg className="w-7 h-7" viewBox="0 0 24 24">
+                    <path fill="#0078D4" d="M7.88 12.04q0 .45-.11.87-.1.41-.33.74-.22.33-.58.52-.37.2-.87.2t-.85-.2q-.35-.21-.57-.55-.22-.33-.33-.75-.1-.42-.1-.86t.1-.87q.1-.43.34-.76.22-.34.59-.54.36-.2.87-.2t.86.2q.35.21.57.55.22.34.31.77.1.43.1.88zM24 12v9.38q0 .46-.33.8-.33.32-.8.32H7.13q-.46 0-.8-.33-.32-.33-.32-.8V18H1q-.41 0-.7-.3-.3-.29-.3-.7V7q0-.41.3-.7Q.58 6 1 6h6.5V2.55q0-.44.3-.75.3-.3.75-.3h12.9q.44 0 .75.3.3.3.3.75V12z"/>
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-lg">Outlook</h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Read, send, and manage emails from Outlook
+                  </p>
+                  <Button
+                    className="mt-4 w-full sm:w-auto"
+                    onClick={() => handleConnect('outlook')}
+                    disabled={connecting === 'outlook'}
+                  >
+                    {connecting === 'outlook' ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Plug className="h-4 w-4 mr-2" />
+                    )}
+                    Connect Outlook
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          </div>
+        )}
 
         {/* Emails List */}
-        {connections.length > 0 && (
+        {hasAnyConnection && (
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Recent Emails</h2>
+            <h2 className="text-xl font-semibold flex items-center gap-2">
+              <Mail className="h-5 w-5 text-primary" />
+              Inbox
+            </h2>
             
             {loadingEmails ? (
               <Card className="p-8 text-center">
-                <Loader2 className="h-8 w-8 mx-auto mb-4 animate-spin text-muted-foreground" />
+                <Loader2 className="h-8 w-8 mx-auto mb-4 animate-spin text-primary" />
                 <p className="text-muted-foreground">Loading emails...</p>
               </Card>
             ) : emails.length === 0 ? (
-              <Card className="p-8 text-center">
-                <Mail className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-muted-foreground">No recent emails found</p>
+              <Card className="p-8 text-center bg-gradient-to-br from-muted/30 to-muted/10">
+                <Mail className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                <p className="text-muted-foreground font-medium">No recent emails found</p>
+                <p className="text-sm text-muted-foreground mt-1">Emails from your connected accounts will appear here</p>
               </Card>
             ) : (
               <div className="space-y-2">
                 {emails.map((email) => (
                   <Card 
                     key={email.id} 
-                    className={`p-4 hover:bg-muted/50 cursor-pointer transition-colors ${email.isUnread ? 'border-l-4 border-l-primary' : ''}`}
+                    className={`p-4 hover:bg-muted/50 cursor-pointer transition-all hover:shadow-md ${email.isUnread ? 'border-l-4 border-l-primary bg-primary/5' : ''}`}
+                    onClick={() => handleOpenEmail(email)}
                   >
                     <div className="flex items-start gap-3">
                       {email.isUnread && (
                         <Circle className="h-2 w-2 fill-primary text-primary mt-2 flex-shrink-0" />
                       )}
+                      <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                        <span className="text-xs font-semibold">
+                          {extractSenderName(email.from).charAt(0).toUpperCase()}
+                        </span>
+                      </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2">
                           <p className={`truncate ${email.isUnread ? 'font-semibold' : 'font-medium'}`}>
@@ -346,12 +596,13 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
           </div>
         )}
 
-        {connections.length === 0 && !loading && (
-          <Card className="p-12 text-center">
-            <Mail className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="text-xl font-semibold mb-2">No Email Accounts Connected</h3>
-            <p className="text-muted-foreground mb-6">
-              Connect your Gmail or Outlook account to manage communications directly from your CRM
+        {/* Empty state when no connections */}
+        {!hasAnyConnection && !loading && (
+          <Card className="p-12 text-center bg-gradient-to-br from-primary/5 to-primary/10 border-dashed border-2">
+            <Mail className="h-16 w-16 mx-auto mb-4 text-primary/40" />
+            <h3 className="text-xl font-semibold mb-2">Connect Your Email</h3>
+            <p className="text-muted-foreground mb-4 max-w-md mx-auto">
+              Connect your Gmail or Outlook account to read, send, and manage emails directly from your CRM.
             </p>
           </Card>
         )}
