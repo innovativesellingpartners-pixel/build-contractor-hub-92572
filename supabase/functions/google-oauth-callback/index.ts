@@ -1,6 +1,28 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 
+// Helper function to create an HTML redirect response
+function createRedirectResponse(url: string): Response {
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta http-equiv="refresh" content="0;url=${url}">
+        <script>window.location.href = "${url}";</script>
+      </head>
+      <body>
+        <p>Redirecting... If you are not redirected automatically, <a href="${url}">click here</a>.</p>
+      </body>
+    </html>
+  `;
+  return new Response(html, {
+    status: 200,
+    headers: {
+      'Content-Type': 'text/html; charset=utf-8',
+    },
+  });
+}
+
 serve(async (req) => {
   try {
     const url = new URL(req.url);
@@ -18,12 +40,12 @@ serve(async (req) => {
 
     if (error) {
       console.error('OAuth error from Google:', error);
-      return Response.redirect(`${APP_URL}/dashboard?oauth_error=${error}`);
+      return createRedirectResponse(`${APP_URL}/dashboard?oauth_error=${error}`);
     }
 
     if (!code || !state) {
       console.error('Missing code or state');
-      return Response.redirect(`${APP_URL}/dashboard?oauth_error=missing_params`);
+      return createRedirectResponse(`${APP_URL}/dashboard?oauth_error=missing_params`);
     }
 
     // Create service role client to bypass RLS
@@ -45,12 +67,12 @@ serve(async (req) => {
 
     if (stateError) {
       console.error('Error querying state:', stateError);
-      return Response.redirect(`${APP_URL}/dashboard?oauth_error=state_query_failed`);
+      return createRedirectResponse(`${APP_URL}/dashboard?oauth_error=state_query_failed`);
     }
 
     if (!stateData) {
       console.error('State not found in database. State:', state);
-      return Response.redirect(`${APP_URL}/dashboard?oauth_error=invalid_state`);
+      return createRedirectResponse(`${APP_URL}/dashboard?oauth_error=invalid_state`);
     }
 
     console.log('Found oauth state for user:', stateData.contractor_id, 'type:', stateData.type);
@@ -59,7 +81,7 @@ serve(async (req) => {
     if (new Date(stateData.expires_at) < new Date()) {
       console.error('State expired');
       await supabase.from('oauth_states').delete().eq('state', state);
-      return Response.redirect(`${APP_URL}/dashboard?oauth_error=state_expired`);
+      return createRedirectResponse(`${APP_URL}/dashboard?oauth_error=state_expired`);
     }
 
     // Delete used state
@@ -85,7 +107,7 @@ serve(async (req) => {
 
     if (tokens.error) {
       console.error('Token exchange error:', tokens);
-      return Response.redirect(`${APP_URL}/dashboard?oauth_error=token_exchange_failed`);
+      return createRedirectResponse(`${APP_URL}/dashboard?oauth_error=token_exchange_failed`);
     }
 
     console.log('Token exchange successful');
@@ -116,11 +138,11 @@ serve(async (req) => {
 
       if (upsertError) {
         console.error('Failed to save calendar connection:', upsertError);
-        return Response.redirect(`${APP_URL}/dashboard?oauth_error=save_failed`);
+        return createRedirectResponse(`${APP_URL}/dashboard?oauth_error=save_failed`);
       }
 
       console.log('Calendar connection saved successfully');
-      return Response.redirect(`${APP_URL}/dashboard?oauth_success=calendar&provider=google`);
+      return createRedirectResponse(`${APP_URL}/dashboard?oauth_success=calendar&provider=google`);
     } else {
       console.log('Saving email connection for user:', stateData.contractor_id);
       const { error: upsertError } = await supabase
@@ -137,15 +159,15 @@ serve(async (req) => {
 
       if (upsertError) {
         console.error('Failed to save email connection:', upsertError);
-        return Response.redirect(`${APP_URL}/dashboard?oauth_error=save_failed`);
+        return createRedirectResponse(`${APP_URL}/dashboard?oauth_error=save_failed`);
       }
 
       console.log('Email connection saved successfully');
-      return Response.redirect(`${APP_URL}/dashboard?oauth_success=email&provider=google`);
+      return createRedirectResponse(`${APP_URL}/dashboard?oauth_success=email&provider=google`);
     }
   } catch (error) {
     console.error('Google OAuth callback error:', error);
     const APP_URL = Deno.env.get('APP_URL') || 'https://myct1.com';
-    return Response.redirect(`${APP_URL}/dashboard?oauth_error=server_error`);
+    return createRedirectResponse(`${APP_URL}/dashboard?oauth_error=server_error`);
   }
 });
