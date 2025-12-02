@@ -53,7 +53,7 @@ serve(async (req) => {
       return Response.redirect(`${APP_URL}/dashboard?oauth_error=invalid_state`);
     }
 
-    console.log('Found oauth state for user:', stateData.user_id, 'type:', stateData.type);
+    console.log('Found oauth state for user:', stateData.contractor_id, 'type:', stateData.type);
 
     // Check expiry
     if (new Date(stateData.expires_at) < new Date()) {
@@ -101,11 +101,11 @@ serve(async (req) => {
 
     // Store connection based on type
     if (stateData.type === 'calendar') {
-      console.log('Saving calendar connection for user:', stateData.user_id);
+      console.log('Saving calendar connection for user:', stateData.contractor_id);
       const { error: upsertError } = await supabase
         .from('calendar_connections')
         .upsert({
-          user_id: stateData.user_id,
+          user_id: stateData.contractor_id,
           provider: 'google',
           calendar_email: userInfo.email,
           access_token_encrypted: tokens.access_token,
@@ -122,11 +122,11 @@ serve(async (req) => {
       console.log('Calendar connection saved successfully');
       return Response.redirect(`${APP_URL}/dashboard?oauth_success=calendar&provider=google`);
     } else {
-      console.log('Saving email connection for user:', stateData.user_id);
+      console.log('Saving email connection for user:', stateData.contractor_id);
       const { error: upsertError } = await supabase
         .from('email_connections')
         .upsert({
-          user_id: stateData.user_id,
+          user_id: stateData.contractor_id,
           provider: 'google',
           email_address: userInfo.email,
           access_token_encrypted: tokens.access_token,

@@ -76,7 +76,7 @@ serve(async (req) => {
       .from('oauth_states')
       .insert({
         state,
-        user_id: user.id,
+        contractor_id: user.id,
         provider: 'google',
         type,
         created_at: new Date().toISOString(),
