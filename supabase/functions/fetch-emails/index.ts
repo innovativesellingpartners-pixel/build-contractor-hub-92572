@@ -6,6 +6,38 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Decode token from various formats (hex-encoded, Buffer, or plain string)
+function decodeToken(token: any): string {
+  if (!token) return '';
+  
+  // If it's a string
+  if (typeof token === 'string') {
+    // Check if it's PostgreSQL hex-encoded bytea (starts with \x)
+    if (token.startsWith('\\x')) {
+      const hex = token.slice(2);
+      let str = '';
+      for (let i = 0; i < hex.length; i += 2) {
+        str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+      }
+      console.log('Decoded hex token, starts with:', str.substring(0, 10));
+      return str;
+    }
+    return token;
+  }
+  
+  // If it's a Buffer-like object
+  if (token?.data) {
+    const decoded = new TextDecoder().decode(new Uint8Array(token.data));
+    // Check if the decoded result is also hex-encoded
+    if (decoded.startsWith('\\x')) {
+      return decodeToken(decoded);
+    }
+    return decoded;
+  }
+  
+  return String(token);
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -65,20 +97,24 @@ serve(async (req) => {
     const allEmails: any[] = [];
 
     for (const connection of connections) {
-      let accessToken = connection.access_token_encrypted;
+      console.log('Processing email connection:', connection.id, 'email:', connection.email_address);
       
-      // Check if token is expired and refresh if needed
-      if (new Date(connection.expires_at) < new Date()) {
-        console.log('Token expired, refreshing...');
-        accessToken = await refreshGoogleToken(connection, supabase);
-        if (!accessToken) {
-          console.error('Failed to refresh token for connection:', connection.id);
-          continue;
-        }
+      // Decode the access token (handles hex-encoded, Buffer, or plain string)
+      let accessToken = decodeToken(connection.access_token_encrypted);
+      console.log('Decoded access token preview:', accessToken?.substring(0, 20) + '...');
+      
+      // Always try to refresh the token first to ensure we have valid credentials
+      console.log('Attempting token refresh for fresh credentials...');
+      const refreshedToken = await refreshGoogleToken(connection, supabase);
+      if (refreshedToken) {
+        accessToken = refreshedToken;
+        console.log('Using refreshed token');
       }
 
       if (connection.provider === 'google') {
+        console.log('Fetching Gmail messages...');
         const emails = await fetchGmailMessages(accessToken);
+        console.log('Fetched', emails.length, 'emails');
         allEmails.push(...emails.map((e: any) => ({
           ...e,
           provider: 'google',
@@ -87,6 +123,7 @@ serve(async (req) => {
       }
     }
 
+    console.log('Total emails fetched:', allEmails.length);
     return new Response(JSON.stringify({ emails: allEmails }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -107,23 +144,30 @@ async function refreshGoogleToken(connection: any, supabase: any): Promise<strin
     const GOOGLE_CLIENT_ID = Deno.env.get('GOOGLE_CLIENT_ID');
     const GOOGLE_CLIENT_SECRET = Deno.env.get('GOOGLE_CLIENT_SECRET');
 
+    // Decode the refresh token
+    const refreshToken = decodeToken(connection.refresh_token_encrypted);
+    console.log('Using refresh token preview:', refreshToken?.substring(0, 20) + '...');
+
     const response = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
         client_id: GOOGLE_CLIENT_ID!,
         client_secret: GOOGLE_CLIENT_SECRET!,
-        refresh_token: connection.refresh_token_encrypted,
+        refresh_token: refreshToken,
         grant_type: 'refresh_token',
       }),
     });
 
+    console.log('Token refresh response status:', response.status);
     const tokens = await response.json();
+    
     if (tokens.error) {
       console.error('Token refresh error:', tokens);
       return null;
     }
 
+    console.log('Got new access token, length:', tokens.access_token?.length);
     const expiresAt = new Date(Date.now() + tokens.expires_in * 1000).toISOString();
 
     await supabase
@@ -144,6 +188,8 @@ async function refreshGoogleToken(connection: any, supabase: any): Promise<strin
 
 async function fetchGmailMessages(accessToken: string): Promise<any[]> {
   try {
+    console.log('Calling Gmail API with token length:', accessToken?.length);
+    
     // Fetch recent emails from inbox
     const listResponse = await fetch(
       `https://gmail.googleapis.com/gmail/v1/users/me/messages?` +
@@ -155,12 +201,14 @@ async function fetchGmailMessages(accessToken: string): Promise<any[]> {
     );
 
     if (!listResponse.ok) {
-      console.error('Gmail API error:', listResponse.status, await listResponse.text());
+      const errorText = await listResponse.text();
+      console.error('Gmail API error:', listResponse.status, errorText);
       return [];
     }
 
     const listData = await listResponse.json();
     const messageIds = listData.messages || [];
+    console.log('Found', messageIds.length, 'message IDs');
 
     // Fetch details for each message (limit to 25 for performance)
     const emails: any[] = [];
