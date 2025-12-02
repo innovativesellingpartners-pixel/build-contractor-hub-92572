@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Calendar, Clock, Plus, Trash2, MapPin } from 'lucide-react';
+import { Calendar, Clock, Plus, Trash2, MapPin, Pencil } from 'lucide-react';
 import { format } from 'date-fns';
 
 export interface MeetingFormData {
@@ -21,6 +21,7 @@ interface JobMeetingsSectionProps {
   meetings: MeetingFormData[];
   onAddMeeting: (meeting: MeetingFormData) => void;
   onRemoveMeeting: (index: number) => void;
+  onUpdateMeeting?: (index: number, meeting: MeetingFormData) => void;
   jobLocation?: string;
 }
 
@@ -33,41 +34,69 @@ const MEETING_TYPES = [
   { value: 'other', label: 'Other' },
 ];
 
-export function JobMeetingsSection({ meetings, onAddMeeting, onRemoveMeeting, jobLocation }: JobMeetingsSectionProps) {
+const DEFAULT_FORM_DATA: MeetingFormData = {
+  title: '',
+  meeting_type: 'site_visit',
+  scheduled_date: '',
+  scheduled_time: '09:00',
+  duration_minutes: 60,
+  location: '',
+  notes: '',
+};
+
+export function JobMeetingsSection({ meetings, onAddMeeting, onRemoveMeeting, onUpdateMeeting, jobLocation }: JobMeetingsSectionProps) {
   const [showForm, setShowForm] = useState(false);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [sameAsJob, setSameAsJob] = useState(true);
   const [formData, setFormData] = useState<MeetingFormData>({
-    title: '',
-    meeting_type: 'site_visit',
-    scheduled_date: '',
-    scheduled_time: '09:00',
-    duration_minutes: 60,
+    ...DEFAULT_FORM_DATA,
     location: jobLocation || '',
-    notes: '',
   });
 
   // Update location when sameAsJob changes or jobLocation changes
   useEffect(() => {
-    if (sameAsJob && jobLocation) {
+    if (sameAsJob && jobLocation && editingIndex === null) {
       setFormData(prev => ({ ...prev, location: jobLocation }));
     }
-  }, [sameAsJob, jobLocation]);
+  }, [sameAsJob, jobLocation, editingIndex]);
+
+  const resetForm = () => {
+    setFormData({
+      ...DEFAULT_FORM_DATA,
+      location: jobLocation || '',
+    });
+    setSameAsJob(true);
+    setShowForm(false);
+    setEditingIndex(null);
+  };
 
   const handleAdd = () => {
     if (!formData.title || !formData.scheduled_date) return;
     onAddMeeting(formData);
-    setFormData({
-      title: '',
-      meeting_type: 'site_visit',
-      scheduled_date: '',
-      scheduled_time: '09:00',
-      duration_minutes: 60,
-      location: jobLocation || '',
-      notes: '',
-    });
-    setSameAsJob(true);
-    setShowForm(false);
+    resetForm();
   };
+
+  const handleUpdate = () => {
+    if (!formData.title || !formData.scheduled_date || editingIndex === null) return;
+    if (onUpdateMeeting) {
+      onUpdateMeeting(editingIndex, formData);
+    }
+    resetForm();
+  };
+
+  const handleEdit = (index: number) => {
+    const meeting = meetings[index];
+    setFormData({ ...meeting });
+    setSameAsJob(meeting.location === jobLocation);
+    setEditingIndex(index);
+    setShowForm(true);
+  };
+
+  const handleCancel = () => {
+    resetForm();
+  };
+
+  const isEditing = editingIndex !== null;
 
   return (
     <div className="space-y-4">
@@ -115,23 +144,37 @@ export function JobMeetingsSection({ meetings, onAddMeeting, onRemoveMeeting, jo
                   )}
                 </div>
               </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => onRemoveMeeting(index)}
-                className="text-destructive hover:text-destructive"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
+              <div className="flex items-center gap-1">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleEdit(index)}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onRemoveMeeting(index)}
+                  className="text-destructive hover:text-destructive"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           ))}
         </div>
       )}
 
-      {/* Add meeting form */}
+      {/* Add/Edit meeting form */}
       {showForm && (
         <div className="p-4 border rounded-lg bg-card space-y-4">
+          <div className="text-sm font-medium text-muted-foreground mb-2">
+            {isEditing ? 'Edit Meeting' : 'New Meeting'}
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="meeting_title">Meeting Title *</Label>
@@ -231,13 +274,20 @@ export function JobMeetingsSection({ meetings, onAddMeeting, onRemoveMeeting, jo
           </div>
 
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" size="sm" onClick={() => setShowForm(false)}>
+            <Button type="button" variant="outline" size="sm" onClick={handleCancel}>
               Cancel
             </Button>
-            <Button type="button" size="sm" onClick={handleAdd} disabled={!formData.title || !formData.scheduled_date}>
-              <Plus className="h-4 w-4 mr-1" />
-              Add Meeting
-            </Button>
+            {isEditing ? (
+              <Button type="button" size="sm" onClick={handleUpdate} disabled={!formData.title || !formData.scheduled_date}>
+                <Pencil className="h-4 w-4 mr-1" />
+                Update Meeting
+              </Button>
+            ) : (
+              <Button type="button" size="sm" onClick={handleAdd} disabled={!formData.title || !formData.scheduled_date}>
+                <Plus className="h-4 w-4 mr-1" />
+                Add Meeting
+              </Button>
+            )}
           </div>
         </div>
       )}

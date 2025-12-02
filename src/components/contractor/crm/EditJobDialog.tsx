@@ -63,6 +63,10 @@ export function EditJobDialog({ job, open, onOpenChange, onUpdate }: EditJobDial
     setNewMeetings(prev => prev.filter((_, i) => i !== index));
   };
 
+  const handleUpdateNewMeeting = (index: number, meeting: MeetingFormData) => {
+    setNewMeetings(prev => prev.map((m, i) => i === index ? meeting : m));
+  };
+
   const jobLocation = [formData.address, formData.city, formData.state, formData.zip_code].filter(Boolean).join(', ');
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -273,6 +277,7 @@ export function EditJobDialog({ job, open, onOpenChange, onUpdate }: EditJobDial
               meetings={newMeetings}
               onAddMeeting={handleAddNewMeeting}
               onRemoveMeeting={handleRemoveNewMeeting}
+              onUpdateMeeting={handleUpdateNewMeeting}
               jobLocation={jobLocation}
             />
             
