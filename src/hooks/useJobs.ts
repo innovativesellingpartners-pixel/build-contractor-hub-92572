@@ -79,12 +79,32 @@ export const useJobs = () => {
 
       if (error) throw error;
 
-      setJobs([data as Job, ...jobs]);
+      const newJob = data as Job;
+      setJobs([newJob, ...jobs]);
+      
+      // Create calendar event for the job (non-blocking)
+      supabase.functions.invoke('create-calendar-event', {
+        body: {
+          jobId: newJob.id,
+          jobName: newJob.name,
+          description: newJob.description,
+          startDate: newJob.start_date,
+          endDate: newJob.end_date,
+          address: newJob.address,
+          city: newJob.city,
+          state: newJob.state,
+        },
+      }).then(({ error: calError }) => {
+        if (calError) {
+          console.log('Calendar event creation skipped or failed:', calError);
+        }
+      });
+
       toast({
         title: 'Job added',
         description: 'New job has been added successfully',
       });
-      return data as Job;
+      return newJob;
     } catch (error: any) {
       toast({
         title: 'Error adding job',
