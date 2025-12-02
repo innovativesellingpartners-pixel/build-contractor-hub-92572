@@ -40,7 +40,7 @@ const tradeTypes = [
 
 const categories = [
   'Materials',
-  'Labour',
+  'Labor',
   'Equipment',
   'Subcontractor',
   'Overhead',
@@ -297,8 +297,8 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
       .filter(item => item.category === 'Materials' && item.included)
       .reduce((sum, item) => sum + item.line_total, 0);
     
-    const labourTotal = lineItems
-      .filter(item => item.category === 'Labour' && item.included)
+    const laborTotal = lineItems
+      .filter(item => item.category === 'Labor' && item.included)
       .reduce((sum, item) => sum + item.line_total, 0);
     
     const equipmentTotal = lineItems
@@ -317,7 +317,7 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
       .filter(item => item.category === 'Contingency' && item.included)
       .reduce((sum, item) => sum + item.line_total, 0);
 
-    const subtotal = materialsTotal + labourTotal + equipmentTotal + 
+    const subtotal = materialsTotal + laborTotal + equipmentTotal + 
                      subcontractorTotal + overheadTotal + contingencyTotal;
     
     const profitMarkupAmount = subtotal * (profitMarkupPercentage / 100);
@@ -325,7 +325,7 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
 
     return {
       materialsTotal,
-      labourTotal,
+      laborTotal,
       equipmentTotal,
       subcontractorTotal,
       overheadTotal,
@@ -481,7 +481,7 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
       // Legacy cost_summary for backward compatibility
       cost_summary: {
         materials_total: totals.materialsTotal,
-        labour_total: totals.labourTotal,
+        labor_total: totals.laborTotal,
         equipment_total: totals.equipmentTotal,
         subcontractor_total: totals.subcontractorTotal,
         overhead_total: totals.overheadTotal,
@@ -824,8 +824,8 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
                     <span className="font-semibold">${totals.materialsTotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Labour:</span>
-                    <span className="font-semibold">${totals.labourTotal.toFixed(2)}</span>
+                    <span>Labor:</span>
+                    <span className="font-semibold">${totals.laborTotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Equipment:</span>
