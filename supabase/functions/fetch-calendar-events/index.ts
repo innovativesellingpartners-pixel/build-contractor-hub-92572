@@ -71,14 +71,23 @@ serve(async (req) => {
       console.log('Processing connection:', connection.id, 'email:', connection.calendar_email);
       console.log('Token expires at:', connection.expires_at, 'Current time:', new Date().toISOString());
       
-      // Always try to refresh token first since stored tokens may be invalid
-      console.log('Refreshing token to ensure validity...');
-      const refreshedToken = await refreshGoogleToken(connection, supabase);
-      if (refreshedToken) {
-        accessToken = refreshedToken;
-        console.log('Token refreshed successfully');
+      // Check if token is expired or expiring within 5 minutes
+      const expiresAt = new Date(connection.expires_at);
+      const bufferTime = new Date(Date.now() + 5 * 60 * 1000);
+      
+      if (expiresAt > bufferTime) {
+        // Token is still valid, use it directly
+        console.log('Token still valid, using stored access token');
       } else {
-        console.log('Token refresh failed, trying with stored token');
+        // Token expired or expiring soon, try to refresh
+        console.log('Token expired or expiring soon, refreshing...');
+        const refreshedToken = await refreshGoogleToken(connection, supabase);
+        if (refreshedToken) {
+          accessToken = refreshedToken;
+          console.log('Token refreshed successfully');
+        } else {
+          console.log('Token refresh failed, will try with stored token anyway');
+        }
       }
 
       if (connection.provider === 'google') {
