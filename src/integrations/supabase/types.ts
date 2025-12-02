@@ -2118,21 +2118,30 @@ export type Database = {
           created_at: string
           expires_at: string
           id: string
-          state_token: string
+          provider: string | null
+          state: string
+          type: string | null
+          user_id: string | null
         }
         Insert: {
           contractor_id: string
           created_at?: string
           expires_at?: string
           id?: string
-          state_token: string
+          provider?: string | null
+          state: string
+          type?: string | null
+          user_id?: string | null
         }
         Update: {
           contractor_id?: string
           created_at?: string
           expires_at?: string
           id?: string
-          state_token?: string
+          provider?: string | null
+          state?: string
+          type?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }

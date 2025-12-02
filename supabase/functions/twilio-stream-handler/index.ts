@@ -350,7 +350,7 @@ Deno.serve(async (req) => {
               type: 'session.update',
               session: {
                 modalities: ['text', 'audio'],
-                instructions: config.system_prompt,
+                instructions: config.system_prompt + '\n\nIMPORTANT SPEAKING STYLE: Speak naturally and conversationally like a friendly human. Use contractions (I\'m, you\'re, we\'ll). Keep responses concise - 1-2 sentences max unless more detail is needed. Be warm, helpful, and personable. Avoid robotic or formal language. Respond quickly and naturally as if having a real phone conversation.',
                 voice: voiceId,
                 input_audio_format: 'pcm16',
                 output_audio_format: 'pcm16',
@@ -359,12 +359,12 @@ Deno.serve(async (req) => {
                 },
                 turn_detection: {
                   type: 'server_vad',
-                  threshold: 0.6,              // Less sensitive - won't cut off as easily
-                  prefix_padding_ms: 500,      // Capture more at the start
-                  silence_duration_ms: 2500    // Wait 2.5s before assuming user is done
+                  threshold: 0.5,              // More responsive to speech
+                  prefix_padding_ms: 300,      // Quick start
+                  silence_duration_ms: 800     // Faster turn-taking for natural conversation
                 },
-                temperature: 0.8,
-                max_response_output_tokens: 'inf'
+                temperature: 0.9,              // Slightly more creative/natural
+                max_response_output_tokens: 150 // Keep responses concise
               }
             }));
           }
