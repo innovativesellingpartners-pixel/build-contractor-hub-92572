@@ -336,6 +336,80 @@ export function useEstimates() {
     },
   });
 
+  const duplicateEstimate = useMutation({
+    mutationFn: async (estimateId: string) => {
+      if (!user?.id) throw new Error('Not authenticated');
+
+      // Get the estimate to duplicate
+      const { data: original, error: fetchError } = await supabase
+        .from('estimates')
+        .select('*')
+        .eq('id', estimateId)
+        .single();
+
+      if (fetchError) throw fetchError;
+      if (!original) throw new Error('Estimate not found');
+
+      // Create duplicate with reset status and dates
+      const { data, error } = await supabase
+        .from('estimates')
+        .insert([{
+          user_id: user.id,
+          customer_id: original.customer_id,
+          lead_id: original.lead_id,
+          title: `${original.title} (Copy)`,
+          description: original.description,
+          status: 'draft',
+          total_amount: original.total_amount,
+          valid_until: original.valid_until,
+          line_items: original.line_items,
+          date_issued: new Date().toISOString(),
+          prepared_by: original.prepared_by,
+          project_name: original.project_name,
+          project_address: original.project_address,
+          referred_by: original.referred_by,
+          client_name: original.client_name,
+          client_phone: original.client_phone,
+          client_email: original.client_email,
+          client_address: original.client_address,
+          site_address: original.site_address,
+          scope_objective: original.scope_objective,
+          scope_key_deliverables: original.scope_key_deliverables,
+          scope_exclusions: original.scope_exclusions,
+          scope_timeline: original.scope_timeline,
+          subtotal: original.subtotal,
+          tax_rate: original.tax_rate,
+          tax_amount: original.tax_amount,
+          permit_fee: original.permit_fee,
+          grand_total: original.grand_total,
+          required_deposit: original.required_deposit,
+          balance_due: original.balance_due,
+          terms_validity: original.terms_validity,
+          terms_payment_schedule: original.terms_payment_schedule,
+          terms_change_orders: original.terms_change_orders,
+          terms_insurance: original.terms_insurance,
+          terms_warranty_years: original.terms_warranty_years,
+          trade_type: original.trade_type,
+          project_description: original.project_description,
+          assumptions_and_exclusions: original.assumptions_and_exclusions,
+          cost_summary: original.cost_summary,
+          trade_specific: original.trade_specific,
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['estimates'] });
+      toast.success('Estimate duplicated successfully');
+    },
+    onError: (error) => {
+      toast.error(`Failed to duplicate estimate: ${error.message}`);
+    },
+  });
+
   return {
     estimates,
     isLoading,
@@ -347,5 +421,7 @@ export function useEstimates() {
     sendEstimate: sendEstimate.mutate,
     sendEstimateAsync: sendEstimate.mutateAsync,
     isSendingEstimate: sendEstimate.isPending,
+    duplicateEstimate: duplicateEstimate.mutate,
+    isDuplicatingEstimate: duplicateEstimate.isPending,
   };
 }
