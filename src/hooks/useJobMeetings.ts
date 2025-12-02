@@ -53,7 +53,8 @@ export function useJobMeetings(jobId?: string) {
   const addMeeting = async (
     meetingData: Omit<JobMeeting, 'id' | 'user_id' | 'created_at' | 'updated_at'>,
     jobName?: string,
-    jobLocation?: string
+    jobLocation?: string,
+    jobNumber?: string
   ) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -76,10 +77,11 @@ export function useJobMeetings(jobId?: string) {
         const startDateTime = new Date(`${meetingData.scheduled_date}T${meetingData.scheduled_time || '09:00'}`);
         const endDateTime = new Date(startDateTime.getTime() + (meetingData.duration_minutes || 60) * 60000);
         
+        const eventTitle = [jobNumber, meetingData.title, jobName].filter(Boolean).join(' - ');
         supabase.functions.invoke('create-calendar-event', {
           body: {
             jobId: meetingData.job_id,
-            jobName: `${meetingData.title}${jobName ? ` - ${jobName}` : ''}`,
+            jobName: eventTitle,
             startDate: startDateTime.toISOString(),
             endDate: endDateTime.toISOString(),
             location: meetingData.location || jobLocation || '',

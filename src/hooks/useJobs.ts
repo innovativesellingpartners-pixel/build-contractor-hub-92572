@@ -111,7 +111,7 @@ export const useJobs = () => {
           supabase.functions.invoke('create-calendar-event', {
             body: {
               jobId: newJob.id,
-              jobName: `${meeting.title} - ${newJob.name}`,
+              jobName: `${newJob.job_number || ''} - ${meeting.title} - ${newJob.name}`.replace(/^[\s-]+/, ''),
               startDate: startDateTime.toISOString(),
               endDate: endDateTime.toISOString(),
               location: meeting.location || jobLocation,
@@ -229,7 +229,7 @@ export const useJobs = () => {
           supabase.functions.invoke('create-calendar-event', {
             body: {
               jobId: newJob.id,
-              jobName: newJob.name,
+              jobName: `${newJob.job_number || ''} - ${newJob.name}`.replace(/^[\s-]+/, ''),
               description: newJob.description,
               startDate: newJob.start_date,
               endDate: newJob.end_date,
