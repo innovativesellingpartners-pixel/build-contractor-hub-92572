@@ -108,23 +108,33 @@ serve(async (req) => {
       try {
         console.log('Processing connection:', connection.provider, connection.calendar_email);
         
-        // Decode tokens (they are hex-encoded)
-        const refreshTokenDecoded = decodeToken(connection.refresh_token_encrypted);
-        const accessTokenDecoded = decodeToken(connection.access_token_encrypted);
+        // Decode hex-encoded tokens - same logic as fetch-calendar-events
+        const storedRefreshToken = connection.refresh_token_encrypted;
+        const storedAccessToken = connection.access_token_encrypted;
         
-        console.log('Refresh token decoded, length:', refreshTokenDecoded.length);
-        console.log('Access token decoded, length:', accessTokenDecoded.length);
+        console.log('Stored refresh token length:', storedRefreshToken?.length);
+        console.log('Stored access token length:', storedAccessToken?.length);
+        
+        const refreshTokenDecoded = decodeToken(storedRefreshToken);
+        const accessTokenDecoded = decodeToken(storedAccessToken);
+        
+        console.log('Decoded access token preview:', accessTokenDecoded.substring(0, 20) + '...');
+        console.log('Token expires at:', connection.expires_at, 'Current time:', new Date().toISOString());
 
         let accessToken = accessTokenDecoded;
 
         // Always refresh token to ensure it's valid
-        console.log('Refreshing token for fresh credentials...');
+        console.log('Attempting token refresh for fresh credentials...');
+        console.log('Using refresh token preview:', refreshTokenDecoded.substring(0, 20) + '...');
+        
         try {
           accessToken = await refreshToken(connection.provider, refreshTokenDecoded, connection, supabase);
           console.log('Got fresh access token, length:', accessToken.length);
+          console.log('Using refreshed token');
         } catch (refreshErr: any) {
           console.error('Token refresh failed:', refreshErr.message);
-          // Try with existing token if refresh fails
+          // Try with existing decoded token if refresh fails
+          console.log('Falling back to stored decoded token');
           accessToken = accessTokenDecoded;
         }
 
