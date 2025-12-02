@@ -73,7 +73,14 @@ serve(async (req) => {
       console.log('Stored refresh token length:', connection.refresh_token_encrypted?.length);
       
       // Always try to refresh the token first to ensure we have valid credentials
-      let accessToken = connection.access_token_encrypted;
+      // Handle case where token might be stored as Buffer or string
+      let accessToken = typeof connection.access_token_encrypted === 'string' 
+        ? connection.access_token_encrypted 
+        : (connection.access_token_encrypted?.data 
+            ? new TextDecoder().decode(new Uint8Array(connection.access_token_encrypted.data))
+            : String(connection.access_token_encrypted));
+      
+      console.log('Decoded access token preview:', accessToken?.substring(0, 20) + '...');
       
       if (connection.provider === 'google') {
         // Try to refresh the token to ensure it's valid
@@ -132,13 +139,22 @@ async function refreshGoogleToken(connection: any, supabase: any): Promise<strin
       return null;
     }
 
+    // Handle case where refresh token might be stored as Buffer or string
+    const refreshToken = typeof connection.refresh_token_encrypted === 'string'
+      ? connection.refresh_token_encrypted
+      : (connection.refresh_token_encrypted?.data
+          ? new TextDecoder().decode(new Uint8Array(connection.refresh_token_encrypted.data))
+          : String(connection.refresh_token_encrypted));
+
+    console.log('Using refresh token preview:', refreshToken?.substring(0, 20) + '...');
+
     const response = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
         client_id: GOOGLE_CLIENT_ID!,
         client_secret: GOOGLE_CLIENT_SECRET!,
-        refresh_token: connection.refresh_token_encrypted,
+        refresh_token: refreshToken,
         grant_type: 'refresh_token',
       }),
     });
