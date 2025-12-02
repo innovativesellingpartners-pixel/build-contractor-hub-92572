@@ -64,6 +64,17 @@ const navItems = [
 
   // Persist active section in sessionStorage
   const getInitialSection = (): Section => {
+    // Check for URL param from OAuth callback
+    const params = new URLSearchParams(window.location.search);
+    const crmSection = params.get('crm_section') as Section | null;
+    if (crmSection && ['dashboard', 'leads', 'jobs', 'customers', 'calls', 'calendar', 'emails', 'estimates', 'reporting', 'financials', 'quickbooks', 'more', 'payments'].includes(crmSection)) {
+      sessionStorage.setItem('ct1CrmActiveSection', crmSection);
+      // Clean URL param
+      params.delete('crm_section');
+      const newUrl = params.toString() ? `${window.location.pathname}?${params.toString()}` : window.location.pathname;
+      window.history.replaceState({}, '', newUrl);
+      return crmSection;
+    }
     const saved = sessionStorage.getItem('ct1CrmActiveSection') as Section | null;
     // Default to 'dashboard' for 4-tile landing
     return saved || 'dashboard';
