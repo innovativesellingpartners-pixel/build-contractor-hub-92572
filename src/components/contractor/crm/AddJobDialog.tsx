@@ -40,6 +40,10 @@ export function AddJobDialog({ onAdd }: AddJobDialogProps) {
     setMeetings(prev => prev.filter((_, i) => i !== index));
   };
 
+  const handleUpdateMeeting = (index: number, meeting: MeetingFormData) => {
+    setMeetings(prev => prev.map((m, i) => i === index ? meeting : m));
+  };
+
   const handleAIExtract = (details: Partial<typeof formData>) => {
     setFormData(prev => ({
       ...prev,
@@ -265,6 +269,7 @@ export function AddJobDialog({ onAdd }: AddJobDialogProps) {
                 meetings={meetings}
                 onAddMeeting={handleAddMeeting}
                 onRemoveMeeting={handleRemoveMeeting}
+                onUpdateMeeting={handleUpdateMeeting}
                 jobLocation={jobLocation}
               />
 
