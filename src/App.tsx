@@ -84,6 +84,8 @@ const App = () => (
             <Route path="/blog-podcast" element={<BlogPodcast />} />
             <Route path="/legal/terms" element={<Terms />} />
             <Route path="/legal/privacy" element={<Privacy />} />
+            <Route path="/privacy" element={<Navigate to="/legal/privacy" replace />} />
+            <Route path="/terms" element={<Navigate to="/legal/terms" replace />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/auth" element={<Auth />} />
           <Route path="/estimate/:token" element={<PublicEstimate />} />

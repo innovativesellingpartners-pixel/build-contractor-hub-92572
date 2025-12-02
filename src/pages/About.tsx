@@ -224,8 +224,8 @@ export function About() {
             </div>
             
             <div className="flex space-x-6">
-              <Link to="/privacy" className="text-sm text-muted hover:text-primary transition-colors">Privacy Policy</Link>
-              <Link to="/terms" className="text-sm text-muted hover:text-primary transition-colors">Terms of Service</Link>
+              <Link to="/legal/privacy" className="text-sm text-muted hover:text-primary transition-colors">Privacy Policy</Link>
+              <Link to="/legal/terms" className="text-sm text-muted hover:text-primary transition-colors">Terms of Service</Link>
               <Link to="/contact" className="text-sm text-muted hover:text-primary transition-colors">Support</Link>
             </div>
           </div>
