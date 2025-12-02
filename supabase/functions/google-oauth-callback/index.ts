@@ -1,13 +1,43 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 
-// Helper function to create a proper HTTP redirect
-function createRedirectResponse(url: string): Response {
-  return new Response(null, {
-    status: 302,
-    headers: {
-      'Location': url,
-    },
+// Helper function to create a reliable HTML redirect
+function createRedirectResponse(url: string, message: string = "Connection Successful!"): Response {
+  console.log('Creating redirect to:', url);
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="refresh" content="0;url=${url}">
+  <title>Redirecting...</title>
+  <script>
+    window.location.replace("${url}");
+  </script>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; text-align: center; padding: 50px; background: #f9fafb; margin: 0; }
+    .container { max-width: 400px; margin: 0 auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    .spinner { width: 40px; height: 40px; border: 3px solid #e5e7eb; border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    h2 { color: #111827; margin: 0 0 10px; }
+    p { color: #6b7280; margin: 10px 0; }
+    a { color: #3b82f6; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="spinner"></div>
+    <h2>${message}</h2>
+    <p>Redirecting you back to your dashboard...</p>
+    <p style="margin-top: 20px; font-size: 14px;">
+      <a href="${url}">Click here if not redirected automatically</a>
+    </p>
+  </div>
+</body>
+</html>`;
+  return new Response(html, {
+    status: 200,
+    headers: { 'Content-Type': 'text/html; charset=utf-8' },
   });
 }
 
@@ -28,12 +58,12 @@ serve(async (req) => {
 
     if (error) {
       console.error('OAuth error from Google:', error);
-      return createRedirectResponse(`${APP_URL}/dashboard?oauth_error=${error}`);
+      return createRedirectResponse(`${APP_URL}/dashboard?oauth_error=${error}`, "Connection Failed");
     }
 
     if (!code || !state) {
       console.error('Missing code or state');
-      return createRedirectResponse(`${APP_URL}/dashboard?oauth_error=missing_params`);
+      return createRedirectResponse(`${APP_URL}/dashboard?oauth_error=missing_params`, "Connection Failed");
     }
 
     // Create service role client to bypass RLS
@@ -55,12 +85,12 @@ serve(async (req) => {
 
     if (stateError) {
       console.error('Error querying state:', stateError);
-      return createRedirectResponse(`${APP_URL}/dashboard?oauth_error=state_query_failed`);
+      return createRedirectResponse(`${APP_URL}/dashboard?oauth_error=state_query_failed`, "Connection Failed");
     }
 
     if (!stateData) {
       console.error('State not found in database. State:', state);
-      return createRedirectResponse(`${APP_URL}/dashboard?oauth_error=invalid_state`);
+      return createRedirectResponse(`${APP_URL}/dashboard?oauth_error=invalid_state`, "Connection Failed");
     }
 
     console.log('Found oauth state for user:', stateData.contractor_id, 'type:', stateData.type);
@@ -69,7 +99,7 @@ serve(async (req) => {
     if (new Date(stateData.expires_at) < new Date()) {
       console.error('State expired');
       await supabase.from('oauth_states').delete().eq('state', state);
-      return createRedirectResponse(`${APP_URL}/dashboard?oauth_error=state_expired`);
+      return createRedirectResponse(`${APP_URL}/dashboard?oauth_error=state_expired`, "Connection Failed");
     }
 
     // Delete used state
@@ -95,7 +125,7 @@ serve(async (req) => {
 
     if (tokens.error) {
       console.error('Token exchange error:', tokens);
-      return createRedirectResponse(`${APP_URL}/dashboard?oauth_error=token_exchange_failed`);
+      return createRedirectResponse(`${APP_URL}/dashboard?oauth_error=token_exchange_failed`, "Connection Failed");
     }
 
     console.log('Token exchange successful');
@@ -126,11 +156,11 @@ serve(async (req) => {
 
       if (upsertError) {
         console.error('Failed to save calendar connection:', upsertError);
-        return createRedirectResponse(`${APP_URL}/dashboard?oauth_error=save_failed`);
+        return createRedirectResponse(`${APP_URL}/dashboard?oauth_error=save_failed`, "Connection Failed");
       }
 
       console.log('Calendar connection saved successfully');
-      return createRedirectResponse(`${APP_URL}/dashboard?oauth_success=calendar&provider=google&crm_section=calendar`);
+      return createRedirectResponse(`${APP_URL}/dashboard?oauth_success=calendar&provider=google&crm_section=calendar`, "Google Calendar Connected!");
     } else {
       console.log('Saving email connection for user:', stateData.contractor_id);
       const { error: upsertError } = await supabase
@@ -147,15 +177,15 @@ serve(async (req) => {
 
       if (upsertError) {
         console.error('Failed to save email connection:', upsertError);
-        return createRedirectResponse(`${APP_URL}/dashboard?oauth_error=save_failed`);
+        return createRedirectResponse(`${APP_URL}/dashboard?oauth_error=save_failed`, "Connection Failed");
       }
 
       console.log('Email connection saved successfully');
-      return createRedirectResponse(`${APP_URL}/dashboard?oauth_success=email&provider=google&crm_section=emails`);
+      return createRedirectResponse(`${APP_URL}/dashboard?oauth_success=email&provider=google&crm_section=emails`, "Gmail Connected!");
     }
   } catch (error) {
     console.error('Google OAuth callback error:', error);
     const APP_URL = Deno.env.get('APP_URL') || 'https://myct1.com';
-    return createRedirectResponse(`${APP_URL}/dashboard?oauth_error=server_error`);
+    return createRedirectResponse(`${APP_URL}/dashboard?oauth_error=server_error`, "Connection Failed");
   }
 });
