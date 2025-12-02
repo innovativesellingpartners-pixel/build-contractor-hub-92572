@@ -68,18 +68,27 @@ serve(async (req) => {
     for (const connection of connections) {
       let accessToken = connection.access_token_encrypted;
       
-      // Check if token is expired and refresh if needed
-      if (new Date(connection.expires_at) < new Date()) {
-        console.log('Token expired, refreshing...');
+      console.log('Processing connection:', connection.id, 'email:', connection.calendar_email);
+      console.log('Token expires at:', connection.expires_at, 'Current time:', new Date().toISOString());
+      
+      // Check if token is expired (with 5 min buffer) or refresh anyway to be safe
+      const expiresAt = new Date(connection.expires_at);
+      const bufferTime = new Date(Date.now() + 5 * 60 * 1000); // 5 min buffer
+      
+      if (expiresAt < bufferTime) {
+        console.log('Token expired or expiring soon, refreshing...');
         accessToken = await refreshGoogleToken(connection, supabase);
         if (!accessToken) {
           console.error('Failed to refresh token for connection:', connection.id);
           continue;
         }
+        console.log('Token refreshed successfully');
       }
 
       if (connection.provider === 'google') {
+        console.log('Fetching Google Calendar events with token length:', accessToken?.length);
         const events = await fetchGoogleCalendarEvents(accessToken);
+        console.log('Fetched', events.length, 'events');
         allEvents.push(...events.map((e: any) => ({
           ...e,
           provider: 'google',
@@ -115,6 +124,14 @@ async function refreshGoogleToken(connection: any, supabase: any): Promise<strin
     const GOOGLE_CLIENT_ID = Deno.env.get('GOOGLE_CLIENT_ID');
     const GOOGLE_CLIENT_SECRET = Deno.env.get('GOOGLE_CLIENT_SECRET');
 
+    console.log('Attempting to refresh token for:', connection.calendar_email);
+    console.log('Refresh token length:', connection.refresh_token_encrypted?.length);
+
+    if (!connection.refresh_token_encrypted) {
+      console.error('No refresh token available');
+      return null;
+    }
+
     const response = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -127,15 +144,19 @@ async function refreshGoogleToken(connection: any, supabase: any): Promise<strin
     });
 
     const tokens = await response.json();
+    console.log('Token refresh response status:', response.status);
+    
     if (tokens.error) {
-      console.error('Token refresh error:', tokens);
+      console.error('Token refresh error:', tokens.error, tokens.error_description);
       return null;
     }
+
+    console.log('Got new access token, length:', tokens.access_token?.length);
 
     const expiresAt = new Date(Date.now() + tokens.expires_in * 1000).toISOString();
 
     // Update the stored token
-    await supabase
+    const { error: updateError } = await supabase
       .from('calendar_connections')
       .update({
         access_token_encrypted: tokens.access_token,
@@ -143,6 +164,10 @@ async function refreshGoogleToken(connection: any, supabase: any): Promise<strin
         updated_at: new Date().toISOString()
       })
       .eq('id', connection.id);
+
+    if (updateError) {
+      console.error('Failed to update token in DB:', updateError);
+    }
 
     return tokens.access_token;
   } catch (error) {
