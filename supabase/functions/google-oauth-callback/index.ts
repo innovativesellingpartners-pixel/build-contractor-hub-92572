@@ -1,24 +1,12 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 
-// Helper function to create an HTML redirect response
+// Helper function to create a proper HTTP redirect
 function createRedirectResponse(url: string): Response {
-  const html = `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta http-equiv="refresh" content="0;url=${url}">
-        <script>window.location.href = "${url}";</script>
-      </head>
-      <body>
-        <p>Redirecting... If you are not redirected automatically, <a href="${url}">click here</a>.</p>
-      </body>
-    </html>
-  `;
-  return new Response(html, {
-    status: 200,
+  return new Response(null, {
+    status: 302,
     headers: {
-      'Content-Type': 'text/html; charset=utf-8',
+      'Location': url,
     },
   });
 }
