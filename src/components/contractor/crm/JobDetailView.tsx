@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { 
-  MapPin, Clock, TrendingUp, AlertCircle, CheckCircle, Edit, Briefcase, Users, Calculator, Navigation 
+  MapPin, Clock, TrendingUp, AlertCircle, CheckCircle, Edit, Briefcase, FileText, Calculator, Navigation 
 } from 'lucide-react';
 import { useJobs, Job } from '@/hooks/useJobs';
 import { useJobPhotos } from '@/hooks/useJobPhotos';
@@ -26,7 +26,7 @@ interface JobDetailViewProps {
   job: Job | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onConvertToCustomer?: () => void;
+  onCreateEstimate?: () => void;
 }
 
 // Photos Tab Component
@@ -267,7 +267,7 @@ function DailyLogsTab({ jobId }: { jobId: string }) {
   );
 }
 
-export default function JobDetailView({ job, open, onOpenChange, onConvertToCustomer }: JobDetailViewProps) {
+export default function JobDetailView({ job, open, onOpenChange, onCreateEstimate }: JobDetailViewProps) {
   const { updateJob } = useJobs();
   const { user } = useAuth();
   const [isEditingStatus, setIsEditingStatus] = useState(false);
@@ -312,46 +312,36 @@ export default function JobDetailView({ job, open, onOpenChange, onConvertToCust
     setIsEditingStatus(false);
   };
 
-  const handleConvertToCustomer = async () => {
+  const handleCreateEstimate = async () => {
     if (!job || !user) return;
 
     try {
-      const customerData = {
-        user_id: user.id,
-        name: job.name,
-        email: '',
-        phone: '',
-        address: job.address || '',
-        city: job.city || '',
-        state: job.state || '',
-        zip_code: job.zip_code || '',
-        customer_type: 'residential' as const,
-        notes: job.notes || '',
-        job_id: job.id,
-      };
-
-      const { data: newCustomer, error: customerError } = await supabase
-        .from('customers')
-        .insert([customerData])
+      const fullAddress = [job.address, job.city, job.state, job.zip_code].filter(Boolean).join(', ');
+      
+      const { data: newEstimate, error: estimateError } = await supabase
+        .from('estimates')
+        .insert([{
+          user_id: user.id,
+          job_id: job.id,
+          customer_id: job.customer_id,
+          title: `Estimate for ${job.name}`,
+          project_name: job.name,
+          project_address: fullAddress || null,
+          site_address: fullAddress || null,
+          status: 'draft',
+          total_amount: job.contract_value || job.total_cost || 0,
+        }])
         .select()
         .single();
 
-      if (customerError) throw customerError;
+      if (estimateError) throw estimateError;
 
-      await supabase
-        .from('jobs')
-        .update({
-          converted_at: new Date().toISOString(),
-          converted_to_customer_id: newCustomer.id,
-        })
-        .eq('id', job.id);
-
-      toast.success('Job converted to customer successfully');
+      toast.success('Estimate created successfully');
       setConvertDialogOpen(false);
       onOpenChange(false);
-      if (onConvertToCustomer) onConvertToCustomer();
+      if (onCreateEstimate) onCreateEstimate();
     } catch (error: any) {
-      toast.error('Failed to convert job to customer: ' + error.message);
+      toast.error('Failed to create estimate: ' + error.message);
     }
   };
 
@@ -409,20 +399,20 @@ export default function JobDetailView({ job, open, onOpenChange, onConvertToCust
               <AlertDialog open={convertDialogOpen} onOpenChange={setConvertDialogOpen}>
                 <AlertDialogTrigger asChild>
                   <Button variant="outline" size="sm" className="gap-2 hidden sm:flex">
-                    <Users className="h-4 w-4" />
-                    <span>Convert to Customer</span>
+                    <FileText className="h-4 w-4" />
+                    <span>Create Estimate</span>
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Convert Job to Customer?</AlertDialogTitle>
+                    <AlertDialogTitle>Create Estimate for this Job?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      This will create a new customer record from this job and mark the job as converted. This action cannot be undone.
+                      This will create a new estimate linked to this job. You can add line items and details to the estimate next.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleConvertToCustomer}>Convert</AlertDialogAction>
+                    <AlertDialogAction onClick={handleCreateEstimate}>Create Estimate</AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
