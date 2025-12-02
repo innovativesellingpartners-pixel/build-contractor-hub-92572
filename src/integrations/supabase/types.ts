@@ -1011,6 +1011,80 @@ export type Database = {
         }
         Relationships: []
       }
+      estimate_line_item_macro_groups: {
+        Row: {
+          contractor_id: string
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          contractor_id: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          contractor_id?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      estimate_line_item_macros: {
+        Row: {
+          created_at: string | null
+          default_quantity: number
+          default_unit: string
+          default_unit_price: number
+          description_template: string
+          id: string
+          item_code_template: string | null
+          macro_group_id: string
+          order_index: number
+        }
+        Insert: {
+          created_at?: string | null
+          default_quantity?: number
+          default_unit?: string
+          default_unit_price?: number
+          description_template: string
+          id?: string
+          item_code_template?: string | null
+          macro_group_id: string
+          order_index?: number
+        }
+        Update: {
+          created_at?: string | null
+          default_quantity?: number
+          default_unit?: string
+          default_unit_price?: number
+          description_template?: string
+          id?: string
+          item_code_template?: string | null
+          macro_group_id?: string
+          order_index?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estimate_line_item_macros_macro_group_id_fkey"
+            columns: ["macro_group_id"]
+            isOneToOne: false
+            referencedRelation: "estimate_line_item_macro_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       estimate_payment_sessions: {
         Row: {
           amount: number
@@ -1045,6 +1119,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      estimate_text_macros: {
+        Row: {
+          body_text: string
+          category: string
+          contractor_id: string
+          created_at: string | null
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          body_text: string
+          category: string
+          contractor_id: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          body_text?: string
+          category?: string
+          contractor_id?: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       estimate_views: {
         Row: {

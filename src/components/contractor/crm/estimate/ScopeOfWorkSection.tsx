@@ -6,6 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { ChevronDown, Plus, X, Target } from 'lucide-react';
+import { TextMacro } from '@/hooks/useEstimateMacros';
+import TextMacroSelector from './TextMacroSelector';
 
 interface ScopeOfWorkSectionProps {
   objective: string;
@@ -13,6 +15,7 @@ interface ScopeOfWorkSectionProps {
   exclusions: string[];
   timeline: string;
   onChange: (field: string, value: string | string[]) => void;
+  textMacros?: TextMacro[];
 }
 
 export default function ScopeOfWorkSection({
@@ -21,6 +24,7 @@ export default function ScopeOfWorkSection({
   exclusions,
   timeline,
   onChange,
+  textMacros = [],
 }: ScopeOfWorkSectionProps) {
   const [isOpen, setIsOpen] = useState(true);
 
@@ -52,6 +56,11 @@ export default function ScopeOfWorkSection({
     onChange('exclusions', exclusions.filter((_, i) => i !== index));
   };
 
+  const objectiveMacros = textMacros.filter(m => m.category === 'scope_objective');
+  const deliverableMacros = textMacros.filter(m => m.category === 'scope_deliverables');
+  const exclusionMacros = textMacros.filter(m => m.category === 'scope_exclusions');
+  const timelineMacros = textMacros.filter(m => m.category === 'scope_timeline');
+
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
       <Card className="border-2 border-border/50">
@@ -68,9 +77,19 @@ export default function ScopeOfWorkSection({
           <CardContent className="space-y-6 pt-0">
             {/* Objective */}
             <div className="space-y-2">
-              <Label htmlFor="scope_objective" className="text-sm font-semibold">
-                Project Objective
-              </Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="scope_objective" className="text-sm font-semibold">
+                  Project Objective
+                </Label>
+                {objectiveMacros.length > 0 && (
+                  <TextMacroSelector
+                    macros={objectiveMacros}
+                    onSelect={(text) => onChange('objective', objective ? `${objective}\n\n${text}` : text)}
+                    triggerLabel="Insert Macro"
+                    triggerSize="sm"
+                  />
+                )}
+              </div>
               <Textarea
                 id="scope_objective"
                 value={objective}
@@ -85,16 +104,26 @@ export default function ScopeOfWorkSection({
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <Label className="text-sm font-semibold">Key Deliverables</Label>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={addDeliverable}
-                  className="h-8"
-                >
-                  <Plus className="h-4 w-4 mr-1" />
-                  Add Deliverable
-                </Button>
+                <div className="flex gap-2">
+                  {deliverableMacros.length > 0 && (
+                    <TextMacroSelector
+                      macros={deliverableMacros}
+                      onSelect={(text) => onChange('keyDeliverables', [...keyDeliverables, text])}
+                      triggerLabel="From Macro"
+                      triggerSize="sm"
+                    />
+                  )}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={addDeliverable}
+                    className="h-8"
+                  >
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add Deliverable
+                  </Button>
+                </div>
               </div>
               <div className="space-y-2">
                 {keyDeliverables.map((deliverable, index) => (
@@ -129,16 +158,26 @@ export default function ScopeOfWorkSection({
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <Label className="text-sm font-semibold">Exclusions</Label>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={addExclusion}
-                  className="h-8"
-                >
-                  <Plus className="h-4 w-4 mr-1" />
-                  Add Exclusion
-                </Button>
+                <div className="flex gap-2">
+                  {exclusionMacros.length > 0 && (
+                    <TextMacroSelector
+                      macros={exclusionMacros}
+                      onSelect={(text) => onChange('exclusions', [...exclusions, text])}
+                      triggerLabel="From Macro"
+                      triggerSize="sm"
+                    />
+                  )}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={addExclusion}
+                    className="h-8"
+                  >
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add Exclusion
+                  </Button>
+                </div>
               </div>
               <div className="space-y-2">
                 {exclusions.map((exclusion, index) => (
@@ -171,9 +210,19 @@ export default function ScopeOfWorkSection({
 
             {/* Timeline */}
             <div className="space-y-2">
-              <Label htmlFor="scope_timeline" className="text-sm font-semibold">
-                Estimated Timeline
-              </Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="scope_timeline" className="text-sm font-semibold">
+                  Estimated Timeline
+                </Label>
+                {timelineMacros.length > 0 && (
+                  <TextMacroSelector
+                    macros={timelineMacros}
+                    onSelect={(text) => onChange('timeline', text)}
+                    triggerLabel="Insert Macro"
+                    triggerSize="sm"
+                  />
+                )}
+              </div>
               <Input
                 id="scope_timeline"
                 value={timeline}
