@@ -6,12 +6,27 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Helper function to decode tokens that may be hex-encoded
+// Helper function to decode tokens that may be hex-encoded or bytea format
 function decodeToken(token: any): string {
   if (!token) return '';
   
-  // If it's already a string, check if it's hex-encoded
+  // If it's already a string
   if (typeof token === 'string') {
+    // Handle PostgreSQL bytea format: \x followed by hex
+    if (token.startsWith('\\x')) {
+      try {
+        const hexPart = token.slice(2); // Remove \x prefix
+        const decoded = new TextDecoder().decode(
+          new Uint8Array(hexPart.match(/.{1,2}/g)!.map(byte => parseInt(byte, 16)))
+        );
+        console.log('Decoded bytea token, starts with:', decoded.substring(0, 10));
+        return decoded;
+      } catch (e) {
+        console.log('Failed to decode bytea, using as-is');
+        return token;
+      }
+    }
+    
     // Check if it looks like a hex string (even length, only hex chars)
     if (/^[0-9a-fA-F]+$/.test(token) && token.length % 2 === 0 && token.length > 100) {
       try {
