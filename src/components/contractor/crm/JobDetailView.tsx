@@ -385,20 +385,20 @@ export default function JobDetailView({ job, open, onOpenChange, onCreateEstimat
       return;
     }
     
-    // Use geo: URL for mobile devices, opens default navigation app
+    // Use directions URL to start navigation directly
     const encodedAddress = encodeURIComponent(address);
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     
     if (isMobile) {
-      // For iOS and Android, use platform-specific URL schemes
+      // For iOS and Android, use directions URL to start navigation immediately
       const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
       const url = isIOS 
-        ? `maps://maps.apple.com/?q=${encodedAddress}`
-        : `geo:0,0?q=${encodedAddress}`;
+        ? `maps://maps.apple.com/?daddr=${encodedAddress}&dirflg=d`
+        : `google.navigation:q=${encodedAddress}`;
       window.location.href = url;
     } else {
-      // For desktop, open Google Maps in new tab
-      window.open(`https://www.google.com/maps/search/?api=1&query=${encodedAddress}`, '_blank');
+      // For desktop, open Google Maps directions in new tab
+      window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodedAddress}`, '_blank');
     }
   };
 
