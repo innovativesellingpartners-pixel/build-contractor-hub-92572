@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Plus, FileText, Calendar, DollarSign, Trash2, Eye, Send, CheckCircle, Clock, AlertCircle, RefreshCw, Home, Briefcase } from 'lucide-react';
+import { Plus, FileText, Calendar, DollarSign, Trash2, Eye, Send, CheckCircle, Clock, AlertCircle, RefreshCw, Home, Briefcase, Copy } from 'lucide-react';
 import { useEstimates } from '@/hooks/useEstimates';
 import EstimateForm from '../EstimateForm';
 import { useAuth } from '@/contexts/AuthContext';
@@ -14,7 +14,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 
 export default function EstimatesSection({ onSectionChange }: { onSectionChange?: (section: string) => void }) {
-  const { estimates, isLoading, createEstimate, createEstimateAsync, updateEstimate, updateEstimateAsync, deleteEstimate, sendEstimate, sendEstimateAsync, isSendingEstimate } = useEstimates();
+  const { estimates, isLoading, createEstimate, createEstimateAsync, updateEstimate, updateEstimateAsync, deleteEstimate, sendEstimate, sendEstimateAsync, isSendingEstimate, duplicateEstimate, isDuplicatingEstimate } = useEstimates();
   const { user } = useAuth();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedEstimate, setSelectedEstimate] = useState<any>(null);
@@ -323,6 +323,17 @@ export default function EstimatesSection({ onSectionChange }: { onSectionChange?
                       Job Created
                     </Badge>
                   )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => duplicateEstimate(estimate.id)}
+                    disabled={isDuplicatingEstimate}
+                    className="shrink-0"
+                    aria-label="Duplicate estimate"
+                    title="Duplicate estimate"
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
                   <Button
                     variant="destructive"
                     size="sm"

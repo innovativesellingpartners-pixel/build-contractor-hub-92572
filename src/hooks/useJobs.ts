@@ -166,12 +166,63 @@ export const useJobs = () => {
     }
   };
 
+  const duplicateJob = async (id: string) => {
+    if (!user) return;
+
+    try {
+      const jobToDuplicate = jobs.find(job => job.id === id);
+      if (!jobToDuplicate) throw new Error('Job not found');
+
+      // Generate new job number
+      const { data: jobNumber } = await supabase.rpc('generate_job_number');
+
+      const { data, error } = await supabase
+        .from('jobs')
+        .insert([{
+          user_id: user.id,
+          job_number: jobNumber,
+          name: `${jobToDuplicate.name} (Copy)`,
+          description: jobToDuplicate.description,
+          status: 'scheduled',
+          start_date: jobToDuplicate.start_date,
+          end_date: jobToDuplicate.end_date,
+          address: jobToDuplicate.address,
+          city: jobToDuplicate.city,
+          state: jobToDuplicate.state,
+          zip_code: jobToDuplicate.zip_code,
+          total_cost: jobToDuplicate.total_cost,
+          notes: jobToDuplicate.notes,
+          contract_value: jobToDuplicate.contract_value,
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const newJob = data as Job;
+      setJobs([newJob, ...jobs]);
+      toast({
+        title: 'Job duplicated',
+        description: 'Job has been duplicated successfully',
+      });
+      return newJob;
+    } catch (error: any) {
+      toast({
+        title: 'Error duplicating job',
+        description: error.message,
+        variant: 'destructive',
+      });
+      throw error;
+    }
+  };
+
   return {
     jobs,
     loading,
     addJob,
     updateJob,
     deleteJob,
+    duplicateJob,
     refreshJobs: fetchJobs,
   };
 };

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useJobs } from '@/hooks/useJobs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MapPin, Calendar, Users, Home } from 'lucide-react';
+import { MapPin, Calendar, Users, Home, Copy } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
@@ -16,7 +16,7 @@ interface JobsSectionProps {
 }
 
 export default function JobsSection({ onSectionChange }: JobsSectionProps) {
-  const { jobs, loading, addJob, refreshJobs } = useJobs();
+  const { jobs, loading, addJob, refreshJobs, duplicateJob } = useJobs();
   const { user } = useAuth();
   const [selectedJob, setSelectedJob] = useState<any>(null);
   const [detailOpen, setDetailOpen] = useState(false);
@@ -108,22 +108,41 @@ export default function JobsSection({ onSectionChange }: JobsSectionProps) {
           {jobs.map((job) => (
             <Card 
               key={job.id} 
-              className="hover:shadow-lg transition-shadow cursor-pointer w-full"
-              onClick={() => handleJobClick(job)}
+              className="hover:shadow-lg transition-shadow w-full"
             >
               <CardContent className="p-4 sm:p-4 space-y-2">
-                <h3 className="font-semibold text-sm sm:text-base break-words">{job.name}</h3>
-                {job.job_number && (
-                  <p className="text-xs text-muted-foreground">Job #{job.job_number}</p>
-                )}
-                {(job.city || job.state) && (
-                  <div className="flex items-start gap-1.5 text-xs text-muted-foreground">
-                    <MapPin className="h-3 w-3 flex-shrink-0 mt-0.5" />
-                    <span className="break-words">
-                      {job.city}{job.city && job.state && ', '}{job.state}
-                    </span>
-                  </div>
-                )}
+                <div 
+                  className="cursor-pointer"
+                  onClick={() => handleJobClick(job)}
+                >
+                  <h3 className="font-semibold text-sm sm:text-base break-words">{job.name}</h3>
+                  {job.job_number && (
+                    <p className="text-xs text-muted-foreground">Job #{job.job_number}</p>
+                  )}
+                  {(job.city || job.state) && (
+                    <div className="flex items-start gap-1.5 text-xs text-muted-foreground">
+                      <MapPin className="h-3 w-3 flex-shrink-0 mt-0.5" />
+                      <span className="break-words">
+                        {job.city}{job.city && job.state && ', '}{job.state}
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <div className="pt-2 border-t flex justify-end">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      duplicateJob(job.id);
+                    }}
+                    aria-label="Duplicate job"
+                    title="Duplicate job"
+                  >
+                    <Copy className="h-4 w-4 mr-2" />
+                    Duplicate
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           ))}
