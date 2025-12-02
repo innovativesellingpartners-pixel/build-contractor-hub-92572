@@ -8,6 +8,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ChevronDown, Plus, Trash2, Copy, List } from 'lucide-react';
 import { EstimateLineItem } from '@/hooks/useEstimates';
+import { MacroGroup, LineItemMacro } from '@/hooks/useEstimateMacros';
+import MacroSelector from './MacroSelector';
 
 const categories = [
   'Materials',
@@ -22,9 +24,10 @@ const categories = [
 interface LineItemsSectionProps {
   lineItems: EstimateLineItem[];
   onChange: (items: EstimateLineItem[]) => void;
+  macroGroups?: MacroGroup[];
 }
 
-export default function LineItemsSection({ lineItems, onChange }: LineItemsSectionProps) {
+export default function LineItemsSection({ lineItems, onChange, macroGroups = [] }: LineItemsSectionProps) {
   const [isOpen, setIsOpen] = useState(true);
 
   const addLineItem = () => {
@@ -93,6 +96,24 @@ export default function LineItemsSection({ lineItems, onChange }: LineItemsSecti
     const itemToDuplicate = { ...lineItems[index] };
     itemToDuplicate.itemNumber = `${lineItems.length + 1}.0`;
     onChange([...lineItems, itemToDuplicate]);
+  };
+
+  const handleMacroSelect = (macroItems: LineItemMacro[]) => {
+    const newItems = macroItems.map((macro, idx) => ({
+      itemNumber: `${lineItems.length + idx + 1}.0`,
+      category: 'Materials',
+      item_description: macro.description_template,
+      description: macro.description_template,
+      quantity: macro.default_quantity,
+      unit_type: macro.default_unit,
+      unit: macro.default_unit,
+      unit_cost: macro.default_unit_price,
+      unitPrice: macro.default_unit_price,
+      line_total: macro.default_quantity * macro.default_unit_price,
+      totalPrice: macro.default_quantity * macro.default_unit_price,
+      included: true,
+    }));
+    onChange([...lineItems, ...newItems]);
   };
 
   const formatCurrency = (amount: number) => {
@@ -269,16 +290,24 @@ export default function LineItemsSection({ lineItems, onChange }: LineItemsSecti
               </div>
             ))}
 
-            {/* Add Button */}
-            <Button
-              type="button"
-              variant="outline"
-              onClick={addLineItem}
-              className="w-full border-dashed"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Line Item
-            </Button>
+            {/* Add Buttons */}
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={addLineItem}
+                className="flex-1 border-dashed"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Line Item
+              </Button>
+              {macroGroups.length > 0 && (
+                <MacroSelector
+                  macroGroups={macroGroups}
+                  onSelectGroup={handleMacroSelect}
+                />
+              )}
+            </div>
           </CardContent>
         </CollapsibleContent>
       </Card>

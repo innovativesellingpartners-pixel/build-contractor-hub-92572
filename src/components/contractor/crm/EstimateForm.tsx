@@ -16,11 +16,13 @@ import SignatureCanvas from 'react-signature-canvas';
 import { EstimateLineItem } from '@/hooks/useEstimates';
 import { useCustomers } from '@/hooks/useCustomers';
 import { useContractorProfile } from '@/hooks/useContractorProfile';
+import { useEstimateMacros } from '@/hooks/useEstimateMacros';
 import AddCustomerDialog from './AddCustomerDialog';
 import EstimateAssistant from './EstimateAssistant';
 import ScopeOfWorkSection from './estimate/ScopeOfWorkSection';
 import TermsConditionsSection from './estimate/TermsConditionsSection';
 import FinancialSummarySection from './estimate/FinancialSummarySection';
+import LineItemsSection from './estimate/LineItemsSection';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useOpportunities } from '@/hooks/useOpportunities';
@@ -120,6 +122,9 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
 
   // Contractor profile for defaults
   const { profile, getEstimateDefaults, getBusinessInfo } = useContractorProfile();
+
+  // Estimate macros
+  const { macroGroups, textMacros } = useEstimateMacros();
 
   // Opportunities for job location
   const { opportunities } = useOpportunities();
