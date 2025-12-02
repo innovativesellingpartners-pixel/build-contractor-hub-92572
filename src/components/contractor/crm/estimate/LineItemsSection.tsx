@@ -13,7 +13,7 @@ import MacroSelector from './MacroSelector';
 
 const categories = [
   'Materials',
-  'Labour',
+  'Labor',
   'Equipment',
   'Subcontractor',
   'Overhead',
