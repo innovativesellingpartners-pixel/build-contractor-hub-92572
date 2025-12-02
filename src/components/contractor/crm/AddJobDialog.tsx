@@ -9,9 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plus, Bot, FileText, MapPin, DollarSign } from 'lucide-react';
 import { Job } from '@/hooks/useJobs';
 import { JobAIAssistant } from './JobAIAssistant';
+import { JobMeetingsSection, MeetingFormData } from './JobMeetingsSection';
 
 interface AddJobDialogProps {
-  onAdd: (jobData: Omit<Job, 'id' | 'user_id' | 'job_number' | 'created_at' | 'updated_at'>) => Promise<any>;
+  onAdd: (jobData: Omit<Job, 'id' | 'user_id' | 'job_number' | 'created_at' | 'updated_at'>, meetings?: MeetingFormData[]) => Promise<any>;
 }
 
 export function AddJobDialog({ onAdd }: AddJobDialogProps) {
@@ -29,6 +30,15 @@ export function AddJobDialog({ onAdd }: AddJobDialogProps) {
     total_cost: '0',
     notes: '',
   });
+  const [meetings, setMeetings] = useState<MeetingFormData[]>([]);
+
+  const handleAddMeeting = (meeting: MeetingFormData) => {
+    setMeetings(prev => [...prev, meeting]);
+  };
+
+  const handleRemoveMeeting = (index: number) => {
+    setMeetings(prev => prev.filter((_, i) => i !== index));
+  };
 
   const handleAIExtract = (details: Partial<typeof formData>) => {
     setFormData(prev => ({
@@ -45,7 +55,7 @@ export function AddJobDialog({ onAdd }: AddJobDialogProps) {
         total_cost: parseFloat(formData.total_cost),
         start_date: formData.start_date || undefined,
         end_date: formData.end_date || undefined,
-      });
+      }, meetings);
       setOpen(false);
       setFormData({
         name: '',
@@ -60,10 +70,13 @@ export function AddJobDialog({ onAdd }: AddJobDialogProps) {
         total_cost: '0',
         notes: '',
       });
+      setMeetings([]);
     } catch (error) {
       console.error('Error adding job:', error);
     }
   };
+
+  const jobLocation = [formData.address, formData.city, formData.state, formData.zip_code].filter(Boolean).join(', ');
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -246,6 +259,14 @@ export function AddJobDialog({ onAdd }: AddJobDialogProps) {
                   </div>
                 </div>
               </div>
+
+              {/* Meetings & Site Visits */}
+              <JobMeetingsSection
+                meetings={meetings}
+                onAddMeeting={handleAddMeeting}
+                onRemoveMeeting={handleRemoveMeeting}
+                jobLocation={jobLocation}
+              />
 
               {/* Notes */}
               <div className="space-y-2">

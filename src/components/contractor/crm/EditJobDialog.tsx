@@ -7,6 +7,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FileText, MapPin, DollarSign } from 'lucide-react';
 import { Job } from '@/hooks/useJobs';
+import { JobMeetingsSection, MeetingFormData } from './JobMeetingsSection';
+import { useJobMeetings } from '@/hooks/useJobMeetings';
 
 interface EditJobDialogProps {
   job: Job | null;
@@ -30,6 +32,8 @@ export function EditJobDialog({ job, open, onOpenChange, onUpdate }: EditJobDial
     notes: '',
     contract_value: '0',
   });
+  const [newMeetings, setNewMeetings] = useState<MeetingFormData[]>([]);
+  const { meetings: existingMeetings, addMeeting, deleteMeeting, loading: meetingsLoading } = useJobMeetings(job?.id);
 
   useEffect(() => {
     if (job) {
@@ -47,8 +51,19 @@ export function EditJobDialog({ job, open, onOpenChange, onUpdate }: EditJobDial
         notes: job.notes || '',
         contract_value: String(job.contract_value || 0),
       });
+      setNewMeetings([]);
     }
   }, [job]);
+
+  const handleAddNewMeeting = (meeting: MeetingFormData) => {
+    setNewMeetings(prev => [...prev, meeting]);
+  };
+
+  const handleRemoveNewMeeting = (index: number) => {
+    setNewMeetings(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const jobLocation = [formData.address, formData.city, formData.state, formData.zip_code].filter(Boolean).join(', ');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,6 +84,21 @@ export function EditJobDialog({ job, open, onOpenChange, onUpdate }: EditJobDial
         notes: formData.notes || undefined,
         contract_value: parseFloat(formData.contract_value) || 0,
       });
+      
+      // Save new meetings
+      for (const meeting of newMeetings) {
+        await addMeeting({
+          job_id: job.id!,
+          title: meeting.title,
+          meeting_type: meeting.meeting_type,
+          scheduled_date: meeting.scheduled_date,
+          scheduled_time: meeting.scheduled_time,
+          duration_minutes: meeting.duration_minutes,
+          location: meeting.location || jobLocation,
+          notes: meeting.notes,
+        }, job.name, jobLocation);
+      }
+      
       onOpenChange(false);
     } catch (error) {
       console.error('Error updating job:', error);
@@ -235,6 +265,47 @@ export function EditJobDialog({ job, open, onOpenChange, onUpdate }: EditJobDial
                 />
               </div>
             </div>
+          </div>
+
+          {/* Meetings & Site Visits */}
+          <div className="space-y-4">
+            <JobMeetingsSection
+              meetings={newMeetings}
+              onAddMeeting={handleAddNewMeeting}
+              onRemoveMeeting={handleRemoveNewMeeting}
+              jobLocation={jobLocation}
+            />
+            
+            {/* Existing scheduled meetings */}
+            {existingMeetings.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-muted-foreground">Previously Scheduled:</p>
+                {existingMeetings.map((meeting) => (
+                  <div key={meeting.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-sm">{meeting.title}</span>
+                        <span className="text-xs px-2 py-0.5 bg-primary/10 text-primary rounded">
+                          {meeting.meeting_type.replace('_', ' ')}
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {new Date(meeting.scheduled_date).toLocaleDateString()} {meeting.scheduled_time && `at ${meeting.scheduled_time}`}
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => deleteMeeting(meeting.id)}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Notes */}

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { MeetingFormData } from '@/components/contractor/crm/JobMeetingsSection';
 
 export interface Job {
   id: string;
@@ -64,7 +65,7 @@ export const useJobs = () => {
     fetchJobs();
   }, [user]);
 
-  const addJob = async (jobData: Omit<Job, 'id' | 'user_id' | 'job_number' | 'created_at' | 'updated_at'>) => {
+  const addJob = async (jobData: Omit<Job, 'id' | 'user_id' | 'job_number' | 'created_at' | 'updated_at'>, meetings?: MeetingFormData[]) => {
     if (!user) return;
 
     try {
@@ -82,32 +83,47 @@ export const useJobs = () => {
       const newJob = data as Job;
       setJobs([newJob, ...jobs]);
       
-      // Create calendar event for the job (non-blocking) - pass auth token
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (session) {
+      const jobLocation = [newJob.address, newJob.city, newJob.state, newJob.zip_code].filter(Boolean).join(', ');
+      
+      // Get session for calendar events
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      // Save meetings and create calendar events for each
+      if (meetings && meetings.length > 0 && session) {
+        for (const meeting of meetings) {
+          // Save meeting to database
+          await supabase.from('job_meetings').insert({
+            job_id: newJob.id,
+            user_id: user.id,
+            title: meeting.title,
+            meeting_type: meeting.meeting_type,
+            scheduled_date: meeting.scheduled_date,
+            scheduled_time: meeting.scheduled_time,
+            duration_minutes: meeting.duration_minutes,
+            location: meeting.location || jobLocation,
+            notes: meeting.notes,
+          });
+          
+          // Create calendar event for the meeting
+          const startDateTime = new Date(`${meeting.scheduled_date}T${meeting.scheduled_time || '09:00'}`);
+          const endDateTime = new Date(startDateTime.getTime() + (meeting.duration_minutes || 60) * 60000);
+          
           supabase.functions.invoke('create-calendar-event', {
             body: {
               jobId: newJob.id,
-              jobName: newJob.name,
-              description: newJob.description,
-              startDate: newJob.start_date,
-              endDate: newJob.end_date,
-              address: newJob.address,
-              city: newJob.city,
-              state: newJob.state,
+              jobName: `${meeting.title} - ${newJob.name}`,
+              startDate: startDateTime.toISOString(),
+              endDate: endDateTime.toISOString(),
+              location: meeting.location || jobLocation,
             },
             headers: { Authorization: `Bearer ${session.access_token}` }
-          }).then(({ error: calError }) => {
-            if (calError) {
-              console.log('Calendar event creation skipped or failed:', calError);
-            }
-          });
+          }).catch(err => console.log('Calendar sync error:', err));
         }
-      });
+      }
 
       toast({
         title: 'Job added',
-        description: 'New job has been added successfully',
+        description: meetings?.length ? `Job created with ${meetings.length} meeting(s) scheduled` : 'New job has been added successfully',
       });
       return newJob;
     } catch (error: any) {
