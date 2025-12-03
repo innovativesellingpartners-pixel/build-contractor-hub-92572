@@ -143,7 +143,7 @@ export function NewLandingPage() {
 
       {/* SECTION 1: Hero */}
       <section 
-        className="relative min-h-[80vh] flex items-start overflow-hidden"
+        className="relative min-h-[60vh] flex items-start overflow-hidden"
         style={{
           backgroundImage: `url(${heroImage})`,
           backgroundSize: 'cover',
