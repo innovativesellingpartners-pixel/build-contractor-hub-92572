@@ -374,31 +374,30 @@ export default function NationwideNetwork() {
       {/* SECTION 3: Business Case */}
       <section className="py-20 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-start">
-            {/* Left: Copy and bullets */}
-            <div>
-              <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-6">
-                Why Contractors Join The <span className="text-primary">CT1 Network</span>
-              </h2>
-              <p className="text-lg text-muted-foreground mb-8">
-                You want consistent work, healthy margin, and time back. CT1 gives you the structure to run a serious business, not a collection of jobs.
-              </p>
-              
-              <ul className="space-y-4 mb-8">
-                {[
-                  "More quality leads tracked from first call to closed job.",
-                  "Standard workflows from inbound lead to final invoice.",
-                  "Fewer dropped balls with task tracking and automation.",
-                  "Better visibility into margin, revenue, and crew workload.",
-                  "Training built into the same platform your team uses every day."
-                ].map((item, index) => (
-                  <li key={index} className="flex items-start gap-3">
-                    <CheckCircle className="h-6 w-6 text-primary mt-0.5 flex-shrink-0" />
-                    <span className="text-foreground">{item}</span>
-                  </li>
-                ))}
-              </ul>
-              
+          <div className="max-w-3xl mx-auto">
+            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-6 text-center">
+              Why Contractors Join The <span className="text-primary">CT1 Network</span>
+            </h2>
+            <p className="text-lg text-muted-foreground mb-8 text-center">
+              You want consistent work, healthy margin, and time back. CT1 gives you the structure to run a serious business, not a collection of jobs.
+            </p>
+            
+            <ul className="space-y-4 mb-8">
+              {[
+                "More quality leads tracked from first call to closed job.",
+                "Standard workflows from inbound lead to final invoice.",
+                "Fewer dropped balls with task tracking and automation.",
+                "Better visibility into margin, revenue, and crew workload.",
+                "Training built into the same platform your team uses every day."
+              ].map((item, index) => (
+                <li key={index} className="flex items-start gap-3">
+                  <CheckCircle className="h-6 w-6 text-primary mt-0.5 flex-shrink-0" />
+                  <span className="text-foreground">{item}</span>
+                </li>
+              ))}
+            </ul>
+            
+            <div className="text-center">
               <Dialog open={activeContactForm === "growth-session"} onOpenChange={(open) => setActiveContactForm(open ? "growth-session" : null)}>
                 <DialogTrigger asChild>
                   <Button className="btn-ct1">
@@ -416,45 +415,6 @@ export default function NationwideNetwork() {
                   />
                 </DialogContent>
               </Dialog>
-            </div>
-            
-            {/* Right: Growth Stage Cards */}
-            <div className="space-y-6">
-              <Card className="p-6 border-l-4 border-l-amber-500 hover:shadow-lg transition-shadow">
-                <div className="flex items-start gap-4">
-                  <div className="bg-amber-500/10 p-3 rounded-lg">
-                    <Pickaxe className="h-8 w-8 text-amber-500" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-foreground mb-2">Stage 1 – Grassroots</h3>
-                    <p className="text-muted-foreground">Owner in the truck, jobs from word of mouth, whiteboards and spreadsheets.</p>
-                  </div>
-                </div>
-              </Card>
-              
-              <Card className="p-6 border-l-4 border-l-blue-500 hover:shadow-lg transition-shadow">
-                <div className="flex items-start gap-4">
-                  <div className="bg-blue-500/10 p-3 rounded-lg">
-                    <LayoutGrid className="h-8 w-8 text-blue-500" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-foreground mb-2">Stage 2 – Organized With CT1</h3>
-                    <p className="text-muted-foreground">Leads, jobs, customers, and communication in one workflow.</p>
-                  </div>
-                </div>
-              </Card>
-              
-              <Card className="p-6 border-l-4 border-l-green-500 hover:shadow-lg transition-shadow">
-                <div className="flex items-start gap-4">
-                  <div className="bg-green-500/10 p-3 rounded-lg">
-                    <Network className="h-8 w-8 text-green-500" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-foreground mb-2">Stage 3 – Scaled Network Partner</h3>
-                    <p className="text-muted-foreground">Trained sales team, full pipeline, repeat business, and regional presence.</p>
-                  </div>
-                </div>
-              </Card>
             </div>
           </div>
         </div>
