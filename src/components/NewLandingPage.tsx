@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { FloatingTrialButton } from "@/components/FloatingTrialButton";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { ContactForm } from "@/components/ContactForm";
@@ -10,33 +9,34 @@ import { MainSiteHeader } from "@/components/MainSiteHeader";
 import { Pocketbot } from "@/components/contractor/Pocketbot";
 import heroImage from "@/assets/hero-construction.jpg";
 import ct1Logo from "@/assets/ct1-logo-main.png";
-import constructeamLogo from "@/assets/ct1-logo-main.png";
 import { 
   ArrowRight, 
   Bot, 
   Calculator, 
-  Calendar, 
-  Target, 
   Users,
-  Globe,
   TrendingUp,
   CheckCircle,
   Star,
-  Zap,
-  Award,
-  ChevronUp,
-  Search,
-  Shield,
   Phone,
   Mail,
   MapPin,
   Building,
   Briefcase,
   GraduationCap,
-  DollarSign,
-  Clock,
-  Gauge,
-  FileText
+  BarChart3,
+  Headset,
+  Mic,
+  BookOpen,
+  HardHat,
+  Quote,
+  Wrench,
+  Zap,
+  Flame,
+  Hammer,
+  PaintBucket,
+  Wind,
+  MessageCircle,
+  Rocket
 } from "lucide-react";
 
 export function NewLandingPage() {
@@ -44,248 +44,221 @@ export function NewLandingPage() {
   const [activeContactForm, setActiveContactForm] = useState<string | null>(null);
   const [showPocketbot, setShowPocketbot] = useState(false);
 
+  const featureCards = [
+    { icon: Users, title: "Lead Management", description: "Capture web leads, calls, and referrals in one place. Track source, status, and next steps." },
+    { icon: HardHat, title: "Job Management", description: "Schedule crews, assign tasks, and track progress from first visit to job completion." },
+    { icon: Calculator, title: "Estimating & Proposals", description: "Build professional estimates fast, send digitally, and track approvals." },
+    { icon: Briefcase, title: "Customer Management & CRM", description: "Store every contact, note, call, and job history. Keep relationships strong for repeat work." },
+    { icon: Mic, title: "Voice AI", description: "Answer inbound calls with voice AI support, route them to the right person, and log outcomes." },
+    { icon: GraduationCap, title: "Full Sales Training Suite", description: "Structured sales training for owners, reps, and office staff, aligned with CT1 workflows." },
+    { icon: BookOpen, title: "Business Training & Playbooks", description: "On-demand training on pricing, leadership, hiring, and process, tailored to contractors." },
+    { icon: BarChart3, title: "Dashboards & Reporting", description: "See pipeline, close rate, revenue, and job status in one view." },
+    { icon: Headset, title: "Support & Success", description: "Real people who understand trades, ready to help your team succeed on the platform." },
+  ];
+
+  const tradesBadges = [
+    { icon: Wrench, label: "Roofing" },
+    { icon: Wind, label: "HVAC" },
+    { icon: Zap, label: "Electrical" },
+    { icon: Flame, label: "Plumbing" },
+    { icon: Hammer, label: "Remodeling" },
+    { icon: PaintBucket, label: "Painting" },
+    { icon: HardHat, label: "General Contracting" },
+  ];
+
   const testimonials = [
     {
-      name: "Mike Johnson",
-      company: "Johnson Construction",
       text: "CT1 transformed my business. The PocketBots handle all my estimates and client communication automatically. I've increased my revenue by 40% in just 6 months.",
-      rating: 5,
-      location: "Sterling Heights, MI"
+      name: "Mike Johnson",
+      company: "Johnson Construction"
     },
     {
-      name: "Sarah Martinez",
-      company: "Elite Roofing Solutions",
       text: "The training modules helped me get certified and the marketplace connected me with quality suppliers. CT1 is a complete game-changer for contractors.",
-      rating: 5,
-      location: "Detroit, MI"
+      name: "Sarah Martinez",
+      company: "Elite Roofing Solutions"
     },
     {
-      name: "David Chen",
-      company: "Chen Electrical Services",
       text: "From lead generation to project management, CT1 handles everything. I can focus on quality work while my business runs itself.",
-      rating: 5,
-      location: "Ann Arbor, MI"
-    },
-    {
-      name: "Lisa Thompson",
-      company: "Thompson HVAC",
-      text: "The scheduling tools and automated reminders have eliminated no-shows. My team stays organized and customers love the professional experience.",
-      rating: 5,
-      location: "East Lansing, MI"
+      name: "David Chen",
+      company: "Chen Electrical Services"
     }
   ];
 
-  const features = [
-    {
-      icon: FileText,
-      title: "Proposals & Estimates",
-      description: "Create professional proposals quickly with templates and line items"
-    },
-    {
-      icon: Calendar,
-      title: "Job Management",
-      description: "Track projects from lead to completion with phases and tasks"
-    },
-    {
-      icon: DollarSign,
-      title: "Billing & Payments",
-      description: "Automate invoicing, track payments, and manage financial reporting"
-    },
-    {
-      icon: Users,
-      title: "Client Portal",
-      description: "Secure client access to proposals, project status, and updates"
-    },
-    {
-      icon: TrendingUp,
-      title: "Reporting & Analytics",
-      description: "Monitor cost, revenue, margins with performance metrics"
-    },
-    {
-      icon: Bot,
-      title: "AI Automation",
-      description: "PocketBots handle routine tasks and client communication"
-    }
+  const steps = [
+    { icon: MessageCircle, title: "Step 1 – Conversation", description: "Meet with CT1 to review your business, trades, and goals. Align on fit and growth targets." },
+    { icon: Rocket, title: "Step 2 – Launch Plan", description: "Build a rollout plan for leads, jobs, CRM, and training. Set up pipeline, templates, and reporting." },
+    { icon: TrendingUp, title: "Step 3 – Ongoing Growth", description: "Work with Contractor Success on training, hiring support, and process improvement as your volume grows." },
   ];
 
   return (
     <div className="min-h-screen bg-background">
-      <FloatingTrialButton />
       <MainSiteHeader onContactClick={() => setActiveContactForm("contact-sales")} />
 
-      {/* CT1 Pocketbot - Floating Button (Enlarged) */}
-      <div className="fixed bottom-6 right-4 md:top-20 md:bottom-auto md:right-6 z-50">
+      {/* Sticky Floating CTA Button */}
+      <div className="fixed bottom-6 right-4 z-50">
+        <Dialog open={activeContactForm === "floating-cta"} onOpenChange={(open) => setActiveContactForm(open ? "floating-cta" : null)}>
+          <DialogTrigger asChild>
+            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-2xl hover:shadow-primary/50 px-6 py-3 rounded-full font-semibold transition-all hover:scale-105">
+              <Phone className="mr-2 h-4 w-4" />
+              Talk With CT1
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl">
+            <ContactForm
+              title="Talk With CT1"
+              description="Connect with our team to learn how CT1 can help grow your contracting business"
+              ctaText="Get In Touch"
+              formType="contact-sales"
+              onClose={() => setActiveContactForm(null)}
+            />
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {/* CT1 Pocketbot - Floating Button */}
+      <div className="fixed bottom-6 left-4 z-50">
         <div
           onClick={() => setShowPocketbot(true)}
           className="group relative cursor-pointer"
         >
-          {/* Main Button */}
-          <div className="flex items-center gap-2 md:gap-4 bg-foreground/95 backdrop-blur-md text-background px-4 py-3 md:px-8 md:py-5 rounded-full shadow-2xl hover:shadow-primary/50 transition-all duration-300 hover:scale-105 border-2 border-primary/30">
+          <div className="flex items-center gap-2 bg-foreground/95 backdrop-blur-md text-background px-4 py-3 rounded-full shadow-2xl hover:shadow-primary/50 transition-all duration-300 hover:scale-105 border-2 border-primary/30">
             <div className="relative">
-              <div className="h-10 w-10 md:h-14 md:w-14 bg-primary/20 rounded-full flex items-center justify-center border border-primary/30">
-                <img src={ct1Logo} alt="CT1" className="h-6 w-6 md:h-8 md:w-8" />
+              <div className="h-10 w-10 bg-primary/20 rounded-full flex items-center justify-center border border-primary/30">
+                <Bot className="h-5 w-5 text-primary" />
               </div>
-              <div className="absolute -top-1 -right-1 h-3 w-3 md:h-4 md:w-4 bg-primary rounded-full animate-pulse"></div>
+              <div className="absolute -top-1 -right-1 h-3 w-3 bg-primary rounded-full animate-pulse"></div>
             </div>
-            <div className="flex flex-col hidden md:flex">
-              <span className="font-bold text-lg whitespace-nowrap">Try CT1 Pocketbot</span>
-              <span className="text-sm text-background/70 whitespace-nowrap">Get instant answers</span>
-            </div>
-            <span className="font-bold text-sm md:hidden">CT1 Bot</span>
-            <ArrowRight className="h-5 w-5 md:h-6 md:w-6 text-primary group-hover:translate-x-1 transition-transform" />
+            <span className="font-bold text-sm">Try Pocketbot</span>
           </div>
         </div>
       </div>
 
-      {/* Hero Section */}
-      <section className="section-hero py-12 sm:py-16 md:py-20 relative overflow-hidden min-h-[85vh] flex items-center">
-        <div className="absolute inset-0 bg-black/35"></div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="text-center text-white mb-12">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4 leading-tight drop-shadow-lg tracking-wide">
-              <span className="inline-flex items-center justify-center">
-                <img src={constructeamLogo} alt="CT1" className="h-12 w-12 sm:h-16 sm:w-16 md:h-20 md:w-20 lg:h-24 lg:w-24 inline-block -mr-1" />
-                <span>ne-Up</span>
-              </span>
-              <span className="block">The Competition</span>
-            </h1>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-10">
-              <p className="text-xl sm:text-2xl md:text-3xl leading-relaxed drop-shadow-md max-w-3xl">
-                A nationwide network of contractors building, scaling, and sustaining their businesses, <span className="text-primary font-bold text-2xl sm:text-3xl md:text-4xl">Powered by CT1</span>
+      {/* SECTION 1: Hero */}
+      <section 
+        className="relative min-h-[85vh] flex items-center overflow-hidden"
+        style={{
+          backgroundImage: `url(${heroImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        <div className="absolute inset-0 bg-black/50"></div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-16">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left: Text */}
+            <div className="text-white">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 leading-tight drop-shadow-lg">
+                <span className="inline-flex items-center">
+                  <img src={ct1Logo} alt="CT1" className="h-14 w-14 sm:h-16 sm:w-16 lg:h-20 lg:w-20 inline-block -mr-1" />
+                  <span>ne-Up</span>
+                </span>
+                <span className="block">The Competition</span>
+              </h1>
+              <p className="text-xl sm:text-2xl mb-4 text-white/90 leading-relaxed">
+                A nationwide network of contractors building, scaling, and sustaining their businesses
               </p>
-              <Button 
-                size="lg" 
-                className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-8 py-4 text-lg whitespace-nowrap"
-                onClick={() => navigate('/pricing')}
-              >
-                Join Today
-              </Button>
-            </div>
-          </div>
-
-          {/* Feature Cards - Moved Higher */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-12 max-w-6xl mx-auto">
-            <Link to="/business-suite" className="bg-white/10 backdrop-blur-sm rounded-lg p-5 border border-white/20 hover:bg-white/20 hover:border-primary/50 transition-all cursor-pointer group">
-              <TrendingUp className="h-10 w-10 text-primary mb-3 group-hover:scale-110 transition-transform" />
-              <h4 className="font-semibold text-white text-lg mb-2 group-hover:text-primary transition-colors">Manage your entire contracting business</h4>
-              <p className="text-white/80 text-sm">A complete suite of innovative tools built for contractors</p>
-            </Link>
-            <Link to="/nationwide-network" className="bg-white/10 backdrop-blur-sm rounded-lg p-5 border border-white/20 hover:bg-white/20 hover:border-primary/50 transition-all cursor-pointer group">
-              <Users className="h-10 w-10 text-primary mb-3 group-hover:scale-110 transition-transform" />
-              <h4 className="font-semibold text-white text-lg mb-2 group-hover:text-primary transition-colors">Nationwide Network</h4>
-              <p className="text-white/80 text-sm">A Network of the Nations leading contractors</p>
-            </Link>
-            <Link to="/savings" className="bg-white/10 backdrop-blur-sm rounded-lg p-5 border border-white/20 hover:bg-white/20 hover:border-primary/50 transition-all cursor-pointer group">
-              <Clock className="h-10 w-10 text-primary mb-3 group-hover:scale-110 transition-transform" />
-              <h4 className="font-semibold text-white text-lg mb-2 group-hover:text-primary transition-colors">Save 20+ Hours/Week</h4>
-              <p className="text-white/80 text-sm">Automated workflows</p>
-            </Link>
-            <Link to="/platform" className="bg-white/10 backdrop-blur-sm rounded-lg p-5 border border-white/20 hover:bg-white/20 hover:border-primary/50 transition-all cursor-pointer group">
-              <Award className="h-10 w-10 text-primary mb-3 group-hover:scale-110 transition-transform" />
-              <h4 className="font-semibold text-white text-lg mb-2 group-hover:text-primary transition-colors">Industry Leading</h4>
-              <p className="text-white/80 text-sm">Contractor platform</p>
-            </Link>
-          </div>
-
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-            <Dialog open={activeContactForm === "join-network"} onOpenChange={(open) => setActiveContactForm(open ? "join-network" : null)}>
-              <DialogTrigger asChild>
-                <Button className="btn-hero text-lg px-8 py-4">
-                  Join the CT1 Network
-                  <ArrowRight className="ml-2 h-5 w-5" />
+              <p className="text-2xl sm:text-3xl mb-8 font-bold text-primary">
+                Powered by CT1
+              </p>
+              
+              <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                <Dialog open={activeContactForm === "join-network"} onOpenChange={(open) => setActiveContactForm(open ? "join-network" : null)}>
+                  <DialogTrigger asChild>
+                    <Button className="btn-hero text-lg px-8 py-4">
+                      Join the CT1 Network
+                      <ArrowRight className="ml-2 h-5 w-5" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl">
+                    <ContactForm
+                      title="Join the CT1 Network"
+                      description="Start building your future with CT1's powerful contractor platform"
+                      ctaText="Join Network"
+                      formType="network-signup"
+                      onClose={() => setActiveContactForm(null)}
+                    />
+                  </DialogContent>
+                </Dialog>
+                
+                <Button 
+                  variant="outline" 
+                  className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-foreground text-lg px-8 py-4"
+                  onClick={() => navigate('/pricing')}
+                >
+                  View Pricing
                 </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl mx-4">
-                <ContactForm
-                  title="Join the CT1 Network"
-                  description="Start building your future with CT1's powerful contractor platform"
-                  ctaText="Join Network"
-                  formType="network-signup"
-                  onClose={() => setActiveContactForm(null)}
-                />
-              </DialogContent>
-            </Dialog>
+              </div>
+              
+              <p className="text-white/70 text-sm mb-6 flex items-center gap-2">
+                <MapPin className="h-4 w-4" />
+                Headquartered in Fraser, Michigan. Supporting contractors across the United States.
+              </p>
+              
+              <div className="flex flex-wrap gap-3">
+                <Badge className="bg-white/10 backdrop-blur-sm border-white/20 text-white px-4 py-2">
+                  Built for trades
+                </Badge>
+                <Badge className="bg-white/10 backdrop-blur-sm border-white/20 text-white px-4 py-2">
+                  Business suite for contractors
+                </Badge>
+                <Badge className="bg-white/10 backdrop-blur-sm border-white/20 text-white px-4 py-2">
+                  Sales and operations in one place
+                </Badge>
+              </div>
+            </div>
             
-            <Button variant="outline" size="lg" className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-foreground px-8 py-4" asChild>
-              <Link to="/trial-signup">
-                Try CT1 For Free
-              </Link>
-            </Button>
-          </div>
-
-          {/* Contractor Login Section */}
-          <div className="max-w-md mx-auto bg-black/30 backdrop-blur-sm rounded-lg p-6 border border-white/20">
-            <h3 className="text-lg font-semibold mb-3 text-white">Already a CT1 Contractor?</h3>
-            <p className="text-white/80 mb-4 text-sm">Access your dashboard, manage leads, and grow your business.</p>
-            <Link to="/auth">
-              <Button variant="outline" className="bg-transparent border-white text-white hover:bg-white hover:text-foreground w-full">
-                <Briefcase className="mr-2 h-4 w-4" />
-                Contractor Portal
-              </Button>
-            </Link>
+            {/* Right: Logo/Badge cluster */}
+            <div className="hidden lg:flex items-center justify-center">
+              <div className="relative">
+                <div className="absolute inset-0 bg-primary/20 rounded-full blur-3xl scale-150"></div>
+                <div className="relative bg-white/10 backdrop-blur-md rounded-2xl p-12 border border-white/20">
+                  <img src={ct1Logo} alt="CT1" className="h-32 w-32 mx-auto mb-4" />
+                  <p className="text-white text-center font-semibold text-xl">One-Up Your Business</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-
-      {/* For Contractors Section */}
-      <section id="for-contractors" className="py-12 sm:py-16 md:py-20 bg-background">
+      {/* SECTION 2: Why Contractors Choose CT1 */}
+      <section className="py-20 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-8 sm:gap-10 md:gap-12 items-center">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left: Content */}
             <div>
-              <Badge className="mb-4 bg-primary text-primary-foreground px-4 py-2">
-                <Building className="h-4 w-4 mr-2" />
-                For Contractors
-              </Badge>
-              <h2 className="text-4xl font-bold text-foreground mb-6">
-                Everything You Need to <span className="text-primary">Scale Your Business</span>
+              <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-6">
+                Why Contractors Choose <span className="text-primary">CT1</span>
               </h2>
-              <p className="text-xl text-muted-foreground mb-8">
-                Stop juggling multiple tools and platforms. CT1 integrates everything into one powerful system designed specifically for contractors.
+              <p className="text-lg text-muted-foreground mb-6 leading-relaxed">
+                You want consistent work, healthy margin, and time back. CT1 gives you the structure to run a serious business, not a collection of jobs.
               </p>
               
-              <div className="space-y-4 mb-8">
-                <div className="flex items-start gap-3">
-                  <CheckCircle className="h-6 w-6 text-primary mt-1 flex-shrink-0" />
-                  <div>
-                <h4 className="font-semibold text-foreground">Proposals to Payment</h4>
-                    <p className="text-muted-foreground">Complete workflow from estimates through invoicing and payment tracking</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <CheckCircle className="h-6 w-6 text-primary mt-1 flex-shrink-0" />
-                  <div>
-                <h4 className="font-semibold text-foreground">Job Management</h4>
-                    <p className="text-muted-foreground">Track projects through phases, manage tasks, and coordinate field and office teams</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <CheckCircle className="h-6 w-6 text-primary mt-1 flex-shrink-0" />
-                  <div>
-                <h4 className="font-semibold text-foreground">Client Portal</h4>
-                    <p className="text-muted-foreground">Secure branded portals for clients to review proposals and track project status</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <CheckCircle className="h-6 w-6 text-primary mt-1 flex-shrink-0" />
-                  <div>
-                <h4 className="font-semibold text-foreground">Reporting & Analytics</h4>
-                    <p className="text-muted-foreground">Monitor performance with cost analysis, revenue tracking, and margin reporting</p>
-                  </div>
-                </div>
-              </div>
-
+              <ul className="space-y-4 mb-8">
+                {[
+                  "More quality leads tracked from first call to closed job.",
+                  "Standard workflows from inbound lead to final invoice.",
+                  "Fewer dropped balls with task tracking and automation.",
+                  "Better visibility into margin, revenue, and crew workload.",
+                  "Training built into the same platform your team uses every day."
+                ].map((item, index) => (
+                  <li key={index} className="flex items-start gap-3">
+                    <CheckCircle className="h-6 w-6 text-primary mt-0.5 flex-shrink-0" />
+                    <span className="text-foreground">{item}</span>
+                  </li>
+                ))}
+              </ul>
+              
               <Dialog open={activeContactForm === "contractor-demo"} onOpenChange={(open) => setActiveContactForm(open ? "contractor-demo" : null)}>
                 <DialogTrigger asChild>
                   <Button className="btn-ct1">
-                    Get Contractor Demo
+                    Get Your Free Demo
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-2xl">
                   <ContactForm
-                    title="Get Your Contractor Demo"
+                    title="Get Your Free Demo"
                     description="See how CT1 can transform your contracting business with a personalized demo"
                     ctaText="Schedule Demo"
                     formType="contractor-demo"
@@ -295,177 +268,215 @@ export function NewLandingPage() {
               </Dialog>
             </div>
             
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-4">
-                <Card className="p-4 card-ct1">
-                  <DollarSign className="h-8 w-8 text-primary mb-2" />
-                  <h4 className="font-semibold">Revenue Growth</h4>
-                  <p className="text-sm text-muted-foreground">Increase profits with better lead conversion</p>
-                </Card>
-                <Card className="p-4 card-ct1">
-                  <Gauge className="h-8 w-8 text-primary mb-2" />
-                  <h4 className="font-semibold">Efficiency</h4>
-                  <p className="text-sm text-muted-foreground">Automate administrative tasks</p>
-                </Card>
+            {/* Right: Already a contractor login box */}
+            <div className="bg-card rounded-xl p-8 border shadow-lg">
+              <div className="text-center mb-6">
+                <div className="bg-primary/10 p-4 rounded-full w-fit mx-auto mb-4">
+                  <Briefcase className="h-10 w-10 text-primary" />
+                </div>
+                <h3 className="text-2xl font-bold text-foreground mb-2">Already a CT1 Contractor?</h3>
+                <p className="text-muted-foreground">Access your dashboard, manage leads, and grow your business.</p>
               </div>
-              <div className="space-y-4 mt-8">
-                <Card className="p-4 card-ct1">
-                  <Globe className="h-8 w-8 text-primary mb-2" />
-                  <h4 className="font-semibold">Online Presence</h4>
-                  <p className="text-sm text-muted-foreground">Professional websites and listings</p>
-                </Card>
-                <Card className="p-4 card-ct1">
-                  <Shield className="h-8 w-8 text-primary mb-2" />
-                  <h4 className="font-semibold">Compliance</h4>
-                  <p className="text-sm text-muted-foreground">Track licenses and insurance</p>
-                </Card>
-              </div>
+              <Link to="/auth">
+                <Button className="w-full btn-ct1 mb-4">
+                  <Briefcase className="mr-2 h-4 w-4" />
+                  Contractor Portal Login
+                </Button>
+              </Link>
+              <Link to="/trial-signup">
+                <Button variant="outline" className="w-full">
+                  Try CT1 For Free
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Find Contractor Section */}
-      <section id="find-contractor" className="py-20 bg-muted/30">
+      {/* SECTION 3: Product Suite */}
+      <section className="py-20 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-foreground mb-6">
-              Find a <span className="text-primary">Trusted Contractor</span> Powered by CT1
+            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
+              An Entire Business Suite <span className="text-primary">For Contractors</span>
             </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-              Connect with vetted, professional contractors who use CT1's advanced platform to deliver exceptional service and results.
+            <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+              Replace scattered apps, spreadsheets, and sticky notes with one platform that supports every part of your operation.
             </p>
           </div>
-
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <div className="space-y-6">
-                <div className="flex items-start gap-4">
-                  <div className="bg-primary/10 p-3 rounded-lg">
-                    <Shield className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-foreground mb-2">Verified & Trusted</h4>
-                    <p className="text-muted-foreground">All CT1 contractors are verified, licensed, and insured professionals</p>
-                  </div>
+          
+          {/* Feature Cards Grid */}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+            {featureCards.map((feature, index) => (
+              <Card key={index} className="p-6 hover:shadow-lg transition-all hover:-translate-y-1">
+                <div className="bg-primary/10 p-3 rounded-lg w-fit mb-4">
+                  <feature.icon className="h-8 w-8 text-primary" />
                 </div>
-                <div className="flex items-start gap-4">
-                  <div className="bg-primary/10 p-3 rounded-lg">
-                    <Star className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-foreground mb-2">Quality Guaranteed</h4>
-                    <p className="text-muted-foreground">CT1 contractors deliver professional results with transparent pricing</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-4">
-                  <div className="bg-primary/10 p-3 rounded-lg">
-                    <Zap className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-foreground mb-2">Modern Technology</h4>
-                    <p className="text-muted-foreground">AI-powered project management and communication tools</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-gradient-to-br from-background to-muted/50 p-8 rounded-lg border border-primary/20">
-              <h3 className="text-2xl font-bold text-foreground mb-6 text-center">Find Your Contractor</h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">Service Needed</label>
-                  <select className="w-full p-3 border border-border rounded-lg bg-background">
-                    <option>Select a service...</option>
-                    <option>Roofing</option>
-                    <option>Electrical</option>
-                    <option>Plumbing</option>
-                    <option>HVAC</option>
-                    <option>General Construction</option>
-                    <option>Landscaping</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">Your Location</label>
-                  <div className="relative">
-                    <MapPin className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
-                    <input 
-                      type="text" 
-                      placeholder="Enter city, state or zip code" 
-                      className="w-full pl-10 pr-4 py-3 border border-border rounded-lg bg-background"
-                    />
-                  </div>
-                </div>
-                
-                <Link to="/for-consumers">
-                  <Button className="w-full btn-ct1">
-                    <Search className="mr-2 h-5 w-5" />
-                    Looking for a reliable contractor in your area?
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CT1 Pocketbot Modal */}
-      <Dialog open={showPocketbot} onOpenChange={setShowPocketbot}>
-        <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden p-0">
-          <div className="h-[85vh]">
-            <Pocketbot />
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Testimonials */}
-      <section id="testimonials" className="py-20 bg-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <Badge className="mb-4 bg-primary text-primary-foreground px-4 py-2 text-lg">
-              <Star className="h-5 w-5 mr-2" />
-              Success Stories
-            </Badge>
-            <h2 className="text-4xl font-bold text-foreground mb-6">
-              What <span className="text-primary">Contractors</span> Are Saying
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              See how CT1 is transforming contractor businesses across the country.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <Card key={index} className="card-ct1 p-6">
-                <CardContent className="pt-6">
-                  <div className="flex items-center mb-4">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="h-5 w-5 text-primary fill-current" />
-                    ))}
-                  </div>
-                  <p className="text-muted-foreground mb-4 italic">"{testimonial.text}"</p>
-                  <div className="border-t pt-4">
-                    <h4 className="font-semibold text-foreground">{testimonial.name}</h4>
-                    <p className="text-sm text-muted-foreground">{testimonial.company}</p>
-                    <p className="text-sm text-primary">{testimonial.location}</p>
-                  </div>
-                </CardContent>
+                <h3 className="text-lg font-bold text-foreground mb-2">{feature.title}</h3>
+                <p className="text-muted-foreground text-sm">{feature.description}</p>
               </Card>
             ))}
           </div>
+          
+          {/* Trades Badge Strip */}
+          <div className="flex flex-wrap justify-center gap-3 mb-12 py-6 border-y border-border">
+            {tradesBadges.map((trade, index) => (
+              <Badge key={index} variant="outline" className="px-4 py-2 text-sm flex items-center gap-2">
+                <trade.icon className="h-4 w-4" />
+                {trade.label}
+              </Badge>
+            ))}
+          </div>
+          
+          {/* CTA Strip */}
+          <div className="bg-card rounded-xl p-8 text-center border">
+            <p className="text-xl font-semibold text-foreground mb-4">
+              Ready to run your contracting business on one platform?
+            </p>
+            <Dialog open={activeContactForm === "see-action"} onOpenChange={(open) => setActiveContactForm(open ? "see-action" : null)}>
+              <DialogTrigger asChild>
+                <Button className="btn-ct1">
+                  See CT1 In Action
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl">
+                <ContactForm
+                  title="See CT1 In Action"
+                  description="Get a personalized demo of the CT1 platform"
+                  ctaText="Schedule Demo"
+                  formType="demo"
+                  onClose={() => setActiveContactForm(null)}
+                />
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
       </section>
 
-      {/* Final CTA */}
+      {/* SECTION 4: Testimonials */}
+      <section className="py-20 bg-muted/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
+              Built For Trades. <span className="text-primary">Trusted By Contractors.</span>
+            </h2>
+          </div>
+          
+          {/* Testimonials Grid */}
+          <div className="grid md:grid-cols-3 gap-8 mb-12">
+            {testimonials.map((testimonial, index) => (
+              <Card key={index} className="p-6 relative">
+                <Quote className="h-10 w-10 text-primary/20 absolute top-4 right-4" />
+                <p className="text-foreground mb-6 italic leading-relaxed">"{testimonial.text}"</p>
+                <div className="flex items-center gap-3">
+                  <div className="h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center">
+                    <Building className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-foreground">{testimonial.name}</p>
+                    <p className="text-sm text-muted-foreground">{testimonial.company}</p>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+          
+          {/* Stats Row */}
+          <div className="grid sm:grid-cols-3 gap-8 mb-12 py-8 border-y border-border">
+            <div className="text-center">
+              <p className="text-4xl font-bold text-primary mb-2">47%</p>
+              <p className="text-muted-foreground">Higher lead response speed</p>
+            </div>
+            <div className="text-center">
+              <p className="text-4xl font-bold text-primary mb-2">12+</p>
+              <p className="text-muted-foreground">More booked jobs per month</p>
+            </div>
+            <div className="text-center">
+              <p className="text-4xl font-bold text-primary mb-2">50+</p>
+              <p className="text-muted-foreground">Hours of training content</p>
+            </div>
+          </div>
+          
+          <div className="text-center">
+            <Dialog open={activeContactForm === "success-coach"} onOpenChange={(open) => setActiveContactForm(open ? "success-coach" : null)}>
+              <DialogTrigger asChild>
+                <Button className="btn-ct1">
+                  Talk With A Success Coach
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl">
+                <ContactForm
+                  title="Talk With A Success Coach"
+                  description="Connect with a coach who understands your business and can help you grow"
+                  ctaText="Schedule Call"
+                  formType="success-coach"
+                  onClose={() => setActiveContactForm(null)}
+                />
+              </DialogContent>
+            </Dialog>
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 5: How It Works */}
+      <section className="py-20 bg-background">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
+              How It <span className="text-primary">Works</span>
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+              Getting started with CT1 is simple. We meet you where you are and build from there.
+            </p>
+          </div>
+          
+          {/* Steps */}
+          <div className="grid md:grid-cols-3 gap-8 mb-12">
+            {steps.map((step, index) => (
+              <div key={index} className="text-center">
+                <div className="bg-primary/10 p-4 rounded-full w-fit mx-auto mb-4">
+                  <step.icon className="h-10 w-10 text-primary" />
+                </div>
+                <h3 className="text-xl font-bold text-foreground mb-2">{step.title}</h3>
+                <p className="text-muted-foreground">{step.description}</p>
+              </div>
+            ))}
+          </div>
+          
+          <div className="text-center">
+            <Dialog open={activeContactForm === "start-conversation"} onOpenChange={(open) => setActiveContactForm(open ? "start-conversation" : null)}>
+              <DialogTrigger asChild>
+                <Button className="btn-ct1">
+                  Start The Conversation
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl">
+                <ContactForm
+                  title="Start The Conversation"
+                  description="Let's discuss how CT1 can help grow your contracting business"
+                  ctaText="Get Started"
+                  formType="start-conversation"
+                  onClose={() => setActiveContactForm(null)}
+                />
+              </DialogContent>
+            </Dialog>
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 6: Final CTA */}
       <section className="section-cta py-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="mb-8">
             <img src={ct1Logo} alt="CT1" className="h-20 w-20 mx-auto mb-6" />
-            <h2 className="text-5xl font-bold mb-6 text-primary-foreground">
-              Ready to <span className="text-primary-foreground">Build Your Future?</span>
+            <h2 className="text-4xl sm:text-5xl font-bold mb-6 text-primary-foreground">
+              Ready to One-Up Your Business?
             </h2>
             <p className="text-xl opacity-90 mb-8 max-w-2xl mx-auto text-primary-foreground">
-              Join a nationwide network of trusted and elite contractors, "Powered by CT1" comprehensive platform.
+              Join a nationwide network of trusted and elite contractors, powered by CT1's comprehensive platform.
             </p>
           </div>
           
@@ -474,7 +485,7 @@ export function NewLandingPage() {
               <DialogTrigger asChild>
                 <Button size="lg" className="bg-background text-primary hover:bg-background/90 text-xl px-12 py-6 font-bold">
                   Start Building Today
-                  <ChevronUp className="ml-2 h-6 w-6" />
+                  <ArrowRight className="ml-2 h-6 w-6" />
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-2xl">
@@ -488,25 +499,23 @@ export function NewLandingPage() {
               </DialogContent>
             </Dialog>
             
-            <Dialog open={activeContactForm === "learn-more"} onOpenChange={(open) => setActiveContactForm(open ? "learn-more" : null)}>
-              <DialogTrigger asChild>
-                <Button size="lg" variant="outline" className="border-2 border-background text-background hover:bg-background hover:text-foreground text-xl px-12 py-6 font-bold">
-                  Learn More
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl">
-                <ContactForm
-                  title="Learn More About CT1"
-                  description="Get detailed information about how CT1 can transform your business"
-                  ctaText="Get Information"
-                  formType="learn-more"
-                  onClose={() => setActiveContactForm(null)}
-                />
-              </DialogContent>
-            </Dialog>
+            <Link to="/nationwide-network">
+              <Button size="lg" variant="outline" className="border-2 border-background text-background hover:bg-background hover:text-foreground text-xl px-12 py-6 font-bold">
+                Explore The Network
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
+
+      {/* CT1 Pocketbot Modal */}
+      <Dialog open={showPocketbot} onOpenChange={setShowPocketbot}>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden p-0">
+          <div className="h-[85vh]">
+            <Pocketbot />
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Footer */}
       <footer className="bg-foreground text-background py-12">
@@ -514,7 +523,7 @@ export function NewLandingPage() {
           <div className="grid md:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center space-x-3 mb-4">
-                <img src={constructeamLogo} alt="CONSTRUCTEAM Logo" className="h-10 w-10" />
+                <img src={ct1Logo} alt="CT1 Logo" className="h-10 w-10" />
                 <div>
                   <h3 className="text-xl font-bold text-background">CT1</h3>
                   <p className="text-xs text-muted">One-Up Your Business</p>
@@ -528,20 +537,20 @@ export function NewLandingPage() {
             <div>
               <h4 className="font-semibold text-background mb-4">For Contractors</h4>
               <ul className="space-y-2 text-sm text-muted">
-                <li><Link to="/for-contractors" className="hover:text-primary transition-colors">Platform Features</Link></li>
+                <li><Link to="/business-suite" className="hover:text-primary transition-colors">Platform Features</Link></li>
                 <li><Link to="/pricing" className="hover:text-primary transition-colors">Pricing</Link></li>
                 <li><Link to="/training" className="hover:text-primary transition-colors">Training</Link></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Success Stories</a></li>
+                <li><Link to="/nationwide-network" className="hover:text-primary transition-colors">Nationwide Network</Link></li>
               </ul>
             </div>
             
             <div>
-              <h4 className="font-semibold text-background mb-4">For Consumers</h4>
+              <h4 className="font-semibold text-background mb-4">Company</h4>
               <ul className="space-y-2 text-sm text-muted">
-                <li><Link to="/find-contractor" className="hover:text-primary transition-colors">Find Contractors</Link></li>
-                <li><a href="#" className="hover:text-primary transition-colors">How It Works</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Quality Guarantee</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Customer Support</a></li>
+                <li><Link to="/what-we-do" className="hover:text-primary transition-colors">What We Do</Link></li>
+                <li><Link to="/core-values" className="hover:text-primary transition-colors">Core Values</Link></li>
+                <li><Link to="/blog-podcast" className="hover:text-primary transition-colors">Blog & Podcast</Link></li>
+                <li><Link to="/contact" className="hover:text-primary transition-colors">Contact</Link></li>
               </ul>
             </div>
             
@@ -558,7 +567,7 @@ export function NewLandingPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <MapPin className="h-4 w-4" />
-                  <span>Nationwide Service</span>
+                  <span>Fraser, Michigan</span>
                 </div>
               </div>
             </div>
