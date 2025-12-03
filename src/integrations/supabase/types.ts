@@ -756,6 +756,7 @@ export type Database = {
           created_at: string
           customer_type: string | null
           email: string | null
+          estimate_id: string | null
           id: string
           job_id: string | null
           lifetime_value: number | null
@@ -776,6 +777,7 @@ export type Database = {
           created_at?: string
           customer_type?: string | null
           email?: string | null
+          estimate_id?: string | null
           id?: string
           job_id?: string | null
           lifetime_value?: number | null
@@ -796,6 +798,7 @@ export type Database = {
           created_at?: string
           customer_type?: string | null
           email?: string | null
+          estimate_id?: string | null
           id?: string
           job_id?: string | null
           lifetime_value?: number | null
@@ -810,6 +813,13 @@ export type Database = {
           zip_code?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "customers_estimate_id_fkey"
+            columns: ["estimate_id"]
+            isOneToOne: false
+            referencedRelation: "estimates"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "customers_job_id_fkey"
             columns: ["job_id"]
@@ -2649,6 +2659,66 @@ export type Database = {
           },
           {
             foreignKeyName: "plaid_transactions_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_sale_follow_ups: {
+        Row: {
+          completed_at: string | null
+          contact_method: string | null
+          created_at: string
+          customer_id: string | null
+          id: string
+          job_id: string
+          next_contact_date: string | null
+          notes: string | null
+          outcome: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          contact_method?: string | null
+          created_at?: string
+          customer_id?: string | null
+          id?: string
+          job_id: string
+          next_contact_date?: string | null
+          notes?: string | null
+          outcome?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          contact_method?: string | null
+          created_at?: string
+          customer_id?: string | null
+          id?: string
+          job_id?: string
+          next_contact_date?: string | null
+          notes?: string | null
+          outcome?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_sale_follow_ups_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_sale_follow_ups_job_id_fkey"
             columns: ["job_id"]
             isOneToOne: false
             referencedRelation: "jobs"

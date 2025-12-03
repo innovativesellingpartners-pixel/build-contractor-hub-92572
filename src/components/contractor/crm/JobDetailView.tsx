@@ -16,6 +16,7 @@ import TasksTab from './job/TasksTab';
 import MaterialsTab from './job/MaterialsTab';
 import ChangeOrdersTab from './job/ChangeOrdersTab';
 import InvoicesTab from './job/InvoicesTab';
+import PSFUTab from './job/PSFUTab';
 import { JobFinancialSummary } from './JobFinancialSummary';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
@@ -542,11 +543,12 @@ export default function JobDetailView({ job, open, onOpenChange, onCreateEstimat
 
           <div className="px-3 sm:px-6 py-4">
             <Tabs defaultValue="overview" className="w-full">
-              <TabsList className="grid w-full grid-cols-4 sm:grid-cols-7 gap-1">
+              <TabsList className="grid w-full grid-cols-4 sm:grid-cols-8 gap-1">
                 <TabsTrigger value="overview" className="text-xs sm:text-sm px-2">Overview</TabsTrigger>
                 <TabsTrigger value="tasks" className="text-xs sm:text-sm px-2">Tasks</TabsTrigger>
                 <TabsTrigger value="materials" className="text-xs sm:text-sm px-2">Materials</TabsTrigger>
                 <TabsTrigger value="change-orders" className="text-xs sm:text-sm px-2">Changes</TabsTrigger>
+                <TabsTrigger value="psfu" className="text-xs sm:text-sm px-2">PSFU</TabsTrigger>
                 <TabsTrigger value="invoices" className="hidden sm:inline-flex">Invoices</TabsTrigger>
                 <TabsTrigger value="photos" className="hidden sm:inline-flex">Photos</TabsTrigger>
                 <TabsTrigger value="logs" className="hidden sm:inline-flex">Logs</TabsTrigger>
@@ -626,6 +628,10 @@ export default function JobDetailView({ job, open, onOpenChange, onCreateEstimat
 
               <TabsContent value="logs" className="mt-4">
                 <DailyLogsTab jobId={job.id!} />
+              </TabsContent>
+
+              <TabsContent value="psfu" className="mt-4">
+                <PSFUTab jobId={job.id!} customerId={job.customer_id} />
               </TabsContent>
             </Tabs>
           </div>
