@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Crown, Target, Users, Bot, Calendar, Phone, TrendingUp } from "lucide-react";
 import ct1Logo from "@/assets/ct1-logo-main.png";
+import ct1LogoColor from "@/assets/ct1-logo-color.png";
 import { MobileNav } from "@/components/MobileNav";
 import {
   NavigationMenu,
@@ -116,11 +117,12 @@ export default function TierMarket() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <Badge className="mb-4 bg-amber-500/20 text-amber-600 border-amber-500/30 px-4 py-1">Coming Soon</Badge>
           <div className="flex justify-center mb-6">
-            <div className="h-20 w-20 rounded-2xl bg-amber-500/10 flex items-center justify-center">
-              <Crown className="h-10 w-10 text-amber-600" />
-            </div>
+            <img src={ct1LogoColor} alt="CT1 Logo" className="h-24 w-24 md:h-32 md:w-32" />
           </div>
-          <p className="text-amber-600 font-semibold mb-2">Tier 3</p>
+          <div className="inline-flex items-center gap-2 bg-amber-500/10 text-amber-600 px-4 py-2 rounded-full mb-4">
+            <Crown className="h-4 w-4" />
+            <span className="text-sm font-medium">Tier 3</span>
+          </div>
           <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
             myCT1 Market Dominator
           </h1>

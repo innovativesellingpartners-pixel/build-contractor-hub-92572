@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle, Star, ArrowLeft, Users, BookOpen, ShoppingBag, Bot, Calendar } from "lucide-react";
 import ct1Logo from "@/assets/ct1-logo-main.png";
+import ct1LogoColor from "@/assets/ct1-logo-color.png";
 import { MobileNav } from "@/components/MobileNav";
 import {
   NavigationMenu,
@@ -115,11 +116,12 @@ export default function TierLaunch() {
       <section className="py-20 bg-gradient-to-br from-primary/5 via-background to-primary/10">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="flex justify-center mb-6">
-            <div className="h-20 w-20 rounded-2xl bg-primary/10 flex items-center justify-center">
-              <Star className="h-10 w-10 text-primary" />
-            </div>
+            <img src={ct1LogoColor} alt="CT1 Logo" className="h-24 w-24 md:h-32 md:w-32" />
           </div>
-          <p className="text-primary font-semibold mb-2">Tier 1</p>
+          <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full mb-4">
+            <Star className="h-4 w-4" />
+            <span className="text-sm font-medium">Tier 1</span>
+          </div>
           <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
             myCT1 Launch Growth Starter
           </h1>
