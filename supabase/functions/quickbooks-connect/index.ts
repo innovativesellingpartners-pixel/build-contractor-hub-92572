@@ -71,16 +71,27 @@ Deno.serve(async (req) => {
     authUrl.searchParams.set('redirect_uri', redirectUri);
     authUrl.searchParams.set('state', stateToken);
 
-    console.log('Generated OAuth URL, redirecting to Intuit');
+    console.log('Generated OAuth URL:', authUrl.toString());
 
-    // Redirect to QuickBooks authorization page
-    return Response.redirect(authUrl.toString(), 302);
+    // Return the OAuth URL for client-side redirect (not direct redirect)
+    // This allows proper auth header handling
+    return new Response(
+      JSON.stringify({ authUrl: authUrl.toString(), success: true }),
+      { 
+        status: 200, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
+    );
   } catch (error) {
     console.error('Error in quickbooks-connect:', error);
     const message = error instanceof Error ? error.message : 'An error occurred';
+    
+    // Return proper error response with 401 for auth issues
+    const status = message === 'Unauthorized' || message === 'No authorization header' ? 401 : 400;
+    
     return new Response(
-      JSON.stringify({ error: message }),
-      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({ error: message, code: status }),
+      { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
