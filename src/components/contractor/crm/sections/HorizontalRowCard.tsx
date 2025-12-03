@@ -12,7 +12,7 @@ export function HorizontalRowCard({ children, onClick, className }: HorizontalRo
   return (
     <div
       className={cn(
-        'flex items-center gap-4 px-4 py-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors',
+        'flex items-center gap-3 px-3 py-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors overflow-hidden',
         onClick && 'cursor-pointer',
         className
       )}
@@ -31,8 +31,8 @@ interface RowAvatarProps {
 
 export function RowAvatar({ initials, icon, className }: RowAvatarProps) {
   return (
-    <Avatar className={cn('h-11 w-11 flex-shrink-0', className)}>
-      <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">
+    <Avatar className={cn('h-10 w-10 flex-shrink-0', className)}>
+      <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">
         {icon || initials}
       </AvatarFallback>
     </Avatar>
@@ -46,7 +46,7 @@ interface RowContentProps {
 
 export function RowContent({ children, className }: RowContentProps) {
   return (
-    <div className={cn('flex-1 min-w-0 space-y-1', className)}>
+    <div className={cn('flex-1 min-w-0 overflow-hidden', className)}>
       {children}
     </div>
   );
@@ -59,7 +59,7 @@ interface RowTitleLineProps {
 
 export function RowTitleLine({ children, className }: RowTitleLineProps) {
   return (
-    <div className={cn('flex items-center gap-3 flex-wrap', className)}>
+    <div className={cn('flex items-center gap-2 min-w-0', className)}>
       {children}
     </div>
   );
@@ -72,7 +72,7 @@ interface RowMetaLineProps {
 
 export function RowMetaLine({ children, className }: RowMetaLineProps) {
   return (
-    <div className={cn('flex items-center gap-4 text-xs text-muted-foreground flex-wrap', className)}>
+    <div className={cn('flex items-center gap-2 text-xs text-muted-foreground mt-0.5', className)}>
       {children}
     </div>
   );
@@ -85,7 +85,7 @@ interface RowBadgeGroupProps {
 
 export function RowBadgeGroup({ children, className }: RowBadgeGroupProps) {
   return (
-    <div className={cn('flex items-center gap-2 flex-wrap', className)}>
+    <div className={cn('flex items-center gap-1.5 flex-wrap mt-1', className)}>
       {children}
     </div>
   );
@@ -100,11 +100,11 @@ interface RowAmountProps {
 
 export function RowAmount({ amount, label, badge, className }: RowAmountProps) {
   return (
-    <div className={cn('text-right flex-shrink-0 min-w-[100px]', className)}>
-      <p className="text-base font-bold text-primary">
+    <div className={cn('text-right flex-shrink-0', className)}>
+      <p className="text-sm font-bold text-primary whitespace-nowrap">
         ${amount?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
       </p>
-      {label && <p className="text-xs text-muted-foreground">{label}</p>}
+      {label && <p className="text-xs text-muted-foreground whitespace-nowrap">{label}</p>}
       {badge && <div className="mt-1">{badge}</div>}
     </div>
   );
@@ -117,7 +117,7 @@ interface RowActionsProps {
 
 export function RowActions({ children, className }: RowActionsProps) {
   return (
-    <div className={cn('flex items-center gap-1 flex-shrink-0 ml-2', className)}>
+    <div className={cn('hidden sm:flex items-center gap-1 flex-shrink-0', className)}>
       {children}
     </div>
   );
