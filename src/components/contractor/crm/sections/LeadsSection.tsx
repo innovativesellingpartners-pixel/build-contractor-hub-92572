@@ -283,25 +283,15 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
               )}
               <div className="flex gap-2 flex-wrap">
                 {!(lead as any).converted_at && (
-                  <>
-                    <Button 
-                      variant="default" 
-                      size="sm"
-                      onClick={() => setConvertToOpportunityLead(lead)}
-                      className="gap-1"
-                    >
-                      <TrendingUp className="h-4 w-4" />
-                      <span className="hidden sm:inline">Convert to Opportunity</span>
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => setConvertingLead(lead)}
-                    >
-                      <Users className="h-4 w-4" />
-                      <span className="hidden sm:inline">Convert to Customer</span>
-                    </Button>
-                  </>
+                  <Button 
+                    variant="default" 
+                    size="sm"
+                    onClick={() => setConvertToOpportunityLead(lead)}
+                    className="gap-1"
+                  >
+                    <TrendingUp className="h-4 w-4" />
+                    <span className="hidden sm:inline">Convert to Opportunity</span>
+                  </Button>
                 )}
                 {lead.phone && (
                   <Button variant="outline" size="sm" asChild>
@@ -324,6 +314,16 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
                 >
                   <Edit className="h-4 w-4" />
                 </Button>
+                {!(lead as any).converted_at && (
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setConvertingLead(lead)}
+                    title="Convert to Customer"
+                  >
+                    <Users className="h-4 w-4" />
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>
