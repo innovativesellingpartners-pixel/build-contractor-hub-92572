@@ -8,7 +8,7 @@ interface EstimateFunnelChartProps {
   filters: ReportingFilters;
 }
 
-const COLORS = ["hsl(var(--primary))", "hsl(var(--secondary))", "hsl(var(--accent))", "hsl(217, 91%, 60%)"];
+const COLORS = ["hsl(210, 80%, 55%)", "hsl(270, 70%, 55%)", "hsl(140, 60%, 45%)", "hsl(30, 90%, 55%)", "hsl(350, 70%, 55%)"];
 
 export function EstimateFunnelChart({ filters }: EstimateFunnelChartProps) {
   const { data, isLoading } = useQuery({
@@ -17,34 +17,52 @@ export function EstimateFunnelChart({ filters }: EstimateFunnelChartProps) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      let query = supabase.from("estimates").select("*").eq("user_id", user.id);
+      // Fetch all pipeline data
+      let leadsQuery = supabase.from("leads").select("id, status, created_at").eq("user_id", user.id);
+      let estimatesQuery = supabase.from("estimates").select("id, status, sent_at, signed_at, lead_id, created_at").eq("user_id", user.id);
+      let customersQuery = supabase.from("customers").select("id, estimate_id, created_at").eq("user_id", user.id);
+      let jobsQuery = supabase.from("jobs").select("id, customer_id, job_status, created_at").eq("user_id", user.id);
 
-      if (filters.dateFrom) query = query.gte("created_at", filters.dateFrom);
-      if (filters.dateTo) query = query.lte("created_at", filters.dateTo);
-      if (filters.tradeType && filters.tradeType !== "all") {
-        query = query.eq("trade_type", filters.tradeType);
+      // Apply date filters
+      if (filters.dateFrom) {
+        leadsQuery = leadsQuery.gte("created_at", filters.dateFrom);
+        estimatesQuery = estimatesQuery.gte("created_at", filters.dateFrom);
+        customersQuery = customersQuery.gte("created_at", filters.dateFrom);
+        jobsQuery = jobsQuery.gte("created_at", filters.dateFrom);
+      }
+      if (filters.dateTo) {
+        leadsQuery = leadsQuery.lte("created_at", filters.dateTo);
+        estimatesQuery = estimatesQuery.lte("created_at", filters.dateTo);
+        customersQuery = customersQuery.lte("created_at", filters.dateTo);
+        jobsQuery = jobsQuery.lte("created_at", filters.dateTo);
       }
 
-      const { data: estimates } = await query;
+      const [leadsRes, estimatesRes, customersRes, jobsRes] = await Promise.all([
+        leadsQuery,
+        estimatesQuery,
+        customersQuery,
+        jobsQuery,
+      ]);
 
-      const created = estimates?.length || 0;
-      const sent = estimates?.filter((e) => e.sent_at).length || 0;
-      const accepted = estimates?.filter((e) => e.status === "accepted" || e.signed_at).length || 0;
+      const leads = leadsRes.data || [];
+      const estimates = estimatesRes.data || [];
+      const customers = customersRes.data || [];
+      const jobs = jobsRes.data || [];
 
-      // Get sold jobs count
-      const { data: jobs } = await supabase
-        .from("jobs")
-        .select("id")
-        .eq("user_id", user.id)
-        .in("job_status", ["completed", "in_progress"]);
-
-      const sold = jobs?.length || 0;
+      const totalLeads = leads.length;
+      const totalEstimates = estimates.length;
+      const sentEstimates = estimates.filter((e) => e.sent_at).length;
+      const acceptedEstimates = estimates.filter((e) => e.status === "accepted" || e.status === "sold" || e.signed_at).length;
+      const totalCustomers = customers.length;
+      const totalJobs = jobs.length;
 
       return [
-        { stage: "Created", count: created, conversion: 100 },
-        { stage: "Sent", count: sent, conversion: created > 0 ? (sent / created) * 100 : 0 },
-        { stage: "Accepted", count: accepted, conversion: sent > 0 ? (accepted / sent) * 100 : 0 },
-        { stage: "Sold", count: sold, conversion: accepted > 0 ? (sold / accepted) * 100 : 0 },
+        { stage: "Leads", count: totalLeads, conversion: 100 },
+        { stage: "Estimates", count: totalEstimates, conversion: totalLeads > 0 ? (totalEstimates / totalLeads) * 100 : 0 },
+        { stage: "Sent", count: sentEstimates, conversion: totalEstimates > 0 ? (sentEstimates / totalEstimates) * 100 : 0 },
+        { stage: "Accepted", count: acceptedEstimates, conversion: sentEstimates > 0 ? (acceptedEstimates / sentEstimates) * 100 : 0 },
+        { stage: "Customers", count: totalCustomers, conversion: acceptedEstimates > 0 ? (totalCustomers / acceptedEstimates) * 100 : 0 },
+        { stage: "Jobs", count: totalJobs, conversion: totalCustomers > 0 ? (totalJobs / totalCustomers) * 100 : 0 },
       ];
     },
   });
@@ -53,7 +71,7 @@ export function EstimateFunnelChart({ filters }: EstimateFunnelChartProps) {
     return <Skeleton className="h-[300px] w-full" />;
   }
 
-  if (!data) {
+  if (!data || data.every(d => d.count === 0)) {
     return (
       <div className="h-[300px] flex items-center justify-center text-muted-foreground">
         No data for this period
@@ -65,7 +83,7 @@ export function EstimateFunnelChart({ filters }: EstimateFunnelChartProps) {
     <ResponsiveContainer width="100%" height={300}>
       <BarChart data={data}>
         <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="stage" />
+        <XAxis dataKey="stage" tick={{ fontSize: 12 }} />
         <YAxis />
         <Tooltip
           content={({ payload }) => {

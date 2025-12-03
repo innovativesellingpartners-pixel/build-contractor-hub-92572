@@ -9,46 +9,99 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ReportingFilters as Filters } from "@/pages/Reporting";
+import { useEffect } from "react";
 
 interface ReportingFiltersProps {
   filters: Filters;
   onFiltersChange: (filters: Filters) => void;
 }
 
+function getDateRangeValues(value: string): { dateFrom?: string; dateTo?: string } {
+  const now = new Date();
+  let dateFrom: Date | undefined;
+  let dateTo: Date | undefined;
+
+  switch (value) {
+    case "all_time":
+      // No date filters for all time
+      return {};
+    case "today":
+      dateFrom = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      dateTo = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+      break;
+    case "this_week":
+      const startOfWeek = new Date(now);
+      startOfWeek.setDate(now.getDate() - now.getDay());
+      startOfWeek.setHours(0, 0, 0, 0);
+      dateFrom = startOfWeek;
+      dateTo = new Date();
+      break;
+    case "this_month":
+      dateFrom = new Date(now.getFullYear(), now.getMonth(), 1);
+      dateTo = new Date();
+      break;
+    case "last_month":
+      dateFrom = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      dateTo = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+      break;
+    case "this_quarter":
+      const quarter = Math.floor(now.getMonth() / 3);
+      dateFrom = new Date(now.getFullYear(), quarter * 3, 1);
+      dateTo = new Date();
+      break;
+    case "last_quarter":
+      const lastQuarter = Math.floor(now.getMonth() / 3) - 1;
+      const lastQuarterYear = lastQuarter < 0 ? now.getFullYear() - 1 : now.getFullYear();
+      const adjustedLastQuarter = lastQuarter < 0 ? 3 : lastQuarter;
+      dateFrom = new Date(lastQuarterYear, adjustedLastQuarter * 3, 1);
+      dateTo = new Date(lastQuarterYear, adjustedLastQuarter * 3 + 3, 0, 23, 59, 59);
+      break;
+    case "this_year":
+      dateFrom = new Date(now.getFullYear(), 0, 1);
+      dateTo = new Date();
+      break;
+    case "custom":
+      return {};
+  }
+
+  return {
+    dateFrom: dateFrom?.toISOString(),
+    dateTo: dateTo?.toISOString(),
+  };
+}
+
 export function ReportingFilters({ filters, onFiltersChange }: ReportingFiltersProps) {
-  const handleDateRangeChange = (value: string) => {
-    const now = new Date();
-    let dateFrom: Date | undefined;
-    let dateTo: Date | undefined;
-
-    switch (value) {
-      case "today":
-        dateFrom = dateTo = now;
-        break;
-      case "this_week":
-        dateFrom = new Date(now.setDate(now.getDate() - now.getDay()));
-        dateTo = new Date();
-        break;
-      case "this_month":
-        dateFrom = new Date(now.getFullYear(), now.getMonth(), 1);
-        dateTo = new Date();
-        break;
-      case "quarter":
-        const quarter = Math.floor(now.getMonth() / 3);
-        dateFrom = new Date(now.getFullYear(), quarter * 3, 1);
-        dateTo = new Date();
-        break;
-      case "year":
-        dateFrom = new Date(now.getFullYear(), 0, 1);
-        dateTo = new Date();
-        break;
+  // Initialize date filters on mount if not already set
+  useEffect(() => {
+    if (filters.dateRange && !filters.dateFrom && !filters.dateTo && filters.dateRange !== "all_time" && filters.dateRange !== "custom") {
+      const dates = getDateRangeValues(filters.dateRange);
+      if (dates.dateFrom || dates.dateTo) {
+        onFiltersChange({
+          ...filters,
+          ...dates,
+        });
+      }
     }
+  }, []);
 
+  const handleDateRangeChange = (value: string) => {
+    const dates = getDateRangeValues(value);
     onFiltersChange({
       ...filters,
       dateRange: value,
-      dateFrom: dateFrom?.toISOString(),
-      dateTo: dateTo?.toISOString(),
+      dateFrom: dates.dateFrom,
+      dateTo: dates.dateTo,
+    });
+  };
+
+  const handleReset = () => {
+    // Reset to all time so user can see all their data
+    onFiltersChange({ 
+      dateRange: "all_time",
+      dateFrom: undefined,
+      dateTo: undefined,
+      tradeType: undefined,
+      status: undefined,
     });
   };
 
@@ -62,11 +115,14 @@ export function ReportingFilters({ filters, onFiltersChange }: ReportingFiltersP
               <SelectValue placeholder="Select date range" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="all_time">All Time</SelectItem>
               <SelectItem value="today">Today</SelectItem>
               <SelectItem value="this_week">This Week</SelectItem>
               <SelectItem value="this_month">This Month</SelectItem>
-              <SelectItem value="quarter">Quarter to Date</SelectItem>
-              <SelectItem value="year">Year to Date</SelectItem>
+              <SelectItem value="last_month">Last Month</SelectItem>
+              <SelectItem value="this_quarter">This Quarter</SelectItem>
+              <SelectItem value="last_quarter">Last Quarter</SelectItem>
+              <SelectItem value="this_year">Year to Date</SelectItem>
               <SelectItem value="custom">Custom Range</SelectItem>
             </SelectContent>
           </Select>
@@ -74,8 +130,8 @@ export function ReportingFilters({ filters, onFiltersChange }: ReportingFiltersP
 
         <div className="flex-1 min-w-[200px]">
           <Select
-            value={filters.tradeType}
-            onValueChange={(value) => onFiltersChange({ ...filters, tradeType: value })}
+            value={filters.tradeType || "all"}
+            onValueChange={(value) => onFiltersChange({ ...filters, tradeType: value === "all" ? undefined : value })}
           >
             <SelectTrigger>
               <SelectValue placeholder="All Trades" />
@@ -87,14 +143,17 @@ export function ReportingFilters({ filters, onFiltersChange }: ReportingFiltersP
               <SelectItem value="hvac">HVAC</SelectItem>
               <SelectItem value="roofing">Roofing</SelectItem>
               <SelectItem value="concrete">Concrete</SelectItem>
+              <SelectItem value="general">General Contracting</SelectItem>
+              <SelectItem value="painting">Painting</SelectItem>
+              <SelectItem value="landscaping">Landscaping</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <div className="flex-1 min-w-[200px]">
           <Select
-            value={filters.status}
-            onValueChange={(value) => onFiltersChange({ ...filters, status: value })}
+            value={filters.status || "all"}
+            onValueChange={(value) => onFiltersChange({ ...filters, status: value === "all" ? undefined : value })}
           >
             <SelectTrigger>
               <SelectValue placeholder="All Statuses" />
@@ -104,12 +163,13 @@ export function ReportingFilters({ filters, onFiltersChange }: ReportingFiltersP
               <SelectItem value="draft">Draft</SelectItem>
               <SelectItem value="sent">Sent</SelectItem>
               <SelectItem value="accepted">Accepted</SelectItem>
+              <SelectItem value="sold">Sold</SelectItem>
               <SelectItem value="rejected">Rejected</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
-        <Button variant="outline" onClick={() => onFiltersChange({ dateRange: "this_month" })}>
+        <Button variant="outline" onClick={handleReset}>
           Reset Filters
         </Button>
       </div>

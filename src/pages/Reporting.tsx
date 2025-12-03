@@ -33,8 +33,9 @@ export interface ReportingFilters {
 }
 
 export default function Reporting() {
+  // Default to "all_time" so users see all their data initially
   const [filters, setFilters] = useState<ReportingFilters>({
-    dateRange: "this_month",
+    dateRange: "all_time",
   });
 
   // Fetch all report data for export
@@ -57,6 +58,7 @@ export default function Reporting() {
   // Prepare report data for export
   const reportData = useMemo(() => {
     const dateRangeLabels: Record<string, string> = {
+      all_time: "All Time",
       this_week: "This Week",
       this_month: "This Month",
       this_quarter: "This Quarter",
