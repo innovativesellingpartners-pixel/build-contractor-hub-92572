@@ -1,11 +1,14 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FloatingTrialButton } from '@/components/FloatingTrialButton';
-import { Youtube, FileText, Mic } from 'lucide-react';
+import { Youtube, FileText, Mic, Play } from 'lucide-react';
 import ct1Logo from '@/assets/ct1-logo-main.png';
+import podcastThumbnail from '@/assets/podcast-thumbnail.png';
 
 export const BlogPodcast = () => {
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   // Placeholder data - will be replaced with actual content
   const podcastEpisodes = [
     {
@@ -110,13 +113,31 @@ export const BlogPodcast = () => {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             {/* Featured Video */}
             <Card className="overflow-hidden hover:shadow-lg transition-shadow md:col-span-2 lg:col-span-3">
-              <div className="aspect-video">
-                <iframe
-                  src="https://drive.google.com/file/d/1YIwwe3zaeu9Mcj4ftMuw3Kwu6PGdov2M/preview?t=784s"
-                  className="w-full h-full"
-                  allow="autoplay"
-                  title="CT1 Featured Episode"
-                />
+              <div className="aspect-video relative">
+                {isVideoPlaying ? (
+                  <iframe
+                    src="https://drive.google.com/file/d/1YIwwe3zaeu9Mcj4ftMuw3Kwu6PGdov2M/preview?t=784s"
+                    className="w-full h-full"
+                    allow="autoplay"
+                    title="CT1 Featured Episode"
+                  />
+                ) : (
+                  <button
+                    onClick={() => setIsVideoPlaying(true)}
+                    className="w-full h-full relative group cursor-pointer"
+                  >
+                    <img 
+                      src={podcastThumbnail} 
+                      alt="CT1 Podcast - Click to play"
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                      <div className="w-20 h-20 rounded-full bg-primary flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <Play className="h-10 w-10 text-primary-foreground ml-1" />
+                      </div>
+                    </div>
+                  </button>
+                )}
               </div>
               <CardHeader>
                 <CardTitle className="text-lg">Featured Episode</CardTitle>
