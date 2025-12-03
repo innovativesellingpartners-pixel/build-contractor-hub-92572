@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar, Plug, Check, Loader2, X, RefreshCw, Clock, MapPin, ChevronDown, ChevronUp } from 'lucide-react';
+import { Calendar, Plug, Check, Loader2, X, RefreshCw, Clock, MapPin, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { format, parseISO } from 'date-fns';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 interface CalendarConnection {
   id: string;
@@ -38,6 +39,7 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
   const [loadingEvents, setLoadingEvents] = useState(false);
   const [connecting, setConnecting] = useState<string | null>(null);
   const [connectionsExpanded, setConnectionsExpanded] = useState(false);
+  const [deletingEventId, setDeletingEventId] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -143,6 +145,36 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
       setEvents([]);
     } catch (error: any) {
       toast.error('Failed to disconnect');
+    }
+  };
+
+  const handleDeleteEvent = async (event: CalendarEvent) => {
+    setDeletingEventId(event.id);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error('Please sign in first');
+        return;
+      }
+
+      const { error } = await supabase.functions.invoke('delete-calendar-event', {
+        body: { 
+          eventId: event.id, 
+          provider: event.provider,
+          calendarEmail: event.calendar_email 
+        },
+        headers: { Authorization: `Bearer ${session.access_token}` }
+      });
+
+      if (error) throw error;
+      
+      setEvents(prev => prev.filter(e => e.id !== event.id));
+      toast.success('Event deleted');
+    } catch (error: any) {
+      console.error('Error deleting event:', error);
+      toast.error('Failed to delete event');
+    } finally {
+      setDeletingEventId(null);
     }
   };
 
@@ -436,6 +468,36 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
                                 {event.calendar_email}
                               </p>
                             </div>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon"
+                                  className="text-muted-foreground hover:text-destructive flex-shrink-0"
+                                  disabled={deletingEventId === event.id}
+                                >
+                                  {deletingEventId === event.id ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <Trash2 className="h-4 w-4" />
+                                  )}
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Delete Event</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Are you sure you want to delete "{event.summary || 'this event'}"? This will also remove it from your {event.provider === 'google' ? 'Google' : 'Outlook'} Calendar.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => handleDeleteEvent(event)} className="bg-destructive hover:bg-destructive/90">
+                                    Delete
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
                           </div>
                         </Card>
                       ))}
