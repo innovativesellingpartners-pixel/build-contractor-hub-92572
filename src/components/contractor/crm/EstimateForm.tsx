@@ -1256,8 +1256,8 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
             </CardContent>
           </Card>
 
-          {/* Fixed Bottom Bar with Total and Actions */}
-          <div className="sticky bottom-0 bg-background border-t p-4 shadow-lg">
+          {/* Total and Actions */}
+          <div className="bg-card border rounded-lg p-4 mt-4">
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
               <div className="text-xl font-bold text-center sm:text-left">
                 Grand Total: <span className="text-primary">${totals.grandTotal.toFixed(2)}</span>
