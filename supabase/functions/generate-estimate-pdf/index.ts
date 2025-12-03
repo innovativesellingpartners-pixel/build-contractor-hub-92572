@@ -26,7 +26,6 @@ function formatDate(dateStr: string | null | undefined) {
   });
 }
 
-// Word wrap helper
 function wrapText(text: string, maxCharsPerLine: number): string[] {
   const words = text.split(' ');
   const lines: string[] = [];
@@ -107,10 +106,9 @@ const handler = async (req: Request): Promise<Response> => {
       .single();
 
     const companyName = profile?.company_name || "CT1 Constructeam";
-    const logoUrl = profile?.logo_url || null;
     const phone = profile?.phone || "";
     const contactEmail = profile?.contact_email || "";
-    const address = [profile?.business_address, profile?.city, profile?.state, profile?.zip_code]
+    const businessAddress = [profile?.business_address, profile?.city, profile?.state, profile?.zip_code]
       .filter(Boolean)
       .join(", ");
 
@@ -122,214 +120,233 @@ const handler = async (req: Request): Promise<Response> => {
     let page = pdfDoc.addPage([612, 792]); // US Letter
     const { height, width } = page.getSize();
 
-    const margin = 48;
+    const margin = 40;
     let cursorY = height - margin;
 
     // Fonts
     const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
     const fontReg = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
-    // Colors - Premium palette
-    const primaryRed = rgb(0.878, 0.141, 0.141); // #E02424
-    const darkGray = rgb(0.067, 0.067, 0.067);   // #111
-    const medGray = rgb(0.294, 0.294, 0.294);    // #4B4B4B
-    const lightGray = rgb(0.6, 0.6, 0.6);
-    const borderGray = rgb(0.88, 0.88, 0.88);
-    const bgLight = rgb(0.98, 0.98, 0.98);
+    // Premium Color Palette - Deep Navy & Gold
+    const primaryNavy = rgb(0.086, 0.118, 0.173);      // #161E2C - Deep navy
+    const accentGold = rgb(0.835, 0.624, 0.278);       // #D59F47 - Classic gold
+    const darkText = rgb(0.133, 0.133, 0.133);         // #222222
+    const mediumText = rgb(0.4, 0.4, 0.4);             // #666666
+    const lightText = rgb(0.6, 0.6, 0.6);              // #999999
+    const borderColor = rgb(0.85, 0.85, 0.85);         // #D9D9D9
+    const headerBg = rgb(0.957, 0.945, 0.922);         // #F4F1EB - Warm cream
+    const white = rgb(1, 1, 1);
 
-    // ===== HEADER BAR =====
+    // ===== HEADER BAND =====
     page.drawRectangle({
       x: 0,
-      y: height - 80,
+      y: height - 100,
       width: width,
-      height: 80,
-      color: primaryRed,
+      height: 100,
+      color: primaryNavy,
     });
 
-    // Company Name in header
+    // Company Name
     page.drawText(companyName.toUpperCase(), {
       x: margin,
-      y: height - 50,
-      size: 22,
+      y: height - 55,
+      size: 24,
       font: fontBold,
-      color: rgb(1, 1, 1),
+      color: white,
     });
 
-    // "ESTIMATE" label right side
-    page.drawText("ESTIMATE", {
-      x: width - margin - 90,
-      y: height - 50,
-      size: 16,
-      font: fontBold,
-      color: rgb(1, 1, 1),
+    // Professional Services tagline
+    page.drawText("PROFESSIONAL CONTRACTOR SERVICES", {
+      x: margin,
+      y: height - 75,
+      size: 9,
+      font: fontReg,
+      color: rgb(0.7, 0.7, 0.7),
     });
 
-    cursorY = height - 110;
+    // ESTIMATE label (right side, with gold accent)
+    const estimateLabel = "ESTIMATE";
+    page.drawRectangle({
+      x: width - margin - 120,
+      y: height - 70,
+      width: 110,
+      height: 32,
+      color: accentGold,
+    });
+    page.drawText(estimateLabel, {
+      x: width - margin - 95,
+      y: height - 60,
+      size: 14,
+      font: fontBold,
+      color: primaryNavy,
+    });
+
+    cursorY = height - 130;
 
     // ===== ESTIMATE INFO BAR =====
     page.drawRectangle({
       x: margin,
-      y: cursorY - 60,
+      y: cursorY - 55,
       width: width - margin * 2,
-      height: 60,
-      color: bgLight,
-      borderColor: borderGray,
-      borderWidth: 1,
+      height: 55,
+      color: headerBg,
+      borderColor: borderColor,
+      borderWidth: 0.5,
     });
 
-    const infoY = cursorY - 25;
-    const col1X = margin + 20;
-    const col2X = margin + 180;
-    const col3X = margin + 340;
+    const infoY = cursorY - 18;
+    const colWidth = (width - margin * 2) / 4;
 
     // Estimate Number
-    page.drawText("ESTIMATE #", { x: col1X, y: infoY, size: 8, font: fontReg, color: lightGray });
-    page.drawText(estimate.estimate_number || "—", { x: col1X, y: infoY - 14, size: 11, font: fontBold, color: darkGray });
+    page.drawText("REFERENCE NO.", { x: margin + 15, y: infoY, size: 7, font: fontReg, color: lightText });
+    page.drawText(estimate.estimate_number || "—", { x: margin + 15, y: infoY - 14, size: 11, font: fontBold, color: darkText });
+
+    // Client Name
+    page.drawText("CLIENT NAME", { x: margin + colWidth + 15, y: infoY, size: 7, font: fontReg, color: lightText });
+    page.drawText((estimate.client_name || "—").substring(0, 25), { x: margin + colWidth + 15, y: infoY - 14, size: 11, font: fontBold, color: darkText });
 
     // Date Issued
-    page.drawText("DATE ISSUED", { x: col2X, y: infoY, size: 8, font: fontReg, color: lightGray });
-    page.drawText(formatDate(estimate.created_at), { x: col2X, y: infoY - 14, size: 11, font: fontBold, color: darkGray });
+    page.drawText("DATE ISSUE", { x: margin + colWidth * 2 + 15, y: infoY, size: 7, font: fontReg, color: lightText });
+    page.drawText(formatDate(estimate.created_at), { x: margin + colWidth * 2 + 15, y: infoY - 14, size: 11, font: fontBold, color: darkText });
 
     // Valid Until
-    page.drawText("VALID UNTIL", { x: col3X, y: infoY, size: 8, font: fontReg, color: lightGray });
-    page.drawText(formatDate(estimate.valid_until) || "30 Days", { x: col3X, y: infoY - 14, size: 11, font: fontBold, color: darkGray });
+    page.drawText("VALID UNTIL", { x: margin + colWidth * 3 + 15, y: infoY, size: 7, font: fontReg, color: lightText });
+    page.drawText(formatDate(estimate.valid_until) || "30 Days", { x: margin + colWidth * 3 + 15, y: infoY - 14, size: 11, font: fontBold, color: darkText });
 
-    cursorY -= 90;
+    cursorY -= 80;
 
-    // ===== TWO COLUMN SECTION =====
+    // ===== CLIENT & PROJECT INFO =====
     const leftColX = margin;
-    const rightColX = width / 2 + 20;
+    const rightColX = width / 2 + 10;
 
-    // PREPARED FOR
-    page.drawText("PREPARED FOR", { x: leftColX, y: cursorY, size: 9, font: fontBold, color: primaryRed });
-    cursorY -= 18;
+    // CLIENT DETAILS
+    page.drawText("CLIENT DETAILS", { x: leftColX, y: cursorY, size: 8, font: fontBold, color: accentGold });
+    cursorY -= 14;
 
+    let clientY = cursorY;
     if (estimate.client_name) {
-      page.drawText(estimate.client_name, { x: leftColX, y: cursorY, size: 13, font: fontBold, color: darkGray });
-      cursorY -= 16;
+      page.drawText(estimate.client_name, { x: leftColX, y: clientY, size: 11, font: fontBold, color: darkText });
+      clientY -= 14;
     }
-
-    let clientInfoY = cursorY;
     if (estimate.client_email) {
-      page.drawText(estimate.client_email, { x: leftColX, y: clientInfoY, size: 10, font: fontReg, color: medGray });
-      clientInfoY -= 14;
+      page.drawText(estimate.client_email, { x: leftColX, y: clientY, size: 9, font: fontReg, color: mediumText });
+      clientY -= 12;
     }
     if (estimate.client_phone) {
-      page.drawText(estimate.client_phone, { x: leftColX, y: clientInfoY, size: 10, font: fontReg, color: medGray });
-      clientInfoY -= 14;
+      page.drawText(estimate.client_phone, { x: leftColX, y: clientY, size: 9, font: fontReg, color: mediumText });
+      clientY -= 12;
     }
     if (estimate.client_address) {
-      page.drawText(estimate.client_address, { x: leftColX, y: clientInfoY, size: 10, font: fontReg, color: medGray });
-      clientInfoY -= 14;
+      const addrLines = wrapText(estimate.client_address, 40);
+      for (const line of addrLines.slice(0, 2)) {
+        page.drawText(line, { x: leftColX, y: clientY, size: 9, font: fontReg, color: mediumText });
+        clientY -= 12;
+      }
     }
 
     // PROJECT DETAILS (right column)
-    let rightY = cursorY + 18;
-    page.drawText("PROJECT DETAILS", { x: rightColX, y: rightY, size: 9, font: fontBold, color: primaryRed });
-    rightY -= 18;
+    let rightY = cursorY + 14;
+    page.drawText("PROJECT DETAILS", { x: rightColX, y: rightY, size: 8, font: fontBold, color: accentGold });
+    rightY -= 14;
 
-    page.drawText(estimate.title || "Project", { x: rightColX, y: rightY, size: 13, font: fontBold, color: darkGray });
-    rightY -= 16;
+    page.drawText((estimate.title || "Project").substring(0, 35), { x: rightColX, y: rightY, size: 11, font: fontBold, color: darkText });
+    rightY -= 14;
 
     if (estimate.site_address) {
-      page.drawText(estimate.site_address, { x: rightColX, y: rightY, size: 10, font: fontReg, color: medGray });
-      rightY -= 14;
+      const siteLines = wrapText(estimate.site_address, 40);
+      for (const line of siteLines.slice(0, 2)) {
+        page.drawText(line, { x: rightColX, y: rightY, size: 9, font: fontReg, color: mediumText });
+        rightY -= 12;
+      }
     }
     if (estimate.trade_type) {
-      page.drawText(`Trade: ${estimate.trade_type}`, { x: rightColX, y: rightY, size: 10, font: fontReg, color: medGray });
-      rightY -= 14;
+      page.drawText(`Trade: ${estimate.trade_type}`, { x: rightColX, y: rightY, size: 9, font: fontReg, color: mediumText });
+      rightY -= 12;
     }
 
-    cursorY = Math.min(clientInfoY, rightY) - 25;
+    cursorY = Math.min(clientY, rightY) - 20;
 
-    // ===== PROJECT DESCRIPTION =====
-    if (estimate.project_description?.trim()) {
-      // Divider
-      page.drawLine({
-        start: { x: margin, y: cursorY + 5 },
-        end: { x: width - margin, y: cursorY + 5 },
-        thickness: 1,
-        color: borderGray,
-      });
-      cursorY -= 15;
-
-      page.drawText("PROJECT DESCRIPTION", { x: margin, y: cursorY, size: 9, font: fontBold, color: primaryRed });
-      cursorY -= 16;
-
-      const descLines = wrapText(String(estimate.project_description), 95);
-      for (const line of descLines.slice(0, 4)) {
-        page.drawText(line, { x: margin, y: cursorY, size: 10, font: fontReg, color: medGray });
-        cursorY -= 13;
-      }
-      cursorY -= 10;
-    }
-
-    // ===== LINE ITEMS TABLE =====
-    // Divider
-    page.drawLine({
-      start: { x: margin, y: cursorY + 5 },
-      end: { x: width - margin, y: cursorY + 5 },
-      thickness: 1,
-      color: borderGray,
+    // ===== COST DETAILS SECTION =====
+    page.drawRectangle({
+      x: margin,
+      y: cursorY - 22,
+      width: width - margin * 2,
+      height: 22,
+      color: accentGold,
     });
-    cursorY -= 15;
 
-    page.drawText("LINE ITEMS", { x: margin, y: cursorY, size: 9, font: fontBold, color: primaryRed });
-    cursorY -= 20;
+    page.drawText("COST DETAILS", { x: margin + 12, y: cursorY - 15, size: 10, font: fontBold, color: primaryNavy });
+    cursorY -= 22;
+
+    // Table header
+    page.drawRectangle({
+      x: margin,
+      y: cursorY - 24,
+      width: width - margin * 2,
+      height: 24,
+      color: headerBg,
+      borderColor: borderColor,
+      borderWidth: 0.5,
+    });
 
     const tableX = margin;
     const tableWidth = width - margin * 2;
+    const descColWidth = tableWidth * 0.45;
+    const qtyColX = tableX + descColWidth;
+    const unitColX = qtyColX + 60;
+    const rateColX = unitColX + 60;
+    const amtColX = tableX + tableWidth - 70;
 
-    // Table header background
-    page.drawRectangle({
-      x: tableX,
-      y: cursorY - 22,
-      width: tableWidth,
-      height: 22,
-      color: darkGray,
-    });
+    page.drawText("DESCRIPTION", { x: tableX + 12, y: cursorY - 16, size: 8, font: fontBold, color: darkText });
+    page.drawText("QTY", { x: qtyColX, y: cursorY - 16, size: 8, font: fontBold, color: darkText });
+    page.drawText("UNIT", { x: unitColX, y: cursorY - 16, size: 8, font: fontBold, color: darkText });
+    page.drawText("RATE", { x: rateColX, y: cursorY - 16, size: 8, font: fontBold, color: darkText });
+    page.drawText("AMOUNT", { x: amtColX, y: cursorY - 16, size: 8, font: fontBold, color: darkText });
 
-    // Header text
-    page.drawText("DESCRIPTION", { x: tableX + 12, y: cursorY - 15, size: 9, font: fontBold, color: rgb(1, 1, 1) });
-    page.drawText("QTY", { x: tableX + tableWidth - 180, y: cursorY - 15, size: 9, font: fontBold, color: rgb(1, 1, 1) });
-    page.drawText("RATE", { x: tableX + tableWidth - 120, y: cursorY - 15, size: 9, font: fontBold, color: rgb(1, 1, 1) });
-    page.drawText("AMOUNT", { x: tableX + tableWidth - 60, y: cursorY - 15, size: 9, font: fontBold, color: rgb(1, 1, 1) });
+    cursorY -= 24;
 
-    cursorY -= 22;
-
-    // Table rows
+    // Line items
     const lineItems = (estimate.line_items || []).filter((li: any) => li?.included !== false);
     let rowIndex = 0;
 
     for (const item of lineItems) {
-      // Check if we need a new page
-      if (cursorY < 180) {
+      if (cursorY < 200) {
         page = pdfDoc.addPage([612, 792]);
         cursorY = 792 - margin;
       }
 
-      // Alternate row background
+      // Alternating row background
       if (rowIndex % 2 === 0) {
         page.drawRectangle({
           x: tableX,
-          y: cursorY - 24,
+          y: cursorY - 22,
           width: tableWidth,
-          height: 24,
-          color: bgLight,
+          height: 22,
+          color: rgb(0.98, 0.98, 0.98),
         });
       }
 
-      const desc = String(item.item_description || "Item").substring(0, 50);
+      // Row border
+      page.drawLine({
+        start: { x: tableX, y: cursorY - 22 },
+        end: { x: tableX + tableWidth, y: cursorY - 22 },
+        thickness: 0.5,
+        color: borderColor,
+      });
+
+      const desc = String(item.item_description || "Item").substring(0, 45);
       const qty = String(item.quantity || 1);
+      const unit = String(item.unit || "Each").substring(0, 8);
       const rate = formatCurrency(item.unit_cost || 0);
       const lineTotal = item.line_total ?? (item.unit_cost || 0) * (item.quantity || 1);
 
-      page.drawText(desc, { x: tableX + 12, y: cursorY - 16, size: 10, font: fontReg, color: darkGray });
-      page.drawText(qty, { x: tableX + tableWidth - 180, y: cursorY - 16, size: 10, font: fontReg, color: darkGray });
-      page.drawText(rate, { x: tableX + tableWidth - 120, y: cursorY - 16, size: 10, font: fontReg, color: darkGray });
-      page.drawText(formatCurrency(lineTotal), { x: tableX + tableWidth - 60, y: cursorY - 16, size: 10, font: fontBold, color: darkGray });
+      page.drawText(desc, { x: tableX + 12, y: cursorY - 15, size: 9, font: fontReg, color: darkText });
+      page.drawText(qty, { x: qtyColX, y: cursorY - 15, size: 9, font: fontReg, color: darkText });
+      page.drawText(unit, { x: unitColX, y: cursorY - 15, size: 9, font: fontReg, color: darkText });
+      page.drawText(rate, { x: rateColX, y: cursorY - 15, size: 9, font: fontReg, color: darkText });
+      page.drawText(formatCurrency(lineTotal), { x: amtColX, y: cursorY - 15, size: 9, font: fontBold, color: darkText });
 
-      cursorY -= 24;
+      cursorY -= 22;
       rowIndex++;
     }
 
@@ -337,87 +354,130 @@ const handler = async (req: Request): Promise<Response> => {
     page.drawLine({
       start: { x: tableX, y: cursorY },
       end: { x: tableX + tableWidth, y: cursorY },
-      thickness: 2,
-      color: darkGray,
+      thickness: 1.5,
+      color: primaryNavy,
     });
 
-    cursorY -= 30;
+    cursorY -= 25;
 
-    // ===== TOTALS SECTION =====
-    const totalsWidth = 220;
-    const totalsX = width - margin - totalsWidth;
+    // ===== ESTIMATE SUMMARY =====
+    page.drawRectangle({
+      x: margin,
+      y: cursorY - 22,
+      width: width - margin * 2,
+      height: 22,
+      color: accentGold,
+    });
+
+    page.drawText("ESTIMATE SUMMARY", { x: margin + 12, y: cursorY - 15, size: 10, font: fontBold, color: primaryNavy });
+    cursorY -= 22;
+
+    const summaryX = width / 2;
+    const summaryWidth = width / 2 - margin;
     const cs = estimate.cost_summary || {};
 
+    // Summary box
+    page.drawRectangle({
+      x: summaryX,
+      y: cursorY - 100,
+      width: summaryWidth,
+      height: 100,
+      color: headerBg,
+      borderColor: borderColor,
+      borderWidth: 0.5,
+    });
+
+    let summaryY = cursorY - 18;
+
     // Subtotal
-    const subtotal = cs.subtotal || estimate.subtotal || 0;
-    if (subtotal > 0) {
-      page.drawText("Subtotal", { x: totalsX, y: cursorY, size: 10, font: fontReg, color: medGray });
-      page.drawText(formatCurrency(subtotal), { x: totalsX + totalsWidth - 80, y: cursorY, size: 10, font: fontReg, color: darkGray });
-      cursorY -= 18;
-    }
+    const subtotal = cs.subtotal || estimate.subtotal || lineItems.reduce((sum: number, li: any) => {
+      return sum + ((li.line_total ?? (li.unit_cost || 0) * (li.quantity || 1)) || 0);
+    }, 0);
+
+    page.drawText("Subtotal", { x: summaryX + 15, y: summaryY, size: 9, font: fontReg, color: mediumText });
+    page.drawText(formatCurrency(subtotal), { x: summaryX + summaryWidth - 80, y: summaryY, size: 9, font: fontReg, color: darkText });
+    summaryY -= 16;
 
     // Tax
     const taxAmount = cs.tax_and_fees || estimate.tax_amount || 0;
-    if (taxAmount > 0) {
-      page.drawText("Tax", { x: totalsX, y: cursorY, size: 10, font: fontReg, color: medGray });
-      page.drawText(formatCurrency(taxAmount), { x: totalsX + totalsWidth - 80, y: cursorY, size: 10, font: fontReg, color: darkGray });
-      cursorY -= 18;
+    const taxRate = estimate.sales_tax_rate_percent || estimate.tax_rate || 0;
+    if (taxAmount > 0 || taxRate > 0) {
+      page.drawText(`Sales Tax (${taxRate}%)`, { x: summaryX + 15, y: summaryY, size: 9, font: fontReg, color: mediumText });
+      page.drawText(formatCurrency(taxAmount), { x: summaryX + summaryWidth - 80, y: summaryY, size: 9, font: fontReg, color: darkText });
+      summaryY -= 16;
     }
 
-    // Total box
-    page.drawRectangle({
-      x: totalsX - 10,
-      y: cursorY - 35,
-      width: totalsWidth + 20,
-      height: 40,
-      color: primaryRed,
+    // Permit fee if any
+    if (estimate.permit_fee && estimate.permit_fee > 0) {
+      page.drawText("Permit Fee", { x: summaryX + 15, y: summaryY, size: 9, font: fontReg, color: mediumText });
+      page.drawText(formatCurrency(estimate.permit_fee), { x: summaryX + summaryWidth - 80, y: summaryY, size: 9, font: fontReg, color: darkText });
+      summaryY -= 16;
+    }
+
+    // Divider line before total
+    page.drawLine({
+      start: { x: summaryX + 15, y: summaryY + 6 },
+      end: { x: summaryX + summaryWidth - 15, y: summaryY + 6 },
+      thickness: 1,
+      color: primaryNavy,
     });
 
-    page.drawText("TOTAL", { x: totalsX, y: cursorY - 22, size: 12, font: fontBold, color: rgb(1, 1, 1) });
-    const totalStr = formatCurrency(estimate.total_amount || estimate.grand_total || 0);
-    page.drawText(totalStr, { x: totalsX + totalsWidth - 90, y: cursorY - 22, size: 16, font: fontBold, color: rgb(1, 1, 1) });
+    // Total
+    const totalAmount = estimate.total_amount || estimate.grand_total || subtotal + taxAmount;
+    page.drawText("TOTAL AMOUNT DUE", { x: summaryX + 15, y: summaryY - 8, size: 10, font: fontBold, color: primaryNavy });
+    page.drawText(formatCurrency(totalAmount), { x: summaryX + summaryWidth - 90, y: summaryY - 8, size: 12, font: fontBold, color: primaryNavy });
 
-    cursorY -= 60;
-
-    // Deposit required
-    if (estimate.required_deposit) {
-      page.drawText(`Deposit Required: ${formatCurrency(estimate.required_deposit)}`, {
-        x: totalsX,
-        y: cursorY,
-        size: 10,
-        font: fontBold,
-        color: primaryRed,
-      });
-      cursorY -= 25;
+    // Deposit required (left side)
+    if (estimate.required_deposit && estimate.required_deposit > 0) {
+      page.drawText("DEPOSIT REQUIRED", { x: margin, y: cursorY - 30, size: 9, font: fontBold, color: accentGold });
+      page.drawText(formatCurrency(estimate.required_deposit), { x: margin, y: cursorY - 45, size: 14, font: fontBold, color: primaryNavy });
+      
+      if (estimate.required_deposit_percent) {
+        page.drawText(`(${estimate.required_deposit_percent}% of total)`, { x: margin, y: cursorY - 60, size: 8, font: fontReg, color: mediumText });
+      }
     }
 
-    // ===== CLICKABLE CTA BUTTON =====
-    if (includePaymentLink) {
-      const buttonW = 260;
-      const buttonH = 44;
+    cursorY -= 120;
+
+    // ===== NOTE/REMARKS =====
+    page.drawText("NOTE:", { x: margin, y: cursorY, size: 8, font: fontBold, color: darkText });
+    cursorY -= 12;
+
+    const noteText = estimate.assumptions_and_exclusions || 
+      `This estimate is valid for ${estimate.valid_until ? formatDate(estimate.valid_until) : '30 days'} from date of issue. We cannot guarantee that the price of labor or materials will stay the same. We provide excellent service at competitive prices.`;
+    
+    const noteLines = wrapText(noteText, 100);
+    for (const line of noteLines.slice(0, 3)) {
+      page.drawText(line, { x: margin, y: cursorY, size: 8, font: fontReg, color: mediumText });
+      cursorY -= 11;
+    }
+
+    cursorY -= 15;
+
+    // ===== CTA BUTTON =====
+    if (includePaymentLink && cursorY > 120) {
+      const buttonW = 240;
+      const buttonH = 38;
       const buttonX = (width - buttonW) / 2;
       const buttonY = cursorY - buttonH;
 
-      // Button background
       page.drawRectangle({
         x: buttonX,
         y: buttonY,
         width: buttonW,
         height: buttonH,
-        color: primaryRed,
+        color: accentGold,
       });
 
-      // Button text
-      const buttonText = "VIEW, SIGN & PAY ONLINE";
-      page.drawText(buttonText, {
-        x: buttonX + 32,
-        y: buttonY + 16,
-        size: 13,
+      page.drawText("VIEW, SIGN & PAY ONLINE", {
+        x: buttonX + 38,
+        y: buttonY + 14,
+        size: 11,
         font: fontBold,
-        color: rgb(1, 1, 1),
+        color: primaryNavy,
       });
 
-      // Create clickable link annotation using pdf-lib's proper method
+      // Link annotation
       const linkAnnotation = pdfDoc.context.obj({
         Type: 'Annot',
         Subtype: 'Link',
@@ -430,7 +490,6 @@ const handler = async (req: Request): Promise<Response> => {
         },
       });
       
-      // Get or create annotations array on the page
       const existingAnnots = page.node.get(pdfDoc.context.obj('Annots'));
       if (existingAnnots) {
         (existingAnnots as any).push(linkAnnotation);
@@ -438,115 +497,99 @@ const handler = async (req: Request): Promise<Response> => {
         page.node.set(pdfDoc.context.obj('Annots'), pdfDoc.context.obj([linkAnnotation]));
       }
 
-      cursorY = buttonY - 20;
+      cursorY = buttonY - 15;
 
-      // URL hint
-      page.drawText("Click the button above or visit:", {
-        x: margin,
-        y: cursorY,
-        size: 8,
-        font: fontReg,
-        color: lightGray,
-      });
-      cursorY -= 12;
       page.drawText(publicUrl, {
         x: margin,
         y: cursorY,
-        size: 8,
+        size: 7,
         font: fontReg,
-        color: rgb(0.2, 0.4, 0.8),
+        color: lightText,
       });
 
-      cursorY -= 30;
+      cursorY -= 20;
     }
 
-    // ===== TERMS & CONDITIONS =====
-    if (cursorY > 150) {
+    // ===== SIGNATURE SECTION =====
+    if (cursorY > 80) {
       page.drawLine({
-        start: { x: margin, y: cursorY + 5 },
-        end: { x: width - margin, y: cursorY + 5 },
-        thickness: 1,
-        color: borderGray,
+        start: { x: margin, y: cursorY },
+        end: { x: width - margin, y: cursorY },
+        thickness: 0.5,
+        color: borderColor,
       });
-      cursorY -= 15;
+      cursorY -= 25;
 
-      page.drawText("TERMS & CONDITIONS", { x: margin, y: cursorY, size: 9, font: fontBold, color: primaryRed });
-      cursorY -= 16;
+      // Prepared By
+      page.drawLine({
+        start: { x: margin, y: cursorY },
+        end: { x: margin + 180, y: cursorY },
+        thickness: 0.5,
+        color: darkText,
+      });
+      page.drawText("PREPARED BY", { x: margin, y: cursorY - 12, size: 7, font: fontReg, color: lightText });
 
-      const agreementText = "This estimate constitutes a binding agreement between the customer and the contractor. By accepting this proposal, the customer acknowledges that they have read, understood, and agreed to all terms, conditions, and pricing stated herein, and accepts full legal responsibility for payment in accordance with the agreed terms. The contractor provides a minimum two (2) year labor warranty covering workmanship under normal use and conditions; this warranty excludes damage caused by misuse, neglect, alteration, or acts of nature.";
-      
-      const agreementLines = wrapText(agreementText, 100);
-      for (const line of agreementLines.slice(0, 6)) {
-        page.drawText(line, { x: margin, y: cursorY, size: 8, font: fontReg, color: medGray });
-        cursorY -= 11;
-      }
+      // Signature
+      page.drawLine({
+        start: { x: margin + 210, y: cursorY },
+        end: { x: margin + 390, y: cursorY },
+        thickness: 0.5,
+        color: darkText,
+      });
+      page.drawText("SIGNATURE", { x: margin + 210, y: cursorY - 12, size: 7, font: fontReg, color: lightText });
+
+      // Date
+      page.drawLine({
+        start: { x: margin + 420, y: cursorY },
+        end: { x: width - margin, y: cursorY },
+        thickness: 0.5,
+        color: darkText,
+      });
+      page.drawText("DATE", { x: margin + 420, y: cursorY - 12, size: 7, font: fontReg, color: lightText });
     }
 
     // ===== FOOTER =====
-    const footerY = 35;
+    const footerY = 25;
     page.drawLine({
-      start: { x: margin, y: footerY + 15 },
-      end: { x: width - margin, y: footerY + 15 },
-      thickness: 1,
-      color: borderGray,
+      start: { x: margin, y: footerY + 12 },
+      end: { x: width - margin, y: footerY + 12 },
+      thickness: 0.5,
+      color: borderColor,
     });
 
-    // Footer content
-    const footerParts = [companyName];
+    const footerParts = [];
+    if (businessAddress) footerParts.push(businessAddress);
     if (phone) footerParts.push(phone);
     if (contactEmail) footerParts.push(contactEmail);
     
-    page.drawText(footerParts.join("  •  "), {
+    const footerText = footerParts.join("  |  ");
+    page.drawText(footerText.substring(0, 100), {
       x: margin,
       y: footerY,
-      size: 8,
+      size: 7,
       font: fontReg,
-      color: lightGray,
+      color: lightText,
     });
 
-    page.drawText("Powered by CT1 Constructeam", {
-      x: width - margin - 130,
-      y: footerY,
-      size: 8,
-      font: fontBold,
-      color: primaryRed,
-    });
-
+    // Serialize and return
     const pdfBytes = await pdfDoc.save();
-    
-    // Safe base64 encoding
-    let binary = '';
-    const chunkSize = 0x8000;
-    for (let i = 0; i < pdfBytes.length; i += chunkSize) {
-      const chunk = pdfBytes.subarray(i, i + chunkSize);
-      let chunkStr = '';
-      for (let j = 0; j < chunk.length; j++) {
-        chunkStr += String.fromCharCode(chunk[j]);
-      }
-      binary += chunkStr;
-    }
-    const base64Pdf = btoa(binary);
+    const base64 = btoa(String.fromCharCode(...pdfBytes));
 
     return new Response(
       JSON.stringify({
-        success: true,
-        pdfBase64: base64Pdf,
+        pdfBase64: base64,
         pdfSize: pdfBytes.length,
-        estimate: {
-          number: estimate.estimate_number,
-          title: estimate.title,
-          client_name: estimate.client_name,
-          total_amount: estimate.total_amount,
-        },
+        publicUrl,
       }),
-      { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
-  } catch (error: any) {
-    console.error("Error generating PDF:", error);
-    return new Response(JSON.stringify({ error: error.message || String(error) }), {
-      status: 500,
-      headers: { "Content-Type": "application/json", ...corsHeaders },
-    });
+  } catch (error: unknown) {
+    console.error("PDF generation error:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    return new Response(
+      JSON.stringify({ error: errorMessage }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
   }
 };
 
