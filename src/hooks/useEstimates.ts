@@ -315,7 +315,18 @@ export function useEstimates() {
         body: { estimateId, contractorName, contractorEmail },
       });
 
-      if (error) throw error;
+      // Check for edge function error or error in response body
+      if (error) {
+        // Try to extract the actual error message from the response
+        const errorMessage = data?.error || error.message || 'Failed to send estimate';
+        throw new Error(errorMessage);
+      }
+      
+      // Also check if the response indicates failure
+      if (data && data.success === false) {
+        throw new Error(data.error || 'Failed to send estimate');
+      }
+      
       return data;
     },
     onSuccess: () => {
@@ -323,7 +334,7 @@ export function useEstimates() {
       toast.success('Estimate sent to client successfully');
     },
     onError: (error: any) => {
-      let details = error?.context?.error || error?.message || 'Unknown error';
+      let details = error?.message || error?.context?.error || 'Unknown error';
       
       // Check for domain verification error
       if (details.includes('domain is not verified') || details.includes('verify your domain')) {
