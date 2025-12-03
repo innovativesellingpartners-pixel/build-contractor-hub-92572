@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Mail, Phone, User, Building, MessageSquare } from "lucide-react";
+import ct1Logo from "@/assets/ct1-logo-main.png";
 
 const contactFormSchema = z.object({
   firstName: z.string().trim().min(1, "First name is required").max(50, "First name must be less than 50 characters"),
@@ -92,6 +93,9 @@ export function ContactForm({
   return (
     <Card className="w-full max-w-lg mx-auto card-ct1">
       <CardHeader className="text-center">
+        <div className="flex justify-center mb-4">
+          <img src={ct1Logo} alt="CT1 Logo" className="h-16 w-16" />
+        </div>
         <CardTitle className="text-2xl font-bold text-foreground">{title}</CardTitle>
         <p className="text-muted-foreground">{description}</p>
       </CardHeader>

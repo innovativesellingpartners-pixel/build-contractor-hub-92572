@@ -141,20 +141,17 @@ export function NewLandingPage() {
         <div className="absolute inset-0 bg-black/50"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center text-white mb-12">
-            <div className="mb-8 flex justify-center">
-              <img src={constructeamLogo} alt="CONSTRUCTEAM CT1" className="h-20 w-20 sm:h-24 sm:w-24 drop-shadow-lg" />
-            </div>
-            
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-12 leading-tight drop-shadow-lg uppercase tracking-wide">
-              <span className="block">A NATIONWIDE NETWORK</span>
-              <span className="block">OF CONTRACTORS</span>
-              <span className="block text-primary">POWERED BY CT1</span>
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-8 leading-tight drop-shadow-lg tracking-wide">
+              <span className="inline-flex items-center">
+                <img src={constructeamLogo} alt="CT1" className="h-12 w-12 sm:h-16 sm:w-16 md:h-20 md:w-20 lg:h-24 lg:w-24 inline-block -mr-1" />
+                <span>ne-Up Your</span>
+              </span>
+              <span className="block text-primary">Competition</span>
             </h1>
             
-            <p className="text-lg sm:text-xl md:text-2xl mb-10 leading-relaxed drop-shadow-md opacity-90 max-w-4xl mx-auto">
-              The all-in-one platform that takes you from lead to profit. Manage your entire sales pipeline—leads, estimates, 
-              customers, jobs, and follow-ups—with integrated CRM, AI-powered assistants, accounting, and real-time calendar sync. 
-              Built by contractors, for contractors.
+            <p className="text-xl sm:text-2xl md:text-3xl mb-10 leading-relaxed drop-shadow-md opacity-90 max-w-4xl mx-auto">
+              A Nationwide Network of Contractors<br />
+              <span className="text-primary font-semibold">Powered by CT1</span>
             </p>
           </div>
 
