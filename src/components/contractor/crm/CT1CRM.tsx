@@ -54,7 +54,6 @@ const navItems = [
   { id: 'estimates' as Section, label: 'Estimates', icon: FileText },
   { id: 'payments' as Section, label: 'Payments', icon: CreditCard },
   { id: 'accounting' as Section, label: 'Accounting', icon: DollarSign },
-  { id: 'financials' as Section, label: 'Financials', icon: DollarSign },
   { id: 'reporting' as Section, label: 'Reporting', icon: BarChart2 },
   { id: 'quickbooks' as Section, label: 'QuickBooks', icon: LinkIcon },
   { id: 'calls' as Section, label: 'Calls', icon: Phone },
