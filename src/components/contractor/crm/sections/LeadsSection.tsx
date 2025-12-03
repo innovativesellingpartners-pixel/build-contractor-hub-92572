@@ -1,8 +1,7 @@
 import { useState, useRef } from 'react';
 import { useLeads } from '@/hooks/useLeads';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, Phone, Mail, Edit, Users, TrendingUp, Upload, FileSpreadsheet } from 'lucide-react';
+import { Plus, Phone, Mail, Edit, Users, TrendingUp, Upload, FileSpreadsheet, ChevronRight, DollarSign } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { AddLeadDialog } from '../../AddLeadDialog';
 import { EditLeadDialog } from '../../EditLeadDialog';
@@ -11,6 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
+import { HorizontalRowCard, RowAvatar, RowContent, RowTitleLine, RowMetaLine, RowAmount, RowActions } from './HorizontalRowCard';
 
 interface LeadsSectionProps {
   onSectionChange?: (section: string) => void;
@@ -254,80 +254,103 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
           </div>
         </div>
 
-        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="space-y-3">
         {leads.map((lead) => (
-          <Card key={lead.id} className="hover:shadow-lg transition-shadow">
-            <CardHeader className="px-4 pt-4 sm:px-6 sm:pt-6">
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex-1 min-w-0">
-                  <CardTitle className="text-base sm:text-lg truncate">{lead.name}</CardTitle>
-                  {lead.company && (
-                    <p className="text-xs sm:text-sm text-muted-foreground truncate">{lead.company}</p>
-                  )}
-                </div>
-                <Badge className={`${getStatusColor(lead.status)} shrink-0 text-xs`}>
+          <HorizontalRowCard key={lead.id}>
+            {/* Avatar */}
+            <RowAvatar initials={lead.name.charAt(0).toUpperCase()} />
+
+            {/* Info */}
+            <RowContent>
+              <RowTitleLine>
+                <h3 className="font-semibold text-sm sm:text-base truncate max-w-[200px]">
+                  {lead.name}
+                </h3>
+                <Badge className={`${getStatusColor(lead.status)} text-white text-xs`}>
                   {lead.status}
                 </Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3 px-4 pb-4 sm:px-6 sm:pb-6">
-              {lead.project_type && (
-                <p className="text-xs sm:text-sm">
-                  <span className="font-medium">Project:</span> {lead.project_type}
-                </p>
-              )}
-              {lead.value && (
-                <p className="text-sm sm:text-base font-semibold text-primary">
-                  ${lead.value.toLocaleString()}
-                </p>
-              )}
-              <div className="flex gap-2 flex-wrap">
-                {!(lead as any).converted_at && (
-                  <Button 
-                    variant="default" 
-                    size="sm"
-                    onClick={() => setConvertToOpportunityLead(lead)}
-                    className="gap-1"
-                  >
-                    <TrendingUp className="h-4 w-4" />
-                    <span className="hidden sm:inline">Convert to Opportunity</span>
-                  </Button>
-                )}
-                {lead.phone && (
-                  <Button variant="outline" size="sm" asChild>
-                    <a href={`tel:${lead.phone}`}>
-                      <Phone className="h-4 w-4" />
-                    </a>
-                  </Button>
-                )}
-                {lead.email && (
-                  <Button variant="outline" size="sm" asChild>
-                    <a href={`mailto:${lead.email}`}>
-                      <Mail className="h-4 w-4" />
-                    </a>
-                  </Button>
-                )}
+              </RowTitleLine>
+              
+              <RowMetaLine>
+                {lead.company && <span className="truncate max-w-[150px]">{lead.company}</span>}
+                {lead.project_type && <span className="truncate max-w-[120px]">{lead.project_type}</span>}
+              </RowMetaLine>
+            </RowContent>
+
+            {/* Amount */}
+            {lead.value ? (
+              <RowAmount amount={lead.value} />
+            ) : (
+              <div className="min-w-[100px]" />
+            )}
+
+            {/* Actions */}
+            <RowActions>
+              {!(lead as any).converted_at && (
                 <Button 
-                  variant="outline" 
+                  variant="default" 
                   size="sm"
-                  onClick={() => handleEditLead(lead)}
+                  onClick={() => setConvertToOpportunityLead(lead)}
+                  className="gap-1 hidden sm:flex"
                 >
-                  <Edit className="h-4 w-4" />
+                  <TrendingUp className="h-4 w-4" />
+                  <span>Opportunity</span>
                 </Button>
-                {!(lead as any).converted_at && (
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => setConvertingLead(lead)}
-                    title="Convert to Customer"
-                  >
-                    <Users className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+              )}
+              {!(lead as any).converted_at && (
+                <Button 
+                  variant="default" 
+                  size="icon"
+                  onClick={() => setConvertToOpportunityLead(lead)}
+                  className="h-8 w-8 sm:hidden"
+                  title="Convert to Opportunity"
+                >
+                  <TrendingUp className="h-4 w-4" />
+                </Button>
+              )}
+              {lead.phone && (
+                <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+                  <a href={`tel:${lead.phone}`}>
+                    <Phone className="h-4 w-4" />
+                  </a>
+                </Button>
+              )}
+              {lead.email && (
+                <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+                  <a href={`mailto:${lead.email}`}>
+                    <Mail className="h-4 w-4" />
+                  </a>
+                </Button>
+              )}
+              <Button 
+                variant="ghost" 
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => handleEditLead(lead)}
+              >
+                <Edit className="h-4 w-4" />
+              </Button>
+              {!(lead as any).converted_at && (
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setConvertingLead(lead)}
+                  title="Convert to Customer"
+                >
+                  <Users className="h-4 w-4" />
+                </Button>
+              )}
+              <ChevronRight className="h-4 w-4 text-muted-foreground ml-1" />
+            </RowActions>
+          </HorizontalRowCard>
         ))}
+
+        {leads.length === 0 && (
+          <div className="text-center py-8 text-muted-foreground">
+            No leads yet. Add your first lead to get started.
+          </div>
+        )}
         </div>
 
         {selectedLead && (
