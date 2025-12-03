@@ -58,9 +58,39 @@ export function QuickBooksIntegration() {
     }
   };
 
-  const handleConnect = () => {
-    // Redirect to backend OAuth initiation route
-    window.location.href = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/quickbooks-connect`;
+  const handleConnect = async () => {
+    try {
+      setLoading(true);
+      
+      // Call the edge function with proper auth headers via Supabase client
+      const { data, error } = await supabase.functions.invoke('quickbooks-connect');
+      
+      if (error) {
+        console.error('QuickBooks connect error:', error);
+        toast({
+          variant: "destructive",
+          title: "Connection Failed",
+          description: error.message || "Failed to initiate QuickBooks connection",
+        });
+        return;
+      }
+      
+      if (data?.authUrl) {
+        // Redirect to QuickBooks OAuth page
+        window.location.href = data.authUrl;
+      } else {
+        throw new Error('No authorization URL returned');
+      }
+    } catch (error: any) {
+      console.error('Error connecting to QuickBooks:', error);
+      toast({
+        variant: "destructive",
+        title: "Connection Failed",
+        description: error.message || "Failed to connect to QuickBooks",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDisconnect = async () => {
