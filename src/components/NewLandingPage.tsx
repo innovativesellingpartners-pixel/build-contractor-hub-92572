@@ -338,13 +338,16 @@ export function NewLandingPage() {
           {/* Feature Cards Grid */}
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
             {featureCards.map((feature, index) => (
-              <Card key={index} className="p-6 hover:shadow-lg transition-all hover:-translate-y-1">
-                <div className="bg-primary/10 p-3 rounded-lg w-fit mb-4">
-                  <feature.icon className="h-8 w-8 text-primary" />
-                </div>
-                <h3 className="text-lg font-bold text-foreground mb-2">{feature.title}</h3>
-                <p className="text-muted-foreground text-sm">{feature.description}</p>
-              </Card>
+              <Link key={index} to={feature.link}>
+                <Card className="p-6 hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer h-full group">
+                  <div className="bg-primary/10 p-3 rounded-lg w-fit mb-4">
+                    <feature.icon className="h-8 w-8 text-primary" />
+                  </div>
+                  <h3 className="text-lg font-bold text-foreground mb-2 group-hover:text-primary transition-colors">{feature.title}</h3>
+                  <p className="text-muted-foreground text-sm">{feature.description}</p>
+                  <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary mt-4 transition-colors" />
+                </Card>
+              </Link>
             ))}
           </div>
           
