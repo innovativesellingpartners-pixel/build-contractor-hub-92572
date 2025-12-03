@@ -11,6 +11,14 @@ import { Pocketbot } from "@/components/contractor/Pocketbot";
 import heroImage from "@/assets/hero-construction.jpg";
 import ct1Logo from "@/assets/ct1-logo-main.png";
 import constructeamLogo from "@/assets/ct1-logo-main.png";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from "@/components/ui/navigation-menu";
 import { 
   ArrowRight, 
   Bot, 
@@ -36,7 +44,8 @@ import {
   DollarSign,
   Clock,
   Gauge,
-  FileText
+  FileText,
+  Mic
 } from "lucide-react";
 
 export function NewLandingPage() {
@@ -122,13 +131,76 @@ export function NewLandingPage() {
               </div>
             </Link>
             
-            <nav className="hidden lg:flex items-center space-x-4 xl:space-x-6">
-              <Link to="/what-we-do" className="text-foreground hover:text-primary transition-colors font-medium text-sm xl:text-base">What We Do</Link>
-              <Link to="/pricing" className="text-foreground hover:text-primary transition-colors font-medium text-sm xl:text-base">Products</Link>
-              <Link to="/pricing" className="text-foreground hover:text-primary transition-colors font-medium text-sm xl:text-base">Pricing</Link>
-              <Link to="/trades-we-serve" className="text-foreground hover:text-primary transition-colors font-medium text-sm xl:text-base">Trades We Serve</Link>
-              <Link to="/core-values" className="text-foreground hover:text-primary transition-colors font-medium text-sm xl:text-base">Core Values</Link>
-              <Link to="/blog-podcast" className="text-foreground hover:text-primary transition-colors font-medium text-sm xl:text-base">Blog & Podcast</Link>
+            <nav className="hidden lg:flex items-center space-x-3 xl:space-x-5">
+              <Link to="/what-we-do" className="text-foreground hover:text-primary transition-colors font-medium text-sm">What We Do</Link>
+              
+              {/* Products Dropdown */}
+              <NavigationMenu>
+                <NavigationMenuList>
+                  <NavigationMenuItem>
+                    <NavigationMenuTrigger className="text-foreground hover:text-primary font-medium text-sm bg-transparent">
+                      Products
+                    </NavigationMenuTrigger>
+                    <NavigationMenuContent>
+                      <div className="w-[320px] p-4">
+                        <div className="space-y-1">
+                          <Link to="/products/pocketbot" className="block">
+                            <NavigationMenuLink className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted transition-colors">
+                              <Bot className="h-5 w-5 text-primary mt-0.5" />
+                              <div>
+                                <div className="font-medium text-foreground">myCT1 Pocketbot</div>
+                                <p className="text-xs text-muted-foreground">Complete AI business assistant</p>
+                              </div>
+                            </NavigationMenuLink>
+                          </Link>
+                          <Link to="/products/voice-ai" className="block">
+                            <NavigationMenuLink className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted transition-colors">
+                              <Mic className="h-5 w-5 text-primary mt-0.5" />
+                              <div>
+                                <div className="font-medium text-foreground">AI Voice Assistant</div>
+                                <p className="text-xs text-muted-foreground">24/7 AI call handling</p>
+                              </div>
+                            </NavigationMenuLink>
+                          </Link>
+                        </div>
+                        
+                        <div className="border-t border-border my-3" />
+                        
+                        <div className="space-y-1">
+                          <Link to="/pricing#tier-launch" className="block">
+                            <NavigationMenuLink className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted transition-colors">
+                              <span className="text-sm text-muted-foreground">myCT1 Launch Growth Starter</span>
+                            </NavigationMenuLink>
+                          </Link>
+                          <Link to="/pricing#tier-growth" className="block">
+                            <NavigationMenuLink className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted transition-colors">
+                              <span className="text-sm text-muted-foreground">myCT1 Growth Business Builder</span>
+                            </NavigationMenuLink>
+                          </Link>
+                          <Link to="/pricing#tier-market" className="block">
+                            <NavigationMenuLink className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted transition-colors">
+                              <span className="text-sm text-muted-foreground">myCT1 Market Dominator</span>
+                            </NavigationMenuLink>
+                          </Link>
+                        </div>
+                        
+                        <div className="border-t border-border my-3" />
+                        
+                        <Link to="/pricing" className="block">
+                          <NavigationMenuLink className="flex items-center justify-center gap-2 p-2 rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors">
+                            <span className="text-sm font-medium text-primary">View All Pricing</span>
+                            <ArrowRight className="h-4 w-4 text-primary" />
+                          </NavigationMenuLink>
+                        </Link>
+                      </div>
+                    </NavigationMenuContent>
+                  </NavigationMenuItem>
+                </NavigationMenuList>
+              </NavigationMenu>
+              
+              <Link to="/trades-we-serve" className="text-foreground hover:text-primary transition-colors font-medium text-sm">Trades We Serve</Link>
+              <Link to="/core-values" className="text-foreground hover:text-primary transition-colors font-medium text-sm">Core Values</Link>
+              <Link to="/blog-podcast" className="text-foreground hover:text-primary transition-colors font-medium text-sm">Blog & Podcast</Link>
               
               <Dialog open={activeContactForm === "contact-sales"} onOpenChange={(open) => setActiveContactForm(open ? "contact-sales" : null)}>
                 <DialogTrigger asChild>

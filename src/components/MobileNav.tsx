@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu } from "lucide-react";
+import { Menu, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface MobileNavProps {
   onContactClick?: () => void;
@@ -10,6 +11,7 @@ interface MobileNavProps {
 
 export function MobileNav({ onContactClick }: MobileNavProps) {
   const [open, setOpen] = useState(false);
+  const [productsOpen, setProductsOpen] = useState(false);
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -36,20 +38,61 @@ export function MobileNav({ onContactClick }: MobileNavProps) {
           >
             What We Do
           </Link>
-          <Link 
-            to="/pricing" 
-            className="text-lg font-medium text-foreground hover:text-primary transition-colors py-2"
-            onClick={() => setOpen(false)}
-          >
-            Products
-          </Link>
-          <Link 
-            to="/pricing" 
-            className="text-lg font-medium text-foreground hover:text-primary transition-colors py-2"
-            onClick={() => setOpen(false)}
-          >
-            Pricing
-          </Link>
+          
+          {/* Products Dropdown */}
+          <Collapsible open={productsOpen} onOpenChange={setProductsOpen}>
+            <CollapsibleTrigger className="flex items-center justify-between w-full text-lg font-medium text-foreground hover:text-primary transition-colors py-2">
+              Products
+              <ChevronDown className={`h-5 w-5 transition-transform ${productsOpen ? 'rotate-180' : ''}`} />
+            </CollapsibleTrigger>
+            <CollapsibleContent className="pl-4 space-y-2 mt-2">
+              <Link 
+                to="/products/pocketbot" 
+                className="block text-base text-muted-foreground hover:text-primary transition-colors py-2"
+                onClick={() => setOpen(false)}
+              >
+                myCT1 Pocketbot
+              </Link>
+              <Link 
+                to="/products/voice-ai" 
+                className="block text-base text-muted-foreground hover:text-primary transition-colors py-2"
+                onClick={() => setOpen(false)}
+              >
+                AI Voice Assistant
+              </Link>
+              <div className="border-t border-border my-2" />
+              <Link 
+                to="/pricing#tier-launch" 
+                className="block text-base text-muted-foreground hover:text-primary transition-colors py-2"
+                onClick={() => setOpen(false)}
+              >
+                myCT1 Launch (Tier 1)
+              </Link>
+              <Link 
+                to="/pricing#tier-growth" 
+                className="block text-base text-muted-foreground hover:text-primary transition-colors py-2"
+                onClick={() => setOpen(false)}
+              >
+                myCT1 Growth (Tier 2)
+              </Link>
+              <Link 
+                to="/pricing#tier-market" 
+                className="block text-base text-muted-foreground hover:text-primary transition-colors py-2"
+                onClick={() => setOpen(false)}
+              >
+                myCT1 Market (Tier 3)
+              </Link>
+              <div className="border-t border-border my-2" />
+              <Link 
+                to="/pricing" 
+                className="block text-base font-medium text-primary hover:text-primary/80 transition-colors py-2"
+                onClick={() => setOpen(false)}
+              >
+                View All Pricing
+              </Link>
+            </CollapsibleContent>
+          </Collapsible>
+          
           <Link 
             to="/trades-we-serve" 
             className="text-lg font-medium text-foreground hover:text-primary transition-colors py-2"

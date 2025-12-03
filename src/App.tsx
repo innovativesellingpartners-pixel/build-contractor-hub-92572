@@ -54,6 +54,8 @@ import PublicEstimate from "./pages/PublicEstimate";
 import Reporting from "./pages/Reporting";
 import AppInstall from "./pages/AppInstall";
 import Accounting from "./pages/Accounting";
+import PocketbotProduct from "./pages/products/PocketbotProduct";
+import VoiceAIProduct from "./pages/products/VoiceAIProduct";
 
 const queryClient = new QueryClient();
 
@@ -82,6 +84,8 @@ const App = () => (
           <Route path="/network-map" element={<NetworkMap />} />
             <Route path="/trades-we-serve" element={<TradesWeServe />} />
             <Route path="/blog-podcast" element={<BlogPodcast />} />
+            <Route path="/products/pocketbot" element={<PocketbotProduct />} />
+            <Route path="/products/voice-ai" element={<VoiceAIProduct />} />
             <Route path="/legal/terms" element={<Terms />} />
             <Route path="/legal/privacy" element={<Privacy />} />
             <Route path="/privacy" element={<Navigate to="/legal/privacy" replace />} />
