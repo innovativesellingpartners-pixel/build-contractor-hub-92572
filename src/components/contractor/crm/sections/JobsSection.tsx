@@ -3,7 +3,7 @@ import { useJobs, Job } from '@/hooks/useJobs';
 import { MapPin, Home, Copy, Eye, Briefcase, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import JobDetailView from '../JobDetailView';
+import JobDetailViewBlue from '../JobDetailViewBlue';
 import { AddJobDialog } from '../AddJobDialog';
 import { EditJobDialog } from '../EditJobDialog';
 import { HorizontalRowCard, RowAvatar, RowContent, RowTitleLine, RowMetaLine, RowAmount, RowActions } from './HorizontalRowCard';
@@ -153,7 +153,7 @@ export default function JobsSection({ onSectionChange }: JobsSectionProps) {
           )}
         </div>
 
-        <JobDetailView
+        <JobDetailViewBlue
           job={selectedJob}
           open={detailOpen}
           onOpenChange={setDetailOpen}
