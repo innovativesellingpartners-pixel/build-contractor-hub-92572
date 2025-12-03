@@ -13,26 +13,56 @@ function generateSecureState(): string {
 }
 
 Deno.serve(async (req) => {
+  console.log('QuickBooks connect function invoked');
+  console.log('Request method:', req.method);
+  
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Validate required environment variables first
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const clientId = Deno.env.get('QUICKBOOKS_CLIENT_ID');
+    
+    console.log('Environment check:', {
+      hasSupabaseUrl: !!supabaseUrl,
+      hasAnonKey: !!supabaseAnonKey,
+      hasServiceKey: !!supabaseServiceKey,
+      hasClientId: !!clientId,
+    });
+
+    if (!clientId) {
+      console.error('QUICKBOOKS_CLIENT_ID is not configured');
+      throw new Error('QuickBooks integration is not configured. Please contact support.');
+    }
+
     const authHeader = req.headers.get('Authorization');
+    console.log('Auth header present:', !!authHeader);
+    
     if (!authHeader) {
       throw new Error('No authorization header');
     }
 
     // Get authenticated user - NEVER trust contractor ID from browser
     const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      supabaseUrl ?? '',
+      supabaseAnonKey ?? '',
       { global: { headers: { Authorization: authHeader } } }
     );
 
+    console.log('Attempting to get user from session...');
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
-    if (userError || !user) {
-      console.error('Authentication failed:', userError);
+    
+    if (userError) {
+      console.error('User authentication error:', userError);
+      throw new Error('Unauthorized');
+    }
+    
+    if (!user) {
+      console.error('No user found in session');
       throw new Error('Unauthorized');
     }
 
@@ -41,13 +71,15 @@ Deno.serve(async (req) => {
 
     // Generate secure state token
     const stateToken = generateSecureState();
+    console.log('Generated state token');
 
     // Store state in database with contractor ID using service role
     const serviceClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      supabaseUrl ?? '',
+      supabaseServiceKey ?? ''
     );
 
+    console.log('Storing OAuth state in database...');
     const { error: stateError } = await serviceClient
       .from('oauth_states')
       .insert({
@@ -59,19 +91,20 @@ Deno.serve(async (req) => {
       console.error('Failed to store OAuth state:', stateError);
       throw new Error('Failed to initiate OAuth flow');
     }
+    console.log('OAuth state stored successfully');
 
     // Build QuickBooks OAuth 2.0 authorization URL
-    const clientId = Deno.env.get('QUICKBOOKS_CLIENT_ID');
     const redirectUri = 'https://myct1.com/api/quickbooks/callback';
     
     const authUrl = new URL('https://appcenter.intuit.com/connect/oauth2');
-    authUrl.searchParams.set('client_id', clientId!);
+    authUrl.searchParams.set('client_id', clientId);
     authUrl.searchParams.set('response_type', 'code');
     authUrl.searchParams.set('scope', 'com.intuit.quickbooks.accounting');
     authUrl.searchParams.set('redirect_uri', redirectUri);
     authUrl.searchParams.set('state', stateToken);
 
-    console.log('Generated OAuth URL:', authUrl.toString());
+    console.log('Generated OAuth URL successfully');
+    console.log('Redirect URI:', redirectUri);
 
     // Return the OAuth URL for client-side redirect (not direct redirect)
     // This allows proper auth header handling
