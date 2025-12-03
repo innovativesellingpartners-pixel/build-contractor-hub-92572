@@ -2,9 +2,8 @@ import { useState } from 'react';
 import { useCustomers } from '@/hooks/useCustomers';
 import { useEstimates } from '@/hooks/useEstimates';
 import { useJobs } from '@/hooks/useJobs';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, Phone, Mail, MapPin, Briefcase, Home, FileText, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Plus, Phone, Mail, Briefcase, Home, FileText } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import AddCustomerDialog from '../AddCustomerDialog';
@@ -107,119 +106,103 @@ export default function CustomersSection({ onSectionChange }: CustomersSectionPr
           </div>
         </div>
 
-        {/* Sales Flow Indicator */}
-        <Card className="bg-muted/50">
-          <CardContent className="py-4">
-            <div className="flex items-center justify-center gap-2 text-sm flex-wrap">
-              <Badge variant="outline">Lead</Badge>
-              <ArrowRight className="w-4 h-4 text-muted-foreground" />
-              <Badge variant="outline">Estimate</Badge>
-              <ArrowRight className="w-4 h-4 text-muted-foreground" />
-              <Badge variant="default" className="bg-primary">Customer</Badge>
-              <ArrowRight className="w-4 h-4 text-muted-foreground" />
-              <Badge variant="outline">Job</Badge>
-              <ArrowRight className="w-4 h-4 text-muted-foreground" />
-              <Badge variant="outline">PSFU</Badge>
-            </div>
-          </CardContent>
-        </Card>
-
-        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        {/* Horizontal List */}
+        <div className="space-y-2">
           {customers.map((customer) => {
             const { linkedEstimate, linkedJobs } = getCustomerData(customer);
             
             return (
-              <Card key={customer.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader className="pb-3 px-4 pt-4 sm:px-6 sm:pt-6">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <CardTitle className="text-base sm:text-lg truncate">{customer.name}</CardTitle>
-                    </div>
-                    <Badge variant="secondary" className="shrink-0 text-xs">
+              <div 
+                key={customer.id} 
+                className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
+              >
+                {/* Avatar */}
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <span className="text-sm font-semibold text-primary">
+                    {customer.name.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-medium text-sm truncate">{customer.name}</h3>
+                    <Badge variant="secondary" className="text-xs shrink-0">
                       {customer.customer_type}
                     </Badge>
                   </div>
-                </CardHeader>
-                <CardContent className="space-y-3 px-4 pb-4 sm:px-6 sm:pb-6">
-                  {customer.phone && (
-                    <div className="flex items-center gap-2 text-xs sm:text-sm min-w-0">
-                      <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
-                      <a href={`tel:${customer.phone}`} className="hover:underline truncate">
-                        {customer.phone}
-                      </a>
-                    </div>
-                  )}
-                  {customer.email && (
-                    <div className="flex items-center gap-2 text-xs sm:text-sm min-w-0">
-                      <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
-                      <a href={`mailto:${customer.email}`} className="hover:underline truncate">
-                        {customer.email}
-                      </a>
-                    </div>
-                  )}
-                  {customer.address && (
-                    <div className="flex items-start gap-2 text-xs sm:text-sm min-w-0">
-                      <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
-                      <span className="line-clamp-2">
-                        {customer.address}
-                        {customer.city && `, ${customer.city}`}
-                        {customer.state && `, ${customer.state}`}
-                      </span>
-                    </div>
-                  )}
-
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
+                    {customer.phone && <span className="truncate">{customer.phone}</span>}
+                    {customer.email && <span className="truncate hidden sm:inline">{customer.email}</span>}
+                  </div>
                   {/* Linked Records */}
-                  <div className="flex flex-wrap gap-2 pt-2 border-t">
+                  <div className="flex items-center gap-2 mt-1">
                     {linkedEstimate && (
                       <Badge 
                         variant="outline" 
-                        className="gap-1 cursor-pointer hover:bg-muted"
+                        className="text-xs gap-1 cursor-pointer hover:bg-muted py-0"
                         onClick={() => onSectionChange?.('estimates')}
                       >
-                        <ArrowLeft className="h-3 w-3" />
                         <FileText className="h-3 w-3" />
-                        Estimate
+                        Est
                       </Badge>
                     )}
                     {linkedJobs.length > 0 && (
                       <Badge 
                         variant="outline" 
-                        className="gap-1 cursor-pointer hover:bg-muted border-green-600 text-green-600"
+                        className="text-xs gap-1 cursor-pointer hover:bg-muted border-green-600 text-green-600 py-0"
                         onClick={() => onSectionChange?.('jobs')}
                       >
                         <Briefcase className="h-3 w-3" />
                         {linkedJobs.length} Job{linkedJobs.length > 1 ? 's' : ''}
-                        <ArrowRight className="h-3 w-3" />
                       </Badge>
                     )}
                   </div>
+                </div>
 
-                  <div className="pt-2">
-                    {linkedJobs.length === 0 ? (
-                      <Button 
-                        size="sm" 
-                        onClick={() => setConvertingCustomer(customer)}
-                        className="w-full"
-                      >
-                        <Briefcase className="h-4 w-4 mr-2" />
-                        <span className="text-xs sm:text-sm">Convert to Job</span>
-                      </Button>
-                    ) : (
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => setConvertingCustomer(customer)}
-                        className="w-full"
-                      >
-                        <Plus className="h-4 w-4 mr-2" />
-                        <span className="text-xs sm:text-sm">Add Another Job</span>
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+                {/* Actions */}
+                <div className="flex items-center gap-1 shrink-0">
+                  {customer.phone && (
+                    <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+                      <a href={`tel:${customer.phone}`}>
+                        <Phone className="h-4 w-4" />
+                      </a>
+                    </Button>
+                  )}
+                  {customer.email && (
+                    <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+                      <a href={`mailto:${customer.email}`}>
+                        <Mail className="h-4 w-4" />
+                      </a>
+                    </Button>
+                  )}
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setConvertingCustomer(customer)}
+                    className="hidden sm:flex"
+                  >
+                    <Briefcase className="h-4 w-4 mr-1" />
+                    {linkedJobs.length === 0 ? 'Create Job' : 'Add Job'}
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="icon"
+                    onClick={() => setConvertingCustomer(customer)}
+                    className="sm:hidden h-8 w-8"
+                  >
+                    <Briefcase className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
             );
           })}
+
+          {customers.length === 0 && (
+            <div className="text-center py-8 text-muted-foreground">
+              No customers yet. Add your first customer to get started.
+            </div>
+          )}
         </div>
       </div>
 

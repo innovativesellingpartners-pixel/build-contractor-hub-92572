@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useJobs, Job } from '@/hooks/useJobs';
-import { Card, CardContent } from '@/components/ui/card';
-import { MapPin, Home, Copy } from 'lucide-react';
+import { MapPin, Home, Copy, Eye, Briefcase } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import JobDetailView from '../JobDetailView';
 import { AddJobDialog } from '../AddJobDialog';
 import { EditJobDialog } from '../EditJobDialog';
@@ -31,7 +31,6 @@ export default function JobsSection({ onSectionChange }: JobsSectionProps) {
   const handleDuplicateJob = async (jobId: string): Promise<Job | undefined> => {
     const newJob = await duplicateJob(jobId);
     if (newJob) {
-      // Update selected job to the new one and open detail view
       setSelectedJob(newJob);
       setDetailOpen(true);
     }
@@ -40,11 +39,21 @@ export default function JobsSection({ onSectionChange }: JobsSectionProps) {
 
   const handleUpdateJob = async (id: string, updates: Partial<Job>) => {
     const updatedJob = await updateJob(id, updates);
-    // Update selected job if it's the one being edited
     if (selectedJob?.id === id) {
       setSelectedJob(updatedJob);
     }
     return updatedJob;
+  };
+
+  const getStatusColor = (status: string) => {
+    const colors: Record<string, string> = {
+      scheduled: 'bg-blue-500',
+      in_progress: 'bg-yellow-500',
+      completed: 'bg-green-500',
+      cancelled: 'bg-red-500',
+      on_hold: 'bg-gray-500',
+    };
+    return colors[status] || 'bg-gray-500';
   };
 
   if (loading) {
@@ -68,48 +77,88 @@ export default function JobsSection({ onSectionChange }: JobsSectionProps) {
           </div>
         </div>
 
-        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-full">
+        {/* Horizontal List */}
+        <div className="space-y-2">
           {jobs.map((job) => (
-            <Card 
+            <div 
               key={job.id} 
-              className="hover:shadow-lg transition-shadow w-full"
+              className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors cursor-pointer"
+              onClick={() => handleJobClick(job)}
             >
-              <CardContent className="p-4 sm:p-4 space-y-2">
-                <div 
-                  className="cursor-pointer"
-                  onClick={() => handleJobClick(job)}
-                >
-                  <h3 className="font-semibold text-sm sm:text-base break-words">{job.name}</h3>
-                  {job.job_number && (
-                    <p className="text-xs text-muted-foreground">Job #{job.job_number}</p>
-                  )}
+              {/* Avatar */}
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <Briefcase className="h-5 w-5 text-primary" />
+              </div>
+
+              {/* Info */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <h3 className="font-medium text-sm truncate">{job.name}</h3>
+                  <Badge className={`${getStatusColor(job.status)} text-white text-xs shrink-0`}>
+                    {job.status.replace('_', ' ')}
+                  </Badge>
+                </div>
+                <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
+                  {job.job_number && <span>#{job.job_number}</span>}
                   {(job.city || job.state) && (
-                    <div className="flex items-start gap-1.5 text-xs text-muted-foreground">
-                      <MapPin className="h-3 w-3 flex-shrink-0 mt-0.5" />
-                      <span className="break-words">
-                        {job.city}{job.city && job.state && ', '}{job.state}
-                      </span>
-                    </div>
+                    <span className="flex items-center gap-1 truncate">
+                      <MapPin className="h-3 w-3" />
+                      {job.city}{job.city && job.state && ', '}{job.state}
+                    </span>
                   )}
                 </div>
-                <div className="pt-2 border-t flex justify-end">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDuplicateJob(job.id);
-                    }}
-                    aria-label="Duplicate job"
-                    title="Duplicate job"
-                  >
-                    <Copy className="h-4 w-4 mr-2" />
-                    Duplicate
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+                {job.contract_value && job.contract_value > 0 && (
+                  <p className="text-xs font-medium text-primary mt-0.5">
+                    ${job.contract_value.toLocaleString()}
+                  </p>
+                )}
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center gap-1 shrink-0">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-8 w-8"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleJobClick(job);
+                  }}
+                >
+                  <Eye className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDuplicateJob(job.id);
+                  }}
+                  className="hidden sm:flex"
+                >
+                  <Copy className="h-4 w-4 mr-1" />
+                  Duplicate
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDuplicateJob(job.id);
+                  }}
+                  className="sm:hidden h-8 w-8"
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
           ))}
+
+          {jobs.length === 0 && (
+            <div className="text-center py-8 text-muted-foreground">
+              No jobs yet. Create your first job to get started.
+            </div>
+          )}
         </div>
 
         <JobDetailView
