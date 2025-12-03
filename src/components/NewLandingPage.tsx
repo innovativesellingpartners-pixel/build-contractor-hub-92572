@@ -155,7 +155,9 @@ export function NewLandingPage() {
           <div className="flex flex-col items-center text-center">
             <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold mb-4 leading-tight drop-shadow-lg text-white">
               <span className="inline-flex items-center justify-center">
-                <img src={ct1Logo} alt="CT1" className="h-16 w-16 sm:h-20 sm:w-20 lg:h-24 lg:w-24 xl:h-28 xl:w-28 inline-block -mr-1 drop-shadow-lg" />
+                <span className="inline-flex items-center justify-center rounded-full border-4 border-white p-1 -mr-1">
+                  <img src={ct1Logo} alt="CT1" className="h-14 w-14 sm:h-18 sm:w-18 lg:h-20 lg:w-20 xl:h-24 xl:w-24 drop-shadow-lg" />
+                </span>
                 <span>ne-Up</span>
               </span>
               <span className="block">The Competition</span>
