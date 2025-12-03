@@ -94,11 +94,19 @@ export function NewLandingPage() {
     <div className="min-h-screen bg-background">
       <MainSiteHeader onContactClick={() => setActiveContactForm("contact-sales")} />
 
+      {/* Floating Try for Free Button */}
+      <Link to="/trial-signup" className="fixed bottom-24 right-4 z-50">
+        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-2xl hover:shadow-primary/50 px-6 py-3 rounded-full font-semibold transition-all hover:scale-105">
+          <Rocket className="mr-2 h-4 w-4" />
+          Try CT1 Free
+        </Button>
+      </Link>
+
       {/* Sticky Floating CTA Button */}
       <div className="fixed bottom-6 right-4 z-50">
         <Dialog open={activeContactForm === "floating-cta"} onOpenChange={(open) => setActiveContactForm(open ? "floating-cta" : null)}>
           <DialogTrigger asChild>
-            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-2xl hover:shadow-primary/50 px-6 py-3 rounded-full font-semibold transition-all hover:scale-105">
+            <Button className="bg-foreground hover:bg-foreground/90 text-background shadow-2xl hover:shadow-primary/50 px-6 py-3 rounded-full font-semibold transition-all hover:scale-105">
               <Phone className="mr-2 h-4 w-4" />
               Talk With CT1
             </Button>
@@ -142,14 +150,14 @@ export function NewLandingPage() {
           backgroundPosition: 'center',
         }}
       >
-        <div className="absolute inset-0 bg-black/50"></div>
+        <div className="absolute inset-0 bg-black/35"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-16">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Left: Text */}
             <div className="text-white">
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 leading-tight drop-shadow-lg">
                 <span className="inline-flex items-center">
-                  <img src={ct1Logo} alt="CT1" className="h-14 w-14 sm:h-16 sm:w-16 lg:h-20 lg:w-20 inline-block -mr-1" />
+                  <img src={ct1Logo} alt="CT1" className="h-14 w-14 sm:h-16 sm:w-16 lg:h-20 lg:w-20 inline-block -mr-1 drop-shadow-lg" />
                   <span>ne-Up</span>
                 </span>
                 <span className="block">The Competition</span>
@@ -207,14 +215,10 @@ export function NewLandingPage() {
               </div>
             </div>
             
-            {/* Right: Logo/Badge cluster */}
+            {/* Right: Logo without background */}
             <div className="hidden lg:flex items-center justify-center">
               <div className="relative">
-                <div className="absolute inset-0 bg-primary/20 rounded-full blur-3xl scale-150"></div>
-                <div className="relative bg-white/10 backdrop-blur-md rounded-2xl p-12 border border-white/20">
-                  <img src={ct1Logo} alt="CT1" className="h-32 w-32 mx-auto mb-4" />
-                  <p className="text-white text-center font-semibold text-xl">One-Up Your Business</p>
-                </div>
+                <img src={ct1Logo} alt="CT1" className="h-40 w-40 drop-shadow-2xl" />
               </div>
             </div>
           </div>
@@ -268,26 +272,68 @@ export function NewLandingPage() {
               </Dialog>
             </div>
             
-            {/* Right: Already a contractor login box */}
-            <div className="bg-card rounded-xl p-8 border shadow-lg">
-              <div className="text-center mb-6">
-                <div className="bg-primary/10 p-4 rounded-full w-fit mx-auto mb-4">
-                  <Briefcase className="h-10 w-10 text-primary" />
+            {/* Right: Feature Cards Grid */}
+            <div className="grid gap-4">
+              {/* Contractor Business Suite Card */}
+              <Link to="/business-suite">
+                <Card className="p-6 hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer group">
+                  <div className="flex items-start gap-4">
+                    <div className="bg-primary/10 p-3 rounded-lg">
+                      <Briefcase className="h-8 w-8 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold text-foreground mb-2 group-hover:text-primary transition-colors">
+                        Contractor Business Suite
+                      </h3>
+                      <p className="text-muted-foreground text-sm">
+                        Complete platform for leads, jobs, CRM, estimating, and training - all in one place.
+                      </p>
+                    </div>
+                    <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                  </div>
+                </Card>
+              </Link>
+
+              {/* Nationwide Network Card */}
+              <Link to="/nationwide-network">
+                <Card className="p-6 hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer group">
+                  <div className="flex items-start gap-4">
+                    <div className="bg-primary/10 p-3 rounded-lg">
+                      <MapPin className="h-8 w-8 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold text-foreground mb-2 group-hover:text-primary transition-colors">
+                        Nationwide Network
+                      </h3>
+                      <p className="text-muted-foreground text-sm">
+                        Join a growing network of trusted contractors across the United States.
+                      </p>
+                    </div>
+                    <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                  </div>
+                </Card>
+              </Link>
+
+              {/* Already a Contractor Card */}
+              <Card className="p-6 border shadow-lg">
+                <div className="text-center">
+                  <h3 className="text-xl font-bold text-foreground mb-3">Already a CT1 Contractor?</h3>
+                  <p className="text-muted-foreground text-sm mb-4">Access your dashboard and manage your business.</p>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <Link to="/auth" className="flex-1">
+                      <Button className="w-full btn-ct1">
+                        <Briefcase className="mr-2 h-4 w-4" />
+                        Contractor Login
+                      </Button>
+                    </Link>
+                    <Link to="/trial-signup" className="flex-1">
+                      <Button variant="outline" className="w-full">
+                        Try CT1 Free
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
-                <h3 className="text-2xl font-bold text-foreground mb-2">Already a CT1 Contractor?</h3>
-                <p className="text-muted-foreground">Access your dashboard, manage leads, and grow your business.</p>
-              </div>
-              <Link to="/auth">
-                <Button className="w-full btn-ct1 mb-4">
-                  <Briefcase className="mr-2 h-4 w-4" />
-                  Contractor Portal Login
-                </Button>
-              </Link>
-              <Link to="/trial-signup">
-                <Button variant="outline" className="w-full">
-                  Try CT1 For Free
-                </Button>
-              </Link>
+              </Card>
             </div>
           </div>
         </div>
