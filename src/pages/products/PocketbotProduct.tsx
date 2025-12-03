@@ -31,6 +31,7 @@ import {
   Pause
 } from "lucide-react";
 import ct1Logo from "@/assets/ct1-logo-main.png";
+import ct1LogoColor from "@/assets/ct1-logo-color.png";
 
 const PocketbotProduct = () => {
   const [activeContactForm, setActiveContactForm] = useState<string | null>(null);
@@ -249,12 +250,15 @@ const PocketbotProduct = () => {
       {/* Hero Section */}
       <section className="py-20 bg-gradient-to-br from-primary/10 via-background to-secondary/10">
         <div className="container mx-auto px-4 text-center">
+          <div className="flex justify-center mb-8">
+            <img src={ct1LogoColor} alt="CT1 Logo" className="h-24 w-24 md:h-32 md:w-32" />
+          </div>
           <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full mb-6">
             <Sparkles className="h-4 w-4" />
             <span className="text-sm font-medium">AI-Powered Business Assistant</span>
           </div>
           <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6">
-            myCT1 Pocketbot
+            MyCT1 Pocketbot
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
             Your complete AI business assistant. One bot that covers everything you need—sales, estimating, 
