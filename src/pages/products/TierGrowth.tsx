@@ -117,7 +117,7 @@ export default function TierGrowth() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <Badge className="mb-4 bg-primary text-primary-foreground px-4 py-1">Most Popular</Badge>
           <div className="flex justify-center mb-6">
-            <img src={ct1LogoColor} alt="CT1 Logo" className="h-24 w-24 md:h-32 md:w-32" />
+            <img src={ct1Logo} alt="CT1 Logo" className="h-24 w-24 md:h-32 md:w-32" />
           </div>
           <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full mb-4">
             <Zap className="h-4 w-4" />

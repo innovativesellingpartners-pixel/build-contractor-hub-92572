@@ -117,7 +117,7 @@ export default function TierMarket() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <Badge className="mb-4 bg-amber-500/20 text-amber-600 border-amber-500/30 px-4 py-1">Coming Soon</Badge>
           <div className="flex justify-center mb-6">
-            <img src={ct1LogoColor} alt="CT1 Logo" className="h-24 w-24 md:h-32 md:w-32" />
+            <img src={ct1Logo} alt="CT1 Logo" className="h-24 w-24 md:h-32 md:w-32" />
           </div>
           <div className="inline-flex items-center gap-2 bg-amber-500/10 text-amber-600 px-4 py-2 rounded-full mb-4">
             <Crown className="h-4 w-4" />
