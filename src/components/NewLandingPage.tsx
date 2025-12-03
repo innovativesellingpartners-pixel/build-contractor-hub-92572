@@ -139,7 +139,7 @@ export function NewLandingPage() {
 
       {/* Hero Section */}
       <section className="section-hero py-12 sm:py-16 md:py-20 relative overflow-hidden min-h-[85vh] flex items-center">
-        <div className="absolute inset-0 bg-black/50"></div>
+        <div className="absolute inset-0 bg-black/35"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center text-white mb-12">
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4 leading-tight drop-shadow-lg tracking-wide">
