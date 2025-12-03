@@ -170,7 +170,7 @@ export function NewLandingPage() {
               <h4 className="font-semibold text-white text-lg mb-2 group-hover:text-primary transition-colors">Manage your entire contracting business</h4>
               <p className="text-white/80 text-sm">A complete suite of innovative tools built for contractors</p>
             </Link>
-            <Link to="/network-map" className="bg-white/10 backdrop-blur-sm rounded-lg p-5 border border-white/20 hover:bg-white/20 hover:border-primary/50 transition-all cursor-pointer group">
+            <Link to="/nationwide-network" className="bg-white/10 backdrop-blur-sm rounded-lg p-5 border border-white/20 hover:bg-white/20 hover:border-primary/50 transition-all cursor-pointer group">
               <Users className="h-10 w-10 text-primary mb-3 group-hover:scale-110 transition-transform" />
               <h4 className="font-semibold text-white text-lg mb-2 group-hover:text-primary transition-colors">Nationwide Network</h4>
               <p className="text-white/80 text-sm">A Network of the Nations leading contractors</p>

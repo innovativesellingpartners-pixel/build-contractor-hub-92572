@@ -22,6 +22,7 @@ import { CoursePlayer } from "@/components/CoursePlayer";
 import Subscribe from "./pages/Subscribe";
 import NotFound from "./pages/NotFound";
 import NetworkMap from "./pages/NetworkMap";
+import NationwideNetwork from "./pages/NationwideNetwork";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import PayBill from "./pages/PayBill";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -85,6 +86,7 @@ const App = () => (
           <Route path="/what-we-do" element={<WhatWeDo />} />
           <Route path="/core-values" element={<CoreValues />} />
           <Route path="/network-map" element={<NetworkMap />} />
+            <Route path="/nationwide-network" element={<NationwideNetwork />} />
             <Route path="/trades-we-serve" element={<TradesWeServe />} />
             <Route path="/blog-podcast" element={<BlogPodcast />} />
             <Route path="/products/pocketbot" element={<PocketbotProduct />} />
