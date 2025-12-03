@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { useJobs, Job } from '@/hooks/useJobs';
-import { MapPin, Home, Copy, Eye, Briefcase } from 'lucide-react';
+import { MapPin, Home, Copy, Eye, Briefcase, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import JobDetailView from '../JobDetailView';
 import { AddJobDialog } from '../AddJobDialog';
 import { EditJobDialog } from '../EditJobDialog';
+import { HorizontalRowCard, RowAvatar, RowContent, RowTitleLine, RowMetaLine, RowAmount, RowActions } from './HorizontalRowCard';
 
 interface JobsSectionProps {
   onSectionChange?: (section: string) => void;
@@ -78,44 +79,46 @@ export default function JobsSection({ onSectionChange }: JobsSectionProps) {
         </div>
 
         {/* Horizontal List */}
-        <div className="space-y-2">
+        <div className="space-y-3">
           {jobs.map((job) => (
-            <div 
-              key={job.id} 
-              className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors cursor-pointer"
-              onClick={() => handleJobClick(job)}
-            >
+            <HorizontalRowCard key={job.id} onClick={() => handleJobClick(job)}>
               {/* Avatar */}
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                <Briefcase className="h-5 w-5 text-primary" />
-              </div>
+              <RowAvatar 
+                initials="" 
+                icon={<Briefcase className="h-5 w-5 text-primary" />} 
+              />
 
               {/* Info */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <h3 className="font-medium text-sm truncate">{job.name}</h3>
-                  <Badge className={`${getStatusColor(job.status)} text-white text-xs shrink-0`}>
+              <RowContent>
+                <RowTitleLine>
+                  <h3 className="font-semibold text-sm sm:text-base truncate max-w-[200px]">
+                    {job.name}
+                  </h3>
+                  <Badge className={`${getStatusColor(job.status)} text-white text-xs`}>
                     {job.status.replace('_', ' ')}
                   </Badge>
-                </div>
-                <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
-                  {job.job_number && <span>#{job.job_number}</span>}
+                </RowTitleLine>
+                
+                <RowMetaLine>
+                  {job.job_number && <span className="font-medium">#{job.job_number}</span>}
                   {(job.city || job.state) && (
-                    <span className="flex items-center gap-1 truncate">
-                      <MapPin className="h-3 w-3" />
+                    <span className="flex items-center gap-1 truncate max-w-[180px]">
+                      <MapPin className="h-3 w-3 flex-shrink-0" />
                       {job.city}{job.city && job.state && ', '}{job.state}
                     </span>
                   )}
-                </div>
-                {job.contract_value && job.contract_value > 0 && (
-                  <p className="text-xs font-medium text-primary mt-0.5">
-                    ${job.contract_value.toLocaleString()}
-                  </p>
-                )}
-              </div>
+                </RowMetaLine>
+              </RowContent>
+
+              {/* Amount */}
+              {job.contract_value && job.contract_value > 0 ? (
+                <RowAmount amount={job.contract_value} />
+              ) : (
+                <div className="min-w-[100px]" />
+              )}
 
               {/* Actions */}
-              <div className="flex items-center gap-1 shrink-0">
+              <RowActions>
                 <Button 
                   variant="ghost" 
                   size="icon" 
@@ -128,30 +131,19 @@ export default function JobsSection({ onSectionChange }: JobsSectionProps) {
                   <Eye className="h-4 w-4" />
                 </Button>
                 <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDuplicateJob(job.id);
-                  }}
-                  className="hidden sm:flex"
-                >
-                  <Copy className="h-4 w-4 mr-1" />
-                  Duplicate
-                </Button>
-                <Button
-                  variant="outline"
+                  variant="ghost"
                   size="icon"
+                  className="h-8 w-8"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleDuplicateJob(job.id);
                   }}
-                  className="sm:hidden h-8 w-8"
                 >
                   <Copy className="h-4 w-4" />
                 </Button>
-              </div>
-            </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground ml-1" />
+              </RowActions>
+            </HorizontalRowCard>
           ))}
 
           {jobs.length === 0 && (

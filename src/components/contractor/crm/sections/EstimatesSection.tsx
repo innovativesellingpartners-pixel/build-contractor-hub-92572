@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Plus, FileText, DollarSign, Trash2, Eye, Send, CheckCircle, Clock, AlertCircle, RefreshCw, Users, Copy, ArrowRight, ArrowLeft, Briefcase, ChevronRight } from 'lucide-react';
+import { Plus, FileText, Trash2, Eye, Send, CheckCircle, Clock, AlertCircle, RefreshCw, Users, Copy, ArrowLeft, Briefcase, ChevronRight } from 'lucide-react';
 import { useEstimates } from '@/hooks/useEstimates';
 import { useLeads } from '@/hooks/useLeads';
 import EstimateForm from '../EstimateForm';
@@ -12,7 +12,7 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { MobileOptimizedWrapper, MobileStack } from './MobileOptimizedWrapper';
 import { supabase } from '@/integrations/supabase/client';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { HorizontalRowCard, RowAvatar, RowContent, RowTitleLine, RowMetaLine, RowBadgeGroup, RowAmount, RowActions } from './HorizontalRowCard';
 
 export default function EstimatesSection({ onSectionChange }: { onSectionChange?: (section: string) => void }) {
   const { estimates, isLoading, createEstimate, createEstimateAsync, updateEstimate, updateEstimateAsync, deleteEstimate, sendEstimate, sendEstimateAsync, isSendingEstimate, duplicateEstimate, isDuplicatingEstimate } = useEstimates();
@@ -190,6 +190,34 @@ export default function EstimatesSection({ onSectionChange }: { onSectionChange?
     return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
   };
 
+  const getDeliveryBadge = (estimate: any) => {
+    if (estimate.email_send_error) {
+      return (
+        <Badge variant="destructive" className="text-xs">
+          <AlertCircle className="h-2.5 w-2.5 mr-1" />
+          Failed
+        </Badge>
+      );
+    }
+    if (estimate.signed_at) {
+      return (
+        <Badge variant="outline" className="text-xs border-green-600 text-green-600">
+          <CheckCircle className="h-2.5 w-2.5 mr-1" />
+          Signed
+        </Badge>
+      );
+    }
+    if (estimate.viewed_at) {
+      return (
+        <Badge variant="outline" className="text-xs">
+          <Eye className="h-2.5 w-2.5 mr-1" />
+          Viewed
+        </Badge>
+      );
+    }
+    return null;
+  };
+
   return (
     <MobileOptimizedWrapper
       title="Estimates"
@@ -210,190 +238,166 @@ export default function EstimatesSection({ onSectionChange }: { onSectionChange?
           <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
         </div>
       ) : estimates && estimates.length > 0 ? (
-        <MobileStack>
+        <MobileStack className="space-y-3">
           {estimates.map((estimate: any) => (
-            <Card 
-              key={estimate.id} 
-              className="hover:shadow-md transition-shadow overflow-hidden"
-            >
-              <CardContent className="p-0">
-                <div className="flex items-center gap-3 p-3 sm:p-4">
-                  {/* Avatar */}
-                  <Avatar className="h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0">
-                    <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">
-                      {getInitials(estimate.client_name)}
-                    </AvatarFallback>
-                  </Avatar>
+            <HorizontalRowCard key={estimate.id} onClick={() => handleEdit(estimate)}>
+              {/* Avatar */}
+              <RowAvatar initials={getInitials(estimate.client_name)} />
 
-                  {/* Main Content */}
-                  <div className="flex-1 min-w-0 overflow-hidden">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-semibold truncate text-sm sm:text-base">{estimate.title}</h3>
-                      {estimate.estimate_number && (
-                        <span className="text-xs text-muted-foreground flex-shrink-0">#{estimate.estimate_number}</span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-sm text-muted-foreground truncate max-w-[150px]">
-                        {estimate.client_name || 'No client'}
-                      </span>
-                      <div className="flex items-center gap-1 flex-shrink-0">
-                        {getStatusIcon(estimate)}
-                        <Badge variant={getStatusColor(estimate.status)} className="text-xs">
-                          {estimate.status}
-                        </Badge>
-                      </div>
-                      {/* Linked badges */}
-                      {estimate.lead_id && (
-                        <Badge 
-                          variant="outline" 
-                          className="text-xs gap-1 cursor-pointer hover:bg-muted flex-shrink-0"
-                          onClick={(e) => { e.stopPropagation(); onSectionChange?.('leads'); }}
-                        >
-                          <ArrowLeft className="h-2 w-2" />
-                          Lead
-                        </Badge>
-                      )}
-                      {estimate.customer_id && (
-                        <Badge 
-                          variant="outline" 
-                          className="text-xs gap-1 border-blue-600 text-blue-600 cursor-pointer hover:bg-muted flex-shrink-0"
-                          onClick={(e) => { e.stopPropagation(); onSectionChange?.('customers'); }}
-                        >
-                          <Users className="h-2 w-2" />
-                          Customer
-                        </Badge>
-                      )}
-                      {estimate.job_id && (
-                        <Badge 
-                          variant="outline" 
-                          className="text-xs gap-1 border-green-600 text-green-600 cursor-pointer hover:bg-muted flex-shrink-0"
-                          onClick={(e) => { e.stopPropagation(); onSectionChange?.('jobs'); }}
-                        >
-                          <Briefcase className="h-2 w-2" />
-                          Job
-                        </Badge>
-                      )}
-                    </div>
-                    {/* Date info */}
-                    {estimate.valid_until && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Valid until {format(new Date(estimate.valid_until), 'MMM dd, yyyy')}
-                      </p>
-                    )}
-                  </div>
+              {/* Main Content */}
+              <RowContent>
+                <RowTitleLine>
+                  <h3 className="font-semibold text-sm sm:text-base truncate max-w-[200px]">
+                    {estimate.title}
+                  </h3>
+                  {estimate.estimate_number && (
+                    <span className="text-xs text-muted-foreground">#{estimate.estimate_number}</span>
+                  )}
+                </RowTitleLine>
+                
+                <RowMetaLine>
+                  <span className="truncate max-w-[140px]">
+                    {estimate.client_name || 'No client'}
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    {getStatusIcon(estimate)}
+                    <Badge variant={getStatusColor(estimate.status)} className="text-xs">
+                      {estimate.status}
+                    </Badge>
+                  </span>
+                </RowMetaLine>
 
-                  {/* Amount */}
-                  <div className="text-right flex-shrink-0">
-                    <div className="flex items-center gap-1 text-primary font-bold text-base sm:text-lg">
-                      <DollarSign className="h-4 w-4" />
-                      {estimate.total_amount?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
-                    </div>
-                    {/* Delivery indicator */}
-                    {estimate.email_send_error ? (
-                      <Badge variant="destructive" className="text-xs mt-1">
-                        <AlertCircle className="h-2 w-2 mr-1" />
-                        Failed
-                      </Badge>
-                    ) : estimate.signed_at ? (
-                      <Badge variant="outline" className="text-xs mt-1 border-green-600 text-green-600">
-                        <CheckCircle className="h-2 w-2 mr-1" />
-                        Signed
-                      </Badge>
-                    ) : estimate.viewed_at ? (
-                      <Badge variant="outline" className="text-xs mt-1">
-                        <Eye className="h-2 w-2 mr-1" />
-                        Viewed
-                      </Badge>
-                    ) : null}
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex items-center gap-1 flex-shrink-0">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => handleEdit(estimate)}
-                      title="View/Edit"
+                {/* Linked badges & date */}
+                <RowBadgeGroup>
+                  {estimate.lead_id && (
+                    <Badge 
+                      variant="outline" 
+                      className="text-xs gap-1 cursor-pointer hover:bg-muted"
+                      onClick={(e) => { e.stopPropagation(); onSectionChange?.('leads'); }}
                     >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    
-                    {estimate.client_email && estimate.status === 'draft' && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => handleSendEstimate(estimate)}
-                        disabled={isSendingEstimate}
-                        title="Send"
-                      >
-                        <Send className="h-4 w-4" />
-                      </Button>
-                    )}
-
-                    {estimate.client_email && estimate.status !== 'draft' && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => handleSendEstimate(estimate)}
-                        disabled={isSendingEstimate}
-                        title="Resend"
-                      >
-                        <RefreshCw className={`h-4 w-4 ${isSendingEstimate ? 'animate-spin' : ''}`} />
-                      </Button>
-                    )}
-
-                    {/* Convert to Customer button */}
-                    {(estimate.status === 'sent' || estimate.status === 'accepted' || estimate.signed_at) && !estimate.customer_id && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                        onClick={() => handleConvertToCustomer(estimate)}
-                        disabled={isConverting === estimate.id}
-                        title="Convert to Customer"
-                      >
-                        {isConverting === estimate.id ? (
-                          <RefreshCw className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Users className="h-4 w-4" />
-                        )}
-                      </Button>
-                    )}
-
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => duplicateEstimate(estimate.id)}
-                      disabled={isDuplicatingEstimate}
-                      title="Duplicate"
+                      <ArrowLeft className="h-2.5 w-2.5" />
+                      Lead
+                    </Badge>
+                  )}
+                  {estimate.customer_id && (
+                    <Badge 
+                      variant="outline" 
+                      className="text-xs gap-1 border-blue-600 text-blue-600 cursor-pointer hover:bg-muted"
+                      onClick={(e) => { e.stopPropagation(); onSectionChange?.('customers'); }}
                     >
-                      <Copy className="h-4 w-4" />
-                    </Button>
-
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-destructive hover:text-destructive"
-                      onClick={() => {
-                        if (window.confirm('Are you sure you want to delete this estimate?')) {
-                          deleteEstimate(estimate.id);
-                        }
-                      }}
-                      title="Delete"
+                      <Users className="h-2.5 w-2.5" />
+                      Customer
+                    </Badge>
+                  )}
+                  {estimate.job_id && (
+                    <Badge 
+                      variant="outline" 
+                      className="text-xs gap-1 border-green-600 text-green-600 cursor-pointer hover:bg-muted"
+                      onClick={(e) => { e.stopPropagation(); onSectionChange?.('jobs'); }}
                     >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                      <Briefcase className="h-2.5 w-2.5" />
+                      Job
+                    </Badge>
+                  )}
+                  {estimate.valid_until && (
+                    <span className="text-xs text-muted-foreground">
+                      Valid until {format(new Date(estimate.valid_until), 'MMM dd, yyyy')}
+                    </span>
+                  )}
+                </RowBadgeGroup>
+              </RowContent>
 
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+              {/* Amount */}
+              <RowAmount 
+                amount={estimate.total_amount} 
+                badge={getDeliveryBadge(estimate)}
+              />
+
+              {/* Actions */}
+              <RowActions>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={(e) => { e.stopPropagation(); handleEdit(estimate); }}
+                  title="View/Edit"
+                >
+                  <Eye className="h-4 w-4" />
+                </Button>
+                
+                {estimate.client_email && estimate.status === 'draft' && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={(e) => { e.stopPropagation(); handleSendEstimate(estimate); }}
+                    disabled={isSendingEstimate}
+                    title="Send"
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                )}
+
+                {estimate.client_email && estimate.status !== 'draft' && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={(e) => { e.stopPropagation(); handleSendEstimate(estimate); }}
+                    disabled={isSendingEstimate}
+                    title="Resend"
+                  >
+                    <RefreshCw className={`h-4 w-4 ${isSendingEstimate ? 'animate-spin' : ''}`} />
+                  </Button>
+                )}
+
+                {/* Convert to Customer button */}
+                {(estimate.status === 'sent' || estimate.status === 'accepted' || estimate.signed_at) && !estimate.customer_id && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                    onClick={(e) => { e.stopPropagation(); handleConvertToCustomer(estimate); }}
+                    disabled={isConverting === estimate.id}
+                    title="Convert to Customer"
+                  >
+                    {isConverting === estimate.id ? (
+                      <RefreshCw className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Users className="h-4 w-4" />
+                    )}
+                  </Button>
+                )}
+
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={(e) => { e.stopPropagation(); duplicateEstimate(estimate.id); }}
+                  disabled={isDuplicatingEstimate}
+                  title="Duplicate"
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-destructive hover:text-destructive"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (window.confirm('Are you sure you want to delete this estimate?')) {
+                      deleteEstimate(estimate.id);
+                    }
+                  }}
+                  title="Delete"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+
+                <ChevronRight className="h-4 w-4 text-muted-foreground ml-1" />
+              </RowActions>
+            </HorizontalRowCard>
           ))}
         </MobileStack>
       ) : (

@@ -3,12 +3,13 @@ import { useCustomers } from '@/hooks/useCustomers';
 import { useEstimates } from '@/hooks/useEstimates';
 import { useJobs } from '@/hooks/useJobs';
 import { Button } from '@/components/ui/button';
-import { Plus, Phone, Mail, Briefcase, Home, FileText } from 'lucide-react';
+import { Plus, Phone, Mail, Briefcase, Home, FileText, ChevronRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import AddCustomerDialog from '../AddCustomerDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { HorizontalRowCard, RowAvatar, RowContent, RowTitleLine, RowMetaLine, RowBadgeGroup, RowActions } from './HorizontalRowCard';
 
 interface CustomersSectionProps {
   onSectionChange?: (section: string) => void;
@@ -107,61 +108,58 @@ export default function CustomersSection({ onSectionChange }: CustomersSectionPr
         </div>
 
         {/* Horizontal List */}
-        <div className="space-y-2">
+        <div className="space-y-3">
           {customers.map((customer) => {
             const { linkedEstimate, linkedJobs } = getCustomerData(customer);
             
             return (
-              <div 
-                key={customer.id} 
-                className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
-              >
+              <HorizontalRowCard key={customer.id}>
                 {/* Avatar */}
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                  <span className="text-sm font-semibold text-primary">
-                    {customer.name.charAt(0).toUpperCase()}
-                  </span>
-                </div>
+                <RowAvatar initials={customer.name.charAt(0).toUpperCase()} />
 
                 {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-medium text-sm truncate">{customer.name}</h3>
-                    <Badge variant="secondary" className="text-xs shrink-0">
+                <RowContent>
+                  <RowTitleLine>
+                    <h3 className="font-semibold text-sm sm:text-base truncate max-w-[200px]">
+                      {customer.name}
+                    </h3>
+                    <Badge variant="secondary" className="text-xs">
                       {customer.customer_type}
                     </Badge>
-                  </div>
-                  <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
-                    {customer.phone && <span className="truncate">{customer.phone}</span>}
-                    {customer.email && <span className="truncate hidden sm:inline">{customer.email}</span>}
-                  </div>
+                  </RowTitleLine>
+                  
+                  <RowMetaLine>
+                    {customer.phone && <span className="truncate max-w-[120px]">{customer.phone}</span>}
+                    {customer.email && <span className="truncate max-w-[180px] hidden sm:inline">{customer.email}</span>}
+                  </RowMetaLine>
+
                   {/* Linked Records */}
-                  <div className="flex items-center gap-2 mt-1">
+                  <RowBadgeGroup>
                     {linkedEstimate && (
                       <Badge 
                         variant="outline" 
-                        className="text-xs gap-1 cursor-pointer hover:bg-muted py-0"
+                        className="text-xs gap-1 cursor-pointer hover:bg-muted"
                         onClick={() => onSectionChange?.('estimates')}
                       >
-                        <FileText className="h-3 w-3" />
-                        Est
+                        <FileText className="h-2.5 w-2.5" />
+                        Estimate
                       </Badge>
                     )}
                     {linkedJobs.length > 0 && (
                       <Badge 
                         variant="outline" 
-                        className="text-xs gap-1 cursor-pointer hover:bg-muted border-green-600 text-green-600 py-0"
+                        className="text-xs gap-1 cursor-pointer hover:bg-muted border-green-600 text-green-600"
                         onClick={() => onSectionChange?.('jobs')}
                       >
-                        <Briefcase className="h-3 w-3" />
+                        <Briefcase className="h-2.5 w-2.5" />
                         {linkedJobs.length} Job{linkedJobs.length > 1 ? 's' : ''}
                       </Badge>
                     )}
-                  </div>
-                </div>
+                  </RowBadgeGroup>
+                </RowContent>
 
                 {/* Actions */}
-                <div className="flex items-center gap-1 shrink-0">
+                <RowActions>
                   {customer.phone && (
                     <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
                       <a href={`tel:${customer.phone}`}>
@@ -193,8 +191,9 @@ export default function CustomersSection({ onSectionChange }: CustomersSectionPr
                   >
                     <Briefcase className="h-4 w-4" />
                   </Button>
-                </div>
-              </div>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground ml-1" />
+                </RowActions>
+              </HorizontalRowCard>
             );
           })}
 
