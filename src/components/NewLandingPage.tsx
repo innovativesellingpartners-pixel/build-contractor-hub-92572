@@ -94,15 +94,33 @@ export function NewLandingPage() {
     <div className="min-h-screen bg-background">
       <MainSiteHeader onContactClick={() => setActiveContactForm("contact-sales")} />
 
-      {/* Floating Try for Free Button */}
-      <Link to="/trial-signup" className="fixed bottom-24 right-4 z-50">
+      {/* Floating Try for Free Button - Top Left */}
+      <Link to="/trial-signup" className="fixed top-20 left-4 z-50">
         <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-2xl hover:shadow-primary/50 px-6 py-3 rounded-full font-semibold transition-all hover:scale-105">
           <Rocket className="mr-2 h-4 w-4" />
           Try CT1 Free
         </Button>
       </Link>
 
-      {/* Sticky Floating CTA Button */}
+      {/* CT1 Pocketbot - Top Right */}
+      <div className="fixed top-20 right-4 z-50">
+        <div
+          onClick={() => setShowPocketbot(true)}
+          className="group relative cursor-pointer"
+        >
+          <div className="flex items-center gap-2 bg-foreground/95 backdrop-blur-md text-background px-4 py-3 rounded-full shadow-2xl hover:shadow-primary/50 transition-all duration-300 hover:scale-105 border-2 border-primary/30">
+            <div className="relative">
+              <div className="h-10 w-10 bg-primary/20 rounded-full flex items-center justify-center border border-primary/30">
+                <Bot className="h-5 w-5 text-primary" />
+              </div>
+              <div className="absolute -top-1 -right-1 h-3 w-3 bg-primary rounded-full animate-pulse"></div>
+            </div>
+            <span className="font-bold text-sm">Try Pocketbot</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Sticky Floating CTA Button - Bottom Right */}
       <div className="fixed bottom-6 right-4 z-50">
         <Dialog open={activeContactForm === "floating-cta"} onOpenChange={(open) => setActiveContactForm(open ? "floating-cta" : null)}>
           <DialogTrigger asChild>
@@ -121,24 +139,6 @@ export function NewLandingPage() {
             />
           </DialogContent>
         </Dialog>
-      </div>
-
-      {/* CT1 Pocketbot - Floating Button */}
-      <div className="fixed bottom-6 left-4 z-50">
-        <div
-          onClick={() => setShowPocketbot(true)}
-          className="group relative cursor-pointer"
-        >
-          <div className="flex items-center gap-2 bg-foreground/95 backdrop-blur-md text-background px-4 py-3 rounded-full shadow-2xl hover:shadow-primary/50 transition-all duration-300 hover:scale-105 border-2 border-primary/30">
-            <div className="relative">
-              <div className="h-10 w-10 bg-primary/20 rounded-full flex items-center justify-center border border-primary/30">
-                <Bot className="h-5 w-5 text-primary" />
-              </div>
-              <div className="absolute -top-1 -right-1 h-3 w-3 bg-primary rounded-full animate-pulse"></div>
-            </div>
-            <span className="font-bold text-sm">Try Pocketbot</span>
-          </div>
-        </div>
       </div>
 
       {/* SECTION 1: Hero */}
