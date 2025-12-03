@@ -217,10 +217,10 @@ async function refreshGoogleToken(connection: any, supabase: any): Promise<strin
 
 async function fetchGoogleCalendarEvents(accessToken: string): Promise<any[]> {
   try {
-    // Fetch events from next 30 days
+    // Fetch events from next 6 months (180 days)
     const now = new Date();
     const timeMin = now.toISOString();
-    const timeMax = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
+    const timeMax = new Date(now.getTime() + 180 * 24 * 60 * 60 * 1000).toISOString();
 
     const url = `https://www.googleapis.com/calendar/v3/calendars/primary/events?` +
       `timeMin=${encodeURIComponent(timeMin)}&` +
