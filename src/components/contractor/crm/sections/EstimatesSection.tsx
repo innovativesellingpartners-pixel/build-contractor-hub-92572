@@ -13,6 +13,7 @@ import { format } from 'date-fns';
 import { MobileOptimizedWrapper, MobileStack } from './MobileOptimizedWrapper';
 import { supabase } from '@/integrations/supabase/client';
 import { HorizontalRowCard, RowAvatar, RowContent, RowTitleLine, RowMetaLine, RowBadgeGroup, RowAmount, RowActions } from './HorizontalRowCard';
+import { EstimateDetailViewBlue } from './EstimateDetailViewBlue';
 
 export default function EstimatesSection({ onSectionChange }: { onSectionChange?: (section: string) => void }) {
   const { estimates, isLoading, createEstimate, createEstimateAsync, updateEstimate, updateEstimateAsync, deleteEstimate, sendEstimate, sendEstimateAsync, isSendingEstimate, duplicateEstimate, isDuplicatingEstimate } = useEstimates();
@@ -20,6 +21,8 @@ export default function EstimatesSection({ onSectionChange }: { onSectionChange?
   const { user } = useAuth();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedEstimate, setSelectedEstimate] = useState<any>(null);
+  const [detailViewOpen, setDetailViewOpen] = useState(false);
+  const [selectedEstimateForDetail, setSelectedEstimateForDetail] = useState<any>(null);
   const [isConverting, setIsConverting] = useState<string | null>(null);
 
   // Convert estimate to customer (new linear flow)
@@ -163,6 +166,26 @@ export default function EstimatesSection({ onSectionChange }: { onSectionChange?
     setIsFormOpen(true);
   };
 
+  const handleOpenDetail = (estimate: any) => {
+    setSelectedEstimateForDetail(estimate);
+    setDetailViewOpen(true);
+  };
+
+  const handleEditFromDetail = (estimate: any) => {
+    setDetailViewOpen(false);
+    setSelectedEstimate(estimate);
+    setIsFormOpen(true);
+  };
+
+  const handleSendFromDetail = async (estimate: any) => {
+    await handleSendEstimate(estimate);
+  };
+
+  const handleDuplicateFromDetail = (estimateId: string) => {
+    duplicateEstimate(estimateId);
+    setDetailViewOpen(false);
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'draft':
@@ -240,7 +263,7 @@ export default function EstimatesSection({ onSectionChange }: { onSectionChange?
       ) : estimates && estimates.length > 0 ? (
         <MobileStack className="space-y-3">
           {estimates.map((estimate: any) => (
-            <HorizontalRowCard key={estimate.id} onClick={() => handleEdit(estimate)}>
+            <HorizontalRowCard key={estimate.id} onClick={() => handleOpenDetail(estimate)}>
               {/* Avatar */}
               <RowAvatar initials={getInitials(estimate.client_name)} />
 
@@ -432,6 +455,22 @@ export default function EstimatesSection({ onSectionChange }: { onSectionChange?
             }}
             initialData={selectedEstimate}
           />
+        </DialogContent>
+      </Dialog>
+
+      {/* Estimate Detail View Dialog */}
+      <Dialog open={detailViewOpen} onOpenChange={setDetailViewOpen}>
+        <DialogContent className="max-w-2xl max-h-[95vh] p-0 overflow-hidden">
+          {selectedEstimateForDetail && (
+            <EstimateDetailViewBlue
+              estimate={selectedEstimateForDetail}
+              onClose={() => setDetailViewOpen(false)}
+              onSectionChange={onSectionChange}
+              onEdit={() => handleEditFromDetail(selectedEstimateForDetail)}
+              onSend={() => handleSendFromDetail(selectedEstimateForDetail)}
+              onDuplicate={() => handleDuplicateFromDetail(selectedEstimateForDetail.id)}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </MobileOptimizedWrapper>

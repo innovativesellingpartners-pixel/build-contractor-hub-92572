@@ -6,10 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Plus, Phone, Mail, Briefcase, Home, FileText, ChevronRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import AddCustomerDialog from '../AddCustomerDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { HorizontalRowCard, RowAvatar, RowContent, RowTitleLine, RowMetaLine, RowBadgeGroup, RowActions } from './HorizontalRowCard';
+import { CustomerDetailViewBlue } from './CustomerDetailViewBlue';
 
 interface CustomersSectionProps {
   onSectionChange?: (section: string) => void;
@@ -21,6 +23,13 @@ export default function CustomersSection({ onSectionChange }: CustomersSectionPr
   const { jobs } = useJobs();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [convertingCustomer, setConvertingCustomer] = useState<any>(null);
+  const [detailViewOpen, setDetailViewOpen] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
+
+  const handleOpenDetail = (customer: any) => {
+    setSelectedCustomer(customer);
+    setDetailViewOpen(true);
+  };
 
   const handleConvertToJob = async () => {
     if (!convertingCustomer) return;
@@ -113,7 +122,7 @@ export default function CustomersSection({ onSectionChange }: CustomersSectionPr
             const { linkedEstimate, linkedJobs } = getCustomerData(customer);
             
             return (
-              <HorizontalRowCard key={customer.id}>
+              <HorizontalRowCard key={customer.id} onClick={() => handleOpenDetail(customer)}>
                 {/* Avatar */}
                 <RowAvatar initials={customer.name.charAt(0).toUpperCase()} />
 
@@ -161,14 +170,14 @@ export default function CustomersSection({ onSectionChange }: CustomersSectionPr
                 {/* Actions */}
                 <RowActions>
                   {customer.phone && (
-                    <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" asChild onClick={(e) => e.stopPropagation()}>
                       <a href={`tel:${customer.phone}`}>
                         <Phone className="h-4 w-4" />
                       </a>
                     </Button>
                   )}
                   {customer.email && (
-                    <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" asChild onClick={(e) => e.stopPropagation()}>
                       <a href={`mailto:${customer.email}`}>
                         <Mail className="h-4 w-4" />
                       </a>
@@ -177,7 +186,7 @@ export default function CustomersSection({ onSectionChange }: CustomersSectionPr
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={() => setConvertingCustomer(customer)}
+                    onClick={(e) => { e.stopPropagation(); setConvertingCustomer(customer); }}
                     className="hidden sm:flex"
                   >
                     <Briefcase className="h-4 w-4 mr-1" />
@@ -186,7 +195,7 @@ export default function CustomersSection({ onSectionChange }: CustomersSectionPr
                   <Button 
                     variant="outline" 
                     size="icon"
-                    onClick={() => setConvertingCustomer(customer)}
+                    onClick={(e) => { e.stopPropagation(); setConvertingCustomer(customer); }}
                     className="sm:hidden h-8 w-8"
                   >
                     <Briefcase className="h-4 w-4" />
@@ -230,6 +239,20 @@ export default function CustomersSection({ onSectionChange }: CustomersSectionPr
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Customer Detail View Dialog */}
+      <Dialog open={detailViewOpen} onOpenChange={setDetailViewOpen}>
+        <DialogContent className="max-w-2xl max-h-[95vh] p-0 overflow-hidden">
+          {selectedCustomer && (
+            <CustomerDetailViewBlue
+              customer={selectedCustomer}
+              onClose={() => setDetailViewOpen(false)}
+              onSectionChange={onSectionChange}
+              onCreateJob={() => setConvertingCustomer(selectedCustomer)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
