@@ -3,8 +3,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Plus, FileText, Calendar, DollarSign, Trash2, Eye, Send, CheckCircle, Clock, AlertCircle, RefreshCw, Home, Briefcase, Copy } from 'lucide-react';
+import { Plus, FileText, Calendar, DollarSign, Trash2, Eye, Send, CheckCircle, Clock, AlertCircle, RefreshCw, Home, Users, Copy, ArrowRight, ArrowLeft, Briefcase } from 'lucide-react';
 import { useEstimates } from '@/hooks/useEstimates';
+import { useLeads } from '@/hooks/useLeads';
 import EstimateForm from '../EstimateForm';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -15,11 +16,77 @@ import { supabase } from '@/integrations/supabase/client';
 
 export default function EstimatesSection({ onSectionChange }: { onSectionChange?: (section: string) => void }) {
   const { estimates, isLoading, createEstimate, createEstimateAsync, updateEstimate, updateEstimateAsync, deleteEstimate, sendEstimate, sendEstimateAsync, isSendingEstimate, duplicateEstimate, isDuplicatingEstimate } = useEstimates();
+  const { leads } = useLeads();
   const { user } = useAuth();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedEstimate, setSelectedEstimate] = useState<any>(null);
   const [isConverting, setIsConverting] = useState<string | null>(null);
 
+  // Convert estimate to customer (new linear flow)
+  const handleConvertToCustomer = async (estimate: any) => {
+    if (estimate.customer_id) {
+      toast.info('This estimate already has a customer');
+      onSectionChange?.('customers');
+      return;
+    }
+
+    setIsConverting(estimate.id);
+    try {
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (!currentUser) throw new Error('Not authenticated');
+
+      // Create customer from estimate data
+      const { data: newCustomer, error: customerError } = await supabase
+        .from('customers')
+        .insert([{
+          user_id: currentUser.id,
+          name: estimate.client_name || 'Unknown Customer',
+          email: estimate.client_email || null,
+          phone: estimate.client_phone || null,
+          address: estimate.site_address || estimate.client_address || null,
+          customer_type: 'residential',
+          estimate_id: estimate.id,
+          notes: `Created from estimate: ${estimate.title}`,
+        }])
+        .select()
+        .single();
+
+      if (customerError) throw customerError;
+
+      // Update estimate to link to customer and mark as accepted
+      const { error: updateError } = await supabase
+        .from('estimates')
+        .update({ 
+          customer_id: newCustomer.id, 
+          status: 'accepted' 
+        })
+        .eq('id', estimate.id);
+
+      if (updateError) throw updateError;
+
+      // If estimate was linked to a lead, update the lead
+      if (estimate.lead_id) {
+        await supabase
+          .from('leads')
+          .update({ 
+            customer_id: newCustomer.id, 
+            converted_to_customer: true,
+            status: 'won'
+          })
+          .eq('id', estimate.lead_id);
+      }
+
+      toast.success('Customer created from estimate!');
+      onSectionChange?.('customers');
+    } catch (error: any) {
+      console.error('Error converting estimate to customer:', error);
+      toast.error(`Failed to create customer: ${error.message}`);
+    } finally {
+      setIsConverting(null);
+    }
+  };
+
+  // Legacy: Convert estimate directly to job (skip customer)
   const handleConvertToJob = async (estimate: any) => {
     if (estimate.job_id) {
       toast.info('This estimate has already been converted to a job');
@@ -35,7 +102,6 @@ export default function EstimatesSection({ onSectionChange }: { onSectionChange?
       if (error) throw error;
 
       toast.success('Estimate converted to job successfully!');
-      // Navigate to jobs section
       onSectionChange?.('jobs');
     } catch (error: any) {
       console.error('Error converting estimate to job:', error);
@@ -43,6 +109,10 @@ export default function EstimatesSection({ onSectionChange }: { onSectionChange?
     } finally {
       setIsConverting(null);
     }
+  };
+
+  const getLinkedLead = (estimate: any) => {
+    return leads?.find(l => l.id === estimate.lead_id);
   };
 
   const handleSubmit = async (data: any, isDraft: boolean) => {
@@ -262,11 +332,22 @@ export default function EstimatesSection({ onSectionChange }: { onSectionChange?
 
                 {/* Actions */}
                 <div className="flex flex-wrap items-center gap-2 pt-2">
+                  {/* Linked Lead indicator */}
+                  {estimate.lead_id && (
+                    <Badge 
+                      variant="outline" 
+                      className="gap-1 cursor-pointer hover:bg-muted"
+                      onClick={() => onSectionChange?.('leads')}
+                    >
+                      <ArrowLeft className="h-3 w-3" />
+                      Lead
+                    </Badge>
+                  )}
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => handleEdit(estimate)}
-                    className="flex-1 min-w-[140px]"
+                    className="flex-1 min-w-[100px]"
                   >
                     <Eye className="h-4 w-4 mr-2" />
                     View/Edit
@@ -279,7 +360,7 @@ export default function EstimatesSection({ onSectionChange }: { onSectionChange?
                           size="sm"
                           onClick={() => handleSendEstimate(estimate)}
                           disabled={isSendingEstimate}
-                          className="flex-1 min-w-[120px]"
+                          className="flex-1 min-w-[100px]"
                         >
                           <Send className="h-4 w-4 mr-2" />
                           Send
@@ -291,7 +372,7 @@ export default function EstimatesSection({ onSectionChange }: { onSectionChange?
                           size="sm"
                           onClick={() => handleSendEstimate(estimate)}
                           disabled={isSendingEstimate}
-                          className="flex-1 min-w-[120px] gap-2"
+                          className="gap-2"
                         >
                           <RefreshCw className={`h-4 w-4 ${isSendingEstimate ? 'animate-spin' : ''}`} />
                           Resend
@@ -299,28 +380,45 @@ export default function EstimatesSection({ onSectionChange }: { onSectionChange?
                       )}
                     </>
                   )}
-                  {/* Convert to Job button - show when estimate is accepted/signed and not already converted */}
-                  {(estimate.status === 'accepted' || estimate.status === 'sold' || estimate.signed_at) && !estimate.job_id && (
+                  {/* PRIMARY: Convert to Customer - Linear flow */}
+                  {(estimate.status === 'sent' || estimate.status === 'accepted' || estimate.signed_at) && !estimate.customer_id && (
                     <Button
                       variant="default"
                       size="sm"
-                      onClick={() => handleConvertToJob(estimate)}
+                      onClick={() => handleConvertToCustomer(estimate)}
                       disabled={isConverting === estimate.id}
-                      className="flex-1 min-w-[140px] bg-green-600 hover:bg-green-700"
+                      className="flex-1 min-w-[140px] bg-blue-600 hover:bg-blue-700"
                     >
                       {isConverting === estimate.id ? (
                         <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
                       ) : (
-                        <Briefcase className="h-4 w-4 mr-2" />
+                        <Users className="h-4 w-4 mr-2" />
                       )}
-                      Convert to Job
+                      Convert to Customer
                     </Button>
+                  )}
+                  {/* Show linked customer indicator */}
+                  {estimate.customer_id && !estimate.job_id && (
+                    <Badge 
+                      variant="outline" 
+                      className="gap-1 border-blue-600 text-blue-600 cursor-pointer hover:bg-muted"
+                      onClick={() => onSectionChange?.('customers')}
+                    >
+                      <Users className="h-3 w-3" />
+                      Customer
+                      <ArrowRight className="h-3 w-3" />
+                    </Badge>
                   )}
                   {/* Show linked job indicator */}
                   {estimate.job_id && (
-                    <Badge variant="outline" className="gap-1 border-green-600 text-green-600">
+                    <Badge 
+                      variant="outline" 
+                      className="gap-1 border-green-600 text-green-600 cursor-pointer hover:bg-muted"
+                      onClick={() => onSectionChange?.('jobs')}
+                    >
                       <Briefcase className="h-3 w-3" />
-                      Job Created
+                      Job
+                      <ArrowRight className="h-3 w-3" />
                     </Badge>
                   )}
                   <Button

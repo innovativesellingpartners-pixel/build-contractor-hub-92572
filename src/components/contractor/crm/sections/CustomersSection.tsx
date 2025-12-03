@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useCustomers } from '@/hooks/useCustomers';
+import { useEstimates } from '@/hooks/useEstimates';
+import { useJobs } from '@/hooks/useJobs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, Phone, Mail, MapPin, Briefcase, Home, FileText } from 'lucide-react';
+import { Plus, Phone, Mail, MapPin, Briefcase, Home, FileText, ArrowRight, ArrowLeft } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import AddCustomerDialog from '../AddCustomerDialog';
@@ -15,9 +17,10 @@ interface CustomersSectionProps {
 
 export default function CustomersSection({ onSectionChange }: CustomersSectionProps) {
   const { customers, loading } = useCustomers();
+  const { estimates } = useEstimates();
+  const { jobs } = useJobs();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [convertingCustomer, setConvertingCustomer] = useState<any>(null);
-  const [buildingEstimateFor, setBuildingEstimateFor] = useState<any>(null);
 
   const handleConvertToJob = async () => {
     if (!convertingCustomer) return;
@@ -27,6 +30,9 @@ export default function CustomersSection({ onSectionChange }: CustomersSectionPr
 
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
+
+      // Find linked estimate for this customer to get pricing
+      const linkedEstimate = estimates?.find(e => e.customer_id === convertingCustomer.id);
 
       // Create a new job from the customer
       const { data: newJob, error: jobError } = await supabase
@@ -41,11 +47,21 @@ export default function CustomersSection({ onSectionChange }: CustomersSectionPr
           zip_code: convertingCustomer.zip_code || null,
           status: 'scheduled',
           notes: convertingCustomer.notes || null,
+          contract_value: linkedEstimate?.grand_total || linkedEstimate?.total_amount || 0,
+          original_estimate_id: linkedEstimate?.id || null,
         }])
         .select()
         .single();
 
       if (jobError) throw jobError;
+
+      // Update the estimate to link to this job
+      if (linkedEstimate) {
+        await supabase
+          .from('estimates')
+          .update({ job_id: newJob.id, status: 'sold' })
+          .eq('id', linkedEstimate.id);
+      }
 
       toast.success('Job created successfully!', { id: 'convert-customer' });
       setConvertingCustomer(null);
@@ -60,46 +76,11 @@ export default function CustomersSection({ onSectionChange }: CustomersSectionPr
     }
   };
 
-  const handleBuildEstimate = async () => {
-    if (!buildingEstimateFor) return;
-
-    try {
-      toast.loading('Creating estimate for customer...', { id: 'build-estimate' });
-
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
-
-      // Create a new estimate from the customer
-      const { data: newEstimate, error: estimateError } = await supabase
-        .from('estimates')
-        .insert([{
-          title: `Estimate for ${buildingEstimateFor.name}`,
-          user_id: user.id,
-          customer_id: buildingEstimateFor.id,
-          client_name: buildingEstimateFor.name,
-          client_email: buildingEstimateFor.email || null,
-          client_address: buildingEstimateFor.address 
-            ? `${buildingEstimateFor.address}${buildingEstimateFor.city ? `, ${buildingEstimateFor.city}` : ''}${buildingEstimateFor.state ? `, ${buildingEstimateFor.state}` : ''}${buildingEstimateFor.zip_code ? ` ${buildingEstimateFor.zip_code}` : ''}`.trim()
-            : null,
-          status: 'draft',
-          total_amount: 0,
-        }])
-        .select()
-        .single();
-
-      if (estimateError) throw estimateError;
-
-      toast.success('Estimate created successfully!', { id: 'build-estimate' });
-      setBuildingEstimateFor(null);
-
-      // Navigate to estimates section if available
-      if (onSectionChange) {
-        setTimeout(() => onSectionChange('estimates'), 500);
-      }
-    } catch (error: any) {
-      console.error('Error creating estimate:', error);
-      toast.error('Failed to create estimate: ' + error.message, { id: 'build-estimate' });
-    }
+  // Get linked data for each customer
+  const getCustomerData = (customer: any) => {
+    const linkedEstimate = estimates?.find(e => e.customer_id === customer.id);
+    const linkedJobs = jobs?.filter(j => j.customer_id === customer.id) || [];
+    return { linkedEstimate, linkedJobs };
   };
 
   if (loading) {
@@ -110,85 +91,135 @@ export default function CustomersSection({ onSectionChange }: CustomersSectionPr
     <div className="w-full h-full overflow-y-auto overflow-x-hidden pb-20 bg-background">
       <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 w-full sm:max-w-7xl sm:mx-auto">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div className="flex-1">
-          <h1 className="text-2xl sm:text-3xl font-bold">Customers</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">Manage your customer database</p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => onSectionChange?.('dashboard')}>
-            <Home className="h-4 w-4 mr-2" />
-            <span className="hidden sm:inline">Contractor Hub</span>
-          </Button>
-          <Button onClick={() => setIsAddDialogOpen(true)} className="w-full sm:w-auto">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Customer
-          </Button>
-        </div>
+          <div className="flex-1">
+            <h1 className="text-2xl sm:text-3xl font-bold">Customers</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">Manage your customer database</p>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => onSectionChange?.('dashboard')}>
+              <Home className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">Contractor Hub</span>
+            </Button>
+            <Button onClick={() => setIsAddDialogOpen(true)} className="w-full sm:w-auto">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Customer
+            </Button>
+          </div>
         </div>
 
+        {/* Sales Flow Indicator */}
+        <Card className="bg-muted/50">
+          <CardContent className="py-4">
+            <div className="flex items-center justify-center gap-2 text-sm flex-wrap">
+              <Badge variant="outline">Lead</Badge>
+              <ArrowRight className="w-4 h-4 text-muted-foreground" />
+              <Badge variant="outline">Estimate</Badge>
+              <ArrowRight className="w-4 h-4 text-muted-foreground" />
+              <Badge variant="default" className="bg-primary">Customer</Badge>
+              <ArrowRight className="w-4 h-4 text-muted-foreground" />
+              <Badge variant="outline">Job</Badge>
+              <ArrowRight className="w-4 h-4 text-muted-foreground" />
+              <Badge variant="outline">PSFU</Badge>
+            </div>
+          </CardContent>
+        </Card>
+
         <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-        {customers.map((customer) => (
-          <Card key={customer.id} className="hover:shadow-lg transition-shadow">
-            <CardHeader className="pb-3 px-4 pt-4 sm:px-6 sm:pt-6">
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex-1 min-w-0">
-                  <CardTitle className="text-base sm:text-lg truncate">{customer.name}</CardTitle>
-                </div>
-                <Badge variant={customer.customer_type === 'commercial' ? 'default' : 'secondary'} className="shrink-0 text-xs">
-                  {customer.customer_type}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3 px-4 pb-4 sm:px-6 sm:pb-6">
-              {customer.phone && (
-                <div className="flex items-center gap-2 text-xs sm:text-sm min-w-0">
-                  <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <a href={`tel:${customer.phone}`} className="hover:underline truncate">
-                    {customer.phone}
-                  </a>
-                </div>
-              )}
-              {customer.email && (
-                <div className="flex items-center gap-2 text-xs sm:text-sm min-w-0">
-                  <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <a href={`mailto:${customer.email}`} className="hover:underline truncate">
-                    {customer.email}
-                  </a>
-                </div>
-              )}
-              {customer.address && (
-                <div className="flex items-start gap-2 text-xs sm:text-sm min-w-0">
-                  <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
-                  <span className="line-clamp-2">
-                    {customer.address}
-                    {customer.city && `, ${customer.city}`}
-                    {customer.state && `, ${customer.state}`}
-                  </span>
-                </div>
-              )}
-              <div className="pt-2 flex gap-2">
-                <Button 
-                  size="sm" 
-                  variant="outline"
-                  onClick={() => setConvertingCustomer(customer)}
-                  className="flex-1"
-                >
-                  <Briefcase className="h-4 w-4 mr-2" />
-                  <span className="text-xs sm:text-sm">Create Job</span>
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="outline"
-                  onClick={() => setBuildingEstimateFor(customer)}
-                  className="flex-1"
-                >
-                  <FileText className="h-4 w-4 mr-2" />
-                  <span className="text-xs sm:text-sm">Build Estimate</span>
-                </Button>
-              </div>
-            </CardContent>
-            </Card>
-          ))}
+          {customers.map((customer) => {
+            const { linkedEstimate, linkedJobs } = getCustomerData(customer);
+            
+            return (
+              <Card key={customer.id} className="hover:shadow-lg transition-shadow">
+                <CardHeader className="pb-3 px-4 pt-4 sm:px-6 sm:pt-6">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <CardTitle className="text-base sm:text-lg truncate">{customer.name}</CardTitle>
+                    </div>
+                    <Badge variant="secondary" className="shrink-0 text-xs">
+                      {customer.customer_type}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-3 px-4 pb-4 sm:px-6 sm:pb-6">
+                  {customer.phone && (
+                    <div className="flex items-center gap-2 text-xs sm:text-sm min-w-0">
+                      <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <a href={`tel:${customer.phone}`} className="hover:underline truncate">
+                        {customer.phone}
+                      </a>
+                    </div>
+                  )}
+                  {customer.email && (
+                    <div className="flex items-center gap-2 text-xs sm:text-sm min-w-0">
+                      <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <a href={`mailto:${customer.email}`} className="hover:underline truncate">
+                        {customer.email}
+                      </a>
+                    </div>
+                  )}
+                  {customer.address && (
+                    <div className="flex items-start gap-2 text-xs sm:text-sm min-w-0">
+                      <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
+                      <span className="line-clamp-2">
+                        {customer.address}
+                        {customer.city && `, ${customer.city}`}
+                        {customer.state && `, ${customer.state}`}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Linked Records */}
+                  <div className="flex flex-wrap gap-2 pt-2 border-t">
+                    {linkedEstimate && (
+                      <Badge 
+                        variant="outline" 
+                        className="gap-1 cursor-pointer hover:bg-muted"
+                        onClick={() => onSectionChange?.('estimates')}
+                      >
+                        <ArrowLeft className="h-3 w-3" />
+                        <FileText className="h-3 w-3" />
+                        Estimate
+                      </Badge>
+                    )}
+                    {linkedJobs.length > 0 && (
+                      <Badge 
+                        variant="outline" 
+                        className="gap-1 cursor-pointer hover:bg-muted border-green-600 text-green-600"
+                        onClick={() => onSectionChange?.('jobs')}
+                      >
+                        <Briefcase className="h-3 w-3" />
+                        {linkedJobs.length} Job{linkedJobs.length > 1 ? 's' : ''}
+                        <ArrowRight className="h-3 w-3" />
+                      </Badge>
+                    )}
+                  </div>
+
+                  <div className="pt-2">
+                    {linkedJobs.length === 0 ? (
+                      <Button 
+                        size="sm" 
+                        onClick={() => setConvertingCustomer(customer)}
+                        className="w-full"
+                      >
+                        <Briefcase className="h-4 w-4 mr-2" />
+                        <span className="text-xs sm:text-sm">Convert to Job</span>
+                      </Button>
+                    ) : (
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => setConvertingCustomer(customer)}
+                        className="w-full"
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        <span className="text-xs sm:text-sm">Add Another Job</span>
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       </div>
 
@@ -203,31 +234,16 @@ export default function CustomersSection({ onSectionChange }: CustomersSectionPr
           <AlertDialogHeader>
             <AlertDialogTitle>Create Job for Customer?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will create a new job for {convertingCustomer?.name}. You can add more details to the job later.
+              This will create a new job for {convertingCustomer?.name}. 
+              {estimates?.find(e => e.customer_id === convertingCustomer?.id) && (
+                <> The linked estimate will be marked as sold.</>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleConvertToJob}>
               Create Job
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Build Estimate Dialog */}
-      <AlertDialog open={!!buildingEstimateFor} onOpenChange={() => setBuildingEstimateFor(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Build Estimate for Customer?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will create a new estimate for {buildingEstimateFor?.name}. You can add line items and details to the estimate next.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleBuildEstimate}>
-              Build Estimate
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
