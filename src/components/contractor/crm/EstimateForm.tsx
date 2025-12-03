@@ -115,6 +115,15 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
   const [permitFeeSurcharge, setPermitFeeSurcharge] = useState(0);
   const [requiredDepositPercent, setRequiredDepositPercent] = useState(30.0);
 
+  // Referred By
+  const [referredBy, setReferredBy] = useState('');
+
+  // Signature printed names and acceptance dates
+  const [contractorPrintedName, setContractorPrintedName] = useState('');
+  const [clientPrintedName, setClientPrintedName] = useState('');
+  const [contractorAcceptanceDate, setContractorAcceptanceDate] = useState('');
+  const [clientAcceptanceDate, setClientAcceptanceDate] = useState('');
+
   // Customers
   const { customers, refreshCustomers } = useCustomers();
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | undefined>(undefined);
@@ -250,6 +259,15 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
       setInsuranceText(initialData.terms_insurance || '');
       setWarrantyYears(initialData.terms_warranty_years || 2);
 
+      // Load referred by
+      setReferredBy(initialData.referred_by || '');
+
+      // Load signature printed names and dates
+      setContractorPrintedName(initialData.contractor_printed_name || '');
+      setClientPrintedName(initialData.client_printed_name || '');
+      setContractorAcceptanceDate(initialData.contractor_acceptance_date || '');
+      setClientAcceptanceDate(initialData.client_acceptance_date || '');
+
       // Load signatures if they exist
       if (initialData.contractor_signature && contractorSigRef.current) {
         contractorSigRef.current.fromDataURL(initialData.contractor_signature);
@@ -286,6 +304,11 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
       setScopeKeyDeliverables([]);
       setScopeExclusions([]);
       setScopeTimeline('');
+      setReferredBy('');
+      setContractorPrintedName('');
+      setClientPrintedName('');
+      setContractorAcceptanceDate('');
+      setClientAcceptanceDate('');
       contractorSigRef.current?.clear();
       clientSigRef.current?.clear();
     }
@@ -501,8 +524,18 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
       terms_warranty_years: warrantyYears,
       
       trade_specific: tradeSpecific,
+      
+      // Referred by
+      referred_by: referredBy,
+      
+      // Signatures with printed names and dates
       contractor_signature: contractorSigRef.current?.toDataURL(),
+      contractor_printed_name: contractorPrintedName,
+      contractor_acceptance_date: contractorAcceptanceDate || (contractorSigRef.current && !contractorSigRef.current.isEmpty() ? new Date().toISOString().split('T')[0] : null),
       client_signature: clientSigRef.current?.toDataURL(),
+      client_printed_name: clientPrintedName,
+      client_acceptance_date: clientAcceptanceDate || (clientSigRef.current && !clientSigRef.current.isEmpty() ? new Date().toISOString().split('T')[0] : null),
+      
       status: isDraft ? 'draft' : (initialData?.status || 'draft'),
       total_amount: grandTotal,
     };
@@ -676,6 +709,16 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
                     <div className="space-y-2">
                       <Label htmlFor="valid_until">Valid Until</Label>
                       <Input id="valid_until" type="date" {...register('valid_until')} />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="referred_by">Referred By</Label>
+                      <Input 
+                        id="referred_by" 
+                        value={referredBy}
+                        onChange={(e) => setReferredBy(e.target.value)}
+                        placeholder="How did they hear about you?"
+                      />
                     </div>
                   </div>
 
@@ -1040,43 +1083,111 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
           {/* Signatures */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-xl">Signatures</CardTitle>
+              <CardTitle className="text-xl">Signatures & Acceptance</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label>Contractor Signature</Label>
-                <div className="border rounded-lg">
-                  <SignatureCanvas
-                    ref={contractorSigRef}
-                    canvasProps={{ className: 'w-full h-32 bg-background' }}
-                  />
+            <CardContent className="space-y-6">
+              {/* Contractor Signature Section */}
+              <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
+                <h4 className="font-semibold text-lg">Contractor</h4>
+                <div className="space-y-2">
+                  <Label>Contractor Signature</Label>
+                  <div className="border rounded-lg bg-background">
+                    <SignatureCanvas
+                      ref={contractorSigRef}
+                      canvasProps={{ className: 'w-full h-32 bg-background' }}
+                      onEnd={() => {
+                        // Auto-fill acceptance date when signature is added
+                        if (!contractorAcceptanceDate) {
+                          setContractorAcceptanceDate(new Date().toISOString().split('T')[0]);
+                        }
+                      }}
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      contractorSigRef.current?.clear();
+                      setContractorAcceptanceDate('');
+                    }}
+                  >
+                    Clear
+                  </Button>
                 </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => contractorSigRef.current?.clear()}
-                >
-                  Clear
-                </Button>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="contractor_printed_name">Printed Name</Label>
+                    <Input 
+                      id="contractor_printed_name"
+                      value={contractorPrintedName}
+                      onChange={(e) => setContractorPrintedName(e.target.value)}
+                      placeholder="Full legal name"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="contractor_acceptance_date">Date of Acceptance</Label>
+                    <Input 
+                      id="contractor_acceptance_date"
+                      type="date"
+                      value={contractorAcceptanceDate}
+                      onChange={(e) => setContractorAcceptanceDate(e.target.value)}
+                    />
+                  </div>
+                </div>
               </div>
 
-              <div className="space-y-2">
-                <Label>Client Signature</Label>
-                <div className="border rounded-lg">
-                  <SignatureCanvas
-                    ref={clientSigRef}
-                    canvasProps={{ className: 'w-full h-32 bg-background' }}
-                  />
+              {/* Client Signature Section */}
+              <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
+                <h4 className="font-semibold text-lg">Client</h4>
+                <div className="space-y-2">
+                  <Label>Client Signature</Label>
+                  <div className="border rounded-lg bg-background">
+                    <SignatureCanvas
+                      ref={clientSigRef}
+                      canvasProps={{ className: 'w-full h-32 bg-background' }}
+                      onEnd={() => {
+                        // Auto-fill acceptance date when signature is added
+                        if (!clientAcceptanceDate) {
+                          setClientAcceptanceDate(new Date().toISOString().split('T')[0]);
+                        }
+                      }}
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      clientSigRef.current?.clear();
+                      setClientAcceptanceDate('');
+                    }}
+                  >
+                    Clear
+                  </Button>
                 </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => clientSigRef.current?.clear()}
-                >
-                  Clear
-                </Button>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="client_printed_name">Printed Name</Label>
+                    <Input 
+                      id="client_printed_name"
+                      value={clientPrintedName}
+                      onChange={(e) => setClientPrintedName(e.target.value)}
+                      placeholder="Full legal name"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="client_acceptance_date">Date of Acceptance</Label>
+                    <Input 
+                      id="client_acceptance_date"
+                      type="date"
+                      value={clientAcceptanceDate}
+                      onChange={(e) => setClientAcceptanceDate(e.target.value)}
+                    />
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
