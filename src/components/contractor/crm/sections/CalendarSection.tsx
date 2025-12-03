@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar, Plug, Check, Loader2, X, RefreshCw, Clock, MapPin, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
+import { Calendar, Plug, Check, Loader2, X, RefreshCw, Clock, MapPin, ChevronDown, ChevronUp, Trash2, Plus, Briefcase } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -230,25 +230,48 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
     <div className="w-full h-full overflow-y-auto overflow-x-hidden pb-20 bg-background">
       <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 w-full sm:max-w-7xl sm:mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
               Calendar
             </h1>
             <p className="text-muted-foreground text-sm">Sync and manage your schedule</p>
           </div>
-          {hasAnyConnection && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={fetchEvents}
-              disabled={loadingEvents}
-              className="gap-2"
-            >
-              <RefreshCw className={`h-4 w-4 ${loadingEvents ? 'animate-spin' : ''}`} />
-              Refresh
-            </Button>
-          )}
+          <div className="flex items-center gap-2 flex-wrap">
+            {hasAnyConnection && (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onSectionChange?.('jobs')}
+                  className="gap-2"
+                >
+                  <Briefcase className="h-4 w-4" />
+                  <span className="hidden sm:inline">Create Job</span>
+                  <span className="sm:hidden">Job</span>
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => onSectionChange?.('jobs')}
+                  className="gap-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span className="hidden sm:inline">Schedule Meeting</span>
+                  <span className="sm:hidden">Meeting</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={fetchEvents}
+                  disabled={loadingEvents}
+                  className="gap-2"
+                >
+                  <RefreshCw className={`h-4 w-4 ${loadingEvents ? 'animate-spin' : ''}`} />
+                  <span className="hidden sm:inline">Refresh</span>
+                </Button>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Connected Accounts Summary - Compact when connected */}
