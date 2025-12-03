@@ -48,15 +48,16 @@ const VOICE_CONFIG = {
   silenceDurationMs: 700,     // Wait for natural pause before responding
   
   // Keep-alive intervals (ms) - CRITICAL for preventing timeouts
-  // OpenAI Realtime has a ~60 second idle timeout - we must send session.update to reset it
+  // OpenAI Realtime API closes after ~60 seconds of no audio activity
+  // We must send periodic audio keepalives to prevent disconnection
   keepAliveIntervalMs: 15000,  // Send Twilio mark every 15 seconds
-  sessionPingIntervalMs: 25000, // Send session.update every 25 seconds (well under 60s timeout)
+  openaiAudioKeepAliveMs: 10000, // Send silent audio to OpenAI every 10 seconds
   
   // Audio buffer settings
   audioBufferMs: 100,         // Small buffer for low latency
   
   // Session management
-  maxSessionDurationMs: 30 * 60 * 1000, // 30 minutes max call duration
+  maxSessionDurationMs: 60 * 60 * 1000, // 60 minutes max call duration (increased from 30)
 };
 
 /**
@@ -462,6 +463,23 @@ Deno.serve(async (req) => {
     }
   };
 
+  // Generate silent PCM16 audio buffer (minimal size, ~50ms at 24kHz)
+  const generateSilentAudio = (): string => {
+    // 24000 samples/sec * 0.05 sec = 1200 samples
+    // Each sample is 2 bytes (Int16)
+    const silentSamples = new Int16Array(1200);
+    // Fill with very low amplitude noise to prevent detection as true silence
+    for (let i = 0; i < silentSamples.length; i++) {
+      silentSamples[i] = Math.floor(Math.random() * 10) - 5; // -5 to +5
+    }
+    const uint8 = new Uint8Array(silentSamples.buffer);
+    let binary = '';
+    for (let i = 0; i < uint8.length; i++) {
+      binary += String.fromCharCode(uint8[i]);
+    }
+    return btoa(binary);
+  };
+
   // Setup keep-alive ping - CRITICAL for preventing session timeouts
   const setupKeepAlive = () => {
     if (keepAliveInterval) clearInterval(keepAliveInterval);
@@ -479,36 +497,31 @@ Deno.serve(async (req) => {
       }
     }, VOICE_CONFIG.keepAliveIntervalMs);
     
-    // TRUE SESSION KEEP-ALIVE: Send session.update every 25 seconds
-    // This is the ONLY reliable way to reset OpenAI's ~60 second idle timeout
-    // Appending silent audio does NOT work - the session tracks actual interaction
+    // OpenAI AUDIO KEEP-ALIVE: Send minimal silent audio every 10 seconds
+    // The OpenAI Realtime API has a ~60 second timeout based on audio activity
+    // session.update does NOT reset this timer - only audio activity does
     sessionPingInterval = setInterval(() => {
       if (openaiWs && openaiWs.readyState === WebSocket.OPEN) {
         sessionPingCounter++;
         
-        // Send a session.update which resets the idle timer
-        // We just re-confirm the same settings which doesn't change behavior
+        // Send a tiny amount of silent audio to reset the idle timer
+        const silentAudio = generateSilentAudio();
         openaiWs.send(JSON.stringify({
-          type: 'session.update',
-          session: {
-            // Minimal update that still resets the timer
-            input_audio_transcription: {
-              model: 'whisper-1'
-            }
-          }
+          type: 'input_audio_buffer.append',
+          audio: silentAudio
         }));
         
-        Logger.info('session_ping_sent', { 
+        Logger.info('audio_keepalive_sent', { 
           pingNumber: sessionPingCounter,
           lastAudioMs: lastAudioTime ? Date.now() - lastAudioTime : null,
           callDurationMs: callStartTime ? Date.now() - callStartTime : 0
         });
       }
-    }, VOICE_CONFIG.sessionPingIntervalMs);
+    }, VOICE_CONFIG.openaiAudioKeepAliveMs);
     
     Logger.info('keepalive_setup', { 
       twilioIntervalMs: VOICE_CONFIG.keepAliveIntervalMs,
-      sessionPingIntervalMs: VOICE_CONFIG.sessionPingIntervalMs,
+      openaiAudioKeepAliveMs: VOICE_CONFIG.openaiAudioKeepAliveMs,
       maxDurationMs: VOICE_CONFIG.maxSessionDurationMs
     });
   };
