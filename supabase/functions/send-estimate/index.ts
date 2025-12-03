@@ -99,13 +99,14 @@ const handler = async (req: Request): Promise<Response> => {
     // Fetch contractor profile for branding
     const { data: profile } = await supabase
       .from('profiles')
-      .select('company_name, logo_url, phone')
+      .select('company_name, logo_url, phone, business_address, city, state')
       .eq('user_id', estimate.user_id)
       .single();
 
     const companyName = profile?.company_name || contractorName;
     const logoSrc = profile?.logo_url || 'https://faqrzzodtmsybofakcvv.supabase.co/storage/v1/object/public/company-logos/ct1-logo-circle.png';
     const companyPhone = profile?.phone || '';
+    const companyAddress = [profile?.business_address, profile?.city, profile?.state].filter(Boolean).join(', ');
 
     // Send email to client
     const recipients = [estimate.client_email];
@@ -144,14 +145,14 @@ const handler = async (req: Request): Promise<Response> => {
       console.error('PDF generation failed:', pdfError);
     }
 
-    // Premium email template
+    // Premium email template with classic, elegant design
     const emailHtml = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Your Estimate from ${companyName}</title>
+  <title>Estimate from ${companyName}</title>
   <!--[if mso]>
   <noscript>
     <xml>
@@ -162,42 +163,51 @@ const handler = async (req: Request): Promise<Response> => {
   </noscript>
   <![endif]-->
 </head>
-<body style="margin: 0; padding: 0; background-color: #f8f9fa; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f8f9fa;">
+<body style="margin: 0; padding: 0; background-color: #f4f1eb; font-family: Georgia, 'Times New Roman', serif;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f4f1eb;">
     <tr>
       <td align="center" style="padding: 40px 20px;">
-        <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="max-width: 600px; width: 100%;">
+        <table role="presentation" width="640" cellspacing="0" cellpadding="0" border="0" style="max-width: 640px; width: 100%;">
           
           <!-- Header -->
           <tr>
-            <td style="background: linear-gradient(135deg, #E02424 0%, #B91C1C 100%); border-radius: 16px 16px 0 0; padding: 40px 48px;">
+            <td style="background-color: #161e2c; padding: 0;">
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                 <tr>
-                  <td width="60" valign="middle">
-                    <img src="${logoSrc}" alt="${companyName}" width="50" height="50" style="display: block; border-radius: 10px; border: 2px solid rgba(255,255,255,0.2);">
-                  </td>
-                  <td style="padding-left: 16px;" valign="middle">
-                    <h1 style="margin: 0; font-size: 24px; font-weight: 700; color: #ffffff; letter-spacing: -0.5px;">${companyName}</h1>
-                    <p style="margin: 4px 0 0 0; font-size: 14px; color: rgba(255,255,255,0.9);">Professional Contractor Services</p>
+                  <td style="padding: 32px 40px;">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td valign="middle">
+                          <img src="${logoSrc}" alt="${companyName}" width="48" height="48" style="display: inline-block; border-radius: 8px; margin-right: 16px; vertical-align: middle;">
+                          <span style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 22px; font-weight: 700; color: #ffffff; letter-spacing: -0.5px; vertical-align: middle;">${companyName.toUpperCase()}</span>
+                        </td>
+                        <td align="right" valign="middle">
+                          <span style="background-color: #d59f47; color: #161e2c; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 12px; font-weight: 700; padding: 10px 20px; border-radius: 4px; letter-spacing: 1px;">ESTIMATE</span>
+                        </td>
+                      </tr>
+                    </table>
                   </td>
                 </tr>
               </table>
             </td>
           </tr>
-          
-          <!-- Estimate Badge -->
+
+          <!-- Reference Bar -->
           <tr>
-            <td style="background-color: #ffffff; padding: 0 48px;">
+            <td style="background-color: #f9f8f5; border-bottom: 1px solid #e8e4dc; padding: 20px 40px;">
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                 <tr>
-                  <td style="padding: 30px 0 24px 0; border-bottom: 1px solid #e5e7eb;">
-                    <table role="presentation" cellspacing="0" cellpadding="0" border="0">
-                      <tr>
-                        <td style="background-color: #111827; padding: 8px 20px; border-radius: 24px;">
-                          <span style="color: #ffffff; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">ESTIMATE ${estimate.estimate_number || ''}</span>
-                        </td>
-                      </tr>
-                    </table>
+                  <td width="33%">
+                    <span style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 10px; color: #999999; text-transform: uppercase; letter-spacing: 1px;">Reference No.</span><br>
+                    <span style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 14px; font-weight: 600; color: #222222;">${estimate.estimate_number || '—'}</span>
+                  </td>
+                  <td width="33%">
+                    <span style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 10px; color: #999999; text-transform: uppercase; letter-spacing: 1px;">Date Issued</span><br>
+                    <span style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 14px; font-weight: 600; color: #222222;">${formatDate(estimate.created_at)}</span>
+                  </td>
+                  <td width="33%">
+                    <span style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 10px; color: #999999; text-transform: uppercase; letter-spacing: 1px;">Valid Until</span><br>
+                    <span style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 14px; font-weight: 600; color: #222222;">${formatDate(estimate.valid_until) || '30 Days'}</span>
                   </td>
                 </tr>
               </table>
@@ -206,100 +216,61 @@ const handler = async (req: Request): Promise<Response> => {
           
           <!-- Main Content -->
           <tr>
-            <td style="background-color: #ffffff; padding: 32px 48px;">
-              <h2 style="margin: 0 0 16px 0; font-size: 28px; font-weight: 700; color: #111827; letter-spacing: -0.5px;">Hello ${estimate.client_name || 'Valued Customer'},</h2>
-              <p style="margin: 0 0 24px 0; font-size: 16px; line-height: 1.7; color: #4b5563;">
-                Thank you for the opportunity to provide you with an estimate. We've prepared a detailed proposal for <strong style="color: #111827;">${estimate.title}</strong> and are excited to potentially work with you on this project.
+            <td style="background-color: #ffffff; padding: 40px;">
+              <h2 style="margin: 0 0 20px 0; font-size: 26px; font-weight: 400; color: #161e2c; font-family: Georgia, 'Times New Roman', serif;">Dear ${estimate.client_name || 'Valued Customer'},</h2>
+              <p style="margin: 0 0 24px 0; font-size: 16px; line-height: 1.8; color: #444444; font-family: Georgia, 'Times New Roman', serif;">
+                Thank you for the opportunity to provide you with an estimate. Please find enclosed our detailed proposal for your project:
               </p>
-            </td>
-          </tr>
-          
-          <!-- Estimate Summary Card -->
-          <tr>
-            <td style="background-color: #ffffff; padding: 0 48px 32px 48px;">
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f9fafb; border-radius: 12px; border: 1px solid #e5e7eb;">
+              
+              <!-- Project Card -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f9f8f5; border: 1px solid #e8e4dc; border-radius: 8px; margin-bottom: 24px;">
                 <tr>
                   <td style="padding: 24px;">
-                    <h3 style="margin: 0 0 20px 0; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #E02424;">Estimate Summary</h3>
-                    
-                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
-                      <tr>
-                        <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
-                          <span style="font-size: 13px; color: #6b7280;">Project</span><br>
-                          <span style="font-size: 15px; font-weight: 600; color: #111827;">${estimate.title}</span>
-                        </td>
-                      </tr>
-                      ${estimate.site_address ? `
-                      <tr>
-                        <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
-                          <span style="font-size: 13px; color: #6b7280;">Location</span><br>
-                          <span style="font-size: 15px; font-weight: 600; color: #111827;">${estimate.site_address}</span>
-                        </td>
-                      </tr>
-                      ` : ''}
-                      ${estimate.valid_until ? `
-                      <tr>
-                        <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
-                          <span style="font-size: 13px; color: #6b7280;">Valid Until</span><br>
-                          <span style="font-size: 15px; font-weight: 600; color: #111827;">${formatDate(estimate.valid_until)}</span>
-                        </td>
-                      </tr>
-                      ` : ''}
-                    </table>
-                    
-                    <!-- Total Amount -->
-                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-top: 20px;">
-                      <tr>
-                        <td style="background: linear-gradient(135deg, #E02424 0%, #B91C1C 100%); border-radius: 10px; padding: 20px; text-align: center;">
-                          <span style="display: block; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.9); margin-bottom: 8px;">Total Investment</span>
-                          <span style="display: block; font-size: 32px; font-weight: 700; color: #ffffff;">${formatCurrency(estimate.total_amount || estimate.grand_total || 0)}</span>
-                          ${estimate.required_deposit ? `<span style="display: block; font-size: 13px; color: rgba(255,255,255,0.9); margin-top: 8px;">Deposit: ${formatCurrency(estimate.required_deposit)}</span>` : ''}
-                        </td>
-                      </tr>
-                    </table>
+                    <span style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 11px; color: #d59f47; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Project Details</span>
+                    <h3 style="margin: 8px 0 12px 0; font-size: 20px; font-weight: 600; color: #161e2c; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;">${estimate.title}</h3>
+                    ${estimate.site_address ? `<p style="margin: 0 0 8px 0; font-size: 14px; color: #666666; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;">📍 ${estimate.site_address}</p>` : ''}
+                    ${estimate.trade_type ? `<p style="margin: 0; font-size: 14px; color: #666666; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;">🔧 ${estimate.trade_type}</p>` : ''}
                   </td>
                 </tr>
               </table>
-            </td>
-          </tr>
-          
-          <!-- CTA Button -->
-          <tr>
-            <td style="background-color: #ffffff; padding: 0 48px 32px 48px; text-align: center;">
-              <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 0 auto;">
+              
+              <!-- Total Investment -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #161e2c; border-radius: 8px; margin-bottom: 24px;">
                 <tr>
-                  <td style="background: linear-gradient(135deg, #E02424 0%, #B91C1C 100%); border-radius: 10px;">
-                    <a href="${publicUrl}" target="_blank" style="display: inline-block; padding: 18px 48px; font-size: 16px; font-weight: 700; color: #ffffff; text-decoration: none; letter-spacing: 0.5px;">
+                  <td style="padding: 28px; text-align: center;">
+                    <span style="display: block; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #d59f47; margin-bottom: 8px; font-weight: 600;">Total Investment</span>
+                    <span style="display: block; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 36px; font-weight: 700; color: #ffffff;">${formatCurrency(estimate.total_amount || estimate.grand_total || 0)}</span>
+                    ${estimate.required_deposit ? `<span style="display: block; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 13px; color: #d59f47; margin-top: 12px;">Deposit Required: ${formatCurrency(estimate.required_deposit)}</span>` : ''}
+                  </td>
+                </tr>
+              </table>
+              
+              <!-- CTA Button -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                  <td align="center" style="padding: 8px 0 24px 0;">
+                    <a href="${publicUrl}" target="_blank" style="display: inline-block; background-color: #d59f47; color: #161e2c; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 14px; font-weight: 700; padding: 16px 40px; border-radius: 6px; text-decoration: none; letter-spacing: 0.5px;">
                       VIEW, SIGN &amp; PAY ONLINE →
                     </a>
                   </td>
                 </tr>
               </table>
-              <p style="margin: 16px 0 0 0; font-size: 13px; color: #9ca3af;">
-                Click the button above to review your complete estimate
+              
+              <p style="margin: 0; font-size: 13px; color: #999999; text-align: center; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;">
+                Click the button above to review the complete estimate online
               </p>
             </td>
           </tr>
           
           <!-- PDF Notice -->
           <tr>
-            <td style="background-color: #ffffff; padding: 0 48px 32px 48px;">
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #fef3c7; border-radius: 10px; border-left: 4px solid #f59e0b;">
+            <td style="background-color: #ffffff; padding: 0 40px 32px 40px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #fef9e7; border-left: 4px solid #d59f47; border-radius: 0 6px 6px 0;">
                 <tr>
-                  <td style="padding: 20px;">
-                    <table role="presentation" cellspacing="0" cellpadding="0" border="0">
-                      <tr>
-                        <td width="24" valign="top">
-                          <span style="font-size: 18px;">📎</span>
-                        </td>
-                        <td style="padding-left: 12px;">
-                          <p style="margin: 0; font-size: 14px; font-weight: 600; color: #92400e;">PDF Attached</p>
-                          <p style="margin: 4px 0 0 0; font-size: 13px; color: #a16207; line-height: 1.5;">
-                            A detailed PDF of your estimate is attached to this email for your records.
-                          </p>
-                        </td>
-                      </tr>
-                    </table>
+                  <td style="padding: 16px 20px;">
+                    <p style="margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 14px; color: #8b7355;">
+                      <strong>📎 PDF Attached</strong> — A detailed PDF of your estimate is attached to this email for your records.
+                    </p>
                   </td>
                 </tr>
               </table>
@@ -308,15 +279,15 @@ const handler = async (req: Request): Promise<Response> => {
           
           <!-- Contact Section -->
           <tr>
-            <td style="background-color: #ffffff; padding: 0 48px 40px 48px;">
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f9fafb; border-radius: 10px;">
+            <td style="background-color: #ffffff; padding: 0 40px 40px 40px; border-bottom-left-radius: 0; border-bottom-right-radius: 0;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-top: 1px solid #e8e4dc; padding-top: 24px;">
                 <tr>
-                  <td style="padding: 24px; text-align: center;">
-                    <p style="margin: 0 0 8px 0; font-size: 15px; font-weight: 600; color: #111827;">Questions? We're here to help.</p>
-                    <p style="margin: 0; font-size: 14px; color: #6b7280;">
-                      Reply to this email or contact us at<br>
-                      <a href="mailto:${contractorEmail}" style="color: #E02424; font-weight: 600; text-decoration: none;">${contractorEmail}</a>
-                      ${companyPhone ? `<br><span style="color: #111827;">${companyPhone}</span>` : ''}
+                  <td>
+                    <p style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: #161e2c; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;">Questions? We're here to help.</p>
+                    <p style="margin: 0; font-size: 14px; color: #666666; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;">
+                      Reply to this email or contact us at 
+                      <a href="mailto:${contractorEmail}" style="color: #d59f47; text-decoration: none;">${contractorEmail}</a>
+                      ${companyPhone ? ` • ${companyPhone}` : ''}
                     </p>
                   </td>
                 </tr>
@@ -326,14 +297,14 @@ const handler = async (req: Request): Promise<Response> => {
           
           <!-- Footer -->
           <tr>
-            <td style="background-color: #111827; border-radius: 0 0 16px 16px; padding: 32px 48px; text-align: center;">
-              <p style="margin: 0 0 8px 0; font-size: 13px; color: rgba(255,255,255,0.7);">
+            <td style="background-color: #161e2c; padding: 28px 40px; text-align: center;">
+              <p style="margin: 0 0 8px 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 12px; color: rgba(255,255,255,0.6);">
                 This estimate was prepared specifically for ${estimate.client_name || 'you'}.
               </p>
-              <p style="margin: 0 0 16px 0; font-size: 12px; color: rgba(255,255,255,0.5);">
-                All pricing and terms are confidential and subject to the conditions in the attached document.
+              <p style="margin: 0 0 16px 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 11px; color: rgba(255,255,255,0.4);">
+                ${companyAddress ? `${companyAddress} • ` : ''}All pricing and terms are confidential.
               </p>
-              <p style="margin: 0; font-size: 13px; color: #E02424; font-weight: 600;">
+              <p style="margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 11px; color: #d59f47; font-weight: 600;">
                 Powered by CT1 Constructeam
               </p>
             </td>
@@ -352,7 +323,7 @@ const handler = async (req: Request): Promise<Response> => {
       to: recipients,
       bcc,
       reply_to: contractorEmail || undefined,
-      subject: `Estimate from ${contractorName} - ${estimate.title}`,
+      subject: `Estimate from ${companyName} - ${estimate.title}`,
       html: emailHtml,
     };
 
@@ -376,94 +347,51 @@ const handler = async (req: Request): Promise<Response> => {
         const retry = await resend.emails.send({
           from: `${contractorName} <${effectiveFromEmail}>`,
           to: [ownerEmail],
-          subject: `Forward to ${estimate.client_name} <${estimate.client_email}> — Estimate from ${contractorName}`,
+          subject: `Forward to ${estimate.client_name} <${estimate.client_email}> — Estimate from ${companyName}`,
           html: `
-            <div style="font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-              <div style="background:#FFF7ED;border:1px solid #FDBA74;color:#7C2D12;padding:16px;border-radius:8px;margin-bottom:24px;">
+            <div style="font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif; max-width: 640px; margin: 0 auto; padding: 20px;">
+              <div style="background:#FEF9E7;border:1px solid #D59F47;color:#8B7355;padding:16px;border-radius:8px;margin-bottom:24px;">
                 <strong>⚠️ Test Mode:</strong> Your email service is in test mode. Please forward this estimate to ${estimate.client_name} &lt;${estimate.client_email}&gt;.
               </div>
-              <p style="font-size: 16px; color: #374151; margin-bottom: 24px;">Click below to view the full estimate:</p>
-              <a href="${publicUrl}" style="display:inline-block;background:#E02424;color:#fff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:600;">View Full Estimate</a>
-              <p style="color:#6B7280;font-size:13px;margin-top:24px;">Or copy this link: ${publicUrl}</p>
+              ${emailHtml}
             </div>
           `,
-          reply_to: contractorEmail || undefined,
-          attachments,
+          attachments: attachments,
         });
-        emailResponse = retry as any;
+        console.log('Fallback email sent to owner:', JSON.stringify(retry, null, 2));
         usedFallback = true;
-        console.log('Retry response:', JSON.stringify(emailResponse, null, 2));
+        emailResponse = retry;
       }
     }
 
-    // Final error handling
-    if (emailResponse?.error) {
-      console.error('Resend error:', emailResponse.error);
-      return new Response(JSON.stringify({
-        success: false,
-        error: `Failed to send email: ${JSON.stringify(emailResponse.error)}`,
-      }), {
-        status: 400,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      });
+    if (emailResponse.error) {
+      throw new Error(emailResponse.error.message);
     }
 
-    if (!emailResponse?.data) {
-      console.error('No email data returned from Resend');
-      return new Response(JSON.stringify({
-        success: false,
-        error: 'Email was not accepted by the email service',
-      }), {
-        status: 400,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      });
-    }
-
-    // Update estimate record
-    console.log('Email accepted with ID:', emailResponse.data.id);
-    const now = new Date().toISOString();
-    const updateData: Record<string, any> = {
-      last_send_attempt: now,
-      email_provider_id: emailResponse.data.id,
-      email_send_error: null,
-    };
-    if (!usedFallback) {
-      updateData.status = 'sent';
-      updateData.sent_at = now;
-    } else {
-      updateData.email_send_error = `Sent to account owner only (test mode). Please forward to ${estimate.client_email}.`;
-    }
-
-    const { error: updateError } = await supabase
+    // Update estimate with sent timestamp
+    await supabase
       .from('estimates')
-      .update(updateData)
+      .update({ 
+        sent_at: new Date().toISOString(),
+        status: estimate.status === 'draft' ? 'sent' : estimate.status,
+      })
       .eq('id', estimateId);
 
-    if (updateError) {
-      console.error('Failed to update estimate:', updateError);
-    }
-
     return new Response(
-      JSON.stringify({
-        success: true,
-        emailId: emailResponse.data.id,
-        sentTo: recipients,
+      JSON.stringify({ 
+        success: true, 
+        messageId: emailResponse.data?.id,
         usedFallback,
-        pdfAttached: !!(attachments && attachments.length > 0),
+        note: usedFallback ? 'Email sent to your account email due to Resend test mode. Please forward to client.' : undefined
       }),
-      {
-        status: 200,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      }
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
-  } catch (error: any) {
-    console.error("Error in send-estimate function:", error);
+  } catch (error: unknown) {
+    console.error("Error sending estimate:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return new Response(
-      JSON.stringify({ success: false, error: error.message }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      }
+      JSON.stringify({ error: errorMessage }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 };
