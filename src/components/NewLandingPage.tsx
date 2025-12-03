@@ -45,15 +45,12 @@ export function NewLandingPage() {
   const [showPocketbot, setShowPocketbot] = useState(false);
 
   const featureCards = [
-    { icon: Users, title: "Lead Management", description: "Capture web leads, calls, and referrals in one place. Track source, status, and next steps." },
-    { icon: HardHat, title: "Job Management", description: "Schedule crews, assign tasks, and track progress from first visit to job completion." },
-    { icon: Calculator, title: "Estimating & Proposals", description: "Build professional estimates fast, send digitally, and track approvals." },
-    { icon: Briefcase, title: "Customer Management & CRM", description: "Store every contact, note, call, and job history. Keep relationships strong for repeat work." },
-    { icon: Mic, title: "Voice AI", description: "Answer inbound calls with voice AI support, route them to the right person, and log outcomes." },
-    { icon: GraduationCap, title: "Full Sales Training Suite", description: "Structured sales training for owners, reps, and office staff, aligned with CT1 workflows." },
-    { icon: BookOpen, title: "Business Training & Playbooks", description: "On-demand training on pricing, leadership, hiring, and process, tailored to contractors." },
-    { icon: BarChart3, title: "Dashboards & Reporting", description: "See pipeline, close rate, revenue, and job status in one view." },
-    { icon: Headset, title: "Support & Success", description: "Real people who understand trades, ready to help your team succeed on the platform." },
+    { icon: GraduationCap, title: "Business & Sales Training", description: "Structured sales training for owners, reps, and office staff, aligned with CT1 workflows.", link: "/features/training" },
+    { icon: Users, title: "Full Customer Management Suite", description: "Store every contact, note, call, and job history. Keep relationships strong for repeat work.", link: "/features/crm" },
+    { icon: Calculator, title: "Estimating & Proposals", description: "Build professional estimates fast, send digitally, and track approvals.", link: "/features/estimating" },
+    { icon: HardHat, title: "Jobs Management", description: "Schedule crews, assign tasks, and track progress from first visit to job completion.", link: "/features/jobs" },
+    { icon: Mic, title: "Voice AI", description: "Answer inbound calls with voice AI support, route them to the right person, and log outcomes.", link: "/features/voice-ai" },
+    { icon: BarChart3, title: "Dashboard & Reporting", description: "See pipeline, close rate, revenue, and job status in one view.", link: "/features/reporting" },
   ];
 
   const tradesBadges = [
