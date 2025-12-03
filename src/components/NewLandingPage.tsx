@@ -201,13 +201,11 @@ export function NewLandingPage() {
               <img src={constructeamLogo} alt="CONSTRUCTEAM CT1" className="h-20 w-20 sm:h-24 sm:w-24 drop-shadow-lg" />
             </div>
             
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4 leading-tight drop-shadow-lg">
-              A nationwide network of contractors,
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-12 leading-tight drop-shadow-lg uppercase tracking-wide">
+              <span className="block">A NATIONWIDE NETWORK</span>
+              <span className="block">OF CONTRACTORS</span>
+              <span className="block text-primary">POWERED BY CT1</span>
             </h1>
-            
-            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-12 leading-tight drop-shadow-lg">
-              <span className="text-primary">Powered by CT1</span>
-            </h2>
             
             <p className="text-lg sm:text-xl md:text-2xl mb-10 leading-relaxed drop-shadow-md opacity-90 max-w-4xl mx-auto">
               Complete contractor management combining proposals, job tracking, billing, client communication, 
