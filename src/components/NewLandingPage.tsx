@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { ContactForm } from "@/components/ContactForm";
 import { MainSiteHeader } from "@/components/MainSiteHeader";
 import { Pocketbot } from "@/components/contractor/Pocketbot";
-import heroImage from "@/assets/hero-construction.jpg";
+import heroImage from "@/assets/hero-home.jpg";
 import ct1Logo from "@/assets/ct1-logo-main.png";
 import { 
   ArrowRight, 
@@ -218,7 +218,7 @@ export function NewLandingPage() {
             {/* Right: Logo without background */}
             <div className="hidden lg:flex items-center justify-center">
               <div className="relative">
-                <img src={ct1Logo} alt="CT1" className="h-40 w-40 drop-shadow-2xl" />
+                <img src={ct1Logo} alt="CT1" className="h-72 w-72 drop-shadow-2xl" />
               </div>
             </div>
           </div>
