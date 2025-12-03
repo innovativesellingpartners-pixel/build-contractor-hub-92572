@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, ChevronDown } from "lucide-react";
+import { Menu, ChevronDown, Bot, Mic, Rocket, TrendingUp, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -45,50 +45,70 @@ export function MobileNav({ onContactClick }: MobileNavProps) {
               Products
               <ChevronDown className={`h-5 w-5 transition-transform ${productsOpen ? 'rotate-180' : ''}`} />
             </CollapsibleTrigger>
-            <CollapsibleContent className="pl-4 space-y-2 mt-2">
+            <CollapsibleContent className="pl-4 space-y-3 mt-2">
               <Link 
                 to="/products/pocketbot" 
-                className="block text-base text-muted-foreground hover:text-primary transition-colors py-2"
+                className="flex items-center gap-3 py-2 hover:bg-muted rounded-lg px-2 transition-colors"
                 onClick={() => setOpen(false)}
               >
-                myCT1 Pocketbot
+                <Bot className="h-5 w-5 text-primary" />
+                <div>
+                  <div className="text-base font-medium text-foreground">myCT1 Pocketbot</div>
+                  <p className="text-xs text-muted-foreground">Complete AI business assistant</p>
+                </div>
               </Link>
               <Link 
                 to="/products/voice-ai" 
-                className="block text-base text-muted-foreground hover:text-primary transition-colors py-2"
+                className="flex items-center gap-3 py-2 hover:bg-muted rounded-lg px-2 transition-colors"
                 onClick={() => setOpen(false)}
               >
-                AI Voice Assistant
+                <Mic className="h-5 w-5 text-primary" />
+                <div>
+                  <div className="text-base font-medium text-foreground">AI Voice Assistant</div>
+                  <p className="text-xs text-muted-foreground">24/7 AI call handling</p>
+                </div>
               </Link>
               <div className="border-t border-border my-2" />
               <Link 
                 to="/pricing#tier-launch" 
-                className="block text-base text-muted-foreground hover:text-primary transition-colors py-2"
+                className="flex items-center gap-3 py-2 hover:bg-muted rounded-lg px-2 transition-colors"
                 onClick={() => setOpen(false)}
               >
-                myCT1 Launch (Tier 1)
+                <Rocket className="h-5 w-5 text-primary" />
+                <div>
+                  <div className="text-base font-medium text-foreground">myCT1 Launch Growth Starter</div>
+                  <p className="text-xs text-muted-foreground">Perfect for getting started</p>
+                </div>
               </Link>
               <Link 
                 to="/pricing#tier-growth" 
-                className="block text-base text-muted-foreground hover:text-primary transition-colors py-2"
+                className="flex items-center gap-3 py-2 hover:bg-muted rounded-lg px-2 transition-colors"
                 onClick={() => setOpen(false)}
               >
-                myCT1 Growth (Tier 2)
+                <TrendingUp className="h-5 w-5 text-primary" />
+                <div>
+                  <div className="text-base font-medium text-foreground">myCT1 Growth Business Builder</div>
+                  <p className="text-xs text-muted-foreground">Scale your operations</p>
+                </div>
               </Link>
               <Link 
                 to="/pricing#tier-market" 
-                className="block text-base text-muted-foreground hover:text-primary transition-colors py-2"
+                className="flex items-center gap-3 py-2 hover:bg-muted rounded-lg px-2 transition-colors"
                 onClick={() => setOpen(false)}
               >
-                myCT1 Market (Tier 3)
+                <Crown className="h-5 w-5 text-primary" />
+                <div>
+                  <div className="text-base font-medium text-foreground">myCT1 Market Dominator</div>
+                  <p className="text-xs text-muted-foreground">Maximum growth potential</p>
+                </div>
               </Link>
               <div className="border-t border-border my-2" />
               <Link 
                 to="/pricing" 
-                className="block text-base font-medium text-primary hover:text-primary/80 transition-colors py-2"
+                className="flex items-center justify-center gap-2 py-2 bg-primary/10 hover:bg-primary/20 rounded-lg px-2 transition-colors"
                 onClick={() => setOpen(false)}
               >
-                View All Pricing
+                <span className="text-base font-medium text-primary">View All Pricing</span>
               </Link>
             </CollapsibleContent>
           </Collapsible>

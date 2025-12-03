@@ -1,6 +1,18 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { ContactForm } from "@/components/ContactForm";
+import { MobileNav } from "@/components/MobileNav";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from "@/components/ui/navigation-menu";
 import { 
   Bot, 
   Calculator, 
@@ -10,11 +22,20 @@ import {
   GraduationCap,
   CheckCircle,
   ArrowRight,
-  Sparkles
+  Sparkles,
+  Mic,
+  Rocket,
+  TrendingUp,
+  Crown,
+  Play,
+  Pause
 } from "lucide-react";
-import ct1Logo from "@/assets/ct1-logo.png";
+import ct1Logo from "@/assets/ct1-logo-main.png";
 
 const PocketbotProduct = () => {
+  const [activeContactForm, setActiveContactForm] = useState<string | null>(null);
+  const [playingAudio, setPlayingAudio] = useState<string | null>(null);
+
   const modules = [
     {
       icon: Bot,
@@ -57,21 +78,170 @@ const PocketbotProduct = () => {
     "Financial Management"
   ];
 
+  const sampleConversations = [
+    {
+      id: "sales",
+      title: "Sales Bot - Closing a Deal",
+      transcript: [
+        { speaker: "You", text: "I have a customer who seems interested but keeps delaying. What should I do?" },
+        { speaker: "Pocketbot", text: "That's a common situation. Let's address it strategically. First, have you identified their primary concern? Often, delays come from uncertainty about price, timing, or trust." },
+        { speaker: "You", text: "They mentioned the price seems high compared to another quote." },
+        { speaker: "Pocketbot", text: "Perfect - now we know the objection. Here's your approach: Don't compete on price alone. Instead, ask them what's included in the other quote. Then highlight your value differentiators - your warranty, your response time, your reviews. Would you like me to draft a follow-up message that addresses price concerns professionally?" }
+      ]
+    },
+    {
+      id: "estimator",
+      title: "Estimator Bot - Creating a Quote",
+      transcript: [
+        { speaker: "You", text: "I need to create an estimate for a 1,500 sq ft bathroom remodel with tile, new fixtures, and a walk-in shower." },
+        { speaker: "Pocketbot", text: "Great, I'll help you build this estimate. Based on current market rates in your area and a mid-range finish level, here's what I recommend for your line items:" },
+        { speaker: "Pocketbot", text: "Tile work (floor & walls): $4,500-6,000\nWalk-in shower installation: $3,200-4,500\nFixtures (toilet, vanity, faucets): $2,800-4,000\nPlumbing labor: $1,800-2,500\nDemo & prep: $800-1,200\n\nWith your standard 35% markup, you're looking at $18,500-25,200 total. Want me to generate the detailed line items?" },
+        { speaker: "You", text: "Yes, use the mid-range numbers and add permit fees." }
+      ]
+    },
+    {
+      id: "project",
+      title: "Project Manager Bot - Job Tracking",
+      transcript: [
+        { speaker: "You", text: "The Henderson kitchen remodel is running behind. We're 3 days past the original timeline." },
+        { speaker: "Pocketbot", text: "Let me help you get back on track. First, what caused the delay - was it materials, labor availability, or unexpected issues?" },
+        { speaker: "You", text: "The cabinets arrived damaged and we had to reorder." },
+        { speaker: "Pocketbot", text: "Got it. Here's your recovery plan:\n1. Document the damaged cabinets with photos for your records\n2. Contact the supplier for expedited replacement and potential credit\n3. Communicate proactively with the Hendersons - customers appreciate transparency\n4. Shift your crew to complete countertop prep and electrical while waiting\n\nWould you like me to draft a professional update email to send to the customer?" }
+      ]
+    }
+  ];
+
+  const handlePlayAudio = (id: string) => {
+    if (playingAudio === id) {
+      setPlayingAudio(null);
+    } else {
+      setPlayingAudio(id);
+      // Simulate audio playing for 5 seconds
+      setTimeout(() => setPlayingAudio(null), 5000);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <img src={ct1Logo} alt="CT1" className="h-8 w-auto" />
-          </Link>
-          <div className="flex items-center gap-4">
-            <Link to="/pricing">
-              <Button variant="outline">View Pricing</Button>
+      {/* Header - Full Navigation */}
+      <header className="border-b border-border sticky top-0 bg-background/95 backdrop-blur-sm z-50" style={{ paddingTop: "env(safe-area-inset-top)" }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <Link to="/" className="flex items-center space-x-2 sm:space-x-3 hover:opacity-80 transition-opacity">
+              <img src={ct1Logo} alt="CT1 Logo" className="h-10 w-10 sm:h-12 sm:w-12" />
+              <div>
+                <h1 className="text-xl sm:text-2xl font-bold text-foreground">CT1</h1>
+                <p className="text-[10px] sm:text-xs text-muted-foreground font-medium">One-Up Your Business</p>
+              </div>
             </Link>
-            <Link to="/auth">
-              <Button>Get Started</Button>
-            </Link>
+            
+            <nav className="hidden lg:flex items-center space-x-3 xl:space-x-5">
+              <Link to="/what-we-do" className="text-foreground hover:text-primary transition-colors font-medium text-sm">What We Do</Link>
+              
+              {/* Products Dropdown */}
+              <NavigationMenu>
+                <NavigationMenuList>
+                  <NavigationMenuItem>
+                    <NavigationMenuTrigger className="text-foreground hover:text-primary font-medium text-sm bg-transparent">
+                      Products
+                    </NavigationMenuTrigger>
+                    <NavigationMenuContent>
+                      <div className="w-[320px] p-4">
+                        <div className="space-y-1">
+                          <Link to="/products/pocketbot" className="block">
+                            <NavigationMenuLink className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted transition-colors">
+                              <Bot className="h-5 w-5 text-primary mt-0.5" />
+                              <div>
+                                <div className="font-medium text-foreground">myCT1 Pocketbot</div>
+                                <p className="text-xs text-muted-foreground">Complete AI business assistant</p>
+                              </div>
+                            </NavigationMenuLink>
+                          </Link>
+                          <Link to="/products/voice-ai" className="block">
+                            <NavigationMenuLink className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted transition-colors">
+                              <Mic className="h-5 w-5 text-primary mt-0.5" />
+                              <div>
+                                <div className="font-medium text-foreground">AI Voice Assistant</div>
+                                <p className="text-xs text-muted-foreground">24/7 AI call handling</p>
+                              </div>
+                            </NavigationMenuLink>
+                          </Link>
+                        </div>
+                        
+                        <div className="border-t border-border my-3" />
+                        
+                        <div className="space-y-1">
+                          <Link to="/pricing#tier-launch" className="block">
+                            <NavigationMenuLink className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted transition-colors">
+                              <Rocket className="h-5 w-5 text-primary mt-0.5" />
+                              <div>
+                                <div className="font-medium text-foreground">myCT1 Launch Growth Starter</div>
+                                <p className="text-xs text-muted-foreground">Perfect for getting started</p>
+                              </div>
+                            </NavigationMenuLink>
+                          </Link>
+                          <Link to="/pricing#tier-growth" className="block">
+                            <NavigationMenuLink className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted transition-colors">
+                              <TrendingUp className="h-5 w-5 text-primary mt-0.5" />
+                              <div>
+                                <div className="font-medium text-foreground">myCT1 Growth Business Builder</div>
+                                <p className="text-xs text-muted-foreground">Scale your operations</p>
+                              </div>
+                            </NavigationMenuLink>
+                          </Link>
+                          <Link to="/pricing#tier-market" className="block">
+                            <NavigationMenuLink className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted transition-colors">
+                              <Crown className="h-5 w-5 text-primary mt-0.5" />
+                              <div>
+                                <div className="font-medium text-foreground">myCT1 Market Dominator</div>
+                                <p className="text-xs text-muted-foreground">Maximum growth potential</p>
+                              </div>
+                            </NavigationMenuLink>
+                          </Link>
+                        </div>
+                        
+                        <div className="border-t border-border my-3" />
+                        
+                        <Link to="/pricing" className="block">
+                          <NavigationMenuLink className="flex items-center justify-center gap-2 p-2 rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors">
+                            <span className="text-sm font-medium text-primary">View All Pricing</span>
+                            <ArrowRight className="h-4 w-4 text-primary" />
+                          </NavigationMenuLink>
+                        </Link>
+                      </div>
+                    </NavigationMenuContent>
+                  </NavigationMenuItem>
+                </NavigationMenuList>
+              </NavigationMenu>
+              
+              <Link to="/trades-we-serve" className="text-foreground hover:text-primary transition-colors font-medium text-sm">Trades We Serve</Link>
+              <Link to="/core-values" className="text-foreground hover:text-primary transition-colors font-medium text-sm">Core Values</Link>
+              <Link to="/blog-podcast" className="text-foreground hover:text-primary transition-colors font-medium text-sm">Blog & Podcast</Link>
+              
+              <Dialog open={activeContactForm === "contact-sales"} onOpenChange={(open) => setActiveContactForm(open ? "contact-sales" : null)}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm" className="font-semibold">Contact Sales</Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                  <ContactForm
+                    title="Contact Our Sales Team"
+                    description="Let's discuss how CT1 can transform your contracting business"
+                    ctaText="Contact Sales"
+                    formType="sales-inquiry"
+                    onClose={() => setActiveContactForm(null)}
+                  />
+                </DialogContent>
+              </Dialog>
+              
+              <Link 
+                to="/auth" 
+                className="bg-primary text-primary-foreground px-4 xl:px-6 py-2 rounded-lg font-bold hover:bg-primary-hover transition-colors text-sm xl:text-base"
+              >
+                Contractor Login
+              </Link>
+            </nav>
+
+            <MobileNav onContactClick={() => setActiveContactForm("contact-sales")} />
           </div>
         </div>
       </header>
@@ -149,8 +319,89 @@ const PocketbotProduct = () => {
         </div>
       </section>
 
-      {/* Training Integration */}
+      {/* Sample Conversations with Audio */}
       <section className="py-20">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              Hear Pocketbot in Action
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Listen to real conversation examples and see how Pocketbot helps contractors every day
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {sampleConversations.map((conversation) => (
+              <Card key={conversation.id} className="h-full">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-lg font-semibold text-foreground">{conversation.title}</h3>
+                    <button
+                      onClick={() => handlePlayAudio(conversation.id)}
+                      className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
+                        playingAudio === conversation.id 
+                          ? 'bg-primary text-primary-foreground' 
+                          : 'bg-primary/10 text-primary hover:bg-primary/20'
+                      }`}
+                    >
+                      {playingAudio === conversation.id ? (
+                        <Pause className="h-5 w-5" />
+                      ) : (
+                        <Play className="h-5 w-5 ml-0.5" />
+                      )}
+                    </button>
+                  </div>
+                  
+                  {/* Audio Waveform Visualization */}
+                  <div className="mb-6 h-12 bg-muted/50 rounded-lg flex items-center justify-center gap-1 px-4">
+                    {[...Array(20)].map((_, i) => (
+                      <div
+                        key={i}
+                        className={`w-1 rounded-full transition-all duration-150 ${
+                          playingAudio === conversation.id 
+                            ? 'bg-primary animate-pulse' 
+                            : 'bg-muted-foreground/30'
+                        }`}
+                        style={{
+                          height: playingAudio === conversation.id 
+                            ? `${Math.random() * 24 + 8}px` 
+                            : `${Math.sin(i * 0.5) * 12 + 16}px`,
+                          animationDelay: `${i * 50}ms`
+                        }}
+                      />
+                    ))}
+                  </div>
+
+                  <div className="space-y-4 max-h-64 overflow-y-auto">
+                    {conversation.transcript.map((line, i) => (
+                      <div key={i} className={`flex gap-3 ${line.speaker === 'You' ? 'flex-row-reverse' : ''}`}>
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                          line.speaker === 'Pocketbot' ? 'bg-primary/20' : 'bg-muted'
+                        }`}>
+                          {line.speaker === 'Pocketbot' ? (
+                            <Bot className="h-4 w-4 text-primary" />
+                          ) : (
+                            <span className="text-xs font-medium">You</span>
+                          )}
+                        </div>
+                        <div className={`flex-1 p-3 rounded-lg ${
+                          line.speaker === 'Pocketbot' ? 'bg-primary/10' : 'bg-muted'
+                        }`}>
+                          <p className="text-sm text-foreground whitespace-pre-line">{line.text}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Training Integration */}
+      <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>

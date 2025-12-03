@@ -45,7 +45,9 @@ import {
   Clock,
   Gauge,
   FileText,
-  Mic
+  Mic,
+  Rocket,
+  Crown
 } from "lucide-react";
 
 export function NewLandingPage() {
@@ -168,18 +170,30 @@ export function NewLandingPage() {
                         
                         <div className="space-y-1">
                           <Link to="/pricing#tier-launch" className="block">
-                            <NavigationMenuLink className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted transition-colors">
-                              <span className="text-sm text-muted-foreground">myCT1 Launch Growth Starter</span>
+                            <NavigationMenuLink className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted transition-colors">
+                              <Rocket className="h-5 w-5 text-primary mt-0.5" />
+                              <div>
+                                <div className="font-medium text-foreground">myCT1 Launch Growth Starter</div>
+                                <p className="text-xs text-muted-foreground">Perfect for getting started</p>
+                              </div>
                             </NavigationMenuLink>
                           </Link>
                           <Link to="/pricing#tier-growth" className="block">
-                            <NavigationMenuLink className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted transition-colors">
-                              <span className="text-sm text-muted-foreground">myCT1 Growth Business Builder</span>
+                            <NavigationMenuLink className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted transition-colors">
+                              <TrendingUp className="h-5 w-5 text-primary mt-0.5" />
+                              <div>
+                                <div className="font-medium text-foreground">myCT1 Growth Business Builder</div>
+                                <p className="text-xs text-muted-foreground">Scale your operations</p>
+                              </div>
                             </NavigationMenuLink>
                           </Link>
                           <Link to="/pricing#tier-market" className="block">
-                            <NavigationMenuLink className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted transition-colors">
-                              <span className="text-sm text-muted-foreground">myCT1 Market Dominator</span>
+                            <NavigationMenuLink className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted transition-colors">
+                              <Crown className="h-5 w-5 text-primary mt-0.5" />
+                              <div>
+                                <div className="font-medium text-foreground">myCT1 Market Dominator</div>
+                                <p className="text-xs text-muted-foreground">Maximum growth potential</p>
+                              </div>
                             </NavigationMenuLink>
                           </Link>
                         </div>
