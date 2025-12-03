@@ -53,7 +53,7 @@ export function MobileNav({ onContactClick }: MobileNavProps) {
               >
                 <Bot className="h-5 w-5 text-primary" />
                 <div>
-                  <div className="text-base font-medium text-foreground">myCT1 Pocketbot</div>
+                  <div className="text-base font-medium text-foreground">MyCT1 Pocketbot</div>
                   <p className="text-xs text-muted-foreground">Complete AI business assistant</p>
                 </div>
               </Link>
@@ -70,7 +70,7 @@ export function MobileNav({ onContactClick }: MobileNavProps) {
               </Link>
               <div className="border-t border-border my-2" />
               <Link 
-                to="/pricing#tier-launch" 
+                to="/products/tier-launch" 
                 className="flex items-center gap-3 py-2 hover:bg-muted rounded-lg px-2 transition-colors"
                 onClick={() => setOpen(false)}
               >
@@ -81,7 +81,7 @@ export function MobileNav({ onContactClick }: MobileNavProps) {
                 </div>
               </Link>
               <Link 
-                to="/pricing#tier-growth" 
+                to="/products/tier-growth" 
                 className="flex items-center gap-3 py-2 hover:bg-muted rounded-lg px-2 transition-colors"
                 onClick={() => setOpen(false)}
               >
@@ -92,7 +92,7 @@ export function MobileNav({ onContactClick }: MobileNavProps) {
                 </div>
               </Link>
               <Link 
-                to="/pricing#tier-market" 
+                to="/products/tier-market" 
                 className="flex items-center gap-3 py-2 hover:bg-muted rounded-lg px-2 transition-colors"
                 onClick={() => setOpen(false)}
               >

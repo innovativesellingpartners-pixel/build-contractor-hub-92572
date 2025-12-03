@@ -56,6 +56,9 @@ import AppInstall from "./pages/AppInstall";
 import Accounting from "./pages/Accounting";
 import PocketbotProduct from "./pages/products/PocketbotProduct";
 import VoiceAIProduct from "./pages/products/VoiceAIProduct";
+import TierLaunch from "./pages/products/TierLaunch";
+import TierGrowth from "./pages/products/TierGrowth";
+import TierMarket from "./pages/products/TierMarket";
 
 const queryClient = new QueryClient();
 
@@ -86,6 +89,9 @@ const App = () => (
             <Route path="/blog-podcast" element={<BlogPodcast />} />
             <Route path="/products/pocketbot" element={<PocketbotProduct />} />
             <Route path="/products/voice-ai" element={<VoiceAIProduct />} />
+            <Route path="/products/tier-launch" element={<TierLaunch />} />
+            <Route path="/products/tier-growth" element={<TierGrowth />} />
+            <Route path="/products/tier-market" element={<TierMarket />} />
             <Route path="/legal/terms" element={<Terms />} />
             <Route path="/legal/privacy" element={<Privacy />} />
             <Route path="/privacy" element={<Navigate to="/legal/privacy" replace />} />
