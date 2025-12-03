@@ -19,6 +19,20 @@ interface SendEstimateRequest {
   contractorEmail: string;
 }
 
+function formatCurrency(v: number | null | undefined) {
+  const n = Number(v || 0);
+  return n.toLocaleString("en-US", { style: "currency", currency: "USD" });
+}
+
+function formatDate(dateStr: string | null | undefined) {
+  if (!dateStr) return "";
+  return new Date(dateStr).toLocaleDateString("en-US", { 
+    month: "long", 
+    day: "numeric", 
+    year: "numeric" 
+  });
+}
+
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -79,39 +93,38 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Generate public view URL
-    const appUrl = Deno.env.get('APP_URL') || 'https://yourapp.lovable.app';
+    const appUrl = Deno.env.get('APP_URL') || 'https://myct1.com';
     const publicUrl = `${appUrl}/estimate/${estimate.public_token}`;
 
-    // Fetch contractor profile for branding (company name, logo)
+    // Fetch contractor profile for branding
     const { data: profile } = await supabase
       .from('profiles')
-      .select('company_name, logo_url')
+      .select('company_name, logo_url, phone')
       .eq('user_id', estimate.user_id)
       .single();
 
-    const companyName = profile?.company_name || 'CT1 Constructeam';
-    const logoSrc = profile?.logo_url || '';
+    const companyName = profile?.company_name || contractorName;
+    const logoSrc = profile?.logo_url || 'https://faqrzzodtmsybofakcvv.supabase.co/storage/v1/object/public/company-logos/ct1-logo-circle.png';
+    const companyPhone = profile?.phone || '';
 
     // Send email to client
     const recipients = [estimate.client_email];
     const bcc: string[] | undefined = contractorEmail ? [contractorEmail] : undefined;
 
-    // Log if using default resend.dev email (optional: verify custom domain later)
+    // Log if using default resend.dev email
     if (FROM_EMAIL.endsWith('@resend.dev') || FROM_EMAIL === 'onboarding@resend.dev') {
       console.log('Note: Using Resend test domain. For custom branding, verify your domain at resend.com/domains');
     }
 
-    // Use FROM_EMAIL environment variable (now set to estimates@myct1.com)
     const effectiveFromEmail = FROM_EMAIL;
-    console.log('Attempting to send estimate email', { to: recipients, bcc, from: effectiveFromEmail, replyTo: contractorEmail || null });
+    console.log('Attempting to send estimate email', { to: recipients, bcc, from: effectiveFromEmail });
     
-    // Use Resend attachments to attach PDF
-    // Generate PDF and attach to email (with auth bypass for public function)
+    // Generate PDF and attach to email
     const { data: pdfData, error: pdfError } = await supabase.functions.invoke('generate-estimate-pdf', {
       body: {
         estimateId,
         includePaymentLink: true,
-        public_token: estimate.public_token, // Pass token for public access
+        public_token: estimate.public_token,
       },
     });
 
@@ -131,154 +144,216 @@ const handler = async (req: Request): Promise<Response> => {
       console.error('PDF generation failed:', pdfError);
     }
 
+    // Premium email template
+    const emailHtml = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Estimate from ${companyName}</title>
+  <!--[if mso]>
+  <noscript>
+    <xml>
+      <o:OfficeDocumentSettings>
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+  </noscript>
+  <![endif]-->
+</head>
+<body style="margin: 0; padding: 0; background-color: #f8f9fa; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f8f9fa;">
+    <tr>
+      <td align="center" style="padding: 40px 20px;">
+        <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="max-width: 600px; width: 100%;">
+          
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #E02424 0%, #B91C1C 100%); border-radius: 16px 16px 0 0; padding: 40px 48px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                  <td width="60" valign="middle">
+                    <img src="${logoSrc}" alt="${companyName}" width="50" height="50" style="display: block; border-radius: 10px; border: 2px solid rgba(255,255,255,0.2);">
+                  </td>
+                  <td style="padding-left: 16px;" valign="middle">
+                    <h1 style="margin: 0; font-size: 24px; font-weight: 700; color: #ffffff; letter-spacing: -0.5px;">${companyName}</h1>
+                    <p style="margin: 4px 0 0 0; font-size: 14px; color: rgba(255,255,255,0.9);">Professional Contractor Services</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          
+          <!-- Estimate Badge -->
+          <tr>
+            <td style="background-color: #ffffff; padding: 0 48px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                  <td style="padding: 30px 0 24px 0; border-bottom: 1px solid #e5e7eb;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td style="background-color: #111827; padding: 8px 20px; border-radius: 24px;">
+                          <span style="color: #ffffff; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">ESTIMATE ${estimate.estimate_number || ''}</span>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          
+          <!-- Main Content -->
+          <tr>
+            <td style="background-color: #ffffff; padding: 32px 48px;">
+              <h2 style="margin: 0 0 16px 0; font-size: 28px; font-weight: 700; color: #111827; letter-spacing: -0.5px;">Hello ${estimate.client_name || 'Valued Customer'},</h2>
+              <p style="margin: 0 0 24px 0; font-size: 16px; line-height: 1.7; color: #4b5563;">
+                Thank you for the opportunity to provide you with an estimate. We've prepared a detailed proposal for <strong style="color: #111827;">${estimate.title}</strong> and are excited to potentially work with you on this project.
+              </p>
+            </td>
+          </tr>
+          
+          <!-- Estimate Summary Card -->
+          <tr>
+            <td style="background-color: #ffffff; padding: 0 48px 32px 48px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f9fafb; border-radius: 12px; border: 1px solid #e5e7eb;">
+                <tr>
+                  <td style="padding: 24px;">
+                    <h3 style="margin: 0 0 20px 0; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #E02424;">Estimate Summary</h3>
+                    
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
+                          <span style="font-size: 13px; color: #6b7280;">Project</span><br>
+                          <span style="font-size: 15px; font-weight: 600; color: #111827;">${estimate.title}</span>
+                        </td>
+                      </tr>
+                      ${estimate.site_address ? `
+                      <tr>
+                        <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
+                          <span style="font-size: 13px; color: #6b7280;">Location</span><br>
+                          <span style="font-size: 15px; font-weight: 600; color: #111827;">${estimate.site_address}</span>
+                        </td>
+                      </tr>
+                      ` : ''}
+                      ${estimate.valid_until ? `
+                      <tr>
+                        <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
+                          <span style="font-size: 13px; color: #6b7280;">Valid Until</span><br>
+                          <span style="font-size: 15px; font-weight: 600; color: #111827;">${formatDate(estimate.valid_until)}</span>
+                        </td>
+                      </tr>
+                      ` : ''}
+                    </table>
+                    
+                    <!-- Total Amount -->
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-top: 20px;">
+                      <tr>
+                        <td style="background: linear-gradient(135deg, #E02424 0%, #B91C1C 100%); border-radius: 10px; padding: 20px; text-align: center;">
+                          <span style="display: block; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.9); margin-bottom: 8px;">Total Investment</span>
+                          <span style="display: block; font-size: 32px; font-weight: 700; color: #ffffff;">${formatCurrency(estimate.total_amount || estimate.grand_total || 0)}</span>
+                          ${estimate.required_deposit ? `<span style="display: block; font-size: 13px; color: rgba(255,255,255,0.9); margin-top: 8px;">Deposit: ${formatCurrency(estimate.required_deposit)}</span>` : ''}
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          
+          <!-- CTA Button -->
+          <tr>
+            <td style="background-color: #ffffff; padding: 0 48px 32px 48px; text-align: center;">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 0 auto;">
+                <tr>
+                  <td style="background: linear-gradient(135deg, #E02424 0%, #B91C1C 100%); border-radius: 10px;">
+                    <a href="${publicUrl}" target="_blank" style="display: inline-block; padding: 18px 48px; font-size: 16px; font-weight: 700; color: #ffffff; text-decoration: none; letter-spacing: 0.5px;">
+                      VIEW, SIGN &amp; PAY ONLINE →
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin: 16px 0 0 0; font-size: 13px; color: #9ca3af;">
+                Click the button above to review your complete estimate
+              </p>
+            </td>
+          </tr>
+          
+          <!-- PDF Notice -->
+          <tr>
+            <td style="background-color: #ffffff; padding: 0 48px 32px 48px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #fef3c7; border-radius: 10px; border-left: 4px solid #f59e0b;">
+                <tr>
+                  <td style="padding: 20px;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td width="24" valign="top">
+                          <span style="font-size: 18px;">📎</span>
+                        </td>
+                        <td style="padding-left: 12px;">
+                          <p style="margin: 0; font-size: 14px; font-weight: 600; color: #92400e;">PDF Attached</p>
+                          <p style="margin: 4px 0 0 0; font-size: 13px; color: #a16207; line-height: 1.5;">
+                            A detailed PDF of your estimate is attached to this email for your records.
+                          </p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          
+          <!-- Contact Section -->
+          <tr>
+            <td style="background-color: #ffffff; padding: 0 48px 40px 48px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f9fafb; border-radius: 10px;">
+                <tr>
+                  <td style="padding: 24px; text-align: center;">
+                    <p style="margin: 0 0 8px 0; font-size: 15px; font-weight: 600; color: #111827;">Questions? We're here to help.</p>
+                    <p style="margin: 0; font-size: 14px; color: #6b7280;">
+                      Reply to this email or contact us at<br>
+                      <a href="mailto:${contractorEmail}" style="color: #E02424; font-weight: 600; text-decoration: none;">${contractorEmail}</a>
+                      ${companyPhone ? `<br><span style="color: #111827;">${companyPhone}</span>` : ''}
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #111827; border-radius: 0 0 16px 16px; padding: 32px 48px; text-align: center;">
+              <p style="margin: 0 0 8px 0; font-size: 13px; color: rgba(255,255,255,0.7);">
+                This estimate was prepared specifically for ${estimate.client_name || 'you'}.
+              </p>
+              <p style="margin: 0 0 16px 0; font-size: 12px; color: rgba(255,255,255,0.5);">
+                All pricing and terms are confidential and subject to the conditions in the attached document.
+              </p>
+              <p style="margin: 0; font-size: 13px; color: #E02424; font-weight: 600;">
+                Powered by CT1 Constructeam
+              </p>
+            </td>
+          </tr>
+          
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+    `;
+
     const emailData: any = {
       from: `${contractorName} <${effectiveFromEmail}>`,
       to: recipients,
       bcc,
       reply_to: contractorEmail || undefined,
-      subject: `RE: ${contractorName} - Powered by CT1 - Estimate`,
-      html: `
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <meta charset="utf-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <style>
-              body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; background-color: #f3f4f6; }
-              .email-wrapper { background-color: #f3f4f6; padding: 20px 0; }
-              .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
-              .header { background: linear-gradient(135deg, #E02424 0%, #C01E1E 100%); padding: 40px 40px; }
-              .header-content { display: table; width: 100%; }
-              .header-logo { display: table-cell; vertical-align: middle; width: 60px; padding-right: 20px; }
-              .header-logo img { max-width: 50px; height: auto; border-radius: 6px; display: block; }
-              .header-text { display: table-cell; vertical-align: middle; }
-              .header-title { color: #ffffff; font-size: 28px; font-weight: 900; margin: 0 0 8px 0; letter-spacing: -0.5px; }
-              .header-subtitle { color: rgba(255, 255, 255, 0.95); font-size: 16px; margin: 0; font-weight: 500; }
-              .content { padding: 50px 40px; background: #ffffff; }
-              .greeting { color: #111827; font-size: 20px; font-weight: 700; margin: 0 0 25px 0; }
-              .message { color: #4b5563; font-size: 16px; line-height: 1.7; margin: 0 0 35px 0; }
-              .details-box { background: linear-gradient(to bottom, #fef2f2, #ffffff); border: 2px solid #fee2e2; border-radius: 12px; padding: 30px; margin: 35px 0; }
-              .details-title { color: #111827; font-size: 22px; font-weight: 900; margin: 0 0 25px 0; text-align: center; }
-              .detail-row { margin: 16px 0; padding: 12px 0; border-bottom: 1px solid #f3f4f6; }
-              .detail-row:last-child { border-bottom: none; padding-bottom: 0; }
-              .detail-label { color: #6b7280; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 6px 0; font-weight: 600; }
-              .detail-value { color: #111827; font-size: 17px; font-weight: 600; margin: 0; }
-              .total-section { background: linear-gradient(135deg, #E02424 0%, #C01E1E 100%); padding: 25px; border-radius: 8px; margin-top: 20px; text-align: center; }
-              .total-label { color: rgba(255, 255, 255, 0.9); font-size: 14px; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 8px 0; }
-              .total-amount { color: #ffffff; font-size: 36px; font-weight: 900; margin: 0; }
-              .cta-section { text-align: center; margin: 40px 0; }
-              .cta-button { display: inline-block; background: #E02424; color: #ffffff !important; padding: 18px 50px; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 17px; box-shadow: 0 6px 20px rgba(224, 36, 36, 0.4); transition: all 0.3s; }
-              .attachment-notice { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 20px; border-radius: 8px; margin: 30px 0; }
-              .attachment-notice p { color: #78350f; font-size: 14px; margin: 0; line-height: 1.6; }
-              .attachment-notice strong { color: #92400e; }
-              .contact-info { background: #f9fafb; padding: 25px; border-radius: 10px; margin: 35px 0; text-align: center; }
-              .contact-info p { color: #4b5563; font-size: 15px; margin: 8px 0; line-height: 1.6; }
-              .contact-info strong { color: #111827; font-size: 16px; }
-              .footer { background: #f9fafb; padding: 35px 40px; text-align: center; border-top: 2px solid #e5e7eb; }
-              .footer-text { color: #9ca3af; font-size: 13px; line-height: 1.7; margin: 0 0 15px 0; }
-              .powered-by { color: #6b7280; font-size: 13px; margin: 0; font-weight: 600; }
-              .powered-by strong { color: #E02424; }
-              @media only screen and (max-width: 600px) {
-                .header { padding: 30px 25px; }
-                .content { padding: 35px 25px; }
-                .footer { padding: 30px 25px; }
-                .header-content { display: block; }
-                .header-logo { display: block; width: 100%; padding-right: 0; margin-bottom: 15px; text-align: center; }
-                .header-logo img { margin: 0 auto; }
-                .header-text { display: block; text-align: center; }
-                .header-title { font-size: 24px; }
-                .details-box { padding: 25px 20px; }
-                .cta-button { padding: 16px 35px; font-size: 16px; }
-                .total-amount { font-size: 30px; }
-              }
-            </style>
-          </head>
-          <body>
-            <div class="email-wrapper">
-              <div class="container">
-                <div class="header">
-                  <div class="header-content">
-                    <div class="header-logo">
-                      ${logoSrc ? `<img src="${logoSrc}" alt="${companyName} Logo"/>` : `<img src="https://faqrzzodtmsybofakcvv.supabase.co/storage/v1/object/public/company-logos/ct1-logo-circle.png" alt="CT1 Logo"/>`}
-                    </div>
-                    <div class="header-text">
-                      <h1 class="header-title">Professional Estimate</h1>
-                      <p class="header-subtitle">${estimate.estimate_number ? `#${estimate.estimate_number}` : 'Your Project Estimate'}</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div class="content">
-                  <p class="greeting">Hello ${estimate.client_name},</p>
-                  <p class="message">
-                    Thank you for considering <strong>${contractorName}</strong> for your project. We've prepared a comprehensive estimate for <strong>${estimate.title}</strong>. Please review the attached PDF for complete details, or click the button below to view, sign, and pay online.
-                  </p>
-                  
-                  <div class="attachment-notice">
-                    <p><strong>📎 PDF Attached</strong><br>
-                    A detailed estimate document is attached to this email. You can download it, review it at your convenience, and even sign and pay directly from the PDF link.</p>
-                  </div>
-                  
-                  <div class="details-box">
-                    <h2 class="details-title">Estimate Overview</h2>
-                    <div class="detail-row">
-                      <p class="detail-label">Project Name</p>
-                      <p class="detail-value">${estimate.title}</p>
-                    </div>
-                    ${estimate.trade_type ? `
-                    <div class="detail-row">
-                      <p class="detail-label">Trade Type</p>
-                      <p class="detail-value">${estimate.trade_type}</p>
-                    </div>
-                    ` : ''}
-                    ${estimate.site_address ? `
-                    <div class="detail-row">
-                      <p class="detail-label">Project Location</p>
-                      <p class="detail-value">${estimate.site_address}</p>
-                    </div>
-                    ` : ''}
-                    ${estimate.valid_until ? `
-                    <div class="detail-row">
-                      <p class="detail-label">Valid Until</p>
-                      <p class="detail-value">${new Date(estimate.valid_until).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                    </div>
-                    ` : ''}
-                    <div class="total-section">
-                      <p class="total-label">Total Investment</p>
-                      <p class="total-amount">$${estimate.total_amount?.toFixed(2) || '0.00'}</p>
-                    </div>
-                  </div>
-
-                  <div class="cta-section">
-                    <a href="${publicUrl.replace(/^https?:\/\//, 'https://')}" class="cta-button">
-                      View, Sign &amp; Pay Online
-                    </a>
-                    <p style="color: #6b7280; font-size: 13px; margin-top: 15px;">
-                      Click the button above to review the full estimate online
-                    </p>
-                  </div>
-
-                  <div class="contact-info">
-                    <p><strong>Questions? We're Here to Help!</strong></p>
-                    <p>📧 ${contractorEmail}</p>
-                    <p>Reply to this email or contact us directly</p>
-                  </div>
-                </div>
-
-                <div class="footer">
-                  <p class="footer-text">
-                    This estimate was prepared specifically for ${estimate.client_name}.<br>
-                    All pricing and terms are confidential and subject to the conditions outlined in the attached document.
-                  </p>
-                  <p class="powered-by">
-                    Powered by <strong>CT1 Constructeam</strong> - Professional Contractor Management
-                  </p>
-                </div>
-              </div>
-            </div>
-          </body>
-        </html>
-      `,
+      subject: `Estimate from ${contractorName} - ${estimate.title}`,
+      html: emailHtml,
     };
 
     // Add PDF attachment if available
@@ -291,7 +366,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log('Resend API response:', JSON.stringify(emailResponse, null, 2));
 
-    // Handle Resend test-mode restriction by re-sending to the allowed owner email
+    // Handle Resend test-mode restriction
     let usedFallback = false;
     if (emailResponse?.error && (emailResponse.error as any).statusCode === 403 && typeof emailResponse.error.message === 'string' && emailResponse.error.message.includes('only send testing emails to your own email address')) {
       const match = emailResponse.error.message.match(/\(([^)]+)\)/);
@@ -303,19 +378,17 @@ const handler = async (req: Request): Promise<Response> => {
           to: [ownerEmail],
           subject: `Forward to ${estimate.client_name} <${estimate.client_email}> — Estimate from ${contractorName}`,
           html: `
-            <!DOCTYPE html>
-            <html><body style="font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;">
-              <div style="background:#FFF7ED;border:1px solid #FDBA74;color:#7C2D12;padding:12px 16px;border-radius:8px;margin-bottom:16px;">
-                Your email service is in test mode. Please forward this estimate to ${estimate.client_name} &lt;${estimate.client_email}&gt;.
+            <div style="font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+              <div style="background:#FFF7ED;border:1px solid #FDBA74;color:#7C2D12;padding:16px;border-radius:8px;margin-bottom:24px;">
+                <strong>⚠️ Test Mode:</strong> Your email service is in test mode. Please forward this estimate to ${estimate.client_name} &lt;${estimate.client_email}&gt;.
               </div>
-              <p>Open the estimate here:</p>
-              <p><a href="${publicUrl}" style="display:inline-block;background:#E02424;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;">View Full Estimate & Sign</a></p>
-              <hr style="border:none;border-top:1px solid #E5E7EB;margin:20px 0;" />
-              <p style="color:#6B7280;font-size:14px;">If the button does not work, copy this link: ${publicUrl}</p>
-              <p style="color:#6B7280;font-size:14px;">Reply-To: ${contractorEmail}</p>
-            </body></html>
+              <p style="font-size: 16px; color: #374151; margin-bottom: 24px;">Click below to view the full estimate:</p>
+              <a href="${publicUrl}" style="display:inline-block;background:#E02424;color:#fff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:600;">View Full Estimate</a>
+              <p style="color:#6B7280;font-size:13px;margin-top:24px;">Or copy this link: ${publicUrl}</p>
+            </div>
           `,
           reply_to: contractorEmail || undefined,
+          attachments,
         });
         emailResponse = retry as any;
         usedFallback = true;
@@ -367,41 +440,26 @@ const handler = async (req: Request): Promise<Response> => {
       .eq('id', estimateId);
 
     if (updateError) {
-      console.error('Error updating estimate status:', updateError);
+      console.error('Failed to update estimate:', updateError);
     }
 
-    return new Response(JSON.stringify({ 
-      success: true, 
-      emailResponse,
-      publicUrl,
-      usedFallback,
-    }), {
-      status: 200,
-      headers: { "Content-Type": "application/json", ...corsHeaders },
-    });
+    return new Response(
+      JSON.stringify({
+        success: true,
+        emailId: emailResponse.data.id,
+        sentTo: recipients,
+        usedFallback,
+        pdfAttached: !!(attachments && attachments.length > 0),
+      }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      }
+    );
   } catch (error: any) {
     console.error("Error in send-estimate function:", error);
-    
-    // Try to log the error in the estimate record
-    try {
-      const supabaseClient = createClient(supabaseUrl, supabaseServiceKey);
-      const body = await req.clone().json();
-      const { estimateId } = body;
-      if (estimateId) {
-        await supabaseClient
-          .from('estimates')
-          .update({ 
-            last_send_attempt: new Date().toISOString(),
-            email_send_error: error.message 
-          })
-          .eq('id', estimateId);
-      }
-    } catch (logError) {
-      console.error("Error logging send failure:", logError);
-    }
-    
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ success: false, error: error.message }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },
