@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { FloatingTrialButton } from "@/components/FloatingTrialButton";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, ArrowLeft, Star, Zap, Crown, Bot, Phone, MessageSquare } from "lucide-react";
+import { MainSiteHeader } from "@/components/MainSiteHeader";
+import { CheckCircle, Star, Zap, Crown, Bot, Phone } from "lucide-react";
 import ct1Logo from "@/assets/ct1-logo-main.png";
 import { TierCheckout } from "@/components/TierCheckout";
 import { SignupAfterPayment } from "@/components/SignupAfterPayment";
@@ -116,25 +117,7 @@ export function Pricing() {
   return (
     <div className="min-h-screen bg-background">
       <FloatingTrialButton />
-      {/* Header */}
-      <header className="border-b border-border sticky top-0 bg-background/95 backdrop-blur-sm z-50" style={{ paddingTop: "env(safe-area-inset-top)" }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <Link to="/" className="flex items-center space-x-3">
-              <img src={ct1Logo} alt="CT1 Logo" className="h-12 w-12" />
-              <div>
-                <h1 className="text-2xl font-bold text-foreground">CT1</h1>
-                <p className="text-xs text-muted-foreground font-medium">One-Up the Competition</p>
-              </div>
-            </Link>
-            
-            <Link to="/" className="text-muted-foreground hover:text-foreground flex items-center">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Home
-            </Link>
-          </div>
-        </div>
-      </header>
+      <MainSiteHeader />
 
       {/* Hero Section */}
       <section className="py-20 bg-gradient-to-br from-background to-muted/30">

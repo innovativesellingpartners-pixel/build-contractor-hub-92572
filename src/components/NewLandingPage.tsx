@@ -6,19 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { ContactForm } from "@/components/ContactForm";
-import { MobileNav } from "@/components/MobileNav";
+import { MainSiteHeader } from "@/components/MainSiteHeader";
 import { Pocketbot } from "@/components/contractor/Pocketbot";
 import heroImage from "@/assets/hero-construction.jpg";
 import ct1Logo from "@/assets/ct1-logo-main.png";
 import constructeamLogo from "@/assets/ct1-logo-main.png";
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-} from "@/components/ui/navigation-menu";
 import { 
   ArrowRight, 
   Bot, 
@@ -44,10 +36,7 @@ import {
   DollarSign,
   Clock,
   Gauge,
-  FileText,
-  Mic,
-  Rocket,
-  Crown
+  FileText
 } from "lucide-react";
 
 export function NewLandingPage() {
@@ -121,139 +110,7 @@ export function NewLandingPage() {
   return (
     <div className="min-h-screen bg-background">
       <FloatingTrialButton />
-      {/* Header */}
-      <header className="border-b border-border sticky top-0 bg-background/95 backdrop-blur-sm z-50" style={{ paddingTop: "env(safe-area-inset-top)" }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <Link to="/" className="flex items-center space-x-2 sm:space-x-3 hover:opacity-80 transition-opacity">
-              <img src={ct1Logo} alt="CT1 Logo" className="h-10 w-10 sm:h-12 sm:w-12" />
-              <div>
-                <h1 className="text-xl sm:text-2xl font-bold text-foreground">CT1</h1>
-                <p className="text-[10px] sm:text-xs text-muted-foreground font-medium">One-Up Your Business</p>
-              </div>
-            </Link>
-            
-            <nav className="hidden lg:flex items-center space-x-3 xl:space-x-5">
-              <Link to="/what-we-do" className="text-foreground hover:text-primary transition-colors font-medium text-sm">What We Do</Link>
-              
-              {/* Products Dropdown */}
-              <NavigationMenu>
-                <NavigationMenuList>
-                  <NavigationMenuItem>
-                    <NavigationMenuTrigger className="text-foreground hover:text-primary font-medium text-sm bg-transparent">
-                      Products
-                    </NavigationMenuTrigger>
-                    <NavigationMenuContent>
-                      <div className="w-[320px] p-4">
-                        <div className="space-y-1">
-                          <Link to="/products/pocketbot" className="block">
-                            <NavigationMenuLink className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted transition-colors">
-                              <Bot className="h-5 w-5 text-primary mt-0.5" />
-                              <div>
-                                <div className="font-medium text-foreground">MyCT1 Pocketbot</div>
-                                <p className="text-xs text-muted-foreground">Complete AI business assistant</p>
-                              </div>
-                            </NavigationMenuLink>
-                          </Link>
-                          <Link to="/products/voice-ai" className="block">
-                            <NavigationMenuLink className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted transition-colors">
-                              <Mic className="h-5 w-5 text-primary mt-0.5" />
-                              <div>
-                                <div className="font-medium text-foreground">AI Voice Assistant</div>
-                                <p className="text-xs text-muted-foreground">24/7 AI call handling</p>
-                              </div>
-                            </NavigationMenuLink>
-                          </Link>
-                        </div>
-                        
-                        <div className="border-t border-border my-3" />
-                        
-                        <div className="space-y-1">
-                          <Link to="/products/tier-launch" className="block">
-                            <NavigationMenuLink className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted transition-colors">
-                              <Rocket className="h-5 w-5 text-primary mt-0.5" />
-                              <div>
-                                <div className="font-medium text-foreground">myCT1 Launch Growth Starter</div>
-                                <p className="text-xs text-muted-foreground">Perfect for getting started</p>
-                              </div>
-                            </NavigationMenuLink>
-                          </Link>
-                          <Link to="/products/tier-growth" className="block">
-                            <NavigationMenuLink className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted transition-colors">
-                              <TrendingUp className="h-5 w-5 text-primary mt-0.5" />
-                              <div>
-                                <div className="font-medium text-foreground">myCT1 Growth Business Builder</div>
-                                <p className="text-xs text-muted-foreground">Scale your operations</p>
-                              </div>
-                            </NavigationMenuLink>
-                          </Link>
-                          <Link to="/products/tier-market" className="block">
-                            <NavigationMenuLink className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted transition-colors">
-                              <Crown className="h-5 w-5 text-primary mt-0.5" />
-                              <div>
-                                <div className="font-medium text-foreground">myCT1 Market Dominator</div>
-                                <p className="text-xs text-muted-foreground">Maximum growth potential</p>
-                              </div>
-                            </NavigationMenuLink>
-                          </Link>
-                        </div>
-                        
-                        <div className="border-t border-border my-3" />
-                        
-                        <Link to="/pricing" className="block">
-                          <NavigationMenuLink className="flex items-center justify-center gap-2 p-2 rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors">
-                            <span className="text-sm font-medium text-primary">View All Pricing</span>
-                            <ArrowRight className="h-4 w-4 text-primary" />
-                          </NavigationMenuLink>
-                        </Link>
-                      </div>
-                    </NavigationMenuContent>
-                  </NavigationMenuItem>
-                </NavigationMenuList>
-              </NavigationMenu>
-              
-              <Link to="/trades-we-serve" className="text-foreground hover:text-primary transition-colors font-medium text-sm">Trades We Serve</Link>
-              <Link to="/core-values" className="text-foreground hover:text-primary transition-colors font-medium text-sm">Core Values</Link>
-              <Link to="/blog-podcast" className="text-foreground hover:text-primary transition-colors font-medium text-sm">Blog & Podcast</Link>
-              
-              <Dialog open={activeContactForm === "contact-sales"} onOpenChange={(open) => setActiveContactForm(open ? "contact-sales" : null)}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="font-semibold">Contact Sales</Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl">
-                  <ContactForm
-                    title="Contact Our Sales Team"
-                    description="Let's discuss how CT1 can transform your contracting business"
-                    ctaText="Contact Sales"
-                    formType="sales-inquiry"
-                    onClose={() => setActiveContactForm(null)}
-                  />
-                </DialogContent>
-              </Dialog>
-              
-              <Link 
-                to="/auth" 
-                className="bg-primary text-primary-foreground px-4 xl:px-6 py-2 rounded-lg font-bold hover:bg-primary-hover transition-colors text-sm xl:text-base"
-              >
-                Contractor Login
-              </Link>
-            </nav>
-
-            <MobileNav onContactClick={() => setActiveContactForm("contact-sales")} />
-          </div>
-        </div>
-      </header>
-
-      {/* Mobile Contractor Login Button - Sticky below header */}
-      <div className="lg:hidden sticky top-16 bg-primary z-40 border-b border-primary-foreground/20">
-        <div className="px-4 py-2">
-          <Link to="/auth" className="block">
-            <Button className="w-full bg-primary-foreground text-primary hover:bg-primary-foreground/90 font-bold text-lg py-6" size="lg">
-              Contractor Login
-            </Button>
-          </Link>
-        </div>
-      </div>
+      <MainSiteHeader onContactClick={() => setActiveContactForm("contact-sales")} />
 
       {/* CT1 Pocketbot - Floating Button (Enlarged) */}
       <div className="fixed bottom-6 right-4 md:top-20 md:bottom-auto md:right-6 z-50">

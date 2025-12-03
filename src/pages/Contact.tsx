@@ -3,6 +3,7 @@ import { ContactForm } from "@/components/ContactForm";
 import { Card, CardContent } from "@/components/ui/card";
 import { FloatingTrialButton } from "@/components/FloatingTrialButton";
 import { Badge } from "@/components/ui/badge";
+import { MainSiteHeader } from "@/components/MainSiteHeader";
 import ct1Logo from "@/assets/ct1-logo-main.png";
 import { 
   Phone, 
@@ -61,32 +62,7 @@ export function Contact() {
   return (
     <div className="min-h-screen bg-background">
       <FloatingTrialButton />
-      {/* Header */}
-      <header className="border-b border-border sticky top-0 bg-background/95 backdrop-blur-sm z-50" style={{ paddingTop: "env(safe-area-inset-top)" }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <Link to="/" className="flex items-center space-x-3">
-              <img src={ct1Logo} alt="CT1 Logo" className="h-12 w-12" />
-              <div>
-                <h1 className="text-2xl font-bold text-foreground">CT1</h1>
-                <p className="text-xs text-muted-foreground font-medium">One-Up Your Business</p>
-              </div>
-            </Link>
-            
-            <nav className="hidden md:flex items-center space-x-6">
-              <Link to="/" className="text-foreground hover:text-primary transition-colors font-medium">Home</Link>
-              <Link to="/about" className="text-foreground hover:text-primary transition-colors font-medium">About</Link>
-              <Link to="/for-contractors" className="text-foreground hover:text-primary transition-colors font-medium">For Contractors</Link>
-              <Link 
-                to="/pricing" 
-                className="bg-primary text-primary-foreground px-6 py-2 rounded-lg font-bold hover:bg-primary-hover transition-colors"
-              >
-                Get Started
-              </Link>
-            </nav>
-          </div>
-        </div>
-      </header>
+      <MainSiteHeader />
 
       {/* Hero Section */}
       <section className="py-20 bg-gradient-to-br from-background to-muted/30">
