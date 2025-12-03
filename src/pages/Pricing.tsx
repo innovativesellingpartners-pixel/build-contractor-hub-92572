@@ -2,9 +2,9 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { FloatingTrialButton } from "@/components/FloatingTrialButton";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, ArrowLeft, Star, Zap, Crown, Bot } from "lucide-react";
+import { CheckCircle, ArrowLeft, Star, Zap, Crown, Bot, Phone, MessageSquare } from "lucide-react";
 import ct1Logo from "@/assets/ct1-logo-main.png";
 import { TierCheckout } from "@/components/TierCheckout";
 import { SignupAfterPayment } from "@/components/SignupAfterPayment";
@@ -27,7 +27,7 @@ export function Pricing() {
   const tiers = [
     {
       id: "launch",
-      name: "CT1 LAUNCH Growth Starter",
+      name: "myCT1 Launch Growth Starter",
       subtitle: "Tier 1",
       price: 99.99,
       originalPrice: null,
@@ -44,7 +44,7 @@ export function Pricing() {
     },
     {
       id: "growth",
-      name: "CT1 - Growth Business Builder", 
+      name: "myCT1 Growth Business Builder", 
       subtitle: "Tier 2",
       price: 250,
       originalPrice: null,
@@ -52,7 +52,7 @@ export function Pricing() {
       icon: <Zap className="h-8 w-8" />,
       popular: true,
       features: [
-        "Everything in LAUNCH, plus:",
+        "Everything in Launch Growth Starter, plus:",
         "AI Phone Assistant for call answering and screening",
         "2 personal monthly business training sessions",
         "5 qualified leads per month",
@@ -62,7 +62,7 @@ export function Pricing() {
     },
     {
       id: "accel",
-      name: "CT1 Market Dominator",
+      name: "myCT1 Market Dominator",
       subtitle: "Tier 3 - Coming Soon",
       price: null,
       originalPrice: null,
@@ -76,6 +76,39 @@ export function Pricing() {
         "Full AI toolset (Project Manager Bot, Sales Bot, Admin Bot)",
         "Weekly one-on-one growth & leadership coaching",
         "Enhanced AI Phone Assistant with qualification & scheduling"
+      ]
+    }
+  ];
+
+  const addOns = [
+    {
+      id: "voice-ai",
+      name: "Voice AI Assistant",
+      price: 50,
+      icon: <Phone className="h-10 w-10" />,
+      description: "Your 24/7 AI-powered phone receptionist that answers calls, captures leads, schedules appointments, and handles customer inquiries with a natural, professional voice. Never miss a call again - your AI assistant works around the clock so you can focus on the job.",
+      features: [
+        "24/7 call answering with natural AI voice",
+        "Automatic lead capture and CRM integration",
+        "Appointment scheduling with calendar sync",
+        "Custom greeting and business profile",
+        "Call forwarding with configurable timeout",
+        "Bilingual support (English & Spanish)"
+      ]
+    },
+    {
+      id: "pocketbot",
+      name: "Pocket Bot AI Assistant",
+      price: 20,
+      icon: <Bot className="h-10 w-10" />,
+      description: "Your personal AI business assistant available 24/7 to help with estimates, proposals, customer communication, and business questions. Get instant answers and generate professional content without leaving your dashboard.",
+      features: [
+        "Instant answers to business questions",
+        "Generate professional estimates and proposals",
+        "Draft customer communications",
+        "Business advice and guidance",
+        "Available in your dashboard 24/7",
+        "Unlimited conversations"
       ]
     }
   ];
@@ -118,6 +151,8 @@ export function Pricing() {
       {/* Pricing Tiers */}
       <section className="py-12 sm:py-16 md:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold text-center mb-12">Subscription Tiers</h2>
+          
           {/* First 2 tiers side by side */}
           <div className="grid sm:grid-cols-2 gap-6 sm:gap-8 mb-8">
             {tiers.slice(0, 2).map((tier) => (
@@ -173,7 +208,7 @@ export function Pricing() {
                       onClick={() => setSelectedTier({ id: tier.id, name: tier.name, price: tier.price })}
                       className="w-full bg-red-600 text-white hover:bg-red-700"
                     >
-                      Sign up for {tier.name}
+                      Sign up for {tier.name.split(' ').slice(0, 2).join(' ')}
                     </Button>
                   </div>
                 </CardContent>
@@ -182,7 +217,7 @@ export function Pricing() {
           </div>
 
           {/* Third tier below */}
-          <div className="max-w-2xl mx-auto">
+          <div className="max-w-2xl mx-auto mb-20">
             {tiers.slice(2).map((tier) => (
               <Card 
                 key={tier.id} 
@@ -233,6 +268,62 @@ export function Pricing() {
                 </CardContent>
               </Card>
             ))}
+          </div>
+
+          {/* Add-On Products */}
+          <div className="border-t border-border pt-16">
+            <h2 className="text-3xl font-bold text-center mb-4">Add-On Products</h2>
+            <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
+              Enhance your CT1 experience with standalone AI-powered tools. Available as add-ons to any tier or as standalone products.
+            </p>
+            
+            <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+              {addOns.map((addon) => (
+                <Card 
+                  key={addon.id} 
+                  className="relative p-6 border-2 hover:border-primary/50 transition-colors"
+                >
+                  <CardHeader className="pb-4">
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="h-16 w-16 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                        {addon.icon}
+                      </div>
+                      <div>
+                        <CardTitle className="text-xl font-bold">{addon.name}</CardTitle>
+                        <div className="flex items-baseline gap-1 mt-1">
+                          <span className="text-2xl font-bold text-primary">${addon.price}</span>
+                          <span className="text-muted-foreground text-sm">/month per user</span>
+                        </div>
+                      </div>
+                    </div>
+                    <CardDescription className="text-sm leading-relaxed">
+                      {addon.description}
+                    </CardDescription>
+                  </CardHeader>
+
+                  <CardContent className="space-y-4">
+                    <ul className="space-y-2">
+                      {addon.features.map((feature, index) => (
+                        <li key={index} className="flex items-start gap-2">
+                          <CheckCircle className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                          <span className="text-sm text-foreground">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    <div className="pt-4">
+                      <Button 
+                        onClick={() => setSelectedTier({ id: addon.id, name: addon.name, price: addon.price })}
+                        className="w-full"
+                        variant="outline"
+                      >
+                        Add {addon.name}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
         </div>
       </section>
