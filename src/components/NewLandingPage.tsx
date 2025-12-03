@@ -142,17 +142,20 @@ export function NewLandingPage() {
         <div className="absolute inset-0 bg-black/50"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center text-white mb-12">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-8 leading-tight drop-shadow-lg tracking-wide">
-              <span className="inline-flex items-center">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4 leading-tight drop-shadow-lg tracking-wide">
+              <span className="inline-flex items-center justify-center">
                 <img src={constructeamLogo} alt="CT1" className="h-12 w-12 sm:h-16 sm:w-16 md:h-20 md:w-20 lg:h-24 lg:w-24 inline-block -mr-1" />
-                <span>ne-Up Your</span>
+                <span>ne-Up</span>
               </span>
-              <span className="block text-primary">Competition</span>
+              <span className="block">The Competition</span>
             </h1>
+            <p className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-primary mb-8 drop-shadow-lg">
+              Powered by CT1
+            </p>
             
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-10">
               <p className="text-xl sm:text-2xl md:text-3xl leading-relaxed drop-shadow-md opacity-90 max-w-3xl">
-                A nationwide network of contractors building, scaling, and sustaining their businesses, <span className="text-primary font-semibold">Powered by CT1</span>
+                A nationwide network of contractors building, scaling, and sustaining their businesses
               </p>
               <Button 
                 size="lg" 
