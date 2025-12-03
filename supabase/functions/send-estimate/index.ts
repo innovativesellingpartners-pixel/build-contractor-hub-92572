@@ -68,7 +68,14 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     if (!estimate.client_email) {
-      throw new Error('Client email is required to send estimate');
+      console.error('Missing client email for estimate:', estimateId);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Client email is required to send estimate. Please add the client\'s email address to the estimate first.' 
+        }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     // Generate public view URL
