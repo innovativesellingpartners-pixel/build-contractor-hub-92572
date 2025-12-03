@@ -34,10 +34,11 @@ import MoreSection from './sections/MoreSection';
 import { QuickBooksIntegration } from '@/components/contractor/QuickBooksIntegration';
 import ct1Logo from '@/assets/ct1-logo-main.png';
 import Reporting from '@/pages/Reporting';
+import Accounting from '@/pages/Accounting';
 import { MobileLandingPage } from './MobileLandingPage';
 import { PaymentsBankingSection } from './sections/PaymentsBankingSection';
 
-type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calendar' | 'emails' | 'estimates' | 'reporting' | 'financials' | 'quickbooks' | 'more' | 'payments';
+type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calendar' | 'emails' | 'estimates' | 'reporting' | 'financials' | 'quickbooks' | 'more' | 'payments' | 'accounting';
 
 interface CT1CRMProps {
   onOpenPocketbot?: () => void;
@@ -52,6 +53,7 @@ const navItems = [
   { id: 'customers' as Section, label: 'Customers', icon: Users },
   { id: 'estimates' as Section, label: 'Estimates', icon: FileText },
   { id: 'payments' as Section, label: 'Payments', icon: CreditCard },
+  { id: 'accounting' as Section, label: 'Accounting', icon: DollarSign },
   { id: 'financials' as Section, label: 'Financials', icon: DollarSign },
   { id: 'reporting' as Section, label: 'Reporting', icon: BarChart2 },
   { id: 'quickbooks' as Section, label: 'QuickBooks', icon: LinkIcon },
@@ -67,7 +69,7 @@ const navItems = [
     // Check for URL param from OAuth callback
     const params = new URLSearchParams(window.location.search);
     const crmSection = params.get('crm_section') as Section | null;
-    if (crmSection && ['dashboard', 'leads', 'jobs', 'customers', 'calls', 'calendar', 'emails', 'estimates', 'reporting', 'financials', 'quickbooks', 'more', 'payments'].includes(crmSection)) {
+    if (crmSection && ['dashboard', 'leads', 'jobs', 'customers', 'calls', 'calendar', 'emails', 'estimates', 'reporting', 'financials', 'quickbooks', 'more', 'payments', 'accounting'].includes(crmSection)) {
       sessionStorage.setItem('ct1CrmActiveSection', crmSection);
       // Clean URL param
       params.delete('crm_section');
@@ -159,6 +161,8 @@ const navItems = [
         return <MoreSection onSectionChange={handleSectionChange} />;
       case 'payments':
         return <PaymentsBankingSection />;
+      case 'accounting':
+        return <Accounting />;
       default:
         return <CRMDashboard onSectionChange={handleSectionChange} />;
     }
