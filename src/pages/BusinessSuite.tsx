@@ -9,15 +9,19 @@ import {
   Briefcase, 
   Users, 
   DollarSign, 
-  Shield, 
-  ShoppingBag,
+  Calculator,
   Mic,
   Phone,
   Headset,
   ArrowRight,
   Sparkles,
   Zap,
-  Star
+  Star,
+  Mail,
+  PhoneCall,
+  BarChart3,
+  FileText,
+  HardHat
 } from "lucide-react";
 import { useState } from "react";
 
@@ -36,42 +40,66 @@ export function BusinessSuite() {
     {
       id: "crm",
       icon: Briefcase,
-      title: "ProvenJobs",
-      description: "Complete job management and customer relationship tools in one place",
+      title: "CRM",
+      description: "Complete customer relationship management with pipeline tracking and follow-ups",
       color: "from-blue-500 to-cyan-500",
-      features: ["Job Tracking", "Client Management", "Pipeline View"]
+      features: ["Customer Database", "Pipeline Management", "Follow-Up Automation"]
+    },
+    {
+      id: "accounting",
+      icon: DollarSign,
+      title: "Accounting",
+      description: "Track payments, expenses, invoices, and job profitability all in one place",
+      color: "from-green-500 to-emerald-500",
+      features: ["Invoice Management", "Expense Tracking", "Profit Analysis"]
+    },
+    {
+      id: "estimating",
+      icon: Calculator,
+      title: "Estimating",
+      description: "Create professional estimates with templates, macros, and digital signatures",
+      color: "from-purple-500 to-violet-500",
+      features: ["Professional Templates", "Digital Signatures", "Payment Links"]
+    },
+    {
+      id: "jobs",
+      icon: HardHat,
+      title: "Jobs Management",
+      description: "Track projects from start to finish with tasks, materials, and crew management",
+      color: "from-amber-500 to-orange-500",
+      features: ["Task Tracking", "Material Management", "Crew Scheduling"]
+    },
+    {
+      id: "communication",
+      icon: Mail,
+      title: "Communication",
+      description: "Manage calls, emails, and customer communication from a unified inbox",
+      color: "from-indigo-500 to-blue-500",
+      features: ["Email Integration", "Call Tracking", "Message History"]
+    },
+    {
+      id: "voice-ai",
+      icon: Mic,
+      title: "Voice AI",
+      description: "24/7 AI-powered call answering that captures leads and schedules appointments",
+      color: "from-pink-500 to-rose-500",
+      features: ["24/7 Answering", "Lead Capture", "Smart Scheduling"]
+    },
+    {
+      id: "reporting",
+      icon: BarChart3,
+      title: "Reporting",
+      description: "Comprehensive analytics and reports to track performance and growth",
+      color: "from-teal-500 to-cyan-500",
+      features: ["Sales Analytics", "Job Profitability", "Custom Reports"]
     },
     {
       id: "leads",
       icon: Users,
-      title: "Leads",
+      title: "Leads Generation",
       description: "Capture, nurture, and convert more leads into profitable projects",
-      color: "from-purple-500 to-pink-500",
+      color: "from-fuchsia-500 to-pink-500",
       features: ["Lead Capture", "Auto-Follow Up", "Conversion Analytics"]
-    },
-    {
-      id: "quickbooks",
-      icon: DollarSign,
-      title: "QuickBooks",
-      description: "Seamless integration with QuickBooks for effortless financial management",
-      color: "from-green-500 to-emerald-500",
-      features: ["Auto-Sync", "Invoice Management", "Financial Reports"]
-    },
-    {
-      id: "insurance",
-      icon: Shield,
-      title: "Insurance",
-      description: "Streamlined insurance management and compliance tracking",
-      color: "from-indigo-500 to-blue-500",
-      features: ["Policy Management", "Compliance Tracking", "Certificate Generation"]
-    },
-    {
-      id: "marketplace",
-      icon: ShoppingBag,
-      title: "Marketplace",
-      description: "Connect with suppliers, find materials, and grow your network",
-      color: "from-amber-500 to-yellow-500",
-      features: ["Supplier Network", "Product Catalog", "Special Deals"]
     }
   ];
 
@@ -163,7 +191,7 @@ export function BusinessSuite() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-20">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-12 sm:mb-20">
             {modules.map((module) => {
               const Icon = module.icon;
               const isHovered = hoveredCard === module.id;
@@ -177,50 +205,44 @@ export function BusinessSuite() {
                 >
                   <div className={`absolute inset-0 bg-gradient-to-br ${module.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`}></div>
                   
-                   <CardContent className="p-8 relative">
-                    <div className="mb-6 relative">
-                      {module.id === 'quickbooks' ? (
-                        <div className={`inline-flex px-6 py-4 rounded-2xl bg-gradient-to-r from-green-600 to-green-500 transition-transform duration-300 ${isHovered ? 'scale-110' : 'scale-100'}`}>
-                          <span className="text-white font-bold text-2xl">QuickBooks</span>
-                        </div>
-                      ) : (
-                        <div className={`inline-flex p-4 rounded-2xl bg-gradient-to-br ${module.color} transition-transform duration-300 ${isHovered ? 'scale-110' : 'scale-100'}`}>
-                          <Icon className="h-8 w-8 text-white" />
-                        </div>
-                      )}
+                  <CardContent className="p-5 sm:p-6 md:p-8 relative">
+                    <div className="mb-4 sm:mb-6 relative">
+                      <div className={`inline-flex p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-br ${module.color} transition-transform duration-300 ${isHovered ? 'scale-110' : 'scale-100'}`}>
+                        <Icon className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
+                      </div>
                       {isHovered && (
-                        <Sparkles className="absolute -top-2 -right-2 h-6 w-6 text-primary animate-pulse" />
+                        <Sparkles className="absolute -top-2 -right-2 h-5 w-5 sm:h-6 sm:w-6 text-primary animate-pulse" />
                       )}
                     </div>
                     
-                    <h3 className="text-2xl font-bold text-foreground mb-3 group-hover:text-primary transition-colors flex items-center gap-2">
+                    <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground mb-2 sm:mb-3 group-hover:text-primary transition-colors flex items-center gap-2 flex-wrap">
                       {module.title}
                       {module.id === 'training' && (
                         <span className="flex gap-0.5">
                           {[...Array(5)].map((_, i) => (
-                            <Star key={i} className="h-4 w-4 fill-yellow-500 text-yellow-500" />
+                            <Star key={i} className="h-3 w-3 sm:h-4 sm:w-4 fill-yellow-500 text-yellow-500" />
                           ))}
                         </span>
                       )}
                     </h3>
                     
-                    <p className="text-muted-foreground mb-6">
+                    <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6 line-clamp-2 sm:line-clamp-none">
                       {module.description}
                     </p>
                     
-                    <div className="space-y-2">
+                    <div className="space-y-1.5 sm:space-y-2">
                       {module.features.map((feature, idx) => (
-                        <div key={idx} className="flex items-center gap-2 text-sm">
-                          <Zap className="h-4 w-4 text-primary" />
+                        <div key={idx} className="flex items-center gap-2 text-xs sm:text-sm">
+                          <Zap className="h-3 w-3 sm:h-4 sm:w-4 text-primary flex-shrink-0" />
                           <span className="text-foreground/80">{feature}</span>
                         </div>
                       ))}
                     </div>
 
-                    <Link to={module.id === 'marketplace' ? '/marketplace' : `/business-suite/${module.id}`}>
+                    <Link to={`/business-suite/${module.id}`}>
                       <Button 
                         variant="ghost" 
-                        className="mt-6 w-full group-hover:bg-primary group-hover:text-primary-foreground transition-all"
+                        className="mt-4 sm:mt-6 w-full group-hover:bg-primary group-hover:text-primary-foreground transition-all text-sm sm:text-base py-2 sm:py-2.5"
                       >
                         Learn More <ArrowRight className="ml-2 h-4 w-4" />
                       </Button>
