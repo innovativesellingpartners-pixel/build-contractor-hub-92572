@@ -5,6 +5,7 @@ import { FloatingTrialButton } from "@/components/FloatingTrialButton";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MainSiteHeader } from "@/components/MainSiteHeader";
+import { FormNavigation } from "@/components/FormNavigation";
 import { CheckCircle, Star, Zap, Crown, Bot, Phone } from "lucide-react";
 import ct1Logo from "@/assets/ct1-logo-main.png";
 import { TierCheckout } from "@/components/TierCheckout";
@@ -122,6 +123,7 @@ export function Pricing() {
       {/* Hero Section */}
       <section className="py-20 bg-gradient-to-br from-background to-muted/30">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <FormNavigation className="justify-center mb-8" />
           <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
             Choose Your Growth Path
           </h1>
