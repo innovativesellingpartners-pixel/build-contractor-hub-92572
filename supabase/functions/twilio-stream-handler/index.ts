@@ -32,26 +32,30 @@ const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
 const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
 /**
- * Voice AI Configuration - Tuned for natural conversation
+ * Voice AI Configuration - Tuned for natural conversation and long calls
  */
 const VOICE_CONFIG = {
   // Voice selection
   defaultVoice: 'coral',
   
-  // Response behavior - allow longer responses to complete sentences
+  // Response behavior - allow complete responses without cutting off
   temperature: 0.8,
-  maxResponseTokens: 500,  // INCREASED from 120 to prevent mid-sentence cutoffs
+  maxResponseTokens: 4096,  // INCREASED SIGNIFICANTLY - allow full responses
   
   // Turn detection - balanced for natural conversation
   vadThreshold: 0.5,          // Standard sensitivity
   prefixPaddingMs: 300,       // Standard speech start detection
-  silenceDurationMs: 700,     // INCREASED from 550 - wait longer before responding
+  silenceDurationMs: 700,     // Wait for natural pause before responding
   
-  // Keep-alive interval (ms) - prevents WebSocket timeout
-  keepAliveIntervalMs: 15000, // Send ping every 15 seconds
+  // Keep-alive intervals (ms) - CRITICAL for preventing timeouts
+  keepAliveIntervalMs: 8000,  // Send keep-alive every 8 seconds (more aggressive)
+  openaiPingIntervalMs: 5000, // Send ping to OpenAI every 5 seconds
   
   // Audio buffer settings
   audioBufferMs: 100,         // Small buffer for low latency
+  
+  // Session management
+  maxSessionDurationMs: 30 * 60 * 1000, // 30 minutes max call duration
 };
 
 /**
@@ -431,33 +435,45 @@ Deno.serve(async (req) => {
     }
   };
 
-  // Setup keep-alive ping
+  // Setup keep-alive ping - CRITICAL for preventing session timeouts
   const setupKeepAlive = () => {
     if (keepAliveInterval) clearInterval(keepAliveInterval);
     
+    // More aggressive keep-alive for Twilio
     keepAliveInterval = setInterval(() => {
       // Send mark event to Twilio to keep connection alive
       if (twilioWs.readyState === WebSocket.OPEN) {
         twilioWs.send(JSON.stringify({
           event: 'mark',
           streamSid: streamSid,
-          mark: { name: 'keepalive' }
+          mark: { name: 'keepalive_' + Date.now() }
         }));
         Logger.info('keepalive_sent', { target: 'twilio' });
       }
       
-      // OpenAI Realtime API doesn't need explicit pings - the WebSocket handles it
-      // But we log to track connection health
+      // Send input_audio_buffer.commit to keep OpenAI session active
+      // This acts as a heartbeat that prevents session timeout
       if (openaiWs && openaiWs.readyState === WebSocket.OPEN) {
+        // Send a minimal audio buffer to keep the session alive
+        // This prevents the 42-second idle timeout
+        openaiWs.send(JSON.stringify({
+          type: 'input_audio_buffer.append',
+          audio: 'AAAA' // Minimal silent audio (base64)
+        }));
+        
         Logger.info('keepalive_check', { 
           target: 'openai', 
           state: 'open',
-          lastAudioMs: lastAudioTime ? Date.now() - lastAudioTime : null
+          lastAudioMs: lastAudioTime ? Date.now() - lastAudioTime : null,
+          callDurationMs: callStartTime ? Date.now() - callStartTime : 0
         });
       }
     }, VOICE_CONFIG.keepAliveIntervalMs);
     
-    Logger.info('keepalive_setup', { intervalMs: VOICE_CONFIG.keepAliveIntervalMs });
+    Logger.info('keepalive_setup', { 
+      intervalMs: VOICE_CONFIG.keepAliveIntervalMs,
+      maxDurationMs: VOICE_CONFIG.maxSessionDurationMs
+    });
   };
 
   twilioWs.onopen = () => {
@@ -571,7 +587,7 @@ Deno.serve(async (req) => {
             if (openaiMessage.type === 'session.created') {
               Logger.info('openai_session_created');
               
-              // Configure session with optimized settings
+              // Configure session with optimized settings for long calls
               openaiWs!.send(JSON.stringify({
                 type: 'session.update',
                 session: {
@@ -591,6 +607,57 @@ Deno.serve(async (req) => {
                   },
                   temperature: VOICE_CONFIG.temperature,
                   max_response_output_tokens: VOICE_CONFIG.maxResponseTokens,
+                  // Tool definitions for scheduling and actions
+                  tools: [
+                    {
+                      type: 'function',
+                      name: 'schedule_appointment',
+                      description: 'Schedule an appointment or site visit for the customer. Use this when the customer wants to schedule a visit to their home.',
+                      parameters: {
+                        type: 'object',
+                        properties: {
+                          customer_name: { type: 'string', description: 'Customer\'s name' },
+                          customer_phone: { type: 'string', description: 'Customer\'s callback phone number' },
+                          address: { type: 'string', description: 'Address for the site visit' },
+                          preferred_date: { type: 'string', description: 'Preferred date (e.g., "tomorrow", "next Monday", "December 5th")' },
+                          preferred_time: { type: 'string', description: 'Preferred time (e.g., "morning", "afternoon", "2pm")' },
+                          job_type: { type: 'string', description: 'Type of job or service needed' },
+                          is_emergency: { type: 'boolean', description: 'Whether this is an emergency' },
+                          notes: { type: 'string', description: 'Additional notes about the appointment' }
+                        },
+                        required: ['customer_name', 'job_type']
+                      }
+                    },
+                    {
+                      type: 'function',
+                      name: 'take_voicemail',
+                      description: 'Record a voicemail message when the customer wants to leave a message for the contractor.',
+                      parameters: {
+                        type: 'object',
+                        properties: {
+                          customer_name: { type: 'string', description: 'Customer\'s name' },
+                          customer_phone: { type: 'string', description: 'Customer\'s callback phone number' },
+                          message: { type: 'string', description: 'The message they want to leave' },
+                          urgency: { type: 'string', enum: ['low', 'normal', 'high', 'emergency'], description: 'How urgent is their request' },
+                          job_reference: { type: 'string', description: 'Job number or reference if they have one' }
+                        },
+                        required: ['message']
+                      }
+                    },
+                    {
+                      type: 'function', 
+                      name: 'lookup_job',
+                      description: 'Look up an existing job by reference number or job number.',
+                      parameters: {
+                        type: 'object',
+                        properties: {
+                          job_number: { type: 'string', description: 'The job number or reference number' }
+                        },
+                        required: ['job_number']
+                      }
+                    }
+                  ],
+                  tool_choice: 'auto'
                 }
               }));
             }
@@ -682,6 +749,166 @@ Deno.serve(async (req) => {
                 // Wait a bit and continue
                 await new Promise(r => setTimeout(r, 1000));
               }
+            }
+            
+            // Handle function calls from AI
+            if (openaiMessage.type === 'response.function_call_arguments.done') {
+              const functionName = openaiMessage.name;
+              const callId = openaiMessage.call_id;
+              let args: any = {};
+              
+              try {
+                args = JSON.parse(openaiMessage.arguments || '{}');
+              } catch (e) {
+                Logger.error('function_args_parse_error', e);
+              }
+              
+              Logger.info('function_call', { functionName, callId, args });
+              
+              let result: { success: boolean; message: string; job?: any } = { success: false, message: 'Unknown function' };
+              
+              // Handle schedule_appointment
+              if (functionName === 'schedule_appointment') {
+                try {
+                  // Get contractor ID from session
+                  const contractorId = callSession?.contractor_id;
+                  
+                  if (contractorId) {
+                    // Create a job meeting / appointment
+                    const appointmentDate = new Date();
+                    // Try to parse preferred date (simple heuristic)
+                    if (args.preferred_date) {
+                      const dateStr = args.preferred_date.toLowerCase();
+                      if (dateStr.includes('tomorrow')) {
+                        appointmentDate.setDate(appointmentDate.getDate() + 1);
+                      } else if (dateStr.includes('next week')) {
+                        appointmentDate.setDate(appointmentDate.getDate() + 7);
+                      }
+                    }
+                    
+                    // Check if contractor has calendar connection
+                    const { data: calendarConnection } = await supabase
+                      .from('calendar_connections')
+                      .select('*')
+                      .eq('user_id', contractorId)
+                      .single();
+                    
+                    // Create an AI call action record for follow-up
+                    await supabase.from('ai_call_actions').insert({
+                      call_id: callSid,
+                      contractor_id: contractorId,
+                      action_type: 'schedule_appointment',
+                      action_data: {
+                        customer_name: args.customer_name || 'Unknown',
+                        customer_phone: args.customer_phone || '',
+                        address: args.address || '',
+                        preferred_date: args.preferred_date || '',
+                        preferred_time: args.preferred_time || '',
+                        job_type: args.job_type || '',
+                        is_emergency: args.is_emergency || false,
+                        notes: args.notes || '',
+                        has_calendar: !!calendarConnection
+                      },
+                      completed: false
+                    });
+                    
+                    result = { 
+                      success: true, 
+                      message: `Appointment request recorded for ${args.customer_name || 'the customer'}. ${calendarConnection ? 'It will be added to the calendar.' : 'The contractor will receive the details and call back to confirm.'}` 
+                    };
+                    
+                    Logger.info('appointment_scheduled', { contractorId, args });
+                  }
+                } catch (error) {
+                  Logger.error('schedule_appointment_error', error);
+                  result = { success: false, message: 'There was an issue scheduling. The contractor will call back to confirm.' };
+                }
+              }
+              
+              // Handle take_voicemail
+              if (functionName === 'take_voicemail') {
+                try {
+                  const contractorId = callSession?.contractor_id;
+                  
+                  if (contractorId) {
+                    // Create an AI call action record for voicemail
+                    await supabase.from('ai_call_actions').insert({
+                      call_id: callSid,
+                      contractor_id: contractorId,
+                      action_type: 'voicemail',
+                      action_data: {
+                        customer_name: args.customer_name || 'Unknown',
+                        customer_phone: args.customer_phone || '',
+                        message: args.message || '',
+                        urgency: args.urgency || 'normal',
+                        job_reference: args.job_reference || ''
+                      },
+                      completed: false
+                    });
+                    
+                    result = { 
+                      success: true, 
+                      message: `Message recorded. ${args.customer_name || 'The customer'}'s message will be delivered to the contractor right away.` 
+                    };
+                    
+                    Logger.info('voicemail_recorded', { contractorId, args });
+                  }
+                } catch (error) {
+                  Logger.error('take_voicemail_error', error);
+                  result = { success: false, message: 'Message recorded. We will pass it along.' };
+                }
+              }
+              
+              // Handle lookup_job
+              if (functionName === 'lookup_job') {
+                try {
+                  const contractorId = callSession?.contractor_id;
+                  
+                  if (contractorId && args.job_number) {
+                    // Try to find the job
+                    const { data: job } = await supabase
+                      .from('jobs')
+                      .select('id, name, job_number, status, customer_id')
+                      .eq('user_id', contractorId)
+                      .or(`job_number.ilike.%${args.job_number}%,name.ilike.%${args.job_number}%`)
+                      .limit(1)
+                      .single();
+                    
+                    if (job) {
+                      result = { 
+                        success: true, 
+                        message: `Found job: ${job.name}. Job number: ${job.job_number || 'Not assigned'}. Status: ${job.status || 'Active'}.`,
+                        job: job
+                      };
+                    } else {
+                      result = { 
+                        success: false, 
+                        message: `I couldn't find a job with that reference number. Let me help you as a new inquiry instead.` 
+                      };
+                    }
+                    
+                    Logger.info('job_lookup', { contractorId, jobNumber: args.job_number, found: !!job });
+                  }
+                } catch (error) {
+                  Logger.error('lookup_job_error', error);
+                  result = { success: false, message: 'I had trouble looking that up. Let me help you another way.' };
+                }
+              }
+              
+              // Send function result back to OpenAI
+              openaiWs!.send(JSON.stringify({
+                type: 'conversation.item.create',
+                item: {
+                  type: 'function_call_output',
+                  call_id: callId,
+                  output: JSON.stringify(result)
+                }
+              }));
+              
+              // Request AI to continue the conversation with the result
+              openaiWs!.send(JSON.stringify({
+                type: 'response.create'
+              }));
             }
             
             // Log speech events for timing analysis
