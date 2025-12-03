@@ -1,14 +1,16 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useLeads } from '@/hooks/useLeads';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, Phone, Mail, Edit, Users, TrendingUp, Home } from 'lucide-react';
+import { Plus, Phone, Mail, Edit, Users, TrendingUp, Upload, FileSpreadsheet } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { AddLeadDialog } from '../../AddLeadDialog';
 import { EditLeadDialog } from '../../EditLeadDialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import * as XLSX from 'xlsx';
 
 interface LeadsSectionProps {
   onSectionChange?: (section: string) => void;
@@ -20,6 +22,82 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
   const [selectedLead, setSelectedLead] = useState<any>(null);
   const [convertingLead, setConvertingLead] = useState<any>(null);
   const [convertToOpportunityLead, setConvertToOpportunityLead] = useState<any>(null);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [importPreview, setImportPreview] = useState<any[]>([]);
+  const [importing, setImporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const data = evt.target?.result;
+        const workbook = XLSX.read(data, { type: 'binary' });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json(sheet);
+        
+        // Map CSV columns to lead fields
+        const mappedLeads = jsonData.map((row: any) => ({
+          name: row['Name'] || row['name'] || row['Full Name'] || row['full_name'] || '',
+          email: row['Email'] || row['email'] || row['E-mail'] || '',
+          phone: row['Phone'] || row['phone'] || row['Phone Number'] || row['phone_number'] || '',
+          company: row['Company'] || row['company'] || row['Business'] || '',
+          project_type: row['Project Type'] || row['project_type'] || row['Project'] || '',
+          value: parseFloat(row['Value'] || row['value'] || row['Estimated Value'] || '0') || null,
+          address: row['Address'] || row['address'] || row['Street'] || '',
+          city: row['City'] || row['city'] || '',
+          state: row['State'] || row['state'] || '',
+          zip_code: row['Zip'] || row['zip'] || row['Zip Code'] || row['zip_code'] || '',
+          notes: row['Notes'] || row['notes'] || row['Comments'] || '',
+          status: 'new',
+        })).filter((lead: any) => lead.name); // Only include rows with a name
+
+        setImportPreview(mappedLeads);
+        setImportDialogOpen(true);
+      } catch (error) {
+        console.error('Error parsing file:', error);
+        toast.error('Failed to parse file. Please ensure it\'s a valid CSV or Excel file.');
+      }
+    };
+    reader.readAsBinaryString(file);
+    
+    // Reset file input
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleImportLeads = async () => {
+    if (importPreview.length === 0) return;
+
+    setImporting(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      let successCount = 0;
+      for (const lead of importPreview) {
+        try {
+          await addLead(lead);
+          successCount++;
+        } catch (err) {
+          console.error('Error importing lead:', lead.name, err);
+        }
+      }
+
+      toast.success(`Successfully imported ${successCount} of ${importPreview.length} leads`);
+      setImportDialogOpen(false);
+      setImportPreview([]);
+      refreshLeads();
+    } catch (error: any) {
+      console.error('Import error:', error);
+      toast.error('Failed to import leads: ' + error.message);
+    } finally {
+      setImporting(false);
+    }
+  };
 
   const handleConvertToCustomer = async () => {
     if (!convertingLead) return;
@@ -152,11 +230,28 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
     <div className="w-full h-full overflow-y-auto overflow-x-hidden pb-20 bg-background">
       <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 w-full sm:max-w-7xl sm:mx-auto">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold">Leads</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">Manage and track your leads</p>
-        </div>
-        <AddLeadDialog onAdd={addLead} sources={sources} />
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold">Leads</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">Manage and track your leads</p>
+          </div>
+          <div className="flex gap-2">
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileUpload}
+              accept=".csv,.xlsx,.xls"
+              className="hidden"
+            />
+            <Button 
+              variant="outline" 
+              onClick={() => fileInputRef.current?.click()}
+              className="gap-2"
+            >
+              <Upload className="h-4 w-4" />
+              <span className="hidden sm:inline">Import CSV</span>
+            </Button>
+            <AddLeadDialog onAdd={addLead} sources={sources} />
+          </div>
         </div>
 
         <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
@@ -285,6 +380,53 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        {/* CSV Import Preview Dialog */}
+        <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <FileSpreadsheet className="h-5 w-5" />
+                Import Leads Preview
+              </DialogTitle>
+              <DialogDescription>
+                Review the leads to be imported. {importPreview.length} leads found.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex-1 overflow-auto border rounded-md">
+              <table className="w-full text-sm">
+                <thead className="bg-muted sticky top-0">
+                  <tr>
+                    <th className="text-left p-2 font-medium">Name</th>
+                    <th className="text-left p-2 font-medium">Email</th>
+                    <th className="text-left p-2 font-medium">Phone</th>
+                    <th className="text-left p-2 font-medium">Project</th>
+                    <th className="text-right p-2 font-medium">Value</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {importPreview.map((lead, idx) => (
+                    <tr key={idx} className="border-t">
+                      <td className="p-2 truncate max-w-[150px]">{lead.name}</td>
+                      <td className="p-2 truncate max-w-[150px]">{lead.email || '-'}</td>
+                      <td className="p-2">{lead.phone || '-'}</td>
+                      <td className="p-2 truncate max-w-[100px]">{lead.project_type || '-'}</td>
+                      <td className="p-2 text-right">{lead.value ? `$${lead.value.toLocaleString()}` : '-'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setImportDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleImportLeads} disabled={importing || importPreview.length === 0}>
+                {importing ? 'Importing...' : `Import ${importPreview.length} Leads`}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
