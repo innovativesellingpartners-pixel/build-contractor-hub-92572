@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { useLeads } from '@/hooks/useLeads';
+import { useCustomers } from '@/hooks/useCustomers';
 import { Button } from '@/components/ui/button';
 import { Plus, Phone, Mail, Edit, Users, TrendingUp, Upload, FileSpreadsheet, ChevronRight, DollarSign } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -11,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
 import { HorizontalRowCard, RowAvatar, RowContent, RowTitleLine, RowMetaLine, RowAmount, RowActions } from './HorizontalRowCard';
+import { LeadDetailViewBlue } from './LeadDetailViewBlue';
 
 interface LeadsSectionProps {
   onSectionChange?: (section: string) => void;
@@ -18,8 +20,11 @@ interface LeadsSectionProps {
 
 export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
   const { leads, sources, loading, addLead, updateLead, deleteLead, refreshLeads } = useLeads();
+  const { customers } = useCustomers();
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<any>(null);
+  const [detailViewOpen, setDetailViewOpen] = useState(false);
+  const [selectedLeadForDetail, setSelectedLeadForDetail] = useState<any>(null);
   const [convertingLead, setConvertingLead] = useState<any>(null);
   const [convertToOpportunityLead, setConvertToOpportunityLead] = useState<any>(null);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
@@ -222,6 +227,11 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
     setEditDialogOpen(true);
   };
 
+  const handleOpenDetail = (lead: any) => {
+    setSelectedLeadForDetail(lead);
+    setDetailViewOpen(true);
+  };
+
   if (loading) {
     return <div className="p-6">Loading leads...</div>;
   }
@@ -255,8 +265,12 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
         </div>
 
         <div className="space-y-3">
-        {leads.map((lead) => (
-          <HorizontalRowCard key={lead.id}>
+        {leads.map((lead) => {
+          const linkedCustomer = customers.find(c => 
+            leads.find(l => l.id === lead.id && l.customer_id === c.id)
+          );
+          return (
+          <HorizontalRowCard key={lead.id} onClick={() => handleOpenDetail(lead)}>
             {/* Avatar */}
             <RowAvatar initials={lead.name.charAt(0).toUpperCase()} />
 
@@ -290,7 +304,7 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
                 <Button 
                   variant="default" 
                   size="sm"
-                  onClick={() => setConvertToOpportunityLead(lead)}
+                  onClick={(e) => { e.stopPropagation(); setConvertToOpportunityLead(lead); }}
                   className="gap-1 hidden sm:flex"
                 >
                   <TrendingUp className="h-4 w-4" />
@@ -301,7 +315,7 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
                 <Button 
                   variant="default" 
                   size="icon"
-                  onClick={() => setConvertToOpportunityLead(lead)}
+                  onClick={(e) => { e.stopPropagation(); setConvertToOpportunityLead(lead); }}
                   className="h-8 w-8 sm:hidden"
                   title="Convert to Opportunity"
                 >
@@ -326,7 +340,7 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
                 variant="ghost" 
                 size="icon"
                 className="h-8 w-8"
-                onClick={() => handleEditLead(lead)}
+                onClick={(e) => { e.stopPropagation(); handleEditLead(lead); }}
               >
                 <Edit className="h-4 w-4" />
               </Button>
@@ -335,7 +349,7 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
                   variant="ghost" 
                   size="icon"
                   className="h-8 w-8"
-                  onClick={() => setConvertingLead(lead)}
+                  onClick={(e) => { e.stopPropagation(); setConvertingLead(lead); }}
                   title="Convert to Customer"
                 >
                   <Users className="h-4 w-4" />
@@ -344,7 +358,7 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
               <ChevronRight className="h-4 w-4 text-muted-foreground ml-1" />
             </RowActions>
           </HorizontalRowCard>
-        ))}
+        )})}
 
         {leads.length === 0 && (
           <div className="text-center py-8 text-muted-foreground">
@@ -448,6 +462,23 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
                 {importing ? 'Importing...' : `Import ${importPreview.length} Leads`}
               </Button>
             </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Lead Detail View Dialog */}
+        <Dialog open={detailViewOpen} onOpenChange={setDetailViewOpen}>
+          <DialogContent className="max-w-2xl max-h-[95vh] p-0 overflow-hidden">
+            {selectedLeadForDetail && (
+              <LeadDetailViewBlue
+                lead={selectedLeadForDetail}
+                onConvertToCustomer={() => {
+                  setDetailViewOpen(false);
+                  setConvertingLead(selectedLeadForDetail);
+                }}
+                onClose={() => setDetailViewOpen(false)}
+                onSectionChange={onSectionChange}
+              />
+            )}
           </DialogContent>
         </Dialog>
       </div>
