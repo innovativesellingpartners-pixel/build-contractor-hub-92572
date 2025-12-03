@@ -2,8 +2,8 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { FloatingTrialButton } from '@/components/FloatingTrialButton';
+import { MainSiteHeader } from '@/components/MainSiteHeader';
 import { Heart, Shield, Target, Users, Lightbulb, Trophy, Download } from 'lucide-react';
-import ct1Logo from '@/assets/ct1-logo-main.png';
 import joeCipriano from '@/assets/joe-cipriano.png';
 
 export const CoreValues = () => {
@@ -43,37 +43,7 @@ export const CoreValues = () => {
   return (
     <div className="min-h-screen bg-background">
       <FloatingTrialButton />
-      {/* Header */}
-      <header className="border-b sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
-            <Link to="/" className="flex items-center space-x-3">
-              <img src={ct1Logo} alt="CT1 Logo" className="h-12 w-12" />
-              <div>
-                <h1 className="text-2xl font-bold text-foreground">CT1</h1>
-                <p className="text-xs text-muted-foreground font-medium">One-Up Your Business</p>
-              </div>
-            </Link>
-            <nav className="hidden md:flex items-center gap-6">
-              <Link to="/" className="text-sm hover:text-primary transition-colors">Home</Link>
-              <Link to="/what-we-do" className="text-sm hover:text-primary transition-colors">What We Do</Link>
-              <Link to="/core-values" className="text-sm font-semibold text-primary">Core Values</Link>
-              <Link to="/trades-we-serve" className="text-sm hover:text-primary transition-colors">Trades We Serve</Link>
-              <Link to="/pricing" className="text-sm hover:text-primary transition-colors">Pricing</Link>
-              <Link to="/blog-podcast" className="text-sm hover:text-primary transition-colors">Blog & Podcast</Link>
-              <Link to="/contact" className="text-sm hover:text-primary transition-colors">Contact</Link>
-            </nav>
-            <div className="flex items-center gap-3">
-              <Link to="/auth">
-                <Button variant="outline">Login</Button>
-              </Link>
-              <Link to="/auth">
-                <Button>Start Free Trial</Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </header>
+      <MainSiteHeader />
 
       {/* Hero Section with Founder Quote */}
       <section className="py-20 bg-gradient-to-br from-primary/5 to-primary/10">

@@ -1,29 +1,13 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { FloatingTrialButton } from '@/components/FloatingTrialButton';
-import { ArrowLeft } from 'lucide-react';
-import ct1Logo from '@/assets/ct1-logo-main.png';
+import { MainSiteHeader } from '@/components/MainSiteHeader';
 
 export const Terms = () => {
   return (
     <div className="min-h-screen bg-background">
       <FloatingTrialButton />
-      {/* Header */}
-      <header className="border-b sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
-            <Link to="/">
-              <img src={ct1Logo} alt="CT1 Logo" className="h-12" />
-            </Link>
-            <Link to="/">
-              <Button variant="outline">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Home
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </header>
+      <MainSiteHeader />
 
       {/* Content */}
       <div className="container mx-auto px-4 py-20 max-w-4xl">

@@ -4,113 +4,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Zap, Phone, Users, Bot, Calendar, Target, Headphones } from "lucide-react";
 import ct1Logo from "@/assets/ct1-logo-main.png";
-import ct1LogoColor from "@/assets/ct1-logo-color.png";
-import { MobileNav } from "@/components/MobileNav";
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-} from "@/components/ui/navigation-menu";
-import { Bot as BotIcon, Mic, Rocket, TrendingUp, Crown } from "lucide-react";
+import { MainSiteHeader } from "@/components/MainSiteHeader";
 
 export default function TierGrowth() {
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border sticky top-0 bg-background/95 backdrop-blur-sm z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <Link to="/" className="flex items-center space-x-3">
-              <img src={ct1Logo} alt="CT1 Logo" className="h-12 w-12" />
-              <div>
-                <h1 className="text-2xl font-bold text-foreground">CT1</h1>
-                <p className="text-xs text-muted-foreground font-medium">One-Up the Competition</p>
-              </div>
-            </Link>
-            
-            {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center space-x-8">
-              <Link to="/what-we-do" className="text-muted-foreground hover:text-foreground transition-colors">
-                What We Do
-              </Link>
-              <NavigationMenu>
-                <NavigationMenuList>
-                  <NavigationMenuItem>
-                    <NavigationMenuTrigger className="text-muted-foreground hover:text-foreground bg-transparent">
-                      Products
-                    </NavigationMenuTrigger>
-                    <NavigationMenuContent>
-                      <div className="w-[400px] p-4 bg-popover">
-                        <div className="space-y-2">
-                          <Link to="/products/pocketbot" className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors">
-                            <BotIcon className="h-5 w-5 text-primary" />
-                            <div>
-                              <div className="font-medium text-foreground">MyCT1 Pocketbot</div>
-                              <p className="text-xs text-muted-foreground">Complete AI business assistant</p>
-                            </div>
-                          </Link>
-                          <Link to="/products/voice-ai" className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors">
-                            <Mic className="h-5 w-5 text-primary" />
-                            <div>
-                              <div className="font-medium text-foreground">AI Voice Assistant</div>
-                              <p className="text-xs text-muted-foreground">24/7 AI call handling</p>
-                            </div>
-                          </Link>
-                          <div className="border-t border-border my-2" />
-                          <Link to="/products/tier-launch" className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors">
-                            <Rocket className="h-5 w-5 text-primary" />
-                            <div>
-                              <div className="font-medium text-foreground">myCT1 Launch Growth Starter</div>
-                              <p className="text-xs text-muted-foreground">Perfect for getting started</p>
-                            </div>
-                          </Link>
-                          <Link to="/products/tier-growth" className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors">
-                            <TrendingUp className="h-5 w-5 text-primary" />
-                            <div>
-                              <div className="font-medium text-foreground">myCT1 Growth Business Builder</div>
-                              <p className="text-xs text-muted-foreground">Scale your operations</p>
-                            </div>
-                          </Link>
-                          <Link to="/products/tier-market" className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors">
-                            <Crown className="h-5 w-5 text-primary" />
-                            <div>
-                              <div className="font-medium text-foreground">myCT1 Market Dominator</div>
-                              <p className="text-xs text-muted-foreground">Maximum growth potential</p>
-                            </div>
-                          </Link>
-                          <div className="border-t border-border my-2" />
-                          <Link to="/pricing" className="flex items-center justify-center gap-2 p-3 bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors">
-                            <span className="font-medium text-primary">View All Pricing</span>
-                          </Link>
-                        </div>
-                      </div>
-                    </NavigationMenuContent>
-                  </NavigationMenuItem>
-                </NavigationMenuList>
-              </NavigationMenu>
-              <Link to="/trades-we-serve" className="text-muted-foreground hover:text-foreground transition-colors">
-                Trades We Serve
-              </Link>
-              <Link to="/core-values" className="text-muted-foreground hover:text-foreground transition-colors">
-                Core Values
-              </Link>
-              <Link to="/blog-podcast" className="text-muted-foreground hover:text-foreground transition-colors">
-                Blog & Podcast
-              </Link>
-              <Link to="/contact">
-                <Button variant="outline">Contact Sales</Button>
-              </Link>
-              <Link to="/auth">
-                <Button>Contractor Login</Button>
-              </Link>
-            </nav>
-            
-            <MobileNav />
-          </div>
-        </div>
-      </header>
+      <MainSiteHeader />
 
       {/* Hero Section */}
       <section className="py-20 bg-gradient-to-br from-primary/5 via-background to-primary/10">

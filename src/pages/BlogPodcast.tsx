@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FloatingTrialButton } from '@/components/FloatingTrialButton';
+import { MainSiteHeader } from '@/components/MainSiteHeader';
 import { Youtube, FileText, Mic, Play } from 'lucide-react';
-import ct1Logo from '@/assets/ct1-logo-main.png';
 import podcastThumbnail from '@/assets/podcast-thumbnail.png';
 
 export const BlogPodcast = () => {
@@ -61,33 +61,7 @@ export const BlogPodcast = () => {
   return (
     <div className="min-h-screen bg-background">
       <FloatingTrialButton />
-      {/* Header */}
-      <header className="border-b sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
-            <Link to="/">
-              <img src={ct1Logo} alt="CT1 Logo" className="h-12" />
-            </Link>
-            <nav className="hidden md:flex items-center gap-6">
-              <Link to="/" className="text-sm hover:text-primary transition-colors">Home</Link>
-              <Link to="/what-we-do" className="text-sm hover:text-primary transition-colors">What We Do</Link>
-              <Link to="/core-values" className="text-sm hover:text-primary transition-colors">Core Values</Link>
-              <Link to="/trades-we-serve" className="text-sm hover:text-primary transition-colors">Trades We Serve</Link>
-              <Link to="/pricing" className="text-sm hover:text-primary transition-colors">Pricing</Link>
-              <Link to="/blog-podcast" className="text-sm font-semibold text-primary">Blog & Podcast</Link>
-              <Link to="/contact" className="text-sm hover:text-primary transition-colors">Contact</Link>
-            </nav>
-            <div className="flex items-center gap-3">
-              <Link to="/auth">
-                <Button variant="outline">Login</Button>
-              </Link>
-              <Link to="/auth">
-                <Button>Start Free Trial</Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </header>
+      <MainSiteHeader />
 
       {/* Hero Section */}
       <section className="py-20 bg-gradient-to-br from-primary/5 to-primary/10">
