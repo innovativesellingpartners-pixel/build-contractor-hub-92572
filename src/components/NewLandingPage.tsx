@@ -149,13 +149,9 @@ export function NewLandingPage() {
               </span>
               <span className="block">The Competition</span>
             </h1>
-            <p className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-primary mb-8 drop-shadow-lg">
-              Powered by CT1
-            </p>
-            
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-10">
-              <p className="text-xl sm:text-2xl md:text-3xl leading-relaxed drop-shadow-md opacity-90 max-w-3xl">
-                A nationwide network of contractors building, scaling, and sustaining their businesses
+              <p className="text-xl sm:text-2xl md:text-3xl leading-relaxed drop-shadow-md max-w-3xl">
+                A nationwide network of contractors building, scaling, and sustaining their businesses, <span className="text-primary font-bold text-2xl sm:text-3xl md:text-4xl">Powered by CT1</span>
               </p>
               <Button 
                 size="lg" 
