@@ -66,18 +66,18 @@ export function NewLandingPage() {
   const testimonials = [
     {
       text: "CT1 transformed my business. The PocketBots handle all my estimates and client communication automatically. I've increased my revenue by 40% in just 6 months.",
-      name: "Mike Johnson",
-      company: "Johnson Construction"
+      name: "Mike J.",
+      company: "Owner at a large construction company in Michigan"
     },
     {
       text: "The training modules helped me get certified and the marketplace connected me with quality suppliers. CT1 is a complete game-changer for contractors.",
-      name: "Sarah Martinez",
-      company: "Elite Roofing Solutions"
+      name: "Sarah M.",
+      company: "Owner at a roofing company in Texas"
     },
     {
       text: "From lead generation to project management, CT1 handles everything. I can focus on quality work while my business runs itself.",
-      name: "David Chen",
-      company: "Chen Electrical Services"
+      name: "David C.",
+      company: "Owner at an electrical services company in California"
     }
   ];
 
