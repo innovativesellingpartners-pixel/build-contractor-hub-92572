@@ -27,14 +27,16 @@ export function KPICards({ filters }: KPICardsProps) {
         .select("*")
         .eq("user_id", user.id);
 
-      // Apply date filters
-      if (filters.dateFrom) {
-        estimatesQuery = estimatesQuery.gte("created_at", filters.dateFrom);
-        jobsQuery = jobsQuery.gte("created_at", filters.dateFrom);
-      }
-      if (filters.dateTo) {
-        estimatesQuery = estimatesQuery.lte("created_at", filters.dateTo);
-        jobsQuery = jobsQuery.lte("created_at", filters.dateTo);
+      // Apply date filters (skip for "all_time")
+      if (filters.dateRange !== "all_time") {
+        if (filters.dateFrom) {
+          estimatesQuery = estimatesQuery.gte("created_at", filters.dateFrom);
+          jobsQuery = jobsQuery.gte("created_at", filters.dateFrom);
+        }
+        if (filters.dateTo) {
+          estimatesQuery = estimatesQuery.lte("created_at", filters.dateTo);
+          jobsQuery = jobsQuery.lte("created_at", filters.dateTo);
+        }
       }
 
       // Apply trade filter
