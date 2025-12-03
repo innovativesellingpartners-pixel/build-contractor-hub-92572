@@ -117,6 +117,20 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
 
   // Referred By
   const [referredBy, setReferredBy] = useState('');
+  const [referredByOther, setReferredByOther] = useState('');
+  
+  // Same as customer checkbox
+  const [sameAsCustomer, setSameAsCustomer] = useState(false);
+
+  const referralOptions = [
+    'Google',
+    'Social Media',
+    'CT1',
+    'Friend',
+    'Former Customer',
+    'Family Member',
+    'Other',
+  ];
 
   // Signature printed names and acceptance dates
   const [contractorPrintedName, setContractorPrintedName] = useState('');
@@ -260,7 +274,14 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
       setWarrantyYears(initialData.terms_warranty_years || 2);
 
       // Load referred by
-      setReferredBy(initialData.referred_by || '');
+      const savedReferredBy = initialData.referred_by || '';
+      if (savedReferredBy && !referralOptions.includes(savedReferredBy)) {
+        setReferredBy('Other');
+        setReferredByOther(savedReferredBy);
+      } else {
+        setReferredBy(savedReferredBy);
+        setReferredByOther('');
+      }
 
       // Load signature printed names and dates
       setContractorPrintedName(initialData.contractor_printed_name || '');
@@ -526,7 +547,7 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
       trade_specific: tradeSpecific,
       
       // Referred by
-      referred_by: referredBy,
+      referred_by: referredBy === 'Other' ? referredByOther : referredBy,
       
       // Signatures with printed names and dates
       contractor_signature: contractorSigRef.current?.toDataURL(),
@@ -641,7 +662,28 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
 
                     <div className="space-y-2">
                       <Label htmlFor="client_name">Client Name *</Label>
-                      <Input id="client_name" {...register('client_name')} />
+                      {selectedCustomerId && (
+                        <div className="flex items-center gap-2 mb-2">
+                          <Checkbox 
+                            id="same-as-customer"
+                            checked={sameAsCustomer}
+                            onCheckedChange={(checked) => {
+                              setSameAsCustomer(checked as boolean);
+                              if (checked) {
+                                const customer = customers.find(c => c.id === selectedCustomerId);
+                                if (customer) {
+                                  setValue('client_name', customer.name);
+                                  if (customer.email) setValue('client_email', customer.email);
+                                }
+                              }
+                            }}
+                          />
+                          <Label htmlFor="same-as-customer" className="text-sm font-medium cursor-pointer">
+                            Same as customer
+                          </Label>
+                        </div>
+                      )}
+                      <Input id="client_name" {...register('client_name')} disabled={sameAsCustomer} />
                       {errors.client_name && <p className="text-sm text-destructive">{errors.client_name.message}</p>}
                     </div>
 
@@ -713,12 +755,34 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
 
                     <div className="space-y-2">
                       <Label htmlFor="referred_by">Referred By</Label>
-                      <Input 
-                        id="referred_by" 
+                      <Select
                         value={referredBy}
-                        onChange={(e) => setReferredBy(e.target.value)}
-                        placeholder="How did they hear about you?"
-                      />
+                        onValueChange={(value) => {
+                          setReferredBy(value);
+                          if (value !== 'Other') {
+                            setReferredByOther('');
+                          }
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select referral source" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {referralOptions.map((option) => (
+                            <SelectItem key={option} value={option}>
+                              {option}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {referredBy === 'Other' && (
+                        <Input 
+                          className="mt-2"
+                          value={referredByOther}
+                          onChange={(e) => setReferredByOther(e.target.value)}
+                          placeholder="Please specify"
+                        />
+                      )}
                     </div>
                   </div>
 
@@ -1091,10 +1155,10 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
                 <h4 className="font-semibold text-lg">Contractor</h4>
                 <div className="space-y-2">
                   <Label>Contractor Signature</Label>
-                  <div className="border rounded-lg bg-background">
+                  <div className="border rounded-lg bg-white">
                     <SignatureCanvas
                       ref={contractorSigRef}
-                      canvasProps={{ className: 'w-full h-32 bg-background' }}
+                      canvasProps={{ className: 'w-full h-32 bg-white rounded-lg' }}
                       onEnd={() => {
                         // Auto-fill acceptance date when signature is added
                         if (!contractorAcceptanceDate) {
@@ -1143,10 +1207,10 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
                 <h4 className="font-semibold text-lg">Client</h4>
                 <div className="space-y-2">
                   <Label>Client Signature</Label>
-                  <div className="border rounded-lg bg-background">
+                  <div className="border rounded-lg bg-white">
                     <SignatureCanvas
                       ref={clientSigRef}
-                      canvasProps={{ className: 'w-full h-32 bg-background' }}
+                      canvasProps={{ className: 'w-full h-32 bg-white rounded-lg' }}
                       onEnd={() => {
                         // Auto-fill acceptance date when signature is added
                         if (!clientAcceptanceDate) {
