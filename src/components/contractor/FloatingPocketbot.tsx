@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bot, Send, Loader2, Lock, Sparkles, X, Minimize2, Download, GripVertical } from "lucide-react";
+import { Bot, Send, Loader2, Lock, Sparkles, X, Minimize2, Download, GripVertical, Mic, MicOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
@@ -42,6 +42,8 @@ export function FloatingPocketbot({ onClose, onPositionChange }: FloatingPocketb
   });
   const [showPaywall, setShowPaywall] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
   const [position, setPosition] = useState(() => {
     const saved = localStorage.getItem('ct1_pocketbot_position');
     let initialPosition = { x: window.innerWidth - 400, y: 20 };
@@ -76,6 +78,8 @@ export function FloatingPocketbot({ onClose, onPositionChange }: FloatingPocketb
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const scrollRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -224,6 +228,99 @@ export function FloatingPocketbot({ onClose, onPositionChange }: FloatingPocketb
       title: "Subscription Coming Soon",
       description: `CT1 Pocketbot subscription for $${SUBSCRIPTION_PRICE}/month will be available soon!`,
     });
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        stream.getTracks().forEach(track => track.stop());
+        await transcribeAudio(audioBlob);
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+    } catch (error) {
+      console.error('Error starting recording:', error);
+      toast({
+        title: "Microphone Error",
+        description: "Could not access microphone. Please check permissions.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
+  };
+
+  const transcribeAudio = async (audioBlob: Blob) => {
+    setIsTranscribing(true);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData?.session?.access_token;
+
+      if (!accessToken) {
+        toast({
+          title: "Authentication Required",
+          description: "Please sign in to use voice input.",
+          variant: "destructive"
+        });
+        setIsTranscribing(false);
+        return;
+      }
+
+      // Convert blob to base64
+      const reader = new FileReader();
+      reader.readAsDataURL(audioBlob);
+      reader.onloadend = async () => {
+        const base64Audio = (reader.result as string).split(',')[1];
+        
+        const response = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/voice-to-text`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify({ audio: base64Audio }),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to transcribe audio");
+        }
+
+        const data = await response.json();
+        if (data.text) {
+          setInput(prev => prev ? `${prev} ${data.text}` : data.text);
+        }
+        setIsTranscribing(false);
+      };
+    } catch (error) {
+      console.error("Transcription error:", error);
+      toast({
+        title: "Transcription Error",
+        description: "Failed to transcribe audio. Please try again.",
+        variant: "destructive",
+      });
+      setIsTranscribing(false);
+    }
   };
 
   const handleSend = async () => {
@@ -605,12 +702,28 @@ export function FloatingPocketbot({ onClose, onPositionChange }: FloatingPocketb
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Ask me anything..."
-                disabled={isLoading}
+                disabled={isLoading || isTranscribing}
                 className="flex-1 text-sm"
               />
               <Button 
+                onClick={isRecording ? stopRecording : startRecording}
+                disabled={isLoading || isTranscribing}
+                size="icon"
+                variant={isRecording ? "destructive" : "outline"}
+                className={isRecording ? 'animate-pulse' : ''}
+                title={isRecording ? "Stop recording" : "Start voice input"}
+              >
+                {isTranscribing ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : isRecording ? (
+                  <MicOff className="h-4 w-4" />
+                ) : (
+                  <Mic className="h-4 w-4" />
+                )}
+              </Button>
+              <Button 
                 onClick={handleSend} 
-                disabled={isLoading || !input.trim()}
+                disabled={isLoading || !input.trim() || isTranscribing}
                 size="icon"
               >
                 {isLoading ? (
