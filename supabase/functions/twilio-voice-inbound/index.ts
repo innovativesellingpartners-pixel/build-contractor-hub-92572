@@ -341,16 +341,17 @@ Your role:
 
 Keep responses concise and conversational. This is a phone call.`;
 
-    // Use custom greeting or default
+    // Use custom greeting or default - warm and conversational
     const greeting = aiProfile.custom_greeting || 
-      `Hello, thank you for calling ${aiProfile.business_name}. This is your ${aiProfile.trade} assistant. How can I help you today?`;
+      `Hey there, thanks for calling ${aiProfile.business_name}. How can I help you today?`;
 
     // Get voice ID and ensure it's one of the supported OpenAI voices
+    // Default to 'coral' for warm, friendly tone suited to contractors
     const supportedVoices = ['alloy', 'ash', 'ballad', 'coral', 'echo', 'sage', 'shimmer', 'verse', 'marin', 'cedar'];
-    let voiceId = aiProfile.voice_id || 'alloy';
+    let voiceId = aiProfile.voice_id || 'coral';
     if (!supportedVoices.includes(voiceId)) {
-      console.log(`Unsupported voice_id '${voiceId}' in AI profile, defaulting to 'alloy'`);
-      voiceId = 'alloy';
+      console.log(`Unsupported voice_id '${voiceId}' in AI profile, defaulting to 'coral'`);
+      voiceId = 'coral';
     }
 
     // Store configuration in session for WebSocket handler

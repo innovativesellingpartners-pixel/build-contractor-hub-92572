@@ -111,11 +111,15 @@ Your role:
 
 Keep responses concise and conversational. This is a phone call.`;
 
-    // Use custom greeting or default (mentioning the contractor couldn't answer)
-    const greeting = `Hello, thank you for calling ${aiProfile.business_name}. I apologize, but ${aiProfile.contractor_name || 'the contractor'} couldn't answer right now. I'm the AI assistant and I'm happy to help you. How can I assist you today?`;
+    // Use custom greeting or default - warm, natural, acknowledges missed call
+    const greeting = `Hey there, thanks for calling ${aiProfile.business_name}. Sorry ${aiProfile.contractor_name || 'we'} couldn't grab the phone. I'm happy to help - what do you need?`;
 
-    // Get voice ID (default to 'alloy' if not set)
-    const voiceId = aiProfile.voice_id || 'alloy';
+    // Get voice ID - default to 'coral' for warm, friendly tone
+    const supportedVoices = ['alloy', 'ash', 'ballad', 'coral', 'echo', 'sage', 'shimmer', 'verse', 'marin', 'cedar'];
+    let voiceId = aiProfile.voice_id || 'coral';
+    if (!supportedVoices.includes(voiceId)) {
+      voiceId = 'coral';
+    }
 
     // Store configuration in session for WebSocket handler
     await supabase.from('call_sessions').update({

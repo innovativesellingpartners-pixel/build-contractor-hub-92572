@@ -11,6 +11,33 @@
  * 3. Short-lived call sessions
  * 
  * WebSocket URL: wss://faqrzzodtmsybofakcvv.supabase.co/functions/v1/twilio-stream-handler
+ * 
+ * ========================
+ * VOICE AI CONFIGURATION
+ * ========================
+ * Adjust these values to change voice behavior:
+ * 
+ * Voice Options (OpenAI Realtime):
+ *   coral   - Friendly, warm (recommended for contractors)
+ *   ash     - Professional, confident
+ *   alloy   - Neutral, standard
+ *   echo    - Male, deeper tone
+ *   sage    - Calm, measured
+ *   shimmer - Expressive, dynamic
+ * 
+ * Timing (milliseconds):
+ *   silenceDurationMs - How long to wait after speech stops before responding
+ *                       Lower = faster response, may cut off speaker
+ *                       Recommended: 500-700ms
+ * 
+ *   prefixPaddingMs   - How long to wait before speech is considered started
+ *                       Lower = faster pickup, may catch noise
+ *                       Recommended: 200-350ms
+ * 
+ * Volume/Clarity:
+ *   Audio quality is constrained by phone standards (8kHz mulaw)
+ *   The conversion to/from OpenAI's 24kHz PCM16 is optimized
+ *   No additional adjustments available in telephony context
  */
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
@@ -18,6 +45,48 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
 const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+/**
+ * Voice AI Configuration - Easy to adjust for tone and timing
+ */
+const VOICE_CONFIG = {
+  // Voice selection: coral (friendly), ash (professional), alloy (neutral)
+  defaultVoice: 'coral',
+  
+  // Response behavior
+  temperature: 0.85,            // Slightly less random for consistent tone
+  maxResponseTokens: 120,       // Keep responses concise
+  
+  // Turn detection - controls response timing
+  vadThreshold: 0.4,            // Lower = more sensitive to speech (was 0.5)
+  prefixPaddingMs: 250,         // Faster speech start detection (was 300)
+  silenceDurationMs: 550,       // Faster turn-taking (was 800)
+};
+
+/**
+ * Speaking style for contractor phone calls - warm, direct, blue-collar friendly
+ */
+const CONTRACTOR_SPEAKING_STYLE = `
+
+SPEAKING STYLE FOR CONTRACTOR PHONE CALLS:
+- Speak like a friendly dispatcher or office manager - warm but efficient
+- Use plain, direct language that field workers appreciate
+- Keep answers short: 1-2 sentences unless they ask for details
+- Use contractions naturally (I'm, you're, we'll, can't)
+- Confirm key information back: "Got it, you need service at [address]"
+- When taking messages: "I'll make sure [contractor name] gets this right away"
+- For scheduling: "Let me check what we have open..." then confirm clearly
+- If you don't know something: "I'll need to check on that and have someone call you back"
+- End calls warmly: "Thanks for calling [business name]. We'll take care of you."
+
+AVOID:
+- Corporate jargon or overly formal language
+- Long explanations unless asked
+- Fake enthusiasm or salesy tone
+- Technical terms the caller won't care about
+- Saying "I'm an AI" unless directly asked
+
+Remember: This is a real phone call. Be human, helpful, and to the point.`;
 
 interface CallSession {
   call_sid: string;
@@ -284,10 +353,10 @@ Deno.serve(async (req) => {
         
         // Validate and normalize voice_id (same logic as twilio-voice-inbound)
         const supportedVoices = ['alloy', 'ash', 'ballad', 'coral', 'echo', 'sage', 'shimmer', 'verse', 'marin', 'cedar'];
-        let voiceId = config.voice_id || 'alloy';
+        let voiceId = config.voice_id || VOICE_CONFIG.defaultVoice;
         if (!supportedVoices.includes(voiceId)) {
-          console.log(`Unsupported voice_id '${voiceId}', defaulting to 'alloy'`);
-          voiceId = 'alloy';
+          console.log(`Unsupported voice_id '${voiceId}', defaulting to '${VOICE_CONFIG.defaultVoice}'`);
+          voiceId = VOICE_CONFIG.defaultVoice;
         }
         
         // Get ephemeral token from OpenAI for Realtime API
@@ -345,12 +414,12 @@ Deno.serve(async (req) => {
           if (openaiMessage.type === 'session.created') {
             console.log('OpenAI session created, configuring...');
             
-            // Send session configuration
+            // Send session configuration with optimized timing and contractor-friendly style
             openaiWs!.send(JSON.stringify({
               type: 'session.update',
               session: {
                 modalities: ['text', 'audio'],
-                instructions: config.system_prompt + '\n\nIMPORTANT SPEAKING STYLE: Speak naturally and conversationally like a friendly human. Use contractions (I\'m, you\'re, we\'ll). Keep responses concise - 1-2 sentences max unless more detail is needed. Be warm, helpful, and personable. Avoid robotic or formal language. Respond quickly and naturally as if having a real phone conversation.',
+                instructions: config.system_prompt + CONTRACTOR_SPEAKING_STYLE,
                 voice: voiceId,
                 input_audio_format: 'pcm16',
                 output_audio_format: 'pcm16',
@@ -359,12 +428,12 @@ Deno.serve(async (req) => {
                 },
                 turn_detection: {
                   type: 'server_vad',
-                  threshold: 0.5,              // More responsive to speech
-                  prefix_padding_ms: 300,      // Quick start
-                  silence_duration_ms: 800     // Faster turn-taking for natural conversation
+                  threshold: VOICE_CONFIG.vadThreshold,
+                  prefix_padding_ms: VOICE_CONFIG.prefixPaddingMs,
+                  silence_duration_ms: VOICE_CONFIG.silenceDurationMs,
                 },
-                temperature: 0.9,              // Slightly more creative/natural
-                max_response_output_tokens: 150 // Keep responses concise
+                temperature: VOICE_CONFIG.temperature,
+                max_response_output_tokens: VOICE_CONFIG.maxResponseTokens,
               }
             }));
           }
