@@ -48,8 +48,9 @@ const VOICE_CONFIG = {
   silenceDurationMs: 700,     // Wait for natural pause before responding
   
   // Keep-alive intervals (ms) - CRITICAL for preventing timeouts
-  keepAliveIntervalMs: 8000,  // Send keep-alive every 8 seconds (more aggressive)
-  openaiPingIntervalMs: 5000, // Send ping to OpenAI every 5 seconds
+  // OpenAI Realtime has a ~60 second idle timeout - we must send session.update to reset it
+  keepAliveIntervalMs: 15000,  // Send Twilio mark every 15 seconds
+  sessionPingIntervalMs: 25000, // Send session.update every 25 seconds (well under 60s timeout)
   
   // Audio buffer settings
   audioBufferMs: 100,         // Small buffer for low latency
@@ -188,8 +189,19 @@ const MULAW_DECODE_TABLE = new Int16Array([
 ]);
 
 /**
+ * Cubic interpolation helper for smooth upsampling
+ */
+function cubicInterpolate(y0: number, y1: number, y2: number, y3: number, t: number): number {
+  const a = -0.5 * y0 + 1.5 * y1 - 1.5 * y2 + 0.5 * y3;
+  const b = y0 - 2.5 * y1 + 2 * y2 - 0.5 * y3;
+  const c = -0.5 * y0 + 0.5 * y2;
+  const d = y1;
+  return Math.round(a * t * t * t + b * t * t + c * t + d);
+}
+
+/**
  * Convert Twilio's mulaw (8kHz) to OpenAI's PCM16 (24kHz)
- * Uses lookup table for accurate decoding and linear interpolation for upsampling
+ * Uses lookup table for accurate decoding and cubic interpolation for high-quality upsampling
  */
 function mulawToPCM16(mulawData: Uint8Array): string {
   // Decode mulaw to PCM16 at 8kHz using lookup table
@@ -199,19 +211,27 @@ function mulawToPCM16(mulawData: Uint8Array): string {
     pcm8k[i] = MULAW_DECODE_TABLE[mulawData[i]];
   }
   
-  // Upsample from 8kHz to 24kHz using linear interpolation
+  // Upsample from 8kHz to 24kHz using cubic interpolation for better quality
   const pcm24k = new Int16Array(pcm8k.length * 3);
   
   for (let i = 0; i < pcm8k.length; i++) {
-    const curr = pcm8k[i];
-    const next = pcm8k[Math.min(pcm8k.length - 1, i + 1)];
+    // Get 4 samples for cubic interpolation (clamp at boundaries)
+    const y0 = pcm8k[Math.max(0, i - 1)];
+    const y1 = pcm8k[i];
+    const y2 = pcm8k[Math.min(pcm8k.length - 1, i + 1)];
+    const y3 = pcm8k[Math.min(pcm8k.length - 1, i + 2)];
     
     // Original sample
-    pcm24k[i * 3] = curr;
+    pcm24k[i * 3] = y1;
     
-    // Linear interpolation for intermediate samples
-    pcm24k[i * 3 + 1] = Math.round(curr + (next - curr) / 3);
-    pcm24k[i * 3 + 2] = Math.round(curr + (next - curr) * 2 / 3);
+    // Cubic interpolation for intermediate samples
+    pcm24k[i * 3 + 1] = cubicInterpolate(y0, y1, y2, y3, 1/3);
+    pcm24k[i * 3 + 2] = cubicInterpolate(y0, y1, y2, y3, 2/3);
+  }
+  
+  // Clamp values to valid Int16 range
+  for (let i = 0; i < pcm24k.length; i++) {
+    pcm24k[i] = Math.max(-32768, Math.min(32767, pcm24k[i]));
   }
   
   // Convert to base64
@@ -362,8 +382,10 @@ Deno.serve(async (req) => {
   let hasGreeted = false;
   let recordingStarted = false;
   let keepAliveInterval: number | null = null;
+  let sessionPingInterval: number | null = null;
   let callStartTime: number | null = null;
   let lastAudioTime: number | null = null;
+  let sessionPingCounter = 0;
   const audioBuffer = new AudioBufferManager();
 
   const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_KEY!);
@@ -375,6 +397,11 @@ Deno.serve(async (req) => {
     if (keepAliveInterval) {
       clearInterval(keepAliveInterval);
       keepAliveInterval = null;
+    }
+    
+    if (sessionPingInterval) {
+      clearInterval(sessionPingInterval);
+      sessionPingInterval = null;
     }
     
     if (openaiWs && openaiWs.readyState === WebSocket.OPEN) {
@@ -438,10 +465,10 @@ Deno.serve(async (req) => {
   // Setup keep-alive ping - CRITICAL for preventing session timeouts
   const setupKeepAlive = () => {
     if (keepAliveInterval) clearInterval(keepAliveInterval);
+    if (sessionPingInterval) clearInterval(sessionPingInterval);
     
-    // More aggressive keep-alive for Twilio
+    // Twilio mark events every 15 seconds
     keepAliveInterval = setInterval(() => {
-      // Send mark event to Twilio to keep connection alive
       if (twilioWs.readyState === WebSocket.OPEN) {
         twilioWs.send(JSON.stringify({
           event: 'mark',
@@ -450,28 +477,38 @@ Deno.serve(async (req) => {
         }));
         Logger.info('keepalive_sent', { target: 'twilio' });
       }
-      
-      // Send input_audio_buffer.commit to keep OpenAI session active
-      // This acts as a heartbeat that prevents session timeout
+    }, VOICE_CONFIG.keepAliveIntervalMs);
+    
+    // TRUE SESSION KEEP-ALIVE: Send session.update every 25 seconds
+    // This is the ONLY reliable way to reset OpenAI's ~60 second idle timeout
+    // Appending silent audio does NOT work - the session tracks actual interaction
+    sessionPingInterval = setInterval(() => {
       if (openaiWs && openaiWs.readyState === WebSocket.OPEN) {
-        // Send a minimal audio buffer to keep the session alive
-        // This prevents the 42-second idle timeout
+        sessionPingCounter++;
+        
+        // Send a session.update which resets the idle timer
+        // We just re-confirm the same settings which doesn't change behavior
         openaiWs.send(JSON.stringify({
-          type: 'input_audio_buffer.append',
-          audio: 'AAAA' // Minimal silent audio (base64)
+          type: 'session.update',
+          session: {
+            // Minimal update that still resets the timer
+            input_audio_transcription: {
+              model: 'whisper-1'
+            }
+          }
         }));
         
-        Logger.info('keepalive_check', { 
-          target: 'openai', 
-          state: 'open',
+        Logger.info('session_ping_sent', { 
+          pingNumber: sessionPingCounter,
           lastAudioMs: lastAudioTime ? Date.now() - lastAudioTime : null,
           callDurationMs: callStartTime ? Date.now() - callStartTime : 0
         });
       }
-    }, VOICE_CONFIG.keepAliveIntervalMs);
+    }, VOICE_CONFIG.sessionPingIntervalMs);
     
     Logger.info('keepalive_setup', { 
-      intervalMs: VOICE_CONFIG.keepAliveIntervalMs,
+      twilioIntervalMs: VOICE_CONFIG.keepAliveIntervalMs,
+      sessionPingIntervalMs: VOICE_CONFIG.sessionPingIntervalMs,
       maxDurationMs: VOICE_CONFIG.maxSessionDurationMs
     });
   };
