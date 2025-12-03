@@ -295,8 +295,9 @@ export function NewLandingPage() {
             </h1>
             
             <p className="text-lg sm:text-xl md:text-2xl mb-10 leading-relaxed drop-shadow-md opacity-90 max-w-4xl mx-auto">
-              Complete contractor management combining proposals, job tracking, billing, client communication, 
-              scheduling, and team coordination. Everything connected. Nothing missing.
+              The all-in-one platform that takes you from lead to profit. Manage your entire sales pipeline—leads, estimates, 
+              customers, jobs, and follow-ups—with integrated CRM, AI-powered assistants, accounting, and real-time calendar sync. 
+              Built by contractors, for contractors.
             </p>
           </div>
 
