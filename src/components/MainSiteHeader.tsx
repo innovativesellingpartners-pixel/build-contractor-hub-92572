@@ -38,7 +38,7 @@ export function MainSiteHeader({ onContactClick }: MainSiteHeaderProps) {
             <img src={ct1Logo} alt="CT1 Logo" className="h-10 w-10 sm:h-12 sm:w-12" />
             <div>
               <h1 className="text-xl sm:text-2xl font-bold text-white">MYCT1.COM</h1>
-              <p className="text-[10px] sm:text-xs text-zinc-400 font-medium">the competition today!</p>
+              <p className="text-[10px] sm:text-xs text-zinc-400 font-medium">One-Up The Competition Today</p>
             </div>
           </Link>
           
