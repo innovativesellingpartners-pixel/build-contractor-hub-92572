@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
@@ -14,7 +14,7 @@ export function MobileNav({ onContactClick }: MobileNavProps) {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="md:hidden">
+        <Button variant="ghost" size="icon" className="lg:hidden">
           <Menu className="h-6 w-6" />
         </Button>
       </SheetTrigger>
@@ -37,11 +37,18 @@ export function MobileNav({ onContactClick }: MobileNavProps) {
             What We Do
           </Link>
           <Link 
-            to="/core-values" 
+            to="/pricing" 
             className="text-lg font-medium text-foreground hover:text-primary transition-colors py-2"
             onClick={() => setOpen(false)}
           >
-            Core Values
+            Products
+          </Link>
+          <Link 
+            to="/pricing" 
+            className="text-lg font-medium text-foreground hover:text-primary transition-colors py-2"
+            onClick={() => setOpen(false)}
+          >
+            Pricing
           </Link>
           <Link 
             to="/trades-we-serve" 
@@ -51,11 +58,11 @@ export function MobileNav({ onContactClick }: MobileNavProps) {
             Trades We Serve
           </Link>
           <Link 
-            to="/pricing" 
+            to="/core-values" 
             className="text-lg font-medium text-foreground hover:text-primary transition-colors py-2"
             onClick={() => setOpen(false)}
           >
-            Pricing
+            Core Values
           </Link>
           <Link 
             to="/blog-podcast" 

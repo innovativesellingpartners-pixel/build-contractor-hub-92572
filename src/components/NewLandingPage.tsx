@@ -122,16 +122,17 @@ export function NewLandingPage() {
               </div>
             </Link>
             
-            <nav className="hidden md:flex items-center space-x-6">
-              <Link to="/what-we-do" className="text-foreground hover:text-primary transition-colors font-medium">What We Do</Link>
-              <Link to="/core-values" className="text-foreground hover:text-primary transition-colors font-medium">Core Values</Link>
-              <Link to="/trades-we-serve" className="text-foreground hover:text-primary transition-colors font-medium">Trades We Serve</Link>
-              <Link to="/pricing" className="text-foreground hover:text-primary transition-colors font-medium">Pricing</Link>
-              <Link to="/blog-podcast" className="text-foreground hover:text-primary transition-colors font-medium">Blog & Podcast</Link>
+            <nav className="hidden lg:flex items-center space-x-4 xl:space-x-6">
+              <Link to="/what-we-do" className="text-foreground hover:text-primary transition-colors font-medium text-sm xl:text-base">What We Do</Link>
+              <Link to="/pricing" className="text-foreground hover:text-primary transition-colors font-medium text-sm xl:text-base">Products</Link>
+              <Link to="/pricing" className="text-foreground hover:text-primary transition-colors font-medium text-sm xl:text-base">Pricing</Link>
+              <Link to="/trades-we-serve" className="text-foreground hover:text-primary transition-colors font-medium text-sm xl:text-base">Trades We Serve</Link>
+              <Link to="/core-values" className="text-foreground hover:text-primary transition-colors font-medium text-sm xl:text-base">Core Values</Link>
+              <Link to="/blog-podcast" className="text-foreground hover:text-primary transition-colors font-medium text-sm xl:text-base">Blog & Podcast</Link>
               
               <Dialog open={activeContactForm === "contact-sales"} onOpenChange={(open) => setActiveContactForm(open ? "contact-sales" : null)}>
                 <DialogTrigger asChild>
-                  <Button variant="outline" className="font-semibold">Contact Sales</Button>
+                  <Button variant="outline" size="sm" className="font-semibold">Contact Sales</Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-2xl">
                   <ContactForm
@@ -146,7 +147,7 @@ export function NewLandingPage() {
               
               <Link 
                 to="/auth" 
-                className="bg-primary text-primary-foreground px-6 py-2 rounded-lg font-bold hover:bg-primary-hover transition-colors"
+                className="bg-primary text-primary-foreground px-4 xl:px-6 py-2 rounded-lg font-bold hover:bg-primary-hover transition-colors text-sm xl:text-base"
               >
                 Contractor Login
               </Link>
@@ -158,7 +159,7 @@ export function NewLandingPage() {
       </header>
 
       {/* Mobile Contractor Login Button - Sticky below header */}
-      <div className="md:hidden sticky top-16 bg-primary z-40 border-b border-primary-foreground/20">
+      <div className="lg:hidden sticky top-16 bg-primary z-40 border-b border-primary-foreground/20">
         <div className="px-4 py-2">
           <Link to="/auth" className="block">
             <Button className="w-full bg-primary-foreground text-primary hover:bg-primary-foreground/90 font-bold text-lg py-6" size="lg">
