@@ -143,15 +143,15 @@ export function NewLandingPage() {
 
       {/* SECTION 1: Hero */}
       <section 
-        className="relative min-h-[80vh] flex items-center overflow-hidden"
+        className="relative min-h-[80vh] flex items-start overflow-hidden"
         style={{
           backgroundImage: `url(${heroImage})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
       >
-        <div className="absolute inset-0 bg-black/40"></div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-4 pb-12">
+        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/50 backdrop-blur-[2px]"></div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-16 pb-12 w-full">
           <div className="flex flex-col items-center text-center">
             <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold mb-4 leading-tight drop-shadow-lg text-white">
               <span className="inline-flex items-center justify-center">
