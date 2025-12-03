@@ -150,76 +150,66 @@ export function NewLandingPage() {
           backgroundPosition: 'center',
         }}
       >
-        <div className="absolute inset-0 bg-black/35"></div>
+        <div className="absolute inset-0 bg-black/50"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-16">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Left: Text */}
-            <div className="text-white">
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 leading-tight drop-shadow-lg">
-                <span className="inline-flex items-center">
-                  <img src={ct1Logo} alt="CT1" className="h-14 w-14 sm:h-16 sm:w-16 lg:h-20 lg:w-20 inline-block -mr-1 drop-shadow-lg" />
-                  <span>ne-Up</span>
-                </span>
-                <span className="block">The Competition</span>
-              </h1>
-              <p className="text-xl sm:text-2xl mb-4 text-white/90 leading-relaxed">
-                A nationwide network of contractors building, scaling, and sustaining their businesses
-              </p>
-              <p className="text-2xl sm:text-3xl mb-8 font-bold text-primary">
-                Powered by CT1
-              </p>
+          <div className="flex flex-col items-center text-center">
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold mb-8 leading-tight drop-shadow-lg text-white">
+              <span className="inline-flex items-center justify-center">
+                <img src={ct1Logo} alt="CT1" className="h-16 w-16 sm:h-20 sm:w-20 lg:h-24 lg:w-24 xl:h-28 xl:w-28 inline-block -mr-1 drop-shadow-lg" />
+                <span>ne-Up</span>
+              </span>
+              <span className="block">The Competition</span>
+            </h1>
+            <p className="text-2xl sm:text-3xl lg:text-4xl mb-6 text-white/90 leading-relaxed max-w-4xl">
+              A nationwide network of contractors building, scaling, and sustaining their businesses
+            </p>
+            <p className="text-3xl sm:text-4xl lg:text-5xl mb-10 font-bold text-primary">
+              Powered by CT1
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-4 mb-8">
+              <Dialog open={activeContactForm === "join-network"} onOpenChange={(open) => setActiveContactForm(open ? "join-network" : null)}>
+                <DialogTrigger asChild>
+                  <Button className="btn-hero text-lg px-8 py-4">
+                    Join the CT1 Network
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                  <ContactForm
+                    title="Join the CT1 Network"
+                    description="Start building your future with CT1's powerful contractor platform"
+                    ctaText="Join Network"
+                    formType="network-signup"
+                    onClose={() => setActiveContactForm(null)}
+                  />
+                </DialogContent>
+              </Dialog>
               
-              <div className="flex flex-col sm:flex-row gap-4 mb-6">
-                <Dialog open={activeContactForm === "join-network"} onOpenChange={(open) => setActiveContactForm(open ? "join-network" : null)}>
-                  <DialogTrigger asChild>
-                    <Button className="btn-hero text-lg px-8 py-4">
-                      Join the CT1 Network
-                      <ArrowRight className="ml-2 h-5 w-5" />
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-2xl">
-                    <ContactForm
-                      title="Join the CT1 Network"
-                      description="Start building your future with CT1's powerful contractor platform"
-                      ctaText="Join Network"
-                      formType="network-signup"
-                      onClose={() => setActiveContactForm(null)}
-                    />
-                  </DialogContent>
-                </Dialog>
-                
-                <Button 
-                  variant="outline" 
-                  className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-foreground text-lg px-8 py-4"
-                  onClick={() => navigate('/pricing')}
-                >
-                  View Pricing
-                </Button>
-              </div>
-              
-              <p className="text-white/70 text-sm mb-6 flex items-center gap-2">
-                <MapPin className="h-4 w-4" />
-                Headquartered in Fraser, Michigan. Supporting contractors across the United States.
-              </p>
-              
-              <div className="flex flex-wrap gap-3">
-                <Badge className="bg-white/10 backdrop-blur-sm border-white/20 text-white px-4 py-2">
-                  Built for trades
-                </Badge>
-                <Badge className="bg-white/10 backdrop-blur-sm border-white/20 text-white px-4 py-2">
-                  Business suite for contractors
-                </Badge>
-                <Badge className="bg-white/10 backdrop-blur-sm border-white/20 text-white px-4 py-2">
-                  Sales and operations in one place
-                </Badge>
-              </div>
+              <Button 
+                variant="outline" 
+                className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-foreground text-lg px-8 py-4"
+                onClick={() => navigate('/pricing')}
+              >
+                View Pricing
+              </Button>
             </div>
             
-            {/* Right: Logo without background */}
-            <div className="hidden lg:flex items-center justify-center">
-              <div className="relative">
-                <img src={ct1Logo} alt="CT1" className="h-72 w-72 drop-shadow-2xl" />
-              </div>
+            <p className="text-white/70 text-sm mb-6 flex items-center gap-2">
+              <MapPin className="h-4 w-4" />
+              Headquartered in Fraser, Michigan. Supporting contractors across the United States.
+            </p>
+            
+            <div className="flex flex-wrap justify-center gap-3">
+              <Badge className="bg-white/10 backdrop-blur-sm border-white/20 text-white px-4 py-2">
+                Built for trades
+              </Badge>
+              <Badge className="bg-white/10 backdrop-blur-sm border-white/20 text-white px-4 py-2">
+                Business suite for contractors
+              </Badge>
+              <Badge className="bg-white/10 backdrop-blur-sm border-white/20 text-white px-4 py-2">
+                Sales and operations in one place
+              </Badge>
             </div>
           </div>
         </div>
