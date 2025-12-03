@@ -37,8 +37,8 @@ export function MainSiteHeader({ onContactClick }: MainSiteHeaderProps) {
           <Link to="/" className="flex items-center space-x-2 sm:space-x-3 hover:opacity-80 transition-opacity">
             <img src={ct1Logo} alt="CT1 Logo" className="h-10 w-10 sm:h-12 sm:w-12" />
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-white">CT1</h1>
-              <p className="text-[10px] sm:text-xs text-zinc-400 font-medium">One-Up Your Business</p>
+              <h1 className="text-xl sm:text-2xl font-bold text-white">MYCT1.COM</h1>
+              <p className="text-[10px] sm:text-xs text-zinc-400 font-medium">the competition today!</p>
             </div>
           </Link>
           
