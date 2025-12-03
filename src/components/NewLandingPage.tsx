@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { FloatingTrialButton } from "@/components/FloatingTrialButton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -40,6 +40,7 @@ import {
 } from "lucide-react";
 
 export function NewLandingPage() {
+  const navigate = useNavigate();
   const [activeContactForm, setActiveContactForm] = useState<string | null>(null);
   const [showPocketbot, setShowPocketbot] = useState(false);
 
@@ -149,10 +150,18 @@ export function NewLandingPage() {
               <span className="block text-primary">Competition</span>
             </h1>
             
-            <p className="text-xl sm:text-2xl md:text-3xl mb-10 leading-relaxed drop-shadow-md opacity-90 max-w-4xl mx-auto">
-              A Nationwide Network of Contractors<br />
-              <span className="text-primary font-semibold">Powered by CT1</span>
-            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-10">
+              <p className="text-xl sm:text-2xl md:text-3xl leading-relaxed drop-shadow-md opacity-90 max-w-3xl">
+                A nationwide network of contractors building, scaling, and sustaining their businesses, <span className="text-primary font-semibold">Powered by CT1</span>
+              </p>
+              <Button 
+                size="lg" 
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-8 py-4 text-lg whitespace-nowrap"
+                onClick={() => navigate('/pricing')}
+              >
+                Join Today
+              </Button>
+            </div>
           </div>
 
           {/* Feature Cards - Moved Higher */}
