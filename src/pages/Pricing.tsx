@@ -157,8 +157,9 @@ export function Pricing() {
           <div className="grid sm:grid-cols-2 gap-6 sm:gap-8 mb-8">
             {tiers.slice(0, 2).map((tier) => (
               <Card 
-                key={tier.id} 
-                className={`relative p-6 ${
+                key={tier.id}
+                id={tier.id === "launch" ? "tier-launch" : tier.id === "growth" ? "tier-growth" : undefined}
+                className={`relative p-6 scroll-mt-24 ${
                   tier.popular ? "border-primary shadow-lg ring-2 ring-primary/20" : ""
                 }`}
               >
@@ -220,8 +221,9 @@ export function Pricing() {
           <div className="max-w-2xl mx-auto mb-20">
             {tiers.slice(2).map((tier) => (
               <Card 
-                key={tier.id} 
-                className="relative p-6 opacity-75"
+                key={tier.id}
+                id="tier-market"
+                className="relative p-6 opacity-75 scroll-mt-24"
               >
                 <CardHeader className="text-center pb-6">
                   <div className="flex justify-center mb-4">
