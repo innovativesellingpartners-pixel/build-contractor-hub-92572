@@ -45,6 +45,10 @@ import { CRM } from "@/pages/features/CRM";
 import { Leads } from "@/pages/features/Leads";
 import { QuickBooks } from "@/pages/features/QuickBooks";
 import { Insurance } from "@/pages/features/Insurance";
+import Estimating from "@/pages/features/Estimating";
+import Jobs from "@/pages/features/Jobs";
+import VoiceAI from "@/pages/features/VoiceAI";
+import ReportingFeature from "@/pages/features/Reporting";
 import { TrialSignup } from "@/pages/TrialSignup";
 import { BotSignup } from "@/pages/BotSignup";
 import Savings from "./pages/Savings";
@@ -81,6 +85,12 @@ const App = () => (
             <Route path="/business-suite/leads" element={<Leads />} />
             <Route path="/business-suite/quickbooks" element={<QuickBooks />} />
             <Route path="/business-suite/insurance" element={<Insurance />} />
+            <Route path="/features/training" element={<Training />} />
+            <Route path="/features/crm" element={<CRM />} />
+            <Route path="/features/estimating" element={<Estimating />} />
+            <Route path="/features/jobs" element={<Jobs />} />
+            <Route path="/features/voice-ai" element={<VoiceAI />} />
+            <Route path="/features/reporting" element={<ReportingFeature />} />
             <Route path="/marketplace" element={<Marketplace />} />
             <Route path="/about" element={<About />} />
           <Route path="/what-we-do" element={<WhatWeDo />} />
