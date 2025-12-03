@@ -143,31 +143,31 @@ export function NewLandingPage() {
 
       {/* SECTION 1: Hero */}
       <section 
-        className="relative min-h-[85vh] flex items-center overflow-hidden"
+        className="relative min-h-[80vh] flex items-center overflow-hidden"
         style={{
           backgroundImage: `url(${heroImage})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
       >
-        <div className="absolute inset-0 bg-black/50"></div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-16">
+        <div className="absolute inset-0 bg-black/40"></div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-4 pb-12">
           <div className="flex flex-col items-center text-center">
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold mb-8 leading-tight drop-shadow-lg text-white">
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold mb-4 leading-tight drop-shadow-lg text-white">
               <span className="inline-flex items-center justify-center">
                 <img src={ct1Logo} alt="CT1" className="h-16 w-16 sm:h-20 sm:w-20 lg:h-24 lg:w-24 xl:h-28 xl:w-28 inline-block -mr-1 drop-shadow-lg" />
                 <span>ne-Up</span>
               </span>
               <span className="block">The Competition</span>
             </h1>
-            <p className="text-2xl sm:text-3xl lg:text-4xl mb-6 text-white/90 leading-relaxed max-w-4xl">
+            <p className="text-2xl sm:text-3xl lg:text-4xl mb-4 text-white/90 leading-relaxed max-w-4xl">
               A nationwide network of contractors building, scaling, and sustaining their businesses
             </p>
-            <p className="text-3xl sm:text-4xl lg:text-5xl mb-10 font-bold text-primary">
+            <p className="text-3xl sm:text-4xl lg:text-5xl mb-8 font-bold text-primary">
               Powered by CT1
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 mb-8">
+            <div className="flex flex-col sm:flex-row gap-4 mb-6">
               <Dialog open={activeContactForm === "join-network"} onOpenChange={(open) => setActiveContactForm(open ? "join-network" : null)}>
                 <DialogTrigger asChild>
                   <Button className="btn-hero text-lg px-8 py-4">
@@ -195,7 +195,7 @@ export function NewLandingPage() {
               </Button>
             </div>
             
-            <p className="text-white/70 text-sm mb-6 flex items-center gap-2">
+            <p className="text-white/70 text-sm mb-4 flex items-center gap-2">
               <MapPin className="h-4 w-4" />
               Headquartered in Fraser, Michigan. Supporting contractors across the United States.
             </p>
@@ -216,7 +216,7 @@ export function NewLandingPage() {
       </section>
 
       {/* SECTION 2: Why Contractors Choose CT1 */}
-      <section className="py-20 bg-muted/30">
+      <section className="py-12 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Left: Content */}
@@ -330,7 +330,7 @@ export function NewLandingPage() {
       </section>
 
       {/* SECTION 3: Product Suite */}
-      <section className="py-20 bg-background">
+      <section className="py-12 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
@@ -391,7 +391,7 @@ export function NewLandingPage() {
       </section>
 
       {/* SECTION 4: Testimonials */}
-      <section className="py-20 bg-muted/30">
+      <section className="py-12 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
@@ -457,7 +457,7 @@ export function NewLandingPage() {
       </section>
 
       {/* SECTION 5: How It Works */}
-      <section className="py-20 bg-background">
+      <section className="py-12 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
@@ -504,7 +504,7 @@ export function NewLandingPage() {
       </section>
 
       {/* SECTION 6: Final CTA */}
-      <section className="section-cta py-24">
+      <section className="section-cta py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="mb-8">
             <img src={ct1Logo} alt="CT1" className="h-20 w-20 mx-auto mb-6" />
