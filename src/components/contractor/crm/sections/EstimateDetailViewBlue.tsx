@@ -133,20 +133,20 @@ export function EstimateDetailViewBlue({
       {/* Action Buttons */}
       <ActionButtonRow className="flex-wrap">
         {onEdit && (
-          <ActionButton variant="blue" onClick={onEdit} className="flex items-center gap-2">
+          <ActionButton variant="secondary" onClick={onEdit} className="flex items-center gap-2">
             <Eye className="w-4 h-4" />
             EDIT
           </ActionButton>
         )}
         {onSend && estimate.client_email && (
-          <ActionButton variant="green" onClick={onSend} className="flex items-center gap-2">
+          <ActionButton variant="success" onClick={onSend} className="flex items-center gap-2">
             <Send className="w-4 h-4" />
             {estimate.sent_at ? 'RESEND' : 'SEND'}
           </ActionButton>
         )}
         {!estimate.customer_id && (estimate.status === 'sent' || estimate.status === 'accepted' || estimate.signed_at) && (
           <ActionButton 
-            variant="orange" 
+            variant="primary" 
             onClick={handleConvertToCustomer}
             disabled={isConverting}
             className="flex items-center gap-2"
@@ -157,7 +157,7 @@ export function EstimateDetailViewBlue({
         )}
         {estimate.customer_id && !estimate.job_id && (
           <ActionButton 
-            variant="orange" 
+            variant="primary" 
             onClick={handleConvertToJob}
             disabled={isConverting}
             className="flex items-center gap-2"
@@ -167,7 +167,7 @@ export function EstimateDetailViewBlue({
           </ActionButton>
         )}
         {onDuplicate && (
-          <ActionButton variant="gray" onClick={onDuplicate} className="flex items-center gap-2">
+          <ActionButton variant="muted" onClick={onDuplicate} className="flex items-center gap-2">
             <Copy className="w-4 h-4" />
             DUPLICATE
           </ActionButton>

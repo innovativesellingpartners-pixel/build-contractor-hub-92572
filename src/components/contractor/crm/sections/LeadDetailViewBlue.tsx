@@ -85,7 +85,7 @@ export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSecti
       <ActionButtonRow>
         {leadEstimates.length === 0 && !lead.converted_to_customer && (
           <ActionButton 
-            variant="orange" 
+            variant="primary" 
             onClick={handleConvertToEstimate} 
             disabled={isConverting}
             className="flex-1 flex items-center justify-center gap-2"
@@ -96,7 +96,7 @@ export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSecti
         )}
         {!lead.converted_to_customer && leadEstimates.length > 0 && (
           <ActionButton 
-            variant="blue" 
+            variant="secondary" 
             onClick={onConvertToCustomer}
             className="flex-1 flex items-center justify-center gap-2"
           >
@@ -215,8 +215,8 @@ export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSecti
         <InfoCard className="rounded-none">
           {leadEstimates.length === 0 ? (
             <div className="p-4 text-center">
-              <p className="text-slate-500 text-sm mb-3">No estimates yet</p>
-              <ActionButton variant="blue" onClick={handleConvertToEstimate} disabled={isConverting}>
+              <p className="text-muted-foreground text-sm mb-3">No estimates yet</p>
+              <ActionButton variant="secondary" onClick={handleConvertToEstimate} disabled={isConverting}>
                 Create Estimate
               </ActionButton>
             </div>

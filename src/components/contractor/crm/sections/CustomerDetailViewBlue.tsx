@@ -97,7 +97,7 @@ export function CustomerDetailViewBlue({ customer, onClose, onSectionChange, onC
       {/* Action Buttons */}
       <ActionButtonRow>
         <ActionButton 
-          variant="orange" 
+          variant="primary" 
           onClick={handleCreateJob}
           disabled={isCreatingJob}
           className="flex-1 flex items-center justify-center gap-2"
@@ -211,8 +211,8 @@ export function CustomerDetailViewBlue({ customer, onClose, onSectionChange, onC
         <InfoCard className="rounded-none">
           {customerJobs.length === 0 ? (
             <div className="p-4 text-center">
-              <p className="text-slate-500 text-sm mb-3">No jobs yet</p>
-              <ActionButton variant="blue" onClick={handleCreateJob} disabled={isCreatingJob}>
+              <p className="text-muted-foreground text-sm mb-3">No jobs yet</p>
+              <ActionButton variant="secondary" onClick={handleCreateJob} disabled={isCreatingJob}>
                 Create Job
               </ActionButton>
             </div>
