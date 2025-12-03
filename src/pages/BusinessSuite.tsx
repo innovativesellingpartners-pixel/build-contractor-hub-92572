@@ -156,23 +156,23 @@ export function BusinessSuite() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative py-20 overflow-hidden bg-gradient-to-br from-primary/10 via-background to-background">
+      <section className="relative py-10 sm:py-12 overflow-hidden bg-gradient-to-br from-primary/10 via-background to-background">
         <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <div className="text-center mb-16">
-            <div className="mb-8 flex justify-center">
+          <div className="text-center">
+            <div className="mb-4 sm:mb-6 flex justify-center">
               <div className="relative">
-                <img src={ct1Logo} alt="CT1" className="h-32 w-32 drop-shadow-2xl" />
+                <img src={ct1Logo} alt="CT1" className="h-20 w-20 sm:h-24 sm:w-24 drop-shadow-2xl" />
                 <div className="absolute -inset-4 bg-primary/20 rounded-full blur-2xl -z-10"></div>
               </div>
             </div>
             
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 text-foreground">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-3 sm:mb-4 text-foreground">
               Your Complete
-              <span className="block text-primary mt-2">Business Suite</span>
+              <span className="block text-primary mt-1">Business Suite</span>
             </h1>
             
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+            <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
               A complete suite of innovative tools to manage your business—all in one powerful platform
             </p>
           </div>
@@ -180,9 +180,9 @@ export function BusinessSuite() {
       </section>
 
       {/* Business Modules Grid */}
-      <section className="py-20 bg-muted/30">
+      <section className="py-10 sm:py-12 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
+          <div className="text-center mb-6 sm:mb-8">
             <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
               Everything You Need, <span className="text-primary">In One Place</span>
             </h2>
@@ -256,24 +256,24 @@ export function BusinessSuite() {
       </section>
 
       {/* AI-Powered Support Section */}
-      <section className="py-20 relative overflow-hidden">
+      <section className="py-10 sm:py-12 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-background"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary font-semibold mb-6">
+          <div className="text-center mb-8 sm:mb-10">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary font-semibold mb-4">
               <Sparkles className="h-5 w-5" />
               <span>AI-Powered Intelligence</span>
             </div>
             
-            <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">
               Always-On <span className="text-primary">Support & Automation</span>
             </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Advanced AI assistance combined with real human expertise when you need it most
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
             {aiFeatures.map((feature, idx) => {
               const Icon = feature.icon;
               
@@ -282,22 +282,22 @@ export function BusinessSuite() {
                   key={idx}
                   className="relative overflow-hidden group hover:shadow-2xl hover:shadow-primary/20 transition-all duration-300 border-2 hover:border-primary/50"
                 >
-                  <CardContent className="p-8">
-                    <div className="absolute top-4 right-4">
-                      <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold">
+                  <CardContent className="p-5 sm:p-6">
+                    <div className="absolute top-3 right-3">
+                      <span className="px-2 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold">
                         {feature.highlight}
                       </span>
                     </div>
                     
-                    <div className="mb-6 inline-flex p-4 rounded-2xl bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                      <Icon className="h-10 w-10 text-primary" />
+                    <div className="mb-4 inline-flex p-3 rounded-xl bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                      <Icon className="h-8 w-8 text-primary" />
                     </div>
                     
-                    <h3 className="text-xl font-bold text-foreground mb-3">
+                    <h3 className="text-lg font-bold text-foreground mb-2">
                       {feature.title}
                     </h3>
                     
-                    <p className="text-muted-foreground">
+                    <p className="text-sm text-muted-foreground">
                       {feature.description}
                     </p>
                   </CardContent>
@@ -306,12 +306,12 @@ export function BusinessSuite() {
             })}
           </div>
 
-          <div className="mt-16 text-center">
-            <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
+          <div className="mt-8 sm:mt-10 text-center">
+            <p className="text-sm text-muted-foreground mb-4 max-w-2xl mx-auto">
               Our support team consists of experienced trade professionals who understand your industry. 
               Every assistant is an agent of your trade and company, providing personalized expertise.
             </p>
-            <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground text-lg px-8 py-6">
+            <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-5">
               Experience the Platform
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
@@ -320,25 +320,25 @@ export function BusinessSuite() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 bg-gradient-to-br from-primary/10 to-background">
+      <section className="py-12 sm:py-16 bg-gradient-to-br from-primary/10 to-background">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <img src={ct1Logo} alt="CT1" className="h-20 w-20 mx-auto mb-8" />
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
+          <img src={ct1Logo} alt="CT1" className="h-16 w-16 mx-auto mb-4" />
+          <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-foreground">
             Ready to Transform <span className="text-primary">Your Business?</span>
           </h2>
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+          <p className="text-lg text-muted-foreground mb-6 max-w-2xl mx-auto">
             Join thousands of contractors who are already using CT1 to streamline operations and grow their business.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link to="/subscribe">
-              <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground text-xl px-12 py-6 font-bold">
+              <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground text-lg px-8 py-5 font-bold">
                 Start Free Trial
-                <ArrowRight className="ml-2 h-6 w-6" />
+                <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
             <Link to="/pricing">
-              <Button size="lg" variant="outline" className="text-xl px-12 py-6 font-bold">
+              <Button size="lg" variant="outline" className="text-lg px-8 py-5 font-bold">
                 View Pricing
               </Button>
             </Link>
