@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import ct1Logo from "@/assets/ct1-logo-main.png";
 import { Loader2, Award, Shield, Store, Calendar } from "lucide-react";
+import { FormNavigation } from "@/components/FormNavigation";
 
 export function BotSignup() {
   const navigate = useNavigate();
@@ -109,7 +110,7 @@ export function BotSignup() {
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex flex-col">
       {/* Header */}
       <header className="border-b bg-card/80 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center space-x-3">
             <img src={ct1Logo} alt="CT1 Logo" className="h-10 w-10" />
             <div>
@@ -117,6 +118,7 @@ export function BotSignup() {
               <p className="text-xs text-muted-foreground font-medium">One-Up Your Business</p>
             </div>
           </Link>
+          <FormNavigation />
         </div>
       </header>
 

@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { FloatingTrialButton } from "@/components/FloatingTrialButton";
 import { Badge } from "@/components/ui/badge";
 import { MainSiteHeader } from "@/components/MainSiteHeader";
+import { FormNavigation } from "@/components/FormNavigation";
 import ct1Logo from "@/assets/ct1-logo-main.png";
 import { 
   Phone, 
@@ -67,6 +68,7 @@ export function Contact() {
       {/* Hero Section */}
       <section className="py-20 bg-gradient-to-br from-background to-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <FormNavigation className="mb-8" />
           <div className="text-center mb-16">
             <Badge className="mb-4 bg-primary text-primary-foreground px-4 py-2 text-lg">
               <MessageSquare className="h-5 w-5 mr-2" />
