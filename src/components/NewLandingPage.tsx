@@ -150,7 +150,7 @@ export function NewLandingPage() {
                             <NavigationMenuLink className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted transition-colors">
                               <Bot className="h-5 w-5 text-primary mt-0.5" />
                               <div>
-                                <div className="font-medium text-foreground">myCT1 Pocketbot</div>
+                                <div className="font-medium text-foreground">MyCT1 Pocketbot</div>
                                 <p className="text-xs text-muted-foreground">Complete AI business assistant</p>
                               </div>
                             </NavigationMenuLink>
@@ -169,7 +169,7 @@ export function NewLandingPage() {
                         <div className="border-t border-border my-3" />
                         
                         <div className="space-y-1">
-                          <Link to="/pricing#tier-launch" className="block">
+                          <Link to="/products/tier-launch" className="block">
                             <NavigationMenuLink className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted transition-colors">
                               <Rocket className="h-5 w-5 text-primary mt-0.5" />
                               <div>
@@ -178,7 +178,7 @@ export function NewLandingPage() {
                               </div>
                             </NavigationMenuLink>
                           </Link>
-                          <Link to="/pricing#tier-growth" className="block">
+                          <Link to="/products/tier-growth" className="block">
                             <NavigationMenuLink className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted transition-colors">
                               <TrendingUp className="h-5 w-5 text-primary mt-0.5" />
                               <div>
@@ -187,7 +187,7 @@ export function NewLandingPage() {
                               </div>
                             </NavigationMenuLink>
                           </Link>
-                          <Link to="/pricing#tier-market" className="block">
+                          <Link to="/products/tier-market" className="block">
                             <NavigationMenuLink className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted transition-colors">
                               <Crown className="h-5 w-5 text-primary mt-0.5" />
                               <div>
