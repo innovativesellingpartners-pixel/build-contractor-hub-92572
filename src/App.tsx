@@ -2,7 +2,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { GlobalPocketbot } from "@/components/GlobalPocketbot";
 import { NewLandingPage } from "@/components/NewLandingPage";
 import { About } from "@/pages/About";
 import { Contact } from "@/pages/Contact";
@@ -67,6 +68,30 @@ import TierMarket from "./pages/products/TierMarket";
 
 const queryClient = new QueryClient();
 
+// Wrapper to conditionally show Pocketbot on public pages only
+function PocketbotWrapper() {
+  const location = useLocation();
+  const publicPaths = [
+    '/', '/savings', '/platform', '/for-consumers', '/business-suite', 
+    '/what-we-do', '/core-values', '/trades-we-serve', '/blog-podcast',
+    '/pricing', '/contact', '/nationwide-network', '/network-map',
+    '/features/', '/products/', '/legal/', '/about'
+  ];
+  
+  const isPublicPage = publicPaths.some(path => 
+    location.pathname === path || location.pathname.startsWith(path)
+  );
+  
+  // Don't show on auth, dashboard, admin, or estimate pages
+  const excludedPaths = ['/auth', '/dashboard', '/admin', '/crm', '/reporting', '/accounting', '/estimate/', '/p/estimate/'];
+  const isExcluded = excludedPaths.some(path => location.pathname.startsWith(path));
+  
+  if (isPublicPage && !isExcluded) {
+    return <GlobalPocketbot />;
+  }
+  return null;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
@@ -74,6 +99,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <PocketbotWrapper />
           <Routes>
             <Route path="/" element={<NewLandingPage />} />
             <Route path="/savings" element={<Savings />} />

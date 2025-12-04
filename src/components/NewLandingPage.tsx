@@ -6,12 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { ContactForm } from "@/components/ContactForm";
 import { MainSiteHeader } from "@/components/MainSiteHeader";
-import { Pocketbot } from "@/components/contractor/Pocketbot";
 import heroImage from "@/assets/hero-home.jpg";
 import ct1Logo from "@/assets/ct1-logo-main.png";
 import { 
   ArrowRight, 
-  Bot, 
   Calculator, 
   Users,
   TrendingUp,
@@ -42,7 +40,6 @@ import {
 export function NewLandingPage() {
   const navigate = useNavigate();
   const [activeContactForm, setActiveContactForm] = useState<string | null>(null);
-  const [showPocketbot, setShowPocketbot] = useState(false);
 
   const featureCards = [
     { icon: GraduationCap, title: "Business & Sales Training", description: "Structured sales training for owners, reps, and office staff, aligned with CT1 workflows.", link: "/features/training" },
@@ -99,18 +96,18 @@ export function NewLandingPage() {
         </Button>
       </Link>
 
-      {/* CT1 Pocketbot - Top Right */}
-      <div className="fixed top-20 right-4 z-50">
-        <div
-          onClick={() => setShowPocketbot(true)}
-          className="group relative cursor-pointer"
-        >
-          <div className="flex items-center gap-2 bg-foreground/95 backdrop-blur-md text-background px-6 py-3 rounded-full shadow-2xl hover:shadow-primary/50 transition-all duration-300 hover:scale-105">
-            <Bot className="h-4 w-4 text-primary" />
-            <span className="font-semibold">Try Pocketbot</span>
-          </div>
-        </div>
-      </div>
+      {/* Contact Sales Dialog */}
+      <Dialog open={activeContactForm === "contact-sales"} onOpenChange={(open) => setActiveContactForm(open ? "contact-sales" : null)}>
+        <DialogContent className="max-w-2xl">
+          <ContactForm
+            title="Contact Sales"
+            description="Connect with our team to learn how CT1 can help grow your contracting business"
+            ctaText="Get In Touch"
+            formType="contact-sales"
+            onClose={() => setActiveContactForm(null)}
+          />
+        </DialogContent>
+      </Dialog>
 
       {/* Sticky Floating CTA Button - Bottom Right */}
       <div className="fixed bottom-6 right-4 z-50">
@@ -540,15 +537,6 @@ export function NewLandingPage() {
           </div>
         </div>
       </section>
-
-      {/* CT1 Pocketbot Modal */}
-      <Dialog open={showPocketbot} onOpenChange={setShowPocketbot}>
-        <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden p-0">
-          <div className="h-[85vh]">
-            <Pocketbot />
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {/* Footer */}
       <footer className="bg-foreground text-background py-12">
