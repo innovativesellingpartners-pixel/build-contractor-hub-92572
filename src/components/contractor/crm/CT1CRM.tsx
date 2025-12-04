@@ -122,7 +122,6 @@ const navItems = [
           onNavigateToEstimates={() => handleSectionChange('estimates')}
           onNavigateToCustomers={() => handleSectionChange('customers')}
           onNavigateToEmails={() => handleSectionChange('emails')}
-          onNavigateToCalendar={() => handleSectionChange('calendar')}
           onNavigateToAccounting={() => handleSectionChange('accounting')}
           onNavigateToCalls={() => handleSectionChange('calls')}
         />
