@@ -49,9 +49,9 @@ export default function CT1CRM({ onOpenPocketbot }: CT1CRMProps = {}) {
 const navItems = [
   { id: 'dashboard' as Section, label: 'Dashboard', icon: LayoutDashboard },
   { id: 'leads' as Section, label: 'Leads', icon: ClipboardList },
-  { id: 'jobs' as Section, label: 'Jobs', icon: Briefcase },
-  { id: 'customers' as Section, label: 'Customers', icon: Users },
   { id: 'estimates' as Section, label: 'Estimates', icon: FileText },
+  { id: 'customers' as Section, label: 'Customers', icon: Users },
+  { id: 'jobs' as Section, label: 'Jobs', icon: Briefcase },
   { id: 'payments' as Section, label: 'Payments', icon: CreditCard },
   { id: 'accounting' as Section, label: 'Accounting', icon: DollarSign },
   { id: 'reporting' as Section, label: 'Reporting', icon: BarChart2 },
