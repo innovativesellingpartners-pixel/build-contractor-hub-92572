@@ -93,23 +93,23 @@ export function CRM() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative py-20 overflow-hidden bg-gradient-to-br from-blue-500/10 via-background to-background">
+      <section className="relative py-12 overflow-hidden bg-gradient-to-br from-blue-500/10 via-background to-background">
         <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <div className="text-center mb-16">
-            <div className="mb-8 flex justify-center">
+          <div className="text-center mb-8">
+            <div className="mb-6 flex justify-center">
               <div className="relative">
-                <img src={ct1Logo} alt="CT1" className="h-32 w-32 drop-shadow-2xl" />
+                <img src={ct1Logo} alt="CT1" className="h-24 w-24 drop-shadow-2xl" />
                 <div className="absolute -inset-4 bg-blue-500/20 rounded-full blur-2xl -z-10"></div>
               </div>
             </div>
             
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 text-foreground">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 text-foreground">
               CRM & Job Management
               <span className="block text-primary mt-2">All-in-One Solution</span>
             </h1>
             
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+            <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
               Manage customers, track jobs, and grow your business with powerful, easy-to-use tools
             </p>
           </div>
@@ -117,15 +117,15 @@ export function CRM() {
       </section>
 
       {/* Features Grid */}
-      <section className="py-20 bg-muted/30">
+      <section className="py-10 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
               Everything You Need to <span className="text-primary">Manage & Grow</span>
             </h2>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
             {features.map((feature, idx) => {
               const Icon = feature.icon;
               return (
@@ -163,15 +163,15 @@ export function CRM() {
       </section>
 
       {/* Use Cases */}
-      <section className="py-20">
+      <section className="py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
               Built for <span className="text-primary">Contractor Workflows</span>
             </h2>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-3 gap-4">
             <Card className="border-2 hover:border-primary/50 transition-all">
               <CardContent className="p-8">
                 <Phone className="h-12 w-12 text-primary mb-4" />
@@ -248,13 +248,13 @@ export function CRM() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 bg-gradient-to-br from-blue-500/10 to-background">
+      <section className="py-12 bg-gradient-to-br from-blue-500/10 to-background">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <Briefcase className="h-16 w-16 text-primary mx-auto mb-6" />
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
+          <Briefcase className="h-12 w-12 text-primary mx-auto mb-4" />
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
             Ready to <span className="text-primary">Streamline Your Business?</span>
           </h2>
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+          <p className="text-lg text-muted-foreground mb-6 max-w-2xl mx-auto">
             Join thousands of contractors managing customers and jobs more effectively with CT1 CRM.
           </p>
           

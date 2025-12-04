@@ -89,29 +89,29 @@ export function Training() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative py-20 overflow-hidden bg-gradient-to-br from-yellow-500/10 via-background to-background">
+      <section className="relative py-12 overflow-hidden bg-gradient-to-br from-yellow-500/10 via-background to-background">
         <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <div className="text-center mb-16">
-            <div className="mb-8 flex justify-center">
+          <div className="text-center mb-8">
+            <div className="mb-6 flex justify-center">
               <div className="relative">
-                <img src={ct1Logo} alt="CT1" className="h-32 w-32 drop-shadow-2xl" />
+                <img src={ct1Logo} alt="CT1" className="h-24 w-24 drop-shadow-2xl" />
                 <div className="absolute -inset-4 bg-yellow-500/20 rounded-full blur-2xl -z-10"></div>
               </div>
             </div>
             
-            <div className="flex justify-center gap-2 mb-6">
+            <div className="flex justify-center gap-2 mb-4">
               {[...Array(5)].map((_, i) => (
-                <Star key={i} className="h-12 w-12 fill-yellow-500 text-yellow-500 drop-shadow-lg" />
+                <Star key={i} className="h-10 w-10 fill-yellow-500 text-yellow-500 drop-shadow-lg" />
               ))}
             </div>
             
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 text-foreground">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 text-foreground">
               5-Star Training
               <span className="block text-primary mt-2">Excellence Program</span>
             </h1>
             
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+            <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
               World-class training that transforms your team into industry-leading professionals
             </p>
           </div>
@@ -119,15 +119,15 @@ export function Training() {
       </section>
 
       {/* Features Grid */}
-      <section className="py-20 bg-muted/30">
+      <section className="py-10 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
               Elevate Your Team's <span className="text-primary">Skills & Performance</span>
             </h2>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6 mb-16">
+          <div className="grid md:grid-cols-2 gap-4 mb-10">
             {features.map((feature, idx) => {
               const Icon = feature.icon;
               return (
@@ -165,16 +165,16 @@ export function Training() {
       </section>
 
       {/* Course Library */}
-      <section className="py-20">
+      <section className="py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
               Comprehensive <span className="text-primary">Course Library</span>
             </h2>
-            <p className="text-xl text-muted-foreground">Over 290+ courses across all categories</p>
+            <p className="text-lg text-muted-foreground">Over 290+ courses across all categories</p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {courses.map((course, idx) => (
               <Card key={idx} className="group hover:shadow-xl hover:shadow-primary/10 transition-all hover:border-primary/50 border-2">
                 <CardContent className="p-6">
@@ -195,7 +195,7 @@ export function Training() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 bg-gradient-to-br from-yellow-500/10 to-background">
+      <section className="py-12 bg-gradient-to-br from-yellow-500/10 to-background">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="flex justify-center gap-2 mb-6">
             {[...Array(5)].map((_, i) => (
