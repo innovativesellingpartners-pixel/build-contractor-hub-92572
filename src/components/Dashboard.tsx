@@ -33,7 +33,6 @@ import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { useUserTier } from "@/hooks/useUserTier";
 import { useToast } from "@/hooks/use-toast";
 import { TrainingHub } from "@/components/TrainingHub";
-import { ScheduleCall } from "@/components/contractor/ScheduleCall";
 import { Marketplace } from "@/components/Marketplace";
 import CT1CRM from "@/components/contractor/crm/CT1CRM";
 import { Insurance } from "@/components/contractor/Insurance";
@@ -46,7 +45,7 @@ import ct1Logo from "@/assets/ct1-logo-main.png";
 import { VoiceAI } from "@/components/contractor/VoiceAI";
 import Reporting from "@/pages/Reporting";
 
-type ActiveSection = 'training' | 'crm' | 'schedule' | 'marketplace' | 'leads' | 'insurance' | 'account' | 'voiceai' | 'reporting';
+type ActiveSection = 'training' | 'crm' | 'marketplace' | 'leads' | 'insurance' | 'account' | 'voiceai' | 'reporting';
 
 export function Dashboard() {
   const { user, profile, signOut } = useAuth();
@@ -316,11 +315,6 @@ export function Dashboard() {
               </div>
             )}
             {activeSection === 'leads' && <CT1CRM onOpenPocketbot={() => setPocketbotOpen(true)} />}
-            {activeSection === 'schedule' && (
-              <div className="p-3 md:p-4 lg:p-6 min-h-[400px] md:min-h-[600px]">
-                <ScheduleCall />
-              </div>
-            )}
             {activeSection === 'insurance' && (
               <div className="p-3 md:p-4 lg:p-6 min-h-[400px] md:min-h-[600px]">
                 <Insurance />
@@ -689,20 +683,6 @@ function SidebarNav({ activeSection, setActiveSection, tierFeatures }: SidebarNa
         </Button>
       )}
       
-      {tierFeatures.monthlyCall && (
-        <Button
-          variant={activeSection === 'schedule' ? 'default' : 'ghost'}
-          className={`w-full justify-start transition-all ${
-            activeSection === 'schedule' 
-              ? 'shadow-md' 
-              : 'hover:bg-red-50 hover:border-red-500 hover:text-black border border-transparent'
-          }`}
-          onClick={() => setActiveSection('schedule')}
-        >
-          <Phone className="h-4 w-4 mr-3" />
-          Schedule Calls
-        </Button>
-      )}
       
       {tierFeatures.myAccount && (
         <Button

@@ -2,12 +2,13 @@ import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { Bot, CheckCircle, Phone, Clock, Users, ExternalLink, PhoneCall } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Bot, CheckCircle, Phone, Clock, Users, ExternalLink, PhoneCall, Zap } from "lucide-react";
 import ct1Logo from "@/assets/ct1-logo-main.png";
 
 export function VoiceAI() {
-  const [voiceAIDialogOpen, setVoiceAIDialogOpen] = useState(true);
+  const [smithAIDialogOpen, setSmithAIDialogOpen] = useState(false);
+  const [myCT1DialogOpen, setMyCT1DialogOpen] = useState(false);
 
   return (
     <div className="space-y-6">
@@ -17,13 +18,109 @@ export function VoiceAI() {
           <div>
             <h2 className="text-3xl font-bold flex items-center gap-3">
               <Bot className="h-8 w-8 text-primary" />
-              CT1 AI Voice Assistant
+              Voice AI Assistant
             </h2>
             <p className="text-muted-foreground mt-1">
-              smith.ai virtual receptionists handle calls, schedule appointments, and capture leads
+              Connect to AI-powered voice assistants for 24/7 call handling
             </p>
           </div>
         </div>
+      </div>
+
+      {/* Connection Options */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* myCT1 Voice AI Card */}
+        <Card className="border-2 border-primary/30 bg-gradient-to-br from-primary/5 to-primary/10">
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="h-12 w-12 rounded-lg bg-primary/20 flex items-center justify-center">
+                <img src={ct1Logo} alt="myCT1" className="h-8 w-8" />
+              </div>
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  myCT1 Voice AI
+                  <Badge variant="default" className="text-xs">Native</Badge>
+                </CardTitle>
+                <CardDescription>Built-in AI voice assistant</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <ul className="space-y-2 text-sm">
+              <li className="flex items-start gap-2">
+                <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                <span>Native integration with CT1 CRM</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                <span>Automatic lead capture & sync</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                <span>Custom greeting & business hours</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                <span>$50/month per user</span>
+              </li>
+            </ul>
+            <Button 
+              className="w-full" 
+              size="lg"
+              onClick={() => setMyCT1DialogOpen(true)}
+            >
+              <Zap className="h-4 w-4 mr-2" />
+              Connect to myCT1 Voice AI
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Smith AI Card */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center">
+                <Bot className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  Smith.ai
+                  <Badge variant="secondary" className="text-xs">Third Party</Badge>
+                </CardTitle>
+                <CardDescription>Professional virtual receptionist</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <ul className="space-y-2 text-sm">
+              <li className="flex items-start gap-2">
+                <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                <span>Human + AI hybrid answering</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                <span>Appointment scheduling</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                <span>Bilingual English & Spanish</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                <span>Pay-per-call pricing</span>
+              </li>
+            </ul>
+            <Button 
+              variant="outline"
+              className="w-full" 
+              size="lg"
+              onClick={() => setSmithAIDialogOpen(true)}
+            >
+              <ExternalLink className="h-4 w-4 mr-2" />
+              Connect to Smith.ai
+            </Button>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Features Overview */}
@@ -57,153 +154,126 @@ export function VoiceAI() {
         </Card>
       </div>
 
-      {/* Main Features Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle>smith.ai Features</CardTitle>
-          <CardDescription>
-            Professional virtual receptionist services powered by AI
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="bg-muted/50 p-4 rounded-lg space-y-3">
-            <h4 className="font-semibold">Key Benefits:</h4>
-            <ul className="space-y-2 text-sm">
-              <li className="flex items-start gap-2">
-                <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                <span>Answer calls 24/7 with natural AI conversations</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                <span>Schedule appointments and sync with your calendar</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                <span>Capture lead information and send instant notifications</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                <span>Handle customer service inquiries professionally</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                <span>Bilingual support for English and Spanish speakers</span>
-              </li>
-            </ul>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Access smith.ai */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Access Your smith.ai Account</CardTitle>
-          <CardDescription>
-            Log in to manage your virtual receptionist settings and view call logs
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Dialog open={voiceAIDialogOpen} onOpenChange={setVoiceAIDialogOpen}>
-            <DialogContent className="sm:max-w-[500px]">
-              <div className="flex flex-col items-center space-y-6 p-4">
-                <div className="flex items-center gap-3">
-                  <img src={ct1Logo} alt="CT1 Logo" className="h-10 w-10" />
-                  <Bot className="h-10 w-10 text-primary" />
-                </div>
-                
-                <div className="text-center space-y-2">
-                  <h2 className="text-2xl font-bold">Access smith.ai</h2>
-                  <p className="text-muted-foreground">
-                    You'll be redirected to smith.ai to log in and manage your virtual receptionist
-                  </p>
-                </div>
-
-                <div className="w-full space-y-3">
-                  <Button 
-                    onClick={() => {
-                      window.open('https://app.smith.ai/log-in/?utm_source=google-ads&utm_medium=cpc&utm_campaign=air-key-terms-search&_gl=1*oi56mm*_gcl_aw*R0NMLjE3NjAwMTk3MDMuQ2p3S0NBand1cDNIQmhBQUVpd0E3ZXVadWlZbDN6YnNSeURHZ0xsSlFTa1pTdDZxR05qMnpObnVNUkpZaGo2dVFWVVM2dzJWTHAwQkRCb0NtczhRQXZEX0J3RQ..*_gcl_au*MTc2Nzk4ODc4MC4xNzYwMDE4OTcw', '_blank');
-                      setVoiceAIDialogOpen(false);
-                    }}
-                    size="lg" 
-                    className="w-full"
-                  >
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    Log in to smith.ai
-                  </Button>
-
-                  <Button 
-                    variant="outline" 
-                    size="lg" 
-                    className="w-full"
-                    onClick={() => {
-                      setVoiceAIDialogOpen(false);
-                      window.location.href = '/contact';
-                    }}
-                  >
-                    <PhoneCall className="h-4 w-4 mr-2" />
-                    Contact Sales
-                  </Button>
-                </div>
-
-                <p className="text-xs text-center text-muted-foreground">
-                  smith.ai will open in a new window for secure authentication
-                </p>
-              </div>
-            </DialogContent>
-          </Dialog>
-          <Button 
-            onClick={() => setVoiceAIDialogOpen(true)}
-            size="lg" 
-            className="w-full"
-          >
-            <ExternalLink className="h-4 w-4 mr-2" />
-            Log in to smith.ai
-          </Button>
-          <p className="text-xs text-muted-foreground mt-2 text-center">
-            Opens in new window for secure login
-          </p>
-        </CardContent>
-      </Card>
-
-      {/* Pricing & Plans Info */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Plans & Pricing</CardTitle>
-          <CardDescription>
-            Flexible pricing to match your business needs
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="p-4 border rounded-lg">
-              <h4 className="font-semibold mb-2">Starter Plan</h4>
-              <p className="text-sm text-muted-foreground mb-2">Perfect for small businesses</p>
-              <ul className="text-sm space-y-1">
-                <li>• Up to 50 calls/month</li>
-                <li>• Basic lead capture</li>
-                <li>• Email notifications</li>
+      {/* myCT1 Voice AI Dialog */}
+      <Dialog open={myCT1DialogOpen} onOpenChange={setMyCT1DialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <img src={ct1Logo} alt="myCT1" className="h-8 w-8" />
+              Connect to myCT1 Voice AI
+            </DialogTitle>
+            <DialogDescription>
+              Get started with the native CT1 AI voice assistant
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <div className="bg-muted/50 p-4 rounded-lg space-y-3">
+              <h4 className="font-semibold">What's Included:</h4>
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span>24/7 AI call answering with natural voice</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span>Automatic lead creation in CRM</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span>Calendar integration & scheduling</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span>Custom greeting & voicemail options</span>
+                </li>
               </ul>
             </div>
-            <div className="p-4 border rounded-lg border-primary/50 bg-primary/5">
-              <Badge className="mb-2">Most Popular</Badge>
-              <h4 className="font-semibold mb-2">Professional Plan</h4>
-              <p className="text-sm text-muted-foreground mb-2">For growing contractors</p>
-              <ul className="text-sm space-y-1">
-                <li>• Unlimited calls</li>
-                <li>• Advanced scheduling</li>
-                <li>• CRM integration</li>
-                <li>• Priority support</li>
+            <div className="text-center p-4 bg-primary/5 rounded-lg">
+              <p className="text-2xl font-bold text-primary">$50/month</p>
+              <p className="text-sm text-muted-foreground">per user</p>
+            </div>
+            <div className="flex gap-3">
+              <Button 
+                className="flex-1" 
+                size="lg"
+                asChild
+              >
+                <a href="/contact">
+                  <PhoneCall className="h-4 w-4 mr-2" />
+                  Contact Sales to Enable
+                </a>
+              </Button>
+            </div>
+            <p className="text-xs text-center text-muted-foreground">
+              Our team will set up your dedicated phone number and configure your AI assistant
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Smith.ai Dialog */}
+      <Dialog open={smithAIDialogOpen} onOpenChange={setSmithAIDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Bot className="h-8 w-8 text-primary" />
+              Connect to Smith.ai
+            </DialogTitle>
+            <DialogDescription>
+              Access professional virtual receptionist services
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <div className="bg-muted/50 p-4 rounded-lg space-y-3">
+              <h4 className="font-semibold">Smith.ai Features:</h4>
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span>Human + AI hybrid call answering</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span>Appointment scheduling & calendar sync</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span>Lead capture & notifications</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span>Bilingual English & Spanish support</span>
+                </li>
               </ul>
             </div>
+            <div className="flex gap-3">
+              <Button 
+                className="flex-1" 
+                size="lg"
+                onClick={() => {
+                  window.open('https://app.smith.ai/log-in/', '_blank');
+                  setSmithAIDialogOpen(false);
+                }}
+              >
+                <ExternalLink className="h-4 w-4 mr-2" />
+                Log in to Smith.ai
+              </Button>
+            </div>
+            <Button 
+              variant="outline" 
+              className="w-full"
+              asChild
+            >
+              <a href="/contact">
+                <PhoneCall className="h-4 w-4 mr-2" />
+                Contact Sales for Setup
+              </a>
+            </Button>
+            <p className="text-xs text-center text-muted-foreground">
+              Smith.ai will open in a new window for secure authentication
+            </p>
           </div>
-          <Button variant="outline" className="w-full" size="lg" asChild>
-            <a href="/contact">
-              <PhoneCall className="h-4 w-4 mr-2" />
-              Contact Sales for Pricing
-            </a>
-          </Button>
-        </CardContent>
-      </Card>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
