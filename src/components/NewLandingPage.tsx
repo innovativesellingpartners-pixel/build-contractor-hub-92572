@@ -146,8 +146,8 @@ export function NewLandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-16 pb-12 w-full">
           <div className="flex flex-col items-center text-center">
             <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold mb-4 leading-tight drop-shadow-lg text-white">
-              <span className="inline-flex items-center justify-center">
-                <span className="inline-flex items-center justify-center rounded-full border-4 border-white p-1 -mr-1">
+              <span className="inline-flex items-center justify-center tracking-tight">
+                <span className="inline-flex items-center justify-center rounded-full border-4 border-white p-1 -mr-3 sm:-mr-4 lg:-mr-5">
                   <img src={ct1Logo} alt="CT1" className="h-14 w-14 sm:h-18 sm:w-18 lg:h-20 lg:w-20 xl:h-24 xl:w-24 drop-shadow-lg" />
                 </span>
                 <span>ne-Up</span>
@@ -157,7 +157,7 @@ export function NewLandingPage() {
             <p className="text-2xl sm:text-3xl lg:text-4xl mb-4 text-white/90 leading-relaxed max-w-4xl">
               A nationwide network of contractors building, scaling, and sustaining their businesses
             </p>
-            <p className="text-3xl sm:text-4xl lg:text-5xl mb-8 font-bold text-primary">
+            <p className="text-4xl sm:text-5xl lg:text-6xl mb-8 font-bold text-primary drop-shadow-md">
               Powered by CT1
             </p>
             
