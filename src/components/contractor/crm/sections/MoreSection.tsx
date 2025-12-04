@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileText, BarChart2, DollarSign, Phone, Calendar, Mail, Link as LinkIcon, LayoutDashboard, ClipboardList, Briefcase, Users, CreditCard, Calculator } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'estimates' | 'reporting' | 'financials' | 'calls' | 'calendar' | 'emails' | 'quickbooks' | 'payments' | 'accounting';
+type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'estimates' | 'reporting' | 'financials' | 'calls' | 'calendar' | 'emails' | 'payments' | 'accounting';
 
 interface MoreSectionProps {
   onSectionChange: (section: Section) => void;
@@ -82,14 +82,6 @@ const allCRMFeatures = [
     description: 'View insights'
   },
   { 
-    id: 'quickbooks' as Section, 
-    label: 'QuickBooks', 
-    icon: LinkIcon, 
-    gradient: 'from-indigo-500 to-indigo-600',
-    borderColor: 'border-indigo-400',
-    description: 'Sync accounting'
-  },
-  { 
     id: 'calls' as Section, 
     label: 'Calls', 
     icon: Phone, 
@@ -97,7 +89,7 @@ const allCRMFeatures = [
     borderColor: 'border-orange-400',
     description: 'Call history'
   },
-  { 
+  {
     id: 'calendar' as Section, 
     label: 'Calendar', 
     icon: Calendar, 
@@ -159,7 +151,7 @@ export default function MoreSection({ onSectionChange }: MoreSectionProps) {
             <p>• Use Estimates to create and send quotes to customers</p>
             <p>• Reporting provides insights into your business performance</p>
             <p>• Financials helps track income, expenses, and profitability</p>
-            <p>• QuickBooks integration syncs your financial data</p>
+            <p>• Accounting lets you link bank accounts and QuickBooks</p>
           </CardContent>
         </Card>
       </div>

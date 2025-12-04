@@ -5,7 +5,7 @@ import { FileText, Briefcase, Users, ClipboardList, Phone, Mail, Calendar, Dolla
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 
-type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calendar' | 'emails' | 'estimates' | 'reporting' | 'financials' | 'quickbooks' | 'more';
+type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calendar' | 'emails' | 'estimates' | 'reporting' | 'financials' | 'more';
 
 interface CRMDashboardProps {
   onSectionChange?: (section: Section) => void;

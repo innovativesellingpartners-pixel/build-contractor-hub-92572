@@ -118,8 +118,8 @@ export default function FinancialsSection({ onSectionChange }: FinancialsSection
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={() => window.location.href = '/crm?section=quickbooks'}>
-              Go to Integrations
+            <Button onClick={() => window.location.href = '/crm?section=accounting'}>
+              Go to Accounting
             </Button>
           </CardContent>
         </Card>
