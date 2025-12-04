@@ -1,15 +1,22 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Building2, Plus, RefreshCw, DollarSign, TrendingDown, TrendingUp } from "lucide-react";
+import { Building2, Plus, RefreshCw, DollarSign, TrendingDown, TrendingUp, Link as LinkIcon, CheckCircle, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { usePlaidLink } from "@/hooks/usePlaidLink";
+import { useToast } from "@/hooks/use-toast";
+import { useSearchParams } from "react-router-dom";
 
 export function BankingView() {
   const { user } = useAuth();
+  const { toast } = useToast();
+  const [searchParams] = useSearchParams();
+  const [qbLoading, setQbLoading] = useState(false);
+  const [qbConnected, setQbConnected] = useState(false);
   
   const { open: openPlaid } = usePlaidLink({
     onSuccess: async (publicToken: string, metadata: any) => {
@@ -28,6 +35,64 @@ export function BankingView() {
       }
     }
   });
+
+  // Check QuickBooks connection status
+  useEffect(() => {
+    const checkQBConnection = async () => {
+      if (!user?.id) return;
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('qb_realm_id')
+        .eq('id', user.id)
+        .single();
+      setQbConnected(!!profile?.qb_realm_id);
+    };
+    checkQBConnection();
+
+    // Handle OAuth callback
+    if (searchParams.get('qb_connected') === 'true') {
+      toast({
+        title: "QuickBooks Connected!",
+        description: "Your QuickBooks account has been successfully connected.",
+      });
+      setQbConnected(true);
+    }
+    if (searchParams.get('qb_error')) {
+      toast({
+        variant: "destructive",
+        title: "Connection Failed",
+        description: searchParams.get('qb_error') || "Failed to connect to QuickBooks",
+      });
+    }
+  }, [user?.id, searchParams, toast]);
+
+  const handleConnectQuickBooks = async () => {
+    try {
+      setQbLoading(true);
+      const { data, error } = await supabase.functions.invoke('quickbooks-connect');
+      
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Connection Failed",
+          description: error.message || "Failed to initiate QuickBooks connection",
+        });
+        return;
+      }
+      
+      if (data?.authUrl) {
+        window.location.href = data.authUrl;
+      }
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Connection Failed",
+        description: error.message || "Failed to connect to QuickBooks",
+      });
+    } finally {
+      setQbLoading(false);
+    }
+  };
 
   const { data: bankAccounts, isLoading: loadingAccounts } = useQuery({
     queryKey: ['bank-accounts', user?.id],
@@ -78,6 +143,56 @@ export function BankingView() {
 
   return (
     <div className="space-y-6">
+      {/* Primary Actions - Link Bank & Connect QuickBooks */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Card className="border-2 border-dashed hover:border-primary/50 transition-colors">
+          <CardContent className="flex flex-col items-center justify-center p-6 text-center">
+            <div className="p-3 bg-primary/10 rounded-full mb-3">
+              <Building2 className="h-6 w-6 text-primary" />
+            </div>
+            <h3 className="font-semibold mb-1">Link Bank Account</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Connect your bank to sync transactions
+            </p>
+            <Button onClick={openPlaid} className="w-full">
+              <Plus className="h-4 w-4 mr-2" />
+              Link Bank Account
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="border-2 border-dashed hover:border-primary/50 transition-colors">
+          <CardContent className="flex flex-col items-center justify-center p-6 text-center">
+            <div className="p-3 bg-green-100 rounded-full mb-3">
+              <LinkIcon className="h-6 w-6 text-green-600" />
+            </div>
+            <h3 className="font-semibold mb-1">Connect QuickBooks</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Sync invoices and financial data
+            </p>
+            {qbConnected ? (
+              <Button variant="outline" className="w-full" disabled>
+                <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
+                Connected
+              </Button>
+            ) : (
+              <Button 
+                onClick={handleConnectQuickBooks} 
+                className="w-full bg-green-600 hover:bg-green-700"
+                disabled={qbLoading}
+              >
+                {qbLoading ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <LinkIcon className="h-4 w-4 mr-2" />
+                )}
+                Connect QuickBooks
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Banking</h2>
@@ -85,16 +200,10 @@ export function BankingView() {
             Manage bank accounts and transactions
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={handleSyncTransactions}>
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Sync Transactions
-          </Button>
-          <Button onClick={openPlaid}>
-            <Plus className="h-4 w-4 mr-2" />
-            Link Bank Account
-          </Button>
-        </div>
+        <Button variant="outline" onClick={handleSyncTransactions}>
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Sync
+        </Button>
       </div>
 
       {/* Bank Accounts */}

@@ -31,14 +31,14 @@ import EmailsSection from './sections/EmailsSection';
 import EstimatesSection from './sections/EstimatesSection';
 import FinancialsSection from './sections/FinancialsSection';
 import MoreSection from './sections/MoreSection';
-import { QuickBooksIntegration } from '@/components/contractor/QuickBooksIntegration';
+
 import ct1Logo from '@/assets/ct1-logo-main.png';
 import Reporting from '@/pages/Reporting';
 import Accounting from '@/pages/Accounting';
 import { MobileLandingPage } from './MobileLandingPage';
 import { PaymentsBankingSection } from './sections/PaymentsBankingSection';
 
-type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calendar' | 'emails' | 'estimates' | 'reporting' | 'financials' | 'quickbooks' | 'more' | 'payments' | 'accounting';
+type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calendar' | 'emails' | 'estimates' | 'reporting' | 'financials' | 'more' | 'payments' | 'accounting';
 
 interface CT1CRMProps {
   onOpenPocketbot?: () => void;
@@ -52,13 +52,12 @@ const navItems = [
   { id: 'estimates' as Section, label: 'Estimates', icon: FileText },
   { id: 'customers' as Section, label: 'Customers', icon: Users },
   { id: 'jobs' as Section, label: 'Jobs', icon: Briefcase },
-  { id: 'payments' as Section, label: 'Payments', icon: CreditCard },
-  { id: 'accounting' as Section, label: 'Accounting', icon: DollarSign },
-  { id: 'reporting' as Section, label: 'Reporting', icon: BarChart2 },
-  { id: 'quickbooks' as Section, label: 'QuickBooks', icon: LinkIcon },
   { id: 'calls' as Section, label: 'Calls', icon: Phone },
-  { id: 'calendar' as Section, label: 'Calendar', icon: Calendar },
   { id: 'emails' as Section, label: 'Emails', icon: Mail },
+  { id: 'calendar' as Section, label: 'Calendar', icon: Calendar },
+  { id: 'accounting' as Section, label: 'Accounting', icon: DollarSign },
+  { id: 'payments' as Section, label: 'Payments', icon: CreditCard },
+  { id: 'reporting' as Section, label: 'Reporting', icon: BarChart2 },
 ];
 
 // Component moved to accept props - see above
@@ -68,7 +67,7 @@ const navItems = [
     // Check for URL param from OAuth callback
     const params = new URLSearchParams(window.location.search);
     const crmSection = params.get('crm_section') as Section | null;
-    if (crmSection && ['dashboard', 'leads', 'jobs', 'customers', 'calls', 'calendar', 'emails', 'estimates', 'reporting', 'financials', 'quickbooks', 'more', 'payments', 'accounting'].includes(crmSection)) {
+    if (crmSection && ['dashboard', 'leads', 'jobs', 'customers', 'calls', 'calendar', 'emails', 'estimates', 'reporting', 'financials', 'more', 'payments', 'accounting'].includes(crmSection)) {
       sessionStorage.setItem('ct1CrmActiveSection', crmSection);
       // Clean URL param
       params.delete('crm_section');
@@ -149,12 +148,6 @@ const navItems = [
         return <EstimatesSection onSectionChange={handleSectionChange} />;
       case 'financials':
         return <FinancialsSection onSectionChange={handleSectionChange} />;
-      case 'quickbooks':
-        return (
-          <div className="p-6">
-            <QuickBooksIntegration />
-          </div>
-        );
       case 'reporting':
         return <Reporting />;
       case 'more':
