@@ -594,6 +594,21 @@ interface SidebarNavProps {
 function SidebarNav({ activeSection, setActiveSection, tierFeatures }: SidebarNavProps) {
   return (
     <nav className="space-y-1 p-3">
+      {tierFeatures.leads && (
+        <Button
+          variant={activeSection === 'leads' ? 'default' : 'ghost'}
+          className={`w-full justify-start transition-all ${
+            activeSection === 'leads' 
+              ? 'shadow-md' 
+              : 'hover:bg-red-50 hover:border-red-500 hover:text-black border border-transparent'
+          }`}
+          onClick={() => setActiveSection('leads')}
+        >
+          <Briefcase className="h-4 w-4 mr-3" />
+          CT1 CRM
+        </Button>
+      )}
+      
       {tierFeatures.trainingHub && (
         <Button
           variant={activeSection === 'training' ? 'default' : 'ghost'}
@@ -620,51 +635,7 @@ function SidebarNav({ activeSection, setActiveSection, tierFeatures }: SidebarNa
           onClick={() => setActiveSection('voiceai')}
         >
           <Bot className="h-4 w-4 mr-3" />
-          AI Voice Assistant
-        </Button>
-      )}
-      
-      {tierFeatures.leads && (
-        <Button
-          variant={activeSection === 'leads' ? 'default' : 'ghost'}
-          className={`w-full justify-start transition-all ${
-            activeSection === 'leads' 
-              ? 'shadow-md' 
-              : 'hover:bg-red-50 hover:border-red-500 hover:text-black border border-transparent'
-          }`}
-          onClick={() => setActiveSection('leads')}
-        >
-          <Briefcase className="h-4 w-4 mr-3" />
-          CRM/Jobs
-        </Button>
-      )}
-      
-      <Button
-        variant={activeSection === 'reporting' ? 'default' : 'ghost'}
-        className={`w-full justify-start transition-all ${
-          activeSection === 'reporting' 
-            ? 'shadow-md' 
-            : 'hover:bg-red-50 hover:border-red-500 hover:text-black border border-transparent'
-        }`}
-        onClick={() => setActiveSection('reporting')}
-      >
-        <BarChart3 className="h-4 w-4 mr-3" />
-        Reporting & Analytics
-      </Button>
-      
-      
-      {tierFeatures.insurance && (
-        <Button
-          variant={activeSection === 'insurance' ? 'default' : 'ghost'}
-          className={`w-full justify-start transition-all ${
-            activeSection === 'insurance' 
-              ? 'shadow-md' 
-              : 'hover:bg-red-50 hover:border-red-500 hover:text-black border border-transparent'
-          }`}
-          onClick={() => setActiveSection('insurance')}
-        >
-          <Shield className="h-4 w-4 mr-3" />
-          Insurance
+          Voice AI
         </Button>
       )}
       
@@ -683,19 +654,31 @@ function SidebarNav({ activeSection, setActiveSection, tierFeatures }: SidebarNa
         </Button>
       )}
       
+      <Button
+        variant={activeSection === 'reporting' ? 'default' : 'ghost'}
+        className={`w-full justify-start transition-all ${
+          activeSection === 'reporting' 
+            ? 'shadow-md' 
+            : 'hover:bg-red-50 hover:border-red-500 hover:text-black border border-transparent'
+        }`}
+        onClick={() => setActiveSection('reporting')}
+      >
+        <BarChart3 className="h-4 w-4 mr-3" />
+        Reporting
+      </Button>
       
-      {tierFeatures.myAccount && (
+      {tierFeatures.insurance && (
         <Button
-          variant={activeSection === 'account' ? 'default' : 'ghost'}
+          variant={activeSection === 'insurance' ? 'default' : 'ghost'}
           className={`w-full justify-start transition-all ${
-            activeSection === 'account' 
+            activeSection === 'insurance' 
               ? 'shadow-md' 
               : 'hover:bg-red-50 hover:border-red-500 hover:text-black border border-transparent'
           }`}
-          onClick={() => setActiveSection('account')}
+          onClick={() => setActiveSection('insurance')}
         >
-          <User className="h-4 w-4 mr-3" />
-          My Account
+          <Shield className="h-4 w-4 mr-3" />
+          Insurance
         </Button>
       )}
       
@@ -720,8 +703,23 @@ function SidebarNav({ activeSection, setActiveSection, tierFeatures }: SidebarNa
         >
           <Link to="/blog-podcast">
             <Mic className="h-4 w-4 mr-3" />
-            Podcast
+            CT1 Podcast
           </Link>
+        </Button>
+      )}
+      
+      {tierFeatures.myAccount && (
+        <Button
+          variant={activeSection === 'account' ? 'default' : 'ghost'}
+          className={`w-full justify-start transition-all ${
+            activeSection === 'account' 
+              ? 'shadow-md' 
+              : 'hover:bg-red-50 hover:border-red-500 hover:text-black border border-transparent'
+          }`}
+          onClick={() => setActiveSection('account')}
+        >
+          <User className="h-4 w-4 mr-3" />
+          My Account
         </Button>
       )}
       
