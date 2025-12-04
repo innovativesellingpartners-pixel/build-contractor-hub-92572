@@ -1,4 +1,4 @@
-import { Briefcase, FileText, Users, Calendar, DollarSign, Phone, Mail } from 'lucide-react';
+import { Briefcase, FileText, Users, DollarSign, Phone, Mail } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 
 interface MobileLandingPageProps {
@@ -6,18 +6,17 @@ interface MobileLandingPageProps {
   onNavigateToEstimates: () => void;
   onNavigateToCustomers: () => void;
   onNavigateToEmails: () => void;
-  onNavigateToCalendar: () => void;
   onNavigateToAccounting: () => void;
   onNavigateToCalls: () => void;
 }
 
 const mobileModules = [
-  {
-    id: 'calendar',
-    title: 'Calendar',
-    description: 'Schedule & tasks',
-    icon: Calendar,
-    gradient: 'from-yellow-500 via-amber-600 to-orange-600',
+  { 
+    id: 'estimates',
+    title: 'Estimates',
+    description: 'Create & send quotes',
+    icon: FileText,
+    gradient: 'from-green-500 via-green-600 to-green-700',
   },
   { 
     id: 'jobs',
@@ -26,12 +25,19 @@ const mobileModules = [
     icon: Briefcase,
     gradient: 'from-purple-500 via-purple-600 to-purple-700',
   },
-  { 
-    id: 'estimates',
-    title: 'Estimates',
-    description: 'Create & send quotes',
-    icon: FileText,
-    gradient: 'from-green-500 via-green-600 to-green-700',
+  {
+    id: 'emails',
+    title: 'Emails',
+    description: 'Inbox & follow-ups',
+    icon: Mail,
+    gradient: 'from-orange-500 via-orange-600 to-orange-700',
+  },
+  {
+    id: 'calls',
+    title: 'Calls',
+    description: 'Call history & logs',
+    icon: Phone,
+    gradient: 'from-indigo-500 via-indigo-600 to-indigo-700',
   },
   { 
     id: 'customers',
@@ -47,20 +53,6 @@ const mobileModules = [
     icon: DollarSign,
     gradient: 'from-emerald-500 via-emerald-600 to-emerald-700',
   },
-  {
-    id: 'calls',
-    title: 'Calls',
-    description: 'Call history & logs',
-    icon: Phone,
-    gradient: 'from-indigo-500 via-indigo-600 to-indigo-700',
-  },
-  {
-    id: 'emails',
-    title: 'Emails',
-    description: 'Inbox & follow-ups',
-    icon: Mail,
-    gradient: 'from-orange-500 via-orange-600 to-orange-700',
-  },
 ];
 
 export function MobileLandingPage({ 
@@ -68,16 +60,12 @@ export function MobileLandingPage({
   onNavigateToEstimates, 
   onNavigateToCustomers,
   onNavigateToEmails,
-  onNavigateToCalendar,
   onNavigateToAccounting,
   onNavigateToCalls,
 }: MobileLandingPageProps) {
   
   const handleModuleClick = (id: string) => {
     switch (id) {
-      case 'calendar':
-        onNavigateToCalendar();
-        break;
       case 'jobs':
         onNavigateToJobs();
         break;
