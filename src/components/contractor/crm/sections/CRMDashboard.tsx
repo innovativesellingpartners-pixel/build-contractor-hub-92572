@@ -1,11 +1,11 @@
 import { useLeads } from '@/hooks/useLeads';
 import { useCustomers } from '@/hooks/useCustomers';
 import { Card, CardContent } from '@/components/ui/card';
-import { FileText, Briefcase, Users, ClipboardList, Phone, Mail, Calendar, DollarSign } from 'lucide-react';
+import { FileText, Briefcase, Users, Phone, Mail, DollarSign } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 
-type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calendar' | 'emails' | 'estimates' | 'reporting' | 'financials' | 'more';
+type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'emails' | 'estimates' | 'reporting' | 'accounting' | 'more';
 
 interface CRMDashboardProps {
   onSectionChange?: (section: Section) => void;
@@ -34,12 +34,12 @@ export default function CRMDashboard({ onSectionChange }: CRMDashboardProps) {
       description: 'Manage projects'
     },
     { 
-      id: 'customers' as Section, 
-      label: 'Customers', 
-      icon: Users, 
-      gradient: 'from-green-500 to-green-600',
-      borderColor: 'border-green-400',
-      description: 'Customer list'
+      id: 'emails' as Section, 
+      label: 'Emails', 
+      icon: Mail, 
+      gradient: 'from-orange-500 to-orange-600',
+      borderColor: 'border-orange-400',
+      description: 'Inbox & follow-ups'
     },
     { 
       id: 'calls' as Section, 
@@ -50,28 +50,20 @@ export default function CRMDashboard({ onSectionChange }: CRMDashboardProps) {
       description: 'Call history'
     },
     { 
-      id: 'emails' as Section, 
-      label: 'Email', 
-      icon: Mail, 
-      gradient: 'from-yellow-500 to-yellow-600',
-      borderColor: 'border-yellow-400',
-      description: 'Email communications'
+      id: 'customers' as Section, 
+      label: 'Customers', 
+      icon: Users, 
+      gradient: 'from-green-500 to-green-600',
+      borderColor: 'border-green-400',
+      description: 'Customer list'
     },
     { 
-      id: 'financials' as Section, 
-      label: 'Financials', 
+      id: 'accounting' as Section, 
+      label: 'Accounting', 
       icon: DollarSign, 
-      gradient: 'from-amber-600 to-amber-700',
-      borderColor: 'border-amber-500',
-      description: 'Reports & analytics'
-    },
-    { 
-      id: 'calendar' as Section, 
-      label: 'Calendar', 
-      icon: Calendar, 
-      gradient: 'from-yellow-600 to-amber-600',
-      borderColor: 'border-yellow-500',
-      description: 'Schedule & events'
+      gradient: 'from-emerald-500 to-emerald-600',
+      borderColor: 'border-emerald-400',
+      description: 'Payments & expenses'
     },
   ];
 
