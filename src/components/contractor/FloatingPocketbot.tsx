@@ -524,12 +524,13 @@ export function FloatingPocketbot({ onClose, onPositionChange }: FloatingPocketb
   return (
     <Card 
       ref={cardRef} 
-      className="h-full flex flex-col shadow-2xl border-2 border-primary/20 fixed z-50"
+      className="flex flex-col shadow-2xl border-2 border-primary/20 fixed z-50 rounded-2xl"
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
-        maxHeight: 'calc(100vh - 40px)',
-        width: window.innerWidth < 768 ? 'calc(100vw - 32px)' : '380px',
+        height: '450px',
+        maxHeight: 'min(450px, calc(100vh - 100px))',
+        width: window.innerWidth < 768 ? 'calc(100vw - 32px)' : '360px',
         touchAction: 'none'
       }}
     >
