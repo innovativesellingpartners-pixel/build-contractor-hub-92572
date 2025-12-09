@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { ContactForm } from "@/components/ContactForm";
 import { MainSiteHeader } from "@/components/MainSiteHeader";
 import heroImage from "@/assets/hero-home.jpg";
-import ct1Logo from "@/assets/ct1-logo-main.png";
+import ct1RoundLogo from "@/assets/ct1-round-logo.png";
 import { 
   ArrowRight, 
   Calculator, 
@@ -157,9 +157,9 @@ export function NewLandingPage() {
               {/* White ring border effect */}
               <div className="relative p-3 sm:p-4 lg:p-5 rounded-full border-4 border-white/30 backdrop-blur-sm bg-black/20">
                 <img 
-                  src={ct1Logo} 
+                  src={ct1RoundLogo} 
                   alt="CT1" 
-                  className="h-48 w-48 sm:h-72 sm:w-72 lg:h-96 lg:w-96 xl:h-[28rem] xl:w-[28rem] drop-shadow-2xl transition-transform duration-700 hover:scale-105 hover:rotate-3" 
+                  className="h-48 w-48 sm:h-72 sm:w-72 lg:h-96 lg:w-96 xl:h-[28rem] xl:w-[28rem] drop-shadow-2xl transition-transform duration-700 hover:scale-105 hover:rotate-3"
                   style={{ filter: 'drop-shadow(0 0 60px rgba(220, 38, 38, 0.6)) drop-shadow(0 0 120px rgba(220, 38, 38, 0.3))' }}
                 />
               </div>
@@ -520,7 +520,7 @@ export function NewLandingPage() {
       <section className="section-cta py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="mb-8">
-            <img src={ct1Logo} alt="CT1" className="h-20 w-20 mx-auto mb-6" />
+            <img src={ct1RoundLogo} alt="CT1" className="h-20 w-20 mx-auto mb-6" />
             <h2 className="text-4xl sm:text-5xl font-bold mb-6 text-primary-foreground">
               Ready to One-Up Your Business?
             </h2>
@@ -563,7 +563,7 @@ export function NewLandingPage() {
           <div className="grid md:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center space-x-3 mb-4">
-                <img src={ct1Logo} alt="CT1 Logo" className="h-10 w-10" />
+                <img src={ct1RoundLogo} alt="CT1 Logo" className="h-10 w-10" />
                 <div>
                   <h3 className="text-xl font-bold text-background">CT1</h3>
                   <p className="text-xs text-muted">One-Up Your Business</p>

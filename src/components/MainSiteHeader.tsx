@@ -13,7 +13,7 @@ import {
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
 import { Bot, Mic, Rocket, TrendingUp, Crown } from "lucide-react";
-import ct1RoundLogo from "@/assets/ct1-round-logo.png";
+import ct1Logo from "@/assets/ct1-main-logo.png";
 
 interface MainSiteHeaderProps {
   onContactClick?: () => void;
@@ -35,7 +35,7 @@ export function MainSiteHeader({ onContactClick }: MainSiteHeaderProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-24">
           <Link to="/" className="flex items-center hover:opacity-90 transition-opacity group">
-            <img src={ct1RoundLogo} alt="CT1 Logo" className="h-16 sm:h-20 w-auto drop-shadow-lg group-hover:scale-105 transition-transform" />
+            <img src={ct1Logo} alt="CT1 Logo" className="h-16 sm:h-20 w-auto drop-shadow-lg group-hover:scale-105 transition-transform" />
           </Link>
           
           <nav className="hidden lg:flex items-center space-x-3 xl:space-x-5">
