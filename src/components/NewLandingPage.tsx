@@ -89,7 +89,7 @@ export function NewLandingPage() {
       <MainSiteHeader onContactClick={() => setActiveContactForm("contact-sales")} />
 
       {/* Floating Try for Free Button - Top Left */}
-      <Link to="/trial-signup" className="fixed top-28 left-4 z-50">
+      <Link to="/trial-signup" className="fixed top-72 left-4 z-50">
         <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-2xl hover:shadow-primary/50 px-6 py-3 rounded-full font-semibold transition-all hover:scale-105">
           <Rocket className="mr-2 h-4 w-4" />
           Try CT1 Free
