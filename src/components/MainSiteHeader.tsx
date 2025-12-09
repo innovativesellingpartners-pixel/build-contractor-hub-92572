@@ -36,9 +36,9 @@ export function MainSiteHeader({ onContactClick }: MainSiteHeaderProps) {
         <div className="flex justify-between items-center h-24">
           <Link to="/" className="flex items-center hover:opacity-90 transition-opacity group gap-3">
             <img src={ct1Logo} alt="CT1 Logo" className="h-16 sm:h-20 w-auto drop-shadow-lg group-hover:scale-105 transition-transform" />
-            <div className="hidden sm:flex flex-col">
-              <span className="text-white font-bold text-xl lg:text-2xl tracking-wide">MYCT1.COM</span>
-              <span className="text-zinc-400 text-sm lg:text-base tracking-wide">One-up the competition</span>
+            <div className="flex flex-col">
+              <span className="text-white font-bold text-base sm:text-xl lg:text-2xl tracking-wide">MYCT1.COM</span>
+              <span className="text-zinc-400 text-xs sm:text-sm lg:text-base tracking-wide">One-up the competition</span>
             </div>
           </Link>
           
