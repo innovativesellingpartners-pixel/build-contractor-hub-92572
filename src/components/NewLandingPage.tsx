@@ -132,38 +132,47 @@ export function NewLandingPage() {
 
       {/* SECTION 1: Hero */}
       <section 
-        className="relative min-h-[60vh] flex items-start overflow-hidden"
+        className="relative min-h-[80vh] flex items-center overflow-hidden"
         style={{
           backgroundImage: `url(${heroImage})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/55 to-black/70 backdrop-blur-[2px]"></div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-16 pb-12 w-full">
+        <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-black/80"></div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-16 w-full">
           <div className="flex flex-col items-center text-center">
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold mb-4 leading-tight drop-shadow-lg text-white">
-              <span className="inline-flex items-center justify-center tracking-tight">
-                <span className="inline-flex items-center justify-center rounded-full border-4 border-white p-1 -mr-3 sm:-mr-4 lg:-mr-5">
-                  <img src={ct1Logo} alt="CT1" className="h-14 w-14 sm:h-18 sm:w-18 lg:h-20 lg:w-20 xl:h-24 xl:w-24 drop-shadow-lg" />
-                </span>
-                <span>ne-Up</span>
-              </span>
-              <span className="block">The Competition</span>
+            {/* Giant Logo with Glow Effect */}
+            <div className="relative mb-8 group">
+              <div className="absolute inset-0 bg-primary/40 rounded-full blur-3xl scale-150 animate-pulse"></div>
+              <div className="relative">
+                <img 
+                  src={ct1Logo} 
+                  alt="CT1" 
+                  className="h-40 w-40 sm:h-52 sm:w-52 lg:h-64 lg:w-64 xl:h-80 xl:w-80 drop-shadow-2xl transition-transform duration-500 hover:scale-110" 
+                  style={{ filter: 'drop-shadow(0 0 30px rgba(220, 38, 38, 0.5))' }}
+                />
+              </div>
+            </div>
+            
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black mb-4 leading-tight drop-shadow-lg text-white tracking-tight">
+              <span className="block">One-Up</span>
+              <span className="block text-primary">The Competition</span>
             </h1>
-            <p className="text-2xl sm:text-3xl lg:text-4xl mb-4 text-white/90 leading-relaxed max-w-4xl">
+            
+            <p className="text-xl sm:text-2xl lg:text-3xl mb-4 text-white/90 leading-relaxed max-w-4xl font-light">
               A nationwide network of contractors building, scaling, and sustaining their businesses
             </p>
-            <p className="text-4xl sm:text-5xl lg:text-6xl mb-8 font-bold text-primary drop-shadow-md">
-              Powered by CT1
+            <p className="text-3xl sm:text-4xl lg:text-5xl mb-10 font-bold text-white drop-shadow-md">
+              Powered by <span className="text-primary">CT1</span>
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 mb-6">
+            <div className="flex flex-col sm:flex-row gap-4 mb-8">
               <Dialog open={activeContactForm === "join-network"} onOpenChange={(open) => setActiveContactForm(open ? "join-network" : null)}>
                 <DialogTrigger asChild>
-                  <Button className="btn-hero text-lg px-8 py-4">
+                  <Button className="btn-hero text-lg px-10 py-5 text-xl shadow-xl shadow-primary/30 hover:shadow-primary/50 transition-all">
                     Join the CT1 Network
-                    <ArrowRight className="ml-2 h-5 w-5" />
+                    <ArrowRight className="ml-2 h-6 w-6" />
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-2xl">
@@ -179,26 +188,26 @@ export function NewLandingPage() {
               
               <Button 
                 variant="outline" 
-                className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-foreground text-lg px-8 py-4"
+                className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-foreground text-lg px-10 py-5 text-xl"
                 onClick={() => navigate('/pricing')}
               >
                 View Pricing
               </Button>
             </div>
             
-            <p className="text-white/70 text-sm mb-4 flex items-center gap-2">
+            <p className="text-white/70 text-sm mb-6 flex items-center gap-2">
               <MapPin className="h-4 w-4" />
               Headquartered in Fraser, Michigan. Supporting contractors across the United States.
             </p>
             
             <div className="flex flex-wrap justify-center gap-3">
-              <Badge className="bg-white/10 backdrop-blur-sm border-white/20 text-white px-4 py-2">
+              <Badge className="bg-white/10 backdrop-blur-sm border-white/20 text-white px-5 py-2.5 text-sm">
                 Built for trades
               </Badge>
-              <Badge className="bg-white/10 backdrop-blur-sm border-white/20 text-white px-4 py-2">
+              <Badge className="bg-white/10 backdrop-blur-sm border-white/20 text-white px-5 py-2.5 text-sm">
                 Business suite for contractors
               </Badge>
-              <Badge className="bg-white/10 backdrop-blur-sm border-white/20 text-white px-4 py-2">
+              <Badge className="bg-white/10 backdrop-blur-sm border-white/20 text-white px-5 py-2.5 text-sm">
                 Sales and operations in one place
               </Badge>
             </div>
