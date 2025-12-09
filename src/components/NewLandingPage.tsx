@@ -40,6 +40,7 @@ import {
 export function NewLandingPage() {
   const navigate = useNavigate();
   const [activeContactForm, setActiveContactForm] = useState<string | null>(null);
+  const [showContactDialog, setShowContactDialog] = useState(false);
 
   const featureCards = [
     { icon: GraduationCap, title: "Business & Sales Training", description: "Structured sales training for owners, reps, and office staff, aligned with CT1 workflows.", link: "/features/training" },
@@ -149,7 +150,7 @@ export function NewLandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-20 w-full">
           <div className="flex flex-col items-center text-center">
             {/* MASSIVE Logo with Multiple Glow Layers */}
-            <div className="relative mb-12 group">
+            <div className="relative mb-12 group cursor-pointer" onClick={() => setShowContactDialog(true)}>
               {/* Outer glow ring */}
               <div className="absolute -inset-8 sm:-inset-12 lg:-inset-16 bg-gradient-to-r from-primary/30 via-primary/50 to-primary/30 rounded-full blur-3xl opacity-70 animate-pulse"></div>
               {/* Middle glow */}
@@ -159,9 +160,15 @@ export function NewLandingPage() {
                 <img 
                   src={ct1RoundLogo} 
                   alt="CT1" 
-                  className="h-48 w-48 sm:h-72 sm:w-72 lg:h-96 lg:w-96 xl:h-[28rem] xl:w-[28rem] drop-shadow-2xl transition-transform duration-700 hover:scale-105 hover:rotate-3"
+                  className="h-48 w-48 sm:h-72 sm:w-72 lg:h-96 lg:w-96 xl:h-[28rem] xl:w-[28rem] drop-shadow-2xl transition-transform duration-700 group-hover:scale-105 group-hover:rotate-3"
                   style={{ filter: 'drop-shadow(0 0 60px rgba(220, 38, 38, 0.6)) drop-shadow(0 0 120px rgba(220, 38, 38, 0.3))' }}
                 />
+              </div>
+              {/* Hover button */}
+              <div className="absolute left-1/2 -translate-x-1/2 bottom-0 translate-y-full pt-4 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none group-hover:pointer-events-auto">
+                <span className="bg-primary text-primary-foreground font-bold px-6 py-3 rounded-full shadow-lg whitespace-nowrap text-sm sm:text-base animate-fade-in">
+                  Contact CT1 Today!
+                </span>
               </div>
             </div>
             
@@ -623,6 +630,13 @@ export function NewLandingPage() {
           </div>
         </div>
       </footer>
+
+      {/* Contact Dialog triggered by logo hover click */}
+      <Dialog open={showContactDialog} onOpenChange={setShowContactDialog}>
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+          <ContactForm />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
