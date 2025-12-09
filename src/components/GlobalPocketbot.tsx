@@ -8,7 +8,7 @@ export function GlobalPocketbot() {
   return (
     <>
       {/* Pocketbot Trigger Button */}
-      <div className="fixed top-20 right-4 z-50">
+      <div className="fixed top-28 right-4 z-50">
         <div
           onClick={() => setShowPocketbot(true)}
           className="group relative cursor-pointer"
