@@ -33,9 +33,9 @@ export function MainSiteHeader({ onContactClick }: MainSiteHeaderProps) {
   return (
     <header className="sticky top-0 bg-zinc-900 z-50" style={{ paddingTop: "env(safe-area-inset-top)" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <Link to="/" className="flex items-center space-x-2 sm:space-x-3 hover:opacity-80 transition-opacity">
-            <img src={ct1Logo} alt="CT1 Logo" className="h-10 sm:h-12 w-auto" />
+        <div className="flex justify-between items-center h-20">
+          <Link to="/" className="flex items-center space-x-3 sm:space-x-4 hover:opacity-80 transition-opacity">
+            <img src={ct1Logo} alt="CT1 Logo" className="h-14 sm:h-16 w-auto" />
             <div>
               <h1 className="text-xl sm:text-2xl font-bold text-white">MYCT1.COM</h1>
               <p className="text-[10px] sm:text-xs text-zinc-400 font-medium">One-Up The Competition Today</p>
