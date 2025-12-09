@@ -13,7 +13,7 @@ import {
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
 import { Bot, Mic, Rocket, TrendingUp, Crown } from "lucide-react";
-import ct1Logo from "@/assets/ct1-logo-main.png";
+import ct1Logo from "@/assets/ct1-header-logo.png";
 
 interface MainSiteHeaderProps {
   onContactClick?: () => void;
@@ -35,7 +35,7 @@ export function MainSiteHeader({ onContactClick }: MainSiteHeaderProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <Link to="/" className="flex items-center space-x-2 sm:space-x-3 hover:opacity-80 transition-opacity">
-            <img src={ct1Logo} alt="CT1 Logo" className="h-10 w-10 sm:h-12 sm:w-12" />
+            <img src={ct1Logo} alt="CT1 Logo" className="h-10 sm:h-12 w-auto" />
             <div>
               <h1 className="text-xl sm:text-2xl font-bold text-white">MYCT1.COM</h1>
               <p className="text-[10px] sm:text-xs text-zinc-400 font-medium">One-Up The Competition Today</p>
