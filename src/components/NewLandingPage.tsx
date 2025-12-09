@@ -132,45 +132,55 @@ export function NewLandingPage() {
 
       {/* SECTION 1: Hero */}
       <section 
-        className="relative min-h-[80vh] flex items-center overflow-hidden"
+        className="relative min-h-screen flex items-center overflow-hidden"
         style={{
           backgroundImage: `url(${heroImage})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-black/80"></div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-16 w-full">
+        <div className="absolute inset-0 bg-gradient-to-b from-black/85 via-black/70 to-black/85"></div>
+        
+        {/* Animated background glow */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="w-[600px] h-[600px] sm:w-[800px] sm:h-[800px] lg:w-[1000px] lg:h-[1000px] bg-primary/20 rounded-full blur-[120px] animate-pulse"></div>
+        </div>
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-20 w-full">
           <div className="flex flex-col items-center text-center">
-            {/* Giant Logo with Glow Effect */}
-            <div className="relative mb-8 group">
-              <div className="absolute inset-0 bg-primary/40 rounded-full blur-3xl scale-150 animate-pulse"></div>
-              <div className="relative">
+            {/* MASSIVE Logo with Multiple Glow Layers */}
+            <div className="relative mb-12 group">
+              {/* Outer glow ring */}
+              <div className="absolute -inset-8 sm:-inset-12 lg:-inset-16 bg-gradient-to-r from-primary/30 via-primary/50 to-primary/30 rounded-full blur-3xl opacity-70 animate-pulse"></div>
+              {/* Middle glow */}
+              <div className="absolute -inset-4 sm:-inset-6 lg:-inset-8 bg-primary/40 rounded-full blur-2xl"></div>
+              {/* White ring border effect */}
+              <div className="relative p-3 sm:p-4 lg:p-5 rounded-full border-4 border-white/30 backdrop-blur-sm bg-black/20">
                 <img 
                   src={ct1Logo} 
                   alt="CT1" 
-                  className="h-40 w-40 sm:h-52 sm:w-52 lg:h-64 lg:w-64 xl:h-80 xl:w-80 drop-shadow-2xl transition-transform duration-500 hover:scale-110" 
-                  style={{ filter: 'drop-shadow(0 0 30px rgba(220, 38, 38, 0.5))' }}
+                  className="h-48 w-48 sm:h-72 sm:w-72 lg:h-96 lg:w-96 xl:h-[28rem] xl:w-[28rem] drop-shadow-2xl transition-transform duration-700 hover:scale-105 hover:rotate-3" 
+                  style={{ filter: 'drop-shadow(0 0 60px rgba(220, 38, 38, 0.6)) drop-shadow(0 0 120px rgba(220, 38, 38, 0.3))' }}
                 />
               </div>
             </div>
             
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black mb-4 leading-tight drop-shadow-lg text-white tracking-tight">
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-black mb-6 leading-none drop-shadow-lg text-white tracking-tight">
               <span className="block">One-Up</span>
-              <span className="block text-primary">The Competition</span>
+              <span className="block text-primary" style={{ textShadow: '0 0 40px rgba(220, 38, 38, 0.5)' }}>The Competition</span>
             </h1>
             
             <p className="text-xl sm:text-2xl lg:text-3xl mb-4 text-white/90 leading-relaxed max-w-4xl font-light">
               A nationwide network of contractors building, scaling, and sustaining their businesses
             </p>
-            <p className="text-3xl sm:text-4xl lg:text-5xl mb-10 font-bold text-white drop-shadow-md">
-              Powered by <span className="text-primary">CT1</span>
+            <p className="text-3xl sm:text-4xl lg:text-5xl mb-12 font-bold text-white drop-shadow-md">
+              Powered by <span className="text-primary" style={{ textShadow: '0 0 30px rgba(220, 38, 38, 0.5)' }}>CT1</span>
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 mb-8">
+            <div className="flex flex-col sm:flex-row gap-5 mb-10">
               <Dialog open={activeContactForm === "join-network"} onOpenChange={(open) => setActiveContactForm(open ? "join-network" : null)}>
                 <DialogTrigger asChild>
-                  <Button className="btn-hero text-lg px-10 py-5 text-xl shadow-xl shadow-primary/30 hover:shadow-primary/50 transition-all">
+                  <Button className="btn-hero text-lg sm:text-xl px-10 py-6 shadow-2xl shadow-primary/40 hover:shadow-primary/60 transition-all hover:scale-105">
                     Join the CT1 Network
                     <ArrowRight className="ml-2 h-6 w-6" />
                   </Button>
@@ -188,7 +198,7 @@ export function NewLandingPage() {
               
               <Button 
                 variant="outline" 
-                className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-foreground text-lg px-10 py-5 text-xl"
+                className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-foreground text-lg sm:text-xl px-10 py-6 hover:scale-105 transition-all"
                 onClick={() => navigate('/pricing')}
               >
                 View Pricing
