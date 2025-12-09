@@ -31,14 +31,14 @@ export function MainSiteHeader({ onContactClick }: MainSiteHeaderProps) {
   };
 
   return (
-    <header className="sticky top-0 bg-zinc-900 z-50" style={{ paddingTop: "env(safe-area-inset-top)" }}>
+    <header className="sticky top-0 bg-zinc-900 z-50 border-b border-zinc-800 shadow-lg shadow-black/20" style={{ paddingTop: "env(safe-area-inset-top)" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20">
-          <Link to="/" className="flex items-center space-x-3 sm:space-x-4 hover:opacity-80 transition-opacity">
-            <img src={ct1Logo} alt="CT1 Logo" className="h-14 sm:h-16 w-auto" />
+        <div className="flex justify-between items-center h-24">
+          <Link to="/" className="flex items-center space-x-4 sm:space-x-5 hover:opacity-90 transition-opacity group">
+            <img src={ct1Logo} alt="CT1 Logo" className="h-16 sm:h-20 w-auto drop-shadow-lg group-hover:scale-105 transition-transform" />
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-white">MYCT1.COM</h1>
-              <p className="text-[10px] sm:text-xs text-zinc-400 font-medium">One-Up The Competition Today</p>
+              <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">MYCT1.COM</h1>
+              <p className="text-xs sm:text-sm text-primary font-semibold tracking-wide">One-Up The Competition Today</p>
             </div>
           </Link>
           
