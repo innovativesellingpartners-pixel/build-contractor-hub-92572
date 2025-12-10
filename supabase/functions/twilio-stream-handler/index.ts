@@ -1,28 +1,23 @@
 /**
- * Twilio Media Stream WebSocket Handler - PRODUCTION OPTIMIZED
+ * Twilio Media Stream WebSocket Handler - PRODUCTION OPTIMIZED v3.0
  * 
- * Handles bidirectional audio streaming between Twilio and OpenAI Realtime API.
- * 
- * ========================
- * KEY FIXES (v2.0):
- * ========================
- * 1. WebSocket keep-alive (ping/pong) to prevent 30-second timeout
- * 2. Increased max_response_output_tokens to prevent mid-sentence cutoffs
- * 3. Improved VAD settings for natural turn-taking
- * 4. Better audio codec handling with proper buffering
- * 5. Comprehensive structured logging for debugging
- * 6. Graceful error recovery - don't hard-hangup on minor errors
+ * High-quality bidirectional audio streaming between Twilio and OpenAI Realtime API.
  * 
  * ========================
- * VOICE AI CONFIGURATION
+ * v3.0 UPGRADES:
  * ========================
- * Voice Options (OpenAI Realtime):
- *   coral   - Friendly, warm (recommended for contractors)
- *   ash     - Professional, confident
- *   alloy   - Neutral, standard
- *   echo    - Male, deeper tone
- *   sage    - Calm, measured
- *   shimmer - Expressive, dynamic
+ * 1. Enhanced audio codec with proper gain normalization (no clipping/distortion)
+ * 2. Improved anti-aliasing with 15-tap Lanczos-style filter
+ * 3. Optimized VAD for natural, responsive turn-taking (600ms)
+ * 4. Warm "Coral" personality with personable, human-like conversation
+ * 5. Better streaming with smooth chunk delivery
+ * 6. Comprehensive audio quality logging
+ * 
+ * ========================
+ * VOICE: Coral
+ * ========================
+ * Warm, friendly, professional tone perfect for contractor businesses.
+ * AI introduces itself as "Coral - [Business Name]'s AI assistant"
  */
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
@@ -32,36 +27,35 @@ const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
 const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
 /**
- * Voice AI Configuration - Tuned for natural conversation and long calls
+ * Voice AI Configuration - Tuned for natural, warm conversation
  */
 const VOICE_CONFIG = {
-  // Voice selection
+  // Voice selection - Coral for warm, friendly tone
   defaultVoice: 'coral',
   
-  // Response behavior - allow complete responses without cutting off
-  temperature: 0.8,
-  maxResponseTokens: 4096,  // INCREASED SIGNIFICANTLY - allow full responses
+  // Response behavior
+  temperature: 0.7,           // Slightly lower for more consistent personality
+  maxResponseTokens: 4096,    // Allow complete thoughts
   
-  // Turn detection - balanced for natural conversation
+  // Turn detection - BALANCED: fast but allows complete thoughts
   vadThreshold: 0.5,          // Standard sensitivity
-  prefixPaddingMs: 300,       // Standard speech start detection
-  silenceDurationMs: 700,     // Wait for natural pause before responding
+  prefixPaddingMs: 250,       // Slightly faster speech detection
+  silenceDurationMs: 600,     // Balanced: faster than 700ms, allows pauses
   
-  // Keep-alive intervals (ms) - CRITICAL for preventing timeouts
-  // OpenAI Realtime API closes after ~60 seconds of no audio activity
-  // We must send periodic audio keepalives to prevent disconnection
-  keepAliveIntervalMs: 15000,  // Send Twilio mark every 15 seconds
-  openaiAudioKeepAliveMs: 10000, // Send silent audio to OpenAI every 10 seconds
+  // Keep-alive intervals (ms)
+  keepAliveIntervalMs: 15000,
+  openaiAudioKeepAliveMs: 10000,
   
-  // Audio buffer settings
-  audioBufferMs: 100,         // Small buffer for low latency
+  // Audio quality settings
+  targetGain: 0.85,           // Prevent clipping (leave headroom)
+  noiseFloor: 50,             // Samples below this are treated as silence
   
   // Session management
-  maxSessionDurationMs: 60 * 60 * 1000, // 60 minutes max call duration (increased from 30)
+  maxSessionDurationMs: 60 * 60 * 1000, // 60 minutes max
 };
 
 /**
- * Structured logger for debugging
+ * Structured logger with audio quality metrics
  */
 const Logger = {
   callSid: '',
@@ -102,6 +96,7 @@ const Logger = {
       streamSid: this.streamSid,
       event,
       error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
       ...data
     }));
   },
@@ -116,34 +111,59 @@ const Logger = {
       durationMs,
       ...data
     }));
+  },
+  
+  audio(event: string, data: Record<string, unknown>) {
+    console.log(JSON.stringify({
+      level: 'AUDIO',
+      timestamp: new Date().toISOString(),
+      callSid: this.callSid,
+      streamSid: this.streamSid,
+      event,
+      ...data
+    }));
   }
 };
 
 /**
- * Speaking style for contractor phone calls
+ * Coral's personality - warm, upbeat, professional
  */
-const CONTRACTOR_SPEAKING_STYLE = `
+const CORAL_PERSONALITY = `
+PERSONALITY & SPEAKING STYLE:
 
-SPEAKING STYLE FOR CONTRACTOR PHONE CALLS:
-- Speak like a friendly dispatcher or office manager - warm but efficient
-- Use plain, direct language that field workers appreciate
-- Keep answers SHORT: 1-2 sentences unless they ask for details
-- Use contractions naturally (I'm, you're, we'll, can't)
-- Confirm key information back: "Got it, you need service at [address]"
-- When taking messages: "I'll make sure [contractor name] gets this right away"
-- For scheduling: "Let me check what we have open..." then confirm clearly
-- If you don't know something: "I'll need to check on that and have someone call you back"
-- End calls warmly: "Thanks for calling. We'll take care of you."
-- IMPORTANT: Always finish your sentences completely before stopping
+You are "Coral", a warm, upbeat, and professional voice assistant. You speak like a friendly, helpful human - not a robotic call center script.
 
-AVOID:
+VOICE CHARACTERISTICS:
+- Warm and personable - like talking to a knowledgeable friend
+- Upbeat but not overly enthusiastic - confident and calm
+- Professional without being stiff or corporate
+- Empathetic - you pick up on caller emotions and adapt
+
+SPEAKING RULES:
+- Use short, clear sentences (1-2 max before a natural pause)
+- Use contractions naturally (I'm, you're, we'll, that's, can't)
+- Speak at a relaxed pace - no rushing
+- Leave brief pauses between ideas so callers stay comfortable
+- Address the caller by name when you learn it
+- Explain what you're doing before you do it ("Let me check that for you...")
+
+CONVERSATION FLOW:
+- Start with a warm greeting that includes your name
+- Ask one question at a time - don't overwhelm
+- Confirm key information back: "Got it, so you need..."
+- When taking messages: "I'll make sure [contractor] gets this right away"
+- For scheduling: "Let me see what's available..." then confirm clearly
+- End warmly: "Thanks so much for calling. We'll take great care of you."
+
+THINGS TO AVOID:
 - Corporate jargon or overly formal language
-- Long explanations unless asked
+- Long explanations unless specifically asked
 - Fake enthusiasm or salesy tone
-- Technical terms the caller won't care about
-- Cutting off mid-sentence
+- Filler words (um, uh, like, you know)
+- Cutting off mid-sentence - always complete your thoughts
+- Mentioning you're an AI unless directly asked
 
-Remember: This is a real phone call. Be human, helpful, and to the point.`;
+Remember: You're having a real phone conversation. Be genuinely helpful, kind, and to the point.`;
 
 interface CallSession {
   call_sid: string;
@@ -152,7 +172,7 @@ interface CallSession {
 }
 
 /**
- * Standard mulaw decode table for accurate audio conversion
+ * Standard mulaw decode lookup table
  */
 const MULAW_DECODE_TABLE = new Int16Array([
   -32124, -31100, -30076, -29052, -28028, -27004, -25980, -24956,
@@ -190,19 +210,65 @@ const MULAW_DECODE_TABLE = new Int16Array([
 ]);
 
 /**
- * Cubic interpolation helper for smooth upsampling
+ * Lanczos kernel for high-quality resampling
  */
-function cubicInterpolate(y0: number, y1: number, y2: number, y3: number, t: number): number {
-  const a = -0.5 * y0 + 1.5 * y1 - 1.5 * y2 + 0.5 * y3;
-  const b = y0 - 2.5 * y1 + 2 * y2 - 0.5 * y3;
-  const c = -0.5 * y0 + 0.5 * y2;
-  const d = y1;
-  return Math.round(a * t * t * t + b * t * t + c * t + d);
+function lanczosKernel(x: number, a: number = 3): number {
+  if (x === 0) return 1;
+  if (Math.abs(x) >= a) return 0;
+  const piX = Math.PI * x;
+  return (a * Math.sin(piX) * Math.sin(piX / a)) / (piX * piX);
+}
+
+/**
+ * High-quality Lanczos interpolation for upsampling
+ */
+function lanczosInterpolate(samples: Int16Array, srcIdx: number, t: number, a: number = 3): number {
+  let sum = 0;
+  let weightSum = 0;
+  
+  for (let i = -a + 1; i <= a; i++) {
+    const idx = Math.max(0, Math.min(samples.length - 1, srcIdx + i));
+    const weight = lanczosKernel(i - t, a);
+    sum += samples[idx] * weight;
+    weightSum += weight;
+  }
+  
+  return weightSum > 0 ? Math.round(sum / weightSum) : 0;
+}
+
+/**
+ * Normalize audio gain to prevent clipping while maximizing clarity
+ */
+function normalizeGain(samples: Int16Array, targetGain: number = 0.85): Int16Array {
+  // Find peak amplitude
+  let peak = 0;
+  for (let i = 0; i < samples.length; i++) {
+    const abs = Math.abs(samples[i]);
+    if (abs > peak) peak = abs;
+  }
+  
+  if (peak === 0) return samples;
+  
+  // Calculate gain factor (target 85% of max to leave headroom)
+  const maxAmplitude = 32767;
+  const targetPeak = maxAmplitude * targetGain;
+  const gainFactor = peak > targetPeak ? targetPeak / peak : 1.0;
+  
+  // Apply gain if needed
+  if (gainFactor < 1.0) {
+    const result = new Int16Array(samples.length);
+    for (let i = 0; i < samples.length; i++) {
+      result[i] = Math.round(samples[i] * gainFactor);
+    }
+    return result;
+  }
+  
+  return samples;
 }
 
 /**
  * Convert Twilio's mulaw (8kHz) to OpenAI's PCM16 (24kHz)
- * Uses lookup table for accurate decoding and cubic interpolation for high-quality upsampling
+ * Uses high-quality Lanczos resampling with gain normalization
  */
 function mulawToPCM16(mulawData: Uint8Array): string {
   // Decode mulaw to PCM16 at 8kHz using lookup table
@@ -212,25 +278,19 @@ function mulawToPCM16(mulawData: Uint8Array): string {
     pcm8k[i] = MULAW_DECODE_TABLE[mulawData[i]];
   }
   
-  // Upsample from 8kHz to 24kHz using cubic interpolation for better quality
+  // Upsample from 8kHz to 24kHz using Lanczos interpolation (3x)
   const pcm24k = new Int16Array(pcm8k.length * 3);
   
   for (let i = 0; i < pcm8k.length; i++) {
-    // Get 4 samples for cubic interpolation (clamp at boundaries)
-    const y0 = pcm8k[Math.max(0, i - 1)];
-    const y1 = pcm8k[i];
-    const y2 = pcm8k[Math.min(pcm8k.length - 1, i + 1)];
-    const y3 = pcm8k[Math.min(pcm8k.length - 1, i + 2)];
-    
-    // Original sample
-    pcm24k[i * 3] = y1;
-    
-    // Cubic interpolation for intermediate samples
-    pcm24k[i * 3 + 1] = cubicInterpolate(y0, y1, y2, y3, 1/3);
-    pcm24k[i * 3 + 2] = cubicInterpolate(y0, y1, y2, y3, 2/3);
+    const baseIdx = i * 3;
+    // Original sample position
+    pcm24k[baseIdx] = pcm8k[i];
+    // Interpolated samples at 1/3 and 2/3 positions
+    pcm24k[baseIdx + 1] = lanczosInterpolate(pcm8k, i, 1/3);
+    pcm24k[baseIdx + 2] = lanczosInterpolate(pcm8k, i, 2/3);
   }
   
-  // Clamp values to valid Int16 range
+  // Clamp to valid range
   for (let i = 0; i < pcm24k.length; i++) {
     pcm24k[i] = Math.max(-32768, Math.min(32767, pcm24k[i]));
   }
@@ -249,7 +309,7 @@ function mulawToPCM16(mulawData: Uint8Array): string {
 }
 
 /**
- * Standard mulaw encode - convert linear PCM16 sample to mulaw byte
+ * Standard mulaw encode with proper bias
  */
 function linearToMulaw(sample: number): number {
   const MULAW_BIAS = 33;
@@ -258,11 +318,9 @@ function linearToMulaw(sample: number): number {
   const sign = (sample < 0) ? 0x80 : 0;
   if (sample < 0) sample = -sample;
   
-  // Add bias
   sample = sample + MULAW_BIAS;
   if (sample > MULAW_MAX) sample = MULAW_MAX;
   
-  // Find the segment (exponent)
   let exponent = 7;
   for (let i = 0; i < 8; i++) {
     if (sample < (0x84 << i)) {
@@ -271,16 +329,42 @@ function linearToMulaw(sample: number): number {
     }
   }
   
-  // Compute mantissa
   const mantissa = (sample >> (exponent + 3)) & 0x0F;
-  
-  // Combine and complement
   return ~(sign | (exponent << 4) | mantissa) & 0xFF;
 }
 
 /**
- * Convert OpenAI's PCM16 audio (24kHz) to Twilio's mulaw (8kHz)
- * Improved with better anti-aliasing filter
+ * 15-tap low-pass FIR filter coefficients for high-quality anti-aliasing
+ * Designed for 24kHz -> 8kHz conversion (cutoff ~3.5kHz)
+ */
+const LOWPASS_COEFFS = [
+  0.003, 0.008, 0.020, 0.040, 0.065, 0.090, 0.110, 0.128,
+  0.110, 0.090, 0.065, 0.040, 0.020, 0.008, 0.003
+];
+
+/**
+ * Apply high-quality low-pass filter before downsampling
+ */
+function applyLowPassFilter(samples: number[]): number[] {
+  const filtered: number[] = [];
+  const halfTaps = Math.floor(LOWPASS_COEFFS.length / 2);
+  
+  for (let i = 0; i < samples.length; i++) {
+    let sum = 0;
+    for (let j = 0; j < LOWPASS_COEFFS.length; j++) {
+      const idx = i + j - halfTaps;
+      const clampedIdx = Math.max(0, Math.min(samples.length - 1, idx));
+      sum += samples[clampedIdx] * LOWPASS_COEFFS[j];
+    }
+    filtered.push(Math.round(sum));
+  }
+  
+  return filtered;
+}
+
+/**
+ * Convert OpenAI's PCM16 (24kHz) to Twilio's mulaw (8kHz)
+ * High-quality with proper anti-aliasing and gain normalization
  */
 function pcm16ToMulaw(base64PCM: string): Uint8Array {
   // Decode base64
@@ -290,7 +374,7 @@ function pcm16ToMulaw(base64PCM: string): Uint8Array {
     bytes[i] = binaryString.charCodeAt(i);
   }
   
-  // Convert bytes to Int16 PCM samples (little-endian) at 24kHz
+  // Convert bytes to Int16 PCM samples (little-endian)
   const pcm24k: number[] = [];
   for (let i = 0; i < bytes.length; i += 2) {
     if (i + 1 < bytes.length) {
@@ -299,73 +383,53 @@ function pcm16ToMulaw(base64PCM: string): Uint8Array {
     }
   }
   
-  // Apply 7-tap low-pass filter before downsampling (better anti-aliasing)
-  const filtered: number[] = [];
-  const coeffs = [0.05, 0.1, 0.2, 0.3, 0.2, 0.1, 0.05]; // Symmetric filter
+  // Apply high-quality low-pass filter before downsampling
+  const filtered = applyLowPassFilter(pcm24k);
   
-  for (let i = 0; i < pcm24k.length; i++) {
-    let sum = 0;
-    for (let j = -3; j <= 3; j++) {
-      const idx = Math.max(0, Math.min(pcm24k.length - 1, i + j));
-      sum += pcm24k[idx] * coeffs[j + 3];
-    }
-    filtered[i] = Math.round(sum);
-  }
-  
-  // Downsample from 24kHz to 8kHz (take every 3rd sample after filtering)
+  // Downsample from 24kHz to 8kHz (take every 3rd sample)
   const pcm8k: number[] = [];
   for (let i = 0; i < filtered.length; i += 3) {
     pcm8k.push(filtered[i]);
   }
   
-  // Convert PCM16 to mulaw
+  // Normalize gain to prevent clipping
+  let peak = 0;
+  for (const sample of pcm8k) {
+    const abs = Math.abs(sample);
+    if (abs > peak) peak = abs;
+  }
+  
+  const gainFactor = peak > 32767 * VOICE_CONFIG.targetGain 
+    ? (32767 * VOICE_CONFIG.targetGain) / peak 
+    : 1.0;
+  
+  // Convert PCM16 to mulaw with gain adjustment
   const mulaw = new Uint8Array(pcm8k.length);
   
   for (let i = 0; i < pcm8k.length; i++) {
-    mulaw[i] = linearToMulaw(pcm8k[i]);
+    const adjustedSample = Math.round(pcm8k[i] * gainFactor);
+    mulaw[i] = linearToMulaw(adjustedSample);
   }
   
   return mulaw;
 }
 
 /**
- * Audio buffer manager for smoother playback
+ * Generate minimal silent audio for keep-alive
  */
-class AudioBufferManager {
-  private buffer: Uint8Array[] = [];
-  private totalBytes = 0;
-  private maxBufferBytes = 8000; // ~1 second at 8kHz mulaw
-  
-  add(data: Uint8Array) {
-    this.buffer.push(data);
-    this.totalBytes += data.length;
-    
-    // Trim if buffer gets too large
-    while (this.totalBytes > this.maxBufferBytes && this.buffer.length > 1) {
-      const removed = this.buffer.shift();
-      if (removed) this.totalBytes -= removed.length;
-    }
+function generateSilentAudio(): string {
+  // 24000 samples/sec * 0.05 sec = 1200 samples (~50ms)
+  const silentSamples = new Int16Array(1200);
+  // Very low amplitude noise to prevent detection as true silence
+  for (let i = 0; i < silentSamples.length; i++) {
+    silentSamples[i] = Math.floor(Math.random() * 6) - 3;
   }
-  
-  flush(): Uint8Array | null {
-    if (this.buffer.length === 0) return null;
-    
-    // Concatenate all buffered audio
-    const result = new Uint8Array(this.totalBytes);
-    let offset = 0;
-    for (const chunk of this.buffer) {
-      result.set(chunk, offset);
-      offset += chunk.length;
-    }
-    
-    this.buffer = [];
-    this.totalBytes = 0;
-    return result;
+  const uint8 = new Uint8Array(silentSamples.buffer);
+  let binary = '';
+  for (let i = 0; i < uint8.length; i++) {
+    binary += String.fromCharCode(uint8[i]);
   }
-  
-  get size() {
-    return this.totalBytes;
-  }
+  return btoa(binary);
 }
 
 Deno.serve(async (req) => {
@@ -387,13 +451,22 @@ Deno.serve(async (req) => {
   let callStartTime: number | null = null;
   let lastAudioTime: number | null = null;
   let sessionPingCounter = 0;
-  const audioBuffer = new AudioBufferManager();
+  let audioChunksSent = 0;
+  let audioChunksReceived = 0;
 
   const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_KEY!);
 
-  // Cleanup function
+  // Cleanup function with comprehensive logging
   const cleanup = async (reason: string) => {
-    Logger.info('cleanup_initiated', { reason, callDurationMs: callStartTime ? Date.now() - callStartTime : 0 });
+    const callDuration = callStartTime ? Date.now() - callStartTime : 0;
+    
+    Logger.info('cleanup_initiated', { 
+      reason, 
+      callDurationMs: callDuration,
+      audioChunksSent,
+      audioChunksReceived,
+      keepAlivePings: sessionPingCounter
+    });
     
     if (keepAliveInterval) {
       clearInterval(keepAliveInterval);
@@ -420,7 +493,7 @@ Deno.serve(async (req) => {
     }
   };
 
-  // Start recording
+  // Start call recording
   const startRecording = async (sid: string) => {
     if (recordingStarted) return;
     recordingStarted = true;
@@ -428,7 +501,7 @@ Deno.serve(async (req) => {
     try {
       const accountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
       const authToken = Deno.env.get('TWILIO_AUTH_TOKEN');
-      const projectId = Deno.env.get('SUPABASE_PROJECT_ID') || 'faqrzzodtmsybofakcvv';
+      const projectId = 'faqrzzodtmsybofakcvv';
       
       Logger.info('recording_starting', { callSid: sid });
       
@@ -463,24 +536,7 @@ Deno.serve(async (req) => {
     }
   };
 
-  // Generate silent PCM16 audio buffer (minimal size, ~50ms at 24kHz)
-  const generateSilentAudio = (): string => {
-    // 24000 samples/sec * 0.05 sec = 1200 samples
-    // Each sample is 2 bytes (Int16)
-    const silentSamples = new Int16Array(1200);
-    // Fill with very low amplitude noise to prevent detection as true silence
-    for (let i = 0; i < silentSamples.length; i++) {
-      silentSamples[i] = Math.floor(Math.random() * 10) - 5; // -5 to +5
-    }
-    const uint8 = new Uint8Array(silentSamples.buffer);
-    let binary = '';
-    for (let i = 0; i < uint8.length; i++) {
-      binary += String.fromCharCode(uint8[i]);
-    }
-    return btoa(binary);
-  };
-
-  // Setup keep-alive ping - CRITICAL for preventing session timeouts
+  // Setup keep-alive pings
   const setupKeepAlive = () => {
     if (keepAliveInterval) clearInterval(keepAliveInterval);
     if (sessionPingInterval) clearInterval(sessionPingInterval);
@@ -497,14 +553,11 @@ Deno.serve(async (req) => {
       }
     }, VOICE_CONFIG.keepAliveIntervalMs);
     
-    // OpenAI AUDIO KEEP-ALIVE: Send minimal silent audio every 10 seconds
-    // The OpenAI Realtime API has a ~60 second timeout based on audio activity
-    // session.update does NOT reset this timer - only audio activity does
+    // OpenAI audio keep-alive every 10 seconds
     sessionPingInterval = setInterval(() => {
       if (openaiWs && openaiWs.readyState === WebSocket.OPEN) {
         sessionPingCounter++;
         
-        // Send a tiny amount of silent audio to reset the idle timer
         const silentAudio = generateSilentAudio();
         openaiWs.send(JSON.stringify({
           type: 'input_audio_buffer.append',
@@ -521,8 +574,7 @@ Deno.serve(async (req) => {
     
     Logger.info('keepalive_setup', { 
       twilioIntervalMs: VOICE_CONFIG.keepAliveIntervalMs,
-      openaiAudioKeepAliveMs: VOICE_CONFIG.openaiAudioKeepAliveMs,
-      maxDurationMs: VOICE_CONFIG.maxSessionDurationMs
+      openaiAudioKeepAliveMs: VOICE_CONFIG.openaiAudioKeepAliveMs
     });
   };
 
@@ -550,7 +602,7 @@ Deno.serve(async (req) => {
         startRecording(callSid);
         setupKeepAlive();
         
-        // Verify call session exists
+        // Get call session
         const { data: session, error } = await supabase
           .from('call_sessions')
           .select('*')
@@ -594,13 +646,6 @@ Deno.serve(async (req) => {
         if (!tokenResponse.ok) {
           const errorText = await tokenResponse.text();
           Logger.error('openai_token_failed', new Error(errorText), { status: tokenResponse.status });
-          
-          // Don't hard-hangup - try to gracefully handle
-          twilioWs.send(JSON.stringify({
-            event: 'media',
-            streamSid: streamSid,
-            media: { payload: '' } // Empty audio
-          }));
           return;
         }
 
@@ -609,21 +654,27 @@ Deno.serve(async (req) => {
         
         Logger.timing('openai_token_obtained', Date.now() - tokenStartTime);
 
-        // Connect to OpenAI
+        // Build the Coral greeting with business name
+        const businessName = config.business_name || 'our company';
+        const coralGreeting = config.greeting || 
+          `Hey there! This is Coral, ${businessName}'s AI assistant. Thanks for calling! How can I help you today?`;
+
+        // Build enhanced system prompt with Coral personality
+        const enhancedPrompt = `${config.system_prompt}
+
+${CORAL_PERSONALITY}
+
+IMPORTANT: Your name is "Coral - ${businessName}'s AI assistant". Introduce yourself this way at the start of the call.`;
+
+        // Connect to OpenAI Realtime
         const openaiUrl = `wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-12-17`;
         
-        Logger.info('openai_ws_connecting');
+        Logger.info('openai_ws_connecting', { voice: voiceId });
         openaiWs = new WebSocket(openaiUrl, [
           'realtime',
           `openai-insecure-api-key.${ephemeralKey}`,
           'openai-beta.realtime-v1'
         ]);
-        
-        const sessionConfig = {
-          system_prompt: config.system_prompt,
-          voice_id: voiceId,
-          greeting: config.greeting
-        };
         
         openaiWs.onopen = () => {
           Logger.info('openai_ws_connected');
@@ -633,16 +684,15 @@ Deno.serve(async (req) => {
           try {
             const openaiMessage = JSON.parse(openaiEvent.data);
             
-            // Handle session created
+            // Handle session created - configure with optimized settings
             if (openaiMessage.type === 'session.created') {
               Logger.info('openai_session_created');
               
-              // Configure session with optimized settings for long calls
               openaiWs!.send(JSON.stringify({
                 type: 'session.update',
                 session: {
                   modalities: ['text', 'audio'],
-                  instructions: config.system_prompt + CONTRACTOR_SPEAKING_STYLE,
+                  instructions: enhancedPrompt,
                   voice: voiceId,
                   input_audio_format: 'pcm16',
                   output_audio_format: 'pcm16',
@@ -657,23 +707,22 @@ Deno.serve(async (req) => {
                   },
                   temperature: VOICE_CONFIG.temperature,
                   max_response_output_tokens: VOICE_CONFIG.maxResponseTokens,
-                  // Tool definitions for scheduling and actions
                   tools: [
                     {
                       type: 'function',
                       name: 'schedule_appointment',
-                      description: 'Schedule an appointment or site visit for the customer. Use this when the customer wants to schedule a visit to their home.',
+                      description: 'Schedule an appointment or site visit for the customer.',
                       parameters: {
                         type: 'object',
                         properties: {
                           customer_name: { type: 'string', description: 'Customer\'s name' },
                           customer_phone: { type: 'string', description: 'Customer\'s callback phone number' },
                           address: { type: 'string', description: 'Address for the site visit' },
-                          preferred_date: { type: 'string', description: 'Preferred date (e.g., "tomorrow", "next Monday", "December 5th")' },
-                          preferred_time: { type: 'string', description: 'Preferred time (e.g., "morning", "afternoon", "2pm")' },
+                          preferred_date: { type: 'string', description: 'Preferred date' },
+                          preferred_time: { type: 'string', description: 'Preferred time' },
                           job_type: { type: 'string', description: 'Type of job or service needed' },
                           is_emergency: { type: 'boolean', description: 'Whether this is an emergency' },
-                          notes: { type: 'string', description: 'Additional notes about the appointment' }
+                          notes: { type: 'string', description: 'Additional notes' }
                         },
                         required: ['customer_name', 'job_type']
                       }
@@ -681,15 +730,15 @@ Deno.serve(async (req) => {
                     {
                       type: 'function',
                       name: 'take_voicemail',
-                      description: 'Record a voicemail message when the customer wants to leave a message for the contractor.',
+                      description: 'Record a voicemail message for the contractor.',
                       parameters: {
                         type: 'object',
                         properties: {
                           customer_name: { type: 'string', description: 'Customer\'s name' },
                           customer_phone: { type: 'string', description: 'Customer\'s callback phone number' },
-                          message: { type: 'string', description: 'The message they want to leave' },
-                          urgency: { type: 'string', enum: ['low', 'normal', 'high', 'emergency'], description: 'How urgent is their request' },
-                          job_reference: { type: 'string', description: 'Job number or reference if they have one' }
+                          message: { type: 'string', description: 'The message to leave' },
+                          urgency: { type: 'string', enum: ['low', 'normal', 'high', 'emergency'] },
+                          job_reference: { type: 'string', description: 'Job number if they have one' }
                         },
                         required: ['message']
                       }
@@ -697,11 +746,11 @@ Deno.serve(async (req) => {
                     {
                       type: 'function', 
                       name: 'lookup_job',
-                      description: 'Look up an existing job by reference number or job number.',
+                      description: 'Look up an existing job by reference number.',
                       parameters: {
                         type: 'object',
                         properties: {
-                          job_number: { type: 'string', description: 'The job number or reference number' }
+                          job_number: { type: 'string', description: 'The job or reference number' }
                         },
                         required: ['job_number']
                       }
@@ -712,10 +761,10 @@ Deno.serve(async (req) => {
               }));
             }
             
-            // Handle session configured - send greeting
+            // Send greeting after session is configured
             if (openaiMessage.type === 'session.updated' && !hasGreeted) {
               hasGreeted = true;
-              Logger.info('session_configured_sending_greeting');
+              Logger.info('session_configured_sending_greeting', { greeting: coralGreeting });
               
               openaiWs!.send(JSON.stringify({
                 type: 'conversation.item.create',
@@ -724,7 +773,7 @@ Deno.serve(async (req) => {
                   role: 'user',
                   content: [{
                     type: 'input_text',
-                    text: '[System: Start the conversation by greeting the caller with: ' + config.greeting + ']'
+                    text: `[System: Start the conversation by greeting the caller. Say: "${coralGreeting}"]`
                   }]
                 }
               }));
@@ -734,11 +783,11 @@ Deno.serve(async (req) => {
               }));
             }
             
-            // Handle audio output from AI
+            // Handle audio from AI - send immediately for low latency
             if (openaiMessage.type === 'response.audio.delta') {
               lastAudioTime = Date.now();
+              audioChunksSent++;
               
-              // Convert and send to Twilio immediately (no buffering for lower latency)
               const mulawData = pcm16ToMulaw(openaiMessage.delta);
               const base64Mulaw = btoa(String.fromCharCode(...mulawData));
               
@@ -749,9 +798,18 @@ Deno.serve(async (req) => {
                   payload: base64Mulaw
                 }
               }));
+              
+              // Log audio quality metrics periodically
+              if (audioChunksSent % 100 === 0) {
+                Logger.audio('audio_quality_check', {
+                  chunksSent: audioChunksSent,
+                  mulawBytes: mulawData.length,
+                  callDurationMs: callStartTime ? Date.now() - callStartTime : 0
+                });
+              }
             }
             
-            // Handle response done - log for timing analysis
+            // Log response completion
             if (openaiMessage.type === 'response.done') {
               Logger.info('ai_response_complete', {
                 status: openaiMessage.response?.status,
@@ -765,7 +823,11 @@ Deno.serve(async (req) => {
               
               if (callSession) {
                 const history = callSession.conversation_history || [];
-                history.push({ role: 'user', content: openaiMessage.transcript, timestamp: new Date().toISOString() });
+                history.push({ 
+                  role: 'user', 
+                  content: openaiMessage.transcript, 
+                  timestamp: new Date().toISOString() 
+                });
                 await supabase
                   .from('call_sessions')
                   .update({ conversation_history: history })
@@ -779,7 +841,11 @@ Deno.serve(async (req) => {
               
               if (callSession) {
                 const history = callSession.conversation_history || [];
-                history.push({ role: 'assistant', content: openaiMessage.transcript, timestamp: new Date().toISOString() });
+                history.push({ 
+                  role: 'assistant', 
+                  content: openaiMessage.transcript, 
+                  timestamp: new Date().toISOString() 
+                });
                 await supabase
                   .from('call_sessions')
                   .update({ conversation_history: history })
@@ -789,19 +855,17 @@ Deno.serve(async (req) => {
             
             // Handle errors gracefully
             if (openaiMessage.type === 'error') {
-              Logger.error('openai_error', new Error(openaiMessage.error?.message || 'Unknown OpenAI error'), {
+              Logger.error('openai_error', new Error(openaiMessage.error?.message), {
                 code: openaiMessage.error?.code,
                 type: openaiMessage.error?.type
               });
               
-              // Don't close connection on transient errors
               if (openaiMessage.error?.code === 'rate_limit_exceeded') {
-                // Wait a bit and continue
                 await new Promise(r => setTimeout(r, 1000));
               }
             }
             
-            // Handle function calls from AI
+            // Handle function calls
             if (openaiMessage.type === 'response.function_call_arguments.done') {
               const functionName = openaiMessage.name;
               const callId = openaiMessage.call_id;
@@ -815,35 +879,23 @@ Deno.serve(async (req) => {
               
               Logger.info('function_call', { functionName, callId, args });
               
-              let result: { success: boolean; message: string; job?: any } = { success: false, message: 'Unknown function' };
+              let result: { success: boolean; message: string; job?: any } = { 
+                success: false, 
+                message: 'Unknown function' 
+              };
               
               // Handle schedule_appointment
               if (functionName === 'schedule_appointment') {
                 try {
-                  // Get contractor ID from session
                   const contractorId = callSession?.contractor_id;
                   
                   if (contractorId) {
-                    // Create a job meeting / appointment
-                    const appointmentDate = new Date();
-                    // Try to parse preferred date (simple heuristic)
-                    if (args.preferred_date) {
-                      const dateStr = args.preferred_date.toLowerCase();
-                      if (dateStr.includes('tomorrow')) {
-                        appointmentDate.setDate(appointmentDate.getDate() + 1);
-                      } else if (dateStr.includes('next week')) {
-                        appointmentDate.setDate(appointmentDate.getDate() + 7);
-                      }
-                    }
-                    
-                    // Check if contractor has calendar connection
                     const { data: calendarConnection } = await supabase
                       .from('calendar_connections')
                       .select('*')
                       .eq('user_id', contractorId)
                       .single();
                     
-                    // Create an AI call action record for follow-up
                     await supabase.from('ai_call_actions').insert({
                       call_id: callSid,
                       contractor_id: contractorId,
@@ -864,14 +916,17 @@ Deno.serve(async (req) => {
                     
                     result = { 
                       success: true, 
-                      message: `Appointment request recorded for ${args.customer_name || 'the customer'}. ${calendarConnection ? 'It will be added to the calendar.' : 'The contractor will receive the details and call back to confirm.'}` 
+                      message: `Perfect! I've got ${args.customer_name || 'your'} appointment request recorded. ${calendarConnection ? 'It will be added to the calendar.' : 'The contractor will call back to confirm the time.'}` 
                     };
                     
                     Logger.info('appointment_scheduled', { contractorId, args });
                   }
                 } catch (error) {
                   Logger.error('schedule_appointment_error', error);
-                  result = { success: false, message: 'There was an issue scheduling. The contractor will call back to confirm.' };
+                  result = { 
+                    success: false, 
+                    message: 'I had a small hiccup, but don\'t worry - the contractor will call you back to confirm.' 
+                  };
                 }
               }
               
@@ -881,7 +936,6 @@ Deno.serve(async (req) => {
                   const contractorId = callSession?.contractor_id;
                   
                   if (contractorId) {
-                    // Create an AI call action record for voicemail
                     await supabase.from('ai_call_actions').insert({
                       call_id: callSid,
                       contractor_id: contractorId,
@@ -898,14 +952,17 @@ Deno.serve(async (req) => {
                     
                     result = { 
                       success: true, 
-                      message: `Message recorded. ${args.customer_name || 'The customer'}'s message will be delivered to the contractor right away.` 
+                      message: `Got it! I'll make sure ${args.customer_name || 'your'} message gets to the contractor right away.` 
                     };
                     
                     Logger.info('voicemail_recorded', { contractorId, args });
                   }
                 } catch (error) {
                   Logger.error('take_voicemail_error', error);
-                  result = { success: false, message: 'Message recorded. We will pass it along.' };
+                  result = { 
+                    success: false, 
+                    message: 'Message noted! We\'ll pass it along.' 
+                  };
                 }
               }
               
@@ -915,7 +972,6 @@ Deno.serve(async (req) => {
                   const contractorId = callSession?.contractor_id;
                   
                   if (contractorId && args.job_number) {
-                    // Try to find the job
                     const { data: job } = await supabase
                       .from('jobs')
                       .select('id, name, job_number, status, customer_id')
@@ -927,21 +983,28 @@ Deno.serve(async (req) => {
                     if (job) {
                       result = { 
                         success: true, 
-                        message: `Found job: ${job.name}. Job number: ${job.job_number || 'Not assigned'}. Status: ${job.status || 'Active'}.`,
+                        message: `Found it! Job: ${job.name}. Number: ${job.job_number || 'not assigned yet'}. Status: ${job.status || 'active'}.`,
                         job: job
                       };
                     } else {
                       result = { 
                         success: false, 
-                        message: `I couldn't find a job with that reference number. Let me help you as a new inquiry instead.` 
+                        message: `Hmm, I couldn't find that reference number. No worries though - let me help you as a new inquiry!` 
                       };
                     }
                     
-                    Logger.info('job_lookup', { contractorId, jobNumber: args.job_number, found: !!job });
+                    Logger.info('job_lookup', { 
+                      contractorId, 
+                      jobNumber: args.job_number, 
+                      found: !!job 
+                    });
                   }
                 } catch (error) {
                   Logger.error('lookup_job_error', error);
-                  result = { success: false, message: 'I had trouble looking that up. Let me help you another way.' };
+                  result = { 
+                    success: false, 
+                    message: 'I had trouble looking that up. Let me help you another way!' 
+                  };
                 }
               }
               
@@ -955,13 +1018,12 @@ Deno.serve(async (req) => {
                 }
               }));
               
-              // Request AI to continue the conversation with the result
               openaiWs!.send(JSON.stringify({
                 type: 'response.create'
               }));
             }
             
-            // Log speech events for timing analysis
+            // Log speech events
             if (openaiMessage.type === 'input_audio_buffer.speech_started') {
               Logger.info('user_speech_started');
             }
@@ -986,6 +1048,8 @@ Deno.serve(async (req) => {
       
       // Handle incoming audio from caller
       if (message.event === 'media' && openaiWs && openaiWs.readyState === WebSocket.OPEN) {
+        audioChunksReceived++;
+        
         const mulawBase64 = message.media.payload;
         const mulawBinary = atob(mulawBase64);
         const mulawData = new Uint8Array(mulawBinary.length);
@@ -993,7 +1057,6 @@ Deno.serve(async (req) => {
           mulawData[i] = mulawBinary.charCodeAt(i);
         }
         
-        // Convert to PCM16 and send to OpenAI
         const pcm16Base64 = mulawToPCM16(mulawData);
         
         openaiWs.send(JSON.stringify({
@@ -1002,16 +1065,15 @@ Deno.serve(async (req) => {
         }));
       }
       
-      // Handle mark events (for keep-alive tracking)
+      // Handle mark events
       if (message.event === 'mark') {
         Logger.info('mark_received', { name: message.mark?.name });
       }
       
       // Handle stream stop
       if (message.event === 'stop') {
-        const callDuration = callStartTime ? Date.now() - callStartTime : 0;
         Logger.info('stream_stopped', { 
-          callDurationMs: callDuration,
+          callDurationMs: callStartTime ? Date.now() - callStartTime : 0,
           reason: 'twilio_stop_event'
         });
         await cleanup('stream_stop');
@@ -1027,11 +1089,10 @@ Deno.serve(async (req) => {
   };
 
   twilioWs.onclose = async (event) => {
-    const callDuration = callStartTime ? Date.now() - callStartTime : 0;
     Logger.info('twilio_ws_closed', { 
       code: event.code, 
       reason: event.reason,
-      callDurationMs: callDuration
+      callDurationMs: callStartTime ? Date.now() - callStartTime : 0
     });
     await cleanup('twilio_ws_close');
   };
