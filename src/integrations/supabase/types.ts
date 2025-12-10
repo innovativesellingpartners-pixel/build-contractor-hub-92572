@@ -1823,6 +1823,63 @@ export type Database = {
         }
         Relationships: []
       }
+      invoice_waivers: {
+        Row: {
+          amount: number
+          billing_period_end: string | null
+          billing_period_start: string | null
+          created_at: string
+          created_by: string
+          gc_id: string | null
+          id: string
+          invoice_id: string
+          pdf_url: string | null
+          retainage: number | null
+          waiver_type: string
+        }
+        Insert: {
+          amount?: number
+          billing_period_end?: string | null
+          billing_period_start?: string | null
+          created_at?: string
+          created_by: string
+          gc_id?: string | null
+          id?: string
+          invoice_id: string
+          pdf_url?: string | null
+          retainage?: number | null
+          waiver_type: string
+        }
+        Update: {
+          amount?: number
+          billing_period_end?: string | null
+          billing_period_start?: string | null
+          created_at?: string
+          created_by?: string
+          gc_id?: string | null
+          id?: string
+          invoice_id?: string
+          pdf_url?: string | null
+          retainage?: number | null
+          waiver_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_waivers_gc_id_fkey"
+            columns: ["gc_id"]
+            isOneToOne: false
+            referencedRelation: "gc_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_waivers_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invoices: {
         Row: {
           amount_due: number
