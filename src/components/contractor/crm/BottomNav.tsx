@@ -1,5 +1,24 @@
-import { LayoutDashboard, ClipboardList, Phone, Mail, MoreHorizontal } from 'lucide-react';
+import { useState } from 'react';
+import { 
+  LayoutDashboard, 
+  ClipboardList, 
+  Phone, 
+  Mail, 
+  Menu,
+  X,
+  FileText,
+  Briefcase,
+  Users,
+  Calendar,
+  DollarSign,
+  CreditCard,
+  BarChart2,
+  LayoutTemplate,
+  Receipt
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import ct1Logo from '@/assets/ct1-logo-main.png';
 
 type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calendar' | 'emails' | 'estimates' | 'reporting' | 'financials' | 'more' | 'payments' | 'accounting' | 'invoices' | 'templates';
 
@@ -8,15 +27,37 @@ interface BottomNavProps {
   onSectionChange: (section: Section) => void;
 }
 
-const navItems = [
+const bottomNavItems = [
   { id: 'dashboard' as Section, label: 'CRM', icon: LayoutDashboard },
   { id: 'calls' as Section, label: 'Calls', icon: Phone },
   { id: 'emails' as Section, label: 'Emails', icon: Mail },
   { id: 'leads' as Section, label: 'Leads', icon: ClipboardList },
-  { id: 'more' as Section, label: 'More', icon: MoreHorizontal },
+];
+
+const allNavItems = [
+  { id: 'dashboard' as Section, label: 'Dashboard', icon: LayoutDashboard },
+  { id: 'leads' as Section, label: 'Leads', icon: ClipboardList },
+  { id: 'estimates' as Section, label: 'Estimates', icon: FileText },
+  { id: 'templates' as Section, label: 'Templates', icon: LayoutTemplate },
+  { id: 'invoices' as Section, label: 'Invoices', icon: Receipt },
+  { id: 'jobs' as Section, label: 'Jobs', icon: Briefcase },
+  { id: 'calls' as Section, label: 'Calls', icon: Phone },
+  { id: 'emails' as Section, label: 'Emails', icon: Mail },
+  { id: 'calendar' as Section, label: 'Calendar', icon: Calendar },
+  { id: 'accounting' as Section, label: 'Accounting', icon: DollarSign },
+  { id: 'payments' as Section, label: 'Payments', icon: CreditCard },
+  { id: 'customers' as Section, label: 'Customers', icon: Users },
+  { id: 'reporting' as Section, label: 'Reporting', icon: BarChart2 },
 ];
 
 export function BottomNav({ activeSection, onSectionChange }: BottomNavProps) {
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const handleNavClick = (section: Section) => {
+    onSectionChange(section);
+    setMenuOpen(false);
+  };
+
   return (
     <nav className={cn(
       "fixed bottom-0 left-0 right-0 z-50",
@@ -26,7 +67,7 @@ export function BottomNav({ activeSection, onSectionChange }: BottomNavProps) {
       "safe-area-inset-bottom"
     )}>
       <div className="flex items-center justify-around h-16 max-w-screen-sm mx-auto px-2">
-        {navItems.map((item) => {
+        {bottomNavItems.map((item) => {
           const isActive = activeSection === item.id;
           return (
             <button
@@ -48,6 +89,64 @@ export function BottomNav({ activeSection, onSectionChange }: BottomNavProps) {
             </button>
           );
         })}
+        
+        {/* Menu Button with Sheet */}
+        <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+          <SheetTrigger asChild>
+            <button
+              className={cn(
+                'flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl transition-all duration-200 min-w-[64px]',
+                menuOpen
+                  ? 'bg-primary text-white shadow-lg shadow-primary/30 scale-110'
+                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95'
+              )}
+              aria-label="Menu"
+            >
+              <Menu className="h-5 w-5" />
+              <span className="text-xs font-medium">Menu</span>
+            </button>
+          </SheetTrigger>
+          <SheetContent side="left" className="w-[280px] p-0">
+            <div className="flex flex-col h-full bg-card">
+              {/* Header */}
+              <div className="flex items-center justify-between p-4 border-b">
+                <div className="flex items-center gap-2">
+                  <img src={ct1Logo} alt="CT1" className="h-8 w-8" />
+                  <span className="font-semibold">CT1 CRM</span>
+                </div>
+                <button onClick={() => setMenuOpen(false)} className="p-1 rounded-md hover:bg-muted">
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              
+              {/* Navigation Items */}
+              <nav className="flex-1 overflow-y-auto p-4">
+                <ul className="space-y-2">
+                  {allNavItems.map((item) => {
+                    const isActive = activeSection === item.id;
+                    return (
+                      <li key={item.id}>
+                        <button
+                          onClick={() => handleNavClick(item.id)}
+                          className={cn(
+                            'w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors',
+                            'hover:bg-accent',
+                            isActive
+                              ? 'bg-primary text-primary-foreground'
+                              : 'text-muted-foreground'
+                          )}
+                        >
+                          <item.icon className="h-5 w-5 flex-shrink-0" />
+                          <span className="text-base">{item.label}</span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </nav>
+            </div>
+          </SheetContent>
+        </Sheet>
       </div>
     </nav>
   );
