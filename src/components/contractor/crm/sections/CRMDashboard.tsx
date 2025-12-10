@@ -1,11 +1,11 @@
 import { useLeads } from '@/hooks/useLeads';
 import { useCustomers } from '@/hooks/useCustomers';
 import { Card, CardContent } from '@/components/ui/card';
-import { FileText, Briefcase, Users, Phone, Mail, DollarSign } from 'lucide-react';
+import { FileText, Briefcase, Phone, Mail, DollarSign, Calendar } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 
-type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'emails' | 'estimates' | 'reporting' | 'accounting' | 'more';
+type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'emails' | 'estimates' | 'reporting' | 'accounting' | 'more' | 'calendar';
 
 interface CRMDashboardProps {
   onSectionChange?: (section: Section) => void;
@@ -18,12 +18,12 @@ export default function CRMDashboard({ onSectionChange }: CRMDashboardProps) {
 
   const mainModules = [
     { 
-      id: 'estimates' as Section, 
-      label: 'Estimates', 
-      icon: FileText, 
-      gradient: 'from-blue-500 to-blue-600',
-      borderColor: 'border-blue-400',
-      description: 'View & create quotes'
+      id: 'calendar' as Section, 
+      label: 'Calendar', 
+      icon: Calendar, 
+      gradient: 'from-red-500 to-red-600',
+      borderColor: 'border-red-400',
+      description: 'Schedule & events'
     },
     { 
       id: 'jobs' as Section, 
@@ -42,20 +42,20 @@ export default function CRMDashboard({ onSectionChange }: CRMDashboardProps) {
       description: 'Inbox & follow-ups'
     },
     { 
+      id: 'estimates' as Section, 
+      label: 'Estimates', 
+      icon: FileText, 
+      gradient: 'from-blue-500 to-blue-600',
+      borderColor: 'border-blue-400',
+      description: 'View & create quotes'
+    },
+    { 
       id: 'calls' as Section, 
       label: 'Calls', 
       icon: Phone, 
       gradient: 'from-pink-500 to-pink-600',
       borderColor: 'border-pink-400',
       description: 'Call history'
-    },
-    { 
-      id: 'customers' as Section, 
-      label: 'Customers', 
-      icon: Users, 
-      gradient: 'from-green-500 to-green-600',
-      borderColor: 'border-green-400',
-      description: 'Customer list'
     },
     { 
       id: 'accounting' as Section, 
