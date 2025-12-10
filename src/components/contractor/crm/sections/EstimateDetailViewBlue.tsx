@@ -1,10 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Estimate } from '@/hooks/useEstimates';
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { Send, Users, Briefcase, Eye, Copy, ArrowRight, FileText } from 'lucide-react';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { CustomerDetailViewBlue } from './CustomerDetailViewBlue';
+import { Customer } from '@/hooks/useCustomers';
 import {
   BlueBackground,
   SectionHeader,
@@ -36,6 +39,23 @@ export function EstimateDetailViewBlue({
 }: EstimateDetailViewBlueProps) {
   const { user } = useAuth();
   const [isConverting, setIsConverting] = useState(false);
+  const [customerDialogOpen, setCustomerDialogOpen] = useState(false);
+  const [linkedCustomer, setLinkedCustomer] = useState<Customer | null>(null);
+
+  // Fetch linked customer data
+  useEffect(() => {
+    const fetchCustomer = async () => {
+      if (estimate.customer_id) {
+        const { data } = await supabase
+          .from('customers')
+          .select('*')
+          .eq('id', estimate.customer_id)
+          .single();
+        if (data) setLinkedCustomer(data as Customer);
+      }
+    };
+    fetchCustomer();
+  }, [estimate.customer_id]);
 
   const handleConvertToCustomer = async () => {
     if (estimate.customer_id) {
@@ -291,19 +311,19 @@ export function EstimateDetailViewBlue({
                   onClick={() => onSectionChange?.('leads')}
                 />
               )}
-              {estimate.customer_id && (
+              {estimate.customer_id && linkedCustomer && (
                 <InfoRow 
                   label="Customer" 
                   value={
                     <span 
                       className="text-sky-600 cursor-pointer"
-                      onClick={() => onSectionChange?.('customers')}
+                      onClick={() => setCustomerDialogOpen(true)}
                     >
                       View Customer →
                     </span>
                   }
                   isClickable
-                  onClick={() => onSectionChange?.('customers')}
+                  onClick={() => setCustomerDialogOpen(true)}
                 />
               )}
               {estimate.job_id && (
@@ -352,6 +372,19 @@ export function EstimateDetailViewBlue({
           )}
         </InfoCard>
       </div>
+
+      {/* Customer Detail Dialog */}
+      <Dialog open={customerDialogOpen} onOpenChange={setCustomerDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[95vh] p-0 overflow-hidden">
+          {linkedCustomer && (
+            <CustomerDetailViewBlue
+              customer={linkedCustomer}
+              onClose={() => setCustomerDialogOpen(false)}
+              onSectionChange={onSectionChange}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </BlueBackground>
   );
 }
