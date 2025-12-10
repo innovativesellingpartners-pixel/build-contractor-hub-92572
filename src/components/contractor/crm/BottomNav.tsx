@@ -17,7 +17,7 @@ import {
   Receipt
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import ct1Logo from '@/assets/ct1-logo-main.png';
 
 type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calendar' | 'emails' | 'estimates' | 'reporting' | 'financials' | 'more' | 'payments' | 'accounting' | 'invoices' | 'templates';
@@ -107,6 +107,8 @@ export function BottomNav({ activeSection, onSectionChange }: BottomNavProps) {
             </button>
           </SheetTrigger>
           <SheetContent side="left" className="w-[280px] p-0">
+            <SheetTitle className="sr-only">CT1 CRM Navigation</SheetTitle>
+            <SheetDescription className="sr-only">Navigate to different sections of the CRM</SheetDescription>
             <div className="flex flex-col h-full bg-card">
               {/* Header */}
               <div className="flex items-center justify-between p-4 border-b">
