@@ -7,6 +7,7 @@ import JobDetailViewBlue from '../JobDetailViewBlue';
 import { AddJobDialog } from '../AddJobDialog';
 import { EditJobDialog } from '../EditJobDialog';
 import { HorizontalRowCard, RowAvatar, RowContent, RowTitleLine, RowMetaLine, RowAmount, RowActions } from './HorizontalRowCard';
+import { BackNavigation } from '../BackNavigation';
 
 interface JobsSectionProps {
   onSectionChange?: (section: string) => void;
@@ -64,16 +65,15 @@ export default function JobsSection({ onSectionChange }: JobsSectionProps) {
   return (
     <div className="w-full h-full overflow-y-auto overflow-x-hidden pb-24 sm:pb-20 bg-background">
       <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 w-full max-w-full sm:max-w-7xl sm:mx-auto">
+        {/* Back Navigation */}
+        <BackNavigation onBackToDashboard={() => onSectionChange?.('dashboard')} />
+        
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex-1 min-w-0">
             <h1 className="text-2xl sm:text-3xl font-bold">Jobs</h1>
             <p className="text-sm sm:text-base text-muted-foreground">Manage your active and completed jobs</p>
           </div>
           <div className="flex gap-2 flex-shrink-0">
-            <Button variant="outline" size="sm" onClick={() => onSectionChange?.('dashboard')}>
-              <Home className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">Contractor Hub</span>
-            </Button>
             <AddJobDialog onAdd={addJob} />
           </div>
         </div>
