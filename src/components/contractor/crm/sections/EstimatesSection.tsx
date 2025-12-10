@@ -3,8 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Plus, FileText, Trash2, Eye, Send, CheckCircle, Clock, AlertCircle, RefreshCw, Users, Copy, ArrowLeft, Briefcase, ChevronRight } from 'lucide-react';
-import { useEstimates } from '@/hooks/useEstimates';
+import { Plus, FileText, Trash2, Eye, Send, CheckCircle, Clock, AlertCircle, RefreshCw, Users, Copy, ArrowLeft, Briefcase, ChevronRight, LayoutTemplate } from 'lucide-react';
+import { useEstimates, EstimateLineItem } from '@/hooks/useEstimates';
 import { useLeads } from '@/hooks/useLeads';
 import EstimateForm from '../EstimateForm';
 import { useAuth } from '@/contexts/AuthContext';
@@ -15,6 +15,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { HorizontalRowCard, RowAvatar, RowContent, RowTitleLine, RowMetaLine, RowBadgeGroup, RowAmount, RowActions } from './HorizontalRowCard';
 import { EstimateDetailViewBlue } from './EstimateDetailViewBlue';
 import { BackNavigation } from '../BackNavigation';
+import { TemplatesSection } from '../estimate/TemplatesSection';
 
 export default function EstimatesSection({ onSectionChange }: { onSectionChange?: (section: string) => void }) {
   const { estimates, isLoading, createEstimate, createEstimateAsync, updateEstimate, updateEstimateAsync, deleteEstimate, sendEstimate, sendEstimateAsync, isSendingEstimate, duplicateEstimate, isDuplicatingEstimate } = useEstimates();
@@ -25,6 +26,7 @@ export default function EstimatesSection({ onSectionChange }: { onSectionChange?
   const [detailViewOpen, setDetailViewOpen] = useState(false);
   const [selectedEstimateForDetail, setSelectedEstimateForDetail] = useState<any>(null);
   const [isConverting, setIsConverting] = useState<string | null>(null);
+  const [showTemplates, setShowTemplates] = useState(false);
 
   // Convert estimate to customer (new linear flow)
   const handleConvertToCustomer = async (estimate: any) => {
@@ -242,15 +244,34 @@ export default function EstimatesSection({ onSectionChange }: { onSectionChange?
     return null;
   };
 
+  // Show templates section if active
+  if (showTemplates) {
+    return (
+      <TemplatesSection 
+        onBack={() => setShowTemplates(false)} 
+        onAddToEstimate={(lineItems, estimateId) => {
+          // When template is added to an existing estimate, we'd update it
+          // For now, this is handled within TemplatesSection
+        }}
+      />
+    );
+  }
+
   return (
     <MobileOptimizedWrapper
       title="Estimates"
       onBackClick={() => onSectionChange?.('dashboard')}
       actions={
-        <Button onClick={handleNew} className="w-full sm:w-auto">
-          <Plus className="h-4 w-4 mr-2" />
-          Create Estimate
-        </Button>
+        <div className="flex gap-2 flex-wrap">
+          <Button variant="outline" onClick={() => setShowTemplates(true)} className="w-full sm:w-auto">
+            <LayoutTemplate className="h-4 w-4 mr-2" />
+            Templates
+          </Button>
+          <Button onClick={handleNew} className="w-full sm:w-auto">
+            <Plus className="h-4 w-4 mr-2" />
+            Create Estimate
+          </Button>
+        </div>
       }
     >
       <CardDescription className="px-4 sm:px-0 mb-4">
