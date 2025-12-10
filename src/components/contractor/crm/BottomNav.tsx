@@ -36,7 +36,7 @@ const bottomNavItems = [
 
 // All navigation items for the slide-out menu
 const allNavItems = [
-  { id: 'dashboard' as Section, label: 'Dashboard', icon: LayoutDashboard },
+  { id: 'dashboard' as Section, label: 'Dashboard TEST', icon: LayoutDashboard },
   { id: 'leads' as Section, label: 'Leads', icon: ClipboardList },
   { id: 'estimates' as Section, label: 'Estimates', icon: FileText },
   { id: 'templates' as Section, label: 'Templates', icon: LayoutTemplate },
