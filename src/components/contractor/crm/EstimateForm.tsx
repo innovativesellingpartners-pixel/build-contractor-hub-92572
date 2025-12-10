@@ -1294,7 +1294,6 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
                 <Button type="button" variant="outline" onClick={onCancel} className="w-full sm:w-auto">
                   Cancel
                 </Button>
-                </Button>
                 {initialData?.id && (
                   <>
                     <Button
