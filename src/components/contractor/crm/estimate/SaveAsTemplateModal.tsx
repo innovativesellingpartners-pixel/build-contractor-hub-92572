@@ -1,12 +1,14 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Save } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Save, Check, ChevronsUpDown } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { useEstimateTemplates, TRADES, Trade } from '@/hooks/useEstimateTemplates';
 import { EstimateLineItem } from '@/hooks/useEstimates';
 
@@ -32,6 +34,7 @@ export function SaveAsTemplateModal({
   const [tags, setTags] = useState('');
   const [scopeSummary, setScopeSummary] = useState('');
   const [visibility, setVisibility] = useState<'private' | 'account'>('private');
+  const [tradeOpen, setTradeOpen] = useState(false);
 
   const handleSave = async () => {
     if (!name.trim()) return;
@@ -74,17 +77,48 @@ export function SaveAsTemplateModal({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="template-trade">Trade *</Label>
-            <Select value={trade} onValueChange={(v) => setTrade(v as Trade)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select trade" />
-              </SelectTrigger>
-              <SelectContent>
-                {TRADES.map(t => (
-                  <SelectItem key={t} value={t}>{t}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Label>Template Type (Trade) *</Label>
+            <Popover open={tradeOpen} onOpenChange={setTradeOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={tradeOpen}
+                  className="w-full justify-between"
+                >
+                  {trade || "Select trade..."}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0" align="start">
+                <Command>
+                  <CommandInput placeholder="Search trades..." />
+                  <CommandList>
+                    <CommandEmpty>No trade found.</CommandEmpty>
+                    <CommandGroup>
+                      {TRADES.map((t) => (
+                        <CommandItem
+                          key={t}
+                          value={t}
+                          onSelect={() => {
+                            setTrade(t);
+                            setTradeOpen(false);
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              trade === t ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          {t}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
           </div>
 
           <div className="space-y-2">
