@@ -76,7 +76,7 @@ export function TemplatesSection({ onBack, onAddToEstimate }: TemplatesSectionPr
   // Count templates per trade
   const templateCountByTrade = useMemo(() => {
     const counts: Record<string, number> = {};
-    templates.forEach(t => {
+    (templates || []).forEach(t => {
       counts[t.trade] = (counts[t.trade] || 0) + 1;
     });
     return counts;
