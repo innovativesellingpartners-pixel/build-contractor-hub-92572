@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { Send, Users, Briefcase, Eye, Copy, FileText, Receipt } from 'lucide-react';
+import { Send, Users, Briefcase, Eye, Copy, FileText, Receipt, Save } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { CustomerDetailViewBlue } from './CustomerDetailViewBlue';
 import { Customer } from '@/hooks/useCustomers';
@@ -133,17 +133,49 @@ export function EstimateDetailViewBlue({
     }
   };
 
-  // Create invoice from estimate (requires job)
-  const handleCreateInvoice = async () => {
-    if (!estimate.job_id) {
-      toast.error('Please convert this estimate to a job first before creating an invoice');
-      return;
-    }
-
+  // Save estimate as draft invoice (for sending later)
+  const handleSaveAsInvoice = async () => {
     setIsCreatingInvoice(true);
     try {
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       if (!currentUser) throw new Error('Not authenticated');
+
+      let jobId = estimate.job_id;
+      let customerId = estimate.customer_id;
+
+      // Create customer if needed
+      if (!customerId) {
+        const { data: newCustomer, error: customerError } = await supabase
+          .from('customers')
+          .insert([{
+            user_id: currentUser.id,
+            name: estimate.client_name || 'Unknown Customer',
+            email: estimate.client_email || null,
+            phone: estimate.client_phone || null,
+            address: estimate.site_address || estimate.client_address || null,
+            customer_type: 'residential',
+            estimate_id: estimate.id,
+          }])
+          .select()
+          .single();
+
+        if (customerError) throw customerError;
+        customerId = newCustomer.id;
+
+        await supabase
+          .from('estimates')
+          .update({ customer_id: customerId, status: 'accepted' })
+          .eq('id', estimate.id);
+      }
+
+      // Create job if needed
+      if (!jobId) {
+        const { data, error } = await supabase.functions.invoke('convert-estimate-to-job', {
+          body: { estimateId: estimate.id }
+        });
+        if (error) throw error;
+        jobId = data.jobId;
+      }
 
       const lineItems = estimate.line_items as any[] || [];
       const dueDate = new Date();
@@ -153,8 +185,8 @@ export function EstimateDetailViewBlue({
         .from('invoices')
         .insert([{
           user_id: currentUser.id,
-          job_id: estimate.job_id,
-          customer_id: estimate.customer_id,
+          job_id: jobId,
+          customer_id: customerId,
           amount_due: estimate.grand_total || estimate.total_amount || 0,
           amount_paid: estimate.payment_amount || 0,
           balance_due: (estimate.grand_total || estimate.total_amount || 0) - (estimate.payment_amount || 0),
@@ -168,10 +200,10 @@ export function EstimateDetailViewBlue({
         .single();
 
       if (error) throw error;
-      toast.success(`Invoice ${invoice.invoice_number} created successfully!`);
-      onSectionChange?.('accounting');
+      toast.success(`Invoice ${invoice.invoice_number || 'draft'} saved! You can send it later from the Invoices section.`);
+      onSectionChange?.('invoices');
     } catch (error: any) {
-      toast.error(`Failed to create invoice: ${error.message}`);
+      toast.error(`Failed to save invoice: ${error.message}`);
     } finally {
       setIsCreatingInvoice(false);
     }
@@ -187,7 +219,8 @@ export function EstimateDetailViewBlue({
     return 'Draft';
   };
 
-  const canCreateInvoice = estimate.job_id && (estimate.status === 'accepted' || estimate.status === 'sold' || estimate.signed_at);
+  // Show "Save as Invoice" when estimate is accepted/signed
+  const canSaveAsInvoice = estimate.signed_at || estimate.status === 'accepted' || estimate.status === 'sold';
   // Show "Send Invoice to GC" when estimate is accepted/signed (no payment requirement)
   const canSendToGC = estimate.signed_at || estimate.status === 'accepted' || estimate.status === 'sold';
 
@@ -237,15 +270,15 @@ export function EstimateDetailViewBlue({
             TO JOB
           </ActionButton>
         )}
-        {canCreateInvoice && (
+        {canSaveAsInvoice && (
           <ActionButton 
-            variant="primary" 
-            onClick={handleCreateInvoice}
+            variant="secondary" 
+            onClick={handleSaveAsInvoice}
             disabled={isCreatingInvoice}
             className="flex items-center gap-2"
           >
-            <FileText className="w-4 h-4" />
-            {isCreatingInvoice ? 'CREATING...' : 'CREATE INVOICE'}
+            <Save className="w-4 h-4" />
+            {isCreatingInvoice ? 'SAVING...' : 'SAVE AS INVOICE'}
           </ActionButton>
         )}
         {canSendToGC && (
