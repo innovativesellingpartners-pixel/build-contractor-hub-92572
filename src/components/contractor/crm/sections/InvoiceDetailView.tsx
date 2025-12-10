@@ -1,0 +1,416 @@
+import { useState, useEffect } from 'react';
+import { format } from 'date-fns';
+import { FileText, Send, Download, ArrowLeft, Mail, ExternalLink, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { Invoice, useInvoices } from '@/hooks/useInvoices';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  BlueBackground,
+  SectionHeader,
+  InfoCard,
+  InfoRow,
+  ActionButton,
+  DetailHeader,
+  StatusBadge,
+  ActionButtonRow,
+  MoneyDisplay,
+} from './ProvenJobsTheme';
+
+interface InvoiceDetailViewProps {
+  invoice: Invoice;
+  onClose: () => void;
+  onSectionChange?: (section: string) => void;
+}
+
+interface JobData {
+  id: string;
+  name: string;
+  job_number?: string;
+  address?: string;
+}
+
+interface CustomerData {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+}
+
+interface EstimateData {
+  id: string;
+  title: string;
+  estimate_number?: string;
+}
+
+export function InvoiceDetailView({ invoice, onClose, onSectionChange }: InvoiceDetailViewProps) {
+  const { updateInvoice } = useInvoices();
+  const [job, setJob] = useState<JobData | null>(null);
+  const [customer, setCustomer] = useState<CustomerData | null>(null);
+  const [sourceEstimate, setSourceEstimate] = useState<EstimateData | null>(null);
+  const [sending, setSending] = useState(false);
+  const [showSendDialog, setShowSendDialog] = useState(false);
+  const [sendData, setSendData] = useState({
+    recipientEmail: '',
+    recipientName: '',
+    subject: '',
+    body: '',
+  });
+
+  useEffect(() => {
+    const fetchRelatedData = async () => {
+      // Fetch job
+      if (invoice.job_id) {
+        const { data: jobData } = await supabase
+          .from('jobs')
+          .select('id, name, job_number, address')
+          .eq('id', invoice.job_id)
+          .single();
+        if (jobData) setJob(jobData);
+      }
+
+      // Fetch customer
+      if (invoice.customer_id) {
+        const { data: customerData } = await supabase
+          .from('customers')
+          .select('id, name, email, phone')
+          .eq('id', invoice.customer_id)
+          .single();
+        if (customerData) setCustomer(customerData);
+      }
+
+      // Check if this invoice was created from an estimate (by matching job_id)
+      if (invoice.job_id) {
+        const { data: estimateData } = await supabase
+          .from('estimates')
+          .select('id, title, estimate_number')
+          .eq('job_id', invoice.job_id)
+          .single();
+        if (estimateData) setSourceEstimate(estimateData);
+      }
+    };
+
+    fetchRelatedData();
+  }, [invoice]);
+
+  const handleSendInvoice = async () => {
+    if (!sendData.recipientEmail) {
+      toast.error('Recipient email is required');
+      return;
+    }
+
+    setSending(true);
+    try {
+      const { error } = await supabase.functions.invoke('send-invoice-email', {
+        body: {
+          invoiceId: invoice.id,
+          recipientEmail: sendData.recipientEmail,
+          recipientName: sendData.recipientName || customer?.name,
+        }
+      });
+
+      if (error) throw error;
+
+      toast.success(`Invoice sent to ${sendData.recipientEmail}`);
+      setShowSendDialog(false);
+      
+      // Refresh to show updated status
+      window.location.reload();
+    } catch (error: any) {
+      toast.error(`Failed to send invoice: ${error.message}`);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleDownload = () => {
+    // TODO: Implement PDF download
+    toast.info('PDF download coming soon');
+  };
+
+  const openSendDialog = () => {
+    setSendData({
+      recipientEmail: customer?.email || '',
+      recipientName: customer?.name || '',
+      subject: `Invoice ${invoice.invoice_number} for ${job?.name || 'your project'}`,
+      body: `Please find attached the invoice for your project. Contact us with any questions.`,
+    });
+    setShowSendDialog(true);
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'draft': return 'bg-slate-100 text-slate-700';
+      case 'sent': return 'bg-blue-100 text-blue-700';
+      case 'viewed': return 'bg-purple-100 text-purple-700';
+      case 'partial': return 'bg-amber-100 text-amber-700';
+      case 'paid': return 'bg-green-100 text-green-700';
+      case 'overdue': return 'bg-red-100 text-red-700';
+      case 'void': return 'bg-gray-100 text-gray-500';
+      default: return 'bg-muted text-muted-foreground';
+    }
+  };
+
+  const formatCurrency = (amount: number | null) => {
+    return `$${(amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  };
+
+  // Parse line items
+  const lineItems = (invoice.line_items as any[]) || [];
+
+  return (
+    <BlueBackground className="min-h-full">
+      {/* Header */}
+      <DetailHeader
+        title={invoice.invoice_number || 'Invoice'}
+        subtitle={job?.name || undefined}
+        onBack={onClose}
+        rightContent={
+          <Badge className={getStatusColor(invoice.status)}>
+            {invoice.status.toUpperCase()}
+          </Badge>
+        }
+      />
+
+      {/* Action Buttons */}
+      <ActionButtonRow className="flex-wrap">
+        <ActionButton 
+          variant="success" 
+          onClick={openSendDialog}
+          className="flex items-center gap-2"
+        >
+          <Send className="w-4 h-4" />
+          {invoice.status === 'sent' ? 'RESEND' : 'SEND TO GC'}
+        </ActionButton>
+        <ActionButton 
+          variant="secondary" 
+          onClick={handleDownload}
+          className="flex items-center gap-2"
+        >
+          <Download className="w-4 h-4" />
+          DOWNLOAD
+        </ActionButton>
+        {sourceEstimate && (
+          <ActionButton 
+            variant="muted" 
+            onClick={() => onSectionChange?.('estimates')}
+            className="flex items-center gap-2"
+          >
+            <ExternalLink className="w-4 h-4" />
+            VIEW ESTIMATE
+          </ActionButton>
+        )}
+      </ActionButtonRow>
+
+      {/* Content */}
+      <div className="space-y-0">
+        {/* Invoice Information */}
+        <SectionHeader>INVOICE DETAILS</SectionHeader>
+        <InfoCard className="rounded-none">
+          <InfoRow label="Invoice #" value={invoice.invoice_number} />
+          <InfoRow 
+            label="Status" 
+            value={
+              <Badge className={getStatusColor(invoice.status)}>
+                {invoice.status.toUpperCase()}
+              </Badge>
+            } 
+          />
+          <InfoRow 
+            label="Issue Date" 
+            value={format(new Date(invoice.issue_date), 'MMM d, yyyy')} 
+          />
+          {invoice.due_date && (
+            <InfoRow 
+              label="Due Date" 
+              value={format(new Date(invoice.due_date), 'MMM d, yyyy')} 
+            />
+          )}
+        </InfoCard>
+
+        {/* GC/Customer Information */}
+        {customer && (
+          <>
+            <SectionHeader>GC / CUSTOMER</SectionHeader>
+            <InfoCard className="rounded-none">
+              <InfoRow label="Name" value={customer.name} />
+              {customer.email && (
+                <InfoRow 
+                  label="Email" 
+                  value={
+                    <a href={`mailto:${customer.email}`} className="text-sky-600 underline">
+                      {customer.email}
+                    </a>
+                  } 
+                />
+              )}
+              {customer.phone && (
+                <InfoRow 
+                  label="Phone" 
+                  value={
+                    <a href={`tel:${customer.phone}`} className="text-sky-600 underline">
+                      {customer.phone}
+                    </a>
+                  } 
+                />
+              )}
+            </InfoCard>
+          </>
+        )}
+
+        {/* Job Information */}
+        {job && (
+          <>
+            <SectionHeader>JOB INFORMATION</SectionHeader>
+            <InfoCard className="rounded-none">
+              <InfoRow label="Job Name" value={job.name} />
+              {job.job_number && <InfoRow label="Job #" value={job.job_number} />}
+              {job.address && <InfoRow label="Address" value={job.address} />}
+            </InfoCard>
+          </>
+        )}
+
+        {/* Financial Summary */}
+        <SectionHeader>FINANCIAL SUMMARY</SectionHeader>
+        <InfoCard className="rounded-none">
+          <div className="grid grid-cols-2 gap-4 p-4">
+            <MoneyDisplay amount={invoice.amount_due} label="Amount Due" size="lg" />
+            <MoneyDisplay amount={invoice.amount_paid} label="Amount Paid" />
+            <MoneyDisplay 
+              amount={(invoice.amount_due || 0) - (invoice.amount_paid || 0)} 
+              label="Balance Due" 
+              size="lg" 
+            />
+          </div>
+        </InfoCard>
+
+        {/* Line Items */}
+        {lineItems.length > 0 && (
+          <>
+            <SectionHeader>LINE ITEMS ({lineItems.length})</SectionHeader>
+            <InfoCard className="rounded-none">
+              {lineItems.map((item, index) => (
+                <div key={index} className="px-4 py-3 border-b border-sky-50 last:border-b-0">
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1 min-w-0 pr-4">
+                      <p className="font-medium text-slate-800 text-sm">{item.description || item.name}</p>
+                      {item.item_code && (
+                        <p className="text-xs text-slate-500">{item.item_code}</p>
+                      )}
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <p className="font-semibold text-sky-600 text-sm">
+                        ${((item.quantity || 1) * (item.unit_price || 0)).toFixed(2)}
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        {item.quantity || 1} × ${(item.unit_price || 0).toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </InfoCard>
+          </>
+        )}
+
+        {/* Notes */}
+        {invoice.notes && (
+          <>
+            <SectionHeader>NOTES</SectionHeader>
+            <InfoCard className="rounded-none">
+              <div className="p-4">
+                <p className="text-sm text-slate-700 whitespace-pre-wrap">{invoice.notes}</p>
+              </div>
+            </InfoCard>
+          </>
+        )}
+
+        {/* Source Estimate Link */}
+        {sourceEstimate && (
+          <>
+            <SectionHeader>SOURCE ESTIMATE</SectionHeader>
+            <InfoCard className="rounded-none">
+              <InfoRow 
+                label="Estimate" 
+                value={
+                  <span 
+                    className="text-sky-600 cursor-pointer"
+                    onClick={() => onSectionChange?.('estimates')}
+                  >
+                    {sourceEstimate.estimate_number || sourceEstimate.title} →
+                  </span>
+                }
+                isClickable
+                onClick={() => onSectionChange?.('estimates')}
+              />
+            </InfoCard>
+          </>
+        )}
+      </div>
+
+      {/* Send Invoice Dialog */}
+      <Dialog open={showSendDialog} onOpenChange={setShowSendDialog}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Mail className="h-5 w-5" />
+              Send Invoice to GC
+            </DialogTitle>
+            <DialogDescription>
+              Send invoice {invoice.invoice_number} via email
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="recipientEmail">Recipient Email *</Label>
+              <Input
+                id="recipientEmail"
+                type="email"
+                placeholder="gc@example.com"
+                value={sendData.recipientEmail}
+                onChange={(e) => setSendData(prev => ({ ...prev, recipientEmail: e.target.value }))}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="recipientName">Recipient Name</Label>
+              <Input
+                id="recipientName"
+                placeholder="GC Name"
+                value={sendData.recipientName}
+                onChange={(e) => setSendData(prev => ({ ...prev, recipientName: e.target.value }))}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowSendDialog(false)} disabled={sending}>
+              Cancel
+            </Button>
+            <Button onClick={handleSendInvoice} disabled={sending || !sendData.recipientEmail}>
+              {sending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <Send className="mr-2 h-4 w-4" />
+                  Send Invoice
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </BlueBackground>
+  );
+}
