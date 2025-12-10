@@ -3,14 +3,16 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { Search, FileText, Tag, Trash2, ArrowLeft, Plus } from 'lucide-react';
+import { Search, FileText, Tag, Trash2, Plus, Lock, Globe } from 'lucide-react';
 import { useEstimateTemplates, TRADES, Trade, EstimateTemplate } from '@/hooks/useEstimateTemplates';
 import { MobileOptimizedWrapper, MobileStack } from '../sections/MobileOptimizedWrapper';
 import { HorizontalRowCard, RowAvatar, RowContent, RowTitleLine, RowMetaLine, RowActions } from '../sections/HorizontalRowCard';
 import { useEstimates, EstimateLineItem } from '@/hooks/useEstimates';
+import { useJobs } from '@/hooks/useJobs';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { CreateTemplateDialog } from './CreateTemplateDialog';
@@ -22,7 +24,8 @@ interface TemplatesSectionProps {
 
 export function TemplatesSection({ onBack, onAddToEstimate }: TemplatesSectionProps) {
   const { templates, isLoading, deleteTemplate, filterTemplates } = useEstimateTemplates();
-  const { estimates, createEstimateAsync } = useEstimates();
+  const { createEstimateAsync } = useEstimates();
+  const { jobs } = useJobs();
   const { user } = useAuth();
   
   const [searchQuery, setSearchQuery] = useState('');
@@ -32,7 +35,7 @@ export function TemplatesSection({ onBack, onAddToEstimate }: TemplatesSectionPr
   // For add to estimate dialog
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<EstimateTemplate | null>(null);
-  const [targetEstimateId, setTargetEstimateId] = useState<string>('new');
+  const [selectedJobId, setSelectedJobId] = useState<string>('');
   
   // For delete confirmation
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -56,30 +59,35 @@ export function TemplatesSection({ onBack, onAddToEstimate }: TemplatesSectionPr
 
   const handleConfirmAdd = async () => {
     if (!selectedTemplate) return;
+    
+    // Require job selection
+    if (!selectedJobId) {
+      toast.error('Please select a job to link this estimate to');
+      return;
+    }
 
-    if (targetEstimateId === 'new') {
-      // Create new estimate with template line items
-      try {
-        await createEstimateAsync({
-          title: `New Estimate from ${selectedTemplate.name}`,
-          status: 'draft',
-          total_amount: 0,
-          line_items: selectedTemplate.line_items,
-        });
-        toast.success('New estimate created with template');
-        onBack();
-      } catch (error) {
-        console.error('Error creating estimate:', error);
-      }
-    } else if (onAddToEstimate) {
-      // Add to existing estimate
-      onAddToEstimate(selectedTemplate.line_items, targetEstimateId);
-      toast.success('Template added to estimate');
+    const selectedJob = jobs.find(j => j.id === selectedJobId);
+    
+    // Create new estimate with template line items, linked to the job
+    try {
+      await createEstimateAsync({
+        title: `${selectedTemplate.name} - ${selectedJob?.name || 'New Estimate'}`,
+        status: 'draft',
+        total_amount: 0,
+        line_items: selectedTemplate.line_items,
+        job_id: selectedJobId,
+        site_address: selectedJob?.address || '',
+        project_address: [selectedJob?.address, selectedJob?.city, selectedJob?.state, selectedJob?.zip_code].filter(Boolean).join(', '),
+      });
+      toast.success('New estimate created from template and linked to job');
+      onBack();
+    } catch (error) {
+      console.error('Error creating estimate:', error);
     }
     
     setAddDialogOpen(false);
     setSelectedTemplate(null);
-    setTargetEstimateId('new');
+    setSelectedJobId('');
   };
 
   const handleDeleteClick = (template: EstimateTemplate, e: React.MouseEvent) => {
@@ -96,7 +104,8 @@ export function TemplatesSection({ onBack, onAddToEstimate }: TemplatesSectionPr
     }
   };
 
-  const draftEstimates = estimates?.filter(e => e.status === 'draft') || [];
+  // Get active jobs for linking
+  const activeJobs = jobs.filter(j => j.status !== 'completed' && j.status !== 'cancelled');
 
   return (
     <MobileOptimizedWrapper
@@ -180,8 +189,16 @@ export function TemplatesSection({ onBack, onAddToEstimate }: TemplatesSectionPr
                   <Badge variant="outline" className="text-xs">
                     {template.line_items?.length || 0} items
                   </Badge>
-                  {template.visibility === 'account' && (
-                    <Badge variant="secondary" className="text-xs">Shared</Badge>
+                {template.visibility === 'account' ? (
+                    <Badge variant="secondary" className="text-xs flex items-center gap-1">
+                      <Globe className="h-3 w-3" />
+                      Public
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="text-xs flex items-center gap-1">
+                      <Lock className="h-3 w-3" />
+                      Private
+                    </Badge>
                   )}
                 </RowMetaLine>
                 {template.tags && template.tags.length > 0 && (
@@ -228,36 +245,55 @@ export function TemplatesSection({ onBack, onAddToEstimate }: TemplatesSectionPr
         </Card>
       )}
 
-      {/* Add to Estimate Dialog */}
+      {/* Add Template to Job Dialog */}
       <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add Template to Estimate</DialogTitle>
+            <DialogTitle>Use Template: {selectedTemplate?.name}</DialogTitle>
             <DialogDescription>
-              Choose an existing estimate or create a new one with this template.
+              Select a job to create a new estimate from this template. The original template will remain unchanged.
             </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-4 py-4">
-            <Select value={targetEstimateId} onValueChange={setTargetEstimateId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select estimate" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="new">Create New Estimate</SelectItem>
-                {draftEstimates.map(estimate => (
-                  <SelectItem key={estimate.id} value={estimate.id!}>
-                    {estimate.title} ({estimate.status})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="space-y-2">
+              <Label htmlFor="job-select">Select Job *</Label>
+              <Select value={selectedJobId} onValueChange={setSelectedJobId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a job to link..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {activeJobs.length === 0 ? (
+                    <SelectItem value="none" disabled>No active jobs available</SelectItem>
+                  ) : (
+                    activeJobs.map(job => (
+                      <SelectItem key={job.id} value={job.id}>
+                        {job.job_number ? `${job.job_number} - ` : ''}{job.name}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                A new estimate will be created and linked to this job.
+              </p>
+            </div>
+            
+            {selectedTemplate && (
+              <div className="bg-muted rounded-lg p-3 space-y-1">
+                <p className="text-sm font-medium">Template Details:</p>
+                <p className="text-xs text-muted-foreground">{selectedTemplate.line_items?.length || 0} line items</p>
+                <p className="text-xs text-muted-foreground">Trade: {selectedTemplate.trade}</p>
+              </div>
+            )}
           </div>
           
           <DialogFooter>
-            <Button variant="outline" onClick={() => setAddDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleConfirmAdd}>
-              {targetEstimateId === 'new' ? 'Create Estimate' : 'Add to Estimate'}
+            <Button variant="outline" onClick={() => { setAddDialogOpen(false); setSelectedJobId(''); }}>
+              Cancel
+            </Button>
+            <Button onClick={handleConfirmAdd} disabled={!selectedJobId}>
+              Create Estimate
             </Button>
           </DialogFooter>
         </DialogContent>
