@@ -172,9 +172,22 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
   const contractorSigRef = useRef<SignatureCanvas>(null);
   const clientSigRef = useRef<SignatureCanvas>(null);
 
+  // Normalize line items to ensure all required fields exist
+  const normalizeLineItems = (items: any[]): EstimateLineItem[] => {
+    return items.map((item: any) => ({
+      category: item.category || 'Materials',
+      item_description: item.item_description || item.description || item.label || '',
+      quantity: item.quantity ?? 0,
+      unit_type: item.unit_type || item.unit || '',
+      unit_cost: item.unit_cost ?? item.unitPrice ?? 0,
+      line_total: item.line_total ?? item.totalPrice ?? ((item.quantity ?? 0) * (item.unit_cost ?? item.unitPrice ?? 0)),
+      included: item.included !== false,
+    }));
+  };
+
   // Handler for adding template line items
   const handleAddTemplateItems = (templateLineItems: EstimateLineItem[]) => {
-    setLineItems([...lineItems, ...templateLineItems]);
+    setLineItems([...lineItems, ...normalizeLineItems(templateLineItems)]);
   };
   // Load profile defaults on mount
   useEffect(() => {
@@ -254,16 +267,7 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
 
       // Load line items with normalization to handle template format differences
       if (initialData.line_items && initialData.line_items.length > 0) {
-        const normalizedItems = initialData.line_items.map((item: any) => ({
-          category: item.category || 'Materials',
-          item_description: item.item_description || item.description || item.label || '',
-          quantity: item.quantity ?? 0,
-          unit_type: item.unit_type || item.unit || '',
-          unit_cost: item.unit_cost ?? item.unitPrice ?? 0,
-          line_total: item.line_total ?? item.totalPrice ?? ((item.quantity ?? 0) * (item.unit_cost ?? item.unitPrice ?? 0)),
-          included: item.included !== false,
-        }));
-        setLineItems(normalizedItems);
+        setLineItems(normalizeLineItems(initialData.line_items));
       } else {
         // Reset to default empty line item if no line items exist
         setLineItems([{
@@ -368,27 +372,27 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
   const calculateTotals = () => {
     const materialsTotal = lineItems
       .filter(item => item.category === 'Materials' && item.included)
-      .reduce((sum, item) => sum + item.line_total, 0);
+      .reduce((sum, item) => sum + (item.line_total ?? 0), 0);
     
     const laborTotal = lineItems
       .filter(item => item.category === 'Labor' && item.included)
-      .reduce((sum, item) => sum + item.line_total, 0);
+      .reduce((sum, item) => sum + (item.line_total ?? 0), 0);
     
     const equipmentTotal = lineItems
       .filter(item => item.category === 'Equipment' && item.included)
-      .reduce((sum, item) => sum + item.line_total, 0);
+      .reduce((sum, item) => sum + (item.line_total ?? 0), 0);
     
     const subcontractorTotal = lineItems
       .filter(item => item.category === 'Subcontractor' && item.included)
-      .reduce((sum, item) => sum + item.line_total, 0);
+      .reduce((sum, item) => sum + (item.line_total ?? 0), 0);
     
     const overheadTotal = lineItems
       .filter(item => item.category === 'Overhead' && item.included)
-      .reduce((sum, item) => sum + item.line_total, 0);
+      .reduce((sum, item) => sum + (item.line_total ?? 0), 0);
     
     const contingencyTotal = lineItems
       .filter(item => item.category === 'Contingency' && item.included)
-      .reduce((sum, item) => sum + item.line_total, 0);
+      .reduce((sum, item) => sum + (item.line_total ?? 0), 0);
 
     const subtotal = materialsTotal + laborTotal + equipmentTotal + 
                      subcontractorTotal + overheadTotal + contingencyTotal;
@@ -731,7 +735,7 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
                                         setTemplateComboOpen(false);
                                         // Apply template line items
                                         if (template.line_items && template.line_items.length > 0) {
-                                          setLineItems([...lineItems, ...template.line_items]);
+                                          setLineItems([...lineItems, ...normalizeLineItems(template.line_items)]);
                                           toast.success(`Template "${template.name}" applied with ${template.line_items.length} line items`);
                                         }
                                         // Set trade type from template if not already set or if "Any"
