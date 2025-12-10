@@ -1,8 +1,7 @@
 import { ReactNode } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Home } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { BackNavigation } from '../BackNavigation';
 
 interface MobileOptimizedWrapperProps {
   children: ReactNode;
@@ -24,16 +23,19 @@ export function MobileOptimizedWrapper({
       {title && (
         <Card className="mb-4 overflow-hidden">
           <CardHeader className="pb-3">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <CardTitle className="text-xl sm:text-2xl truncate">{title}</CardTitle>
-              <div className="flex gap-2 flex-shrink-0">
-                {onBackClick && (
-                  <Button variant="outline" size="sm" onClick={onBackClick}>
-                    <Home className="h-4 w-4 mr-2" />
-                    <span className="hidden sm:inline">Contractor Hub</span>
-                  </Button>
-                )}
-                {actions}
+            <div className="flex flex-col gap-3">
+              {/* Back navigation row */}
+              <BackNavigation 
+                onBackToDashboard={onBackClick} 
+                showBackButton={true}
+              />
+              
+              {/* Title and actions row */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <CardTitle className="text-xl sm:text-2xl truncate">{title}</CardTitle>
+                <div className="flex gap-2 flex-shrink-0">
+                  {actions}
+                </div>
               </div>
             </div>
           </CardHeader>
