@@ -252,9 +252,18 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
         setSelectedJobId(initialData.job_id);
       }
 
-      // Load line items
+      // Load line items with normalization to handle template format differences
       if (initialData.line_items && initialData.line_items.length > 0) {
-        setLineItems(initialData.line_items);
+        const normalizedItems = initialData.line_items.map((item: any) => ({
+          category: item.category || 'Materials',
+          item_description: item.item_description || item.description || item.label || '',
+          quantity: item.quantity ?? 0,
+          unit_type: item.unit_type || item.unit || '',
+          unit_cost: item.unit_cost ?? item.unitPrice ?? 0,
+          line_total: item.line_total ?? item.totalPrice ?? ((item.quantity ?? 0) * (item.unit_cost ?? item.unitPrice ?? 0)),
+          included: item.included !== false,
+        }));
+        setLineItems(normalizedItems);
       } else {
         // Reset to default empty line item if no line items exist
         setLineItems([{
