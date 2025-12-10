@@ -254,6 +254,12 @@ export function Dashboard() {
                       <CRMSidebarNav 
                         onSectionChange={(section) => {
                           sessionStorage.setItem('ct1CrmActiveSection', section);
+                          // Also set the landing state for dashboard
+                          if (section === 'dashboard') {
+                            sessionStorage.setItem('ct1CrmShowLanding', 'true');
+                          } else {
+                            sessionStorage.setItem('ct1CrmShowLanding', 'false');
+                          }
                           // Force re-render of CRM by briefly switching away and back
                           setActiveSection('training');
                           setTimeout(() => setActiveSection('leads'), 0);
