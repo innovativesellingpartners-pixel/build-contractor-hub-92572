@@ -4,10 +4,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { Send, Users, Briefcase, Eye, Copy, FileText, Receipt } from 'lucide-react';
+import { Send, Users, Briefcase, Eye, Copy, FileText, Receipt, Building2 } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { CustomerDetailViewBlue } from './CustomerDetailViewBlue';
 import { Customer } from '@/hooks/useCustomers';
+import { SendToGCDialog } from '../SendToGCDialog';
 import {
   BlueBackground,
   SectionHeader,
@@ -43,6 +44,7 @@ export function EstimateDetailViewBlue({
   const [isSendingInvoice, setIsSendingInvoice] = useState(false);
   const [customerDialogOpen, setCustomerDialogOpen] = useState(false);
   const [linkedCustomer, setLinkedCustomer] = useState<Customer | null>(null);
+  const [showSendToGCDialog, setShowSendToGCDialog] = useState(false);
 
   // Fetch linked customer data
   useEffect(() => {
@@ -286,6 +288,9 @@ export function EstimateDetailViewBlue({
 
   const canCreateInvoice = estimate.job_id && (estimate.status === 'accepted' || estimate.status === 'sold' || estimate.signed_at);
   const canSendInvoice = estimate.client_email && (estimate.status === 'accepted' || estimate.status === 'sold' || estimate.signed_at);
+  // Show "Send to GC as Invoice" when estimate is signed AND has payment
+  const canSendToGC = (estimate.signed_at || estimate.status === 'accepted' || estimate.status === 'sold') && 
+                      (estimate.payment_amount && estimate.payment_amount > 0);
 
   return (
     <BlueBackground className="min-h-full">
@@ -353,6 +358,16 @@ export function EstimateDetailViewBlue({
           >
             <Receipt className="w-4 h-4" />
             {isSendingInvoice ? 'SENDING...' : 'SEND INVOICE'}
+          </ActionButton>
+        )}
+        {canSendToGC && (
+          <ActionButton 
+            variant="primary" 
+            onClick={() => setShowSendToGCDialog(true)}
+            className="flex items-center gap-2"
+          >
+            <Building2 className="w-4 h-4" />
+            SEND TO GC AS INVOICE
           </ActionButton>
         )}
         {onDuplicate && (

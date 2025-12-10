@@ -1,0 +1,324 @@
+import { useState, useEffect } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Loader2, Send, FileText, UserPlus } from 'lucide-react';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { Estimate } from '@/hooks/useEstimates';
+import { useCustomers, Customer } from '@/hooks/useCustomers';
+
+interface SendToGCDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  estimate: Estimate;
+  onSuccess?: (invoiceId: string) => void;
+}
+
+export function SendToGCDialog({ open, onOpenChange, estimate, onSuccess }: SendToGCDialogProps) {
+  const { customers } = useCustomers();
+  const [step, setStep] = useState<'select-gc' | 'confirm'>('select-gc');
+  const [selectedGCId, setSelectedGCId] = useState<string>('');
+  const [gcEmail, setGCEmail] = useState('');
+  const [gcName, setGCName] = useState('');
+  const [sendViaEmail, setSendViaEmail] = useState(true);
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  // Reset state when dialog opens
+  useEffect(() => {
+    if (open) {
+      setStep('select-gc');
+      setSelectedGCId('');
+      setGCEmail('');
+      setGCName('');
+      setSendViaEmail(true);
+    }
+  }, [open]);
+
+  // Update email/name when GC is selected
+  useEffect(() => {
+    if (selectedGCId && selectedGCId !== 'new') {
+      const gc = customers?.find(c => c.id === selectedGCId);
+      if (gc) {
+        setGCEmail(gc.email || '');
+        setGCName(gc.name || '');
+      }
+    }
+  }, [selectedGCId, customers]);
+
+  const handleSelectGC = () => {
+    if (!selectedGCId) {
+      toast.error('Please select a GC or enter details for a new one');
+      return;
+    }
+    
+    if (selectedGCId === 'new' && !gcEmail) {
+      toast.error('Email is required for new GC');
+      return;
+    }
+    
+    setStep('confirm');
+  };
+
+  const handleGenerateInvoice = async () => {
+    setIsGenerating(true);
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      let jobId = estimate.job_id;
+      let customerId = estimate.customer_id;
+      let gcContactId = selectedGCId !== 'new' ? selectedGCId : null;
+
+      // Step 1: Create customer if needed
+      if (!customerId) {
+        const { data: newCustomer, error: customerError } = await supabase
+          .from('customers')
+          .insert([{
+            user_id: user.id,
+            name: estimate.client_name || 'Unknown Customer',
+            email: estimate.client_email || null,
+            phone: estimate.client_phone || null,
+            address: estimate.site_address || estimate.client_address || null,
+            customer_type: 'residential',
+            estimate_id: estimate.id,
+          }])
+          .select()
+          .single();
+
+        if (customerError) throw customerError;
+        customerId = newCustomer.id;
+
+        await supabase
+          .from('estimates')
+          .update({ customer_id: customerId, status: 'accepted' })
+          .eq('id', estimate.id);
+      }
+
+      // Step 2: Create job if needed
+      if (!jobId) {
+        const { data, error } = await supabase.functions.invoke('convert-estimate-to-job', {
+          body: { estimateId: estimate.id }
+        });
+        if (error) throw error;
+        jobId = data.jobId;
+      }
+
+      // Step 3: Create new GC contact if entering manually
+      if (selectedGCId === 'new' && gcEmail) {
+        const { data: newGC, error: gcError } = await supabase
+          .from('customers')
+          .insert([{
+            user_id: user.id,
+            name: gcName || 'GC',
+            email: gcEmail,
+            customer_type: 'commercial', // GC is typically commercial
+            notes: 'General Contractor',
+          }])
+          .select()
+          .single();
+
+        if (gcError) throw gcError;
+        gcContactId = newGC.id;
+      }
+
+      // Step 4: Create invoice
+      const lineItems = estimate.line_items as any[] || [];
+      const dueDate = new Date();
+      dueDate.setDate(dueDate.getDate() + 30);
+
+      const { data: invoice, error: invoiceError } = await supabase
+        .from('invoices')
+        .insert([{
+          user_id: user.id,
+          job_id: jobId,
+          customer_id: gcContactId || customerId,
+          amount_due: estimate.grand_total || estimate.total_amount || 0,
+          amount_paid: 0,
+          balance_due: estimate.grand_total || estimate.total_amount || 0,
+          line_items: lineItems,
+          status: sendViaEmail ? 'sent' : 'draft',
+          issue_date: new Date().toISOString().split('T')[0],
+          due_date: dueDate.toISOString().split('T')[0],
+          notes: `Invoice for estimate: ${estimate.title}${gcName ? ` | GC: ${gcName}` : ''}`,
+        }])
+        .select()
+        .single();
+
+      if (invoiceError) throw invoiceError;
+
+      // Step 5: Send email if requested
+      if (sendViaEmail && gcEmail) {
+        const { error: emailError } = await supabase.functions.invoke('send-invoice-email', {
+          body: {
+            invoiceId: invoice.id,
+            recipientEmail: gcEmail,
+            recipientName: gcName,
+          }
+        });
+
+        if (emailError) {
+          console.warn('Invoice created but email failed:', emailError);
+          toast.success(`Invoice ${invoice.invoice_number} created. Email may have failed to send.`);
+        } else {
+          toast.success(`Invoice ${invoice.invoice_number} sent to ${gcEmail}`);
+        }
+      } else {
+        toast.success(`Invoice ${invoice.invoice_number} created successfully`);
+      }
+
+      onOpenChange(false);
+      onSuccess?.(invoice.id);
+    } catch (error: any) {
+      console.error('Error generating invoice:', error);
+      toast.error(`Failed to generate invoice: ${error.message}`);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[500px]">
+        {step === 'select-gc' ? (
+          <>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Send Estimate as Invoice to GC
+              </DialogTitle>
+              <DialogDescription>
+                Select a General Contractor to send this invoice to
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label>Select GC</Label>
+                <Select value={selectedGCId} onValueChange={setSelectedGCId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose a GC or add new..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="new">
+                      <div className="flex items-center gap-2">
+                        <UserPlus className="h-4 w-4" />
+                        Add New GC
+                      </div>
+                    </SelectItem>
+                    {customers?.map((customer) => (
+                      <SelectItem key={customer.id} value={customer.id}>
+                        {customer.name} {customer.email && `(${customer.email})`}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {selectedGCId === 'new' && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="gcName">GC Name</Label>
+                    <Input
+                      id="gcName"
+                      placeholder="General Contractor Name"
+                      value={gcName}
+                      onChange={(e) => setGCName(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="gcEmail">GC Email *</Label>
+                    <Input
+                      id="gcEmail"
+                      type="email"
+                      placeholder="gc@example.com"
+                      value={gcEmail}
+                      onChange={(e) => setGCEmail(e.target.value)}
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => onOpenChange(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleSelectGC} disabled={!selectedGCId}>
+                Continue
+              </Button>
+            </DialogFooter>
+          </>
+        ) : (
+          <>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Send className="h-5 w-5" />
+                Send Estimate as Invoice to GC
+              </DialogTitle>
+              <DialogDescription>
+                Confirm invoice details before sending
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="confirmEmail">Recipient Email</Label>
+                <Input
+                  id="confirmEmail"
+                  type="email"
+                  value={gcEmail}
+                  onChange={(e) => setGCEmail(e.target.value)}
+                />
+              </div>
+
+              <div className="rounded-lg bg-muted p-4 space-y-2">
+                <p className="text-sm font-medium">Invoice Summary</p>
+                <p className="text-sm text-muted-foreground">
+                  Estimate: {estimate.estimate_number || estimate.title}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Total: ${(estimate.grand_total || estimate.total_amount || 0).toFixed(2)}
+                </p>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="sendViaEmail"
+                  checked={sendViaEmail}
+                  onCheckedChange={(checked) => setSendViaEmail(checked === true)}
+                />
+                <Label htmlFor="sendViaEmail" className="text-sm cursor-pointer">
+                  Send via email (opens email with invoice attached)
+                </Label>
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setStep('select-gc')} disabled={isGenerating}>
+                Back
+              </Button>
+              <Button onClick={handleGenerateInvoice} disabled={isGenerating}>
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <FileText className="mr-2 h-4 w-4" />
+                    Generate Invoice
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}

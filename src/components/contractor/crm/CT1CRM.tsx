@@ -14,7 +14,8 @@ import {
   DollarSign,
   Link as LinkIcon,
   ArrowLeft,
-  CreditCard
+  CreditCard,
+  Receipt
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -31,6 +32,7 @@ import EmailsSection from './sections/EmailsSection';
 import EstimatesSection from './sections/EstimatesSection';
 import FinancialsSection from './sections/FinancialsSection';
 import MoreSection from './sections/MoreSection';
+import InvoicesSection from './sections/InvoicesSection';
 
 import ct1Logo from '@/assets/ct1-logo-main.png';
 import Reporting from '@/pages/Reporting';
@@ -38,7 +40,7 @@ import Accounting from '@/pages/Accounting';
 import { MobileLandingPage } from './MobileLandingPage';
 import { PaymentsBankingSection } from './sections/PaymentsBankingSection';
 
-type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calendar' | 'emails' | 'estimates' | 'reporting' | 'financials' | 'more' | 'payments' | 'accounting';
+type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calendar' | 'emails' | 'estimates' | 'reporting' | 'financials' | 'more' | 'payments' | 'accounting' | 'invoices';
 
 interface CT1CRMProps {
   onOpenPocketbot?: () => void;
@@ -50,6 +52,7 @@ const navItems = [
   { id: 'dashboard' as Section, label: 'Dashboard', icon: LayoutDashboard },
   { id: 'leads' as Section, label: 'Leads', icon: ClipboardList },
   { id: 'estimates' as Section, label: 'Estimates', icon: FileText },
+  { id: 'invoices' as Section, label: 'Invoices', icon: Receipt },
   { id: 'jobs' as Section, label: 'Jobs', icon: Briefcase },
   { id: 'calls' as Section, label: 'Calls', icon: Phone },
   { id: 'emails' as Section, label: 'Emails', icon: Mail },
@@ -67,7 +70,7 @@ const navItems = [
     // Check for URL param from OAuth callback
     const params = new URLSearchParams(window.location.search);
     const crmSection = params.get('crm_section') as Section | null;
-    if (crmSection && ['dashboard', 'leads', 'jobs', 'customers', 'calls', 'calendar', 'emails', 'estimates', 'reporting', 'financials', 'more', 'payments', 'accounting'].includes(crmSection)) {
+    if (crmSection && ['dashboard', 'leads', 'jobs', 'customers', 'calls', 'calendar', 'emails', 'estimates', 'reporting', 'financials', 'more', 'payments', 'accounting', 'invoices'].includes(crmSection)) {
       sessionStorage.setItem('ct1CrmActiveSection', crmSection);
       // Clean URL param
       params.delete('crm_section');
@@ -145,6 +148,8 @@ const navItems = [
         return <EmailsSection onSectionChange={handleSectionChange} />;
       case 'estimates':
         return <EstimatesSection onSectionChange={handleSectionChange} />;
+      case 'invoices':
+        return <InvoicesSection onSectionChange={handleSectionChange} />;
       case 'financials':
         return <FinancialsSection onSectionChange={handleSectionChange} />;
       case 'reporting':
