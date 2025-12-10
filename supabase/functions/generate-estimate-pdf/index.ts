@@ -101,13 +101,18 @@ const handler = async (req: Request): Promise<Response> => {
     // Fetch contractor profile for branding
     const { data: profile } = await supabase
       .from("profiles")
-      .select("company_name, logo_url, phone, business_address, city, state, zip_code, contact_email")
-      .eq("user_id", estimate.user_id)
+      .select("company_name, contact_name, logo_url, phone, business_address, city, state, zip_code, business_email, website_url, license_number")
+      .eq("id", estimate.user_id)
       .single();
 
-    const companyName = profile?.company_name || "CT1 Constructeam";
+    console.log("Contractor profile for PDF:", profile);
+
+    const companyName = profile?.company_name || "Contractor";
+    const contactName = profile?.contact_name || "";
     const phone = profile?.phone || "";
-    const contactEmail = profile?.contact_email || "";
+    const businessEmail = profile?.business_email || "";
+    const websiteUrl = profile?.website_url || "";
+    const licenseNumber = profile?.license_number || "";
     const businessAddress = [profile?.business_address, profile?.city, profile?.state, profile?.zip_code]
       .filter(Boolean)
       .join(", ");
@@ -140,29 +145,53 @@ const handler = async (req: Request): Promise<Response> => {
     // ===== HEADER BAND =====
     page.drawRectangle({
       x: 0,
-      y: height - 100,
+      y: height - 120,
       width: width,
-      height: 100,
+      height: 120,
       color: primaryNavy,
     });
 
     // Company Name
     page.drawText(companyName.toUpperCase(), {
       x: margin,
-      y: height - 55,
-      size: 24,
+      y: height - 45,
+      size: 22,
       font: fontBold,
       color: white,
     });
 
-    // Professional Services tagline
-    page.drawText("PROFESSIONAL CONTRACTOR SERVICES", {
-      x: margin,
-      y: height - 75,
-      size: 9,
-      font: fontReg,
-      color: rgb(0.7, 0.7, 0.7),
-    });
+    // Contractor contact info line
+    const contactInfoParts = [];
+    if (phone) contactInfoParts.push(phone);
+    if (businessEmail) contactInfoParts.push(businessEmail);
+    if (websiteUrl) contactInfoParts.push(websiteUrl);
+    
+    const contactInfoLine = contactInfoParts.join("  |  ");
+    if (contactInfoLine) {
+      page.drawText(contactInfoLine.substring(0, 70), {
+        x: margin,
+        y: height - 62,
+        size: 8,
+        font: fontReg,
+        color: rgb(0.8, 0.8, 0.8),
+      });
+    }
+
+    // Address and license line
+    const addressLineParts = [];
+    if (businessAddress) addressLineParts.push(businessAddress);
+    if (licenseNumber) addressLineParts.push(`Lic# ${licenseNumber}`);
+    
+    const addressLine = addressLineParts.join("  |  ");
+    if (addressLine) {
+      page.drawText(addressLine.substring(0, 80), {
+        x: margin,
+        y: height - 76,
+        size: 8,
+        font: fontReg,
+        color: rgb(0.7, 0.7, 0.7),
+      });
+    }
 
     // ESTIMATE label (right side, with gold accent)
     const estimateLabel = "ESTIMATE";
@@ -181,7 +210,7 @@ const handler = async (req: Request): Promise<Response> => {
       color: primaryNavy,
     });
 
-    cursorY = height - 130;
+    cursorY = height - 150;
 
     // ===== ESTIMATE INFO BAR =====
     page.drawRectangle({
@@ -560,7 +589,7 @@ const handler = async (req: Request): Promise<Response> => {
     const footerParts = [];
     if (businessAddress) footerParts.push(businessAddress);
     if (phone) footerParts.push(phone);
-    if (contactEmail) footerParts.push(contactEmail);
+    if (businessEmail) footerParts.push(businessEmail);
     
     const footerText = footerParts.join("  |  ");
     page.drawText(footerText.substring(0, 100), {
