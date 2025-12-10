@@ -32,6 +32,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { useUserTier } from "@/hooks/useUserTier";
 import { useToast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { TrainingHub } from "@/components/TrainingHub";
 import { Marketplace } from "@/components/Marketplace";
 import CT1CRM from "@/components/contractor/crm/CT1CRM";
@@ -40,6 +41,8 @@ import { ProfileEditDialog } from "@/components/contractor/ProfileEditDialog";
 import { StarRating } from "@/components/contractor/StarRating";
 import { FloatingPocketbot } from "@/components/contractor/FloatingPocketbot";
 import { ContactSupport } from "@/components/ContactSupport";
+import { BottomNav } from "@/components/contractor/crm/BottomNav";
+import { BackNavigation } from "@/components/contractor/crm/BackNavigation";
 import ct1Logo from "@/assets/ct1-logo-main.png";
 
 import { VoiceAI } from "@/components/contractor/VoiceAI";
@@ -52,6 +55,7 @@ export function Dashboard() {
   const { isAdmin } = useAdminAuth();
   const { tierFeatures, hasFullAccess } = useUserTier();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   
   // Persist active section in sessionStorage
   const getInitialSection = (): ActiveSection => {
@@ -310,34 +314,58 @@ export function Dashboard() {
         <div className="flex-1 overflow-auto min-w-0">
           <div className="bg-card border border-border/50 rounded-xl shadow-md overflow-hidden">
             {activeSection === 'training' && (
-              <div className="p-3 md:p-4 lg:p-6 min-h-[400px] md:min-h-[600px]">
+              <div className="p-3 md:p-4 lg:p-6 min-h-[400px] md:min-h-[600px] pb-20">
+                <BackNavigation 
+                  onBackToDashboard={() => handleSectionChange('leads')}
+                  className="mb-4"
+                />
                 <TrainingHub />
               </div>
             )}
             {activeSection === 'leads' && <CT1CRM onOpenPocketbot={() => setPocketbotOpen(true)} />}
             {activeSection === 'insurance' && (
-              <div className="p-3 md:p-4 lg:p-6 min-h-[400px] md:min-h-[600px]">
+              <div className="p-3 md:p-4 lg:p-6 min-h-[400px] md:min-h-[600px] pb-20">
+                <BackNavigation 
+                  onBackToDashboard={() => handleSectionChange('leads')}
+                  className="mb-4"
+                />
                 <Insurance />
               </div>
             )}
             {activeSection === 'voiceai' && (
-              <div className="p-3 md:p-4 lg:p-6 min-h-[400px] md:min-h-[600px]">
+              <div className="p-3 md:p-4 lg:p-6 min-h-[400px] md:min-h-[600px] pb-20">
+                <BackNavigation 
+                  onBackToDashboard={() => handleSectionChange('leads')}
+                  className="mb-4"
+                />
                 <VoiceAI />
               </div>
             )}
             {activeSection === 'reporting' && (
-              <div className="p-3 md:p-4 lg:p-6 min-h-[400px] md:min-h-[600px]">
+              <div className="p-3 md:p-4 lg:p-6 min-h-[400px] md:min-h-[600px] pb-20">
+                <BackNavigation 
+                  onBackToDashboard={() => handleSectionChange('leads')}
+                  className="mb-4"
+                />
                 <Reporting />
               </div>
             )}
             {activeSection === 'marketplace' && (
-              <div className="p-3 md:p-4 lg:p-6 min-h-[400px] md:min-h-[600px]">
+              <div className="p-3 md:p-4 lg:p-6 min-h-[400px] md:min-h-[600px] pb-20">
+                <BackNavigation 
+                  onBackToDashboard={() => handleSectionChange('leads')}
+                  className="mb-4"
+                />
                 <Marketplace />
               </div>
             )}
             {activeSection === 'account' && (
-              <div className="p-3 md:p-4 lg:p-6 min-h-[400px] md:min-h-[600px]">
+              <div className="p-3 md:p-4 lg:p-6 min-h-[400px] md:min-h-[600px] pb-20">
                 <div className="max-w-5xl mx-auto space-y-4 md:space-y-6">
+                <BackNavigation 
+                  onBackToDashboard={() => handleSectionChange('leads')}
+                  className="mb-4"
+                />
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4 md:mb-6">
                   <h2 className="text-2xl md:text-3xl font-bold">My Account</h2>
                   <Badge variant="outline" className="text-xs md:text-sm">
@@ -545,6 +573,18 @@ export function Dashboard() {
         </DialogContent>
       </Dialog>
       
+      {/* Mobile Bottom Navigation - Show when not in CRM/leads section */}
+      {isMobile && activeSection !== 'leads' && (
+        <BottomNav 
+          activeSection="more"
+          onSectionChange={(section) => {
+            // Navigate to CRM with the selected section
+            handleSectionChange('leads');
+            sessionStorage.setItem('ct1CrmActiveSection', section);
+          }}
+        />
+      )}
+      
       {/* Floating Chat Button */}
       <button
         ref={chatButtonRef}
@@ -555,7 +595,7 @@ export function Dashboard() {
         style={
           chatButtonPosition
             ? { left: chatButtonPosition.x, top: chatButtonPosition.y }
-            : { bottom: 24, right: 24 }
+            : { bottom: isMobile && activeSection !== 'leads' ? 84 : 24, right: 24 }
         }
         aria-label="Open CT1 Pocketbot"
       >
