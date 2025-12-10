@@ -16,15 +16,16 @@ interface CreateTemplateDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
+  defaultTrade?: Trade;
 }
 
 const UNIT_OPTIONS = ['EA', 'SF', 'SY', 'LF', 'HR', 'DAY', 'LS', 'CY', 'GAL', 'TON'];
 
-export function CreateTemplateDialog({ open, onOpenChange, onSuccess }: CreateTemplateDialogProps) {
+export function CreateTemplateDialog({ open, onOpenChange, onSuccess, defaultTrade }: CreateTemplateDialogProps) {
   const { createTemplate } = useEstimateTemplates();
   
   const [name, setName] = useState('');
-  const [trade, setTrade] = useState<Trade | ''>('');
+  const [trade, setTrade] = useState<Trade | ''>(defaultTrade || '');
   const [description, setDescription] = useState('');
   const [tagInput, setTagInput] = useState('');
   const [tags, setTags] = useState<string[]>([]);
