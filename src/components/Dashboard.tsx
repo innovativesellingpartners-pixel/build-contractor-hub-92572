@@ -76,7 +76,9 @@ export function Dashboard() {
   const [upgradePlanOpen, setUpgradePlanOpen] = useState(false);
   const [chatButtonPosition, setChatButtonPosition] = useState<{ x: number; y: number } | null>(null);
   const [isDraggingChatButton, setIsDraggingChatButton] = useState(false);
+  const [hasDragged, setHasDragged] = useState(false);
   const [chatButtonDragOffset, setChatButtonDragOffset] = useState({ x: 0, y: 0 });
+  const dragStartPosition = useRef<{ x: number; y: number } | null>(null);
   const chatButtonRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
@@ -97,6 +99,15 @@ export function Dashboard() {
       const point =
         e instanceof TouchEvent ? e.touches[0] : (e as MouseEvent);
 
+      // Check if user moved enough to be considered a drag (5px threshold)
+      if (dragStartPosition.current) {
+        const dx = Math.abs(point.clientX - dragStartPosition.current.x);
+        const dy = Math.abs(point.clientY - dragStartPosition.current.y);
+        if (dx > 5 || dy > 5) {
+          setHasDragged(true);
+        }
+      }
+
       const newX = point.clientX - chatButtonDragOffset.x;
       const newY = point.clientY - chatButtonDragOffset.y;
 
@@ -116,6 +127,7 @@ export function Dashboard() {
     const handleUp = () => {
       if (!isDraggingChatButton) return;
       setIsDraggingChatButton(false);
+      dragStartPosition.current = null;
       if (chatButtonPosition) {
         localStorage.setItem(
           'ct1_chat_button_position',
@@ -163,11 +175,22 @@ export function Dashboard() {
     const point = 'touches' in e ? e.touches[0] : (e as React.MouseEvent);
     const rect = chatButtonRef.current.getBoundingClientRect();
 
+    dragStartPosition.current = { x: point.clientX, y: point.clientY };
+    setHasDragged(false);
     setChatButtonDragOffset({
       x: point.clientX - rect.left,
       y: point.clientY - rect.top,
     });
     setIsDraggingChatButton(true);
+  };
+
+  const handleChatButtonClick = () => {
+    // Only toggle pocketbot if user didn't drag
+    if (!hasDragged) {
+      setPocketbotOpen(!pocketbotOpen);
+    }
+    // Reset drag state after click
+    setHasDragged(false);
   };
 
   // Save active section to sessionStorage whenever it changes
@@ -524,7 +547,11 @@ export function Dashboard() {
 
       {/* Floating Pocketbot Widget */}
       {pocketbotOpen && (
-        <FloatingPocketbot onClose={() => setPocketbotOpen(false)} onPositionChange={setPocketbotPosition} />
+        <FloatingPocketbot 
+          onClose={() => setPocketbotOpen(false)} 
+          onPositionChange={setPocketbotPosition}
+          initialPosition={chatButtonPosition || undefined}
+        />
       )}
       
       {/* Contact Support Dialog */}
@@ -588,7 +615,7 @@ export function Dashboard() {
       {/* Floating Chat Button */}
       <button
         ref={chatButtonRef}
-        onClick={() => setPocketbotOpen(!pocketbotOpen)}
+        onClick={handleChatButtonClick}
         onMouseDown={handleChatButtonDragStart}
         onTouchStart={handleChatButtonDragStart}
         className="fixed z-[100] group cursor-pointer"
