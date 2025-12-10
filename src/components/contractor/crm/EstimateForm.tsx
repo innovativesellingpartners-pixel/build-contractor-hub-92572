@@ -34,6 +34,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 const tradeTypes = [
+  'Any',
   'General Remodel',
   'Roofing',
   'Plumbing',
@@ -704,36 +705,44 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
                             <CommandList>
                               <CommandEmpty>No templates found.</CommandEmpty>
                               <CommandGroup>
-                                {templates?.map((template) => (
-                                  <CommandItem
-                                    key={template.id}
-                                    value={template.name}
-                                    onSelect={() => {
-                                      setSelectedTemplateId(template.id);
-                                      setTemplateComboOpen(false);
-                                      // Apply template line items
-                                      if (template.line_items && template.line_items.length > 0) {
-                                        setLineItems([...lineItems, ...template.line_items]);
-                                        toast.success(`Template "${template.name}" applied with ${template.line_items.length} line items`);
-                                      }
-                                      // Set trade type from template if not already set
-                                      if (!watch('trade_type') && template.trade) {
-                                        setValue('trade_type', template.trade, { shouldValidate: true });
-                                      }
-                                    }}
-                                  >
-                                    <Check
-                                      className={cn(
-                                        "mr-2 h-4 w-4",
-                                        selectedTemplateId === template.id ? "opacity-100" : "opacity-0"
-                                      )}
-                                    />
-                                    <div className="flex flex-col">
-                                      <span>{template.name}</span>
-                                      <span className="text-xs text-muted-foreground">{template.trade} • {template.line_items?.length || 0} items</span>
-                                    </div>
-                                  </CommandItem>
-                                ))}
+                                {templates
+                                  ?.filter((template) => {
+                                    const selectedTrade = watch('trade_type');
+                                    // If no trade selected or "Any" selected, show all templates
+                                    if (!selectedTrade || selectedTrade === 'Any') return true;
+                                    // Otherwise filter by matching trade
+                                    return template.trade === selectedTrade;
+                                  })
+                                  .map((template) => (
+                                    <CommandItem
+                                      key={template.id}
+                                      value={template.name}
+                                      onSelect={() => {
+                                        setSelectedTemplateId(template.id);
+                                        setTemplateComboOpen(false);
+                                        // Apply template line items
+                                        if (template.line_items && template.line_items.length > 0) {
+                                          setLineItems([...lineItems, ...template.line_items]);
+                                          toast.success(`Template "${template.name}" applied with ${template.line_items.length} line items`);
+                                        }
+                                        // Set trade type from template if not already set or if "Any"
+                                        if ((!watch('trade_type') || watch('trade_type') === 'Any') && template.trade) {
+                                          setValue('trade_type', template.trade, { shouldValidate: true });
+                                        }
+                                      }}
+                                    >
+                                      <Check
+                                        className={cn(
+                                          "mr-2 h-4 w-4",
+                                          selectedTemplateId === template.id ? "opacity-100" : "opacity-0"
+                                        )}
+                                      />
+                                      <div className="flex flex-col">
+                                        <span>{template.name}</span>
+                                        <span className="text-xs text-muted-foreground">{template.trade} • {template.line_items?.length || 0} items</span>
+                                      </div>
+                                    </CommandItem>
+                                  ))}
                               </CommandGroup>
                             </CommandList>
                           </Command>
