@@ -36,6 +36,8 @@ import { TrainingManagement } from "@/components/admin/TrainingManagement";
 import { MarketplaceManagement } from "@/components/admin/MarketplaceManagement";
 import { SupportTickets } from "@/components/admin/SupportTickets";
 import { AdminLeads } from "@/components/admin/AdminLeads";
+import { AdminEstimates } from "@/components/admin/AdminEstimates";
+import { AdminInvoices } from "@/components/admin/AdminInvoices";
 import { AdminJobs } from "@/components/admin/AdminJobs";
 import { AdminCustomers } from "@/components/admin/AdminCustomers";
 import { AdminSettings } from "@/components/admin/AdminSettings";
@@ -194,6 +196,8 @@ const App = () => (
               <Route index element={<UserManagement />} />
               <Route path="users/:userId" element={<UserDetailPage />} />
               <Route path="leads" element={<AdminLeads />} />
+              <Route path="estimates" element={<AdminEstimates />} />
+              <Route path="invoices" element={<AdminInvoices />} />
               <Route path="jobs" element={<AdminJobs />} />
               <Route path="customers" element={<AdminCustomers />} />
               <Route path="support" element={<SupportTickets />} />
