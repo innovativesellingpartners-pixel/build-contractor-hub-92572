@@ -6,11 +6,14 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Loader2, Send, FileText, UserPlus, Check, ChevronsUpDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { Estimate } from '@/hooks/useEstimates';
 import { useGCContacts } from '@/hooks/useGCContacts';
+import { useInvoiceWaivers } from '@/hooks/useInvoiceWaivers';
+import { WaiverSelection, SelectedWaiver } from './WaiverSelection';
 import { cn } from '@/lib/utils';
 
 interface SendToGCDialogProps {
@@ -22,6 +25,7 @@ interface SendToGCDialogProps {
 
 export function SendToGCDialog({ open, onOpenChange, estimate, onSuccess }: SendToGCDialogProps) {
   const { gcContacts, addGCContact } = useGCContacts();
+  const { generateWaivers, isGenerating: isGeneratingWaivers } = useInvoiceWaivers();
   const [step, setStep] = useState<'select-gc' | 'confirm'>('select-gc');
   const [selectedGCId, setSelectedGCId] = useState<string>('');
   const [gcEmail, setGCEmail] = useState('');
@@ -30,6 +34,7 @@ export function SendToGCDialog({ open, onOpenChange, estimate, onSuccess }: Send
   const [sendViaEmail, setSendViaEmail] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [gcSearchOpen, setGcSearchOpen] = useState(false);
+  const [selectedWaivers, setSelectedWaivers] = useState<SelectedWaiver[]>([]);
 
   // Reset state when dialog opens
   useEffect(() => {
@@ -40,6 +45,7 @@ export function SendToGCDialog({ open, onOpenChange, estimate, onSuccess }: Send
       setGCName('');
       setGCCompany('');
       setSendViaEmail(true);
+      setSelectedWaivers([]);
     }
   }, [open]);
 
@@ -163,7 +169,17 @@ export function SendToGCDialog({ open, onOpenChange, estimate, onSuccess }: Send
 
       if (invoiceError) throw invoiceError;
 
-      // Step 5: Send email if requested
+      // Step 5: Generate waivers if selected
+      if (selectedWaivers.length > 0 && gcContactId) {
+        try {
+          await generateWaivers(invoice.id, gcContactId, selectedWaivers);
+          console.log(`Generated ${selectedWaivers.length} waivers for invoice ${invoice.id}`);
+        } catch (waiverError: any) {
+          console.warn('Invoice created but waiver generation failed:', waiverError);
+        }
+      }
+
+      // Step 6: Send email if requested
       if (sendViaEmail && gcEmail) {
         const { error: emailError } = await supabase.functions.invoke('send-invoice-email', {
           body: {
@@ -175,12 +191,12 @@ export function SendToGCDialog({ open, onOpenChange, estimate, onSuccess }: Send
 
         if (emailError) {
           console.warn('Invoice created but email failed:', emailError);
-          toast.success(`Invoice ${invoice.invoice_number} created. Email may have failed to send.`);
+          toast.success(`Invoice ${invoice.invoice_number} created${selectedWaivers.length > 0 ? ` with ${selectedWaivers.length} waiver(s)` : ''}. Email may have failed to send.`);
         } else {
-          toast.success(`Invoice ${invoice.invoice_number} sent to ${gcEmail}`);
+          toast.success(`Invoice ${invoice.invoice_number}${selectedWaivers.length > 0 ? ` with ${selectedWaivers.length} waiver(s)` : ''} sent to ${gcEmail}`);
         }
       } else {
-        toast.success(`Invoice ${invoice.invoice_number} created successfully`);
+        toast.success(`Invoice ${invoice.invoice_number} created${selectedWaivers.length > 0 ? ` with ${selectedWaivers.length} waiver(s)` : ''}`);
       }
 
       onOpenChange(false);
@@ -195,7 +211,7 @@ export function SendToGCDialog({ open, onOpenChange, estimate, onSuccess }: Send
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh]">
         {step === 'select-gc' ? (
           <>
             <DialogHeader>
@@ -204,7 +220,7 @@ export function SendToGCDialog({ open, onOpenChange, estimate, onSuccess }: Send
                 Send Estimate as Invoice to GC
               </DialogTitle>
               <DialogDescription>
-                Select a General Contractor to send this invoice to
+                Select a General Contractor and optional lien waivers
               </DialogDescription>
             </DialogHeader>
 
@@ -295,6 +311,15 @@ export function SendToGCDialog({ open, onOpenChange, estimate, onSuccess }: Send
                   </div>
                 </>
               )}
+
+              {/* Waiver Selection */}
+              <div className="pt-4 border-t">
+                <WaiverSelection
+                  selectedWaivers={selectedWaivers}
+                  onWaiversChange={setSelectedWaivers}
+                  defaultAmount={estimate.grand_total || estimate.total_amount || 0}
+                />
+              </div>
             </div>
 
             <DialogFooter>
