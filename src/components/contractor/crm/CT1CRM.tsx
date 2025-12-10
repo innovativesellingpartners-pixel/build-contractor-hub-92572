@@ -95,10 +95,14 @@ const navItems = [
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showMobileLanding, setShowMobileLanding] = useState(getInitialLandingState);
+  const [navigationHistory, setNavigationHistory] = useState<Section[]>([]);
   const isMobile = useIsMobile();
 
   // Save active section to sessionStorage whenever it changes
   const handleSectionChange = (section: Section) => {
+    // Push current section to navigation history before switching
+    setNavigationHistory(prev => [...prev, activeSection]);
+    
     setActiveSection(section);
     sessionStorage.setItem('ct1CrmActiveSection', section);
     
@@ -114,6 +118,30 @@ const navItems = [
     
     if (isMobile) {
       setMobileMenuOpen(false);
+    }
+  };
+
+  // Handle back navigation using internal history stack
+  const handleBack = () => {
+    if (navigationHistory.length > 0) {
+      const previousSection = navigationHistory[navigationHistory.length - 1];
+      setNavigationHistory(prev => prev.slice(0, -1));
+      setActiveSection(previousSection);
+      sessionStorage.setItem('ct1CrmActiveSection', previousSection);
+      
+      if (previousSection === 'dashboard') {
+        setShowMobileLanding(true);
+        sessionStorage.setItem('ct1CrmShowLanding', 'true');
+      } else {
+        setShowMobileLanding(false);
+        sessionStorage.setItem('ct1CrmShowLanding', 'false');
+      }
+    } else {
+      // If no history, go to dashboard
+      setActiveSection('dashboard');
+      setShowMobileLanding(true);
+      sessionStorage.setItem('ct1CrmActiveSection', 'dashboard');
+      sessionStorage.setItem('ct1CrmShowLanding', 'true');
     }
   };
 
@@ -200,10 +228,13 @@ const navItems = [
           {isMobile && !showMobileLanding && (
             <div className="border-b bg-card px-4 py-2">
               <BackNavigation 
+                onBack={handleBack}
                 onBackToDashboard={() => {
+                  setNavigationHistory([]);
                   setActiveSection('dashboard');
                   setShowMobileLanding(true);
                   sessionStorage.setItem('ct1CrmActiveSection', 'dashboard');
+                  sessionStorage.setItem('ct1CrmShowLanding', 'true');
                 }}
                 showBackButton={true}
               />
