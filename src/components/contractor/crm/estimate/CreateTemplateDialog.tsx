@@ -198,9 +198,14 @@ export function CreateTemplateDialog({ open, onOpenChange, onSuccess }: CreateTe
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="private">Private (Only me)</SelectItem>
-                <SelectItem value="account">Shared (All team members)</SelectItem>
+                <SelectItem value="account">Public (All team members)</SelectItem>
               </SelectContent>
             </Select>
+            <p className="text-xs text-muted-foreground">
+              {visibility === 'private' 
+                ? 'Only you can see and use this template' 
+                : 'All team members can see and use this template'}
+            </p>
           </div>
 
           {/* Line Items */}
