@@ -26,7 +26,12 @@ import {
   Menu,
   X,
   BarChart3,
-  Smartphone
+  Smartphone,
+  LayoutDashboard,
+  ClipboardList,
+  Calendar,
+  DollarSign,
+  Receipt
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
@@ -245,11 +250,23 @@ export function Dashboard() {
                 </SheetTrigger>
                 <SheetContent side="left" className="w-72 p-0 overflow-y-auto">
                   <div className="py-4">
-                    <SidebarNav 
-                      activeSection={activeSection} 
-                      setActiveSection={handleSectionChange} 
-                      tierFeatures={tierFeatures}
-                    />
+                    {activeSection === 'leads' ? (
+                      <CRMSidebarNav 
+                        onSectionChange={(section) => {
+                          sessionStorage.setItem('ct1CrmActiveSection', section);
+                          // Force re-render of CRM by briefly switching away and back
+                          setActiveSection('training');
+                          setTimeout(() => setActiveSection('leads'), 0);
+                          setMobileMenuOpen(false);
+                        }}
+                      />
+                    ) : (
+                      <SidebarNav 
+                        activeSection={activeSection} 
+                        setActiveSection={handleSectionChange} 
+                        tierFeatures={tierFeatures}
+                      />
+                    )}
                   </div>
                 </SheetContent>
               </Sheet>
@@ -804,6 +821,50 @@ function SidebarNav({ activeSection, setActiveSection, tierFeatures }: SidebarNa
           </a>
         </Button>
       )}
+    </nav>
+  );
+}
+
+// CRM Sidebar Navigation Component
+type CRMSection = 'dashboard' | 'leads' | 'estimates' | 'invoices' | 'jobs' | 'calls' | 'emails' | 'calendar' | 'accounting' | 'payments' | 'customers' | 'reporting';
+
+interface CRMSidebarNavProps {
+  onSectionChange: (section: CRMSection) => void;
+}
+
+function CRMSidebarNav({ onSectionChange }: CRMSidebarNavProps) {
+  const crmNavItems = [
+    { id: 'dashboard' as CRMSection, label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'leads' as CRMSection, label: 'Leads', icon: ClipboardList },
+    { id: 'estimates' as CRMSection, label: 'Estimates', icon: FileText },
+    { id: 'invoices' as CRMSection, label: 'Invoices', icon: Receipt },
+    { id: 'jobs' as CRMSection, label: 'Jobs', icon: Briefcase },
+    { id: 'calls' as CRMSection, label: 'Calls', icon: Phone },
+    { id: 'emails' as CRMSection, label: 'Emails', icon: Mail },
+    { id: 'calendar' as CRMSection, label: 'Calendar', icon: Calendar },
+    { id: 'accounting' as CRMSection, label: 'Accounting', icon: DollarSign },
+    { id: 'payments' as CRMSection, label: 'Payments', icon: CreditCard },
+    { id: 'customers' as CRMSection, label: 'Customers', icon: Users },
+    { id: 'reporting' as CRMSection, label: 'Reporting', icon: BarChart3 },
+  ];
+
+  return (
+    <nav className="space-y-1 p-3">
+      <div className="flex items-center gap-2 px-3 py-2 mb-2 border-b border-border/50">
+        <img src={ct1Logo} alt="CT1" className="h-6 w-6" />
+        <span className="font-semibold text-sm">CT1 CRM</span>
+      </div>
+      {crmNavItems.map((item) => (
+        <Button
+          key={item.id}
+          variant="ghost"
+          className="w-full justify-start transition-all hover:bg-red-50 hover:border-red-500 hover:text-black border border-transparent"
+          onClick={() => onSectionChange(item.id)}
+        >
+          <item.icon className="h-4 w-4 mr-3" />
+          {item.label}
+        </Button>
+      ))}
     </nav>
   );
 }
