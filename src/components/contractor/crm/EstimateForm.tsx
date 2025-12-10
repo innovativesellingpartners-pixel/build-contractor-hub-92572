@@ -11,7 +11,9 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Plus, Trash2, ChevronDown, Save, Send, FileText, Download, Eye } from 'lucide-react';
+import { Plus, Trash2, ChevronDown, Save, Send, FileText, Download, Eye, LayoutTemplate, BookmarkPlus } from 'lucide-react';
+import { TemplateSearchModal } from './estimate/TemplateSearchModal';
+import { SaveAsTemplateModal } from './estimate/SaveAsTemplateModal';
 import SignatureCanvas from 'react-signature-canvas';
 import { EstimateLineItem } from '@/hooks/useEstimates';
 import { useCustomers } from '@/hooks/useCustomers';
@@ -153,9 +155,17 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
   const { opportunities } = useOpportunities();
   const [sameAsJobLocation, setSameAsJobLocation] = useState(false);
 
+  // Template modals
+  const [templateSearchOpen, setTemplateSearchOpen] = useState(false);
+  const [saveTemplateOpen, setSaveTemplateOpen] = useState(false);
+
   const contractorSigRef = useRef<SignatureCanvas>(null);
   const clientSigRef = useRef<SignatureCanvas>(null);
 
+  // Handler for adding template line items
+  const handleAddTemplateItems = (templateLineItems: EstimateLineItem[]) => {
+    setLineItems([...lineItems, ...templateLineItems]);
+  };
   // Load profile defaults on mount
   useEffect(() => {
     if (profile && !initialData) {
@@ -1273,8 +1283,17 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
                 Grand Total: <span className="text-primary">${totals.grandTotal.toFixed(2)}</span>
               </div>
               <div className="flex flex-col sm:flex-row gap-2">
+                <Button type="button" variant="outline" onClick={() => setTemplateSearchOpen(true)} className="w-full sm:w-auto">
+                  <LayoutTemplate className="h-4 w-4 mr-2" />
+                  Add Template
+                </Button>
+                <Button type="button" variant="outline" onClick={() => setSaveTemplateOpen(true)} className="w-full sm:w-auto">
+                  <BookmarkPlus className="h-4 w-4 mr-2" />
+                  Save as Template
+                </Button>
                 <Button type="button" variant="outline" onClick={onCancel} className="w-full sm:w-auto">
                   Cancel
+                </Button>
                 </Button>
                 {initialData?.id && (
                   <>
@@ -1319,6 +1338,20 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
       <AddCustomerDialog 
         open={isAddCustomerOpen} 
         onOpenChange={(open) => { setIsAddCustomerOpen(open); if (!open) refreshCustomers(); }}
+      />
+      
+      {/* Template Modals */}
+      <TemplateSearchModal 
+        open={templateSearchOpen}
+        onOpenChange={setTemplateSearchOpen}
+        onSelectTemplate={handleAddTemplateItems}
+      />
+      <SaveAsTemplateModal
+        open={saveTemplateOpen}
+        onOpenChange={setSaveTemplateOpen}
+        lineItems={lineItems}
+        defaultName={watch('title')}
+        defaultTrade={watch('trade_type') || 'General Contracting'}
       />
     </ScrollArea>
   );

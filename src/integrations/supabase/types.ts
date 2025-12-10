@@ -1130,6 +1130,48 @@ export type Database = {
           },
         ]
       }
+      estimate_templates: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          line_items: Json | null
+          name: string
+          scope_summary: string | null
+          tags: string[] | null
+          trade: string
+          updated_at: string
+          user_id: string
+          visibility: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          line_items?: Json | null
+          name: string
+          scope_summary?: string | null
+          tags?: string[] | null
+          trade: string
+          updated_at?: string
+          user_id: string
+          visibility?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          line_items?: Json | null
+          name?: string
+          scope_summary?: string | null
+          tags?: string[] | null
+          trade?: string
+          updated_at?: string
+          user_id?: string
+          visibility?: string
+        }
+        Relationships: []
+      }
       estimate_text_macros: {
         Row: {
           body_text: string
