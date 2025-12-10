@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileText, BarChart2, DollarSign, Phone, Calendar, Mail, Link as LinkIcon, LayoutDashboard, ClipboardList, Briefcase, Users, CreditCard, Calculator } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { ClipboardList, Users, BarChart2, CreditCard } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'estimates' | 'reporting' | 'financials' | 'calls' | 'calendar' | 'emails' | 'payments' | 'accounting';
@@ -8,31 +8,7 @@ interface MoreSectionProps {
   onSectionChange: (section: Section) => void;
 }
 
-const allCRMFeatures = [
-  { 
-    id: 'dashboard' as Section, 
-    label: 'Dashboard', 
-    icon: LayoutDashboard, 
-    gradient: 'from-slate-500 to-slate-600',
-    borderColor: 'border-slate-400',
-    description: 'Overview & stats'
-  },
-  { 
-    id: 'payments' as Section, 
-    label: 'Payments', 
-    icon: CreditCard, 
-    gradient: 'from-emerald-500 to-emerald-600',
-    borderColor: 'border-emerald-400',
-    description: 'Stripe & Banking'
-  },
-  { 
-    id: 'accounting' as Section, 
-    label: 'Accounting', 
-    icon: Calculator, 
-    gradient: 'from-teal-500 to-teal-600',
-    borderColor: 'border-teal-400',
-    description: 'Manage finances'
-  },
+const moreFeatures = [
   { 
     id: 'leads' as Section, 
     label: 'Leads', 
@@ -40,14 +16,6 @@ const allCRMFeatures = [
     gradient: 'from-yellow-500 to-yellow-600',
     borderColor: 'border-yellow-400',
     description: 'New opportunities'
-  },
-  { 
-    id: 'jobs' as Section, 
-    label: 'Jobs', 
-    icon: Briefcase, 
-    gradient: 'from-purple-500 to-purple-600',
-    borderColor: 'border-purple-400',
-    description: 'Active projects'
   },
   { 
     id: 'customers' as Section, 
@@ -58,22 +26,6 @@ const allCRMFeatures = [
     description: 'Contact management'
   },
   { 
-    id: 'estimates' as Section, 
-    label: 'Estimates', 
-    icon: FileText, 
-    gradient: 'from-green-500 to-green-600',
-    borderColor: 'border-green-400',
-    description: 'Create quotes'
-  },
-  { 
-    id: 'financials' as Section, 
-    label: 'Financials', 
-    icon: DollarSign, 
-    gradient: 'from-emerald-500 to-emerald-600',
-    borderColor: 'border-emerald-400',
-    description: 'Track money'
-  },
-  { 
     id: 'reporting' as Section, 
     label: 'Reporting', 
     icon: BarChart2, 
@@ -82,28 +34,12 @@ const allCRMFeatures = [
     description: 'View insights'
   },
   { 
-    id: 'calls' as Section, 
-    label: 'Calls', 
-    icon: Phone, 
-    gradient: 'from-orange-500 to-orange-600',
-    borderColor: 'border-orange-400',
-    description: 'Call history'
-  },
-  {
-    id: 'calendar' as Section, 
-    label: 'Calendar', 
-    icon: Calendar, 
-    gradient: 'from-red-500 to-red-600',
-    borderColor: 'border-red-400',
-    description: 'Schedule events'
-  },
-  { 
-    id: 'emails' as Section, 
-    label: 'Emails', 
-    icon: Mail, 
-    gradient: 'from-cyan-500 to-cyan-600',
-    borderColor: 'border-cyan-400',
-    description: 'Message clients'
+    id: 'payments' as Section, 
+    label: 'Payments', 
+    icon: CreditCard, 
+    gradient: 'from-emerald-500 to-emerald-600',
+    borderColor: 'border-emerald-400',
+    description: 'Stripe & Banking'
   },
 ];
 
@@ -112,12 +48,12 @@ export default function MoreSection({ onSectionChange }: MoreSectionProps) {
     <div className="w-full h-full overflow-y-auto overflow-x-hidden pb-20 bg-background">
       <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 w-full sm:max-w-7xl sm:mx-auto">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold">All CRM Modules</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">Access all features and tools</p>
+          <h1 className="text-2xl sm:text-3xl font-bold">More</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Additional tools and features</p>
         </div>
 
-        <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-3 w-full">
-          {allCRMFeatures.map((feature) => (
+        <div className="grid gap-3 sm:gap-4 grid-cols-2 w-full">
+          {moreFeatures.map((feature) => (
             <Card
               key={feature.id}
               className={cn(
@@ -142,18 +78,6 @@ export default function MoreSection({ onSectionChange }: MoreSectionProps) {
             </Card>
           ))}
         </div>
-
-        <Card className="mt-8">
-          <CardHeader>
-            <CardTitle className="text-lg">Quick Tips</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm text-muted-foreground">
-            <p>• Use Estimates to create and send quotes to customers</p>
-            <p>• Reporting provides insights into your business performance</p>
-            <p>• Financials helps track income, expenses, and profitability</p>
-            <p>• Accounting lets you link bank accounts and QuickBooks</p>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );
