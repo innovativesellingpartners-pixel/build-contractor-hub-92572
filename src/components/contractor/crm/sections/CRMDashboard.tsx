@@ -1,9 +1,12 @@
 import { useLeads } from '@/hooks/useLeads';
 import { useCustomers } from '@/hooks/useCustomers';
 import { Card, CardContent } from '@/components/ui/card';
-import { FileText, Briefcase, Phone, Mail, DollarSign, Calendar } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { FileText, Briefcase, Phone, Mail, DollarSign, Calendar, Headset } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
+import { useState } from 'react';
+import { ContactSupport } from '@/components/ContactSupport';
 
 type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'emails' | 'estimates' | 'reporting' | 'accounting' | 'more' | 'calendar';
 
@@ -15,6 +18,7 @@ export default function CRMDashboard({ onSectionChange }: CRMDashboardProps) {
   const isMobile = useIsMobile();
   const { leads } = useLeads();
   const { customers } = useCustomers();
+  const [contactSupportOpen, setContactSupportOpen] = useState(false);
 
   const mainModules = [
     { 
@@ -72,7 +76,7 @@ export default function CRMDashboard({ onSectionChange }: CRMDashboardProps) {
     <div className="w-full h-full overflow-y-auto overflow-x-hidden pb-20 bg-background pt-safe pt-16 sm:pt-6">
       <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 w-full sm:max-w-7xl sm:mx-auto">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold">CRM Dashboard</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">MyCT1 Dashboard</h1>
           <p className="text-sm sm:text-base text-muted-foreground">Navigate to your workspace</p>
         </div>
 
@@ -100,7 +104,26 @@ export default function CRMDashboard({ onSectionChange }: CRMDashboardProps) {
             ))}
           </div>
         )}
+
+        {/* Contact Support Button */}
+        <div className="flex justify-center pt-4">
+          <Button 
+            variant="outline" 
+            size="lg"
+            onClick={() => setContactSupportOpen(true)}
+            className="gap-2"
+          >
+            <Headset className="h-5 w-5" />
+            Contact Support
+          </Button>
+        </div>
       </div>
+
+      {/* Contact Support Dialog */}
+      <ContactSupport 
+        open={contactSupportOpen} 
+        onOpenChange={setContactSupportOpen} 
+      />
     </div>
   );
 }

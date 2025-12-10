@@ -19,6 +19,7 @@ import { EstimateLineItem } from '@/hooks/useEstimates';
 import { useJobs } from '@/hooks/useJobs';
 import { useContractorProfile } from '@/hooks/useContractorProfile';
 import { useEstimateMacros } from '@/hooks/useEstimateMacros';
+import { useEstimateTemplates, TRADES } from '@/hooks/useEstimateTemplates';
 // Jobs are selected from existing jobs list
 import EstimateAssistant from './EstimateAssistant';
 import ScopeOfWorkSection from './estimate/ScopeOfWorkSection';
@@ -28,6 +29,10 @@ import LineItemsSection from './estimate/LineItemsSection';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useOpportunities } from '@/hooks/useOpportunities';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Check, ChevronsUpDown } from 'lucide-react';
+import { cn } from '@/lib/utils';
 const tradeTypes = [
   'General Remodel',
   'Roofing',
@@ -150,12 +155,17 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
   // Estimate macros
   const { macroGroups, textMacros } = useEstimateMacros();
 
+  // Estimate templates
+  const { templates } = useEstimateTemplates();
+  const [templateSearchOpen, setTemplateSearchOpen] = useState(false);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
+  const [templateComboOpen, setTemplateComboOpen] = useState(false);
+
   // Opportunities for job location
   const { opportunities } = useOpportunities();
   const [sameAsJobLocation, setSameAsJobLocation] = useState(false);
 
-  // Template modals
-  const [templateSearchOpen, setTemplateSearchOpen] = useState(false);
+  // Template modals (legacy)
   const [saveTemplateOpen, setSaveTemplateOpen] = useState(false);
 
   const contractorSigRef = useRef<SignatureCanvas>(null);
@@ -670,6 +680,65 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
                         </SelectContent>
                       </Select>
                       {errors.trade_type && <p className="text-sm text-destructive">{errors.trade_type.message}</p>}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Apply Template</Label>
+                      <Popover open={templateComboOpen} onOpenChange={setTemplateComboOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={templateComboOpen}
+                            className="w-full justify-between"
+                          >
+                            {selectedTemplateId
+                              ? templates?.find((t) => t.id === selectedTemplateId)?.name || "Select template..."
+                              : "Select template..."}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-full p-0" align="start">
+                          <Command>
+                            <CommandInput placeholder="Search templates..." />
+                            <CommandList>
+                              <CommandEmpty>No templates found.</CommandEmpty>
+                              <CommandGroup>
+                                {templates?.map((template) => (
+                                  <CommandItem
+                                    key={template.id}
+                                    value={template.name}
+                                    onSelect={() => {
+                                      setSelectedTemplateId(template.id);
+                                      setTemplateComboOpen(false);
+                                      // Apply template line items
+                                      if (template.line_items && template.line_items.length > 0) {
+                                        setLineItems([...lineItems, ...template.line_items]);
+                                        toast.success(`Template "${template.name}" applied with ${template.line_items.length} line items`);
+                                      }
+                                      // Set trade type from template if not already set
+                                      if (!watch('trade_type') && template.trade) {
+                                        setValue('trade_type', template.trade, { shouldValidate: true });
+                                      }
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        selectedTemplateId === template.id ? "opacity-100" : "opacity-0"
+                                      )}
+                                    />
+                                    <div className="flex flex-col">
+                                      <span>{template.name}</span>
+                                      <span className="text-xs text-muted-foreground">{template.trade} • {template.line_items?.length || 0} items</span>
+                                    </div>
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
                     </div>
 
                     <div className="space-y-2">
