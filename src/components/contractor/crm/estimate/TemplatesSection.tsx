@@ -13,6 +13,7 @@ import { HorizontalRowCard, RowAvatar, RowContent, RowTitleLine, RowMetaLine, Ro
 import { useEstimates, EstimateLineItem } from '@/hooks/useEstimates';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { CreateTemplateDialog } from './CreateTemplateDialog';
 
 interface TemplatesSectionProps {
   onBack: () => void;
@@ -36,6 +37,9 @@ export function TemplatesSection({ onBack, onAddToEstimate }: TemplatesSectionPr
   // For delete confirmation
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [templateToDelete, setTemplateToDelete] = useState<EstimateTemplate | null>(null);
+  
+  // For create template dialog
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
   const filteredTemplates = useMemo(() => {
     return filterTemplates(
@@ -98,6 +102,12 @@ export function TemplatesSection({ onBack, onAddToEstimate }: TemplatesSectionPr
     <MobileOptimizedWrapper
       title="Templates"
       onBackClick={onBack}
+      actions={
+        <Button onClick={() => setCreateDialogOpen(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          Create Template
+        </Button>
+      }
     >
       {/* Filters */}
       <div className="space-y-3 mb-4 px-4 sm:px-0">
@@ -268,6 +278,12 @@ export function TemplatesSection({ onBack, onAddToEstimate }: TemplatesSectionPr
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Create Template Dialog */}
+      <CreateTemplateDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+      />
     </MobileOptimizedWrapper>
   );
 }
