@@ -125,3 +125,6 @@ verify_jwt = false
 
 [functions.create-calendar-event]
 verify_jwt = true
+
+[functions.send-invoice-email]
+verify_jwt = true
