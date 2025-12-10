@@ -197,10 +197,15 @@ export function Auth() {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
-          <Link to="/" className="inline-flex items-center text-muted-foreground hover:text-foreground mb-8">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Home
-          </Link>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => window.history.back()}
+            className="gap-2 text-muted-foreground hover:text-foreground mb-8"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back
+          </Button>
           <img src={ct1Logo} alt="CT1 Logo" className="h-16 w-16 mx-auto mb-4" />
           <h2 className="text-3xl font-bold text-foreground">Contractor Portal</h2>
           <p className="text-muted-foreground mt-2">Access your CT1 business tools</p>

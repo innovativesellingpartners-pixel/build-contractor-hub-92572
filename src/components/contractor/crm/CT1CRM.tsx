@@ -22,6 +22,7 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { BottomNav } from './BottomNav';
+import { BackNavigation } from './BackNavigation';
 import CRMDashboard from './sections/CRMDashboard';
 import LeadsSection from './sections/LeadsSection';
 import JobsSection from './sections/JobsSection';
@@ -195,22 +196,17 @@ const navItems = [
       {isMobile ? (
         <>
 
-          {/* Back to Home Button for Mobile */}
+          {/* Back Navigation for Mobile */}
           {isMobile && !showMobileLanding && activeSection !== 'dashboard' && (
             <div className="border-b bg-card px-4 py-2">
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => {
+              <BackNavigation 
+                onBackToDashboard={() => {
                   setActiveSection('dashboard');
                   setShowMobileLanding(true);
                   sessionStorage.setItem('ct1CrmActiveSection', 'dashboard');
                 }}
-                className="flex items-center gap-2"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Back to Home
-              </Button>
+                showBackButton={true}
+              />
             </div>
           )}
 
