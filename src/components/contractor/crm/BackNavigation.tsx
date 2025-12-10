@@ -3,19 +3,24 @@ import { ArrowLeft, LayoutDashboard } from 'lucide-react';
 
 interface BackNavigationProps {
   onBackToDashboard?: () => void;
+  onBack?: () => void;
   showBackButton?: boolean;
   className?: string;
 }
 
 export function BackNavigation({ 
-  onBackToDashboard, 
+  onBackToDashboard,
+  onBack,
   showBackButton = true,
   className = '' 
 }: BackNavigationProps) {
 
   const handleBack = () => {
-    // Use browser history to go back to previous page
-    window.history.back();
+    if (onBack) {
+      onBack();
+    } else {
+      window.history.back();
+    }
   };
 
   const handleBackToDashboard = () => {
