@@ -50,13 +50,13 @@ const navItems = [
   { id: 'dashboard' as Section, label: 'Dashboard', icon: LayoutDashboard },
   { id: 'leads' as Section, label: 'Leads', icon: ClipboardList },
   { id: 'estimates' as Section, label: 'Estimates', icon: FileText },
-  { id: 'customers' as Section, label: 'Customers', icon: Users },
   { id: 'jobs' as Section, label: 'Jobs', icon: Briefcase },
   { id: 'calls' as Section, label: 'Calls', icon: Phone },
   { id: 'emails' as Section, label: 'Emails', icon: Mail },
   { id: 'calendar' as Section, label: 'Calendar', icon: Calendar },
   { id: 'accounting' as Section, label: 'Accounting', icon: DollarSign },
   { id: 'payments' as Section, label: 'Payments', icon: CreditCard },
+  { id: 'customers' as Section, label: 'Customers', icon: Users },
   { id: 'reporting' as Section, label: 'Reporting', icon: BarChart2 },
 ];
 
