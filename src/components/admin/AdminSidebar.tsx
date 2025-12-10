@@ -7,7 +7,9 @@ import {
   LifeBuoy,
   ClipboardList,
   Briefcase,
-  UserCheck
+  UserCheck,
+  FileText,
+  Receipt
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ct1Logo from '@/assets/ct1-logo-main.png';
@@ -15,6 +17,8 @@ import ct1Logo from '@/assets/ct1-logo-main.png';
 const navItems = [
   { to: '/admin', icon: Users, label: 'User Management', end: true },
   { to: '/admin/leads', icon: ClipboardList, label: 'Leads' },
+  { to: '/admin/estimates', icon: FileText, label: 'Estimates' },
+  { to: '/admin/invoices', icon: Receipt, label: 'Invoices' },
   { to: '/admin/jobs', icon: Briefcase, label: 'Jobs' },
   { to: '/admin/customers', icon: UserCheck, label: 'Customers' },
   { to: '/admin/support', icon: LifeBuoy, label: 'Support Tickets' },
