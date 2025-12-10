@@ -109,6 +109,53 @@ export type Database = {
           },
         ]
       }
+      assumption_templates: {
+        Row: {
+          body: string
+          category: string
+          created_at: string
+          default_selected: boolean
+          id: string
+          is_active: boolean
+          priority: number
+          title: string
+          trade_id: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          category?: string
+          created_at?: string
+          default_selected?: boolean
+          id?: string
+          is_active?: boolean
+          priority?: number
+          title: string
+          trade_id: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          category?: string
+          created_at?: string
+          default_selected?: boolean
+          id?: string
+          is_active?: boolean
+          priority?: number
+          title?: string
+          trade_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assumption_templates_trade_id_fkey"
+            columns: ["trade_id"]
+            isOneToOne: false
+            referencedRelation: "trades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bank_account_links: {
         Row: {
           created_at: string | null
@@ -1021,6 +1068,102 @@ export type Database = {
         }
         Relationships: []
       }
+      estimate_assumptions: {
+        Row: {
+          category: string | null
+          created_at: string
+          estimate_id: string
+          id: string
+          is_custom: boolean
+          priority: number | null
+          template_id: string | null
+          text: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          estimate_id: string
+          id?: string
+          is_custom?: boolean
+          priority?: number | null
+          template_id?: string | null
+          text: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          estimate_id?: string
+          id?: string
+          is_custom?: boolean
+          priority?: number | null
+          template_id?: string | null
+          text?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estimate_assumptions_estimate_id_fkey"
+            columns: ["estimate_id"]
+            isOneToOne: false
+            referencedRelation: "estimates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estimate_assumptions_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "assumption_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      estimate_exclusions: {
+        Row: {
+          category: string | null
+          created_at: string
+          estimate_id: string
+          id: string
+          is_custom: boolean
+          priority: number | null
+          template_id: string | null
+          text: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          estimate_id: string
+          id?: string
+          is_custom?: boolean
+          priority?: number | null
+          template_id?: string | null
+          text: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          estimate_id?: string
+          id?: string
+          is_custom?: boolean
+          priority?: number | null
+          template_id?: string | null
+          text?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estimate_exclusions_estimate_id_fkey"
+            columns: ["estimate_id"]
+            isOneToOne: false
+            referencedRelation: "estimates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estimate_exclusions_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "exclusion_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       estimate_line_item_macro_groups: {
         Row: {
           contractor_id: string
@@ -1204,6 +1347,42 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      estimate_trades: {
+        Row: {
+          created_at: string
+          estimate_id: string
+          id: string
+          trade_id: string
+        }
+        Insert: {
+          created_at?: string
+          estimate_id: string
+          id?: string
+          trade_id: string
+        }
+        Update: {
+          created_at?: string
+          estimate_id?: string
+          id?: string
+          trade_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estimate_trades_estimate_id_fkey"
+            columns: ["estimate_id"]
+            isOneToOne: false
+            referencedRelation: "estimates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estimate_trades_trade_id_fkey"
+            columns: ["trade_id"]
+            isOneToOne: false
+            referencedRelation: "trades"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       estimate_views: {
         Row: {
@@ -1462,6 +1641,53 @@ export type Database = {
             columns: ["lead_id"]
             isOneToOne: false
             referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      exclusion_templates: {
+        Row: {
+          body: string
+          category: string
+          created_at: string
+          default_selected: boolean
+          id: string
+          is_active: boolean
+          priority: number
+          title: string
+          trade_id: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          category?: string
+          created_at?: string
+          default_selected?: boolean
+          id?: string
+          is_active?: boolean
+          priority?: number
+          title: string
+          trade_id: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          category?: string
+          created_at?: string
+          default_selected?: boolean
+          id?: string
+          is_active?: boolean
+          priority?: number
+          title?: string
+          trade_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exclusion_templates_trade_id_fkey"
+            columns: ["trade_id"]
+            isOneToOne: false
+            referencedRelation: "trades"
             referencedColumns: ["id"]
           },
         ]
@@ -3377,6 +3603,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      trades: {
+        Row: {
+          code: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          code?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       training_categories: {
         Row: {
