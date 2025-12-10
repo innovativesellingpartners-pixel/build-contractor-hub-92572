@@ -8,7 +8,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { format, parseISO } from 'date-fns';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { BackNavigation } from '../BackNavigation';
 
 interface CalendarConnection {
   id: string;
@@ -230,9 +229,6 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
   return (
     <div className="w-full h-full overflow-y-auto overflow-x-hidden pb-20 bg-background">
       <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 w-full sm:max-w-7xl sm:mx-auto">
-        {/* Back Navigation */}
-        <BackNavigation onBackToDashboard={() => onSectionChange?.('dashboard')} />
-        
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>

@@ -6,7 +6,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Loader2, DollarSign, AlertCircle, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { BackNavigation } from '../BackNavigation';
 
 interface Invoice {
   invoiceId: string;
@@ -130,9 +129,6 @@ export default function FinancialsSection({ onSectionChange }: FinancialsSection
 
   return (
     <div className="p-6 space-y-6 bg-background">
-      {/* Back Navigation */}
-      <BackNavigation onBackToDashboard={() => onSectionChange?.('dashboard')} />
-      
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold">Financials</h1>
