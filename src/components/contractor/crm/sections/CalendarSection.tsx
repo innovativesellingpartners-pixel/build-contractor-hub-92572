@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { format, parseISO } from 'date-fns';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { ScheduleMeetingDialog } from '../ScheduleMeetingDialog';
 
 interface CalendarConnection {
   id: string;
@@ -40,6 +41,7 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
   const [connecting, setConnecting] = useState<string | null>(null);
   const [connectionsExpanded, setConnectionsExpanded] = useState(false);
   const [deletingEventId, setDeletingEventId] = useState<string | null>(null);
+  const [scheduleMeetingOpen, setScheduleMeetingOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -252,7 +254,7 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
                 </Button>
                 <Button
                   size="sm"
-                  onClick={() => onSectionChange?.('jobs')}
+                  onClick={() => setScheduleMeetingOpen(true)}
                   className="gap-2"
                 >
                   <Plus className="h-4 w-4" />
@@ -543,6 +545,13 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
           </Card>
         )}
       </div>
+
+      {/* Schedule Meeting Dialog */}
+      <ScheduleMeetingDialog
+        open={scheduleMeetingOpen}
+        onOpenChange={setScheduleMeetingOpen}
+        onSuccess={fetchEvents}
+      />
     </div>
   );
 }
