@@ -30,10 +30,16 @@ export function TradesManagement() {
   };
 
   const handleSaveTrade = async () => {
+    if (!editingTrade.name) return;
     if (editingTrade.id) {
       await updateTrade.mutateAsync(editingTrade as Trade);
     } else {
-      await createTrade.mutateAsync(editingTrade);
+      await createTrade.mutateAsync({
+        name: editingTrade.name,
+        code: editingTrade.code,
+        description: editingTrade.description,
+        is_active: editingTrade.is_active,
+      });
     }
     setTradeDialogOpen(false);
   };
@@ -193,17 +199,30 @@ function TradeDetail({ trade, onBack }: TradeDetailProps) {
   };
 
   const handleSaveTemplate = async () => {
+    const t = editingTemplate as any;
+    if (!t.title || !t.body) return;
+    
+    const templateData = {
+      trade_id: trade.id,
+      title: t.title,
+      body: t.body,
+      category: t.category || 'General',
+      priority: t.priority || 0,
+      default_selected: t.default_selected ?? true,
+      is_active: t.is_active ?? true,
+    };
+    
     if (templateType === 'assumption') {
       if (editingTemplate.id) {
         await updateAssumption.mutateAsync(editingTemplate as AssumptionTemplate);
       } else {
-        await createAssumption.mutateAsync(editingTemplate);
+        await createAssumption.mutateAsync(templateData);
       }
     } else {
       if (editingTemplate.id) {
         await updateExclusion.mutateAsync(editingTemplate as ExclusionTemplate);
       } else {
-        await createExclusion.mutateAsync(editingTemplate);
+        await createExclusion.mutateAsync(templateData);
       }
     }
     setTemplateDialogOpen(false);
