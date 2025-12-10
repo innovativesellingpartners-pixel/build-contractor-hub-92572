@@ -38,17 +38,17 @@ const bottomNavItems = [
 const allNavItems = [
   { id: 'dashboard' as Section, label: 'Dashboard', icon: LayoutDashboard },
   { id: 'leads' as Section, label: 'Leads', icon: ClipboardList },
-  { id: 'estimates' as Section, label: 'Estimates', icon: FileText },
-  { id: 'templates' as Section, label: 'Templates', icon: LayoutTemplate },
-  { id: 'invoices' as Section, label: 'Invoices', icon: Receipt },
   { id: 'jobs' as Section, label: 'Jobs', icon: Briefcase },
-  { id: 'calls' as Section, label: 'Calls', icon: Phone },
+  { id: 'estimates' as Section, label: 'Estimates', icon: FileText },
   { id: 'emails' as Section, label: 'Emails', icon: Mail },
+  { id: 'calls' as Section, label: 'Calls', icon: Phone },
   { id: 'calendar' as Section, label: 'Calendar', icon: Calendar },
+  { id: 'invoices' as Section, label: 'Invoices', icon: Receipt },
   { id: 'accounting' as Section, label: 'Accounting', icon: DollarSign },
+  { id: 'templates' as Section, label: 'Templates', icon: LayoutTemplate },
   { id: 'payments' as Section, label: 'Payments', icon: CreditCard },
-  { id: 'customers' as Section, label: 'Customers', icon: Users },
   { id: 'reporting' as Section, label: 'Reporting', icon: BarChart2 },
+  { id: 'customers' as Section, label: 'Customers', icon: Users },
 ];
 
 export function BottomNav({ activeSection, onSectionChange }: BottomNavProps) {
