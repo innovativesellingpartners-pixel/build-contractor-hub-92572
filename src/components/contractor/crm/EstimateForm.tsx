@@ -16,10 +16,10 @@ import { TemplateSearchModal } from './estimate/TemplateSearchModal';
 import { SaveAsTemplateModal } from './estimate/SaveAsTemplateModal';
 import SignatureCanvas from 'react-signature-canvas';
 import { EstimateLineItem } from '@/hooks/useEstimates';
-import { useCustomers } from '@/hooks/useCustomers';
+import { useJobs } from '@/hooks/useJobs';
 import { useContractorProfile } from '@/hooks/useContractorProfile';
 import { useEstimateMacros } from '@/hooks/useEstimateMacros';
-import AddCustomerDialog from './AddCustomerDialog';
+// Jobs are selected from existing jobs list
 import EstimateAssistant from './EstimateAssistant';
 import ScopeOfWorkSection from './estimate/ScopeOfWorkSection';
 import TermsConditionsSection from './estimate/TermsConditionsSection';
@@ -140,10 +140,9 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
   const [contractorAcceptanceDate, setContractorAcceptanceDate] = useState('');
   const [clientAcceptanceDate, setClientAcceptanceDate] = useState('');
 
-  // Customers
-  const { customers, refreshCustomers } = useCustomers();
-  const [selectedCustomerId, setSelectedCustomerId] = useState<string | undefined>(undefined);
-  const [isAddCustomerOpen, setIsAddCustomerOpen] = useState(false);
+  // Jobs
+  const { jobs } = useJobs();
+  const [selectedJobId, setSelectedJobId] = useState<string | undefined>(undefined);
 
   // Contractor profile for defaults
   const { profile, getEstimateDefaults, getBusinessInfo } = useContractorProfile();
@@ -237,9 +236,9 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
         setValue('trade_type', initialData.trade_type, { shouldValidate: true });
       }
 
-      // Set the selected customer if present
-      if (initialData.customer_id) {
-        setSelectedCustomerId(initialData.customer_id);
+      // Set the selected job if present
+      if (initialData.job_id) {
+        setSelectedJobId(initialData.job_id);
       }
 
       // Load line items
@@ -522,7 +521,7 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
 
     const formData = {
       ...data,
-      customer_id: selectedCustomerId,
+      job_id: selectedJobId,
       line_items: lineItems,
       
       // Scope of work
@@ -615,41 +614,34 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <CardContent className="space-y-4">
-                  {/* Customer selection */}
+                  {/* Job selection */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                     <div className="space-y-2 md:col-span-2">
-                      <Label htmlFor="customer">Customer</Label>
+                      <Label htmlFor="job">Job</Label>
                       <Select 
-                        value={selectedCustomerId}
+                        value={selectedJobId}
                         onValueChange={(id) => {
-                          setSelectedCustomerId(id);
-                          const customer = customers.find(c => c.id === id);
-                          if (customer) {
-                            setValue('client_name', customer.name || '');
-                            setValue('client_email', customer.email || '');
-                            const addr = [customer.address, customer.city, customer.state, customer.zip_code]
+                          setSelectedJobId(id);
+                          const job = jobs.find(j => j.id === id);
+                          if (job) {
+                            const addr = [job.address, job.city, job.state, job.zip_code]
                               .filter(Boolean)
                               .join(', ');
-                            setValue('client_address', addr);
+                            setValue('site_address', addr);
                           }
                         }}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Select a customer" />
+                          <SelectValue placeholder="Select a job" />
                         </SelectTrigger>
                         <SelectContent>
-                          {customers.map((c) => (
-                            <SelectItem key={c.id} value={c.id}>
-                              {c.name}{c.company ? ` — ${c.company}` : ''}
+                          {jobs.map((j) => (
+                            <SelectItem key={j.id} value={j.id}>
+                              {j.job_number ? `${j.job_number} - ` : ''}{j.name}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
-                    </div>
-                    <div className="flex md:justify-end">
-                      <Button type="button" variant="outline" onClick={() => setIsAddCustomerOpen(true)}>
-                        <Plus className="h-4 w-4 mr-2" /> Add New
-                      </Button>
                     </div>
                   </div>
 
@@ -682,28 +674,7 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
 
                     <div className="space-y-2">
                       <Label htmlFor="client_name">Client Name *</Label>
-                      {selectedCustomerId && (
-                        <div className="flex items-center gap-2 mb-2">
-                          <Checkbox 
-                            id="same-as-customer"
-                            checked={sameAsCustomer}
-                            onCheckedChange={(checked) => {
-                              setSameAsCustomer(checked as boolean);
-                              if (checked) {
-                                const customer = customers.find(c => c.id === selectedCustomerId);
-                                if (customer) {
-                                  setValue('client_name', customer.name);
-                                  if (customer.email) setValue('client_email', customer.email);
-                                }
-                              }
-                            }}
-                          />
-                          <Label htmlFor="same-as-customer" className="text-sm font-medium cursor-pointer">
-                            Same as customer
-                          </Label>
-                        </div>
-                      )}
-                      <Input id="client_name" {...register('client_name')} disabled={sameAsCustomer} />
+                      <Input id="client_name" {...register('client_name')} />
                       {errors.client_name && <p className="text-sm text-destructive">{errors.client_name.message}</p>}
                     </div>
 
@@ -714,7 +685,7 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
                     </div>
 
                     {/* Same as Job Location Checkbox */}
-                    {selectedCustomerId && (
+                    {selectedJobId && (
                       <div className="flex items-center gap-2 py-2">
                         <Checkbox 
                           id="same-as-job"
@@ -722,21 +693,14 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
                           onCheckedChange={(checked) => {
                             setSameAsJobLocation(checked as boolean);
                             if (checked) {
-                              // Try to get address from opportunity first, then customer
-                              const opportunity = opportunities?.find(o => o.id === initialData?.opportunity_id);
-                              if (opportunity?.job_address) {
-                                setValue('client_address', opportunity.job_address);
-                                setValue('site_address', opportunity.job_address);
-                              } else {
-                                // Get address from selected customer
-                                const customer = customers.find(c => c.id === selectedCustomerId);
-                                if (customer) {
-                                  const addr = [customer.address, customer.city, customer.state, customer.zip_code]
-                                    .filter(Boolean)
-                                    .join(', ');
-                                  setValue('client_address', addr);
-                                  setValue('site_address', addr);
-                                }
+                              // Get address from selected job
+                              const job = jobs.find(j => j.id === selectedJobId);
+                              if (job) {
+                                const addr = [job.address, job.city, job.state, job.zip_code]
+                                  .filter(Boolean)
+                                  .join(', ');
+                                setValue('client_address', addr);
+                                setValue('site_address', addr);
                               }
                             } else {
                               setValue('client_address', '');
@@ -1334,10 +1298,6 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
           </div>
         </form>
       </div>
-      <AddCustomerDialog 
-        open={isAddCustomerOpen} 
-        onOpenChange={(open) => { setIsAddCustomerOpen(open); if (!open) refreshCustomers(); }}
-      />
       
       {/* Template Modals */}
       <TemplateSearchModal 

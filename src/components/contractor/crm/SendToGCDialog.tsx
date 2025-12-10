@@ -4,12 +4,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Send, FileText, UserPlus } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Loader2, Send, FileText, UserPlus, Check, ChevronsUpDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { Estimate } from '@/hooks/useEstimates';
 import { useGCContacts } from '@/hooks/useGCContacts';
+import { cn } from '@/lib/utils';
 
 interface SendToGCDialogProps {
   open: boolean;
@@ -27,6 +29,7 @@ export function SendToGCDialog({ open, onOpenChange, estimate, onSuccess }: Send
   const [gcCompany, setGCCompany] = useState('');
   const [sendViaEmail, setSendViaEmail] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [gcSearchOpen, setGcSearchOpen] = useState(false);
 
   // Reset state when dialog opens
   useEffect(() => {
@@ -51,6 +54,16 @@ export function SendToGCDialog({ open, onOpenChange, estimate, onSuccess }: Send
       }
     }
   }, [selectedGCId, gcContacts]);
+
+  const getSelectedGCLabel = () => {
+    if (!selectedGCId) return 'Search GC contacts...';
+    if (selectedGCId === 'new') return 'Add New GC';
+    const gc = gcContacts?.find(c => c.id === selectedGCId);
+    if (gc) {
+      return `${gc.name}${gc.company ? ` - ${gc.company}` : ''}`;
+    }
+    return 'Search GC contacts...';
+  };
 
   const handleSelectGC = () => {
     if (!selectedGCId) {
@@ -198,24 +211,56 @@ export function SendToGCDialog({ open, onOpenChange, estimate, onSuccess }: Send
             <div className="space-y-4 py-4">
               <div className="space-y-2">
                 <Label>Select GC</Label>
-                <Select value={selectedGCId} onValueChange={setSelectedGCId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Choose a GC or add new..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="new">
-                      <div className="flex items-center gap-2">
-                        <UserPlus className="h-4 w-4" />
-                        Add New GC
-                      </div>
-                    </SelectItem>
-                    {gcContacts?.map((gc) => (
-                      <SelectItem key={gc.id} value={gc.id}>
-                        {gc.name}{gc.company ? ` - ${gc.company}` : ''} {gc.email && `(${gc.email})`}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Popover open={gcSearchOpen} onOpenChange={setGcSearchOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={gcSearchOpen}
+                      className="w-full justify-between"
+                    >
+                      {getSelectedGCLabel()}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0 bg-popover" align="start">
+                    <Command>
+                      <CommandInput placeholder="Search GC contacts..." />
+                      <CommandList>
+                        <CommandEmpty>No GC contacts found.</CommandEmpty>
+                        <CommandGroup>
+                          <CommandItem
+                            value="new"
+                            onSelect={() => {
+                              setSelectedGCId('new');
+                              setGCEmail('');
+                              setGCName('');
+                              setGCCompany('');
+                              setGcSearchOpen(false);
+                            }}
+                          >
+                            <UserPlus className="mr-2 h-4 w-4" />
+                            Add New GC
+                            <Check className={cn("ml-auto h-4 w-4", selectedGCId === 'new' ? "opacity-100" : "opacity-0")} />
+                          </CommandItem>
+                          {gcContacts?.map((gc) => (
+                            <CommandItem
+                              key={gc.id}
+                              value={`${gc.name} ${gc.company || ''} ${gc.email || ''}`}
+                              onSelect={() => {
+                                setSelectedGCId(gc.id);
+                                setGcSearchOpen(false);
+                              }}
+                            >
+                              {gc.name}{gc.company ? ` - ${gc.company}` : ''} {gc.email && `(${gc.email})`}
+                              <Check className={cn("ml-auto h-4 w-4", selectedGCId === gc.id ? "opacity-100" : "opacity-0")} />
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </div>
 
               {selectedGCId === 'new' && (
