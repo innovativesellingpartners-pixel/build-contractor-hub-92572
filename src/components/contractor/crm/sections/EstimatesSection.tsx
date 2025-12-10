@@ -14,6 +14,7 @@ import { MobileOptimizedWrapper, MobileStack } from './MobileOptimizedWrapper';
 import { supabase } from '@/integrations/supabase/client';
 import { HorizontalRowCard, RowAvatar, RowContent, RowTitleLine, RowMetaLine, RowBadgeGroup, RowAmount, RowActions } from './HorizontalRowCard';
 import { EstimateDetailViewBlue } from './EstimateDetailViewBlue';
+import { BackNavigation } from '../BackNavigation';
 
 export default function EstimatesSection({ onSectionChange }: { onSectionChange?: (section: string) => void }) {
   const { estimates, isLoading, createEstimate, createEstimateAsync, updateEstimate, updateEstimateAsync, deleteEstimate, sendEstimate, sendEstimateAsync, isSendingEstimate, duplicateEstimate, isDuplicatingEstimate } = useEstimates();
