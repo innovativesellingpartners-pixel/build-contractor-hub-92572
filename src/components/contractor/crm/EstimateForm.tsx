@@ -663,7 +663,7 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="trade_type">Trade Type *</Label>
+                      <Label htmlFor="trade_type">Trade Type</Label>
                       <Select 
                         onValueChange={(value) => setValue('trade_type', value, { shouldValidate: true })} 
                         value={watch('trade_type') || undefined}
