@@ -1,13 +1,12 @@
 import { useState, useMemo } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { Search, FileText, Tag, Trash2, Plus, Lock, Globe } from 'lucide-react';
+import { Search, FileText, Tag, Trash2, Plus, Lock, Globe, ArrowLeft, FolderOpen } from 'lucide-react';
 import { useEstimateTemplates, TRADES, Trade, EstimateTemplate } from '@/hooks/useEstimateTemplates';
 import { MobileOptimizedWrapper, MobileStack } from '../sections/MobileOptimizedWrapper';
 import { HorizontalRowCard, RowAvatar, RowContent, RowTitleLine, RowMetaLine, RowActions } from '../sections/HorizontalRowCard';
@@ -22,14 +21,44 @@ interface TemplatesSectionProps {
   onAddToEstimate?: (lineItems: EstimateLineItem[], estimateId?: string) => void;
 }
 
+// Trade card colors for visual distinction
+const tradeColors: Record<string, string> = {
+  'General Contracting': 'bg-slate-600',
+  'Roofing (Residential)': 'bg-amber-600',
+  'Roofing (Commercial)': 'bg-amber-700',
+  'Plumbing (Residential)': 'bg-blue-600',
+  'Plumbing (Commercial)': 'bg-blue-700',
+  'HVAC': 'bg-cyan-600',
+  'Electrical': 'bg-yellow-600',
+  'Framing': 'bg-orange-600',
+  'Drywall': 'bg-gray-500',
+  'Painting': 'bg-purple-600',
+  'Flooring': 'bg-amber-800',
+  'Concrete': 'bg-stone-600',
+  'Excavation': 'bg-yellow-800',
+  'Masonry': 'bg-red-800',
+  'Siding': 'bg-teal-600',
+  'Windows/Doors': 'bg-sky-600',
+  'Finish Carpentry': 'bg-orange-700',
+  'Cabinetry': 'bg-amber-900',
+  'Decks': 'bg-lime-700',
+  'Landscaping': 'bg-green-600',
+  'Fencing': 'bg-emerald-700',
+  'Fire Protection': 'bg-red-600',
+  'Low Voltage': 'bg-indigo-600',
+  'Demolition': 'bg-zinc-700',
+  'Environmental Remediation': 'bg-green-800',
+};
+
 export function TemplatesSection({ onBack, onAddToEstimate }: TemplatesSectionProps) {
   const { templates, isLoading, deleteTemplate, filterTemplates } = useEstimateTemplates();
   const { createEstimateAsync } = useEstimates();
   const { jobs } = useJobs();
   const { user } = useAuth();
   
+  // Two-level navigation: null = trade cards, string = specific trade view
+  const [selectedTrade, setSelectedTrade] = useState<Trade | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedTrade, setSelectedTrade] = useState<Trade | 'all'>('all');
   const [visibility, setVisibility] = useState<'all' | 'private' | 'account'>('all');
   
   // For add to estimate dialog
@@ -44,12 +73,19 @@ export function TemplatesSection({ onBack, onAddToEstimate }: TemplatesSectionPr
   // For create template dialog
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
+  // Count templates per trade
+  const templateCountByTrade = useMemo(() => {
+    const counts: Record<string, number> = {};
+    templates.forEach(t => {
+      counts[t.trade] = (counts[t.trade] || 0) + 1;
+    });
+    return counts;
+  }, [templates]);
+
+  // Filter templates for selected trade
   const filteredTemplates = useMemo(() => {
-    return filterTemplates(
-      selectedTrade === 'all' ? undefined : selectedTrade,
-      searchQuery,
-      visibility
-    );
+    if (!selectedTrade) return [];
+    return filterTemplates(selectedTrade, searchQuery, visibility);
   }, [templates, selectedTrade, searchQuery, visibility, filterTemplates]);
 
   const handleAddClick = (template: EstimateTemplate) => {
@@ -60,7 +96,6 @@ export function TemplatesSection({ onBack, onAddToEstimate }: TemplatesSectionPr
   const handleConfirmAdd = async () => {
     if (!selectedTemplate) return;
     
-    // Require job selection
     if (!selectedJobId) {
       toast.error('Please select a job to link this estimate to');
       return;
@@ -68,7 +103,6 @@ export function TemplatesSection({ onBack, onAddToEstimate }: TemplatesSectionPr
 
     const selectedJob = jobs.find(j => j.id === selectedJobId);
     
-    // Create new estimate with template line items, linked to the job
     try {
       await createEstimateAsync({
         title: `${selectedTemplate.name} - ${selectedJob?.name || 'New Estimate'}`,
@@ -104,13 +138,81 @@ export function TemplatesSection({ onBack, onAddToEstimate }: TemplatesSectionPr
     }
   };
 
-  // Get active jobs for linking
+  const handleBackFromTrade = () => {
+    setSelectedTrade(null);
+    setSearchQuery('');
+  };
+
   const activeJobs = jobs.filter(j => j.status !== 'completed' && j.status !== 'cancelled');
 
+  // If no trade selected, show trade cards dashboard
+  if (!selectedTrade) {
+    return (
+      <MobileOptimizedWrapper
+        title="Templates"
+        onBackClick={onBack}
+        actions={
+          <Button onClick={() => setCreateDialogOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Create Template
+          </Button>
+        }
+      >
+        <div className="px-4 sm:px-0">
+          <p className="text-muted-foreground mb-6">
+            Select a trade to view and manage templates
+          </p>
+          
+          {isLoading ? (
+            <div className="flex justify-center p-8">
+              <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {TRADES.map((trade) => {
+                const count = templateCountByTrade[trade] || 0;
+                const colorClass = tradeColors[trade] || 'bg-primary';
+                
+                return (
+                  <Card
+                    key={trade}
+                    className="cursor-pointer hover:shadow-lg transition-all hover:scale-[1.02] overflow-hidden"
+                    onClick={() => setSelectedTrade(trade)}
+                  >
+                    <div className={`h-2 ${colorClass}`} />
+                    <CardContent className="pt-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-sm truncate">{trade}</h3>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {count} {count === 1 ? 'template' : 'templates'}
+                          </p>
+                        </div>
+                        <div className={`p-2 rounded-lg ${colorClass} bg-opacity-20`}>
+                          <FolderOpen className={`h-5 w-5 ${colorClass.replace('bg-', 'text-')}`} />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        <CreateTemplateDialog
+          open={createDialogOpen}
+          onOpenChange={setCreateDialogOpen}
+        />
+      </MobileOptimizedWrapper>
+    );
+  }
+
+  // Trade-specific templates view
   return (
     <MobileOptimizedWrapper
-      title="Templates"
-      onBackClick={onBack}
+      title={selectedTrade}
+      onBackClick={handleBackFromTrade}
       actions={
         <Button onClick={() => setCreateDialogOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
@@ -141,33 +243,6 @@ export function TemplatesSection({ onBack, onAddToEstimate }: TemplatesSectionPr
             </SelectContent>
           </Select>
         </div>
-        
-        {/* Trade Tabs */}
-        <Tabs value={selectedTrade} onValueChange={(v) => setSelectedTrade(v as Trade | 'all')}>
-          <TabsList className="w-full flex flex-wrap h-auto gap-1 p-1">
-            <TabsTrigger value="all" className="text-xs">All</TabsTrigger>
-            {TRADES.slice(0, 8).map(trade => (
-              <TabsTrigger key={trade} value={trade} className="text-xs">
-                {trade.split(' ')[0]}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
-        
-        {/* More trades dropdown */}
-        {selectedTrade !== 'all' && !TRADES.slice(0, 8).includes(selectedTrade) && (
-          <Badge variant="outline">{selectedTrade}</Badge>
-        )}
-        <Select value={selectedTrade === 'all' || TRADES.slice(0, 8).includes(selectedTrade) ? '' : selectedTrade} onValueChange={(v) => v && setSelectedTrade(v as Trade)}>
-          <SelectTrigger className="w-full sm:w-[200px]">
-            <SelectValue placeholder="More trades..." />
-          </SelectTrigger>
-          <SelectContent>
-            {TRADES.slice(8).map(trade => (
-              <SelectItem key={trade} value={trade}>{trade}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
       </div>
 
       {/* Templates List */}
@@ -185,11 +260,10 @@ export function TemplatesSection({ onBack, onAddToEstimate }: TemplatesSectionPr
                   <h3 className="font-semibold text-sm truncate">{template.name}</h3>
                 </RowTitleLine>
                 <RowMetaLine>
-                  <span className="truncate">{template.trade}</span>
                   <Badge variant="outline" className="text-xs">
                     {template.line_items?.length || 0} items
                   </Badge>
-                {template.visibility === 'account' ? (
+                  {template.visibility === 'account' ? (
                     <Badge variant="secondary" className="text-xs flex items-center gap-1">
                       <Globe className="h-3 w-3" />
                       Public
@@ -215,7 +289,7 @@ export function TemplatesSection({ onBack, onAddToEstimate }: TemplatesSectionPr
               <RowActions>
                 <Button size="sm" onClick={(e) => { e.stopPropagation(); handleAddClick(template); }}>
                   <Plus className="h-4 w-4 mr-1" />
-                  Add
+                  Use
                 </Button>
                 {template.user_id === user?.id && (
                   <Button
@@ -235,12 +309,16 @@ export function TemplatesSection({ onBack, onAddToEstimate }: TemplatesSectionPr
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <FileText className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No templates found</h3>
-            <p className="text-muted-foreground text-center">
-              {searchQuery || selectedTrade !== 'all'
-                ? 'Try adjusting your search or filters'
-                : 'Save your first template from an estimate using "Save as Template"'}
+            <h3 className="text-lg font-semibold mb-2">No templates in {selectedTrade}</h3>
+            <p className="text-muted-foreground text-center mb-4">
+              {searchQuery
+                ? 'Try adjusting your search'
+                : 'Create your first template for this trade'}
             </p>
+            <Button onClick={() => setCreateDialogOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Create Template
+            </Button>
           </CardContent>
         </Card>
       )}
@@ -319,6 +397,7 @@ export function TemplatesSection({ onBack, onAddToEstimate }: TemplatesSectionPr
       <CreateTemplateDialog
         open={createDialogOpen}
         onOpenChange={setCreateDialogOpen}
+        defaultTrade={selectedTrade}
       />
     </MobileOptimizedWrapper>
   );
