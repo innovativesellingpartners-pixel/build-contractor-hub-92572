@@ -1,7 +1,7 @@
 import { LayoutDashboard, ClipboardList, Phone, Mail, MoreHorizontal } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calendar' | 'emails' | 'estimates' | 'reporting' | 'financials' | 'more' | 'payments' | 'accounting' | 'invoices';
+type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calendar' | 'emails' | 'estimates' | 'reporting' | 'financials' | 'more' | 'payments' | 'accounting' | 'invoices' | 'templates';
 
 interface BottomNavProps {
   activeSection: Section;

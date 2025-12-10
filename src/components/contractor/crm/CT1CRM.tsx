@@ -13,6 +13,7 @@ import {
   BarChart2,
   DollarSign,
   Link as LinkIcon,
+  LayoutTemplate,
   ArrowLeft,
   CreditCard,
   Receipt
@@ -40,8 +41,9 @@ import Reporting from '@/pages/Reporting';
 import Accounting from '@/pages/Accounting';
 import { MobileLandingPage } from './MobileLandingPage';
 import { PaymentsBankingSection } from './sections/PaymentsBankingSection';
+import { TemplatesSection } from './estimate/TemplatesSection';
 
-type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calendar' | 'emails' | 'estimates' | 'reporting' | 'financials' | 'more' | 'payments' | 'accounting' | 'invoices';
+type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calendar' | 'emails' | 'estimates' | 'reporting' | 'financials' | 'more' | 'payments' | 'accounting' | 'invoices' | 'templates';
 
 interface CT1CRMProps {
   onOpenPocketbot?: () => void;
@@ -53,6 +55,7 @@ const navItems = [
   { id: 'dashboard' as Section, label: 'Dashboard', icon: LayoutDashboard },
   { id: 'leads' as Section, label: 'Leads', icon: ClipboardList },
   { id: 'estimates' as Section, label: 'Estimates', icon: FileText },
+  { id: 'templates' as Section, label: 'Templates', icon: LayoutTemplate },
   { id: 'invoices' as Section, label: 'Invoices', icon: Receipt },
   { id: 'jobs' as Section, label: 'Jobs', icon: Briefcase },
   { id: 'calls' as Section, label: 'Calls', icon: Phone },
@@ -71,7 +74,7 @@ const navItems = [
     // Check for URL param from OAuth callback
     const params = new URLSearchParams(window.location.search);
     const crmSection = params.get('crm_section') as Section | null;
-    if (crmSection && ['dashboard', 'leads', 'jobs', 'customers', 'calls', 'calendar', 'emails', 'estimates', 'reporting', 'financials', 'more', 'payments', 'accounting', 'invoices'].includes(crmSection)) {
+    if (crmSection && ['dashboard', 'leads', 'jobs', 'customers', 'calls', 'calendar', 'emails', 'estimates', 'reporting', 'financials', 'more', 'payments', 'accounting', 'invoices', 'templates'].includes(crmSection)) {
       sessionStorage.setItem('ct1CrmActiveSection', crmSection);
       // Clean URL param
       params.delete('crm_section');
@@ -179,6 +182,8 @@ const navItems = [
         return <EstimatesSection onSectionChange={handleSectionChange} />;
       case 'invoices':
         return <InvoicesSection onSectionChange={handleSectionChange} />;
+      case 'templates':
+        return <TemplatesSection onBack={() => handleSectionChange('dashboard')} />;
       case 'financials':
         return <FinancialsSection onSectionChange={handleSectionChange} />;
       case 'reporting':

@@ -61,7 +61,7 @@ const estimateSchema = z.object({
   client_email: z.string().email('Invalid email').optional().or(z.literal('')),
   client_address: z.string().optional(),
   site_address: z.string().optional(),
-  trade_type: z.string().min(1, 'Trade type is required'),
+  trade_type: z.string().optional(),
   project_description: z.string().optional(),
   assumptions_and_exclusions: z.string().optional(),
   valid_until: z.string().optional(),
