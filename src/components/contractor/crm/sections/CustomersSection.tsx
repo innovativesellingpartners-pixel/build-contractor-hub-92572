@@ -12,7 +12,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { HorizontalRowCard, RowAvatar, RowContent, RowTitleLine, RowMetaLine, RowBadgeGroup, RowActions } from './HorizontalRowCard';
 import { CustomerDetailViewBlue } from './CustomerDetailViewBlue';
-import { BackNavigation } from '../BackNavigation';
 
 interface CustomersSectionProps {
   onSectionChange?: (section: string) => void;
@@ -100,9 +99,6 @@ export default function CustomersSection({ onSectionChange }: CustomersSectionPr
   return (
     <div className="w-full h-full overflow-y-auto overflow-x-hidden pb-20 bg-background">
       <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 w-full sm:max-w-7xl sm:mx-auto">
-        {/* Back Navigation */}
-        <BackNavigation onBackToDashboard={() => onSectionChange?.('dashboard')} />
-        
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex-1">
             <h1 className="text-2xl sm:text-3xl font-bold">Customers</h1>

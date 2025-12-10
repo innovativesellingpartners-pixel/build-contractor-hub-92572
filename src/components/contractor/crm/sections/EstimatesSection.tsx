@@ -14,7 +14,6 @@ import { MobileOptimizedWrapper, MobileStack } from './MobileOptimizedWrapper';
 import { supabase } from '@/integrations/supabase/client';
 import { HorizontalRowCard, RowAvatar, RowContent, RowTitleLine, RowMetaLine, RowBadgeGroup, RowAmount, RowActions } from './HorizontalRowCard';
 import { EstimateDetailViewBlue } from './EstimateDetailViewBlue';
-import { BackNavigation } from '../BackNavigation';
 import { TemplatesSection } from '../estimate/TemplatesSection';
 
 export default function EstimatesSection({ onSectionChange }: { onSectionChange?: (section: string) => void }) {
