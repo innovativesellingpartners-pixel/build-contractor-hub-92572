@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { Send, Users, Briefcase, Eye, Copy, FileText, Receipt, Building2 } from 'lucide-react';
+import { Send, Users, Briefcase, Eye, Copy, FileText, Receipt } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { CustomerDetailViewBlue } from './CustomerDetailViewBlue';
 import { Customer } from '@/hooks/useCustomers';
@@ -41,7 +41,6 @@ export function EstimateDetailViewBlue({
   const { user } = useAuth();
   const [isConverting, setIsConverting] = useState(false);
   const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
-  const [isSendingInvoice, setIsSendingInvoice] = useState(false);
   const [customerDialogOpen, setCustomerDialogOpen] = useState(false);
   const [linkedCustomer, setLinkedCustomer] = useState<Customer | null>(null);
   const [showSendToGCDialog, setShowSendToGCDialog] = useState(false);
@@ -178,104 +177,6 @@ export function EstimateDetailViewBlue({
     }
   };
 
-  // Send invoice directly from estimate (creates job + invoice + sends email)
-  const handleSendInvoice = async () => {
-    if (!estimate.client_email) {
-      toast.error('Client email is required to send an invoice');
-      return;
-    }
-
-    setIsSendingInvoice(true);
-    try {
-      const { data: { user: currentUser } } = await supabase.auth.getUser();
-      if (!currentUser) throw new Error('Not authenticated');
-
-      let jobId = estimate.job_id;
-      let customerId = estimate.customer_id;
-
-      // Step 1: Create customer if needed
-      if (!customerId) {
-        const { data: newCustomer, error: customerError } = await supabase
-          .from('customers')
-          .insert([{
-            user_id: currentUser.id,
-            name: estimate.client_name || 'Unknown Customer',
-            email: estimate.client_email || null,
-            phone: estimate.client_phone || null,
-            address: estimate.site_address || estimate.client_address || null,
-            customer_type: 'residential',
-            estimate_id: estimate.id,
-          }])
-          .select()
-          .single();
-
-        if (customerError) throw customerError;
-        customerId = newCustomer.id;
-
-        await supabase
-          .from('estimates')
-          .update({ customer_id: customerId, status: 'accepted' })
-          .eq('id', estimate.id);
-      }
-
-      // Step 2: Create job if needed
-      if (!jobId) {
-        const { data, error } = await supabase.functions.invoke('convert-estimate-to-job', {
-          body: { estimateId: estimate.id }
-        });
-        if (error) throw error;
-        jobId = data.jobId;
-      }
-
-      // Step 3: Create invoice
-      const lineItems = estimate.line_items as any[] || [];
-      const dueDate = new Date();
-      dueDate.setDate(dueDate.getDate() + 30);
-
-      const { data: invoice, error: invoiceError } = await supabase
-        .from('invoices')
-        .insert([{
-          user_id: currentUser.id,
-          job_id: jobId,
-          customer_id: customerId,
-          amount_due: estimate.grand_total || estimate.total_amount || 0,
-          amount_paid: estimate.payment_amount || 0,
-          balance_due: (estimate.grand_total || estimate.total_amount || 0) - (estimate.payment_amount || 0),
-          line_items: lineItems,
-          status: 'sent',
-          issue_date: new Date().toISOString().split('T')[0],
-          due_date: dueDate.toISOString().split('T')[0],
-          notes: `Invoice for estimate: ${estimate.title}`,
-        }])
-        .select()
-        .single();
-
-      if (invoiceError) throw invoiceError;
-
-      // Step 4: Send invoice email
-      const { error: emailError } = await supabase.functions.invoke('send-invoice-email', {
-        body: {
-          invoiceId: invoice.id,
-          recipientEmail: estimate.client_email,
-          recipientName: estimate.client_name,
-        }
-      });
-
-      if (emailError) {
-        console.warn('Invoice created but email failed:', emailError);
-        toast.success(`Invoice ${invoice.invoice_number} created! Email sending may have failed.`);
-      } else {
-        toast.success(`Invoice ${invoice.invoice_number} sent to ${estimate.client_email}!`);
-      }
-      
-      onSectionChange?.('accounting');
-    } catch (error: any) {
-      toast.error(`Failed to send invoice: ${error.message}`);
-    } finally {
-      setIsSendingInvoice(false);
-    }
-  };
-
   // Parse line items
   const lineItems = estimate.line_items as any[] || [];
 
@@ -287,10 +188,8 @@ export function EstimateDetailViewBlue({
   };
 
   const canCreateInvoice = estimate.job_id && (estimate.status === 'accepted' || estimate.status === 'sold' || estimate.signed_at);
-  const canSendInvoice = estimate.client_email && (estimate.status === 'accepted' || estimate.status === 'sold' || estimate.signed_at);
-  // Show "Send to GC as Invoice" when estimate is signed AND has payment
-  const canSendToGC = (estimate.signed_at || estimate.status === 'accepted' || estimate.status === 'sold') && 
-                      (estimate.payment_amount && estimate.payment_amount > 0);
+  // Show "Send Invoice to GC" when estimate is accepted/signed (no payment requirement)
+  const canSendToGC = estimate.signed_at || estimate.status === 'accepted' || estimate.status === 'sold';
 
   return (
     <BlueBackground className="min-h-full">
@@ -349,25 +248,14 @@ export function EstimateDetailViewBlue({
             {isCreatingInvoice ? 'CREATING...' : 'CREATE INVOICE'}
           </ActionButton>
         )}
-        {canSendInvoice && (
-          <ActionButton 
-            variant="success" 
-            onClick={handleSendInvoice}
-            disabled={isSendingInvoice}
-            className="flex items-center gap-2"
-          >
-            <Receipt className="w-4 h-4" />
-            {isSendingInvoice ? 'SENDING...' : 'SEND INVOICE'}
-          </ActionButton>
-        )}
         {canSendToGC && (
           <ActionButton 
-            variant="primary" 
+            variant="success" 
             onClick={() => setShowSendToGCDialog(true)}
             className="flex items-center gap-2"
           >
-            <Building2 className="w-4 h-4" />
-            SEND TO GC AS INVOICE
+            <Receipt className="w-4 h-4" />
+            SEND INVOICE
           </ActionButton>
         )}
         {onDuplicate && (
@@ -569,6 +457,16 @@ export function EstimateDetailViewBlue({
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Send to GC Dialog */}
+      <SendToGCDialog 
+        open={showSendToGCDialog}
+        onOpenChange={setShowSendToGCDialog}
+        estimate={estimate}
+        onSuccess={() => {
+          onSectionChange?.('invoices');
+        }}
+      />
     </BlueBackground>
   );
 }
