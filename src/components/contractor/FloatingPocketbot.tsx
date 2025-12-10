@@ -23,9 +23,10 @@ const SUBSCRIPTION_PRICE = 10;
 interface FloatingPocketbotProps {
   onClose: () => void;
   onPositionChange?: (position: string) => void;
+  initialPosition?: { x: number; y: number };
 }
 
-export function FloatingPocketbot({ onClose, onPositionChange }: FloatingPocketbotProps) {
+export function FloatingPocketbot({ onClose, onPositionChange, initialPosition }: FloatingPocketbotProps) {
   const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -45,8 +46,30 @@ export function FloatingPocketbot({ onClose, onPositionChange }: FloatingPocketb
   const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [position, setPosition] = useState(() => {
+    // If initialPosition provided (from button location), position dialog near the button
+    if (initialPosition) {
+      const isMobile = window.innerWidth < 768;
+      const cardWidth = isMobile ? window.innerWidth - 32 : 380;
+      const cardHeight = 500; // Approximate height
+      
+      // Position dialog above and to the left of the button
+      let x = initialPosition.x - cardWidth + 60; // Offset to align with button
+      let y = initialPosition.y - cardHeight - 20; // Position above the button
+      
+      // Ensure within viewport
+      x = Math.max(16, Math.min(x, window.innerWidth - cardWidth - 16));
+      y = Math.max(16, Math.min(y, window.innerHeight - cardHeight - 16));
+      
+      // If there's not enough space above, position below
+      if (y < 16) {
+        y = initialPosition.y + 80; // Position below the button
+      }
+      
+      return { x, y };
+    }
+    
     const saved = localStorage.getItem('ct1_pocketbot_position');
-    let initialPosition = { x: window.innerWidth - 400, y: 20 };
+    let defaultPosition = { x: window.innerWidth - 400, y: 20 };
     
     if (saved) {
       try {
@@ -59,10 +82,10 @@ export function FloatingPocketbot({ onClose, onPositionChange }: FloatingPocketb
         
         // If saved position is valid, use it; otherwise use default
         if (parsed.x >= 0 && parsed.x <= maxX && parsed.y >= 0 && parsed.y <= maxY) {
-          initialPosition = parsed;
+          defaultPosition = parsed;
         } else {
           // Reset to default for current screen size
-          initialPosition = { 
+          defaultPosition = { 
             x: isMobile ? 16 : Math.max(0, window.innerWidth - 400), 
             y: 20 
           };
@@ -72,7 +95,7 @@ export function FloatingPocketbot({ onClose, onPositionChange }: FloatingPocketb
       }
     }
     
-    return initialPosition;
+    return defaultPosition;
   });
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
