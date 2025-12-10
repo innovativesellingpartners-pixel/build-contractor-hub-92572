@@ -1,5 +1,8 @@
-import { Briefcase, FileText, Users, DollarSign, Phone, Mail } from 'lucide-react';
+import { useState } from 'react';
+import { Briefcase, FileText, Users, DollarSign, Phone, Mail, Headset } from 'lucide-react';
 import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { ContactSupport } from '@/components/ContactSupport';
 
 interface MobileLandingPageProps {
   onNavigateToJobs: () => void;
@@ -63,6 +66,7 @@ export function MobileLandingPage({
   onNavigateToAccounting,
   onNavigateToCalls,
 }: MobileLandingPageProps) {
+  const [contactSupportOpen, setContactSupportOpen] = useState(false);
   
   const handleModuleClick = (id: string) => {
     switch (id) {
@@ -89,7 +93,13 @@ export function MobileLandingPage({
 
   return (
     <div className="w-full h-full overflow-y-auto overflow-x-hidden pb-20 bg-gradient-to-br from-background via-muted/30 to-background">
-      <div className="p-4 sm:p-6 pt-16 w-full max-w-lg mx-auto">
+      <div className="p-4 sm:p-6 pt-4 w-full max-w-lg mx-auto">
+        {/* Header */}
+        <div className="mb-4">
+          <h1 className="text-2xl font-bold">MyCT1 Dashboard</h1>
+          <p className="text-sm text-muted-foreground">Navigate to your workspace</p>
+        </div>
+
         {/* Grid of Module Cards */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 w-full">
           {mobileModules.map((module) => (
@@ -129,13 +139,25 @@ export function MobileLandingPage({
           ))}
         </div>
 
-        {/* Tip Section */}
-        <div className="mt-4 p-4 bg-card rounded-lg border shadow-sm">
-          <p className="text-xs text-center text-muted-foreground">
-            💡 Tip: Use the bottom navigation to access more features
-          </p>
+        {/* Contact Support Button */}
+        <div className="mt-4 flex justify-center">
+          <Button 
+            variant="outline" 
+            size="lg"
+            onClick={() => setContactSupportOpen(true)}
+            className="gap-2 w-full"
+          >
+            <Headset className="h-5 w-5" />
+            Contact Support
+          </Button>
         </div>
       </div>
+
+      {/* Contact Support Dialog */}
+      <ContactSupport 
+        open={contactSupportOpen} 
+        onOpenChange={setContactSupportOpen} 
+      />
     </div>
   );
 }
