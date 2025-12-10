@@ -174,25 +174,6 @@ export function EstimateDetailViewBlue({
         )}
       </ActionButtonRow>
 
-      {/* Sales Flow Progress */}
-      <div className="bg-white px-4 py-3 border-b border-sky-100">
-        <div className="flex items-center justify-center gap-2 text-xs">
-          <span className={`px-3 py-1 rounded-full font-semibold ${estimate.lead_id ? 'bg-sky-500 text-white' : 'bg-slate-200 text-slate-500'}`}>
-            Lead
-          </span>
-          <ArrowRight className="w-4 h-4 text-slate-400" />
-          <span className="px-3 py-1 bg-sky-500 text-white rounded-full font-semibold">Estimate</span>
-          <ArrowRight className="w-4 h-4 text-slate-400" />
-          <span className={`px-3 py-1 rounded-full font-semibold ${estimate.customer_id ? 'bg-sky-500 text-white' : 'bg-slate-200 text-slate-500'}`}>
-            Customer
-          </span>
-          <ArrowRight className="w-4 h-4 text-slate-400" />
-          <span className={`px-3 py-1 rounded-full font-semibold ${estimate.job_id ? 'bg-sky-500 text-white' : 'bg-slate-200 text-slate-500'}`}>
-            Job
-          </span>
-        </div>
-      </div>
-
       {/* Content */}
       <div className="space-y-0">
         {/* Estimate Information */}
