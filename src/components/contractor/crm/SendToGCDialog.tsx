@@ -9,7 +9,7 @@ import { Loader2, Send, FileText, UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { Estimate } from '@/hooks/useEstimates';
-import { useCustomers, Customer } from '@/hooks/useCustomers';
+import { useGCContacts } from '@/hooks/useGCContacts';
 
 interface SendToGCDialogProps {
   open: boolean;
@@ -19,11 +19,12 @@ interface SendToGCDialogProps {
 }
 
 export function SendToGCDialog({ open, onOpenChange, estimate, onSuccess }: SendToGCDialogProps) {
-  const { customers } = useCustomers();
+  const { gcContacts, addGCContact } = useGCContacts();
   const [step, setStep] = useState<'select-gc' | 'confirm'>('select-gc');
   const [selectedGCId, setSelectedGCId] = useState<string>('');
   const [gcEmail, setGCEmail] = useState('');
   const [gcName, setGCName] = useState('');
+  const [gcCompany, setGCCompany] = useState('');
   const [sendViaEmail, setSendViaEmail] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
 
@@ -34,6 +35,7 @@ export function SendToGCDialog({ open, onOpenChange, estimate, onSuccess }: Send
       setSelectedGCId('');
       setGCEmail('');
       setGCName('');
+      setGCCompany('');
       setSendViaEmail(true);
     }
   }, [open]);
@@ -41,13 +43,14 @@ export function SendToGCDialog({ open, onOpenChange, estimate, onSuccess }: Send
   // Update email/name when GC is selected
   useEffect(() => {
     if (selectedGCId && selectedGCId !== 'new') {
-      const gc = customers?.find(c => c.id === selectedGCId);
+      const gc = gcContacts?.find(c => c.id === selectedGCId);
       if (gc) {
         setGCEmail(gc.email || '');
         setGCName(gc.name || '');
+        setGCCompany(gc.company || '');
       }
     }
-  }, [selectedGCId, customers]);
+  }, [selectedGCId, gcContacts]);
 
   const handleSelectGC = () => {
     if (!selectedGCId) {
@@ -110,20 +113,16 @@ export function SendToGCDialog({ open, onOpenChange, estimate, onSuccess }: Send
 
       // Step 3: Create new GC contact if entering manually
       if (selectedGCId === 'new' && gcEmail) {
-        const { data: newGC, error: gcError } = await supabase
-          .from('customers')
-          .insert([{
-            user_id: user.id,
+        try {
+          const newGC = await addGCContact({
             name: gcName || 'GC',
             email: gcEmail,
-            customer_type: 'commercial', // GC is typically commercial
-            notes: 'General Contractor',
-          }])
-          .select()
-          .single();
-
-        if (gcError) throw gcError;
-        gcContactId = newGC.id;
+            company: gcCompany || undefined,
+          });
+          gcContactId = newGC.id;
+        } catch (gcError: any) {
+          throw new Error(`Failed to create GC contact: ${gcError.message}`);
+        }
       }
 
       // Step 4: Create invoice
@@ -210,9 +209,9 @@ export function SendToGCDialog({ open, onOpenChange, estimate, onSuccess }: Send
                         Add New GC
                       </div>
                     </SelectItem>
-                    {customers?.map((customer) => (
-                      <SelectItem key={customer.id} value={customer.id}>
-                        {customer.name} {customer.email && `(${customer.email})`}
+                    {gcContacts?.map((gc) => (
+                      <SelectItem key={gc.id} value={gc.id}>
+                        {gc.name}{gc.company ? ` - ${gc.company}` : ''} {gc.email && `(${gc.email})`}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -222,12 +221,21 @@ export function SendToGCDialog({ open, onOpenChange, estimate, onSuccess }: Send
               {selectedGCId === 'new' && (
                 <>
                   <div className="space-y-2">
-                    <Label htmlFor="gcName">GC Name</Label>
+                    <Label htmlFor="gcName">GC Contact Name *</Label>
                     <Input
                       id="gcName"
-                      placeholder="General Contractor Name"
+                      placeholder="Contact person name"
                       value={gcName}
                       onChange={(e) => setGCName(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="gcCompany">Company Name</Label>
+                    <Input
+                      id="gcCompany"
+                      placeholder="Company name (optional)"
+                      value={gcCompany}
+                      onChange={(e) => setGCCompany(e.target.value)}
                     />
                   </div>
                   <div className="space-y-2">
