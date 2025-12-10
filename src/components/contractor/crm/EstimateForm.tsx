@@ -11,7 +11,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Plus, Trash2, ChevronDown, Save, Send, FileText, Download } from 'lucide-react';
+import { Plus, Trash2, ChevronDown, Save, Send, FileText, Download, Eye } from 'lucide-react';
 import SignatureCanvas from 'react-signature-canvas';
 import { EstimateLineItem } from '@/hooks/useEstimates';
 import { useCustomers } from '@/hooks/useCustomers';
@@ -445,14 +445,14 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
     }
   };
 
-  const handleDownloadPDF = async () => {
+  const handlePDFAction = async (mode: 'download' | 'preview') => {
     if (!initialData?.id) {
-      toast.error('Please save the estimate first before downloading PDF');
+      toast.error('Please save the estimate first before viewing PDF');
       return;
     }
 
     try {
-      toast.loading('Generating PDF...', { id: 'pdf-gen' });
+      toast.loading(mode === 'preview' ? 'Generating preview...' : 'Generating PDF...', { id: 'pdf-gen' });
       
       const { data, error } = await supabase.functions.invoke('generate-estimate-pdf', {
         body: {
@@ -464,7 +464,7 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
       if (error) throw error;
 
       if (data?.pdfBase64) {
-        // Convert base64 to blob and download
+        // Convert base64 to blob
         const byteCharacters = atob(data.pdfBase64);
         const byteNumbers = new Array(byteCharacters.length);
         for (let i = 0; i < byteCharacters.length; i++) {
@@ -474,16 +474,23 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
         const blob = new Blob([byteArray], { type: 'application/pdf' });
         
         const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        const filename = `Estimate_${initialData.estimate_number || initialData.id}_${initialData.client_name?.replace(/\s+/g, '_')}.pdf`;
-        link.setAttribute('download', filename);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
         
-        toast.success('PDF downloaded successfully', { id: 'pdf-gen' });
+        if (mode === 'preview') {
+          // Open PDF in new tab for preview
+          window.open(url, '_blank');
+          toast.success('PDF opened for review', { id: 'pdf-gen' });
+        } else {
+          // Download the PDF
+          const link = document.createElement('a');
+          link.href = url;
+          const filename = `Estimate_${initialData.estimate_number || initialData.id}_${initialData.client_name?.replace(/\s+/g, '_')}.pdf`;
+          link.setAttribute('download', filename);
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(url);
+          toast.success('PDF downloaded successfully', { id: 'pdf-gen' });
+        }
       } else {
         throw new Error('PDF generation failed - no PDF data returned');
       }
@@ -492,6 +499,9 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
       toast.error('Failed to generate PDF: ' + error.message, { id: 'pdf-gen' });
     }
   };
+
+  const handleDownloadPDF = () => handlePDFAction('download');
+  const handlePreviewPDF = () => handlePDFAction('preview');
 
   const handleFormSubmit = (data: EstimateFormData, isDraft: boolean) => {
     // Calculate financial summary with new fields
@@ -1267,15 +1277,26 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
                   Cancel
                 </Button>
                 {initialData?.id && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleDownloadPDF}
-                    className="w-full sm:w-auto"
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    Download PDF
-                  </Button>
+                  <>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handlePreviewPDF}
+                      className="w-full sm:w-auto"
+                    >
+                      <Eye className="h-4 w-4 mr-2" />
+                      Review PDF
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleDownloadPDF}
+                      className="w-full sm:w-auto"
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Download PDF
+                    </Button>
+                  </>
                 )}
                 <Button
                   type="button"

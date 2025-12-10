@@ -10,9 +10,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Plus, Trash2, Copy, X } from "lucide-react";
+import { Plus, Trash2, Copy, X, Eye } from "lucide-react";
 import { Estimate, EstimateLineItem } from "@/hooks/useEstimates";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const estimateSchema = z.object({
   // Header
@@ -168,6 +169,45 @@ export function EnhancedEstimateForm({ onSubmit, onCancel, initialData }: Enhanc
 
     return { subtotal, taxAmount, grandTotal, requiredDeposit, balanceDue };
   };
+
+  const handlePreviewPDF = async () => {
+    if (!initialData?.id) {
+      toast.error('Please save the estimate first before viewing PDF');
+      return;
+    }
+
+    try {
+      toast.loading('Generating preview...', { id: 'pdf-preview' });
+      
+      const { data, error } = await supabase.functions.invoke('generate-estimate-pdf', {
+        body: {
+          estimateId: initialData.id,
+          includePaymentLink: true,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.pdfBase64) {
+        const byteCharacters = atob(data.pdfBase64);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'application/pdf' });
+        const url = window.URL.createObjectURL(blob);
+        window.open(url, '_blank');
+        toast.success('PDF opened for review', { id: 'pdf-preview' });
+      } else {
+        throw new Error('PDF generation failed');
+      }
+    } catch (error: any) {
+      console.error('Error generating PDF:', error);
+      toast.error('Failed to generate PDF: ' + error.message, { id: 'pdf-preview' });
+    }
+  };
+
 
   const handleSubmit = async (sendImmediately = false) => {
     const formData = form.getValues();
@@ -564,6 +604,12 @@ export function EnhancedEstimateForm({ onSubmit, onCancel, initialData }: Enhanc
             <Button variant="outline" onClick={onCancel}>
               Cancel
             </Button>
+            {initialData?.id && (
+              <Button variant="outline" onClick={handlePreviewPDF}>
+                <Eye className="h-4 w-4 mr-2" />
+                Review PDF
+              </Button>
+            )}
             <Button variant="outline" onClick={() => handleSubmit(false)}>
               Save Draft
             </Button>
