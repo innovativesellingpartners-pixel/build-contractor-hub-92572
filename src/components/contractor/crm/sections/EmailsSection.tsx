@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Mail, Plug, Check, Loader2, X, RefreshCw, Circle, ArrowLeft, Reply, Send, ChevronDown, ChevronUp } from 'lucide-react';
+import { Mail, Plug, Check, Loader2, X, RefreshCw, Circle, ArrowLeft, Reply, Send, ChevronDown, ChevronUp, Search, PenSquare, Paperclip } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -10,6 +10,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface EmailConnection {
   id: string;
@@ -44,6 +46,9 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
   const [connecting, setConnecting] = useState<string | null>(null);
   const [connectionsExpanded, setConnectionsExpanded] = useState(false);
   
+  // Search state
+  const [searchQuery, setSearchQuery] = useState('');
+  
   // Email detail view state
   const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
   const [loadingEmailBody, setLoadingEmailBody] = useState(false);
@@ -53,6 +58,16 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
   const [showReplyDialog, setShowReplyDialog] = useState(false);
   const [replyBody, setReplyBody] = useState('');
   const [sending, setSending] = useState(false);
+  
+  // Compose new email state
+  const [showComposeDialog, setShowComposeDialog] = useState(false);
+  const [composeData, setComposeData] = useState({
+    to: '',
+    subject: '',
+    body: '',
+    fromAccount: ''
+  });
+  const [composeSending, setComposeSending] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -223,9 +238,61 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
     }
   };
 
+  const handleSendNewEmail = async () => {
+    if (!composeData.to.trim() || !composeData.subject.trim() || !composeData.body.trim()) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+    
+    const selectedConnection = connections.find(c => c.id === composeData.fromAccount);
+    if (!selectedConnection) {
+      toast.error('Please select an account to send from');
+      return;
+    }
+    
+    setComposeSending(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const { error } = await supabase.functions.invoke('send-email-reply', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+        body: {
+          provider: selectedConnection.provider,
+          to: composeData.to,
+          subject: composeData.subject,
+          body: composeData.body,
+        }
+      });
+
+      if (error) throw error;
+      
+      toast.success('Email sent successfully');
+      setShowComposeDialog(false);
+      setComposeData({ to: '', subject: '', body: '', fromAccount: '' });
+      fetchEmails();
+    } catch (error: any) {
+      console.error('Error sending email:', error);
+      toast.error('Failed to send email');
+    } finally {
+      setComposeSending(false);
+    }
+  };
+
   const googleConnected = connections.find(c => c.provider === 'google');
   const outlookConnected = connections.find(c => c.provider === 'outlook');
   const hasAnyConnection = connections.length > 0;
+  
+  // Filter emails based on search query
+  const filteredEmails = useMemo(() => {
+    if (!searchQuery.trim()) return emails;
+    const query = searchQuery.toLowerCase();
+    return emails.filter(email => 
+      email.subject?.toLowerCase().includes(query) ||
+      email.from?.toLowerCase().includes(query) ||
+      email.snippet?.toLowerCase().includes(query)
+    );
+  }, [emails, searchQuery]);
 
   const formatEmailDate = (dateStr: string) => {
     try {
@@ -356,26 +423,63 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
     <div className="w-full h-full overflow-y-auto overflow-x-hidden pb-20 bg-background">
       <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 w-full sm:max-w-7xl sm:mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
               Emails
             </h1>
-            <p className="text-muted-foreground text-sm">Read and respond to your emails</p>
+            <p className="text-muted-foreground text-sm">Read, compose, and manage your emails</p>
           </div>
-          {hasAnyConnection && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={fetchEmails}
-              disabled={loadingEmails}
-              className="gap-2"
-            >
-              <RefreshCw className={`h-4 w-4 ${loadingEmails ? 'animate-spin' : ''}`} />
-              Refresh
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            {hasAnyConnection && (
+              <>
+                <Button
+                  onClick={() => {
+                    setComposeData({ to: '', subject: '', body: '', fromAccount: connections[0]?.id || '' });
+                    setShowComposeDialog(true);
+                  }}
+                  className="gap-2"
+                >
+                  <PenSquare className="h-4 w-4" />
+                  Compose
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={fetchEmails}
+                  disabled={loadingEmails}
+                  className="gap-2"
+                >
+                  <RefreshCw className={`h-4 w-4 ${loadingEmails ? 'animate-spin' : ''}`} />
+                  Refresh
+                </Button>
+              </>
+            )}
+          </div>
         </div>
+
+        {/* Search Bar */}
+        {hasAnyConnection && (
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search emails by sender, subject, or content..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+            {searchQuery && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
+                onClick={() => setSearchQuery('')}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        )}
 
         {/* Connected Accounts Summary - Compact when connected */}
         {hasAnyConnection ? (
@@ -539,25 +643,44 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
         {/* Emails List */}
         {hasAnyConnection && (
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold flex items-center gap-2">
-              <Mail className="h-5 w-5 text-primary" />
-              Inbox
-            </h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold flex items-center gap-2">
+                <Mail className="h-5 w-5 text-primary" />
+                Inbox
+                {searchQuery && (
+                  <span className="text-sm font-normal text-muted-foreground">
+                    ({filteredEmails.length} result{filteredEmails.length !== 1 ? 's' : ''})
+                  </span>
+                )}
+              </h2>
+            </div>
             
             {loadingEmails ? (
               <Card className="p-8 text-center">
                 <Loader2 className="h-8 w-8 mx-auto mb-4 animate-spin text-primary" />
                 <p className="text-muted-foreground">Loading emails...</p>
               </Card>
-            ) : emails.length === 0 ? (
+            ) : filteredEmails.length === 0 ? (
               <Card className="p-8 text-center bg-gradient-to-br from-muted/30 to-muted/10">
                 <Mail className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-                <p className="text-muted-foreground font-medium">No recent emails found</p>
-                <p className="text-sm text-muted-foreground mt-1">Emails from your connected accounts will appear here</p>
+                {searchQuery ? (
+                  <>
+                    <p className="text-muted-foreground font-medium">No emails match "{searchQuery}"</p>
+                    <p className="text-sm text-muted-foreground mt-1">Try a different search term</p>
+                    <Button variant="outline" size="sm" className="mt-4" onClick={() => setSearchQuery('')}>
+                      Clear Search
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-muted-foreground font-medium">No recent emails found</p>
+                    <p className="text-sm text-muted-foreground mt-1">Emails from your connected accounts will appear here</p>
+                  </>
+                )}
               </Card>
             ) : (
               <div className="space-y-2">
-                {emails.map((email) => (
+                {filteredEmails.map((email) => (
                   <Card 
                     key={email.id} 
                     className={`p-4 hover:bg-muted/50 cursor-pointer transition-all hover:shadow-md ${email.isUnread ? 'border-l-4 border-l-primary bg-primary/5' : ''}`}
@@ -606,6 +729,89 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
             </p>
           </Card>
         )}
+
+        {/* Compose Email Dialog */}
+        <Dialog open={showComposeDialog} onOpenChange={setShowComposeDialog}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <PenSquare className="h-5 w-5" />
+                Compose New Email
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              {connections.length > 1 && (
+                <div className="space-y-2">
+                  <Label>From</Label>
+                  <Select
+                    value={composeData.fromAccount}
+                    onValueChange={(value) => setComposeData(prev => ({ ...prev, fromAccount: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select account" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {connections.map((conn) => (
+                        <SelectItem key={conn.id} value={conn.id}>
+                          {conn.email_address} ({conn.provider === 'google' ? 'Gmail' : 'Outlook'})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              
+              <div className="space-y-2">
+                <Label htmlFor="compose-to">To</Label>
+                <Input
+                  id="compose-to"
+                  type="email"
+                  placeholder="recipient@example.com"
+                  value={composeData.to}
+                  onChange={(e) => setComposeData(prev => ({ ...prev, to: e.target.value }))}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="compose-subject">Subject</Label>
+                <Input
+                  id="compose-subject"
+                  placeholder="Email subject..."
+                  value={composeData.subject}
+                  onChange={(e) => setComposeData(prev => ({ ...prev, subject: e.target.value }))}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="compose-body">Message</Label>
+                <Textarea
+                  id="compose-body"
+                  placeholder="Write your message..."
+                  value={composeData.body}
+                  onChange={(e) => setComposeData(prev => ({ ...prev, body: e.target.value }))}
+                  className="min-h-[200px]"
+                />
+              </div>
+              
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setShowComposeDialog(false)}>
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleSendNewEmail} 
+                  disabled={composeSending || !composeData.to.trim() || !composeData.subject.trim() || !composeData.body.trim()}
+                >
+                  {composeSending ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4 mr-2" />
+                  )}
+                  Send Email
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
