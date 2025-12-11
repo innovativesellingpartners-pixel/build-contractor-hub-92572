@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { FloatingTrialButton } from '@/components/FloatingTrialButton';
 import { MainSiteHeader } from '@/components/MainSiteHeader';
+import { SEOHead } from '@/components/SEOHead';
 import { Wrench, Zap, Droplet, Wind, Hammer, Paintbrush, Home, Fence } from 'lucide-react';
 
 export const TradesWeServe = () => {
@@ -51,6 +52,12 @@ export const TradesWeServe = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Trades We Serve - Software for Roofers, Plumbers, HVAC, Electricians & More"
+        description="myCT1 contractor software serves all major trades nationwide: roofing, plumbing, HVAC, electrical, painting, remodeling, landscaping & general contracting. Get industry-specific tools."
+        canonical="/trades-we-serve"
+        keywords="roofing contractor software, plumbing software, HVAC contractor management, electrical contractor CRM, painting contractor software, remodeling contractor tools, landscaping business software, general contractor management"
+      />
       <FloatingTrialButton />
       <MainSiteHeader />
 

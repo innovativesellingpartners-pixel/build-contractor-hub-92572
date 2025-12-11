@@ -1,8 +1,12 @@
+# robots.txt for myct1.com
+
 User-agent: Googlebot
 Allow: /
+Crawl-delay: 1
 
 User-agent: Bingbot
 Allow: /
+Crawl-delay: 1
 
 User-agent: Twitterbot
 Allow: /
@@ -10,5 +14,35 @@ Allow: /
 User-agent: facebookexternalhit
 Allow: /
 
+User-agent: LinkedInBot
+Allow: /
+
 User-agent: *
 Allow: /
+Crawl-delay: 2
+
+# Disallow private/protected areas
+Disallow: /dashboard
+Disallow: /admin
+Disallow: /crm
+Disallow: /reporting
+Disallow: /accounting
+Disallow: /pay-bill
+Disallow: /api/
+Disallow: /p/estimate/
+
+# Allow all public pages
+Allow: /pricing
+Allow: /features/
+Allow: /products/
+Allow: /what-we-do
+Allow: /business-suite
+Allow: /nationwide-network
+Allow: /trades-we-serve
+Allow: /contact
+Allow: /about
+Allow: /blog-podcast
+Allow: /legal/
+
+# Sitemap location
+Sitemap: https://myct1.com/sitemap.xml

@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { MainSiteHeader } from "@/components/MainSiteHeader";
 import { FormNavigation } from "@/components/FormNavigation";
+import { SEOHead, structuredDataGenerators } from "@/components/SEOHead";
 import { CheckCircle, Star, Zap, Crown, Bot, Phone } from "lucide-react";
 import ct1Logo from "@/assets/ct1-logo-main.png";
 import { TierCheckout } from "@/components/TierCheckout";
@@ -117,6 +118,17 @@ export function Pricing() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Pricing - Contractor Software Plans"
+        description="Choose from flexible pricing plans for myCT1 contractor software. From $99.99/month for essential CRM and training to full business suite with AI tools. Start your free trial."
+        canonical="/pricing"
+        keywords="contractor software pricing, CRM pricing, contractor management cost, estimating software price, business software plans"
+        structuredData={structuredDataGenerators.product(
+          'myCT1 Contractor Business Suite',
+          'Complete contractor business management software with CRM, estimating, invoicing, job management, and AI-powered tools.',
+          '99.99'
+        )}
+      />
       <FloatingTrialButton />
       <MainSiteHeader />
 
