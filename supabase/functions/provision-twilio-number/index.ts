@@ -77,8 +77,17 @@ serve(async (req) => {
     const contractorId = user.id;
     console.log('Authenticated user:', contractorId);
 
-    // Check if contractor already has a phone number
-    const { data: existingNumber } = await supabase
+    // Create admin client with service role key for database operations (bypasses RLS)
+    const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const adminSupabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+      },
+    });
+
+    // Check if contractor already has a phone number (use admin client to bypass RLS)
+    const { data: existingNumber } = await adminSupabase
       .from('phone_numbers')
       .select('twilio_phone_number')
       .eq('contractor_id', contractorId)
@@ -227,8 +236,8 @@ serve(async (req) => {
     
     console.log('Successfully purchased number:', selectedNumber, 'SID:', twilioSid);
 
-    // Store in database
-    const { data: phoneNumberRecord, error: insertError } = await supabase
+    // Store in database (use admin client to bypass RLS)
+    const { data: phoneNumberRecord, error: insertError } = await adminSupabase
       .from('phone_numbers')
       .insert({
         contractor_id: contractorId,
