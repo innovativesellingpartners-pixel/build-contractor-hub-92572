@@ -5,6 +5,7 @@ import { FloatingTrialButton } from "@/components/FloatingTrialButton";
 import { Badge } from "@/components/ui/badge";
 import { MainSiteHeader } from "@/components/MainSiteHeader";
 import { FormNavigation } from "@/components/FormNavigation";
+import { SEOHead, structuredDataGenerators } from "@/components/SEOHead";
 import ct1Logo from "@/assets/ct1-logo-main.png";
 import { 
   Phone, 
@@ -62,6 +63,17 @@ export function Contact() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Contact Us - Get Started with myCT1 Contractor Software"
+        description="Contact myCT1 for a free demo of our contractor business software. Call (248) 752-7308 or email sales@myct1.com. We serve contractors nationwide across all 50 states."
+        canonical="/contact"
+        keywords="contact myCT1, contractor software demo, contractor CRM support, business software help"
+        structuredData={structuredDataGenerators.faq([
+          { question: "How do I get started with myCT1?", answer: "Start with a free trial at myct1.com or contact our sales team at (248) 752-7308 for a personalized demo." },
+          { question: "What trades does myCT1 support?", answer: "myCT1 supports all major trades including roofing, plumbing, HVAC, electrical, painting, remodeling, landscaping, and general contracting." },
+          { question: "Is there a free trial?", answer: "Yes! myCT1 offers a free trial so you can experience the full platform before committing." }
+        ])}
+      />
       <FloatingTrialButton />
       <MainSiteHeader />
 

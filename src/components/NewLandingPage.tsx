@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { ContactForm } from "@/components/ContactForm";
 import { MainSiteHeader } from "@/components/MainSiteHeader";
+import { SEOHead } from "@/components/SEOHead";
 import heroImage from "@/assets/hero-home.jpg";
 import ct1RoundLogo from "@/assets/ct1-round-logo.png";
 import { 
@@ -87,6 +88,12 @@ export function NewLandingPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Contractor Business Software | CRM, Estimating & AI Tools Nationwide"
+        description="America's leading contractor business suite. Professional CRM, estimating software, AI assistants, job management & invoicing for contractors across all 50 states. Start your free trial today."
+        canonical="/"
+        keywords="contractor software, contractor CRM, estimating software, contractor business management, roofing contractor software, HVAC contractor software, plumbing contractor software, electrical contractor software, construction management, AI for contractors"
+      />
       <MainSiteHeader onContactClick={() => setActiveContactForm("contact-sales")} />
 
       {/* Floating Try for Free Button - Top Left */}
