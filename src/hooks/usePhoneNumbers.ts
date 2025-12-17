@@ -32,7 +32,7 @@ export function useProvisionPhoneNumber() {
   return useMutation({
     mutationFn: async () => {
       const { data, error } = await supabase.functions.invoke('provision-twilio-number', {
-        method: 'POST',
+        body: {},
       });
 
       if (error) throw error;
