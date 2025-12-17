@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { Lead } from '@/hooks/useLeads';
 import { useEstimates } from '@/hooks/useEstimates';
 import { useCustomers } from '@/hooks/useCustomers';
+import { useJobs } from '@/hooks/useJobs';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { FileText, Users, ArrowRight, Mail, Phone } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { FileText, Briefcase, ArrowRight, Mail, Phone } from 'lucide-react';
 import {
   BlueBackground,
   SectionHeader,
@@ -15,7 +17,6 @@ import {
   DetailHeader,
   StatusBadge,
   ActionButtonRow,
-  MoneyDisplay,
 } from './ProvenJobsTheme';
 
 interface LeadDetailViewBlueProps {
@@ -28,16 +29,52 @@ interface LeadDetailViewBlueProps {
 export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSectionChange }: LeadDetailViewBlueProps) {
   const { estimates, createEstimateAsync } = useEstimates();
   const { customers } = useCustomers();
+  const { jobs } = useJobs();
   const { user } = useAuth();
   const [isConverting, setIsConverting] = useState(false);
+  const [isCreatingEstimate, setIsCreatingEstimate] = useState(false);
 
   const leadEstimates = estimates?.filter(e => e.lead_id === lead.id) || [];
   const linkedCustomer = lead.customer_id ? customers?.find(c => c.id === lead.customer_id) : null;
+  const linkedJob = lead.converted_to_job_id ? jobs?.find(j => j.id === lead.converted_to_job_id) : null;
 
-  const handleConvertToEstimate = async () => {
+  // Convert lead directly to job (creates customer + job)
+  const handleConvertToJob = async () => {
     if (!user) return;
     
     setIsConverting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('convert-lead-to-job', {
+        body: { 
+          leadId: lead.id,
+          jobName: `Job for ${lead.name}`
+        }
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      if (data?.alreadyConverted) {
+        toast.info('Lead was already converted to a job');
+      } else {
+        toast.success('Lead converted to job successfully!');
+      }
+      
+      if (onSectionChange) {
+        onSectionChange('jobs');
+      }
+    } catch (error: any) {
+      toast.error('Failed to convert lead: ' + error.message);
+    } finally {
+      setIsConverting(false);
+    }
+  };
+
+  // Create estimate for this lead
+  const handleCreateEstimate = async () => {
+    if (!user) return;
+    
+    setIsCreatingEstimate(true);
     try {
       const fullAddress = [lead.address, lead.city, lead.state, lead.zip_code].filter(Boolean).join(', ');
       
@@ -55,7 +92,7 @@ export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSecti
       };
 
       await createEstimateAsync(estimateData);
-      toast.success('Estimate created from lead!');
+      toast.success('Estimate created!');
       
       if (onSectionChange) {
         onSectionChange('estimates');
@@ -63,13 +100,15 @@ export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSecti
     } catch (error: any) {
       toast.error('Failed to create estimate: ' + error.message);
     } finally {
-      setIsConverting(false);
+      setIsCreatingEstimate(false);
     }
   };
 
   const getFullAddress = () => {
     return [lead.address, lead.city, lead.state, lead.zip_code].filter(Boolean).join(', ');
   };
+
+  const isConverted = !!lead.converted_to_job_id;
 
   return (
     <BlueBackground className="min-h-full">
@@ -83,25 +122,26 @@ export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSecti
 
       {/* Action Buttons */}
       <ActionButtonRow>
-        {leadEstimates.length === 0 && !lead.converted_to_customer && (
+        {!isConverted && (
           <ActionButton 
             variant="primary" 
-            onClick={handleConvertToEstimate} 
+            onClick={handleConvertToJob} 
             disabled={isConverting}
             className="flex-1 flex items-center justify-center gap-2"
           >
-            <FileText className="w-4 h-4" />
-            {isConverting ? 'CREATING...' : 'CREATE ESTIMATE'}
+            <Briefcase className="w-4 h-4" />
+            {isConverting ? 'CONVERTING...' : 'CONVERT TO JOB'}
           </ActionButton>
         )}
-        {!lead.converted_to_customer && leadEstimates.length > 0 && (
+        {!isConverted && (
           <ActionButton 
             variant="secondary" 
-            onClick={onConvertToCustomer}
+            onClick={handleCreateEstimate}
+            disabled={isCreatingEstimate}
             className="flex-1 flex items-center justify-center gap-2"
           >
-            <Users className="w-4 h-4" />
-            CONVERT TO CUSTOMER
+            <FileText className="w-4 h-4" />
+            {isCreatingEstimate ? 'CREATING...' : 'CREATE ESTIMATE'}
           </ActionButton>
         )}
       </ActionButtonRow>
@@ -111,20 +151,60 @@ export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSecti
         <div className="flex items-center justify-center gap-2 text-xs">
           <span className="px-3 py-1 bg-sky-500 text-white rounded-full font-semibold">Lead</span>
           <ArrowRight className="w-4 h-4 text-slate-400" />
-          <span className={`px-3 py-1 rounded-full font-semibold ${leadEstimates.length > 0 ? 'bg-sky-500 text-white' : 'bg-slate-200 text-slate-500'}`}>
-            Estimate
+          <span className={`px-3 py-1 rounded-full font-semibold ${linkedJob ? 'bg-sky-500 text-white' : 'bg-slate-200 text-slate-500'}`}>
+            Job
           </span>
           <ArrowRight className="w-4 h-4 text-slate-400" />
           <span className={`px-3 py-1 rounded-full font-semibold ${linkedCustomer ? 'bg-sky-500 text-white' : 'bg-slate-200 text-slate-500'}`}>
             Customer
           </span>
-          <ArrowRight className="w-4 h-4 text-slate-400" />
-          <span className="px-3 py-1 bg-slate-200 text-slate-500 rounded-full font-semibold">Job</span>
         </div>
+        <p className="text-center text-xs text-slate-500 mt-1">
+          Converting creates both Job and Customer automatically
+        </p>
       </div>
 
       {/* Content */}
       <div className="space-y-0">
+        {/* Converted Status */}
+        {isConverted && linkedJob && (
+          <>
+            <SectionHeader>CONVERTED TO</SectionHeader>
+            <InfoCard className="rounded-none">
+              <div 
+                className="px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-sky-50"
+                onClick={() => onSectionChange?.('jobs')}
+              >
+                <div className="flex items-center gap-3">
+                  <Briefcase className="w-5 h-5 text-sky-600" />
+                  <div>
+                    <p className="font-medium text-slate-800 text-sm">{linkedJob.name}</p>
+                    <p className="text-xs text-slate-500">{linkedJob.job_number}</p>
+                  </div>
+                </div>
+                <ArrowRight className="w-4 h-4 text-slate-400" />
+              </div>
+              {linkedCustomer && (
+                <div 
+                  className="px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-sky-50 border-t border-sky-50"
+                  onClick={() => onSectionChange?.('customers')}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full bg-sky-100 flex items-center justify-center text-xs font-semibold text-sky-600">
+                      {linkedCustomer.name.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="font-medium text-slate-800 text-sm">{linkedCustomer.name}</p>
+                      <p className="text-xs text-slate-500">Customer</p>
+                    </div>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-slate-400" />
+                </div>
+              )}
+            </InfoCard>
+          </>
+        )}
+
         {/* Lead Information */}
         <SectionHeader>LEAD INFORMATION</SectionHeader>
         <InfoCard className="rounded-none">
@@ -190,33 +270,13 @@ export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSecti
           </div>
         )}
 
-        {/* Linked Customer */}
-        {linkedCustomer && (
-          <>
-            <SectionHeader>LINKED CUSTOMER</SectionHeader>
-            <InfoCard className="rounded-none">
-              <InfoRow label="Customer Name" value={linkedCustomer.name} />
-              <InfoRow 
-                label="Lifetime Value" 
-                value={`$${(linkedCustomer.lifetime_value || 0).toFixed(2)}`} 
-              />
-              <div 
-                className="px-4 py-3 flex justify-center cursor-pointer hover:bg-sky-50"
-                onClick={() => onSectionChange?.('customers')}
-              >
-                <span className="text-sky-600 font-semibold text-sm">View Customer →</span>
-              </div>
-            </InfoCard>
-          </>
-        )}
-
         {/* Estimates */}
         <SectionHeader>ESTIMATES ({leadEstimates.length})</SectionHeader>
         <InfoCard className="rounded-none">
           {leadEstimates.length === 0 ? (
             <div className="p-4 text-center">
               <p className="text-muted-foreground text-sm mb-3">No estimates yet</p>
-              <ActionButton variant="secondary" onClick={handleConvertToEstimate} disabled={isConverting}>
+              <ActionButton variant="secondary" onClick={handleCreateEstimate} disabled={isCreatingEstimate}>
                 Create Estimate
               </ActionButton>
             </div>
@@ -253,6 +313,12 @@ export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSecti
             <InfoRow 
               label="Last Contact" 
               value={format(new Date(lead.last_contact_date), 'MMM d, yyyy')} 
+            />
+          )}
+          {lead.converted_at && (
+            <InfoRow 
+              label="Converted" 
+              value={format(new Date(lead.converted_at), 'MMM d, yyyy')} 
             />
           )}
         </InfoCard>

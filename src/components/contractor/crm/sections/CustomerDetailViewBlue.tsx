@@ -1,11 +1,16 @@
 import { useState } from 'react';
-import { Customer } from '@/hooks/useCustomers';
+import { Customer, useCustomers } from '@/hooks/useCustomers';
 import { useEstimates } from '@/hooks/useEstimates';
 import { useJobs } from '@/hooks/useJobs';
+import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { Briefcase, FileText, Phone, Mail, ArrowRight } from 'lucide-react';
+import { Briefcase, FileText, Phone, Mail, ArrowRight, Merge, Search } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import {
   BlueBackground,
   SectionHeader,
@@ -26,12 +31,27 @@ interface CustomerDetailViewBlueProps {
 }
 
 export function CustomerDetailViewBlue({ customer, onClose, onSectionChange, onCreateJob }: CustomerDetailViewBlueProps) {
-  const { estimates } = useEstimates();
+  const { estimates, createEstimateAsync } = useEstimates();
   const { jobs } = useJobs();
+  const { customers, refreshCustomers } = useCustomers();
+  const { user } = useAuth();
   const [isCreatingJob, setIsCreatingJob] = useState(false);
+  const [isCreatingEstimate, setIsCreatingEstimate] = useState(false);
+  const [isMerging, setIsMerging] = useState(false);
+  const [showMergeDialog, setShowMergeDialog] = useState(false);
+  const [mergeSearch, setMergeSearch] = useState('');
+  const [selectedMergeCustomer, setSelectedMergeCustomer] = useState<Customer | null>(null);
 
   const customerEstimates = estimates?.filter(e => e.customer_id === customer.id) || [];
   const customerJobs = jobs?.filter(j => j.customer_id === customer.id) || [];
+
+  // Get other customers for merge (excluding current customer)
+  const otherCustomers = customers?.filter(c => c.id !== customer.id) || [];
+  const filteredMergeCustomers = otherCustomers.filter(c => 
+    c.name.toLowerCase().includes(mergeSearch.toLowerCase()) ||
+    c.email?.toLowerCase().includes(mergeSearch.toLowerCase()) ||
+    c.phone?.includes(mergeSearch)
+  );
 
   const getFullAddress = () => {
     return [customer.address, customer.city, customer.state, customer.zip_code].filter(Boolean).join(', ');
@@ -80,6 +100,63 @@ export function CustomerDetailViewBlue({ customer, onClose, onSectionChange, onC
     }
   };
 
+  const handleCreateEstimate = async () => {
+    if (!user) return;
+    
+    setIsCreatingEstimate(true);
+    try {
+      const fullAddress = getFullAddress();
+      
+      const estimateData = {
+        title: `Estimate for ${customer.name}`,
+        customer_id: customer.id,
+        client_name: customer.name,
+        client_email: customer.email || undefined,
+        client_phone: customer.phone || undefined,
+        client_address: fullAddress || undefined,
+        site_address: fullAddress || undefined,
+        project_name: `Project for ${customer.name}`,
+        status: 'draft' as const,
+        total_amount: 0,
+      };
+
+      await createEstimateAsync(estimateData);
+      toast.success('Estimate created!');
+      onSectionChange?.('estimates');
+    } catch (error: any) {
+      toast.error('Failed to create estimate: ' + error.message);
+    } finally {
+      setIsCreatingEstimate(false);
+    }
+  };
+
+  const handleMergeCustomer = async () => {
+    if (!selectedMergeCustomer) return;
+    
+    setIsMerging(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('merge-customers', {
+        body: { 
+          keepCustomerId: customer.id,
+          mergeCustomerId: selectedMergeCustomer.id
+        }
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      toast.success(`Merged "${selectedMergeCustomer.name}" into this customer`);
+      setShowMergeDialog(false);
+      setSelectedMergeCustomer(null);
+      setMergeSearch('');
+      refreshCustomers?.();
+    } catch (error: any) {
+      toast.error('Failed to merge customers: ' + error.message);
+    } finally {
+      setIsMerging(false);
+    }
+  };
+
   // Calculate totals
   const totalContractValue = customerJobs.reduce((sum, j) => sum + (j.contract_value || 0), 0);
   const totalPaymentsCollected = customerJobs.reduce((sum, j) => sum + (j.payments_collected || 0), 0);
@@ -105,7 +182,29 @@ export function CustomerDetailViewBlue({ customer, onClose, onSectionChange, onC
           <Briefcase className="w-4 h-4" />
           {isCreatingJob ? 'CREATING...' : customerJobs.length === 0 ? 'CREATE JOB' : 'ADD JOB'}
         </ActionButton>
+        <ActionButton 
+          variant="secondary" 
+          onClick={handleCreateEstimate}
+          disabled={isCreatingEstimate}
+          className="flex-1 flex items-center justify-center gap-2"
+        >
+          <FileText className="w-4 h-4" />
+          {isCreatingEstimate ? 'CREATING...' : 'CREATE ESTIMATE'}
+        </ActionButton>
       </ActionButtonRow>
+
+      {/* Merge Button */}
+      <div className="px-4 py-2 bg-white border-b border-sky-100">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => setShowMergeDialog(true)}
+          className="w-full flex items-center justify-center gap-2"
+        >
+          <Merge className="w-4 h-4" />
+          Merge with Another Customer
+        </Button>
+      </div>
 
       {/* Content */}
       <div className="space-y-0">
@@ -182,7 +281,10 @@ export function CustomerDetailViewBlue({ customer, onClose, onSectionChange, onC
         <InfoCard className="rounded-none">
           {customerEstimates.length === 0 ? (
             <div className="p-4 text-center">
-              <p className="text-slate-500 text-sm">No estimates linked</p>
+              <p className="text-slate-500 text-sm mb-3">No estimates linked</p>
+              <ActionButton variant="secondary" onClick={handleCreateEstimate} disabled={isCreatingEstimate}>
+                Create Estimate
+              </ActionButton>
             </div>
           ) : (
             customerEstimates.map((estimate) => (
@@ -265,6 +367,82 @@ export function CustomerDetailViewBlue({ customer, onClose, onSectionChange, onC
           </>
         )}
       </div>
+
+      {/* Merge Customer Dialog */}
+      <Dialog open={showMergeDialog} onOpenChange={setShowMergeDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Merge className="w-5 h-5" />
+              Merge Customer
+            </DialogTitle>
+            <DialogDescription>
+              Select a customer to merge into "{customer.name}". All jobs, estimates, and data from the selected customer will be transferred.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search customers by name, email, or phone..."
+                value={mergeSearch}
+                onChange={(e) => setMergeSearch(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            
+            <div className="border rounded-lg max-h-[250px] overflow-y-auto">
+              {filteredMergeCustomers.length === 0 ? (
+                <div className="p-4 text-center text-muted-foreground text-sm">
+                  {mergeSearch ? 'No customers found' : 'Start typing to search customers'}
+                </div>
+              ) : (
+                filteredMergeCustomers.map((c) => (
+                  <div
+                    key={c.id}
+                    onClick={() => setSelectedMergeCustomer(c)}
+                    className={`p-3 cursor-pointer border-b last:border-b-0 transition-colors ${
+                      selectedMergeCustomer?.id === c.id 
+                        ? 'bg-sky-50 border-sky-200' 
+                        : 'hover:bg-muted/50'
+                    }`}
+                  >
+                    <p className="font-medium text-sm">{c.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {[c.email, c.phone].filter(Boolean).join(' • ')}
+                    </p>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {selectedMergeCustomer && (
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                <p className="text-sm font-medium text-amber-800">
+                  Merge "{selectedMergeCustomer.name}" into "{customer.name}"?
+                </p>
+                <p className="text-xs text-amber-700 mt-1">
+                  This action cannot be undone. All data will be transferred.
+                </p>
+              </div>
+            )}
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowMergeDialog(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleMergeCustomer} 
+              disabled={!selectedMergeCustomer || isMerging}
+              className="bg-amber-600 hover:bg-amber-700"
+            >
+              {isMerging ? 'Merging...' : 'Merge Customers'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </BlueBackground>
   );
 }

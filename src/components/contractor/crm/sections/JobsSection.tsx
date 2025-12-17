@@ -1,8 +1,11 @@
 import { useState } from 'react';
 import { useJobs, Job } from '@/hooks/useJobs';
+import { useEstimates } from '@/hooks/useEstimates';
+import { useCustomers } from '@/hooks/useCustomers';
 import { MapPin, Home, Copy, Eye, Briefcase, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { toast } from 'sonner';
 import JobDetailViewBlue from '../JobDetailViewBlue';
 import { AddJobDialog } from '../AddJobDialog';
 import { EditJobDialog } from '../EditJobDialog';
@@ -14,6 +17,8 @@ interface JobsSectionProps {
 
 export default function JobsSection({ onSectionChange }: JobsSectionProps) {
   const { jobs, loading, addJob, updateJob, refreshJobs, duplicateJob } = useJobs();
+  const { createEstimateAsync } = useEstimates();
+  const { customers } = useCustomers();
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
@@ -44,6 +49,38 @@ export default function JobsSection({ onSectionChange }: JobsSectionProps) {
       setSelectedJob(updatedJob);
     }
     return updatedJob;
+  };
+
+  const handleCreateEstimateFromJob = async () => {
+    if (!selectedJob) return;
+    
+    try {
+      const customer = selectedJob.customer_id ? customers?.find(c => c.id === selectedJob.customer_id) : null;
+      const fullAddress = [selectedJob.address, selectedJob.city, selectedJob.state, selectedJob.zip_code].filter(Boolean).join(', ');
+      
+      const estimateData = {
+        title: `Estimate for ${selectedJob.name}`,
+        job_id: selectedJob.id,
+        customer_id: selectedJob.customer_id || undefined,
+        client_name: customer?.name || selectedJob.name,
+        client_email: customer?.email || undefined,
+        client_phone: customer?.phone || undefined,
+        client_address: fullAddress || undefined,
+        site_address: fullAddress || undefined,
+        project_name: selectedJob.name,
+        status: 'draft' as const,
+        total_amount: selectedJob.contract_value || 0,
+      };
+
+      await createEstimateAsync(estimateData);
+      toast.success('Estimate created for job!');
+      
+      if (onSectionChange) {
+        onSectionChange('estimates');
+      }
+    } catch (error: any) {
+      toast.error('Failed to create estimate: ' + error.message);
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -153,10 +190,7 @@ export default function JobsSection({ onSectionChange }: JobsSectionProps) {
           job={selectedJob}
           open={detailOpen}
           onOpenChange={setDetailOpen}
-          onCreateEstimate={() => {
-            refreshJobs();
-            if (onSectionChange) onSectionChange('estimates');
-          }}
+          onCreateEstimate={handleCreateEstimateFromJob}
           onEditJob={handleEditJob}
           onDuplicateJob={handleDuplicateJob}
         />
