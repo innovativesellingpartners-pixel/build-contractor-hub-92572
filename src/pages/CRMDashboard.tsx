@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { ProfileEditDialog } from "@/components/contractor/ProfileEditDialog";
-import ct1Logo from "@/assets/ct1-round-logo.png";
+import ct1Logo from "@/assets/ct1-logo-circle.png";
 
 interface Lead {
   id: string;
