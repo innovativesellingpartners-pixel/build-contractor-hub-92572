@@ -179,9 +179,9 @@ export function NewLandingPage() {
               </div>
             </div>
             
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-black mb-6 leading-none drop-shadow-lg text-white tracking-tight">
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-black mb-6 leading-none text-white tracking-tight" style={{ textShadow: '2px 2px 8px rgba(0, 0, 0, 0.5)' }}>
               <span className="block">One-Up</span>
-              <span className="block text-primary" style={{ textShadow: '0 0 40px rgba(220, 38, 38, 0.5)' }}>The Competition</span>
+              <span className="block text-primary" style={{ textShadow: '2px 2px 8px rgba(0, 0, 0, 0.5), 0 0 40px rgba(220, 38, 38, 0.5)' }}>The Competition</span>
             </h1>
             
             <p className="text-xl sm:text-2xl lg:text-3xl mb-4 text-white/90 leading-relaxed max-w-4xl font-light">
