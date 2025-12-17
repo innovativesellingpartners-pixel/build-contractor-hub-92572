@@ -10,7 +10,7 @@ import { CheckCircle, FileText, Loader2, CreditCard, Building2, Calendar, Dollar
 import SignatureCanvas from 'react-signature-canvas';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import ct1Logo from '@/assets/ct1-logo-circle.png';
+import ct1Logo from '@/assets/ct1-round-logo-new.png';
 
 export default function PublicEstimate() {
   const { token } = useParams();

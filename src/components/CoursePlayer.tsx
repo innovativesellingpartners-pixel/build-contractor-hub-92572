@@ -39,7 +39,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import ct1Logo from '@/assets/ct1-logo-main.png';
+import ct1Logo from '@/assets/ct1-round-logo-new.png';
 import DOMPurify from 'dompurify';
 // YouTube helpers
 const isYouTubeUrl = (url: string): boolean => {

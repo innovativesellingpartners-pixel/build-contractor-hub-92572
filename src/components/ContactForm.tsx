@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Mail, Phone, User, Building, MessageSquare } from "lucide-react";
-import ct1Logo from "@/assets/ct1-logo-main.png";
+import ct1Logo from "@/assets/ct1-round-logo-new.png";
 import { FormNavigation } from "./FormNavigation";
 
 const contactFormSchema = z.object({

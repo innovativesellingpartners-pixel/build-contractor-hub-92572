@@ -18,7 +18,7 @@ import {
   Play,
   Pause
 } from "lucide-react";
-import ct1Logo from "@/assets/ct1-logo-main.png";
+import ct1Logo from "@/assets/ct1-round-logo-new.png";
 
 const PocketbotProduct = () => {
   const [activeContactForm, setActiveContactForm] = useState<string | null>(null);

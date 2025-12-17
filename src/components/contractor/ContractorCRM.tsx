@@ -15,7 +15,7 @@ import {
   Edit
 } from "lucide-react";
 import { useState } from "react";
-import ct1Logo from "@/assets/ct1-logo-main.png";
+import ct1Logo from "@/assets/ct1-round-logo-new.png";
 import { useLeads, Lead } from "@/hooks/useLeads";
 import { AddLeadDialog } from "./AddLeadDialog";
 import { EditLeadDialog } from "./EditLeadDialog";

@@ -25,7 +25,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import ct1Logo from "@/assets/ct1-logo-main.png";
+import ct1Logo from "@/assets/ct1-round-logo-new.png";
 
 interface Opportunity {
   id: string;

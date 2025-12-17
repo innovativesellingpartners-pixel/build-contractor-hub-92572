@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FloatingTrialButton } from "@/components/FloatingTrialButton";
 import { ArrowLeft, Clock, DollarSign, TrendingUp, Zap, Package, Shield, Calculator } from "lucide-react";
-import ct1Logo from "@/assets/ct1-logo-main.png";
+import ct1Logo from "@/assets/ct1-round-logo-new.png";
 
 export default function Savings() {
   const savingsData = [

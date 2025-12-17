@@ -16,7 +16,7 @@ import {
   DollarSign as DollarSignIcon
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import ct1Logo from '@/assets/ct1-logo-main.png';
+import ct1Logo from '@/assets/ct1-round-logo-new.png';
 
 interface Video {
   id: string;

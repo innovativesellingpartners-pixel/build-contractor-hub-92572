@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckCircle2, Loader2 } from 'lucide-react';
 import { SignupAfterPayment } from '@/components/SignupAfterPayment';
-import ct1Logo from '@/assets/ct1-logo-main.png';
+import ct1Logo from '@/assets/ct1-round-logo-new.png';
 
 export default function PaymentSuccess() {
   const [searchParams] = useSearchParams();

@@ -12,7 +12,7 @@ import {
   Receipt
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import ct1Logo from '@/assets/ct1-logo-main.png';
+import ct1Logo from '@/assets/ct1-round-logo-new.png';
 
 const navItems = [
   { to: '/admin', icon: Users, label: 'User Management', end: true },

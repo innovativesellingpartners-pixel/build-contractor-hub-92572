@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Zap, Phone, Users, Bot, Calendar, Target, Headphones } from "lucide-react";
-import ct1Logo from "@/assets/ct1-logo-main.png";
+import ct1Logo from "@/assets/ct1-round-logo-new.png";
 import { MainSiteHeader } from "@/components/MainSiteHeader";
 
 export default function TierGrowth() {

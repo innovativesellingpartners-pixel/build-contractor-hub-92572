@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Bot, CheckCircle, Phone, Clock, Users, ExternalLink, PhoneCall, Zap } from "lucide-react";
-import ct1Logo from "@/assets/ct1-logo-main.png";
+import ct1Logo from "@/assets/ct1-round-logo-new.png";
 
 export function VoiceAI() {
   const [smithAIDialogOpen, setSmithAIDialogOpen] = useState(false);

@@ -21,7 +21,7 @@ import {
   Bot,
   BarChart3
 } from "lucide-react";
-import ct1Logo from "@/assets/ct1-logo-main.png";
+import ct1Logo from "@/assets/ct1-round-logo-new.png";
 import heroImage from "@/assets/hero-construction.jpg";
 import tmobileLogo from "@/assets/t-mobile-logo.png";
 import ringcentralLogo from "@/assets/ringcentral-logo.webp";
