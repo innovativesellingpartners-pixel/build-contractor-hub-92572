@@ -1,12 +1,13 @@
 import { useState } from 'react';
-import { useCustomers } from '@/hooks/useCustomers';
+import { useCustomers, Customer } from '@/hooks/useCustomers';
 import { useEstimates } from '@/hooks/useEstimates';
 import { useJobs } from '@/hooks/useJobs';
 import { Button } from '@/components/ui/button';
-import { Plus, Phone, Mail, Briefcase, Home, FileText, ChevronRight } from 'lucide-react';
+import { Plus, Phone, Mail, Briefcase, FileText, ChevronRight, Merge, Search } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import AddCustomerDialog from '../AddCustomerDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -18,13 +19,20 @@ interface CustomersSectionProps {
 }
 
 export default function CustomersSection({ onSectionChange }: CustomersSectionProps) {
-  const { customers, loading } = useCustomers();
+  const { customers, loading, refreshCustomers } = useCustomers();
   const { estimates } = useEstimates();
   const { jobs } = useJobs();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [convertingCustomer, setConvertingCustomer] = useState<any>(null);
   const [detailViewOpen, setDetailViewOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
+  
+  // Merge state
+  const [showMergeDialog, setShowMergeDialog] = useState(false);
+  const [mergeSearch, setMergeSearch] = useState('');
+  const [mergeSourceCustomer, setMergeSourceCustomer] = useState<Customer | null>(null);
+  const [mergeTargetCustomer, setMergeTargetCustomer] = useState<Customer | null>(null);
+  const [isMerging, setIsMerging] = useState(false);
 
   const handleOpenDetail = (customer: any) => {
     setSelectedCustomer(customer);
@@ -85,12 +93,48 @@ export default function CustomersSection({ onSectionChange }: CustomersSectionPr
     }
   };
 
+  const handleMergeCustomers = async () => {
+    if (!mergeSourceCustomer || !mergeTargetCustomer) return;
+    
+    setIsMerging(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('merge-customers', {
+        body: { 
+          keepCustomerId: mergeTargetCustomer.id,
+          mergeCustomerId: mergeSourceCustomer.id
+        }
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      toast.success(`Merged "${mergeSourceCustomer.name}" into "${mergeTargetCustomer.name}"`);
+      setShowMergeDialog(false);
+      setMergeSourceCustomer(null);
+      setMergeTargetCustomer(null);
+      setMergeSearch('');
+      refreshCustomers?.();
+    } catch (error: any) {
+      toast.error('Failed to merge customers: ' + error.message);
+    } finally {
+      setIsMerging(false);
+    }
+  };
+
   // Get linked data for each customer
   const getCustomerData = (customer: any) => {
     const linkedEstimate = estimates?.find(e => e.customer_id === customer.id);
     const linkedJobs = jobs?.filter(j => j.customer_id === customer.id) || [];
     return { linkedEstimate, linkedJobs };
   };
+
+  // Filter customers for merge search
+  const filteredMergeCustomers = customers?.filter(c => 
+    c.id !== mergeSourceCustomer?.id &&
+    (c.name.toLowerCase().includes(mergeSearch.toLowerCase()) ||
+     c.email?.toLowerCase().includes(mergeSearch.toLowerCase()) ||
+     c.phone?.includes(mergeSearch))
+  ) || [];
 
   if (loading) {
     return <div className="p-6">Loading customers...</div>;
@@ -105,6 +149,10 @@ export default function CustomersSection({ onSectionChange }: CustomersSectionPr
             <p className="text-sm sm:text-base text-muted-foreground">Manage your customer database</p>
           </div>
           <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setShowMergeDialog(true)}>
+              <Merge className="h-4 w-4 mr-2" />
+              Merge
+            </Button>
             <Button onClick={() => setIsAddDialogOpen(true)} className="w-full sm:w-auto">
               <Plus className="h-4 w-4 mr-2" />
               Add Customer
@@ -235,6 +283,159 @@ export default function CustomersSection({ onSectionChange }: CustomersSectionPr
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Merge Customers Dialog */}
+      <Dialog open={showMergeDialog} onOpenChange={setShowMergeDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Merge className="w-5 h-5" />
+              Merge Customers
+            </DialogTitle>
+            <DialogDescription>
+              Select two customers to merge. All data from the source customer will be transferred to the target customer.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {/* Step 1: Select source customer */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Source Customer (will be deleted)</label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search customer to merge..."
+                  value={mergeSearch}
+                  onChange={(e) => setMergeSearch(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              
+              {!mergeSourceCustomer && (
+                <div className="border rounded-lg max-h-[150px] overflow-y-auto">
+                  {filteredMergeCustomers.length === 0 ? (
+                    <div className="p-3 text-center text-muted-foreground text-sm">
+                      {mergeSearch ? 'No customers found' : 'Start typing to search'}
+                    </div>
+                  ) : (
+                    filteredMergeCustomers.slice(0, 5).map((c) => (
+                      <div
+                        key={c.id}
+                        onClick={() => {
+                          setMergeSourceCustomer(c);
+                          setMergeSearch('');
+                        }}
+                        className="p-3 cursor-pointer border-b last:border-b-0 hover:bg-muted/50"
+                      >
+                        <p className="font-medium text-sm">{c.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {[c.email, c.phone].filter(Boolean).join(' • ')}
+                        </p>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+              
+              {mergeSourceCustomer && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex justify-between items-center">
+                  <div>
+                    <p className="font-medium text-sm">{mergeSourceCustomer.name}</p>
+                    <p className="text-xs text-muted-foreground">Will be merged and deleted</p>
+                  </div>
+                  <Button variant="ghost" size="sm" onClick={() => setMergeSourceCustomer(null)}>
+                    Change
+                  </Button>
+                </div>
+              )}
+            </div>
+
+            {/* Step 2: Select target customer */}
+            {mergeSourceCustomer && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Target Customer (will keep)</label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search target customer..."
+                    value={mergeSearch}
+                    onChange={(e) => setMergeSearch(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                
+                {!mergeTargetCustomer && (
+                  <div className="border rounded-lg max-h-[150px] overflow-y-auto">
+                    {filteredMergeCustomers.length === 0 ? (
+                      <div className="p-3 text-center text-muted-foreground text-sm">
+                        {mergeSearch ? 'No customers found' : 'Start typing to search'}
+                      </div>
+                    ) : (
+                      filteredMergeCustomers.slice(0, 5).map((c) => (
+                        <div
+                          key={c.id}
+                          onClick={() => {
+                            setMergeTargetCustomer(c);
+                            setMergeSearch('');
+                          }}
+                          className="p-3 cursor-pointer border-b last:border-b-0 hover:bg-muted/50"
+                        >
+                          <p className="font-medium text-sm">{c.name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {[c.email, c.phone].filter(Boolean).join(' • ')}
+                          </p>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
+                
+                {mergeTargetCustomer && (
+                  <div className="p-3 bg-green-50 border border-green-200 rounded-lg flex justify-between items-center">
+                    <div>
+                      <p className="font-medium text-sm">{mergeTargetCustomer.name}</p>
+                      <p className="text-xs text-muted-foreground">Will receive merged data</p>
+                    </div>
+                    <Button variant="ghost" size="sm" onClick={() => setMergeTargetCustomer(null)}>
+                      Change
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Confirmation */}
+            {mergeSourceCustomer && mergeTargetCustomer && (
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                <p className="text-sm font-medium text-amber-800">
+                  Merge "{mergeSourceCustomer.name}" into "{mergeTargetCustomer.name}"?
+                </p>
+                <p className="text-xs text-amber-700 mt-1">
+                  This action cannot be undone. All jobs and estimates will be transferred.
+                </p>
+              </div>
+            )}
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setShowMergeDialog(false);
+              setMergeSourceCustomer(null);
+              setMergeTargetCustomer(null);
+              setMergeSearch('');
+            }}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleMergeCustomers} 
+              disabled={!mergeSourceCustomer || !mergeTargetCustomer || isMerging}
+              className="bg-amber-600 hover:bg-amber-700"
+            >
+              {isMerging ? 'Merging...' : 'Merge Customers'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Customer Detail View Dialog */}
       <Dialog open={detailViewOpen} onOpenChange={setDetailViewOpen}>

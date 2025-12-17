@@ -24,6 +24,8 @@ export interface Lead {
   last_contact_date?: string;
   customer_id?: string;
   converted_to_customer?: boolean;
+  converted_to_job_id?: string;
+  converted_at?: string;
 }
 
 export interface LeadSource {

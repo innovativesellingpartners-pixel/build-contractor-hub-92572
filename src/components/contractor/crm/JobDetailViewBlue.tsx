@@ -333,6 +333,12 @@ export default function JobDetailViewBlue({ job, open, onOpenChange, onCreateEst
                 START TRAVEL
               </ActionButton>
             )}
+            {onCreateEstimate && (
+              <ActionButton variant="secondary" onClick={onCreateEstimate} className="flex-1 flex items-center justify-center gap-2">
+                <FileText className="w-4 h-4" />
+                CREATE ESTIMATE
+              </ActionButton>
+            )}
             {job.status === 'scheduled' && (
               <ActionButton variant="success" onClick={() => handleStatusChange('in_progress')} className="flex-1">
                 START JOB
