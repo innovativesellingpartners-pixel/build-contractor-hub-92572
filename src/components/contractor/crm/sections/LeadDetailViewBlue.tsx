@@ -111,8 +111,8 @@ export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSecti
   const isConverted = !!lead.converted_to_job_id;
 
   return (
-    <BlueBackground className="min-h-full">
-      {/* Header */}
+    <BlueBackground className="min-h-full flex flex-col">
+      {/* Header - Fixed */}
       <DetailHeader
         title={lead.name}
         subtitle={lead.company || undefined}
@@ -120,7 +120,7 @@ export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSecti
         rightContent={<StatusBadge status={lead.status} />}
       />
 
-      {/* Action Buttons */}
+      {/* Action Buttons - Fixed */}
       <ActionButtonRow>
         {!isConverted && (
           <ActionButton 
@@ -146,8 +146,8 @@ export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSecti
         )}
       </ActionButtonRow>
 
-      {/* Sales Flow Progress */}
-      <div className="bg-white px-4 py-3 border-b border-sky-100">
+      {/* Sales Flow Progress - Fixed */}
+      <div className="bg-white px-4 py-3 border-b border-sky-100 flex-shrink-0">
         <div className="flex items-center justify-center gap-2 text-xs">
           <span className="px-3 py-1 bg-sky-500 text-white rounded-full font-semibold">Lead</span>
           <ArrowRight className="w-4 h-4 text-slate-400" />
@@ -164,10 +164,11 @@ export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSecti
         </p>
       </div>
 
-      {/* Content */}
-      <div className="space-y-0">
-        {/* Converted Status */}
-        {isConverted && linkedJob && (
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-y-auto pb-8">
+        <div className="space-y-0">
+          {/* Converted Status */}
+          {isConverted && linkedJob && (
           <>
             <SectionHeader>CONVERTED TO</SectionHeader>
             <InfoCard className="rounded-none">
@@ -334,6 +335,7 @@ export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSecti
             </InfoCard>
           </>
         )}
+        </div>
       </div>
     </BlueBackground>
   );

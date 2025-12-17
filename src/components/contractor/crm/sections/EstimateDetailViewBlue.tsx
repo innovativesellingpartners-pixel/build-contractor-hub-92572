@@ -225,8 +225,8 @@ export function EstimateDetailViewBlue({
   const canSendToGC = estimate.signed_at || estimate.status === 'accepted' || estimate.status === 'sold';
 
   return (
-    <BlueBackground className="min-h-full">
-      {/* Header */}
+    <BlueBackground className="min-h-full flex flex-col">
+      {/* Header - Fixed */}
       <DetailHeader
         title={estimate.title}
         subtitle={estimate.estimate_number || undefined}
@@ -234,8 +234,8 @@ export function EstimateDetailViewBlue({
         rightContent={<StatusBadge status={estimate.status} />}
       />
 
-      {/* Action Buttons */}
-      <ActionButtonRow className="flex-wrap">
+      {/* Action Buttons - Fixed */}
+      <ActionButtonRow className="flex-wrap flex-shrink-0">
         {onEdit && (
           <ActionButton variant="secondary" onClick={onEdit} className="flex items-center gap-2">
             <Eye className="w-4 h-4" />
@@ -299,10 +299,11 @@ export function EstimateDetailViewBlue({
         )}
       </ActionButtonRow>
 
-      {/* Content */}
-      <div className="space-y-0">
-        {/* Estimate Information */}
-        <SectionHeader>ESTIMATE DETAILS</SectionHeader>
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-y-auto pb-8">
+        <div className="space-y-0">
+          {/* Estimate Information */}
+          <SectionHeader>ESTIMATE DETAILS</SectionHeader>
         <InfoCard className="rounded-none">
           <InfoRow label="Title" value={estimate.title} />
           <InfoRow label="Estimate #" value={estimate.estimate_number} />
@@ -476,6 +477,7 @@ export function EstimateDetailViewBlue({
             />
           )}
         </InfoCard>
+        </div>
       </div>
 
       {/* Customer Detail Dialog */}
