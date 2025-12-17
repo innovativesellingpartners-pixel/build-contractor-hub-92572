@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle, Star, Users, BookOpen, ShoppingBag, Bot, Calendar } from "lucide-react";
-import ct1Logo from "@/assets/ct1-logo-main.png";
+import ct1Logo from "@/assets/ct1-round-logo-new.png";
 import { MainSiteHeader } from "@/components/MainSiteHeader";
 
 export default function TierLaunch() {

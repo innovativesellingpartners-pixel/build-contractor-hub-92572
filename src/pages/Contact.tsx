@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { MainSiteHeader } from "@/components/MainSiteHeader";
 import { FormNavigation } from "@/components/FormNavigation";
 import { SEOHead, structuredDataGenerators } from "@/components/SEOHead";
-import ct1Logo from "@/assets/ct1-logo-main.png";
+import ct1Logo from "@/assets/ct1-round-logo-new.png";
 import { 
   Phone, 
   Mail, 

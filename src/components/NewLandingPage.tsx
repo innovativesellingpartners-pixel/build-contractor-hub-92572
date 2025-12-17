@@ -8,7 +8,7 @@ import { ContactForm } from "@/components/ContactForm";
 import { MainSiteHeader } from "@/components/MainSiteHeader";
 import { SEOHead } from "@/components/SEOHead";
 import heroImage from "@/assets/hero-home.jpg";
-import ct1RoundLogo from "@/assets/ct1-round-logo.png";
+import ct1RoundLogo from "@/assets/ct1-round-logo-new.png";
 import { 
   ArrowRight, 
   Calculator, 

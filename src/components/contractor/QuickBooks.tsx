@@ -7,7 +7,7 @@ import { DollarSign, CheckCircle, TrendingUp, FileText, Users, Loader2, PhoneCal
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import ct1Logo from "@/assets/ct1-logo-main.png";
+import ct1Logo from "@/assets/ct1-round-logo-new.png";
 
 export function QuickBooks() {
   const [isConnected, setIsConnected] = useState(false);

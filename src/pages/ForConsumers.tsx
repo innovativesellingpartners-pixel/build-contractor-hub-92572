@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { FloatingTrialButton } from '@/components/FloatingTrialButton';
 import { Shield, CheckCircle, Star, Clock, Award, Users, ThumbsUp, MessageCircle } from 'lucide-react';
-import ct1Logo from '@/assets/ct1-logo-main.png';
+import ct1Logo from '@/assets/ct1-round-logo-new.png';
 import joeCipriano from '@/assets/joe-cipriano.png';
 
 export default function ForConsumers() {

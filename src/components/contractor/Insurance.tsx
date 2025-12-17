@@ -8,7 +8,7 @@ import { Shield, FileText, AlertCircle, CheckCircle, Check, ChevronsUpDown, Uplo
 import { useState, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import ct1Logo from "@/assets/ct1-logo-main.png";
+import ct1Logo from "@/assets/ct1-round-logo-new.png";
 import { ContactForm } from "@/components/ContactForm";
 import { useInsuranceDocuments } from "@/hooks/useInsuranceDocuments";
 import { Input } from "@/components/ui/input";

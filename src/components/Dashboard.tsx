@@ -48,7 +48,7 @@ import { FloatingPocketbot } from "@/components/contractor/FloatingPocketbot";
 import { ContactSupport } from "@/components/ContactSupport";
 import { BottomNav } from "@/components/contractor/crm/BottomNav";
 import { BackNavigation } from "@/components/contractor/crm/BackNavigation";
-import ct1Logo from "@/assets/ct1-logo-main.png";
+import ct1Logo from "@/assets/ct1-round-logo-new.png";
 
 import { VoiceAI } from "@/components/contractor/VoiceAI";
 import Reporting from "@/pages/Reporting";

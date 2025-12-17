@@ -36,7 +36,7 @@ import FinancialsSection from './sections/FinancialsSection';
 import MoreSection from './sections/MoreSection';
 import InvoicesSection from './sections/InvoicesSection';
 
-import ct1Logo from '@/assets/ct1-logo-main.png';
+import ct1Logo from '@/assets/ct1-round-logo-new.png';
 import Reporting from '@/pages/Reporting';
 import Accounting from '@/pages/Accounting';
 import { MobileLandingPage } from './MobileLandingPage';

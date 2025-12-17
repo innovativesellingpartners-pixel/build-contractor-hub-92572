@@ -8,7 +8,7 @@ import { MainSiteHeader } from "@/components/MainSiteHeader";
 import { FormNavigation } from "@/components/FormNavigation";
 import { SEOHead, structuredDataGenerators } from "@/components/SEOHead";
 import { CheckCircle, Star, Zap, Crown, Bot, Phone } from "lucide-react";
-import ct1Logo from "@/assets/ct1-logo-main.png";
+import ct1Logo from "@/assets/ct1-round-logo-new.png";
 import { TierCheckout } from "@/components/TierCheckout";
 import { SignupAfterPayment } from "@/components/SignupAfterPayment";
 

@@ -31,7 +31,7 @@ import performanceImg from '@/assets/training-performance.jpg';
 import processImg from '@/assets/training-process.jpg';
 import sellingImg from '@/assets/training-selling.jpg';
 import videoThumbnail from '@/assets/training-video-thumbnail.png';
-import ct1Logo from '@/assets/ct1-logo-main.png';
+import ct1Logo from '@/assets/ct1-round-logo-new.png';
 
 type TrainingSection = 'courses' | 'progress' | 'certificates' | 'support';
 

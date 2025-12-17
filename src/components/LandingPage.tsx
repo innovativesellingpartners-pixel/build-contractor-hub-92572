@@ -4,8 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MobileNav } from "@/components/MobileNav";
 import heroImage from "@/assets/hero-construction.jpg";
-import ct1Logo from "@/assets/ct1-logo-main.png";
-import constructeamLogo from "@/assets/ct1-logo-main.png";
+import ct1Logo from "@/assets/ct1-round-logo-new.png";
+import constructeamLogo from "@/assets/ct1-round-logo-new.png";
 import { 
   ArrowRight, 
   Bot, 

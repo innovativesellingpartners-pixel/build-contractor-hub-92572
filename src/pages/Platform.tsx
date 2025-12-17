@@ -16,7 +16,7 @@ import {
   Clock,
   Zap
 } from "lucide-react";
-import ct1Logo from "@/assets/ct1-logo-main.png";
+import ct1Logo from "@/assets/ct1-round-logo-new.png";
 
 export default function Platform() {
   const features = [
