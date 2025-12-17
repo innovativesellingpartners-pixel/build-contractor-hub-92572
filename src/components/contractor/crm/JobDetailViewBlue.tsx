@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { 
   Navigation, Copy, Pencil, FileText, Camera, ClipboardList, Package, 
-  Receipt, DollarSign, Calendar, Clock, Info, Briefcase
+  Receipt, DollarSign, Calendar, Clock, Info, Briefcase, Upload, X
 } from 'lucide-react';
 import { useJobs, Job } from '@/hooks/useJobs';
 import { format } from 'date-fns';
@@ -15,8 +15,9 @@ import MaterialsTab from './job/MaterialsTab';
 import ChangeOrdersTab from './job/ChangeOrdersTab';
 import InvoicesTab from './job/InvoicesTab';
 import PSFUTab from './job/PSFUTab';
-import { useJobPhotos } from '@/hooks/useJobPhotos';
+import { useJobPhotos, JobPhoto } from '@/hooks/useJobPhotos';
 import { useDailyLogs } from '@/hooks/useDailyLogs';
+import { ImageViewer } from '@/components/ui/image-viewer';
 import {
   BlueBackground,
   SectionHeader,
@@ -40,75 +41,140 @@ interface JobDetailViewBlueProps {
   onDuplicateJob?: (jobId: string) => Promise<Job | undefined>;
 }
 
-// Photos Tab Component (simplified for new theme)
+// Photos Tab Component with camera support and image viewer
 function PhotosTabContent({ jobId }: { jobId: string }) {
   const { photos, uploading, uploadPhoto, deletePhoto } = useJobPhotos(jobId);
   const [photoCaption, setPhotoCaption] = useState('');
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [selectedPhoto, setSelectedPhoto] = useState<JobPhoto | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
+    for (const file of Array.from(files)) {
       await uploadPhoto(file, photoCaption);
-      setPhotoCaption('');
+    }
+    setPhotoCaption('');
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    if (cameraInputRef.current) cameraInputRef.current.value = '';
+  };
+
+  const handlePhotoClick = (photo: JobPhoto) => {
+    setSelectedPhoto(photo);
+    setViewerOpen(true);
+  };
+
+  const handleDelete = async (photo: JobPhoto, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (window.confirm('Delete this photo?')) {
+      await deletePhoto(photo.id, photo.photo_url);
     }
   };
 
   return (
     <div className="p-4 space-y-4">
-      <div className="flex gap-2 items-center">
+      <div className="space-y-2">
         <input
           type="text"
-          placeholder="Photo caption"
-          className="flex-1 px-3 py-2 border border-border rounded-md text-sm bg-card focus:outline-none focus:ring-2 focus:ring-primary"
+          placeholder="Photo caption (optional)"
+          className="w-full px-3 py-2 border border-border rounded-md text-sm bg-card focus:outline-none focus:ring-2 focus:ring-primary"
           value={photoCaption}
           onChange={(e) => setPhotoCaption(e.target.value)}
         />
-        <label className="cursor-pointer">
-          <ActionButton variant="secondary" disabled={uploading}>
-            {uploading ? '...' : 'Upload'}
-          </ActionButton>
-          <input
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handlePhotoUpload}
-            disabled={uploading}
-          />
-        </label>
       </div>
+
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading}
+          className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-sky-500 text-white rounded-lg font-semibold disabled:opacity-50"
+        >
+          <Upload className="w-4 h-4" />
+          {uploading ? 'Uploading...' : 'Upload'}
+        </button>
+        <button
+          type="button"
+          onClick={() => cameraInputRef.current?.click()}
+          disabled={uploading}
+          className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-emerald-500 text-white rounded-lg font-semibold disabled:opacity-50"
+        >
+          <Camera className="w-4 h-4" />
+          Take Photo
+        </button>
+      </div>
+
+      {/* Hidden inputs */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        multiple
+        className="hidden"
+        onChange={handlePhotoUpload}
+        disabled={uploading}
+      />
+      <input
+        ref={cameraInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+        onChange={handlePhotoUpload}
+        disabled={uploading}
+      />
 
       <div className="grid grid-cols-2 gap-3">
         {photos && photos.length > 0 ? (
           photos.map((photo) => (
-            <InfoCard key={photo.id} className="overflow-hidden">
-              <img
-                src={photo.signed_url || photo.photo_url}
-                alt={photo.caption || 'Job photo'}
-                className="w-full h-32 object-cover"
-                onError={(e) => {
-                  e.currentTarget.src = '/placeholder.svg';
-                }}
-              />
-              <div className="p-2">
-                {photo.caption && <p className="text-xs text-slate-700 truncate">{photo.caption}</p>}
-                <p className="text-xs text-slate-500">
-                  {format(new Date(photo.created_at!), 'MMM d, yyyy')}
-                </p>
-                <button
-                  onClick={() => deletePhoto(photo.id!, photo.photo_url)}
-                  className="text-xs text-red-500 mt-1 hover:underline"
-                >
-                  Delete
-                </button>
-              </div>
-            </InfoCard>
+            <div 
+              key={photo.id} 
+              className="relative group cursor-pointer"
+              onClick={() => handlePhotoClick(photo)}
+            >
+              <InfoCard className="overflow-hidden">
+                <img
+                  src={photo.signed_url || photo.photo_url}
+                  alt={photo.caption || 'Job photo'}
+                  className="w-full h-32 object-cover"
+                  onError={(e) => {
+                    e.currentTarget.src = '/placeholder.svg';
+                  }}
+                />
+                <div className="p-2">
+                  {photo.caption && <p className="text-xs text-slate-700 truncate">{photo.caption}</p>}
+                  <p className="text-xs text-slate-500">
+                    {format(new Date(photo.created_at!), 'MMM d, yyyy')}
+                  </p>
+                </div>
+              </InfoCard>
+              <button
+                onClick={(e) => handleDelete(photo, e)}
+                className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </div>
           ))
         ) : (
           <div className="col-span-2 text-center py-8 text-slate-500 text-sm">
-            No photos yet. Upload photos to document progress.
+            No photos yet. Upload or take photos to document progress.
           </div>
         )}
       </div>
+
+      {/* Image Viewer */}
+      {selectedPhoto && (
+        <ImageViewer
+          src={selectedPhoto.signed_url || selectedPhoto.photo_url}
+          alt={selectedPhoto.caption || 'Job photo'}
+          open={viewerOpen}
+          onOpenChange={setViewerOpen}
+        />
+      )}
     </div>
   );
 }

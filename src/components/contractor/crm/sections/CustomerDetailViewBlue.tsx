@@ -163,15 +163,15 @@ export function CustomerDetailViewBlue({ customer, onClose, onSectionChange, onC
   const outstandingBalance = totalContractValue - totalPaymentsCollected;
 
   return (
-    <BlueBackground className="min-h-full">
-      {/* Header */}
+    <BlueBackground className="min-h-full flex flex-col">
+      {/* Header - Fixed */}
       <DetailHeader
         title={customer.name}
         subtitle={customer.customer_type || 'Customer'}
         onBack={onClose}
       />
 
-      {/* Action Buttons */}
+      {/* Action Buttons - Fixed */}
       <ActionButtonRow>
         <ActionButton 
           variant="primary" 
@@ -193,8 +193,8 @@ export function CustomerDetailViewBlue({ customer, onClose, onSectionChange, onC
         </ActionButton>
       </ActionButtonRow>
 
-      {/* Merge Button */}
-      <div className="px-4 py-2 bg-white border-b border-sky-100">
+      {/* Merge Button - Fixed */}
+      <div className="px-4 py-2 bg-white border-b border-sky-100 flex-shrink-0">
         <Button 
           variant="outline" 
           size="sm" 
@@ -206,10 +206,11 @@ export function CustomerDetailViewBlue({ customer, onClose, onSectionChange, onC
         </Button>
       </div>
 
-      {/* Content */}
-      <div className="space-y-0">
-        {/* Customer Information */}
-        <SectionHeader>CUSTOMER INFORMATION</SectionHeader>
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-y-auto pb-8">
+        <div className="space-y-0">
+          {/* Customer Information */}
+          <SectionHeader>CUSTOMER INFORMATION</SectionHeader>
         <InfoCard className="rounded-none">
           <InfoRow label="Name" value={customer.name} />
           <InfoRow label="Type" value={customer.customer_type || 'Residential'} />
@@ -366,6 +367,7 @@ export function CustomerDetailViewBlue({ customer, onClose, onSectionChange, onC
             </InfoCard>
           </>
         )}
+        </div>
       </div>
 
       {/* Merge Customer Dialog */}
