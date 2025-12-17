@@ -7,7 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
-import { FileText, Briefcase, ArrowRight, Mail, Phone } from 'lucide-react';
+import { FileText, Briefcase, ArrowRight, Mail, Phone, Plus } from 'lucide-react';
 import {
   BlueBackground,
   SectionHeader,
@@ -70,7 +70,7 @@ export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSecti
     }
   };
 
-  // Create estimate for this lead
+  // Create estimate for this lead and navigate to it
   const handleCreateEstimate = async () => {
     if (!user) return;
     
@@ -91,10 +91,13 @@ export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSecti
         total_amount: lead.value || 0,
       };
 
-      await createEstimateAsync(estimateData);
+      const newEstimate = await createEstimateAsync(estimateData);
       toast.success('Estimate created!');
       
-      if (onSectionChange) {
+      // Navigate directly to the newly created estimate
+      if (onSectionChange && newEstimate?.id) {
+        onSectionChange(`estimate:${newEstimate.id}`);
+      } else if (onSectionChange) {
         onSectionChange('estimates');
       }
     } catch (error: any) {
@@ -278,28 +281,42 @@ export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSecti
             <div className="p-4 text-center">
               <p className="text-muted-foreground text-sm mb-3">No estimates yet</p>
               <ActionButton variant="secondary" onClick={handleCreateEstimate} disabled={isCreatingEstimate}>
-                Create Estimate
+                {isCreatingEstimate ? 'Creating...' : 'Create Estimate'}
               </ActionButton>
             </div>
           ) : (
-            leadEstimates.map((estimate) => (
-              <div
-                key={estimate.id}
-                className="flex items-center justify-between px-4 py-3 border-b border-sky-50 last:border-b-0 cursor-pointer hover:bg-sky-50"
-                onClick={() => onSectionChange?.('estimates')}
-              >
-                <div>
-                  <p className="font-medium text-slate-800 text-sm">{estimate.title}</p>
-                  <p className="text-xs text-slate-500">
-                    ${estimate.total_amount?.toFixed(2)}
-                  </p>
+            <>
+              {leadEstimates.map((estimate) => (
+                <div
+                  key={estimate.id}
+                  className="flex items-center justify-between px-4 py-3 border-b border-sky-50 last:border-b-0 cursor-pointer hover:bg-sky-50"
+                  onClick={() => onSectionChange?.(`estimate:${estimate.id}`)}
+                >
+                  <div>
+                    <p className="font-medium text-slate-800 text-sm">{estimate.title}</p>
+                    <p className="text-xs text-slate-500">
+                      ${estimate.total_amount?.toFixed(2)}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <StatusBadge status={estimate.status} />
+                    <ArrowRight className="w-4 h-4 text-slate-400" />
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <StatusBadge status={estimate.status} />
-                  <ArrowRight className="w-4 h-4 text-slate-400" />
-                </div>
+              ))}
+              {/* Always show Create Estimate button even if estimates exist */}
+              <div className="p-4 border-t border-sky-100">
+                <ActionButton 
+                  variant="secondary" 
+                  onClick={handleCreateEstimate} 
+                  disabled={isCreatingEstimate}
+                  className="w-full"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  {isCreatingEstimate ? 'Creating...' : 'Create Another Estimate'}
+                </ActionButton>
               </div>
-            ))
+            </>
           )}
         </InfoCard>
 

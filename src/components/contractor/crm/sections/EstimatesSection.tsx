@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -16,7 +16,13 @@ import { HorizontalRowCard, RowAvatar, RowContent, RowTitleLine, RowMetaLine, Ro
 import { EstimateDetailViewBlue } from './EstimateDetailViewBlue';
 import { TemplatesSection } from '../estimate/TemplatesSection';
 
-export default function EstimatesSection({ onSectionChange }: { onSectionChange?: (section: string) => void }) {
+interface EstimatesSectionProps {
+  onSectionChange?: (section: string) => void;
+  initialEstimateId?: string | null;
+  onClearInitialEstimate?: () => void;
+}
+
+export default function EstimatesSection({ onSectionChange, initialEstimateId, onClearInitialEstimate }: EstimatesSectionProps) {
   const { estimates, isLoading, createEstimate, createEstimateAsync, updateEstimate, updateEstimateAsync, deleteEstimate, sendEstimate, sendEstimateAsync, isSendingEstimate, duplicateEstimate, isDuplicatingEstimate } = useEstimates();
   const { leads } = useLeads();
   const { user } = useAuth();
@@ -26,6 +32,19 @@ export default function EstimatesSection({ onSectionChange }: { onSectionChange?
   const [selectedEstimateForDetail, setSelectedEstimateForDetail] = useState<any>(null);
   const [isConverting, setIsConverting] = useState<string | null>(null);
   const [showTemplates, setShowTemplates] = useState(false);
+
+  // Handle initial estimate ID to auto-open the detail view
+  React.useEffect(() => {
+    if (initialEstimateId && estimates && estimates.length > 0) {
+      const estimate = estimates.find(e => e.id === initialEstimateId);
+      if (estimate) {
+        setSelectedEstimateForDetail(estimate);
+        setDetailViewOpen(true);
+        // Clear the initial estimate ID after opening
+        onClearInitialEstimate?.();
+      }
+    }
+  }, [initialEstimateId, estimates, onClearInitialEstimate]);
 
   // Convert estimate to customer (new linear flow)
   const handleConvertToCustomer = async (estimate: any) => {

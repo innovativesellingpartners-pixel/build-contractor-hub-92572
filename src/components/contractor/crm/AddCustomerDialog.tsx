@@ -20,13 +20,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 import { useCustomers } from '@/hooks/useCustomers';
 
 const customerSchema = z.object({
@@ -133,17 +127,18 @@ export default function AddCustomerDialog({ open, onOpenChange }: AddCustomerDia
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Customer Type *</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select type" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="residential">Residential</SelectItem>
-                        <SelectItem value="commercial">Commercial</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <FormControl>
+                      <SearchableSelect
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        placeholder="Select type"
+                        searchPlaceholder="Search type..."
+                        options={[
+                          { value: 'residential', label: 'Residential' },
+                          { value: 'commercial', label: 'Commercial' },
+                        ]}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -183,32 +178,30 @@ export default function AddCustomerDialog({ open, onOpenChange }: AddCustomerDia
                 render={({ field }) => (
                   <FormItem className="md:col-span-2">
                     <FormLabel>Referred By / How did you hear about us?</FormLabel>
-                    <Select 
-                      onValueChange={(value) => {
-                        field.onChange(value);
-                        setShowOtherInput(value === 'Other');
-                        if (value !== 'Other') {
-                          form.setValue('referral_source_other', '');
-                        }
-                      }} 
-                      value={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select source" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="Google">Google</SelectItem>
-                        <SelectItem value="Facebook">Facebook</SelectItem>
-                        <SelectItem value="Social Media">Social Media</SelectItem>
-                        <SelectItem value="CT1">CT1</SelectItem>
-                        <SelectItem value="Friend">Friend</SelectItem>
-                        <SelectItem value="Former Customer">Former Customer</SelectItem>
-                        <SelectItem value="Family Member">Family Member</SelectItem>
-                        <SelectItem value="Other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <FormControl>
+                      <SearchableSelect
+                        value={field.value || ''}
+                        onValueChange={(value) => {
+                          field.onChange(value);
+                          setShowOtherInput(value === 'Other');
+                          if (value !== 'Other') {
+                            form.setValue('referral_source_other', '');
+                          }
+                        }}
+                        placeholder="Select source"
+                        searchPlaceholder="Search sources..."
+                        options={[
+                          { value: 'Google', label: 'Google' },
+                          { value: 'Facebook', label: 'Facebook' },
+                          { value: 'Social Media', label: 'Social Media' },
+                          { value: 'CT1', label: 'CT1' },
+                          { value: 'Friend', label: 'Friend' },
+                          { value: 'Former Customer', label: 'Former Customer' },
+                          { value: 'Family Member', label: 'Family Member' },
+                          { value: 'Other', label: 'Other' },
+                        ]}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
