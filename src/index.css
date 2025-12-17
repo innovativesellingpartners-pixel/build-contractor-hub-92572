@@ -17,10 +17,10 @@
     --popover: 0 0% 10%;                  /* Dark popover */
     --popover-foreground: 0 0% 92%;       /* Light text */
 
-    /* Primary: Lighter CT1 Red */
-    --primary: 0 70% 60%;                 /* Lighter red */
+    /* Primary: CT1 Brand Red #D50A22 */
+    --primary: 353 91% 44%;               /* CT1 brand red #D50A22 */
     --primary-foreground: 0 0% 100%;      /* White text on red */
-    --primary-hover: 0 70% 55%;           /* Slightly darker on hover */
+    --primary-hover: 353 91% 38%;         /* Slightly darker on hover */
 
     /* Secondary: Dark Gray */
     --secondary: 0 0% 18%;                /* Dark gray */
@@ -29,8 +29,8 @@
     --muted: 0 0% 15%;                    /* Dark muted background */
     --muted-foreground: 0 0% 60%;         /* Medium gray text */
     
-    /* Accent: Lighter CT1 Red */
-    --accent: 0 70% 60%;                  /* Lighter red accent */
+    /* Accent: CT1 Brand Red */
+    --accent: 353 91% 44%;                /* CT1 brand red accent */
     --accent-foreground: 0 0% 100%;       /* White on red */
     
     --destructive: 0 62.8% 50%;           /* Slightly lighter destructive */
@@ -38,14 +38,14 @@
     
     --border: 0 0% 22%;                   /* Dark gray borders */
     --input: 0 0% 15%;                    /* Dark input background */
-    --ring: 0 70% 60%;                    /* Lighter red focus ring */
+    --ring: 353 91% 44%;                  /* CT1 brand red focus ring */
 
     /* CT1 specific brand colors - dark palette */
-    --ct1-red: 0 70% 60%;                 /* Lighter brand red */
+    --ct1-red: 353 91% 44%;               /* CT1 brand red #D50A22 */
     --ct1-black: 0 0% 8%;                 /* Dark charcoal */
     --ct1-white: 0 0% 92%;                /* Off-white */
-    --ct1-dark-red: 0 70% 50%;            /* Standard red variant */
-    --ct1-light-red: 0 70% 70%;           /* Even lighter red variant */
+    --ct1-dark-red: 353 91% 38%;          /* Darker red variant */
+    --ct1-light-red: 353 91% 55%;         /* Lighter red variant */
 
     /* Vibrant accent colors */
     --blue-vibrant: 217 91% 60%;          /* Electric blue */
@@ -94,12 +94,12 @@
 
     --sidebar-background: 0 0% 10%;
     --sidebar-foreground: 0 0% 85%;
-    --sidebar-primary: 0 70% 60%;
+    --sidebar-primary: 353 91% 44%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 0 0% 15%;
     --sidebar-accent-foreground: 0 0% 90%;
     --sidebar-border: 0 0% 20%;
-    --sidebar-ring: 0 70% 60%;
+    --sidebar-ring: 353 91% 44%;
   }
 
   .dark {
@@ -111,9 +111,9 @@
     --popover: 0 0% 8%;
     --popover-foreground: 0 0% 100%;
 
-    --primary: 0 70% 60%;                 /* Soft red for dark mode */
+    --primary: 353 91% 44%;               /* CT1 brand red #D50A22 */
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 0 70% 55%;
+    --primary-hover: 353 91% 38%;
 
     --secondary: 0 0% 15%;                /* Dark gray */
     --secondary-foreground: 0 0% 100%;
@@ -121,7 +121,7 @@
     --muted: 0 0% 12%;                    /* Darker muted */
     --muted-foreground: 0 0% 70%;         /* Light gray text */
 
-    --accent: 0 70% 60%;                  /* Soft red accent */
+    --accent: 353 91% 44%;                /* CT1 brand red accent */
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 62.8% 50%;
@@ -129,15 +129,15 @@
 
     --border: 0 0% 25%;                   /* Darker border for better visibility in dark mode */
     --input: 0 0% 15%;                    /* Dark input bg */
-    --ring: 0 70% 60%;                    /* Soft red focus ring */
+    --ring: 353 91% 44%;                  /* CT1 brand red focus ring */
 
-    /* CT1 dark mode colors - softer */
-    --ct1-red: 0 70% 60%;                 /* Softer red for dark mode */
-    --ct1-soft-red: 0 70% 25%;            /* Very soft red for dark backgrounds */
+    /* CT1 dark mode colors */
+    --ct1-red: 353 91% 44%;               /* CT1 brand red #D50A22 */
+    --ct1-soft-red: 353 91% 25%;          /* Soft red for dark backgrounds */
     --ct1-black: 0 0% 5%;                 /* Very dark */
     --ct1-white: 0 0% 100%;               /* Pure white */
-    --ct1-dark-red: 0 70% 50%;            /* Darker red variant */
-    --ct1-light-red: 0 70% 70%;           /* Lighter red variant */
+    --ct1-dark-red: 353 91% 38%;          /* Darker red variant */
+    --ct1-light-red: 353 91% 55%;         /* Lighter red variant */
 
     /* Soft shadows for dark mode */
     --shadow-soft: 0 4px 20px -4px hsl(var(--ct1-red) / 0.3);
@@ -146,12 +146,12 @@
 
     --sidebar-background: 0 0% 8%;
     --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 0 70% 60%;
+    --sidebar-primary: 353 91% 44%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 0 0% 15%;
     --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 0 0% 20%;
-    --sidebar-ring: 0 70% 60%;
+    --sidebar-ring: 353 91% 44%;
   }
 }
 
