@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 import { Plus } from 'lucide-react';
 import { OpportunityStage, LeadSource } from '@/hooks/useOpportunities';
 
@@ -125,46 +125,41 @@ export function AddOpportunityDialog({ onAdd }: AddOpportunityDialogProps) {
 
             <div className="space-y-2">
               <Label htmlFor="trade_type">Trade Type *</Label>
-              <Select
+              <SearchableSelect
                 value={formData.trade_type}
                 onValueChange={(value) => setFormData({ ...formData, trade_type: value })}
-                required
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select trade" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="plumbing">Plumbing</SelectItem>
-                  <SelectItem value="electrical">Electrical</SelectItem>
-                  <SelectItem value="hvac">HVAC</SelectItem>
-                  <SelectItem value="roofing">Roofing</SelectItem>
-                  <SelectItem value="concrete">Concrete</SelectItem>
-                  <SelectItem value="landscaping">Landscaping</SelectItem>
-                  <SelectItem value="carpentry">Carpentry</SelectItem>
-                  <SelectItem value="painting">Painting</SelectItem>
-                  <SelectItem value="general">General Contractor</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
+                placeholder="Select trade"
+                searchPlaceholder="Search trades..."
+                options={[
+                  { value: 'plumbing', label: 'Plumbing' },
+                  { value: 'electrical', label: 'Electrical' },
+                  { value: 'hvac', label: 'HVAC' },
+                  { value: 'roofing', label: 'Roofing' },
+                  { value: 'concrete', label: 'Concrete' },
+                  { value: 'landscaping', label: 'Landscaping' },
+                  { value: 'carpentry', label: 'Carpentry' },
+                  { value: 'painting', label: 'Painting' },
+                  { value: 'general', label: 'General Contractor' },
+                  { value: 'other', label: 'Other' },
+                ]}
+              />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="lead_source">Lead Source</Label>
-              <Select
+              <SearchableSelect
                 value={formData.lead_source}
                 onValueChange={(value) => setFormData({ ...formData, lead_source: value as LeadSource })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="referral">Referral</SelectItem>
-                  <SelectItem value="website">Website</SelectItem>
-                  <SelectItem value="ad">Advertisement</SelectItem>
-                  <SelectItem value="repeat_customer">Repeat Customer</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
+                placeholder="Select source"
+                searchPlaceholder="Search sources..."
+                options={[
+                  { value: 'referral', label: 'Referral' },
+                  { value: 'website', label: 'Website' },
+                  { value: 'ad', label: 'Advertisement' },
+                  { value: 'repeat_customer', label: 'Repeat Customer' },
+                  { value: 'other', label: 'Other' },
+                ]}
+              />
             </div>
 
             <div className="space-y-2">

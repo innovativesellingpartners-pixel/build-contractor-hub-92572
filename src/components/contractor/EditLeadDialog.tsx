@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Lead, LeadSource } from '@/hooks/useLeads';
 import { supabase } from '@/integrations/supabase/client';
@@ -198,34 +198,33 @@ export function EditLeadDialog({ lead, open, onOpenChange, onUpdate, onDelete, s
             </div>
             <div className="space-y-2">
               <Label htmlFor="edit-status">Status</Label>
-              <Select value={formData.status} onValueChange={(value: Lead['status']) => setFormData({ ...formData, status: value })}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="new">New</SelectItem>
-                  <SelectItem value="contacted">Contacted</SelectItem>
-                  <SelectItem value="qualified">Qualified</SelectItem>
-                  <SelectItem value="quoted">Quoted</SelectItem>
-                  <SelectItem value="won">Won</SelectItem>
-                  <SelectItem value="lost">Lost</SelectItem>
-                </SelectContent>
-              </Select>
+              <SearchableSelect
+                value={formData.status}
+                onValueChange={(value) => setFormData({ ...formData, status: value as Lead['status'] })}
+                placeholder="Select status"
+                searchPlaceholder="Search status..."
+                options={[
+                  { value: 'new', label: 'New' },
+                  { value: 'contacted', label: 'Contacted' },
+                  { value: 'qualified', label: 'Qualified' },
+                  { value: 'quoted', label: 'Quoted' },
+                  { value: 'won', label: 'Won' },
+                  { value: 'lost', label: 'Lost' },
+                ]}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="edit-source">Lead Source</Label>
-              <Select value={formData.source_id} onValueChange={(value) => setFormData({ ...formData, source_id: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a source" />
-                </SelectTrigger>
-                <SelectContent>
-                  {sources.map((source) => (
-                    <SelectItem key={source.id} value={source.id}>
-                      {source.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <SearchableSelect
+                value={formData.source_id}
+                onValueChange={(value) => setFormData({ ...formData, source_id: value })}
+                placeholder="Select a source"
+                searchPlaceholder="Search sources..."
+                options={sources.map((source) => ({
+                  value: source.id,
+                  label: source.name,
+                }))}
+              />
             </div>
           </div>
           <div className="space-y-2">

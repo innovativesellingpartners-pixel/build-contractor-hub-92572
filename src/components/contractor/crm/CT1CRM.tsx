@@ -99,14 +99,34 @@ const navItems = [
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showMobileLanding, setShowMobileLanding] = useState(getInitialLandingState);
   const [navigationHistory, setNavigationHistory] = useState<Section[]>([]);
+  const [initialEstimateId, setInitialEstimateId] = useState<string | null>(null);
   const isMobile = useIsMobile();
 
   // Save active section to sessionStorage whenever it changes
-  const handleSectionChange = (section: Section) => {
+  const handleSectionChange = (section: string) => {
+    // Check if navigating to a specific estimate (format: "estimate:uuid")
+    if (section.startsWith('estimate:')) {
+      const estimateId = section.split(':')[1];
+      setInitialEstimateId(estimateId);
+      // Push current section to navigation history before switching
+      setNavigationHistory(prev => [...prev, activeSection]);
+      setActiveSection('estimates');
+      sessionStorage.setItem('ct1CrmActiveSection', 'estimates');
+      setShowMobileLanding(false);
+      sessionStorage.setItem('ct1CrmShowLanding', 'false');
+      if (isMobile) {
+        setMobileMenuOpen(false);
+      }
+      return;
+    }
+    
+    // Clear initial estimate ID when navigating normally
+    setInitialEstimateId(null);
+    
     // Push current section to navigation history before switching
     setNavigationHistory(prev => [...prev, activeSection]);
     
-    setActiveSection(section);
+    setActiveSection(section as Section);
     sessionStorage.setItem('ct1CrmActiveSection', section);
     
     // Hide landing page when navigating to any non-dashboard section
@@ -179,7 +199,7 @@ const navItems = [
       case 'emails':
         return <EmailsSection onSectionChange={handleSectionChange} />;
       case 'estimates':
-        return <EstimatesSection onSectionChange={handleSectionChange} />;
+        return <EstimatesSection onSectionChange={handleSectionChange} initialEstimateId={initialEstimateId} onClearInitialEstimate={() => setInitialEstimateId(null)} />;
       case 'invoices':
         return <InvoicesSection onSectionChange={handleSectionChange} />;
       case 'templates':
