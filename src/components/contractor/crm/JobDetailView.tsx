@@ -405,7 +405,7 @@ export default function JobDetailView({ job, open, onOpenChange, onCreateEstimat
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-full sm:max-w-7xl h-[90vh] p-0">
+      <DialogContent className="max-w-full sm:max-w-7xl h-[calc(100vh-5rem)] sm:h-[90vh] top-[45%] sm:top-[50%] p-0">
         <DialogHeader className="px-4 sm:px-6 pt-4 sm:pt-6 pb-4 border-b space-y-3">
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
