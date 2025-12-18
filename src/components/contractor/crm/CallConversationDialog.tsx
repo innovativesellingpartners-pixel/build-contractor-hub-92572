@@ -24,8 +24,10 @@ export const CallConversationDialog = ({
   open,
   onOpenChange,
 }: CallConversationDialogProps) => {
+  // Filter conversation history to only include actual messages (with role and content)
+  // This excludes config objects that may have been stored in older calls
   const conversationHistory = Array.isArray(call.conversation_history) 
-    ? call.conversation_history 
+    ? call.conversation_history.filter((msg: any) => msg.role && msg.content)
     : [];
 
   const copyTranscript = () => {
@@ -36,8 +38,12 @@ export const CallConversationDialog = ({
       })
       .join('\n\n');
 
-    navigator.clipboard.writeText(transcript);
-    toast.success('Transcript copied to clipboard');
+    if (transcript) {
+      navigator.clipboard.writeText(transcript);
+      toast.success('Transcript copied to clipboard');
+    } else {
+      toast.error('No transcript to copy');
+    }
   };
 
   return (
@@ -83,6 +89,32 @@ export const CallConversationDialog = ({
                   <span className="text-sm text-muted-foreground">{call.action_taken}</span>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Recording Playback */}
+          {call.recording_url && call.recording_status === 'completed' && (
+            <div className="space-y-2 p-4 bg-secondary/30 rounded-lg">
+              <div className="font-medium flex items-center gap-2">
+                <Phone className="h-4 w-4" />
+                Call Recording
+                {call.recording_duration && (
+                  <span className="text-xs text-muted-foreground">
+                    ({Math.floor(call.recording_duration / 60)}:{String(call.recording_duration % 60).padStart(2, '0')})
+                  </span>
+                )}
+              </div>
+              <audio 
+                controls 
+                className="w-full h-10"
+                preload="metadata"
+              >
+                <source 
+                  src={`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/twilio-recording-proxy?url=${encodeURIComponent(call.recording_url)}`} 
+                  type="audio/mpeg" 
+                />
+                Your browser does not support the audio element.
+              </audio>
             </div>
           )}
 
@@ -140,9 +172,16 @@ export const CallConversationDialog = ({
             </div>
           )}
 
-          {conversationHistory.length === 0 && (
+          {conversationHistory.length === 0 && !call.recording_url && !call.ai_summary && (
             <div className="text-center py-8 text-muted-foreground">
-              No conversation transcript available
+              <p>No conversation transcript available for this call.</p>
+              <p className="text-xs mt-2">Transcripts are recorded for AI-handled calls only.</p>
+            </div>
+          )}
+          
+          {conversationHistory.length === 0 && (call.recording_url || call.ai_summary) && (
+            <div className="text-center py-4 text-muted-foreground text-sm">
+              No text transcript available, but you can listen to the recording above.
             </div>
           )}
         </div>
