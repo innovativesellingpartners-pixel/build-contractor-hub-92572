@@ -83,8 +83,10 @@ Deno.serve(async (req) => {
     const { error: stateError } = await serviceClient
       .from('oauth_states')
       .insert({
-        state_token: stateToken,
+        state: stateToken,
         contractor_id: contractorId,
+        provider: 'quickbooks',
+        user_id: contractorId,
       });
 
     if (stateError) {
