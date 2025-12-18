@@ -55,17 +55,15 @@ serve(async (req) => {
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
     const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     
-    // Create client with service role for DB access
+    // Create client with service role for DB access and token validation
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
     
-    // Get user from auth token
+    // Get user from auth token using service client
     const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: userError } = await createClient(
-      SUPABASE_URL,
-      Deno.env.get('SUPABASE_ANON_KEY')!
-    ).auth.getUser(token);
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
 
     if (userError || !user) {
+      console.error('Auth error:', userError);
       return new Response(JSON.stringify({ error: 'Invalid token' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
