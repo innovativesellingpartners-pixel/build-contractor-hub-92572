@@ -467,7 +467,7 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
 
         {/* Lead Detail View Dialog */}
         <Dialog open={detailViewOpen} onOpenChange={setDetailViewOpen}>
-          <DialogContent className="max-w-2xl max-h-[95vh] p-0 overflow-hidden">
+          <DialogContent className="max-w-2xl h-[95vh] p-0 flex flex-col overflow-hidden">
             {selectedLeadForDetail && (
               <LeadDetailViewBlue
                 lead={selectedLeadForDetail}
