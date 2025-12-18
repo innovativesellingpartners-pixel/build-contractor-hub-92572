@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar, Plug, Check, Loader2, X, RefreshCw, Clock, MapPin, ChevronDown, ChevronUp, Trash2, Plus, Briefcase } from 'lucide-react';
+import { Calendar, Plug, Check, Loader2, X, RefreshCw, Clock, MapPin, ChevronDown, ChevronUp, Trash2, Plus, Briefcase, FileText, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { format, parseISO } from 'date-fns';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { ScheduleMeetingDialog } from '../ScheduleMeetingDialog';
 
 interface CalendarConnection {
@@ -42,6 +43,7 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
   const [connectionsExpanded, setConnectionsExpanded] = useState(false);
   const [deletingEventId, setDeletingEventId] = useState<string | null>(null);
   const [scheduleMeetingOpen, setScheduleMeetingOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -471,7 +473,11 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
                     </h3>
                     <div className="space-y-2">
                       {dateEvents.map((event) => (
-                        <Card key={event.id} className="p-4 hover:shadow-md transition-shadow border-l-4 border-l-primary/50">
+                        <Card 
+                          key={event.id} 
+                          className="p-4 hover:shadow-md transition-shadow border-l-4 border-l-primary/50 cursor-pointer"
+                          onClick={() => setSelectedEvent(event)}
+                        >
                           <div className="flex items-start gap-4">
                             <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                               <Calendar className="h-5 w-5 text-primary" />
@@ -500,6 +506,7 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
                                   size="icon"
                                   className="text-muted-foreground hover:text-destructive flex-shrink-0"
                                   disabled={deletingEventId === event.id}
+                                  onClick={(e) => e.stopPropagation()}
                                 >
                                   {deletingEventId === event.id ? (
                                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -508,7 +515,7 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
                                   )}
                                 </Button>
                               </AlertDialogTrigger>
-                              <AlertDialogContent>
+                              <AlertDialogContent onClick={(e) => e.stopPropagation()}>
                                 <AlertDialogHeader>
                                   <AlertDialogTitle>Delete Event</AlertDialogTitle>
                                   <AlertDialogDescription>
@@ -552,6 +559,107 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
         onOpenChange={setScheduleMeetingOpen}
         onSuccess={fetchEvents}
       />
+
+      {/* Event Detail Dialog */}
+      <Dialog open={!!selectedEvent} onOpenChange={(open) => !open && setSelectedEvent(null)}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-primary" />
+              {selectedEvent?.summary || 'Event Details'}
+            </DialogTitle>
+            <DialogDescription>
+              {selectedEvent?.provider === 'google' ? 'Google Calendar' : 'Outlook Calendar'} • {selectedEvent?.calendar_email}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedEvent && (
+            <div className="space-y-4 pt-4">
+              {/* Date & Time */}
+              <div className="flex items-start gap-3">
+                <Clock className="h-5 w-5 text-muted-foreground mt-0.5" />
+                <div>
+                  <p className="font-medium">Date & Time</p>
+                  <p className="text-sm text-muted-foreground">{formatEventTime(selectedEvent)}</p>
+                </div>
+              </div>
+
+              {/* Location */}
+              {selectedEvent.location && (
+                <div className="flex items-start gap-3">
+                  <MapPin className="h-5 w-5 text-muted-foreground mt-0.5" />
+                  <div>
+                    <p className="font-medium">Location</p>
+                    <p className="text-sm text-muted-foreground">{selectedEvent.location}</p>
+                    <Button 
+                      variant="link" 
+                      size="sm" 
+                      className="h-auto p-0 text-primary"
+                      onClick={() => {
+                        const encodedAddress = encodeURIComponent(selectedEvent.location || '');
+                        window.open(`https://www.google.com/maps/search/?api=1&query=${encodedAddress}`, '_blank');
+                      }}
+                    >
+                      <ExternalLink className="h-3 w-3 mr-1" />
+                      Open in Maps
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Description */}
+              {selectedEvent.description && (
+                <div className="flex items-start gap-3">
+                  <FileText className="h-5 w-5 text-muted-foreground mt-0.5" />
+                  <div>
+                    <p className="font-medium">Description</p>
+                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">{selectedEvent.description}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Actions */}
+              <div className="flex gap-2 pt-4 border-t">
+                <Button 
+                  variant="outline" 
+                  className="flex-1"
+                  onClick={() => setSelectedEvent(null)}
+                >
+                  Close
+                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" className="flex-1">
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete Event
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete Event</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to delete "{selectedEvent.summary || 'this event'}"? This will also remove it from your calendar.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction 
+                        onClick={() => {
+                          handleDeleteEvent(selectedEvent);
+                          setSelectedEvent(null);
+                        }} 
+                        className="bg-destructive hover:bg-destructive/90"
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
