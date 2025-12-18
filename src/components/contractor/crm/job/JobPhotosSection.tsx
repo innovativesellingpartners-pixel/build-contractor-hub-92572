@@ -16,9 +16,11 @@ export function JobPhotosSection({ jobId }: JobPhotosSectionProps) {
   const { photos, loading, uploading, uploadPhoto, deletePhoto, refreshPhotos } = useJobPhotos(jobId);
   const [caption, setCaption] = useState('');
   const [viewerOpen, setViewerOpen] = useState(false);
-  const [selectedPhoto, setSelectedPhoto] = useState<JobPhoto | null>(null);
+  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number>(-1);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+
+  const selectedPhoto = selectedPhotoIndex >= 0 ? photos[selectedPhotoIndex] : null;
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -44,9 +46,21 @@ export function JobPhotosSection({ jobId }: JobPhotosSectionProps) {
     cameraInputRef.current?.click();
   };
 
-  const handlePhotoClick = (photo: JobPhoto) => {
-    setSelectedPhoto(photo);
+  const handlePhotoClick = (index: number) => {
+    setSelectedPhotoIndex(index);
     setViewerOpen(true);
+  };
+
+  const handlePrevious = () => {
+    if (selectedPhotoIndex > 0) {
+      setSelectedPhotoIndex(selectedPhotoIndex - 1);
+    }
+  };
+
+  const handleNext = () => {
+    if (selectedPhotoIndex < photos.length - 1) {
+      setSelectedPhotoIndex(selectedPhotoIndex + 1);
+    }
   };
 
   const handleDelete = async (photo: JobPhoto) => {
@@ -129,13 +143,13 @@ export function JobPhotosSection({ jobId }: JobPhotosSectionProps) {
         </div>
       ) : (
         <div className="grid grid-cols-3 gap-2">
-          {photos.map((photo) => (
+          {photos.map((photo, index) => (
             <div key={photo.id} className="relative group aspect-square">
               <img
                 src={photo.signed_url || photo.photo_url}
                 alt={photo.caption || 'Job photo'}
                 className="w-full h-full object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-                onClick={() => handlePhotoClick(photo)}
+                onClick={() => handlePhotoClick(index)}
                 onError={(e) => {
                   e.currentTarget.src = '/placeholder.svg';
                 }}
@@ -166,7 +180,16 @@ export function JobPhotosSection({ jobId }: JobPhotosSectionProps) {
           src={selectedPhoto.signed_url || selectedPhoto.photo_url}
           alt={selectedPhoto.caption || 'Job photo'}
           open={viewerOpen}
-          onOpenChange={setViewerOpen}
+          onOpenChange={(open) => {
+            setViewerOpen(open);
+            if (!open) setSelectedPhotoIndex(-1);
+          }}
+          onPrevious={handlePrevious}
+          onNext={handleNext}
+          hasPrevious={selectedPhotoIndex > 0}
+          hasNext={selectedPhotoIndex < photos.length - 1}
+          currentIndex={selectedPhotoIndex}
+          totalCount={photos.length}
         />
       )}
     </div>
