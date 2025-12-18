@@ -115,6 +115,11 @@ export function ImageViewer({
   const handleMouseUp = () => setIsDragging(false);
 
   const handleTouchStart = (e: React.TouchEvent) => {
+    // Prevent default to stop dialog from intercepting
+    if (scale === 1) {
+      e.stopPropagation();
+    }
+    
     if (e.touches.length === 1) {
       const touch = e.touches[0];
       setTouchStart({ x: touch.clientX, y: touch.clientY });
@@ -134,19 +139,34 @@ export function ImageViewer({
   const handleTouchMove = (e: React.TouchEvent) => {
     if (e.touches.length === 1) {
       const touch = e.touches[0];
-      setTouchEnd({ x: touch.clientX, y: touch.clientY });
+      const currentX = touch.clientX;
+      const currentY = touch.clientY;
+      
+      setTouchEnd({ x: currentX, y: currentY });
+      
+      // Prevent default scroll when swiping horizontally at scale 1
+      if (scale === 1 && touchStart) {
+        const deltaX = Math.abs(currentX - touchStart.x);
+        const deltaY = Math.abs(currentY - touchStart.y);
+        if (deltaX > deltaY) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      }
       
       // Only drag if zoomed
       if (isDragging && scale > 1) {
+        e.preventDefault();
         setPosition({
-          x: touch.clientX - dragStart.x,
-          y: touch.clientY - dragStart.y,
+          x: currentX - dragStart.x,
+          y: currentY - dragStart.y,
         });
       }
     }
   };
 
-  const handleTouchEnd = () => {
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    e.stopPropagation();
     setIsDragging(false);
     
     // Handle swipe navigation only when not zoomed
@@ -278,6 +298,7 @@ export function ImageViewer({
             scale > 1 ? 'cursor-grab' : 'cursor-default',
             isDragging && 'cursor-grabbing'
           )}
+          style={{ touchAction: scale > 1 ? 'none' : 'pan-y' }}
           onWheel={handleWheel}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
