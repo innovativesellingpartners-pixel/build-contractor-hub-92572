@@ -245,7 +245,7 @@ export default function CallsSection({ onSectionChange }: CallsSectionProps) {
               <CardContent className="space-y-4">
                 {/* Predictive Search */}
                 {callSessions.length > 0 && (
-                  <PredictiveSearch<CallSession>
+                  <PredictiveSearch
                     items={callSessions}
                     placeholder="Search by phone, job number, name..."
                     getLabel={(call: CallSession) => {
