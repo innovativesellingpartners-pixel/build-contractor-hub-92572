@@ -17,11 +17,11 @@ interface MobileLandingPageProps {
 
 const mobileModules = [
   { 
-    id: 'estimates',
-    title: 'Estimates',
-    description: 'Create & send quotes',
-    icon: FileText,
-    gradient: 'from-green-500 via-green-600 to-green-700',
+    id: 'calendar',
+    title: 'Calendar',
+    description: 'Schedule & events',
+    icon: Calendar,
+    gradient: 'from-red-500 via-red-600 to-red-700',
   },
   { 
     id: 'jobs',
@@ -29,6 +29,13 @@ const mobileModules = [
     description: 'Manage active jobs',
     icon: Briefcase,
     gradient: 'from-purple-500 via-purple-600 to-purple-700',
+  },
+  { 
+    id: 'estimates',
+    title: 'Estimates',
+    description: 'Create & send quotes',
+    icon: FileText,
+    gradient: 'from-green-500 via-green-600 to-green-700',
   },
   {
     id: 'emails',
@@ -38,25 +45,18 @@ const mobileModules = [
     gradient: 'from-orange-500 via-orange-600 to-orange-700',
   },
   {
-    id: 'calls',
-    title: 'Calls',
-    description: 'Call history & logs',
-    icon: Phone,
-    gradient: 'from-indigo-500 via-indigo-600 to-indigo-700',
-  },
-  { 
-    id: 'calendar',
-    title: 'Calendar',
-    description: 'Schedule & events',
-    icon: Calendar,
-    gradient: 'from-red-500 via-red-600 to-red-700',
-  },
-  {
     id: 'invoices',
     title: 'Invoices',
     description: 'Manage invoices',
     icon: Receipt,
     gradient: 'from-violet-500 via-violet-600 to-violet-700',
+  },
+  {
+    id: 'calls',
+    title: 'Calls',
+    description: 'Call history & logs',
+    icon: Phone,
+    gradient: 'from-indigo-500 via-indigo-600 to-indigo-700',
   },
   { 
     id: 'customers',
