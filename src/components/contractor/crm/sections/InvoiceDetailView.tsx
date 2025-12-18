@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
-import { FileText, Send, Download, ArrowLeft, Mail, ExternalLink, Loader2 } from 'lucide-react';
+import { FileText, Send, Download, ArrowLeft, Mail, ExternalLink, Loader2, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -63,6 +63,9 @@ export function InvoiceDetailView({ invoice, onClose, onSectionChange }: Invoice
     subject: '',
     body: '',
   });
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const [showPdfPreview, setShowPdfPreview] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchRelatedData = async () => {
@@ -130,9 +133,76 @@ export function InvoiceDetailView({ invoice, onClose, onSectionChange }: Invoice
     }
   };
 
-  const handleDownload = () => {
-    // TODO: Implement PDF download
-    toast.info('PDF download coming soon');
+  const generatePdf = async (): Promise<Blob | null> => {
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      
+      if (!token) {
+        toast.error('Please log in to generate PDF');
+        return null;
+      }
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-invoice-pdf`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({ invoiceId: invoice.id }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to generate PDF');
+      }
+
+      return await response.blob();
+    } catch (error: any) {
+      console.error('PDF generation error:', error);
+      throw error;
+    }
+  };
+
+  const handleViewPdf = async () => {
+    setPdfLoading(true);
+    try {
+      const blob = await generatePdf();
+      if (blob) {
+        const url = URL.createObjectURL(blob);
+        setPdfUrl(url);
+        setShowPdfPreview(true);
+      }
+    } catch (error: any) {
+      toast.error(`Failed to generate PDF: ${error.message}`);
+    } finally {
+      setPdfLoading(false);
+    }
+  };
+
+  const handleDownload = async () => {
+    setPdfLoading(true);
+    try {
+      const blob = await generatePdf();
+      if (blob) {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `Invoice-${invoice.invoice_number || invoice.id}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        toast.success('Invoice PDF downloaded');
+      }
+    } catch (error: any) {
+      toast.error(`Failed to download PDF: ${error.message}`);
+    } finally {
+      setPdfLoading(false);
+    }
   };
 
   const openSendDialog = () => {
@@ -182,6 +252,15 @@ export function InvoiceDetailView({ invoice, onClose, onSectionChange }: Invoice
       {/* Action Buttons */}
       <ActionButtonRow className="flex-wrap">
         <ActionButton 
+          variant="primary" 
+          onClick={handleViewPdf}
+          className="flex items-center gap-2"
+          disabled={pdfLoading}
+        >
+          {pdfLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Eye className="w-4 h-4" />}
+          VIEW PDF
+        </ActionButton>
+        <ActionButton 
           variant="success" 
           onClick={openSendDialog}
           className="flex items-center gap-2"
@@ -193,8 +272,9 @@ export function InvoiceDetailView({ invoice, onClose, onSectionChange }: Invoice
           variant="secondary" 
           onClick={handleDownload}
           className="flex items-center gap-2"
+          disabled={pdfLoading}
         >
-          <Download className="w-4 h-4" />
+          {pdfLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
           DOWNLOAD
         </ActionButton>
         {sourceEstimate && (
@@ -407,6 +487,45 @@ export function InvoiceDetailView({ invoice, onClose, onSectionChange }: Invoice
                   Send Invoice
                 </>
               )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* PDF Preview Dialog */}
+      <Dialog open={showPdfPreview} onOpenChange={(open) => {
+        setShowPdfPreview(open);
+        if (!open && pdfUrl) {
+          URL.revokeObjectURL(pdfUrl);
+          setPdfUrl(null);
+        }
+      }}>
+        <DialogContent className="max-w-4xl h-[90vh] p-0 overflow-hidden">
+          <DialogHeader className="p-4 border-b">
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Invoice Preview - {invoice.invoice_number}
+            </DialogTitle>
+            <DialogDescription>
+              Preview your invoice before sending or downloading
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex-1 h-[calc(100%-80px)]">
+            {pdfUrl && (
+              <iframe
+                src={pdfUrl}
+                className="w-full h-full border-0"
+                title="Invoice PDF Preview"
+              />
+            )}
+          </div>
+          <DialogFooter className="p-4 border-t">
+            <Button variant="outline" onClick={() => setShowPdfPreview(false)}>
+              Close
+            </Button>
+            <Button onClick={handleDownload} disabled={pdfLoading}>
+              <Download className="mr-2 h-4 w-4" />
+              Download PDF
             </Button>
           </DialogFooter>
         </DialogContent>
