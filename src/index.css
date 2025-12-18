@@ -8,42 +8,42 @@
 
 @layer base {
   :root {
-    /* CT1 Brand Colors - Dark theme with grays, lighter reds, and blacks */
-    --background: 0 0% 8%;                /* Dark charcoal background */
-    --foreground: 0 0% 92%;               /* Light gray text */
-    --card: 0 0% 12%;                     /* Dark gray cards */
-    --card-foreground: 0 0% 92%;          /* Light text on cards */
-    --card-hover: 0 0% 15%;               /* Slightly lighter on hover */
-    --popover: 0 0% 10%;                  /* Dark popover */
-    --popover-foreground: 0 0% 92%;       /* Light text */
+    /* Light Theme - Clean whites with CT1 red accents */
+    --background: 0 0% 98%;               /* Near white background */
+    --foreground: 0 0% 10%;               /* Dark text */
+    --card: 0 0% 100%;                    /* Pure white cards */
+    --card-foreground: 0 0% 10%;          /* Dark text on cards */
+    --card-hover: 0 0% 96%;               /* Slightly gray on hover */
+    --popover: 0 0% 100%;                 /* White popover */
+    --popover-foreground: 0 0% 10%;       /* Dark text */
 
     /* Primary: CT1 Brand Red #D50A22 */
     --primary: 353 91% 44%;               /* CT1 brand red #D50A22 */
     --primary-foreground: 0 0% 100%;      /* White text on red */
     --primary-hover: 353 91% 38%;         /* Slightly darker on hover */
 
-    /* Secondary: Dark Gray */
-    --secondary: 0 0% 18%;                /* Dark gray */
-    --secondary-foreground: 0 0% 85%;     /* Light text on dark */
+    /* Secondary: Light Gray */
+    --secondary: 0 0% 94%;                /* Light gray */
+    --secondary-foreground: 0 0% 15%;     /* Dark text on light */
     
-    --muted: 0 0% 15%;                    /* Dark muted background */
-    --muted-foreground: 0 0% 60%;         /* Medium gray text */
+    --muted: 0 0% 96%;                    /* Light muted background */
+    --muted-foreground: 0 0% 45%;         /* Medium gray text */
     
     /* Accent: CT1 Brand Red */
     --accent: 353 91% 44%;                /* CT1 brand red accent */
     --accent-foreground: 0 0% 100%;       /* White on red */
     
-    --destructive: 0 62.8% 50%;           /* Slightly lighter destructive */
+    --destructive: 0 62.8% 50%;           /* Destructive red */
     --destructive-foreground: 0 0% 100%;
     
-    --border: 0 0% 22%;                   /* Dark gray borders */
-    --input: 0 0% 15%;                    /* Dark input background */
+    --border: 0 0% 88%;                   /* Light gray borders */
+    --input: 0 0% 96%;                    /* Light input background */
     --ring: 353 91% 44%;                  /* CT1 brand red focus ring */
 
-    /* CT1 specific brand colors - dark palette */
+    /* CT1 specific brand colors - light palette */
     --ct1-red: 353 91% 44%;               /* CT1 brand red #D50A22 */
-    --ct1-black: 0 0% 8%;                 /* Dark charcoal */
-    --ct1-white: 0 0% 92%;                /* Off-white */
+    --ct1-black: 0 0% 10%;                /* Near black */
+    --ct1-white: 0 0% 100%;               /* Pure white */
     --ct1-dark-red: 353 91% 38%;          /* Darker red variant */
     --ct1-light-red: 353 91% 55%;         /* Lighter red variant */
 
@@ -72,33 +72,33 @@
     --warning: 25 95% 53%;
     --warning-foreground: 0 0% 100%;
 
-    /* Dark gradients */
-    --gradient-hero: linear-gradient(135deg, hsl(0 0% 5%), hsl(0 0% 10%));
+    /* Light gradients */
+    --gradient-hero: linear-gradient(135deg, hsl(0 0% 98%), hsl(0 0% 94%));
     --gradient-card: linear-gradient(180deg, hsl(var(--card)), hsl(var(--muted)));
-    --gradient-red: linear-gradient(45deg, hsl(var(--ct1-red) / 0.15), hsl(var(--ct1-light-red) / 0.1));
-    --gradient-black: linear-gradient(135deg, hsl(0 0% 8%), hsl(0 0% 15%));
+    --gradient-red: linear-gradient(45deg, hsl(var(--ct1-red) / 0.08), hsl(var(--ct1-light-red) / 0.05));
+    --gradient-black: linear-gradient(135deg, hsl(0 0% 98%), hsl(0 0% 94%));
     
     /* Colorful gradients */
-    --gradient-blue: linear-gradient(135deg, hsl(217 91% 60% / 0.1), hsl(262 83% 58% / 0.05));
-    --gradient-success: linear-gradient(135deg, hsl(142 71% 45% / 0.1), hsl(189 94% 43% / 0.05));
+    --gradient-blue: linear-gradient(135deg, hsl(217 91% 60% / 0.08), hsl(262 83% 58% / 0.04));
+    --gradient-success: linear-gradient(135deg, hsl(142 71% 45% / 0.08), hsl(189 94% 43% / 0.04));
 
-    /* Soft shadows for dark theme */
-    --shadow-soft: 0 4px 20px -4px hsl(0 0% 0% / 0.5);
-    --shadow-card: 0 2px 12px -2px hsl(0 0% 0% / 0.3);
-    --shadow-red-glow: 0 0 30px hsl(var(--ct1-red) / 0.3);
+    /* Soft shadows for light theme */
+    --shadow-soft: 0 4px 20px -4px hsl(0 0% 0% / 0.08);
+    --shadow-card: 0 2px 12px -2px hsl(0 0% 0% / 0.06);
+    --shadow-red-glow: 0 0 30px hsl(var(--ct1-red) / 0.15);
 
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
     
     --radius: 0.375rem;
 
-    --sidebar-background: 0 0% 10%;
-    --sidebar-foreground: 0 0% 85%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 0 0% 15%;
     --sidebar-primary: 353 91% 44%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 15%;
-    --sidebar-accent-foreground: 0 0% 90%;
-    --sidebar-border: 0 0% 20%;
+    --sidebar-accent: 0 0% 96%;
+    --sidebar-accent-foreground: 0 0% 15%;
+    --sidebar-border: 0 0% 90%;
     --sidebar-ring: 353 91% 44%;
   }
 
@@ -108,6 +108,7 @@
     --foreground: 0 0% 100%;              /* White text */
     --card: 0 0% 8%;
     --card-foreground: 0 0% 100%;
+    --card-hover: 0 0% 12%;
     --popover: 0 0% 8%;
     --popover-foreground: 0 0% 100%;
 
@@ -138,6 +139,12 @@
     --ct1-white: 0 0% 100%;               /* Pure white */
     --ct1-dark-red: 353 91% 38%;          /* Darker red variant */
     --ct1-light-red: 353 91% 55%;         /* Lighter red variant */
+
+    /* Dark gradients */
+    --gradient-hero: linear-gradient(135deg, hsl(0 0% 5%), hsl(0 0% 10%));
+    --gradient-card: linear-gradient(180deg, hsl(var(--card)), hsl(var(--muted)));
+    --gradient-red: linear-gradient(45deg, hsl(var(--ct1-red) / 0.15), hsl(var(--ct1-light-red) / 0.1));
+    --gradient-black: linear-gradient(135deg, hsl(0 0% 8%), hsl(0 0% 15%));
 
     /* Soft shadows for dark mode */
     --shadow-soft: 0 4px 20px -4px hsl(var(--ct1-red) / 0.3);
