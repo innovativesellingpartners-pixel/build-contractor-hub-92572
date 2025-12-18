@@ -9,6 +9,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import AddCustomerDialog from '../AddCustomerDialog';
+import { EditCustomerDialog } from '../EditCustomerDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { HorizontalRowCard, RowAvatar, RowContent, RowTitleLine, RowMetaLine, RowBadgeGroup, RowActions } from './HorizontalRowCard';
@@ -33,6 +34,28 @@ export default function CustomersSection({ onSectionChange }: CustomersSectionPr
   const [mergeSourceCustomer, setMergeSourceCustomer] = useState<Customer | null>(null);
   const [mergeTargetCustomer, setMergeTargetCustomer] = useState<Customer | null>(null);
   const [isMerging, setIsMerging] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+
+  const handleEditCustomer = (customer: Customer) => {
+    setEditingCustomer(customer);
+    setEditDialogOpen(true);
+  };
+
+  const handleCloseEditDialog = (open: boolean) => {
+    if (!open) {
+      setEditDialogOpen(false);
+      if (selectedCustomer) {
+        const updatedCustomer = customers.find(c => c.id === selectedCustomer.id);
+        if (updatedCustomer) {
+          setSelectedCustomer(updatedCustomer);
+        }
+        setDetailViewOpen(true);
+      }
+    } else {
+      setEditDialogOpen(open);
+    }
+  };
 
   const handleOpenDetail = (customer: any) => {
     setSelectedCustomer(customer);
@@ -446,10 +469,18 @@ export default function CustomersSection({ onSectionChange }: CustomersSectionPr
               onClose={() => setDetailViewOpen(false)}
               onSectionChange={onSectionChange}
               onCreateJob={() => setConvertingCustomer(selectedCustomer)}
+              onEdit={() => handleEditCustomer(selectedCustomer)}
             />
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Edit Customer Dialog */}
+      <EditCustomerDialog
+        customer={editingCustomer}
+        open={editDialogOpen}
+        onOpenChange={handleCloseEditDialog}
+      />
     </div>
   );
 }

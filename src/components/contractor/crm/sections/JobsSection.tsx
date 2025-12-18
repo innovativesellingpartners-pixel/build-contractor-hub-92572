@@ -34,6 +34,23 @@ export default function JobsSection({ onSectionChange }: JobsSectionProps) {
     setEditOpen(true);
   };
 
+  // When closing edit dialog, return to detail view
+  const handleCloseEditDialog = (open: boolean) => {
+    if (!open) {
+      setEditOpen(false);
+      // Refresh the job and reopen detail view if we have a selected job
+      if (selectedJob) {
+        const updatedJob = jobs.find(j => j.id === selectedJob.id);
+        if (updatedJob) {
+          setSelectedJob(updatedJob);
+        }
+        setDetailOpen(true);
+      }
+    } else {
+      setEditOpen(open);
+    }
+  };
+
   const handleDuplicateJob = async (jobId: string): Promise<Job | undefined> => {
     const newJob = await duplicateJob(jobId);
     if (newJob) {
@@ -198,7 +215,7 @@ export default function JobsSection({ onSectionChange }: JobsSectionProps) {
         <EditJobDialog
           job={editingJob}
           open={editOpen}
-          onOpenChange={setEditOpen}
+          onOpenChange={handleCloseEditDialog}
           onUpdate={handleUpdateJob}
         />
       </div>

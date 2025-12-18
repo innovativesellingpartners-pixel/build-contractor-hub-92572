@@ -114,8 +114,8 @@ export function EditJobDialog({ job, open, onOpenChange, onUpdate }: EditJobDial
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-        <DialogHeader>
+      <DialogContent className="max-w-4xl h-[calc(100vh-5rem)] top-[45%] sm:top-[50%] overflow-hidden flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>Edit Job</DialogTitle>
           <DialogDescription>Update job details - Job #{job.job_number}</DialogDescription>
         </DialogHeader>

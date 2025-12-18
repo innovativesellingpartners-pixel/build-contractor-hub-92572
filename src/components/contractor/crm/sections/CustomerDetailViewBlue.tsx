@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { Briefcase, FileText, Phone, Mail, ArrowRight, Merge, Search } from 'lucide-react';
+import { Briefcase, FileText, Phone, Mail, ArrowRight, Merge, Search, Pencil } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,9 +28,10 @@ interface CustomerDetailViewBlueProps {
   onClose: () => void;
   onSectionChange?: (section: string) => void;
   onCreateJob?: () => void;
+  onEdit?: () => void;
 }
 
-export function CustomerDetailViewBlue({ customer, onClose, onSectionChange, onCreateJob }: CustomerDetailViewBlueProps) {
+export function CustomerDetailViewBlue({ customer, onClose, onSectionChange, onCreateJob, onEdit }: CustomerDetailViewBlueProps) {
   const { estimates, createEstimateAsync } = useEstimates();
   const { jobs } = useJobs();
   const { customers, refreshCustomers } = useCustomers();
@@ -174,6 +175,16 @@ export function CustomerDetailViewBlue({ customer, onClose, onSectionChange, onC
 
       {/* Action Buttons - Fixed */}
       <ActionButtonRow>
+        {onEdit && (
+          <ActionButton 
+            variant="secondary" 
+            onClick={onEdit}
+            className="flex items-center justify-center gap-2"
+          >
+            <Pencil className="w-4 h-4" />
+            EDIT
+          </ActionButton>
+        )}
         <ActionButton 
           variant="primary" 
           onClick={handleCreateJob}
