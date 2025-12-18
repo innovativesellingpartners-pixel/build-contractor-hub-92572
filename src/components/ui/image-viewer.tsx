@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useState, useRef, useEffect } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { X, ZoomIn, ZoomOut, RotateCw, Download, Maximize2 } from 'lucide-react';
+import { X, ZoomIn, ZoomOut, RotateCw, Download, Maximize2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface ImageViewerProps {
@@ -10,24 +10,67 @@ interface ImageViewerProps {
   alt?: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  // Navigation props
+  onPrevious?: () => void;
+  onNext?: () => void;
+  hasPrevious?: boolean;
+  hasNext?: boolean;
+  currentIndex?: number;
+  totalCount?: number;
 }
 
-export function ImageViewer({ src, alt = 'Image', open, onOpenChange }: ImageViewerProps) {
+export function ImageViewer({ 
+  src, 
+  alt = 'Image', 
+  open, 
+  onOpenChange,
+  onPrevious,
+  onNext,
+  hasPrevious = false,
+  hasNext = false,
+  currentIndex,
+  totalCount
+}: ImageViewerProps) {
   const [scale, setScale] = useState(1);
   const [rotation, setRotation] = useState(0);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
+  
+  // Swipe tracking
+  const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
+  const [touchEnd, setTouchEnd] = useState<{ x: number; y: number } | null>(null);
+  const minSwipeDistance = 50;
 
-  // Reset state when dialog opens
+  // Reset state when dialog opens or src changes
   useEffect(() => {
     if (open) {
       setScale(1);
       setRotation(0);
       setPosition({ x: 0, y: 0 });
     }
-  }, [open]);
+  }, [open, src]);
+
+  // Keyboard navigation
+  useEffect(() => {
+    if (!open) return;
+    
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft' && hasPrevious && onPrevious) {
+        e.preventDefault();
+        onPrevious();
+      } else if (e.key === 'ArrowRight' && hasNext && onNext) {
+        e.preventDefault();
+        onNext();
+      } else if (e.key === 'Escape') {
+        onOpenChange(false);
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [open, hasPrevious, hasNext, onPrevious, onNext, onOpenChange]);
 
   const handleZoomIn = () => setScale((s) => Math.min(s + 0.25, 5));
   const handleZoomOut = () => setScale((s) => Math.max(s - 0.25, 0.25));
@@ -72,25 +115,62 @@ export function ImageViewer({ src, alt = 'Image', open, onOpenChange }: ImageVie
   const handleMouseUp = () => setIsDragging(false);
 
   const handleTouchStart = (e: React.TouchEvent) => {
-    if (scale > 1 && e.touches.length === 1) {
-      setIsDragging(true);
-      setDragStart({
-        x: e.touches[0].clientX - position.x,
-        y: e.touches[0].clientY - position.y,
-      });
+    if (e.touches.length === 1) {
+      const touch = e.touches[0];
+      setTouchStart({ x: touch.clientX, y: touch.clientY });
+      setTouchEnd(null);
+      
+      // Only enable drag if zoomed
+      if (scale > 1) {
+        setIsDragging(true);
+        setDragStart({
+          x: touch.clientX - position.x,
+          y: touch.clientY - position.y,
+        });
+      }
     }
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (isDragging && e.touches.length === 1) {
-      setPosition({
-        x: e.touches[0].clientX - dragStart.x,
-        y: e.touches[0].clientY - dragStart.y,
-      });
+    if (e.touches.length === 1) {
+      const touch = e.touches[0];
+      setTouchEnd({ x: touch.clientX, y: touch.clientY });
+      
+      // Only drag if zoomed
+      if (isDragging && scale > 1) {
+        setPosition({
+          x: touch.clientX - dragStart.x,
+          y: touch.clientY - dragStart.y,
+        });
+      }
     }
   };
 
-  const handleTouchEnd = () => setIsDragging(false);
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+    
+    // Handle swipe navigation only when not zoomed
+    if (scale === 1 && touchStart && touchEnd) {
+      const distanceX = touchStart.x - touchEnd.x;
+      const distanceY = Math.abs(touchStart.y - touchEnd.y);
+      
+      // Only trigger if horizontal swipe is dominant
+      if (Math.abs(distanceX) > minSwipeDistance && distanceY < 100) {
+        if (distanceX > 0 && hasNext && onNext) {
+          // Swiped left - go to next
+          onNext();
+        } else if (distanceX < 0 && hasPrevious && onPrevious) {
+          // Swiped right - go to previous
+          onPrevious();
+        }
+      }
+    }
+    
+    setTouchStart(null);
+    setTouchEnd(null);
+  };
+
+  const showNavigation = hasPrevious || hasNext;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -147,15 +227,48 @@ export function ImageViewer({ src, alt = 'Image', open, onOpenChange }: ImageVie
               <Download className="h-5 w-5" />
             </Button>
           </div>
+          <div className="flex items-center gap-2">
+            {currentIndex !== undefined && totalCount !== undefined && (
+              <span className="text-white text-sm mr-2">
+                {currentIndex + 1} / {totalCount}
+              </span>
+            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onOpenChange(false)}
+              className="text-white hover:bg-white/20"
+            >
+              <X className="h-6 w-6" />
+            </Button>
+          </div>
+        </div>
+
+        {/* Previous button */}
+        {showNavigation && hasPrevious && (
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => onOpenChange(false)}
-            className="text-white hover:bg-white/20"
+            onClick={onPrevious}
+            className="absolute left-2 top-1/2 -translate-y-1/2 z-10 text-white hover:bg-white/20 h-12 w-12"
+            title="Previous image"
           >
-            <X className="h-6 w-6" />
+            <ChevronLeft className="h-8 w-8" />
           </Button>
-        </div>
+        )}
+
+        {/* Next button */}
+        {showNavigation && hasNext && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onNext}
+            className="absolute right-2 top-1/2 -translate-y-1/2 z-10 text-white hover:bg-white/20 h-12 w-12"
+            title="Next image"
+          >
+            <ChevronRight className="h-8 w-8" />
+          </Button>
+        )}
 
         {/* Image container */}
         <div
@@ -188,7 +301,7 @@ export function ImageViewer({ src, alt = 'Image', open, onOpenChange }: ImageVie
 
         {/* Help text */}
         <div className="absolute bottom-3 left-1/2 -translate-x-1/2 text-white/60 text-xs text-center">
-          Scroll to zoom • Drag to pan when zoomed • Pinch on mobile
+          {showNavigation ? 'Swipe or use arrows to navigate • ' : ''}Scroll to zoom • Drag to pan when zoomed
         </div>
       </DialogContent>
     </Dialog>
