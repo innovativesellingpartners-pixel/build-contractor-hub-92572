@@ -227,9 +227,31 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
     setEditDialogOpen(true);
   };
 
+  // When closing edit dialog, return to detail view
+  const handleCloseEditDialog = (open: boolean) => {
+    if (!open) {
+      setEditDialogOpen(false);
+      // If we have a selected lead for detail view, refresh and reopen
+      if (selectedLeadForDetail) {
+        const updatedLead = leads.find(l => l.id === selectedLeadForDetail.id);
+        if (updatedLead) {
+          setSelectedLeadForDetail(updatedLead);
+        }
+        setDetailViewOpen(true);
+      }
+    } else {
+      setEditDialogOpen(open);
+    }
+  };
+
   const handleOpenDetail = (lead: any) => {
     setSelectedLeadForDetail(lead);
     setDetailViewOpen(true);
+  };
+
+  const handleEditFromDetail = (lead: any) => {
+    setSelectedLead(lead);
+    setEditDialogOpen(true);
   };
 
   if (loading) {
@@ -371,7 +393,7 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
           <EditLeadDialog
             lead={selectedLead}
             open={editDialogOpen}
-            onOpenChange={setEditDialogOpen}
+            onOpenChange={handleCloseEditDialog}
             onUpdate={updateLead}
             onDelete={deleteLead}
             sources={sources}
@@ -477,6 +499,7 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
                 }}
                 onClose={() => setDetailViewOpen(false)}
                 onSectionChange={onSectionChange}
+                onEdit={() => handleEditFromDetail(selectedLeadForDetail)}
               />
             )}
           </DialogContent>

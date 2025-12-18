@@ -7,7 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
-import { FileText, Briefcase, ArrowRight, Mail, Phone, Plus } from 'lucide-react';
+import { FileText, Briefcase, ArrowRight, Mail, Phone, Plus, Pencil } from 'lucide-react';
 import {
   BlueBackground,
   SectionHeader,
@@ -24,9 +24,10 @@ interface LeadDetailViewBlueProps {
   onConvertToCustomer: () => void;
   onClose: () => void;
   onSectionChange?: (section: string) => void;
+  onEdit?: () => void;
 }
 
-export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSectionChange }: LeadDetailViewBlueProps) {
+export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSectionChange, onEdit }: LeadDetailViewBlueProps) {
   const { estimates, createEstimateAsync } = useEstimates();
   const { customers } = useCustomers();
   const { jobs } = useJobs();
@@ -126,6 +127,16 @@ export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSecti
 
       {/* Action Buttons - Fixed */}
       <ActionButtonRow>
+        {onEdit && (
+          <ActionButton 
+            variant="secondary" 
+            onClick={onEdit}
+            className="flex items-center justify-center gap-2"
+          >
+            <Pencil className="w-4 h-4" />
+            EDIT
+          </ActionButton>
+        )}
         {!isConverted && (
           <ActionButton 
             variant="primary" 

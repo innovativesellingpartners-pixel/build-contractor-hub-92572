@@ -193,9 +193,23 @@ export default function EstimatesSection({ onSectionChange, initialEstimateId, o
   };
 
   const handleEditFromDetail = (estimate: any) => {
-    setDetailViewOpen(false);
+    // Keep detail view reference, just open edit form
     setSelectedEstimate(estimate);
     setIsFormOpen(true);
+  };
+
+  // When closing edit form, return to detail view if we came from there
+  const handleCloseEditForm = () => {
+    setIsFormOpen(false);
+    if (selectedEstimateForDetail) {
+      // Refresh the estimate data and reopen detail view
+      const updatedEstimate = estimates?.find(e => e.id === selectedEstimateForDetail.id);
+      if (updatedEstimate) {
+        setSelectedEstimateForDetail(updatedEstimate);
+      }
+      setDetailViewOpen(true);
+    }
+    setSelectedEstimate(null);
   };
 
   const handleSendFromDetail = async (estimate: any) => {
@@ -402,21 +416,26 @@ export default function EstimatesSection({ onSectionChange, initialEstimateId, o
       )}
 
       {/* Estimate Form Dialog */}
-      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="max-w-6xl max-h-[95vh] p-0">
-          <DialogHeader className="px-6 pt-6">
+      <Dialog open={isFormOpen} onOpenChange={(open) => {
+        if (!open) {
+          handleCloseEditForm();
+        } else {
+          setIsFormOpen(open);
+        }
+      }}>
+        <DialogContent className="max-w-6xl h-[calc(100vh-5rem)] top-[45%] sm:top-[50%] p-0 flex flex-col overflow-hidden">
+          <DialogHeader className="px-6 pt-6 flex-shrink-0">
             <DialogTitle>
               {selectedEstimate ? 'Edit Estimate' : 'Create New Estimate'}
             </DialogTitle>
           </DialogHeader>
-          <EstimateForm
-            onSubmit={handleSubmit}
-            onCancel={() => {
-              setIsFormOpen(false);
-              setSelectedEstimate(null);
-            }}
-            initialData={selectedEstimate}
-          />
+          <div className="flex-1 overflow-hidden">
+            <EstimateForm
+              onSubmit={handleSubmit}
+              onCancel={handleCloseEditForm}
+              initialData={selectedEstimate}
+            />
+          </div>
         </DialogContent>
       </Dialog>
 
