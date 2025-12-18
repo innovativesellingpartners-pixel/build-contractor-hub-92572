@@ -360,7 +360,9 @@ serve(async (req) => {
           dynamic_variables: {
             business_name: businessName,
             contractor_name: contractorName,
-            trade: trade
+            trade: trade,
+            farewell_message: `Thank you for calling ${businessName}. Have a wonderful day!`,
+            email_collection_reminder: "Always ask for the caller's email address when scheduling appointments so you can send them a calendar invite and confirmation email."
           }
         };
         
@@ -626,17 +628,8 @@ serve(async (req) => {
           result = { success: true, message: "Voicemail saved successfully" };
           break;
         }
-          // Save voicemail message
-          const voicemailData = toolCall.parameters;
-          await supabase.from('calls').update({
-            ai_summary: `Voicemail from ${voicemailData.name} (${voicemailData.phone}): ${voicemailData.message}`,
-            outcome: 'voicemail',
-            message_type: voicemailData.urgency || 'normal'
-          }).eq('call_sid', callSid);
-          result = { success: true, message: "Voicemail saved successfully" };
-          break;
           
-        case 'lookup_job':
+        case 'lookup_job': {
           // Look up job by reference number
           const { reference_number } = toolCall.parameters;
           const { data: job } = await supabase
@@ -660,6 +653,30 @@ serve(async (req) => {
             result = { success: true, job_found: false, message: "No job found with that reference" };
           }
           break;
+        }
+          
+        case 'end_call': {
+          // Agent is ready to end the call gracefully
+          console.log('[ElevenLabs Handler] Agent ending call gracefully');
+          result = { 
+            success: true, 
+            message: `Call ended. Thank you for calling ${businessName}.`
+          };
+          
+          // Wait a moment to let the farewell play, then clean up
+          setTimeout(() => {
+            console.log('[ElevenLabs Handler] Closing connections after farewell');
+            if (twilioWs.readyState === WebSocket.OPEN) {
+              // Send a stop event to Twilio to end the call
+              twilioWs.send(JSON.stringify({
+                event: 'stop',
+                streamSid: streamSid
+              }));
+            }
+            cleanup();
+          }, 3000); // 3 second delay to let farewell play
+          break;
+        }
           
         default:
           console.log('[ElevenLabs Handler] Unknown tool:', toolCall.tool_name);
