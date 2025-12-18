@@ -11,6 +11,7 @@ import { Customer } from '@/hooks/useCustomers';
 import { SendToGCDialog } from '../SendToGCDialog';
 import { TemplateSearchModal } from '../estimate/TemplateSearchModal';
 import { SaveAsTemplateModal } from '../estimate/SaveAsTemplateModal';
+import { EstimatePDFPreview } from '@/components/estimate-pdf';
 import {
   BlueBackground,
   SectionHeader,
@@ -49,6 +50,7 @@ export function EstimateDetailViewBlue({
   const [templateSearchOpen, setTemplateSearchOpen] = useState(false);
   const [saveTemplateOpen, setSaveTemplateOpen] = useState(false);
   const [isPdfLoading, setIsPdfLoading] = useState(false);
+  const [showPdfPreview, setShowPdfPreview] = useState(false);
 
   // Fetch linked customer data
   useEffect(() => {
@@ -284,7 +286,7 @@ export function EstimateDetailViewBlue({
     }
   };
 
-  const handlePreviewPDF = () => handlePDFAction('preview');
+  const handlePreviewPDF = () => setShowPdfPreview(true);
   const handleDownloadPDF = () => handlePDFAction('download');
 
   return (
@@ -603,6 +605,17 @@ export function EstimateDetailViewBlue({
         defaultName={estimate.title}
         defaultTrade={estimate.trade_type || 'General Contracting'}
       />
+
+      {/* PDF Preview Dialog */}
+      <Dialog open={showPdfPreview} onOpenChange={setShowPdfPreview}>
+        <DialogContent className="max-w-[900px] max-h-[95vh] p-0 overflow-auto">
+          <EstimatePDFPreview 
+            estimate={estimate} 
+            onClose={() => setShowPdfPreview(false)}
+            onDownload={handleDownloadPDF}
+          />
+        </DialogContent>
+      </Dialog>
     </BlueBackground>
   );
 }
