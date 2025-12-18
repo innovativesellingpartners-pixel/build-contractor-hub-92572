@@ -2,13 +2,13 @@ import { useLeads } from '@/hooks/useLeads';
 import { useCustomers } from '@/hooks/useCustomers';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FileText, Briefcase, Phone, Mail, DollarSign, Calendar, Headset } from 'lucide-react';
+import { FileText, Briefcase, Phone, Mail, DollarSign, Calendar, Headset, Receipt } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { ContactSupport } from '@/components/ContactSupport';
 
-type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'emails' | 'estimates' | 'reporting' | 'accounting' | 'more' | 'calendar';
+type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'emails' | 'estimates' | 'reporting' | 'accounting' | 'more' | 'calendar' | 'invoices';
 
 interface CRMDashboardProps {
   onSectionChange?: (section: Section) => void;
@@ -68,6 +68,14 @@ export default function CRMDashboard({ onSectionChange }: CRMDashboardProps) {
       gradient: 'from-emerald-500 to-emerald-600',
       borderColor: 'border-emerald-400',
       description: 'Payments & expenses'
+    },
+    { 
+      id: 'invoices' as Section, 
+      label: 'Invoices', 
+      icon: Receipt, 
+      gradient: 'from-indigo-500 to-indigo-600',
+      borderColor: 'border-indigo-400',
+      description: 'Manage invoices'
     },
   ];
 
