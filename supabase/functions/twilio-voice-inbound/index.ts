@@ -244,12 +244,18 @@ serve(async (req) => {
     }
 
     // Check if we should ring contractor first before AI intercepts
+    // 3 rings ≈ 15 seconds on most carriers.
     const forwardTimeout = aiProfile.forward_timeout_seconds || 0;
     const contractorPhone = aiProfile.contractor_phone;
-    
-    if (forwardTimeout > 0 && contractorPhone) {
-      console.log(`Ringing contractor ${contractorPhone} for ${forwardTimeout}s before AI intercepts`);
-      
+
+    // Enforce the requested behavior: ring no more than ~3 times before AI answers.
+    const effectiveForwardTimeout = Math.min(forwardTimeout, 15);
+
+    if (effectiveForwardTimeout > 0 && contractorPhone) {
+      console.log(
+        `Ringing contractor ${contractorPhone} for ${effectiveForwardTimeout}s (max 3 rings) before AI intercepts`
+      );
+
       // Log call with routing_status indicating we're trying contractor first
       await supabase.from('calls').insert({
         from_number: from,
@@ -271,22 +277,22 @@ serve(async (req) => {
         from_number: from,
         to_number: to,
         status: 'pending',
-        conversation_history: []
+        conversation_history: [],
       });
 
       // Return TwiML that dials contractor with timeout, then fallback to AI
       const fallbackUrl = `https://faqrzzodtmsybofakcvv.supabase.co/functions/v1/twilio-voice-fallback`;
-      
+
       // Use the Twilio number as caller ID to avoid carrier blocking
       const dialTwiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Dial timeout="${forwardTimeout}" action="${fallbackUrl}" callerId="${to}">
+  <Dial timeout="${effectiveForwardTimeout}" action="${fallbackUrl}" callerId="${to}">
     <Number statusCallbackEvent="initiated ringing answered completed" statusCallback="https://faqrzzodtmsybofakcvv.supabase.co/functions/v1/twilio-voice-status" statusCallbackMethod="POST">${contractorPhone}</Number>
   </Dial>
 </Response>`;
-      
+
       return new Response(dialTwiml, {
-        headers: { 'Content-Type': 'text/xml', ...corsHeaders }
+        headers: { 'Content-Type': 'text/xml', ...corsHeaders },
       });
     }
 
