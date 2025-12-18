@@ -4,11 +4,13 @@ import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { Send, Users, Briefcase, Eye, Copy, FileText, Receipt, Save } from 'lucide-react';
+import { Send, Users, Briefcase, Eye, Copy, FileText, Receipt, Save, Download, LayoutTemplate, BookmarkPlus } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { CustomerDetailViewBlue } from './CustomerDetailViewBlue';
 import { Customer } from '@/hooks/useCustomers';
 import { SendToGCDialog } from '../SendToGCDialog';
+import { TemplateSearchModal } from '../estimate/TemplateSearchModal';
+import { SaveAsTemplateModal } from '../estimate/SaveAsTemplateModal';
 import {
   BlueBackground,
   SectionHeader,
@@ -44,6 +46,9 @@ export function EstimateDetailViewBlue({
   const [customerDialogOpen, setCustomerDialogOpen] = useState(false);
   const [linkedCustomer, setLinkedCustomer] = useState<Customer | null>(null);
   const [showSendToGCDialog, setShowSendToGCDialog] = useState(false);
+  const [templateSearchOpen, setTemplateSearchOpen] = useState(false);
+  const [saveTemplateOpen, setSaveTemplateOpen] = useState(false);
+  const [isPdfLoading, setIsPdfLoading] = useState(false);
 
   // Fetch linked customer data
   useEffect(() => {
@@ -224,6 +229,64 @@ export function EstimateDetailViewBlue({
   // Show "Send Invoice to GC" when estimate is accepted/signed (no payment requirement)
   const canSendToGC = estimate.signed_at || estimate.status === 'accepted' || estimate.status === 'sold';
 
+  // PDF Action handlers
+  const handlePDFAction = async (mode: 'preview' | 'download') => {
+    if (!estimate.id) {
+      toast.error('Estimate not saved yet');
+      return;
+    }
+
+    setIsPdfLoading(true);
+    toast.loading('Generating PDF...', { id: 'pdf-gen' });
+
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-estimate-pdf', {
+        body: {
+          estimateId: estimate.id,
+          includePaymentLink: true,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.pdfBase64) {
+        const byteCharacters = atob(data.pdfBase64);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'application/pdf' });
+        const url = window.URL.createObjectURL(blob);
+
+        if (mode === 'preview') {
+          window.open(url, '_blank');
+          toast.success('PDF opened for review', { id: 'pdf-gen' });
+        } else {
+          const link = document.createElement('a');
+          link.href = url;
+          const filename = `Estimate_${estimate.estimate_number || estimate.id}_${estimate.client_name?.replace(/\s+/g, '_')}.pdf`;
+          link.setAttribute('download', filename);
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(url);
+          toast.success('PDF downloaded successfully', { id: 'pdf-gen' });
+        }
+      } else {
+        throw new Error('PDF generation failed - no PDF data returned');
+      }
+    } catch (error: any) {
+      console.error('Error generating PDF:', error);
+      toast.error('Failed to generate PDF: ' + error.message, { id: 'pdf-gen' });
+    } finally {
+      setIsPdfLoading(false);
+    }
+  };
+
+  const handlePreviewPDF = () => handlePDFAction('preview');
+  const handleDownloadPDF = () => handlePDFAction('download');
+
   return (
     <BlueBackground className="min-h-full flex flex-col">
       {/* Header - Fixed */}
@@ -243,6 +306,34 @@ export function EstimateDetailViewBlue({
             EDIT
           </ActionButton>
         )}
+        {/* PDF Actions - Always available when estimate has an ID */}
+        <ActionButton 
+          variant="muted" 
+          onClick={handlePreviewPDF}
+          disabled={isPdfLoading}
+          className="flex items-center gap-2"
+        >
+          <Eye className="w-4 h-4" />
+          {isPdfLoading ? 'LOADING...' : 'REVIEW PDF'}
+        </ActionButton>
+        <ActionButton 
+          variant="muted" 
+          onClick={handleDownloadPDF}
+          disabled={isPdfLoading}
+          className="flex items-center gap-2"
+        >
+          <Download className="w-4 h-4" />
+          DOWNLOAD PDF
+        </ActionButton>
+        {/* Template Actions */}
+        <ActionButton 
+          variant="muted" 
+          onClick={() => setSaveTemplateOpen(true)}
+          className="flex items-center gap-2"
+        >
+          <BookmarkPlus className="w-4 h-4" />
+          SAVE TEMPLATE
+        </ActionButton>
         {onSend && estimate.client_email && (
           <ActionButton variant="success" onClick={onSend} className="flex items-center gap-2">
             <Send className="w-4 h-4" />
@@ -502,6 +593,15 @@ export function EstimateDetailViewBlue({
         onSuccess={() => {
           onSectionChange?.('invoices');
         }}
+      />
+
+      {/* Save as Template Modal */}
+      <SaveAsTemplateModal
+        open={saveTemplateOpen}
+        onOpenChange={setSaveTemplateOpen}
+        lineItems={lineItems}
+        defaultName={estimate.title}
+        defaultTrade={estimate.trade_type || 'General Contracting'}
       />
     </BlueBackground>
   );
