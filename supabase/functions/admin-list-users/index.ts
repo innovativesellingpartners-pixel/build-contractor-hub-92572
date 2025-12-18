@@ -24,14 +24,10 @@ serve(async (req) => {
 
     const token = authHeader.replace("Bearer ", "");
     
-    // Create client with anon key to verify the user's token
-    const userClient = createClient(supabaseUrl, supabaseAnonKey, {
-      global: {
-        headers: { Authorization: authHeader }
-      }
-    });
+    // Use service client to verify the user's token directly
+    const serviceClient = createClient(supabaseUrl, supabaseServiceKey);
     
-    const { data: { user }, error: authError } = await userClient.auth.getUser();
+    const { data: { user }, error: authError } = await serviceClient.auth.getUser(token);
     
     if (authError || !user) {
       console.error("Auth error:", authError);
@@ -41,7 +37,6 @@ serve(async (req) => {
     console.log("Authenticated user:", user.id, user.email);
 
     // Check if user is admin using service role client
-    const serviceClient = createClient(supabaseUrl, supabaseServiceKey);
     const { data: roleData, error: roleError } = await serviceClient
       .from("user_roles")
       .select("role")
