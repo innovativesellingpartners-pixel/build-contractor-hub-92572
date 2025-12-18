@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 // Elegant light background wrapper with safe area for mobile browsers
 export function BlueBackground({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <div className={cn('min-h-full bg-gradient-to-b from-muted/50 to-background', className)}>
+    <div className={cn('h-full flex flex-col bg-gradient-to-b from-muted/50 to-background', className)}>
       {children}
     </div>
   );

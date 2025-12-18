@@ -493,23 +493,144 @@ serve(async (req) => {
     
     try {
       switch (toolCall.tool_name) {
-        case 'schedule_appointment':
+        case 'schedule_appointment': {
           // Save appointment to database
           const appointmentData = toolCall.parameters;
-          await supabase.from('job_meetings').insert({
+          const scheduledDate = appointmentData.date || new Date().toISOString().split('T')[0];
+          const scheduledTime = appointmentData.time || '09:00';
+          const location = appointmentData.address || '';
+          const customerName = appointmentData.name || 'Customer';
+          const customerPhone = appointmentData.phone || '';
+          const customerEmail = appointmentData.email || '';
+          const description = appointmentData.description || 'Scheduled Visit';
+          
+          // 1. Insert job_meetings record
+          const { data: meeting, error: meetingError } = await supabase.from('job_meetings').insert({
             user_id: contractorId,
             job_id: null,
-            title: appointmentData.description || 'Scheduled Visit',
+            title: description,
             meeting_type: 'site_visit',
-            scheduled_date: appointmentData.date,
-            scheduled_time: appointmentData.time,
-            location: appointmentData.address,
-            notes: `Customer: ${appointmentData.name}\nPhone: ${appointmentData.phone}\n${appointmentData.notes || ''}`
-          });
-          result = { success: true, message: "Appointment scheduled successfully" };
-          break;
+            scheduled_date: scheduledDate,
+            scheduled_time: scheduledTime,
+            location: location,
+            duration_minutes: 60,
+            notes: `Customer: ${customerName}\nPhone: ${customerPhone}\nEmail: ${customerEmail}\n${appointmentData.notes || ''}`
+          }).select().single();
           
-        case 'take_voicemail':
+          if (meetingError) {
+            console.error('[ElevenLabs Handler] Failed to create meeting:', meetingError);
+            result = { success: false, message: "Failed to save appointment" };
+            break;
+          }
+          
+          console.log('[ElevenLabs Handler] Meeting created:', meeting?.id);
+          
+          // 2. Create calendar event via edge function (server-to-server call)
+          try {
+            const calendarPayload = {
+              jobId: meeting?.id || 'voice-ai-booking',
+              jobName: `${description} - ${customerName}`,
+              description: `Voice AI Scheduled Visit\nCustomer: ${customerName}\nPhone: ${customerPhone}\nAddress: ${location}`,
+              startDate: `${scheduledDate}T${scheduledTime}:00`,
+              endDate: `${scheduledDate}T${String(parseInt(scheduledTime.split(':')[0]) + 1).padStart(2, '0')}:${scheduledTime.split(':')[1]}:00`,
+              location: location,
+              address: location,
+              contractorId: contractorId, // Pass for service role call
+            };
+            
+            // Get contractor's calendar connection
+            const { data: calendarConnection } = await supabase
+              .from('calendar_connections')
+              .select('*')
+              .eq('user_id', contractorId)
+              .limit(1)
+              .single();
+              
+            if (calendarConnection) {
+              console.log('[ElevenLabs Handler] Found calendar connection, creating event...');
+              // Call the create-calendar-event function internally
+              const calResponse = await fetch(
+                `${Deno.env.get('SUPABASE_URL')}/functions/v1/create-calendar-event`,
+                {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+                  },
+                  body: JSON.stringify(calendarPayload),
+                }
+              );
+              const calResult = await calResponse.json();
+              console.log('[ElevenLabs Handler] Calendar event result:', calResult);
+            } else {
+              console.log('[ElevenLabs Handler] No calendar connection for contractor');
+            }
+          } catch (calError) {
+            console.error('[ElevenLabs Handler] Calendar event error:', calError);
+            // Don't fail the whole operation if calendar fails
+          }
+          
+          // 3. Send email confirmation if customer email provided
+          if (customerEmail) {
+            try {
+              console.log('[ElevenLabs Handler] Sending email confirmation to:', customerEmail);
+              
+              // Get contractor profile for business info
+              const { data: profile } = await supabase
+                .from('profiles')
+                .select('business_name, business_phone, business_email')
+                .eq('id', contractorId)
+                .single();
+              
+              const emailPayload = {
+                recipientEmail: customerEmail,
+                meetingTitle: description,
+                meetingDate: scheduledDate,
+                meetingTime: scheduledTime,
+                duration: 60,
+                location: location,
+                notes: `Scheduled by ${profile?.business_name || businessName} AI Assistant.\n\nWe look forward to seeing you!`,
+                contractorId: contractorId, // Pass for service role call
+              };
+              
+              const emailResponse = await fetch(
+                `${Deno.env.get('SUPABASE_URL')}/functions/v1/send-meeting-invite`,
+                {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+                  },
+                  body: JSON.stringify(emailPayload),
+                }
+              );
+              const emailResult = await emailResponse.json();
+              console.log('[ElevenLabs Handler] Email result:', emailResult);
+            } catch (emailError) {
+              console.error('[ElevenLabs Handler] Email error:', emailError);
+              // Don't fail the operation if email fails
+            }
+          }
+          
+          result = { 
+            success: true, 
+            message: `Appointment scheduled for ${scheduledDate} at ${scheduledTime}. ${customerEmail ? 'Confirmation email sent.' : 'No email provided for confirmation.'}`,
+            meeting_id: meeting?.id
+          };
+          break;
+        }
+          
+        case 'take_voicemail': {
+          // Save voicemail message
+          const voicemailData = toolCall.parameters;
+          await supabase.from('calls').update({
+            ai_summary: `Voicemail from ${voicemailData.name} (${voicemailData.phone}): ${voicemailData.message}`,
+            outcome: 'voicemail',
+            message_type: voicemailData.urgency || 'normal'
+          }).eq('call_sid', callSid);
+          result = { success: true, message: "Voicemail saved successfully" };
+          break;
+        }
           // Save voicemail message
           const voicemailData = toolCall.parameters;
           await supabase.from('calls').update({

@@ -18,6 +18,7 @@ interface MeetingInviteRequest {
   location?: string;
   notes?: string;
   jobNumber?: string;
+  contractorId?: string; // For service-role calls from voice AI
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -32,20 +33,31 @@ const handler = async (req: Request): Promise<Response> => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Get user from auth header
+    // Check for auth header - allow service-role calls from voice AI
     const authHeader = req.headers.get("authorization");
-    if (!authHeader) {
+    let userId: string | null = null;
+    
+    if (authHeader) {
+      const token = authHeader.replace("Bearer ", "");
+      
+      // Check if it's the service role key (internal call from voice AI)
+      if (token === supabaseServiceKey) {
+        console.log("Service role call - proceeding without user auth");
+        userId = null; // No user context needed for service calls
+      } else {
+        // Regular user auth
+        const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+        if (authError || !user) {
+          return new Response(
+            JSON.stringify({ error: "Unauthorized" }),
+            { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        userId = user.id;
+      }
+    } else {
       return new Response(
         JSON.stringify({ error: "No authorization header" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -59,6 +71,7 @@ const handler = async (req: Request): Promise<Response> => {
       location,
       notes,
       jobNumber,
+      contractorId,
     }: MeetingInviteRequest = await req.json();
 
     if (!recipientEmail || !meetingTitle || !meetingDate || !meetingTime) {
@@ -68,15 +81,23 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Fetch contractor profile for branding
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("business_name, business_email, business_phone")
-      .eq("id", user.id)
-      .single();
+    // Use contractorId from request (for service calls) or userId from auth
+    const profileId = contractorId || userId;
 
-    const businessName = profile?.business_name || "CT1 Contractor";
-    const businessPhone = profile?.business_phone || "";
+    // Fetch contractor profile for branding (only if we have a profile ID)
+    let businessName = "CT1 Contractor";
+    let businessPhone = "";
+    
+    if (profileId) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("business_name, business_email, business_phone")
+        .eq("id", profileId)
+        .single();
+      
+      businessName = profile?.business_name || "CT1 Contractor";
+      businessPhone = profile?.business_phone || "";
+    }
 
     // Format duration
     const durationText = duration >= 60 

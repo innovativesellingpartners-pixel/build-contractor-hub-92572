@@ -66,29 +66,51 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    // Check for auth header - allow service-role calls from voice AI
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
+    let userId: string | null = null;
+    
+    if (authHeader) {
+      const token = authHeader.replace('Bearer ', '');
+      
+      // Check if it's the service role key (internal call from voice AI)
+      if (token === supabaseServiceKey) {
+        console.log("Service role call - will use contractorId from body");
+        userId = null;
+      } else {
+        // Regular user auth
+        const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+        if (authError || !user) {
+          return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+            status: 401,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+        userId = user.id;
+      }
+    } else {
       return new Response(JSON.stringify({ error: 'No authorization header' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    const { jobId, jobName, description, startDate, endDate, location, address, city, state, contractorId } = await req.json();
     
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
+    // Use contractorId from request (for service calls) or userId from auth
+    const effectiveUserId = contractorId || userId;
+    
+    console.log('Creating calendar event for job:', jobName, 'user:', effectiveUserId);
+
+    if (!jobId || !jobName) {
+      return new Response(JSON.stringify({ error: 'Missing required fields' }), {
+        status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    const { jobId, jobName, description, startDate, endDate, location, address, city, state } = await req.json();
-    console.log('Creating calendar event for job:', jobName, 'user:', user.id);
-
-    if (!jobId || !jobName) {
-      return new Response(JSON.stringify({ error: 'Missing required fields' }), {
+    if (!effectiveUserId) {
+      return new Response(JSON.stringify({ error: 'No user context available' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -98,7 +120,7 @@ serve(async (req) => {
     const { data: connections, error: connError } = await supabase
       .from('calendar_connections')
       .select('*')
-      .eq('user_id', user.id);
+      .eq('user_id', effectiveUserId);
 
     if (connError) {
       console.error('Error fetching calendar connections:', connError);
