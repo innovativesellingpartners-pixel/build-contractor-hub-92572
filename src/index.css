@@ -36,7 +36,7 @@
     --destructive: 0 62.8% 50%;           /* Destructive red */
     --destructive-foreground: 0 0% 100%;
     
-    --border: 0 0% 88%;                   /* Light gray borders */
+    --border: 0 0% 78%;                   /* Darker gray borders for better visibility */
     --input: 0 0% 96%;                    /* Light input background */
     --ring: 353 91% 44%;                  /* CT1 brand red focus ring */
 
