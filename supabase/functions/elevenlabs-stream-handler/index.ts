@@ -83,22 +83,52 @@ function mulawToPcm16(mulawData: Uint8Array, targetSampleRate: number): Int16Arr
   return pcmOut;
 }
 
-// Resample PCM16 to 8kHz and encode to µ-law
+/**
+ * Simple low-pass filter to prevent aliasing when downsampling.
+ * Uses a moving average with a window size based on the downsample ratio.
+ */
+function lowPassFilter(pcmData: Int16Array, windowSize: number): Int16Array {
+  if (windowSize <= 1) return pcmData;
+  
+  const halfWindow = Math.floor(windowSize / 2);
+  const filtered = new Int16Array(pcmData.length);
+  
+  for (let i = 0; i < pcmData.length; i++) {
+    let sum = 0;
+    let count = 0;
+    
+    for (let j = -halfWindow; j <= halfWindow; j++) {
+      const idx = i + j;
+      if (idx >= 0 && idx < pcmData.length) {
+        sum += pcmData[idx];
+        count++;
+      }
+    }
+    
+    filtered[i] = Math.round(sum / count);
+  }
+  
+  return filtered;
+}
+
+// Resample PCM16 to 8kHz and encode to µ-law with anti-aliasing filter
 function pcm16ToMulaw(pcmData: Int16Array, inputSampleRate: number): Uint8Array {
   const targetRate = 8000;
   const ratio = inputSampleRate / targetRate;
-  const outputLength = Math.max(1, Math.floor(pcmData.length / ratio));
+  
+  // Apply low-pass filter before downsampling to prevent aliasing (fuzzy s's)
+  // Window size should be at least the downsample ratio
+  const filterWindowSize = Math.max(3, Math.ceil(ratio));
+  const filteredData = lowPassFilter(pcmData, filterWindowSize);
+  
+  const outputLength = Math.max(1, Math.floor(filteredData.length / ratio));
 
-  // Downsample with linear interpolation, then µ-law encode via lookup table
+  // Downsample using simple decimation (taking every Nth sample)
+  // This is safe now because we've already filtered out high frequencies
   const mulaw = new Uint8Array(outputLength);
   for (let i = 0; i < outputLength; i++) {
-    const srcPos = i * ratio;
-    const idx = Math.floor(srcPos);
-    const frac = srcPos - idx;
-
-    const s0 = pcmData[Math.min(idx, pcmData.length - 1)];
-    const s1 = pcmData[Math.min(idx + 1, pcmData.length - 1)];
-    const sample = Math.round(s0 + (s1 - s0) * frac);
+    const srcIdx = Math.min(Math.floor(i * ratio), filteredData.length - 1);
+    const sample = filteredData[srcIdx];
 
     const tableIdx = sample < 0 ? sample + 65536 : sample;
     mulaw[i] = MULAW_ENCODE_TABLE[tableIdx];
