@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useInvoices, Invoice } from '@/hooks/useInvoices';
 import { InvoiceDetailView } from './InvoiceDetailView';
+import { PredictiveSearch } from '../PredictiveSearch';
 
 interface InvoicesSectionProps {
   onSectionChange?: (section: string) => void;
@@ -83,26 +84,28 @@ export default function InvoicesSection({ onSectionChange }: InvoicesSectionProp
           </div>
         </div>
 
-        {/* Search and Filters */}
+        {/* Predictive Search and Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search by invoice number..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-            {searchQuery && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
-                onClick={() => setSearchQuery('')}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            )}
+          <div className="flex-1">
+          <PredictiveSearch<Invoice>
+            items={invoices || []}
+            placeholder="Search invoices by number or notes..."
+            getLabel={(invoice: Invoice) => invoice.invoice_number || `Invoice ${invoice.id?.slice(0, 8)}`}
+            getSublabel={(invoice: Invoice) => [
+              invoice.status.toUpperCase(),
+              `$${(invoice.amount_due || 0).toLocaleString()}`,
+              format(new Date(invoice.issue_date), 'MMM d, yyyy')
+            ].join(' • ')}
+            filterFn={(invoice: Invoice, query: string) => {
+              const q = query.toLowerCase();
+              return (
+                invoice.invoice_number?.toLowerCase().includes(q) ||
+                invoice.notes?.toLowerCase().includes(q) ||
+                invoice.status?.toLowerCase().includes(q)
+              ) || false;
+            }}
+            onSelect={(invoice: Invoice) => setSelectedInvoice(invoice)}
+          />
           </div>
           
           <Select value={statusFilter} onValueChange={setStatusFilter}>

@@ -14,6 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { HorizontalRowCard, RowAvatar, RowContent, RowTitleLine, RowMetaLine, RowBadgeGroup, RowActions } from './HorizontalRowCard';
 import { CustomerDetailViewBlue } from './CustomerDetailViewBlue';
+import { PredictiveSearch } from '../PredictiveSearch';
 
 interface CustomersSectionProps {
   onSectionChange?: (section: string) => void;
@@ -182,6 +183,26 @@ export default function CustomersSection({ onSectionChange }: CustomersSectionPr
             </Button>
           </div>
         </div>
+
+        {/* Predictive Search */}
+        <PredictiveSearch
+          items={customers}
+          placeholder="Search customers by name, email, phone..."
+          getLabel={(customer) => customer.name}
+          getSublabel={(customer) => [customer.email, customer.phone, customer.company].filter(Boolean).join(' • ')}
+          filterFn={(customer, query) => {
+            const q = query.toLowerCase();
+            return (
+              customer.name.toLowerCase().includes(q) ||
+              customer.email?.toLowerCase().includes(q) ||
+              customer.phone?.includes(q) ||
+              customer.company?.toLowerCase().includes(q) ||
+              customer.address?.toLowerCase().includes(q) ||
+              customer.city?.toLowerCase().includes(q)
+            );
+          }}
+          onSelect={handleOpenDetail}
+        />
 
         {/* Horizontal List */}
         <div className="space-y-3">

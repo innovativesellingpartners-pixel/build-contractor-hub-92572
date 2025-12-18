@@ -10,6 +10,7 @@ import JobDetailViewBlue from '../JobDetailViewBlue';
 import { AddJobDialog } from '../AddJobDialog';
 import { EditJobDialog } from '../EditJobDialog';
 import { HorizontalRowCard, RowAvatar, RowContent, RowTitleLine, RowMetaLine, RowAmount, RowActions } from './HorizontalRowCard';
+import { PredictiveSearch } from '../PredictiveSearch';
 
 interface JobsSectionProps {
   onSectionChange?: (section: string) => void;
@@ -129,6 +130,26 @@ export default function JobsSection({ onSectionChange }: JobsSectionProps) {
             <AddJobDialog onAdd={addJob} />
           </div>
         </div>
+
+        {/* Predictive Search */}
+        <PredictiveSearch
+          items={jobs}
+          placeholder="Search jobs by name, number, or location..."
+          getLabel={(job) => job.name}
+          getSublabel={(job) => [job.job_number && `#${job.job_number}`, job.city, job.state].filter(Boolean).join(' • ')}
+          filterFn={(job, query) => {
+            const q = query.toLowerCase();
+            return (
+              job.name.toLowerCase().includes(q) ||
+              job.job_number?.toLowerCase().includes(q) ||
+              job.address?.toLowerCase().includes(q) ||
+              job.city?.toLowerCase().includes(q) ||
+              job.state?.toLowerCase().includes(q) ||
+              job.status?.toLowerCase().includes(q)
+            );
+          }}
+          onSelect={handleJobClick}
+        />
 
         {/* Horizontal List */}
         <div className="space-y-3">

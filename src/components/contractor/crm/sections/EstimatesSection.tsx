@@ -15,6 +15,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { HorizontalRowCard, RowAvatar, RowContent, RowTitleLine, RowMetaLine, RowBadgeGroup, RowAmount, RowActions } from './HorizontalRowCard';
 import { EstimateDetailViewBlue } from './EstimateDetailViewBlue';
 import { TemplatesSection } from '../estimate/TemplatesSection';
+import { PredictiveSearch } from '../PredictiveSearch';
 
 interface EstimatesSectionProps {
   onSectionChange?: (section: string) => void;
@@ -331,6 +332,27 @@ export default function EstimatesSection({ onSectionChange, initialEstimateId, o
       <CardDescription className="px-4 sm:px-0 mb-4">
         Create, manage, and track project estimates
       </CardDescription>
+
+      {/* Predictive Search */}
+      <div className="px-4 sm:px-0 mb-4">
+        <PredictiveSearch
+          items={estimates || []}
+          placeholder="Search estimates by title, client, or status..."
+          getLabel={(estimate: any) => estimate.title || 'Untitled'}
+          getSublabel={(estimate: any) => [estimate.client_name, estimate.status, estimate.total_amount ? `$${estimate.total_amount.toLocaleString()}` : null].filter(Boolean).join(' • ')}
+          filterFn={(estimate: any, query) => {
+            const q = query.toLowerCase();
+            return (
+              estimate.title?.toLowerCase().includes(q) ||
+              estimate.client_name?.toLowerCase().includes(q) ||
+              estimate.client_email?.toLowerCase().includes(q) ||
+              estimate.status?.toLowerCase().includes(q) ||
+              estimate.project_name?.toLowerCase().includes(q)
+            );
+          }}
+          onSelect={handleOpenDetail}
+        />
+      </div>
 
       {isLoading ? (
         <div className="flex justify-center p-8">

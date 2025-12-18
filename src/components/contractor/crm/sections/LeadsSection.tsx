@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
 import { HorizontalRowCard, RowAvatar, RowContent, RowTitleLine, RowMetaLine, RowAmount, RowActions } from './HorizontalRowCard';
 import { LeadDetailViewBlue } from './LeadDetailViewBlue';
+import { PredictiveSearch } from '../PredictiveSearch';
 
 interface LeadsSectionProps {
   onSectionChange?: (section: string) => void;
@@ -285,6 +286,26 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
             <AddLeadDialog onAdd={addLead} sources={sources} />
           </div>
         </div>
+
+        {/* Predictive Search */}
+        <PredictiveSearch
+          items={leads}
+          placeholder="Search leads by name, company, phone..."
+          getLabel={(lead) => lead.name}
+          getSublabel={(lead) => [lead.company, lead.project_type, lead.status].filter(Boolean).join(' • ')}
+          filterFn={(lead, query) => {
+            const q = query.toLowerCase();
+            return (
+              lead.name.toLowerCase().includes(q) ||
+              lead.email?.toLowerCase().includes(q) ||
+              lead.phone?.includes(q) ||
+              lead.company?.toLowerCase().includes(q) ||
+              lead.project_type?.toLowerCase().includes(q) ||
+              lead.status?.toLowerCase().includes(q)
+            );
+          }}
+          onSelect={handleOpenDetail}
+        />
 
         <div className="space-y-3">
         {leads.map((lead) => {
