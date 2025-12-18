@@ -23,7 +23,7 @@ Deno.serve(async (req) => {
     const { data: oauthState, error: stateError } = await supabaseClient
       .from('oauth_states')
       .select('contractor_id, expires_at')
-      .eq('state_token', state)
+      .eq('state', state)
       .single();
 
     if (stateError || !oauthState) {
@@ -32,7 +32,7 @@ Deno.serve(async (req) => {
     }
 
     // Check if state has expired
-    if (new Date(oauthState.expires_at) < new Date()) {
+    if (oauthState.expires_at && new Date(oauthState.expires_at) < new Date()) {
       console.error('OAuth state expired');
       throw new Error('OAuth state expired');
     }
@@ -44,7 +44,7 @@ Deno.serve(async (req) => {
     await supabaseClient
       .from('oauth_states')
       .delete()
-      .eq('state_token', state);
+      .eq('state', state);
 
     // Exchange authorization code for tokens
     const clientId = Deno.env.get('QUICKBOOKS_CLIENT_ID');
