@@ -54,8 +54,10 @@ export default function JobsSection({ onSectionChange }: JobsSectionProps) {
   const handleDuplicateJob = async (jobId: string): Promise<Job | undefined> => {
     const newJob = await duplicateJob(jobId);
     if (newJob) {
-      setSelectedJob(newJob);
-      setDetailOpen(true);
+      // Open the new job in edit mode immediately
+      setDetailOpen(false);
+      setEditingJob(newJob);
+      setEditOpen(true);
     }
     return newJob;
   };

@@ -23,7 +23,7 @@ interface EstimatesSectionProps {
 }
 
 export default function EstimatesSection({ onSectionChange, initialEstimateId, onClearInitialEstimate }: EstimatesSectionProps) {
-  const { estimates, isLoading, createEstimate, createEstimateAsync, updateEstimate, updateEstimateAsync, deleteEstimate, sendEstimate, sendEstimateAsync, isSendingEstimate, duplicateEstimate, isDuplicatingEstimate } = useEstimates();
+  const { estimates, isLoading, createEstimate, createEstimateAsync, updateEstimate, updateEstimateAsync, deleteEstimate, sendEstimate, sendEstimateAsync, isSendingEstimate, duplicateEstimate, duplicateEstimateAsync, isDuplicatingEstimate } = useEstimates();
   const { leads } = useLeads();
   const { user } = useAuth();
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -216,9 +216,31 @@ export default function EstimatesSection({ onSectionChange, initialEstimateId, o
     await handleSendEstimate(estimate);
   };
 
-  const handleDuplicateFromDetail = (estimateId: string) => {
-    duplicateEstimate(estimateId);
-    setDetailViewOpen(false);
+  const handleDuplicateFromDetail = async (estimateId: string) => {
+    try {
+      const newEstimate = await duplicateEstimateAsync(estimateId);
+      if (newEstimate) {
+        setDetailViewOpen(false);
+        // Open the new estimate in edit mode
+        setSelectedEstimate(newEstimate);
+        setIsFormOpen(true);
+      }
+    } catch (error) {
+      console.error('Failed to duplicate estimate:', error);
+    }
+  };
+
+  const handleDuplicateFromList = async (estimateId: string) => {
+    try {
+      const newEstimate = await duplicateEstimateAsync(estimateId);
+      if (newEstimate) {
+        // Open the new estimate in edit mode
+        setSelectedEstimate(newEstimate);
+        setIsFormOpen(true);
+      }
+    } catch (error) {
+      console.error('Failed to duplicate estimate:', error);
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -374,7 +396,7 @@ export default function EstimatesSection({ onSectionChange, initialEstimateId, o
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8"
-                  onClick={(e) => { e.stopPropagation(); duplicateEstimate(estimate.id); }}
+                  onClick={(e) => { e.stopPropagation(); handleDuplicateFromList(estimate.id); }}
                   disabled={isDuplicatingEstimate}
                   title="Duplicate"
                 >

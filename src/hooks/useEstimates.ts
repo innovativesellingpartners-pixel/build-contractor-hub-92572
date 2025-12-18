@@ -433,6 +433,7 @@ export function useEstimates() {
     sendEstimateAsync: sendEstimate.mutateAsync,
     isSendingEstimate: sendEstimate.isPending,
     duplicateEstimate: duplicateEstimate.mutate,
+    duplicateEstimateAsync: duplicateEstimate.mutateAsync,
     isDuplicatingEstimate: duplicateEstimate.isPending,
   };
 }
