@@ -42,10 +42,13 @@ function encodeUlawSample(sample: number): number {
 }
 
 // Initialize decode table
+// ITU-T G.711 µ-law: the encoded byte is bit-inverted, so we invert back during decode
 for (let i = 0; i < 256; i++) {
-  const sign = (i & 0x80) ? -1 : 1;
-  const exponent = (i >> 4) & 0x07;
-  const mantissa = i & 0x0f;
+  // Invert the byte first (G.711 µ-law stores inverted)
+  const u = ~i & 0xff;
+  const sign = (u & 0x80) ? -1 : 1;
+  const exponent = (u >> 4) & 0x07;
+  const mantissa = u & 0x0f;
   const magnitude = ((mantissa << 3) + MULAW_BIAS) << exponent;
   MULAW_DECODE_TABLE[i] = sign * (magnitude - MULAW_BIAS);
 }
@@ -315,6 +318,17 @@ serve(async (req) => {
             try {
               const mulawBytes = base64ToUint8Array(data.media.payload);
               const pcm = mulawToPcm16(mulawBytes, elevenInputSampleRate);
+              
+              // Debug: Log audio levels periodically to verify audio is being received
+              if (Math.random() < 0.01) { // Log ~1% of audio chunks
+                let maxLevel = 0;
+                for (let i = 0; i < pcm.length; i++) {
+                  const absVal = Math.abs(pcm[i]);
+                  if (absVal > maxLevel) maxLevel = absVal;
+                }
+                console.log('[ElevenLabs Handler] Audio chunk - bytes:', mulawBytes.length, 'pcm samples:', pcm.length, 'max level:', maxLevel);
+              }
+              
               const pcmBase64 = int16ArrayToBase64(pcm);
               
               elevenLabsWs.send(JSON.stringify({
