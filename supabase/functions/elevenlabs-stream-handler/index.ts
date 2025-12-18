@@ -143,12 +143,45 @@ serve(async (req) => {
   let businessName: string = "our office";
   let contractorName: string = "";
   let trade: string = "";
+  let keepAliveInterval: number | null = null;
   
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   console.log('[ElevenLabs Handler] WebSocket connection established');
+
+  // Keep-alive ping every 30 seconds to prevent edge function timeout
+  function startKeepAlive() {
+    if (keepAliveInterval) clearInterval(keepAliveInterval);
+    
+    keepAliveInterval = setInterval(() => {
+      console.log('[ElevenLabs Handler] Keep-alive ping');
+      
+      // Send mark event to Twilio to keep connection alive
+      if (twilioWs.readyState === WebSocket.OPEN && streamSid) {
+        twilioWs.send(JSON.stringify({
+          event: 'mark',
+          streamSid: streamSid,
+          mark: { name: 'keepalive-' + Date.now() }
+        }));
+      }
+      
+      // Send ping to ElevenLabs
+      if (elevenLabsWs && elevenLabsWs.readyState === WebSocket.OPEN) {
+        elevenLabsWs.send(JSON.stringify({
+          type: 'ping'
+        }));
+      }
+    }, 30000); // Every 30 seconds
+  }
+  
+  function stopKeepAlive() {
+    if (keepAliveInterval) {
+      clearInterval(keepAliveInterval);
+      keepAliveInterval = null;
+    }
+  }
 
   twilioWs.onopen = () => {
     console.log('[ElevenLabs Handler] Twilio WebSocket opened');
@@ -192,6 +225,9 @@ serve(async (req) => {
           
           // Connect to ElevenLabs agent
           await connectToElevenLabs();
+          
+          // Start keep-alive pings
+          startKeepAlive();
           break;
           
         case 'media':
@@ -452,6 +488,8 @@ serve(async (req) => {
   }
 
   function cleanup() {
+    stopKeepAlive();
+    
     if (elevenLabsWs) {
       elevenLabsWs.close();
       elevenLabsWs = null;
