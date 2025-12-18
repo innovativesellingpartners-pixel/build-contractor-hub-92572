@@ -25,9 +25,9 @@ serve(async (req) => {
   let streamSid: string = "";
   let callSid: string = "";
   let contractorId: string = "";
-  
-  // Audio buffers for format conversion
-  let twilioAudioBuffer: number[] = [];
+  let businessName: string = "our office";
+  let contractorName: string = "";
+  let trade: string = "";
   
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -58,6 +58,22 @@ serve(async (req) => {
           }
           
           console.log('[ElevenLabs Handler] Stream started:', { streamSid, callSid, contractorId });
+          
+          // Fetch contractor profile to get business_name
+          if (contractorId) {
+            const { data: aiProfile } = await supabase
+              .from('contractor_ai_profiles')
+              .select('business_name, contractor_name, trade')
+              .eq('contractor_id', contractorId)
+              .single();
+            
+            if (aiProfile) {
+              businessName = aiProfile.business_name || 'our office';
+              contractorName = aiProfile.contractor_name || '';
+              trade = aiProfile.trade || '';
+              console.log('[ElevenLabs Handler] Got contractor profile:', { businessName, contractorName, trade });
+            }
+          }
           
           // Connect to ElevenLabs agent
           await connectToElevenLabs();
@@ -133,17 +149,23 @@ serve(async (req) => {
       elevenLabsWs.onopen = () => {
         console.log('[ElevenLabs Handler] ElevenLabs WebSocket connected');
         
-        // Send initial configuration
-        elevenLabsWs!.send(JSON.stringify({
+        // Send initial configuration with dynamic variables
+        const initMessage = {
           type: "conversation_initiation_client_data",
-          conversation_initiation_client_data: {
-            conversation_config_override: {
-              agent: {
-                // Override agent settings if needed based on contractor profile
-              }
+          dynamic_variables: {
+            business_name: businessName,
+            contractor_name: contractorName,
+            trade: trade
+          },
+          conversation_config_override: {
+            agent: {
+              // Can override agent settings here if needed
             }
           }
-        }));
+        };
+        
+        console.log('[ElevenLabs Handler] Sending init message with dynamic vars:', initMessage);
+        elevenLabsWs!.send(JSON.stringify(initMessage));
       };
 
       elevenLabsWs.onmessage = (event) => {
