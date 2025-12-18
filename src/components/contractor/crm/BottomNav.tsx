@@ -61,11 +61,12 @@ export function BottomNav({ activeSection, onSectionChange }: BottomNavProps) {
 
   return (
     <nav className={cn(
-      "fixed bottom-0 left-0 right-0 z-[100]",
+      "fixed bottom-0 left-0 right-0 z-[9999]",
       "bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800",
       "border-t-2 border-slate-200 dark:border-slate-700",
       "shadow-2xl shadow-slate-900/10",
-      "safe-area-inset-bottom"
+      "safe-area-inset-bottom",
+      "pointer-events-auto"
     )}>
       <div className="flex items-center justify-around h-16 max-w-screen-sm mx-auto px-2">
         {bottomNavItems.map((item) => {
