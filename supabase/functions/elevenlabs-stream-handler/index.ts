@@ -48,24 +48,31 @@ const MULAW_DECODE_TABLE = new Int16Array([
   56, 48, 40, 32, 24, 16, 8, 0
 ]);
 
-// Convert mulaw bytes to PCM16 and upsample from 8kHz to 16kHz
-function mulawToPcm16(mulawData: Uint8Array): Int16Array {
+// Convert mulaw bytes to PCM16 and upsample from 8kHz to target sample rate
+function mulawToPcm16(mulawData: Uint8Array, targetSampleRate: number): Int16Array {
   // First decode mulaw to PCM at 8kHz
   const pcm8k = new Int16Array(mulawData.length);
   for (let i = 0; i < mulawData.length; i++) {
     pcm8k[i] = MULAW_DECODE_TABLE[mulawData[i]];
   }
-  
-  // Upsample from 8kHz to 16kHz using linear interpolation
-  const pcm16k = new Int16Array(pcm8k.length * 2);
-  for (let i = 0; i < pcm8k.length - 1; i++) {
-    pcm16k[i * 2] = pcm8k[i];
-    pcm16k[i * 2 + 1] = Math.round((pcm8k[i] + pcm8k[i + 1]) / 2);
+
+  if (targetSampleRate === 8000) return pcm8k;
+
+  const ratio = targetSampleRate / 8000;
+  const outLength = Math.max(1, Math.floor(pcm8k.length * ratio));
+  const pcmOut = new Int16Array(outLength);
+
+  for (let i = 0; i < outLength; i++) {
+    const srcPos = i / ratio;
+    const idx = Math.floor(srcPos);
+    const frac = srcPos - idx;
+
+    const s0 = pcm8k[Math.min(idx, pcm8k.length - 1)];
+    const s1 = pcm8k[Math.min(idx + 1, pcm8k.length - 1)];
+    pcmOut[i] = Math.round(s0 + (s1 - s0) * frac);
   }
-  pcm16k[pcm16k.length - 2] = pcm8k[pcm8k.length - 1];
-  pcm16k[pcm16k.length - 1] = pcm8k[pcm8k.length - 1];
-  
-  return pcm16k;
+
+  return pcmOut;
 }
 
 // Encode linear PCM to mulaw
@@ -87,20 +94,25 @@ function linearToMulaw(sample: number): number {
   return mulawByte & 0xFF;
 }
 
-// Convert PCM16 to mulaw and downsample from 16kHz to 8kHz
-function pcm16ToMulaw(pcmData: Int16Array): Uint8Array {
-  // Downsample from 16kHz to 8kHz by taking every other sample
-  const downsampled = new Int16Array(Math.floor(pcmData.length / 2));
-  for (let i = 0; i < downsampled.length; i++) {
-    downsampled[i] = pcmData[i * 2];
+// Resample PCM16 to 8kHz and encode to mulaw
+function pcm16ToMulaw(pcmData: Int16Array, inputSampleRate: number): Uint8Array {
+  const targetRate = 8000;
+  const ratio = inputSampleRate / targetRate;
+  const outputLength = Math.max(1, Math.floor(pcmData.length / ratio));
+
+  const mulaw = new Uint8Array(outputLength);
+  for (let i = 0; i < outputLength; i++) {
+    const srcPos = i * ratio;
+    const idx = Math.floor(srcPos);
+    const frac = srcPos - idx;
+
+    const s0 = pcmData[Math.min(idx, pcmData.length - 1)];
+    const s1 = pcmData[Math.min(idx + 1, pcmData.length - 1)];
+    const sample = Math.round(s0 + (s1 - s0) * frac);
+
+    mulaw[i] = linearToMulaw(sample);
   }
-  
-  // Convert to mulaw
-  const mulaw = new Uint8Array(downsampled.length);
-  for (let i = 0; i < downsampled.length; i++) {
-    mulaw[i] = linearToMulaw(downsampled[i]);
-  }
-  
+
   return mulaw;
 }
 
@@ -143,6 +155,8 @@ serve(async (req) => {
   let businessName: string = "our office";
   let contractorName: string = "";
   let trade: string = "";
+  let elevenInputSampleRate = 16000;
+  let elevenOutputSampleRate = 16000;
   let keepAliveInterval: number | null = null;
   
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -231,12 +245,12 @@ serve(async (req) => {
           break;
           
         case 'media':
-          // Forward audio to ElevenLabs (convert mulaw 8kHz → PCM 16kHz)
+          // Forward audio to ElevenLabs (convert mulaw 8kHz → PCM at ElevenLabs input sample rate)
           if (elevenLabsWs && elevenLabsWs.readyState === WebSocket.OPEN) {
             try {
               const mulawBytes = base64ToUint8Array(data.media.payload);
-              const pcm16 = mulawToPcm16(mulawBytes);
-              const pcmBase64 = int16ArrayToBase64(pcm16);
+              const pcm = mulawToPcm16(mulawBytes, elevenInputSampleRate);
+              const pcmBase64 = int16ArrayToBase64(pcm);
               
               elevenLabsWs.send(JSON.stringify({
                 user_audio_chunk: pcmBase64
@@ -324,18 +338,35 @@ serve(async (req) => {
           const data = JSON.parse(event.data);
           
           switch (data.type) {
-            case 'conversation_initiation_metadata':
-              console.log('[ElevenLabs Handler] Conversation initiated:', data.conversation_initiation_metadata_event?.conversation_id);
+            case 'conversation_initiation_metadata': {
+              const meta = data.conversation_initiation_metadata_event;
+              console.log('[ElevenLabs Handler] Conversation initiation metadata:', meta);
+              console.log('[ElevenLabs Handler] Conversation initiated:', meta?.conversation_id);
+
+              // Try to infer audio sample rates from metadata if present
+              const inferredInput = meta?.input_audio_format?.sample_rate_hz ?? meta?.input_audio_format?.sample_rate ?? meta?.input_audio_format?.sample_rate_hz;
+              const inferredOutput = meta?.output_audio_format?.sample_rate_hz ?? meta?.output_audio_format?.sample_rate ?? meta?.output_audio_format?.sample_rate_hz;
+
+              if (typeof inferredInput === 'number' && inferredInput > 0) {
+                elevenInputSampleRate = inferredInput;
+                console.log('[ElevenLabs Handler] Using ElevenLabs input sample rate:', elevenInputSampleRate);
+              }
+              if (typeof inferredOutput === 'number' && inferredOutput > 0) {
+                elevenOutputSampleRate = inferredOutput;
+                console.log('[ElevenLabs Handler] Using ElevenLabs output sample rate:', elevenOutputSampleRate);
+              }
               break;
+            }
               
             case 'audio':
-              // Forward audio back to Twilio (convert PCM 16kHz → mulaw 8kHz)
+              // Forward audio back to Twilio (convert PCM → mulaw 8kHz)
               if (twilioWs.readyState === WebSocket.OPEN && data.audio_event?.audio_base_64) {
                 try {
                   const pcmBytes = base64ToUint8Array(data.audio_event.audio_base_64);
-                  // PCM16 is 2 bytes per sample
+                  // PCM16 is 2 bytes per sample (little-endian)
                   const pcm16 = new Int16Array(pcmBytes.buffer);
-                  const mulawBytes = pcm16ToMulaw(pcm16);
+
+                  const mulawBytes = pcm16ToMulaw(pcm16, elevenOutputSampleRate);
                   const mulawBase64 = uint8ArrayToBase64(mulawBytes);
                   
                   twilioWs.send(JSON.stringify({
