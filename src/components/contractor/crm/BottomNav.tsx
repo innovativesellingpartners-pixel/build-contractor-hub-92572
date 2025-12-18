@@ -107,47 +107,45 @@ export function BottomNav({ activeSection, onSectionChange }: BottomNavProps) {
               <span className="text-xs font-medium">Menu</span>
             </button>
           </SheetTrigger>
-          <SheetContent side="left" className="w-[280px] p-0">
+          <SheetContent side="left" className="w-[280px] p-0 flex flex-col h-full max-h-screen">
             <SheetTitle className="sr-only">CT1 CRM Navigation</SheetTitle>
             <SheetDescription className="sr-only">Navigate to different sections of the CRM</SheetDescription>
-            <div className="flex flex-col h-full bg-card">
-              {/* Header */}
-              <div className="flex items-center justify-between p-4 border-b">
-                <div className="flex items-center gap-2">
-                  <img src={ct1Logo} alt="CT1" className="h-8 w-8" />
-                  <span className="font-semibold">CT1 CRM</span>
-                </div>
-                <button onClick={() => setMenuOpen(false)} className="p-1 rounded-md hover:bg-muted">
-                  <X className="h-5 w-5" />
-                </button>
+            {/* Header - fixed at top */}
+            <div className="flex items-center justify-between p-4 border-b bg-card flex-shrink-0">
+              <div className="flex items-center gap-2">
+                <img src={ct1Logo} alt="CT1" className="h-8 w-8" />
+                <span className="font-semibold">CT1 CRM</span>
               </div>
-              
-              {/* Navigation Items */}
-              <nav className="flex-1 overflow-y-auto p-4">
-                <ul className="space-y-2">
-                  {allNavItems.map((item) => {
-                    const isActive = activeSection === item.id;
-                    return (
-                      <li key={item.id}>
-                        <button
-                          onClick={() => handleNavClick(item.id)}
-                          className={cn(
-                            'w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors',
-                            'hover:bg-accent',
-                            isActive
-                              ? 'bg-primary text-primary-foreground'
-                              : 'text-muted-foreground'
-                          )}
-                        >
-                          <item.icon className="h-5 w-5 flex-shrink-0" />
-                          <span className="text-base">{item.label}</span>
-                        </button>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </nav>
+              <button onClick={() => setMenuOpen(false)} className="p-1 rounded-md hover:bg-muted">
+                <X className="h-5 w-5" />
+              </button>
             </div>
+            
+            {/* Navigation Items - scrollable */}
+            <nav className="flex-1 overflow-y-auto overscroll-contain p-4 pb-8 bg-card">
+              <ul className="space-y-2">
+                {allNavItems.map((item) => {
+                  const isActive = activeSection === item.id;
+                  return (
+                    <li key={item.id}>
+                      <button
+                        onClick={() => handleNavClick(item.id)}
+                        className={cn(
+                          'w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors',
+                          'hover:bg-accent',
+                          isActive
+                            ? 'bg-primary text-primary-foreground'
+                            : 'text-muted-foreground'
+                        )}
+                      >
+                        <item.icon className="h-5 w-5 flex-shrink-0" />
+                        <span className="text-base">{item.label}</span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </nav>
           </SheetContent>
         </Sheet>
       </div>
