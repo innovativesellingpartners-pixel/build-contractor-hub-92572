@@ -128,3 +128,6 @@ verify_jwt = true
 
 [functions.send-invoice-email]
 verify_jwt = true
+
+[functions.elevenlabs-stream-handler]
+verify_jwt = false
