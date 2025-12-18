@@ -187,7 +187,13 @@ serve(async (req) => {
   let reconnectTimer: number | null = null;
   let reconnectAttempts = 0;
   let isCleaningUp = false;
-  
+  let hasEverConnectedToElevenLabs = false;
+
+  // When ElevenLabs drops mid-call, buffer a small amount of user audio so we can
+  // flush it immediately after reconnect (prevents "I can't hear you" and restarts).
+  const MAX_PENDING_AUDIO_CHUNKS = 80;
+  const pendingUserAudioChunks: string[] = [];
+
   // Conversation transcript accumulator
   const conversationMessages: Array<{ role: 'user' | 'assistant'; content: string; timestamp: string }> = [];
   let lastScheduledMeeting: string | null = null;
@@ -198,6 +204,70 @@ serve(async (req) => {
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   console.log('[ElevenLabs Handler] WebSocket connection established');
+
+  function enqueueUserAudioChunk(pcmBase64: string) {
+    pendingUserAudioChunks.push(pcmBase64);
+    if (pendingUserAudioChunks.length > MAX_PENDING_AUDIO_CHUNKS) {
+      pendingUserAudioChunks.splice(0, pendingUserAudioChunks.length - MAX_PENDING_AUDIO_CHUNKS);
+    }
+  }
+
+  function flushPendingUserAudio() {
+    if (!elevenLabsWs || elevenLabsWs.readyState !== WebSocket.OPEN) return;
+    if (!pendingUserAudioChunks.length) return;
+
+    const chunks = pendingUserAudioChunks.splice(0, pendingUserAudioChunks.length);
+    for (const pcmBase64 of chunks) {
+      try {
+        elevenLabsWs.send(JSON.stringify({ user_audio_chunk: pcmBase64 }));
+      } catch (err) {
+        console.error('[ElevenLabs Handler] Failed to flush buffered audio chunk:', err);
+        // If sending fails mid-flush, re-buffer remaining chunks and bail.
+        enqueueUserAudioChunk(pcmBase64);
+        break;
+      }
+    }
+  }
+
+  function buildResumeContextText() {
+    // Keep it short to avoid blowing up context.
+    const lastTurns = conversationMessages.slice(-12);
+    const transcript = lastTurns
+      .map((m) => `${m.role === 'user' ? 'Caller' : 'Agent'}: ${m.content}`)
+      .join('\n');
+
+    const extras = [
+      lastScheduledMeeting ? `Latest scheduled appointment: ${lastScheduledMeeting}` : null,
+      lastVoicemail ? `Latest voicemail taken: ${lastVoicemail}` : null,
+    ].filter(Boolean);
+
+    return [
+      'We were mid-call but the connection briefly dropped and reconnected.',
+      'Continue the same conversation naturally. Do NOT restart with an intro/greeting.',
+      transcript ? `Recent transcript:\n${transcript}` : null,
+      extras.length ? extras.join('\n') : null,
+    ]
+      .filter(Boolean)
+      .join('\n\n');
+  }
+
+  function sendResumeContextIfNeeded() {
+    if (!elevenLabsWs || elevenLabsWs.readyState !== WebSocket.OPEN) return;
+    // Only send on reconnects (not first connect).
+    if (!hasEverConnectedToElevenLabs) return;
+    if (!conversationMessages.length && !lastScheduledMeeting && !lastVoicemail) return;
+
+    try {
+      elevenLabsWs.send(
+        JSON.stringify({
+          type: 'contextual_update',
+          text: buildResumeContextText(),
+        })
+      );
+    } catch (err) {
+      console.error('[ElevenLabs Handler] Failed to send resume contextual update:', err);
+    }
+  }
 
   // Keep-alive ping to prevent idle timeouts
   function startKeepAlive() {
@@ -317,33 +387,35 @@ serve(async (req) => {
           startKeepAlive();
           break;
           
-        case 'media':
+        case 'media': {
           // Forward audio to ElevenLabs (convert mulaw 8kHz → PCM at ElevenLabs input sample rate)
-          if (elevenLabsWs && elevenLabsWs.readyState === WebSocket.OPEN) {
-            try {
-              const mulawBytes = base64ToUint8Array(data.media.payload);
-              const pcm = mulawToPcm16(mulawBytes, elevenInputSampleRate);
-              
-              // Debug: Log audio levels periodically to verify audio is being received
-              if (Math.random() < 0.01) { // Log ~1% of audio chunks
-                let maxLevel = 0;
-                for (let i = 0; i < pcm.length; i++) {
-                  const absVal = Math.abs(pcm[i]);
-                  if (absVal > maxLevel) maxLevel = absVal;
-                }
-                console.log('[ElevenLabs Handler] Audio chunk - bytes:', mulawBytes.length, 'pcm samples:', pcm.length, 'max level:', maxLevel);
+          try {
+            const mulawBytes = base64ToUint8Array(data.media.payload);
+            const pcm = mulawToPcm16(mulawBytes, elevenInputSampleRate);
+
+            // Debug: Log audio levels periodically to verify audio is being received
+            if (Math.random() < 0.01) { // Log ~1% of audio chunks
+              let maxLevel = 0;
+              for (let i = 0; i < pcm.length; i++) {
+                const absVal = Math.abs(pcm[i]);
+                if (absVal > maxLevel) maxLevel = absVal;
               }
-              
-              const pcmBase64 = int16ArrayToBase64(pcm);
-              
-              elevenLabsWs.send(JSON.stringify({
-                user_audio_chunk: pcmBase64
-              }));
-            } catch (err) {
-              console.error('[ElevenLabs Handler] Error converting audio:', err);
+              console.log('[ElevenLabs Handler] Audio chunk - bytes:', mulawBytes.length, 'pcm samples:', pcm.length, 'max level:', maxLevel);
             }
+
+            const pcmBase64 = int16ArrayToBase64(pcm);
+
+            if (elevenLabsWs && elevenLabsWs.readyState === WebSocket.OPEN) {
+              elevenLabsWs.send(JSON.stringify({ user_audio_chunk: pcmBase64 }));
+            } else {
+              // Buffer while reconnecting so the agent doesn't lose the user's speech.
+              enqueueUserAudioChunk(pcmBase64);
+            }
+          } catch (err) {
+            console.error('[ElevenLabs Handler] Error converting audio:', err);
           }
           break;
+        }
           
         case 'stop':
           console.log('[ElevenLabs Handler] Stream stopped');
@@ -402,7 +474,7 @@ serve(async (req) => {
 
       elevenLabsWs.onopen = () => {
         console.log('[ElevenLabs Handler] ElevenLabs WebSocket connected');
-        
+
         // Send initial configuration with dynamic variables
         const initMessage = {
           type: "conversation_initiation_client_data",
@@ -414,9 +486,19 @@ serve(async (req) => {
             email_collection_reminder: "Always ask for the caller's email address when scheduling appointments so you can send them a calendar invite and confirmation email."
           }
         };
-        
+
         console.log('[ElevenLabs Handler] Sending init message:', initMessage);
         elevenLabsWs!.send(JSON.stringify(initMessage));
+
+        // If we've connected before during this call, this is a reconnect. Send context
+        // so the agent doesn't "start over".
+        sendResumeContextIfNeeded();
+
+        // Mark that we've successfully connected at least once.
+        hasEverConnectedToElevenLabs = true;
+
+        // Immediately flush any buffered caller audio captured during reconnect.
+        flushPendingUserAudio();
       };
 
       elevenLabsWs.onmessage = (event) => {
