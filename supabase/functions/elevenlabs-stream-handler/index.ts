@@ -158,6 +158,11 @@ serve(async (req) => {
   let elevenInputSampleRate = 16000;
   let elevenOutputSampleRate = 16000;
   let keepAliveInterval: number | null = null;
+
+  // Reconnect state (ElevenLabs signed_url can expire quickly; we reconnect without dropping the call)
+  let reconnectTimer: number | null = null;
+  let reconnectAttempts = 0;
+  let isCleaningUp = false;
   
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -165,36 +170,75 @@ serve(async (req) => {
 
   console.log('[ElevenLabs Handler] WebSocket connection established');
 
-  // Keep-alive ping every 30 seconds to prevent edge function timeout
+  // Keep-alive ping to prevent idle timeouts
   function startKeepAlive() {
     if (keepAliveInterval) clearInterval(keepAliveInterval);
-    
+
     keepAliveInterval = setInterval(() => {
       console.log('[ElevenLabs Handler] Keep-alive ping');
-      
+
       // Send mark event to Twilio to keep connection alive
       if (twilioWs.readyState === WebSocket.OPEN && streamSid) {
-        twilioWs.send(JSON.stringify({
-          event: 'mark',
-          streamSid: streamSid,
-          mark: { name: 'keepalive-' + Date.now() }
-        }));
+        twilioWs.send(
+          JSON.stringify({
+            event: 'mark',
+            streamSid: streamSid,
+            mark: { name: 'keepalive-' + Date.now() },
+          })
+        );
       }
-      
+
       // Send ping to ElevenLabs
       if (elevenLabsWs && elevenLabsWs.readyState === WebSocket.OPEN) {
-        elevenLabsWs.send(JSON.stringify({
-          type: 'ping'
-        }));
+        elevenLabsWs.send(
+          JSON.stringify({
+            type: 'ping',
+          })
+        );
       }
-    }, 30000); // Every 30 seconds
+    }, 10000); // ~every 10s
   }
-  
+
   function stopKeepAlive() {
     if (keepAliveInterval) {
       clearInterval(keepAliveInterval);
       keepAliveInterval = null;
     }
+  }
+
+  function scheduleElevenReconnect(reason: string) {
+    if (isCleaningUp) return;
+    if (twilioWs.readyState !== WebSocket.OPEN) return;
+
+    reconnectAttempts += 1;
+    const delayMs = Math.min(5000, 500 * reconnectAttempts);
+    console.log(
+      `[ElevenLabs Handler] Scheduling ElevenLabs reconnect in ${delayMs}ms (attempt ${reconnectAttempts}) — reason: ${reason}`
+    );
+
+    if (reconnectTimer) clearTimeout(reconnectTimer);
+    reconnectTimer = setTimeout(async () => {
+      if (isCleaningUp) return;
+      if (twilioWs.readyState !== WebSocket.OPEN) return;
+
+      try {
+        if (elevenLabsWs) {
+          try {
+            elevenLabsWs.close();
+          } catch {
+            // ignore
+          }
+          elevenLabsWs = null;
+        }
+
+        await connectToElevenLabs();
+        // successful connect resets attempt counter
+        reconnectAttempts = 0;
+      } catch (err) {
+        console.error('[ElevenLabs Handler] Reconnect attempt failed:', err);
+        scheduleElevenReconnect('reconnect_failed');
+      }
+    }, delayMs);
   }
 
   twilioWs.onopen = () => {
@@ -426,10 +470,12 @@ serve(async (req) => {
 
       elevenLabsWs.onerror = (error) => {
         console.error('[ElevenLabs Handler] ElevenLabs WebSocket error:', error);
+        scheduleElevenReconnect('eleven_ws_error');
       };
 
       elevenLabsWs.onclose = (event) => {
         console.log('[ElevenLabs Handler] ElevenLabs WebSocket closed:', event.code, event.reason);
+        scheduleElevenReconnect(`eleven_ws_close_${event.code}`);
       };
 
     } catch (error) {
