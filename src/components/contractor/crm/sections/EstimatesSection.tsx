@@ -422,7 +422,7 @@ export default function EstimatesSection({ onSectionChange, initialEstimateId, o
 
       {/* Estimate Detail View Dialog */}
       <Dialog open={detailViewOpen} onOpenChange={setDetailViewOpen}>
-        <DialogContent className="max-w-2xl h-[calc(100vh-5rem)] sm:h-[95vh] top-[45%] sm:top-[50%] p-0 flex flex-col overflow-hidden">
+        <DialogContent className="max-w-2xl h-[calc(100vh-5rem)] top-[45%] sm:top-[50%] p-0 flex flex-col overflow-hidden">
           {selectedEstimateForDetail && (
             <EstimateDetailViewBlue
               estimate={selectedEstimateForDetail}

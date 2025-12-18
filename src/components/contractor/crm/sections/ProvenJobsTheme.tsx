@@ -92,15 +92,16 @@ export function ActionButton({ children, variant = 'primary', onClick, disabled,
   );
 }
 
-// Header with back button and title - elegant dark header
+// Header with back button, title, and optional dashboard shortcut
 interface DetailHeaderProps {
   title: string;
   subtitle?: string;
   onBack?: () => void;
+  onDashboard?: () => void;
   rightContent?: ReactNode;
 }
 
-export function DetailHeader({ title, subtitle, onBack, rightContent }: DetailHeaderProps) {
+export function DetailHeader({ title, subtitle, onBack, onDashboard, rightContent }: DetailHeaderProps) {
   return (
     <div className="bg-foreground text-background px-4 py-3 flex items-center gap-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
       {onBack && (
@@ -114,7 +115,18 @@ export function DetailHeader({ title, subtitle, onBack, rightContent }: DetailHe
         <h1 className="font-bold text-base truncate">{title}</h1>
         {subtitle && <p className="text-background/70 text-xs truncate">{subtitle}</p>}
       </div>
-      {rightContent}
+      <div className="flex items-center gap-2">
+        {onDashboard && (
+          <button
+            type="button"
+            onClick={onDashboard}
+            className="px-2 py-1 rounded-md text-xs font-semibold bg-background/10 hover:bg-background/15 transition-colors"
+          >
+            Dashboard
+          </button>
+        )}
+        {rightContent}
+      </div>
     </div>
   );
 }

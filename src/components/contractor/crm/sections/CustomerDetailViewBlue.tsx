@@ -169,6 +169,7 @@ export function CustomerDetailViewBlue({ customer, onClose, onSectionChange, onC
         title={customer.name}
         subtitle={customer.customer_type || 'Customer'}
         onBack={onClose}
+        onDashboard={onSectionChange ? () => { onSectionChange('dashboard'); onClose(); } : undefined}
       />
 
       {/* Action Buttons - Fixed */}
@@ -207,7 +208,7 @@ export function CustomerDetailViewBlue({ customer, onClose, onSectionChange, onC
       </div>
 
       {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto pb-8">
+      <div className="flex-1 min-h-0 overflow-y-auto pb-24">
         <div className="space-y-0">
           {/* Customer Information */}
           <SectionHeader>CUSTOMER INFORMATION</SectionHeader>
