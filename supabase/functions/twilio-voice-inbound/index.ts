@@ -379,8 +379,8 @@ NEVER cut off mid-conversation. Stay on the line until the customer is satisfied
       }]
     }).eq('call_sid', callSid);
 
-    // Return TwiML that connects to our WebSocket stream handler
-    const streamUrl = `wss://faqrzzodtmsybofakcvv.supabase.co/functions/v1/twilio-stream-handler`;
+    // Return TwiML that connects to ElevenLabs stream handler
+    const streamUrl = `wss://faqrzzodtmsybofakcvv.supabase.co/functions/v1/elevenlabs-stream-handler`;
     
     const streamTwiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
