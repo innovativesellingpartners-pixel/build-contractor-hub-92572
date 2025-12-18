@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Briefcase, FileText, Users, DollarSign, Phone, Mail, Headset } from 'lucide-react';
+import { Briefcase, FileText, Users, DollarSign, Phone, Mail, Headset, Calendar, Receipt } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ContactSupport } from '@/components/ContactSupport';
@@ -11,6 +11,8 @@ interface MobileLandingPageProps {
   onNavigateToEmails: () => void;
   onNavigateToAccounting: () => void;
   onNavigateToCalls: () => void;
+  onNavigateToCalendar: () => void;
+  onNavigateToInvoices: () => void;
 }
 
 const mobileModules = [
@@ -43,6 +45,20 @@ const mobileModules = [
     gradient: 'from-indigo-500 via-indigo-600 to-indigo-700',
   },
   { 
+    id: 'calendar',
+    title: 'Calendar',
+    description: 'Schedule & events',
+    icon: Calendar,
+    gradient: 'from-red-500 via-red-600 to-red-700',
+  },
+  {
+    id: 'invoices',
+    title: 'Invoices',
+    description: 'Manage invoices',
+    icon: Receipt,
+    gradient: 'from-violet-500 via-violet-600 to-violet-700',
+  },
+  { 
     id: 'customers',
     title: 'Customers',
     description: 'Contact management',
@@ -65,6 +81,8 @@ export function MobileLandingPage({
   onNavigateToEmails,
   onNavigateToAccounting,
   onNavigateToCalls,
+  onNavigateToCalendar,
+  onNavigateToInvoices,
 }: MobileLandingPageProps) {
   const [contactSupportOpen, setContactSupportOpen] = useState(false);
   
@@ -87,6 +105,12 @@ export function MobileLandingPage({
         break;
       case 'emails':
         onNavigateToEmails();
+        break;
+      case 'calendar':
+        onNavigateToCalendar();
+        break;
+      case 'invoices':
+        onNavigateToInvoices();
         break;
     }
   };

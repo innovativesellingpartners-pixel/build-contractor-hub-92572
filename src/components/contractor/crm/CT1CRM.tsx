@@ -179,6 +179,8 @@ const navItems = [
           onNavigateToEmails={() => handleSectionChange('emails')}
           onNavigateToAccounting={() => handleSectionChange('accounting')}
           onNavigateToCalls={() => handleSectionChange('calls')}
+          onNavigateToCalendar={() => handleSectionChange('calendar')}
+          onNavigateToInvoices={() => handleSectionChange('invoices')}
         />
       );
     }
