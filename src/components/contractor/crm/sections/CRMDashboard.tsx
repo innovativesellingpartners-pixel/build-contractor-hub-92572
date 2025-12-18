@@ -2,7 +2,7 @@ import { useLeads } from '@/hooks/useLeads';
 import { useCustomers } from '@/hooks/useCustomers';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FileText, Briefcase, Phone, Mail, DollarSign, Calendar, Headset, Receipt } from 'lucide-react';
+import { FileText, Briefcase, Phone, Mail, DollarSign, Calendar, Headset, Receipt, Users } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
@@ -38,6 +38,14 @@ export default function CRMDashboard({ onSectionChange }: CRMDashboardProps) {
       description: 'Manage projects'
     },
     { 
+      id: 'estimates' as Section, 
+      label: 'Estimates', 
+      icon: FileText, 
+      gradient: 'from-blue-500 to-blue-600',
+      borderColor: 'border-blue-400',
+      description: 'View & create quotes'
+    },
+    { 
       id: 'emails' as Section, 
       label: 'Emails', 
       icon: Mail, 
@@ -46,12 +54,12 @@ export default function CRMDashboard({ onSectionChange }: CRMDashboardProps) {
       description: 'Inbox & follow-ups'
     },
     { 
-      id: 'estimates' as Section, 
-      label: 'Estimates', 
-      icon: FileText, 
-      gradient: 'from-blue-500 to-blue-600',
-      borderColor: 'border-blue-400',
-      description: 'View & create quotes'
+      id: 'invoices' as Section, 
+      label: 'Invoices', 
+      icon: Receipt, 
+      gradient: 'from-indigo-500 to-indigo-600',
+      borderColor: 'border-indigo-400',
+      description: 'Manage invoices'
     },
     { 
       id: 'calls' as Section, 
@@ -62,20 +70,20 @@ export default function CRMDashboard({ onSectionChange }: CRMDashboardProps) {
       description: 'Call history'
     },
     { 
+      id: 'customers' as Section, 
+      label: 'Customers', 
+      icon: Users, 
+      gradient: 'from-blue-500 to-blue-600',
+      borderColor: 'border-blue-400',
+      description: 'Contact management'
+    },
+    { 
       id: 'accounting' as Section, 
       label: 'Accounting', 
       icon: DollarSign, 
       gradient: 'from-emerald-500 to-emerald-600',
       borderColor: 'border-emerald-400',
       description: 'Payments & expenses'
-    },
-    { 
-      id: 'invoices' as Section, 
-      label: 'Invoices', 
-      icon: Receipt, 
-      gradient: 'from-indigo-500 to-indigo-600',
-      borderColor: 'border-indigo-400',
-      description: 'Manage invoices'
     },
   ];
 
