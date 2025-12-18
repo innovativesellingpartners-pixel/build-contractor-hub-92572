@@ -27,6 +27,7 @@ function formatDate(dateStr: string | null | undefined) {
 }
 
 function wrapText(text: string, maxCharsPerLine: number): string[] {
+  if (!text) return [];
   const words = text.split(' ');
   const lines: string[] = [];
   let currentLine = '';
@@ -41,6 +42,41 @@ function wrapText(text: string, maxCharsPerLine: number): string[] {
   }
   if (currentLine) lines.push(currentLine);
   return lines;
+}
+
+async function fetchAndEmbedLogo(pdfDoc: any, logoUrl: string): Promise<any | null> {
+  try {
+    if (!logoUrl) return null;
+    
+    console.log("Fetching logo from:", logoUrl);
+    const response = await fetch(logoUrl);
+    if (!response.ok) {
+      console.log("Logo fetch failed:", response.status);
+      return null;
+    }
+    
+    const imageBytes = new Uint8Array(await response.arrayBuffer());
+    const contentType = response.headers.get("content-type") || "";
+    
+    console.log("Logo content type:", contentType, "size:", imageBytes.length);
+    
+    if (contentType.includes("png") || logoUrl.toLowerCase().includes(".png")) {
+      return await pdfDoc.embedPng(imageBytes);
+    } else if (contentType.includes("jpeg") || contentType.includes("jpg") || 
+               logoUrl.toLowerCase().includes(".jpg") || logoUrl.toLowerCase().includes(".jpeg")) {
+      return await pdfDoc.embedJpg(imageBytes);
+    }
+    
+    // Try PNG first, then JPG
+    try {
+      return await pdfDoc.embedPng(imageBytes);
+    } catch {
+      return await pdfDoc.embedJpg(imageBytes);
+    }
+  } catch (error) {
+    console.error("Logo embedding error:", error);
+    return null;
+  }
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -113,9 +149,10 @@ const handler = async (req: Request): Promise<Response> => {
     const businessEmail = profile?.business_email || "";
     const websiteUrl = profile?.website_url || "";
     const licenseNumber = profile?.license_number || "";
-    const businessAddress = [profile?.business_address, profile?.city, profile?.state, profile?.zip_code]
-      .filter(Boolean)
-      .join(", ");
+    const logoUrl = profile?.logo_url || "";
+    
+    const addressParts = [profile?.business_address, profile?.city, profile?.state, profile?.zip_code].filter(Boolean);
+    const businessAddress = addressParts.join(", ");
 
     const appUrl = Deno.env.get("APP_URL") || "https://myct1.com";
     const publicUrl = `${appUrl}/estimate/${estimate.public_token}`;
@@ -125,194 +162,233 @@ const handler = async (req: Request): Promise<Response> => {
     let page = pdfDoc.addPage([612, 792]); // US Letter
     const { height, width } = page.getSize();
 
-    const margin = 40;
+    const margin = 50;
     let cursorY = height - margin;
 
     // Fonts
     const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
     const fontReg = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
-    // Premium Color Palette - Deep Navy & Gold
-    const primaryNavy = rgb(0.086, 0.118, 0.173);      // #161E2C - Deep navy
-    const accentGold = rgb(0.835, 0.624, 0.278);       // #D59F47 - Classic gold
-    const darkText = rgb(0.133, 0.133, 0.133);         // #222222
-    const mediumText = rgb(0.4, 0.4, 0.4);             // #666666
-    const lightText = rgb(0.6, 0.6, 0.6);              // #999999
-    const borderColor = rgb(0.85, 0.85, 0.85);         // #D9D9D9
-    const headerBg = rgb(0.957, 0.945, 0.922);         // #F4F1EB - Warm cream
+    // Premium Color Palette
+    const primaryNavy = rgb(0.086, 0.118, 0.173);      // Deep navy
+    const accentGold = rgb(0.835, 0.624, 0.278);       // Classic gold
+    const darkText = rgb(0.133, 0.133, 0.133);
+    const mediumText = rgb(0.4, 0.4, 0.4);
+    const lightText = rgb(0.55, 0.55, 0.55);
+    const borderColor = rgb(0.82, 0.82, 0.82);
+    const headerBg = rgb(0.96, 0.95, 0.93);
     const white = rgb(1, 1, 1);
+    const lightGrayBg = rgb(0.98, 0.98, 0.98);
 
-    // ===== HEADER BAND =====
+    // ===== HEADER SECTION =====
+    const headerHeight = 100;
     page.drawRectangle({
       x: 0,
-      y: height - 120,
+      y: height - headerHeight,
       width: width,
-      height: 120,
+      height: headerHeight,
       color: primaryNavy,
     });
 
+    // Embed logo if available
+    let logoImage = null;
+    if (logoUrl) {
+      logoImage = await fetchAndEmbedLogo(pdfDoc, logoUrl);
+    }
+
+    let companyStartX = margin;
+    
+    if (logoImage) {
+      // Draw logo on left side
+      const logoMaxHeight = 60;
+      const logoMaxWidth = 80;
+      const logoDims = logoImage.scale(1);
+      const logoScale = Math.min(logoMaxWidth / logoDims.width, logoMaxHeight / logoDims.height);
+      const logoWidth = logoDims.width * logoScale;
+      const logoHeight = logoDims.height * logoScale;
+      
+      page.drawImage(logoImage, {
+        x: margin,
+        y: height - headerHeight + (headerHeight - logoHeight) / 2,
+        width: logoWidth,
+        height: logoHeight,
+      });
+      
+      companyStartX = margin + logoWidth + 15;
+    }
+
     // Company Name
     page.drawText(companyName.toUpperCase(), {
-      x: margin,
-      y: height - 45,
-      size: 22,
+      x: companyStartX,
+      y: height - 40,
+      size: 18,
       font: fontBold,
       color: white,
     });
 
-    // Contractor contact info line
-    const contactInfoParts = [];
-    if (phone) contactInfoParts.push(phone);
-    if (businessEmail) contactInfoParts.push(businessEmail);
-    if (websiteUrl) contactInfoParts.push(websiteUrl);
+    // Contact info line 1: Phone & Email
+    const contactLine1Parts = [];
+    if (phone) contactLine1Parts.push(phone);
+    if (businessEmail) contactLine1Parts.push(businessEmail);
+    const contactLine1 = contactLine1Parts.join("  •  ");
     
-    const contactInfoLine = contactInfoParts.join("  |  ");
-    if (contactInfoLine) {
-      page.drawText(contactInfoLine.substring(0, 70), {
-        x: margin,
-        y: height - 62,
-        size: 8,
+    if (contactLine1) {
+      page.drawText(contactLine1, {
+        x: companyStartX,
+        y: height - 58,
+        size: 9,
         font: fontReg,
-        color: rgb(0.8, 0.8, 0.8),
+        color: rgb(0.85, 0.85, 0.85),
       });
     }
 
-    // Address and license line
-    const addressLineParts = [];
-    if (businessAddress) addressLineParts.push(businessAddress);
-    if (licenseNumber) addressLineParts.push(`Lic# ${licenseNumber}`);
-    
-    const addressLine = addressLineParts.join("  |  ");
-    if (addressLine) {
-      page.drawText(addressLine.substring(0, 80), {
-        x: margin,
-        y: height - 76,
-        size: 8,
+    // Contact info line 2: Address
+    if (businessAddress) {
+      page.drawText(businessAddress.substring(0, 60), {
+        x: companyStartX,
+        y: height - 72,
+        size: 9,
         font: fontReg,
-        color: rgb(0.7, 0.7, 0.7),
+        color: rgb(0.75, 0.75, 0.75),
       });
     }
 
-    // ESTIMATE label (right side, with gold accent)
-    const estimateLabel = "ESTIMATE";
+    // License number
+    if (licenseNumber) {
+      page.drawText(`License #${licenseNumber}`, {
+        x: companyStartX,
+        y: height - 86,
+        size: 8,
+        font: fontReg,
+        color: rgb(0.65, 0.65, 0.65),
+      });
+    }
+
+    // ESTIMATE badge (right side)
+    const badgeWidth = 100;
+    const badgeHeight = 28;
     page.drawRectangle({
-      x: width - margin - 120,
-      y: height - 70,
-      width: 110,
-      height: 32,
+      x: width - margin - badgeWidth,
+      y: height - 55,
+      width: badgeWidth,
+      height: badgeHeight,
       color: accentGold,
     });
-    page.drawText(estimateLabel, {
-      x: width - margin - 95,
-      y: height - 60,
-      size: 14,
+    page.drawText("ESTIMATE", {
+      x: width - margin - badgeWidth + 18,
+      y: height - 47,
+      size: 12,
       font: fontBold,
       color: primaryNavy,
     });
 
-    cursorY = height - 150;
+    cursorY = height - headerHeight - 25;
 
     // ===== ESTIMATE INFO BAR =====
+    const infoBarHeight = 50;
     page.drawRectangle({
       x: margin,
-      y: cursorY - 55,
+      y: cursorY - infoBarHeight,
       width: width - margin * 2,
-      height: 55,
+      height: infoBarHeight,
       color: headerBg,
       borderColor: borderColor,
-      borderWidth: 0.5,
+      borderWidth: 1,
     });
 
-    const infoY = cursorY - 18;
-    const colWidth = (width - margin * 2) / 4;
+    const infoColWidth = (width - margin * 2) / 4;
+    const infoLabelY = cursorY - 18;
+    const infoValueY = cursorY - 35;
 
-    // Estimate Number
-    page.drawText("REFERENCE NO.", { x: margin + 15, y: infoY, size: 7, font: fontReg, color: lightText });
-    page.drawText(estimate.estimate_number || "—", { x: margin + 15, y: infoY - 14, size: 11, font: fontBold, color: darkText });
+    // Reference No
+    page.drawText("REFERENCE NO.", { x: margin + 12, y: infoLabelY, size: 7, font: fontReg, color: lightText });
+    page.drawText(estimate.estimate_number || "—", { x: margin + 12, y: infoValueY, size: 10, font: fontBold, color: darkText });
 
     // Client Name
-    page.drawText("CLIENT NAME", { x: margin + colWidth + 15, y: infoY, size: 7, font: fontReg, color: lightText });
-    page.drawText((estimate.client_name || "—").substring(0, 25), { x: margin + colWidth + 15, y: infoY - 14, size: 11, font: fontBold, color: darkText });
+    page.drawText("CLIENT", { x: margin + infoColWidth + 12, y: infoLabelY, size: 7, font: fontReg, color: lightText });
+    page.drawText((estimate.client_name || "—").substring(0, 20), { x: margin + infoColWidth + 12, y: infoValueY, size: 10, font: fontBold, color: darkText });
 
     // Date Issued
-    page.drawText("DATE ISSUE", { x: margin + colWidth * 2 + 15, y: infoY, size: 7, font: fontReg, color: lightText });
-    page.drawText(formatDate(estimate.created_at), { x: margin + colWidth * 2 + 15, y: infoY - 14, size: 11, font: fontBold, color: darkText });
+    page.drawText("DATE ISSUED", { x: margin + infoColWidth * 2 + 12, y: infoLabelY, size: 7, font: fontReg, color: lightText });
+    page.drawText(formatDate(estimate.created_at) || "—", { x: margin + infoColWidth * 2 + 12, y: infoValueY, size: 10, font: fontBold, color: darkText });
 
     // Valid Until
-    page.drawText("VALID UNTIL", { x: margin + colWidth * 3 + 15, y: infoY, size: 7, font: fontReg, color: lightText });
-    page.drawText(formatDate(estimate.valid_until) || "30 Days", { x: margin + colWidth * 3 + 15, y: infoY - 14, size: 11, font: fontBold, color: darkText });
+    page.drawText("VALID UNTIL", { x: margin + infoColWidth * 3 + 12, y: infoLabelY, size: 7, font: fontReg, color: lightText });
+    page.drawText(formatDate(estimate.valid_until) || "30 Days", { x: margin + infoColWidth * 3 + 12, y: infoValueY, size: 10, font: fontBold, color: darkText });
 
-    cursorY -= 80;
+    cursorY -= infoBarHeight + 25;
 
-    // ===== CLIENT & PROJECT INFO =====
+    // ===== CLIENT & PROJECT DETAILS =====
     const leftColX = margin;
-    const rightColX = width / 2 + 10;
+    const rightColX = width / 2 + 20;
+    const detailsStartY = cursorY;
 
     // CLIENT DETAILS
-    page.drawText("CLIENT DETAILS", { x: leftColX, y: cursorY, size: 8, font: fontBold, color: accentGold });
-    cursorY -= 14;
+    page.drawText("CLIENT DETAILS", { x: leftColX, y: cursorY, size: 9, font: fontBold, color: accentGold });
+    cursorY -= 18;
 
-    let clientY = cursorY;
     if (estimate.client_name) {
-      page.drawText(estimate.client_name, { x: leftColX, y: clientY, size: 11, font: fontBold, color: darkText });
-      clientY -= 14;
+      page.drawText(estimate.client_name, { x: leftColX, y: cursorY, size: 11, font: fontBold, color: darkText });
+      cursorY -= 16;
     }
     if (estimate.client_email) {
-      page.drawText(estimate.client_email, { x: leftColX, y: clientY, size: 9, font: fontReg, color: mediumText });
-      clientY -= 12;
+      page.drawText(estimate.client_email, { x: leftColX, y: cursorY, size: 9, font: fontReg, color: mediumText });
+      cursorY -= 14;
     }
     if (estimate.client_phone) {
-      page.drawText(estimate.client_phone, { x: leftColX, y: clientY, size: 9, font: fontReg, color: mediumText });
-      clientY -= 12;
+      page.drawText(estimate.client_phone, { x: leftColX, y: cursorY, size: 9, font: fontReg, color: mediumText });
+      cursorY -= 14;
     }
     if (estimate.client_address) {
-      const addrLines = wrapText(estimate.client_address, 40);
+      const addrLines = wrapText(estimate.client_address, 35);
       for (const line of addrLines.slice(0, 2)) {
-        page.drawText(line, { x: leftColX, y: clientY, size: 9, font: fontReg, color: mediumText });
-        clientY -= 12;
+        page.drawText(line, { x: leftColX, y: cursorY, size: 9, font: fontReg, color: mediumText });
+        cursorY -= 14;
       }
     }
 
     // PROJECT DETAILS (right column)
-    let rightY = cursorY + 14;
-    page.drawText("PROJECT DETAILS", { x: rightColX, y: rightY, size: 8, font: fontBold, color: accentGold });
-    rightY -= 14;
+    let rightY = detailsStartY;
+    page.drawText("PROJECT DETAILS", { x: rightColX, y: rightY, size: 9, font: fontBold, color: accentGold });
+    rightY -= 18;
 
-    page.drawText((estimate.title || "Project").substring(0, 35), { x: rightColX, y: rightY, size: 11, font: fontBold, color: darkText });
-    rightY -= 14;
-
+    if (estimate.title) {
+      page.drawText(estimate.title.substring(0, 30), { x: rightColX, y: rightY, size: 11, font: fontBold, color: darkText });
+      rightY -= 16;
+    }
     if (estimate.site_address) {
-      const siteLines = wrapText(estimate.site_address, 40);
+      const siteLines = wrapText(estimate.site_address, 35);
       for (const line of siteLines.slice(0, 2)) {
         page.drawText(line, { x: rightColX, y: rightY, size: 9, font: fontReg, color: mediumText });
-        rightY -= 12;
+        rightY -= 14;
       }
     }
     if (estimate.trade_type) {
       page.drawText(`Trade: ${estimate.trade_type}`, { x: rightColX, y: rightY, size: 9, font: fontReg, color: mediumText });
-      rightY -= 12;
+      rightY -= 14;
     }
 
-    cursorY = Math.min(clientY, rightY) - 20;
+    cursorY = Math.min(cursorY, rightY) - 20;
 
     // ===== COST DETAILS SECTION =====
+    const sectionHeaderHeight = 24;
     page.drawRectangle({
       x: margin,
-      y: cursorY - 22,
+      y: cursorY - sectionHeaderHeight,
       width: width - margin * 2,
-      height: 22,
+      height: sectionHeaderHeight,
       color: accentGold,
     });
-
-    page.drawText("COST DETAILS", { x: margin + 12, y: cursorY - 15, size: 10, font: fontBold, color: primaryNavy });
-    cursorY -= 22;
+    page.drawText("COST DETAILS", { x: margin + 15, y: cursorY - 17, size: 10, font: fontBold, color: primaryNavy });
+    cursorY -= sectionHeaderHeight;
 
     // Table header
+    const tableHeaderHeight = 26;
     page.drawRectangle({
       x: margin,
-      y: cursorY - 24,
+      y: cursorY - tableHeaderHeight,
       width: width - margin * 2,
-      height: 24,
+      height: tableHeaderHeight,
       color: headerBg,
       borderColor: borderColor,
       borderWidth: 0.5,
@@ -320,173 +396,188 @@ const handler = async (req: Request): Promise<Response> => {
 
     const tableX = margin;
     const tableWidth = width - margin * 2;
-    const descColWidth = tableWidth * 0.45;
-    const qtyColX = tableX + descColWidth;
-    const unitColX = qtyColX + 60;
-    const rateColX = unitColX + 60;
-    const amtColX = tableX + tableWidth - 70;
+    
+    // Column positions - properly spaced
+    const descColX = tableX + 12;
+    const qtyColX = tableX + tableWidth * 0.50;
+    const unitColX = tableX + tableWidth * 0.58;
+    const rateColX = tableX + tableWidth * 0.70;
+    const amtColX = tableX + tableWidth * 0.85;
 
-    page.drawText("DESCRIPTION", { x: tableX + 12, y: cursorY - 16, size: 8, font: fontBold, color: darkText });
-    page.drawText("QTY", { x: qtyColX, y: cursorY - 16, size: 8, font: fontBold, color: darkText });
-    page.drawText("UNIT", { x: unitColX, y: cursorY - 16, size: 8, font: fontBold, color: darkText });
-    page.drawText("RATE", { x: rateColX, y: cursorY - 16, size: 8, font: fontBold, color: darkText });
-    page.drawText("AMOUNT", { x: amtColX, y: cursorY - 16, size: 8, font: fontBold, color: darkText });
+    const headerY = cursorY - 17;
+    page.drawText("DESCRIPTION", { x: descColX, y: headerY, size: 8, font: fontBold, color: darkText });
+    page.drawText("QTY", { x: qtyColX, y: headerY, size: 8, font: fontBold, color: darkText });
+    page.drawText("UNIT", { x: unitColX, y: headerY, size: 8, font: fontBold, color: darkText });
+    page.drawText("RATE", { x: rateColX, y: headerY, size: 8, font: fontBold, color: darkText });
+    page.drawText("AMOUNT", { x: amtColX, y: headerY, size: 8, font: fontBold, color: darkText });
 
-    cursorY -= 24;
+    cursorY -= tableHeaderHeight;
 
     // Line items
     const lineItems = (estimate.line_items || []).filter((li: any) => li?.included !== false);
-    let rowIndex = 0;
+    const rowHeight = 24;
 
-    for (const item of lineItems) {
-      if (cursorY < 200) {
+    for (let i = 0; i < lineItems.length; i++) {
+      const item = lineItems[i];
+      
+      // Check for page break
+      if (cursorY < 180) {
         page = pdfDoc.addPage([612, 792]);
         cursorY = 792 - margin;
       }
 
       // Alternating row background
-      if (rowIndex % 2 === 0) {
+      if (i % 2 === 0) {
         page.drawRectangle({
           x: tableX,
-          y: cursorY - 22,
+          y: cursorY - rowHeight,
           width: tableWidth,
-          height: 22,
-          color: rgb(0.98, 0.98, 0.98),
+          height: rowHeight,
+          color: lightGrayBg,
         });
       }
 
       // Row border
       page.drawLine({
-        start: { x: tableX, y: cursorY - 22 },
-        end: { x: tableX + tableWidth, y: cursorY - 22 },
+        start: { x: tableX, y: cursorY - rowHeight },
+        end: { x: tableX + tableWidth, y: cursorY - rowHeight },
         thickness: 0.5,
         color: borderColor,
       });
 
-      const desc = String(item.item_description || "Item").substring(0, 45);
+      const rowY = cursorY - 16;
+      const desc = String(item.item_description || "Item").substring(0, 40);
       const qty = String(item.quantity || 1);
-      const unit = String(item.unit || "Each").substring(0, 8);
+      const unit = String(item.unit || "Each").substring(0, 6);
       const rate = formatCurrency(item.unit_cost || 0);
       const lineTotal = item.line_total ?? (item.unit_cost || 0) * (item.quantity || 1);
 
-      page.drawText(desc, { x: tableX + 12, y: cursorY - 15, size: 9, font: fontReg, color: darkText });
-      page.drawText(qty, { x: qtyColX, y: cursorY - 15, size: 9, font: fontReg, color: darkText });
-      page.drawText(unit, { x: unitColX, y: cursorY - 15, size: 9, font: fontReg, color: darkText });
-      page.drawText(rate, { x: rateColX, y: cursorY - 15, size: 9, font: fontReg, color: darkText });
-      page.drawText(formatCurrency(lineTotal), { x: amtColX, y: cursorY - 15, size: 9, font: fontBold, color: darkText });
+      page.drawText(desc, { x: descColX, y: rowY, size: 9, font: fontReg, color: darkText });
+      page.drawText(qty, { x: qtyColX, y: rowY, size: 9, font: fontReg, color: darkText });
+      page.drawText(unit, { x: unitColX, y: rowY, size: 9, font: fontReg, color: darkText });
+      page.drawText(rate, { x: rateColX, y: rowY, size: 9, font: fontReg, color: darkText });
+      page.drawText(formatCurrency(lineTotal), { x: amtColX, y: rowY, size: 9, font: fontBold, color: darkText });
 
-      cursorY -= 22;
-      rowIndex++;
+      cursorY -= rowHeight;
     }
 
     // Table bottom border
     page.drawLine({
       start: { x: tableX, y: cursorY },
       end: { x: tableX + tableWidth, y: cursorY },
-      thickness: 1.5,
+      thickness: 2,
       color: primaryNavy,
     });
 
-    cursorY -= 25;
+    cursorY -= 30;
 
     // ===== ESTIMATE SUMMARY =====
     page.drawRectangle({
       x: margin,
-      y: cursorY - 22,
+      y: cursorY - sectionHeaderHeight,
       width: width - margin * 2,
-      height: 22,
+      height: sectionHeaderHeight,
       color: accentGold,
     });
+    page.drawText("ESTIMATE SUMMARY", { x: margin + 15, y: cursorY - 17, size: 10, font: fontBold, color: primaryNavy });
+    cursorY -= sectionHeaderHeight;
 
-    page.drawText("ESTIMATE SUMMARY", { x: margin + 12, y: cursorY - 15, size: 10, font: fontBold, color: primaryNavy });
-    cursorY -= 22;
-
-    const summaryX = width / 2;
-    const summaryWidth = width / 2 - margin;
-    const cs = estimate.cost_summary || {};
-
-    // Summary box
+    // Summary box on right side
+    const summaryBoxWidth = 220;
+    const summaryBoxX = width - margin - summaryBoxWidth;
+    const summaryBoxHeight = 110;
+    
     page.drawRectangle({
-      x: summaryX,
-      y: cursorY - 100,
-      width: summaryWidth,
-      height: 100,
+      x: summaryBoxX,
+      y: cursorY - summaryBoxHeight,
+      width: summaryBoxWidth,
+      height: summaryBoxHeight,
       color: headerBg,
       borderColor: borderColor,
-      borderWidth: 0.5,
+      borderWidth: 1,
     });
 
-    let summaryY = cursorY - 18;
+    const cs = estimate.cost_summary || {};
+    let summaryY = cursorY - 22;
+    const summaryLabelX = summaryBoxX + 15;
+    const summaryValueX = summaryBoxX + summaryBoxWidth - 15;
 
     // Subtotal
     const subtotal = cs.subtotal || estimate.subtotal || lineItems.reduce((sum: number, li: any) => {
       return sum + ((li.line_total ?? (li.unit_cost || 0) * (li.quantity || 1)) || 0);
     }, 0);
 
-    page.drawText("Subtotal", { x: summaryX + 15, y: summaryY, size: 9, font: fontReg, color: mediumText });
-    page.drawText(formatCurrency(subtotal), { x: summaryX + summaryWidth - 80, y: summaryY, size: 9, font: fontReg, color: darkText });
-    summaryY -= 16;
+    page.drawText("Subtotal", { x: summaryLabelX, y: summaryY, size: 9, font: fontReg, color: mediumText });
+    const subtotalText = formatCurrency(subtotal);
+    const subtotalWidth = fontReg.widthOfTextAtSize(subtotalText, 9);
+    page.drawText(subtotalText, { x: summaryValueX - subtotalWidth, y: summaryY, size: 9, font: fontReg, color: darkText });
+    summaryY -= 18;
 
     // Tax
     const taxAmount = cs.tax_and_fees || estimate.tax_amount || 0;
     const taxRate = estimate.sales_tax_rate_percent || estimate.tax_rate || 0;
     if (taxAmount > 0 || taxRate > 0) {
-      page.drawText(`Sales Tax (${taxRate}%)`, { x: summaryX + 15, y: summaryY, size: 9, font: fontReg, color: mediumText });
-      page.drawText(formatCurrency(taxAmount), { x: summaryX + summaryWidth - 80, y: summaryY, size: 9, font: fontReg, color: darkText });
-      summaryY -= 16;
+      const taxLabel = `Sales Tax (${taxRate}%)`;
+      page.drawText(taxLabel, { x: summaryLabelX, y: summaryY, size: 9, font: fontReg, color: mediumText });
+      const taxText = formatCurrency(taxAmount);
+      const taxWidth = fontReg.widthOfTextAtSize(taxText, 9);
+      page.drawText(taxText, { x: summaryValueX - taxWidth, y: summaryY, size: 9, font: fontReg, color: darkText });
+      summaryY -= 18;
     }
 
-    // Permit fee if any
+    // Permit fee
     if (estimate.permit_fee && estimate.permit_fee > 0) {
-      page.drawText("Permit Fee", { x: summaryX + 15, y: summaryY, size: 9, font: fontReg, color: mediumText });
-      page.drawText(formatCurrency(estimate.permit_fee), { x: summaryX + summaryWidth - 80, y: summaryY, size: 9, font: fontReg, color: darkText });
-      summaryY -= 16;
+      page.drawText("Permit Fee", { x: summaryLabelX, y: summaryY, size: 9, font: fontReg, color: mediumText });
+      const permitText = formatCurrency(estimate.permit_fee);
+      const permitWidth = fontReg.widthOfTextAtSize(permitText, 9);
+      page.drawText(permitText, { x: summaryValueX - permitWidth, y: summaryY, size: 9, font: fontReg, color: darkText });
+      summaryY -= 18;
     }
 
-    // Divider line before total
+    // Divider line
     page.drawLine({
-      start: { x: summaryX + 15, y: summaryY + 6 },
-      end: { x: summaryX + summaryWidth - 15, y: summaryY + 6 },
+      start: { x: summaryLabelX, y: summaryY + 8 },
+      end: { x: summaryValueX, y: summaryY + 8 },
       thickness: 1,
       color: primaryNavy,
     });
 
     // Total
     const totalAmount = estimate.total_amount || estimate.grand_total || subtotal + taxAmount;
-    page.drawText("TOTAL AMOUNT DUE", { x: summaryX + 15, y: summaryY - 8, size: 10, font: fontBold, color: primaryNavy });
-    page.drawText(formatCurrency(totalAmount), { x: summaryX + summaryWidth - 90, y: summaryY - 8, size: 12, font: fontBold, color: primaryNavy });
+    page.drawText("TOTAL DUE", { x: summaryLabelX, y: summaryY - 8, size: 10, font: fontBold, color: primaryNavy });
+    const totalText = formatCurrency(totalAmount);
+    const totalWidth = fontBold.widthOfTextAtSize(totalText, 12);
+    page.drawText(totalText, { x: summaryValueX - totalWidth, y: summaryY - 8, size: 12, font: fontBold, color: primaryNavy });
 
-    // Deposit required (left side)
+    // Deposit info (left side of summary)
     if (estimate.required_deposit && estimate.required_deposit > 0) {
-      page.drawText("DEPOSIT REQUIRED", { x: margin, y: cursorY - 30, size: 9, font: fontBold, color: accentGold });
-      page.drawText(formatCurrency(estimate.required_deposit), { x: margin, y: cursorY - 45, size: 14, font: fontBold, color: primaryNavy });
-      
+      const depositY = cursorY - 30;
+      page.drawText("DEPOSIT REQUIRED", { x: margin, y: depositY, size: 9, font: fontBold, color: accentGold });
+      page.drawText(formatCurrency(estimate.required_deposit), { x: margin, y: depositY - 18, size: 14, font: fontBold, color: primaryNavy });
       if (estimate.required_deposit_percent) {
-        page.drawText(`(${estimate.required_deposit_percent}% of total)`, { x: margin, y: cursorY - 60, size: 8, font: fontReg, color: mediumText });
+        page.drawText(`(${estimate.required_deposit_percent}% of total)`, { x: margin, y: depositY - 34, size: 8, font: fontReg, color: mediumText });
       }
     }
 
-    cursorY -= 120;
+    cursorY -= summaryBoxHeight + 20;
 
-    // ===== NOTE/REMARKS =====
-    page.drawText("NOTE:", { x: margin, y: cursorY, size: 8, font: fontBold, color: darkText });
-    cursorY -= 12;
+    // ===== NOTES SECTION =====
+    if (cursorY > 150 && estimate.assumptions_and_exclusions) {
+      page.drawText("NOTES & TERMS", { x: margin, y: cursorY, size: 9, font: fontBold, color: darkText });
+      cursorY -= 14;
 
-    const noteText = estimate.assumptions_and_exclusions || 
-      `This estimate is valid for ${estimate.valid_until ? formatDate(estimate.valid_until) : '30 days'} from date of issue. We cannot guarantee that the price of labor or materials will stay the same. We provide excellent service at competitive prices.`;
-    
-    const noteLines = wrapText(noteText, 100);
-    for (const line of noteLines.slice(0, 3)) {
-      page.drawText(line, { x: margin, y: cursorY, size: 8, font: fontReg, color: mediumText });
-      cursorY -= 11;
+      const noteLines = wrapText(estimate.assumptions_and_exclusions, 90);
+      for (const line of noteLines.slice(0, 4)) {
+        page.drawText(line, { x: margin, y: cursorY, size: 8, font: fontReg, color: mediumText });
+        cursorY -= 12;
+      }
+      cursorY -= 10;
     }
 
-    cursorY -= 15;
-
-    // ===== CTA BUTTON =====
-    if (includePaymentLink && cursorY > 120) {
-      const buttonW = 240;
-      const buttonH = 38;
+    // ===== ONLINE CTA BUTTON =====
+    if (includePaymentLink && cursorY > 100) {
+      const buttonW = 200;
+      const buttonH = 35;
       const buttonX = (width - buttonW) / 2;
       const buttonY = cursorY - buttonH;
 
@@ -498,104 +589,61 @@ const handler = async (req: Request): Promise<Response> => {
         color: accentGold,
       });
 
-      page.drawText("VIEW, SIGN & PAY ONLINE", {
-        x: buttonX + 38,
-        y: buttonY + 14,
+      page.drawText("VIEW & SIGN ONLINE", {
+        x: buttonX + 35,
+        y: buttonY + 12,
         size: 11,
         font: fontBold,
         color: primaryNavy,
       });
 
       // Link annotation
-      const linkAnnotation = pdfDoc.context.obj({
-        Type: 'Annot',
-        Subtype: 'Link',
-        Rect: [buttonX, buttonY, buttonX + buttonW, buttonY + buttonH],
-        Border: [0, 0, 0],
-        A: {
-          Type: 'Action',
-          S: 'URI',
-          URI: publicUrl,
-        },
-      });
-      
-      const existingAnnots = page.node.get(pdfDoc.context.obj('Annots'));
-      if (existingAnnots) {
-        (existingAnnots as any).push(linkAnnotation);
-      } else {
-        page.node.set(pdfDoc.context.obj('Annots'), pdfDoc.context.obj([linkAnnotation]));
+      try {
+        const linkAnnotation = pdfDoc.context.obj({
+          Type: 'Annot',
+          Subtype: 'Link',
+          Rect: [buttonX, buttonY, buttonX + buttonW, buttonY + buttonH],
+          Border: [0, 0, 0],
+          A: {
+            Type: 'Action',
+            S: 'URI',
+            URI: publicUrl,
+          },
+        });
+        
+        const existingAnnots = page.node.get(pdfDoc.context.obj('Annots'));
+        if (existingAnnots) {
+          (existingAnnots as any).push(linkAnnotation);
+        } else {
+          page.node.set(pdfDoc.context.obj('Annots'), pdfDoc.context.obj([linkAnnotation]));
+        }
+      } catch (e) {
+        console.log("Link annotation error:", e);
       }
 
-      cursorY = buttonY - 15;
-
-      page.drawText(publicUrl, {
-        x: margin,
-        y: cursorY,
-        size: 7,
-        font: fontReg,
-        color: lightText,
-      });
-
-      cursorY -= 20;
-    }
-
-    // ===== SIGNATURE SECTION =====
-    if (cursorY > 80) {
-      page.drawLine({
-        start: { x: margin, y: cursorY },
-        end: { x: width - margin, y: cursorY },
-        thickness: 0.5,
-        color: borderColor,
-      });
-      cursorY -= 25;
-
-      // Prepared By
-      page.drawLine({
-        start: { x: margin, y: cursorY },
-        end: { x: margin + 180, y: cursorY },
-        thickness: 0.5,
-        color: darkText,
-      });
-      page.drawText("PREPARED BY", { x: margin, y: cursorY - 12, size: 7, font: fontReg, color: lightText });
-
-      // Signature
-      page.drawLine({
-        start: { x: margin + 210, y: cursorY },
-        end: { x: margin + 390, y: cursorY },
-        thickness: 0.5,
-        color: darkText,
-      });
-      page.drawText("SIGNATURE", { x: margin + 210, y: cursorY - 12, size: 7, font: fontReg, color: lightText });
-
-      // Date
-      page.drawLine({
-        start: { x: margin + 420, y: cursorY },
-        end: { x: width - margin, y: cursorY },
-        thickness: 0.5,
-        color: darkText,
-      });
-      page.drawText("DATE", { x: margin + 420, y: cursorY - 12, size: 7, font: fontReg, color: lightText });
+      cursorY = buttonY - 20;
+      page.drawText(publicUrl, { x: margin, y: cursorY, size: 7, font: fontReg, color: lightText });
     }
 
     // ===== FOOTER =====
-    const footerY = 25;
+    const footerY = 30;
     page.drawLine({
-      start: { x: margin, y: footerY + 12 },
-      end: { x: width - margin, y: footerY + 12 },
+      start: { x: margin, y: footerY + 15 },
+      end: { x: width - margin, y: footerY + 15 },
       thickness: 0.5,
       color: borderColor,
     });
 
     const footerParts = [];
-    if (businessAddress) footerParts.push(businessAddress);
+    if (companyName) footerParts.push(companyName);
     if (phone) footerParts.push(phone);
     if (businessEmail) footerParts.push(businessEmail);
     
-    const footerText = footerParts.join("  |  ");
-    page.drawText(footerText.substring(0, 100), {
+    const footerText = footerParts.join("  •  ");
+    page.drawText(footerText.substring(0, 80), {
       x: margin,
       y: footerY,
-      size: 7,
+      size: 8,
       font: fontReg,
       color: lightText,
     });
