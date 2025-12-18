@@ -120,6 +120,7 @@ export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSecti
         title={lead.name}
         subtitle={lead.company || undefined}
         onBack={onClose}
+        onDashboard={onSectionChange ? () => { onSectionChange('dashboard'); onClose(); } : undefined}
         rightContent={<StatusBadge status={lead.status} />}
       />
 
@@ -168,7 +169,7 @@ export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSecti
       </div>
 
       {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto pb-8">
+      <div className="flex-1 min-h-0 overflow-y-auto pb-24">
         <div className="space-y-0">
           {/* Converted Status */}
           {isConverted && linkedJob && (

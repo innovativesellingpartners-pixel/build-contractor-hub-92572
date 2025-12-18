@@ -231,6 +231,7 @@ export function EstimateDetailViewBlue({
         title={estimate.title}
         subtitle={estimate.estimate_number || undefined}
         onBack={onClose}
+        onDashboard={onSectionChange ? () => { onSectionChange('dashboard'); onClose(); } : undefined}
         rightContent={<StatusBadge status={estimate.status} />}
       />
 
@@ -300,7 +301,7 @@ export function EstimateDetailViewBlue({
       </ActionButtonRow>
 
       {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto pb-8">
+      <div className="flex-1 min-h-0 overflow-y-auto pb-24">
         <div className="space-y-0">
           {/* Estimate Information */}
           <SectionHeader>ESTIMATE DETAILS</SectionHeader>
