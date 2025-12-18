@@ -87,7 +87,7 @@ export default function InvoicesSection({ onSectionChange }: InvoicesSectionProp
         {/* Predictive Search and Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="flex-1">
-          <PredictiveSearch<Invoice>
+          <PredictiveSearch
             items={invoices || []}
             placeholder="Search invoices by number or notes..."
             getLabel={(invoice: Invoice) => invoice.invoice_number || `Invoice ${invoice.id?.slice(0, 8)}`}
