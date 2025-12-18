@@ -47,7 +47,14 @@ export const CallLogItem = ({ call }: CallLogItemProps) => {
   };
 
   const hasVoicemail = call.recording_url && call.recording_status === 'completed';
-  const hasTranscript = call.conversation_history && Array.isArray(call.conversation_history) && call.conversation_history.length > 0;
+  
+  // Check for transcript - handle both old format (config objects) and new format (messages)
+  const conversationHistory = call.conversation_history;
+  const hasTranscript = conversationHistory && Array.isArray(conversationHistory) && 
+    conversationHistory.some((item: any) => item.role && item.content);
+  
+  const hasMeetingScheduled = call.outcome === 'meeting_scheduled' || 
+    (call.action_taken && call.action_taken.toLowerCase().includes('appointment'));
 
   return (
     <>
@@ -77,8 +84,8 @@ export const CallLogItem = ({ call }: CallLogItemProps) => {
             </div>
           </div>
 
-          {/* Date/Time */}
-          <div className="flex items-center gap-2">
+          {/* Date/Time and Badges */}
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="text-sm text-muted-foreground">
               {format(new Date(call.created_at), 'MMM d, yyyy \'at\' h:mm a')}
             </span>
@@ -86,6 +93,18 @@ export const CallLogItem = ({ call }: CallLogItemProps) => {
               <Badge variant="outline" className="text-xs flex items-center gap-1">
                 <Voicemail className="h-3 w-3" />
                 Voicemail
+              </Badge>
+            )}
+            {hasMeetingScheduled && (
+              <Badge variant="default" className="text-xs flex items-center gap-1 bg-green-600">
+                <Calendar className="h-3 w-3" />
+                Meeting Scheduled
+              </Badge>
+            )}
+            {call.outcome === 'voicemail' && !hasVoicemail && (
+              <Badge variant="secondary" className="text-xs flex items-center gap-1">
+                <MessageSquare className="h-3 w-3" />
+                Message Taken
               </Badge>
             )}
           </div>

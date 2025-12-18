@@ -188,6 +188,11 @@ serve(async (req) => {
   let reconnectAttempts = 0;
   let isCleaningUp = false;
   
+  // Conversation transcript accumulator
+  const conversationMessages: Array<{ role: 'user' | 'assistant'; content: string; timestamp: string }> = [];
+  let lastScheduledMeeting: string | null = null;
+  let lastVoicemail: string | null = null;
+  
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -467,13 +472,40 @@ serve(async (req) => {
               }
               break;
               
-            case 'user_transcript':
-              console.log('[ElevenLabs Handler] User said:', data.user_transcription_event?.user_transcript);
+            case 'user_transcript': {
+              const userText = data.user_transcription_event?.user_transcript;
+              if (userText) {
+                console.log('[ElevenLabs Handler] User said:', userText);
+                conversationMessages.push({
+                  role: 'user',
+                  content: userText,
+                  timestamp: new Date().toISOString()
+                });
+                // Periodically save conversation to database
+                if (conversationMessages.length % 4 === 0 && callSid) {
+                  supabase.from('call_sessions').update({
+                    conversation_history: conversationMessages,
+                    updated_at: new Date().toISOString()
+                  }).eq('call_sid', callSid).then(() => {
+                    console.log('[ElevenLabs Handler] Conversation saved (interim)');
+                  });
+                }
+              }
               break;
+            }
               
-            case 'agent_response':
-              console.log('[ElevenLabs Handler] Agent response:', data.agent_response_event?.agent_response);
+            case 'agent_response': {
+              const agentText = data.agent_response_event?.agent_response;
+              if (agentText) {
+                console.log('[ElevenLabs Handler] Agent response:', agentText);
+                conversationMessages.push({
+                  role: 'assistant',
+                  content: agentText,
+                  timestamp: new Date().toISOString()
+                });
+              }
               break;
+            }
               
             case 'interruption':
               console.log('[ElevenLabs Handler] User interrupted');
@@ -653,6 +685,9 @@ serve(async (req) => {
             }
           }
           
+          // Track that we scheduled a meeting
+          lastScheduledMeeting = `Appointment with ${customerName} on ${scheduledDate} at ${scheduledTime}. Location: ${location || 'TBD'}. Phone: ${customerPhone || 'Not provided'}. Email: ${customerEmail || 'Not provided'}.`;
+          
           result = { 
             success: true, 
             message: `Appointment scheduled for ${scheduledDate} at ${scheduledTime}. ${customerEmail ? 'Confirmation email sent.' : 'No email provided for confirmation.'}`,
@@ -669,6 +704,10 @@ serve(async (req) => {
             outcome: 'voicemail',
             message_type: voicemailData.urgency || 'normal'
           }).eq('call_sid', callSid);
+          
+          // Track the voicemail
+          lastVoicemail = `Voicemail from ${voicemailData.name || 'Unknown'} (${voicemailData.phone || 'No phone'}): ${voicemailData.message || 'No message'}. Urgency: ${voicemailData.urgency || 'normal'}.`;
+          
           result = { success: true, message: "Voicemail saved successfully" };
           break;
         }
@@ -741,22 +780,100 @@ serve(async (req) => {
     }
   }
 
-  function cleanup() {
+  async function cleanup() {
+    if (isCleaningUp) return;
+    isCleaningUp = true;
+    
     stopKeepAlive();
+    
+    if (reconnectTimer) {
+      clearTimeout(reconnectTimer);
+      reconnectTimer = null;
+    }
     
     if (elevenLabsWs) {
       elevenLabsWs.close();
       elevenLabsWs = null;
     }
     
+    // Save final conversation and generate summary
+    if (callSid && conversationMessages.length > 0) {
+      try {
+        // Determine outcome and action taken
+        let outcome = 'call_completed';
+        let actionTaken = '';
+        
+        if (lastScheduledMeeting) {
+          outcome = 'meeting_scheduled';
+          actionTaken = lastScheduledMeeting;
+        } else if (lastVoicemail) {
+          outcome = 'voicemail';
+          actionTaken = lastVoicemail;
+        }
+        
+        // Generate AI summary using conversation transcript
+        let aiSummary = '';
+        try {
+          const transcriptText = conversationMessages.map(m => 
+            `${m.role === 'user' ? 'Caller' : 'AI'}: ${m.content}`
+          ).join('\n');
+          
+          const summaryResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              model: 'gpt-4o-mini',
+              messages: [
+                {
+                  role: 'system',
+                  content: 'Summarize this phone call transcript in 2-3 sentences. Focus on: caller intent, any appointments scheduled, key information gathered (name, phone, address), and outcome. Be concise.'
+                },
+                {
+                  role: 'user',
+                  content: transcriptText
+                }
+              ],
+              max_tokens: 200
+            })
+          });
+          
+          if (summaryResponse.ok) {
+            const summaryData = await summaryResponse.json();
+            aiSummary = summaryData.choices?.[0]?.message?.content || '';
+            console.log('[ElevenLabs Handler] Generated AI summary:', aiSummary);
+          }
+        } catch (summaryError) {
+          console.error('[ElevenLabs Handler] Summary generation error:', summaryError);
+          // Fallback summary from conversation
+          aiSummary = `Call with ${conversationMessages.length} exchanges. ${outcome === 'meeting_scheduled' ? 'Appointment was scheduled.' : outcome === 'voicemail' ? 'Voicemail was taken.' : 'General inquiry.'}`;
+        }
+        
+        // Update call_sessions with final data
+        await supabase.from('call_sessions').update({
+          conversation_history: conversationMessages,
+          ai_summary: aiSummary,
+          outcome: outcome,
+          action_taken: actionTaken,
+          status: 'completed',
+          updated_at: new Date().toISOString()
+        }).eq('call_sid', callSid);
+        
+        console.log('[ElevenLabs Handler] Call session updated with transcript and summary');
+      } catch (updateError) {
+        console.error('[ElevenLabs Handler] Error updating call session:', updateError);
+      }
+    }
+    
     // Update call record
     if (callSid) {
-      supabase.from('calls').update({
+      await supabase.from('calls').update({
         call_status: 'completed',
         ai_handled: true
-      }).eq('call_sid', callSid).then(() => {
-        console.log('[ElevenLabs Handler] Call record updated');
-      });
+      }).eq('call_sid', callSid);
+      console.log('[ElevenLabs Handler] Call record updated');
     }
   }
 
