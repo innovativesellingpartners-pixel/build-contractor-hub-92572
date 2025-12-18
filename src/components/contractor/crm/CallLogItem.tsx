@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Phone, Calendar, MessageSquare, Info, ChevronDown, ChevronUp, Voicemail } from 'lucide-react';
+import { Phone, Calendar, MessageSquare, Info, ChevronDown, ChevronUp, Voicemail, Briefcase, User, Link2 } from 'lucide-react';
 import { formatPhoneNumber, calculateCallDuration, formatDuration } from '@/lib/phoneUtils';
 import { format } from 'date-fns';
 import { CallConversationDialog } from './CallConversationDialog';
@@ -10,9 +10,10 @@ import type { CallSession } from '@/hooks/useCallSessions';
 
 type CallLogItemProps = {
   call: CallSession;
+  onLinkToJob?: (call: CallSession) => void;
 };
 
-export const CallLogItem = ({ call }: CallLogItemProps) => {
+export const CallLogItem = ({ call, onLinkToJob }: CallLogItemProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showConversation, setShowConversation] = useState(false);
 
@@ -60,19 +61,39 @@ export const CallLogItem = ({ call }: CallLogItemProps) => {
     <>
       <Card className="p-4 hover:bg-accent/50 transition-colors">
         <div className="space-y-3">
-          {/* Header Row */}
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-2">
-              <Phone className="h-4 w-4 text-muted-foreground" />
-              <a 
-                href={`tel:${call.from_number}`}
-                className="font-medium text-primary hover:underline cursor-pointer"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {formatPhoneNumber(call.from_number)}
-              </a>
+          {/* Header Row - Phone & Caller Info */}
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <Phone className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                <a 
+                  href={`tel:${call.from_number}`}
+                  className="font-medium text-primary hover:underline cursor-pointer"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {formatPhoneNumber(call.from_number)}
+                </a>
+                {call.caller_name && (
+                  <span className="text-sm text-muted-foreground flex items-center gap-1">
+                    <User className="h-3 w-3" />
+                    {call.caller_name}
+                  </span>
+                )}
+              </div>
+              
+              {/* Job Info */}
+              {call.job && (
+                <div className="flex items-center gap-2 mt-1.5">
+                  <Briefcase className="h-3.5 w-3.5 text-primary flex-shrink-0" />
+                  <span className="text-sm font-medium text-primary">
+                    {call.job.job_number && `#${call.job.job_number} - `}
+                    {call.job.name}
+                  </span>
+                </div>
+              )}
             </div>
-            <div className="flex items-center gap-2">
+            
+            <div className="flex items-center gap-2 flex-shrink-0">
               <Badge variant={getStatusBadgeVariant(call.status)}>
                 {call.status}
               </Badge>
@@ -105,6 +126,19 @@ export const CallLogItem = ({ call }: CallLogItemProps) => {
               <Badge variant="secondary" className="text-xs flex items-center gap-1">
                 <MessageSquare className="h-3 w-3" />
                 Message Taken
+              </Badge>
+            )}
+            {!call.job && onLinkToJob && (
+              <Badge 
+                variant="outline" 
+                className="text-xs flex items-center gap-1 cursor-pointer hover:bg-muted"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onLinkToJob(call);
+                }}
+              >
+                <Link2 className="h-3 w-3" />
+                Link to Job
               </Badge>
             )}
           </div>
@@ -159,6 +193,22 @@ export const CallLogItem = ({ call }: CallLogItemProps) => {
                 <p className="text-sm text-muted-foreground">
                   {call.ai_summary}
                 </p>
+              )}
+
+              {/* Job details if linked */}
+              {call.job && (
+                <div className="flex items-start gap-2 p-2 bg-muted/50 rounded-md">
+                  <Briefcase className="h-4 w-4 mt-0.5 flex-shrink-0 text-primary" />
+                  <div>
+                    <span className="text-sm font-medium">Linked Job:</span>
+                    <p className="text-sm text-muted-foreground">
+                      {call.job.job_number && <span className="font-medium">#{call.job.job_number}</span>}
+                      {call.job.job_number && ' - '}
+                      {call.job.name}
+                      {call.job.address && <span className="block text-xs">{call.job.address}</span>}
+                    </p>
+                  </div>
+                </div>
               )}
 
               {call.outcome && (
@@ -228,6 +278,16 @@ export const CallLogItem = ({ call }: CallLogItemProps) => {
                   >
                     <MessageSquare className="h-4 w-4 mr-2" />
                     View Full Transcript
+                  </Button>
+                )}
+                {!call.job && onLinkToJob && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onLinkToJob(call)}
+                  >
+                    <Link2 className="h-4 w-4 mr-2" />
+                    Link to Job
                   </Button>
                 )}
               </div>

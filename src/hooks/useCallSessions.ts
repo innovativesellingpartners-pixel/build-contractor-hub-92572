@@ -20,6 +20,15 @@ export type CallSession = {
   recording_sid: string | null;
   recording_duration: number | null;
   recording_status: string | null;
+  job_id: string | null;
+  caller_name: string | null;
+  // Joined job data
+  job?: {
+    id: string;
+    name: string;
+    job_number: string | null;
+    address: string | null;
+  } | null;
 };
 
 export const useCallSessions = () => {
@@ -32,7 +41,10 @@ export const useCallSessions = () => {
 
       const { data, error } = await supabase
         .from('call_sessions')
-        .select('*')
+        .select(`
+          *,
+          job:jobs(id, name, job_number, address)
+        `)
         .eq('contractor_id', user.id)
         .order('created_at', { ascending: false });
 
@@ -72,10 +84,25 @@ export const useCallSessions = () => {
     };
   }, [user?.id, refetch]);
 
+  // Update a call session (e.g., to link to job)
+  const updateCallSession = async (id: string, updates: Partial<Pick<CallSession, 'job_id' | 'caller_name'>>) => {
+    const { data, error } = await supabase
+      .from('call_sessions')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    refetch();
+    return data;
+  };
+
   return {
     callSessions: callSessions || [],
     isLoading,
     error,
     refetch,
+    updateCallSession,
   };
 };

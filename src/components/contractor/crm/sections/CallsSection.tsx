@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Phone, Copy, AlertCircle, Loader2, ChevronDown, Plus } from 'lucide-react';
+import { Phone, Copy, AlertCircle, Loader2, ChevronDown, Plus, Link2, X } from 'lucide-react';
 import { usePhoneNumber, useProvisionPhoneNumber } from '@/hooks/usePhoneNumbers';
 import { useUserTier } from '@/hooks/useUserTier';
 import { toast } from 'sonner';
@@ -16,8 +16,14 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { useCallSessions } from '@/hooks/useCallSessions';
+import { useCallSessions, CallSession } from '@/hooks/useCallSessions';
 import { CallLogItem } from '../CallLogItem';
+import { PredictiveSearch } from '../PredictiveSearch';
+import { useJobs } from '@/hooks/useJobs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { formatPhoneNumber } from '@/lib/phoneUtils';
 
 interface CallsSectionProps {
   onSectionChange?: (section: string) => void;
@@ -33,7 +39,14 @@ export default function CallsSection({ onSectionChange }: CallsSectionProps) {
   const [showManualEntry, setShowManualEntry] = useState(false);
   const [manualNumber, setManualNumber] = useState('');
   const [manualSid, setManualSid] = useState('');
-  const { callSessions, isLoading: isLoadingCalls } = useCallSessions();
+  const { callSessions, isLoading: isLoadingCalls, updateCallSession } = useCallSessions();
+  const { jobs } = useJobs();
+  
+  // Link to job dialog state
+  const [linkingCall, setLinkingCall] = useState<CallSession | null>(null);
+  const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
+  const [callerName, setCallerName] = useState('');
+  const [isLinking, setIsLinking] = useState(false);
 
   const registerExistingNumber = useMutation({
     mutationFn: async () => {
@@ -76,6 +89,37 @@ export default function CallsSection({ onSectionChange }: CallsSectionProps) {
 
   const handleProvision = () => {
     provisionMutation.mutate();
+  };
+
+  const handleLinkToJob = (call: CallSession) => {
+    setLinkingCall(call);
+    setCallerName(call.caller_name || '');
+    setSelectedJobId(call.job_id || null);
+  };
+
+  const handleSaveLinkToJob = async () => {
+    if (!linkingCall) return;
+    
+    setIsLinking(true);
+    try {
+      await updateCallSession(linkingCall.id, {
+        job_id: selectedJobId || undefined,
+        caller_name: callerName || undefined,
+      });
+      toast.success('Call updated successfully');
+      setLinkingCall(null);
+      setSelectedJobId(null);
+      setCallerName('');
+    } catch (error: any) {
+      toast.error('Failed to update call: ' + error.message);
+    } finally {
+      setIsLinking(false);
+    }
+  };
+
+  const handleCallSelect = (call: CallSession) => {
+    // Scroll to the call and expand it - for now just show toast
+    toast.info(`Viewing call from ${formatPhoneNumber(call.from_number)}`);
   };
 
   if (phoneLoading || tierLoading) {
@@ -198,7 +242,39 @@ export default function CallsSection({ onSectionChange }: CallsSectionProps) {
                   View your call history and AI-handled conversations
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-4">
+                {/* Predictive Search */}
+                {callSessions.length > 0 && (
+                  <PredictiveSearch<CallSession>
+                    items={callSessions}
+                    placeholder="Search by phone, job number, name..."
+                    getLabel={(call: CallSession) => {
+                      const parts = [formatPhoneNumber(call.from_number)];
+                      if (call.caller_name) parts.push(call.caller_name);
+                      return parts.join(' - ');
+                    }}
+                    getSublabel={(call: CallSession) => {
+                      const parts = [];
+                      if (call.job?.job_number) parts.push(`#${call.job.job_number}`);
+                      if (call.job?.name) parts.push(call.job.name);
+                      if (call.status) parts.push(call.status);
+                      return parts.join(' • ') || undefined;
+                    }}
+                    filterFn={(call: CallSession, query: string) => {
+                      const q = query.toLowerCase();
+                      return (
+                        call.from_number.includes(q) ||
+                        call.caller_name?.toLowerCase().includes(q) ||
+                        call.job?.job_number?.toLowerCase().includes(q) ||
+                        call.job?.name?.toLowerCase().includes(q) ||
+                        call.ai_summary?.toLowerCase().includes(q) ||
+                        call.status?.toLowerCase().includes(q)
+                      ) || false;
+                    }}
+                    onSelect={handleCallSelect}
+                  />
+                )}
+
                 {isLoadingCalls ? (
                   <div className="space-y-3">
                     {[1, 2, 3].map((i) => (
@@ -215,7 +291,11 @@ export default function CallsSection({ onSectionChange }: CallsSectionProps) {
                 ) : (
                   <div className="space-y-3">
                     {callSessions.map((call) => (
-                      <CallLogItem key={call.id} call={call} />
+                      <CallLogItem 
+                        key={call.id} 
+                        call={call} 
+                        onLinkToJob={handleLinkToJob}
+                      />
                     ))}
                   </div>
                 )}
@@ -364,6 +444,66 @@ export default function CallsSection({ onSectionChange }: CallsSectionProps) {
           </Card>
         )}
       </div>
+
+      {/* Link to Job Dialog */}
+      <Dialog open={!!linkingCall} onOpenChange={(open) => !open && setLinkingCall(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Link2 className="h-5 w-5" />
+              Link Call to Job
+            </DialogTitle>
+            <DialogDescription>
+              {linkingCall && `Associate this call from ${formatPhoneNumber(linkingCall.from_number)} with a job.`}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Caller Name</Label>
+              <Input
+                placeholder="Enter caller's name..."
+                value={callerName}
+                onChange={(e) => setCallerName(e.target.value)}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Link to Job (Optional)</Label>
+              <PredictiveSearch
+                items={jobs}
+                placeholder="Search jobs by name or number..."
+                getLabel={(job) => job.name}
+                getSublabel={(job) => job.job_number ? `#${job.job_number}` : undefined}
+                filterFn={(job, query) => {
+                  const q = query.toLowerCase();
+                  return job.name.toLowerCase().includes(q) || 
+                    job.job_number?.toLowerCase().includes(q) || false;
+                }}
+                onSelect={(job) => setSelectedJobId(job.id)}
+              />
+              {selectedJobId && (
+                <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
+                  <span className="text-sm flex-1">
+                    {jobs.find(j => j.id === selectedJobId)?.name}
+                  </span>
+                  <Button variant="ghost" size="sm" onClick={() => setSelectedJobId(null)}>
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setLinkingCall(null)}>Cancel</Button>
+            <Button onClick={handleSaveLinkToJob} disabled={isLinking}>
+              {isLinking ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

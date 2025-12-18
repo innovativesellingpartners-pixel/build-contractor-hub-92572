@@ -274,11 +274,13 @@ export type Database = {
           action_taken: string | null
           ai_summary: string | null
           call_sid: string
+          caller_name: string | null
           contractor_id: string | null
           conversation_history: Json | null
           created_at: string
           from_number: string
           id: string
+          job_id: string | null
           outcome: string | null
           recording_duration: number | null
           recording_sid: string | null
@@ -293,11 +295,13 @@ export type Database = {
           action_taken?: string | null
           ai_summary?: string | null
           call_sid: string
+          caller_name?: string | null
           contractor_id?: string | null
           conversation_history?: Json | null
           created_at?: string
           from_number: string
           id?: string
+          job_id?: string | null
           outcome?: string | null
           recording_duration?: number | null
           recording_sid?: string | null
@@ -312,11 +316,13 @@ export type Database = {
           action_taken?: string | null
           ai_summary?: string | null
           call_sid?: string
+          caller_name?: string | null
           contractor_id?: string | null
           conversation_history?: Json | null
           created_at?: string
           from_number?: string
           id?: string
+          job_id?: string | null
           outcome?: string | null
           recording_duration?: number | null
           recording_sid?: string | null
@@ -333,6 +339,13 @@ export type Database = {
             columns: ["contractor_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "call_sessions_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
             referencedColumns: ["id"]
           },
         ]
