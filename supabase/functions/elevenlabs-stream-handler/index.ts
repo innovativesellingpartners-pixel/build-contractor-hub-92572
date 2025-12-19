@@ -5,6 +5,13 @@
  * for ElevenLabs, then converts ElevenLabs PCM response back to mulaw for Twilio.
  * 
  * Agent ID: agent_9901kcrxhb4yfr7r2gzq3rfs6add
+ * 
+ * FIXES v2:
+ * - Improved audio buffering during reconnects
+ * - Better VAD handling to prevent interruptions
+ * - Reduced keep-alive interval
+ * - Improved reconnect logic
+ * - Added agent_response tracking to prevent talking over itself
  */
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
@@ -42,9 +49,7 @@ function encodeUlawSample(sample: number): number {
 }
 
 // Initialize decode table
-// ITU-T G.711 µ-law: the encoded byte is bit-inverted, so we invert back during decode
 for (let i = 0; i < 256; i++) {
-  // Invert the byte first (G.711 µ-law stores inverted)
   const u = ~i & 0xff;
   const sign = (u & 0x80) ? -1 : 1;
   const exponent = (u >> 4) & 0x07;
@@ -61,7 +66,6 @@ for (let i = 0; i < 65536; i++) {
 
 // Convert mulaw bytes to PCM16 and upsample from 8kHz to target sample rate
 function mulawToPcm16(mulawData: Uint8Array, targetSampleRate: number): Int16Array {
-  // First decode mulaw to PCM at 8kHz
   const pcm8k = new Int16Array(mulawData.length);
   for (let i = 0; i < mulawData.length; i++) {
     pcm8k[i] = MULAW_DECODE_TABLE[mulawData[i]];
@@ -88,7 +92,6 @@ function mulawToPcm16(mulawData: Uint8Array, targetSampleRate: number): Int16Arr
 
 /**
  * Simple low-pass filter to prevent aliasing when downsampling.
- * Uses a moving average with a window size based on the downsample ratio.
  */
 function lowPassFilter(pcmData: Int16Array, windowSize: number): Int16Array {
   if (windowSize <= 1) return pcmData;
@@ -119,15 +122,11 @@ function pcm16ToMulaw(pcmData: Int16Array, inputSampleRate: number): Uint8Array 
   const targetRate = 8000;
   const ratio = inputSampleRate / targetRate;
   
-  // Apply low-pass filter before downsampling to prevent aliasing (fuzzy s's)
-  // Window size should be at least the downsample ratio
   const filterWindowSize = Math.max(3, Math.ceil(ratio));
   const filteredData = lowPassFilter(pcmData, filterWindowSize);
   
   const outputLength = Math.max(1, Math.floor(filteredData.length / ratio));
 
-  // Downsample using simple decimation (taking every Nth sample)
-  // This is safe now because we've already filtered out high frequencies
   const mulaw = new Uint8Array(outputLength);
   for (let i = 0; i < outputLength; i++) {
     const srcIdx = Math.min(Math.floor(i * ratio), filteredData.length - 1);
@@ -164,7 +163,6 @@ function int16ArrayToBase64(int16: Int16Array): string {
 }
 
 serve(async (req) => {
-  // Handle WebSocket upgrade
   const upgrade = req.headers.get("upgrade") || "";
   if (upgrade.toLowerCase() !== "websocket") {
     return new Response("Expected WebSocket", { status: 400 });
@@ -183,15 +181,22 @@ serve(async (req) => {
   let elevenOutputSampleRate = 16000;
   let keepAliveInterval: number | null = null;
 
-  // Reconnect state (ElevenLabs signed_url can expire quickly; we reconnect without dropping the call)
+  // Reconnect state
   let reconnectTimer: number | null = null;
   let reconnectAttempts = 0;
   let isCleaningUp = false;
   let hasEverConnectedToElevenLabs = false;
+  
+  // Track if agent is currently speaking to prevent sending audio during output
+  let agentIsSpeaking = false;
+  let lastAgentAudioTime = 0;
+  
+  // Audio queue for smoother playback
+  const audioQueue: string[] = [];
+  let isProcessingQueue = false;
 
-  // When ElevenLabs drops mid-call, buffer a small amount of user audio so we can
-  // flush it immediately after reconnect (prevents "I can't hear you" and restarts).
-  const MAX_PENDING_AUDIO_CHUNKS = 80;
+  // Larger audio buffer for reconnects (about 5 seconds of audio at 8kHz)
+  const MAX_PENDING_AUDIO_CHUNKS = 200;
   const pendingUserAudioChunks: string[] = [];
 
   // Conversation transcript accumulator
@@ -216,13 +221,13 @@ serve(async (req) => {
     if (!elevenLabsWs || elevenLabsWs.readyState !== WebSocket.OPEN) return;
     if (!pendingUserAudioChunks.length) return;
 
+    console.log(`[ElevenLabs Handler] Flushing ${pendingUserAudioChunks.length} buffered audio chunks`);
     const chunks = pendingUserAudioChunks.splice(0, pendingUserAudioChunks.length);
     for (const pcmBase64 of chunks) {
       try {
         elevenLabsWs.send(JSON.stringify({ user_audio_chunk: pcmBase64 }));
       } catch (err) {
         console.error('[ElevenLabs Handler] Failed to flush buffered audio chunk:', err);
-        // If sending fails mid-flush, re-buffer remaining chunks and bail.
         enqueueUserAudioChunk(pcmBase64);
         break;
       }
@@ -230,7 +235,6 @@ serve(async (req) => {
   }
 
   function buildResumeContextText() {
-    // Keep it short to avoid blowing up context.
     const lastTurns = conversationMessages.slice(-12);
     const transcript = lastTurns
       .map((m) => `${m.role === 'user' ? 'Caller' : 'Agent'}: ${m.content}`)
@@ -242,9 +246,10 @@ serve(async (req) => {
     ].filter(Boolean);
 
     return [
-      'We were mid-call but the connection briefly dropped and reconnected.',
-      'Continue the same conversation naturally. Do NOT restart with an intro/greeting.',
-      transcript ? `Recent transcript:\n${transcript}` : null,
+      'IMPORTANT: We are CONTINUING an ongoing phone call. The connection briefly dropped but we are still on the same call with the same person.',
+      'DO NOT greet them again or introduce yourself. Continue the conversation naturally from where we left off.',
+      'If you were in the middle of saying something, continue that thought.',
+      transcript ? `Recent conversation:\n${transcript}` : null,
       extras.length ? extras.join('\n') : null,
     ]
       .filter(Boolean)
@@ -253,10 +258,10 @@ serve(async (req) => {
 
   function sendResumeContextIfNeeded() {
     if (!elevenLabsWs || elevenLabsWs.readyState !== WebSocket.OPEN) return;
-    // Only send on reconnects (not first connect).
     if (!hasEverConnectedToElevenLabs) return;
     if (!conversationMessages.length && !lastScheduledMeeting && !lastVoicemail) return;
 
+    console.log('[ElevenLabs Handler] Sending resume context to prevent re-greeting');
     try {
       elevenLabsWs.send(
         JSON.stringify({
@@ -274,9 +279,7 @@ serve(async (req) => {
     if (keepAliveInterval) clearInterval(keepAliveInterval);
 
     keepAliveInterval = setInterval(() => {
-      console.log('[ElevenLabs Handler] Keep-alive ping');
-
-      // Send mark event to Twilio to keep connection alive
+      // Send mark event to Twilio
       if (twilioWs.readyState === WebSocket.OPEN && streamSid) {
         twilioWs.send(
           JSON.stringify({
@@ -289,13 +292,9 @@ serve(async (req) => {
 
       // Send ping to ElevenLabs
       if (elevenLabsWs && elevenLabsWs.readyState === WebSocket.OPEN) {
-        elevenLabsWs.send(
-          JSON.stringify({
-            type: 'ping',
-          })
-        );
+        elevenLabsWs.send(JSON.stringify({ type: 'ping' }));
       }
-    }, 10000); // ~every 10s
+    }, 5000); // Every 5 seconds (reduced from 10)
   }
 
   function stopKeepAlive() {
@@ -310,9 +309,10 @@ serve(async (req) => {
     if (twilioWs.readyState !== WebSocket.OPEN) return;
 
     reconnectAttempts += 1;
-    const delayMs = Math.min(5000, 500 * reconnectAttempts);
+    // Faster reconnect with exponential backoff capped at 3 seconds
+    const delayMs = Math.min(3000, 300 * reconnectAttempts);
     console.log(
-      `[ElevenLabs Handler] Scheduling ElevenLabs reconnect in ${delayMs}ms (attempt ${reconnectAttempts}) — reason: ${reason}`
+      `[ElevenLabs Handler] Scheduling reconnect in ${delayMs}ms (attempt ${reconnectAttempts}) — reason: ${reason}`
     );
 
     if (reconnectTimer) clearTimeout(reconnectTimer);
@@ -331,13 +331,33 @@ serve(async (req) => {
         }
 
         await connectToElevenLabs();
-        // successful connect resets attempt counter
         reconnectAttempts = 0;
       } catch (err) {
         console.error('[ElevenLabs Handler] Reconnect attempt failed:', err);
         scheduleElevenReconnect('reconnect_failed');
       }
     }, delayMs);
+  }
+
+  // Process audio queue to send to Twilio with proper timing
+  async function processAudioQueue() {
+    if (isProcessingQueue || audioQueue.length === 0) return;
+    isProcessingQueue = true;
+
+    while (audioQueue.length > 0 && twilioWs.readyState === WebSocket.OPEN) {
+      const audioPayload = audioQueue.shift();
+      if (audioPayload) {
+        twilioWs.send(JSON.stringify({
+          event: 'media',
+          streamSid: streamSid,
+          media: { payload: audioPayload }
+        }));
+        // Small delay between chunks for smoother playback
+        await new Promise(resolve => setTimeout(resolve, 10));
+      }
+    }
+
+    isProcessingQueue = false;
   }
 
   twilioWs.onopen = () => {
@@ -357,14 +377,12 @@ serve(async (req) => {
           streamSid = data.start.streamSid;
           callSid = data.start.callSid;
           
-          // Extract custom parameters
           if (data.start.customParameters) {
             contractorId = data.start.customParameters.contractorId || '';
           }
           
           console.log('[ElevenLabs Handler] Stream started:', { streamSid, callSid, contractorId });
           
-          // Fetch contractor profile to get business_name
           if (contractorId) {
             const { data: aiProfile } = await supabase
               .from('contractor_ai_profiles')
@@ -380,27 +398,30 @@ serve(async (req) => {
             }
           }
           
-          // Connect to ElevenLabs agent
           await connectToElevenLabs();
-          
-          // Start keep-alive pings
           startKeepAlive();
           break;
           
         case 'media': {
-          // Forward audio to ElevenLabs (convert mulaw 8kHz → PCM at ElevenLabs input sample rate)
+          // Don't forward user audio while agent is speaking (prevents echo/interruption)
+          const now = Date.now();
+          if (agentIsSpeaking && (now - lastAgentAudioTime) < 500) {
+            // Agent is actively speaking, skip this audio to prevent echo
+            break;
+          }
+          
           try {
             const mulawBytes = base64ToUint8Array(data.media.payload);
             const pcm = mulawToPcm16(mulawBytes, elevenInputSampleRate);
 
-            // Debug: Log audio levels periodically to verify audio is being received
-            if (Math.random() < 0.01) { // Log ~1% of audio chunks
+            // Log audio levels periodically
+            if (Math.random() < 0.005) {
               let maxLevel = 0;
               for (let i = 0; i < pcm.length; i++) {
                 const absVal = Math.abs(pcm[i]);
                 if (absVal > maxLevel) maxLevel = absVal;
               }
-              console.log('[ElevenLabs Handler] Audio chunk - bytes:', mulawBytes.length, 'pcm samples:', pcm.length, 'max level:', maxLevel);
+              console.log('[ElevenLabs Handler] User audio - samples:', pcm.length, 'max level:', maxLevel);
             }
 
             const pcmBase64 = int16ArrayToBase64(pcm);
@@ -408,7 +429,6 @@ serve(async (req) => {
             if (elevenLabsWs && elevenLabsWs.readyState === WebSocket.OPEN) {
               elevenLabsWs.send(JSON.stringify({ user_audio_chunk: pcmBase64 }));
             } else {
-              // Buffer while reconnecting so the agent doesn't lose the user's speech.
               enqueueUserAudioChunk(pcmBase64);
             }
           } catch (err) {
@@ -423,7 +443,6 @@ serve(async (req) => {
           break;
           
         default:
-          // Ignore other events like 'mark'
           break;
       }
     } catch (error) {
@@ -450,7 +469,6 @@ serve(async (req) => {
     }
 
     try {
-      // Get signed URL for the agent
       const response = await fetch(
         `https://api.elevenlabs.io/v1/convai/conversation/get-signed-url?agent_id=${ELEVENLABS_AGENT_ID}`,
         {
@@ -469,35 +487,46 @@ serve(async (req) => {
       const { signed_url } = await response.json();
       console.log('[ElevenLabs Handler] Got signed URL, connecting to ElevenLabs agent');
 
-      // Connect to ElevenLabs WebSocket
       elevenLabsWs = new WebSocket(signed_url);
 
       elevenLabsWs.onopen = () => {
         console.log('[ElevenLabs Handler] ElevenLabs WebSocket connected');
 
-        // Send initial configuration with dynamic variables
-        const initMessage = {
+        // Determine if this is a reconnect - affects first message
+        const isReconnect = hasEverConnectedToElevenLabs && conversationMessages.length > 0;
+
+        const initMessage: Record<string, any> = {
           type: "conversation_initiation_client_data",
           dynamic_variables: {
             business_name: businessName,
             contractor_name: contractorName,
             trade: trade,
             farewell_message: `Thank you for calling ${businessName}. Have a wonderful day!`,
-            email_collection_reminder: "Always ask for the caller's email address when scheduling appointments so you can send them a calendar invite and confirmation email."
+            email_collection_reminder: "Always ask for the caller's email address when scheduling appointments.",
+            // Pass reconnect context as a variable
+            is_reconnect: isReconnect ? "true" : "false",
+          },
+          // Request specific audio format for better compatibility
+          conversation_config_override: {
+            // Higher VAD threshold to reduce false interruptions
+            turn_detection: {
+              mode: "server_vad",
+              vad_threshold: 0.6, // Higher = less sensitive (default is ~0.5)
+              prefix_padding_ms: 500, // More padding before speech
+              silence_duration_ms: 800, // Longer silence before turn ends
+            }
           }
         };
 
-        console.log('[ElevenLabs Handler] Sending init message:', initMessage);
+        console.log('[ElevenLabs Handler] Sending init message:', JSON.stringify(initMessage));
         elevenLabsWs!.send(JSON.stringify(initMessage));
 
-        // If we've connected before during this call, this is a reconnect. Send context
-        // so the agent doesn't "start over".
-        sendResumeContextIfNeeded();
+        // Send resume context if this is a reconnect
+        if (isReconnect) {
+          sendResumeContextIfNeeded();
+        }
 
-        // Mark that we've successfully connected at least once.
         hasEverConnectedToElevenLabs = true;
-
-        // Immediately flush any buffered caller audio captured during reconnect.
         flushPendingUserAudio();
       };
 
@@ -508,31 +537,32 @@ serve(async (req) => {
           switch (data.type) {
             case 'conversation_initiation_metadata': {
               const meta = data.conversation_initiation_metadata_event;
-              console.log('[ElevenLabs Handler] Conversation initiation metadata:', meta);
-              console.log('[ElevenLabs Handler] Conversation initiated:', meta?.conversation_id);
+              console.log('[ElevenLabs Handler] Conversation metadata:', JSON.stringify(meta));
 
-              // Try to infer audio sample rates from metadata if present
-              const inferredInput = meta?.input_audio_format?.sample_rate_hz ?? meta?.input_audio_format?.sample_rate ?? meta?.input_audio_format?.sample_rate_hz;
-              const inferredOutput = meta?.output_audio_format?.sample_rate_hz ?? meta?.output_audio_format?.sample_rate ?? meta?.output_audio_format?.sample_rate_hz;
+              const inferredInput = meta?.input_audio_format?.sample_rate_hz ?? 
+                                   meta?.input_audio_format?.sample_rate ?? 16000;
+              const inferredOutput = meta?.output_audio_format?.sample_rate_hz ?? 
+                                    meta?.output_audio_format?.sample_rate ?? 16000;
 
               if (typeof inferredInput === 'number' && inferredInput > 0) {
                 elevenInputSampleRate = inferredInput;
-                console.log('[ElevenLabs Handler] Using ElevenLabs input sample rate:', elevenInputSampleRate);
+                console.log('[ElevenLabs Handler] Input sample rate:', elevenInputSampleRate);
               }
               if (typeof inferredOutput === 'number' && inferredOutput > 0) {
                 elevenOutputSampleRate = inferredOutput;
-                console.log('[ElevenLabs Handler] Using ElevenLabs output sample rate:', elevenOutputSampleRate);
+                console.log('[ElevenLabs Handler] Output sample rate:', elevenOutputSampleRate);
               }
               break;
             }
               
             case 'audio':
-              // Forward audio back to Twilio (convert PCM → mulaw 8kHz)
+              // Track that agent is speaking
+              agentIsSpeaking = true;
+              lastAgentAudioTime = Date.now();
+              
               if (twilioWs.readyState === WebSocket.OPEN && data.audio_event?.audio_base_64) {
                 try {
                   const pcmBytes = base64ToUint8Array(data.audio_event.audio_base_64);
-
-                  // Convert bytes to Int16 samples (little-endian)
                   const pcm16 = new Int16Array(pcmBytes.length / 2);
                   for (let i = 0; i < pcm16.length; i++) {
                     pcm16[i] = pcmBytes[i * 2] | (pcmBytes[i * 2 + 1] << 8);
@@ -541,17 +571,19 @@ serve(async (req) => {
                   const mulawBytes = pcm16ToMulaw(pcm16, elevenOutputSampleRate);
                   const mulawBase64 = uint8ArrayToBase64(mulawBytes);
                   
-                  twilioWs.send(JSON.stringify({
-                    event: 'media',
-                    streamSid: streamSid,
-                    media: {
-                      payload: mulawBase64
-                    }
-                  }));
+                  // Queue audio for smoother playback
+                  audioQueue.push(mulawBase64);
+                  processAudioQueue();
                 } catch (err) {
                   console.error('[ElevenLabs Handler] Error converting ElevenLabs audio:', err);
                 }
               }
+              break;
+              
+            case 'audio_done':
+              // Agent finished speaking this response
+              console.log('[ElevenLabs Handler] Agent finished speaking');
+              agentIsSpeaking = false;
               break;
               
             case 'user_transcript': {
@@ -563,13 +595,13 @@ serve(async (req) => {
                   content: userText,
                   timestamp: new Date().toISOString()
                 });
-                // Periodically save conversation to database
+                
                 if (conversationMessages.length % 4 === 0 && callSid) {
                   supabase.from('call_sessions').update({
                     conversation_history: conversationMessages,
                     updated_at: new Date().toISOString()
                   }).eq('call_sid', callSid).then(() => {
-                    console.log('[ElevenLabs Handler] Conversation saved (interim)');
+                    console.log('[ElevenLabs Handler] Conversation saved');
                   });
                 }
               }
@@ -590,8 +622,10 @@ serve(async (req) => {
             }
               
             case 'interruption':
-              console.log('[ElevenLabs Handler] User interrupted');
-              // Clear Twilio's audio buffer
+              console.log('[ElevenLabs Handler] User interrupted - clearing audio');
+              agentIsSpeaking = false;
+              audioQueue.length = 0; // Clear pending audio
+              
               if (twilioWs.readyState === WebSocket.OPEN) {
                 twilioWs.send(JSON.stringify({
                   event: 'clear',
@@ -601,7 +635,6 @@ serve(async (req) => {
               break;
               
             case 'ping':
-              // Respond to ping with pong
               if (elevenLabsWs && elevenLabsWs.readyState === WebSocket.OPEN) {
                 elevenLabsWs.send(JSON.stringify({
                   type: 'pong',
@@ -611,12 +644,17 @@ serve(async (req) => {
               break;
               
             case 'client_tool_call':
-              // Handle tool calls from the agent
               handleToolCall(data);
               break;
               
+            case 'error':
+              console.error('[ElevenLabs Handler] ElevenLabs error:', data);
+              break;
+              
             default:
-              console.log('[ElevenLabs Handler] ElevenLabs event:', data.type);
+              if (data.type) {
+                console.log('[ElevenLabs Handler] Event:', data.type);
+              }
           }
         } catch (error) {
           console.error('[ElevenLabs Handler] Error processing ElevenLabs message:', error);
@@ -630,7 +668,10 @@ serve(async (req) => {
 
       elevenLabsWs.onclose = (event) => {
         console.log('[ElevenLabs Handler] ElevenLabs WebSocket closed:', event.code, event.reason);
-        scheduleElevenReconnect(`eleven_ws_close_${event.code}`);
+        // Only reconnect if not cleaning up and Twilio is still connected
+        if (!isCleaningUp && twilioWs.readyState === WebSocket.OPEN) {
+          scheduleElevenReconnect(`eleven_ws_close_${event.code}`);
+        }
       };
 
     } catch (error) {
@@ -642,14 +683,13 @@ serve(async (req) => {
     const toolCall = data.client_tool_call;
     if (!toolCall) return;
     
-    console.log('[ElevenLabs Handler] Tool call:', toolCall.tool_name, toolCall.parameters);
+    console.log('[ElevenLabs Handler] Tool call:', toolCall.tool_name, JSON.stringify(toolCall.parameters));
     
     let result: Record<string, any> = { success: false, message: "Unknown tool" };
     
     try {
       switch (toolCall.tool_name) {
         case 'schedule_appointment': {
-          // Save appointment to database
           const appointmentData = toolCall.parameters;
           const scheduledDate = appointmentData.date || new Date().toISOString().split('T')[0];
           const scheduledTime = appointmentData.time || '09:00';
@@ -659,7 +699,6 @@ serve(async (req) => {
           const customerEmail = appointmentData.email || '';
           const description = appointmentData.description || 'Scheduled Visit';
           
-          // 1. Insert job_meetings record
           const { data: meeting, error: meetingError } = await supabase.from('job_meetings').insert({
             user_id: contractorId,
             job_id: null,
@@ -680,7 +719,7 @@ serve(async (req) => {
           
           console.log('[ElevenLabs Handler] Meeting created:', meeting?.id);
           
-          // 2. Create calendar event via edge function (server-to-server call)
+          // Create calendar event
           try {
             const calendarPayload = {
               jobId: meeting?.id || 'voice-ai-booking',
@@ -690,10 +729,9 @@ serve(async (req) => {
               endDate: `${scheduledDate}T${String(parseInt(scheduledTime.split(':')[0]) + 1).padStart(2, '0')}:${scheduledTime.split(':')[1]}:00`,
               location: location,
               address: location,
-              contractorId: contractorId, // Pass for service role call
+              contractorId: contractorId,
             };
             
-            // Get contractor's calendar connection
             const { data: calendarConnection } = await supabase
               .from('calendar_connections')
               .select('*')
@@ -702,8 +740,7 @@ serve(async (req) => {
               .single();
               
             if (calendarConnection) {
-              console.log('[ElevenLabs Handler] Found calendar connection, creating event...');
-              // Call the create-calendar-event function internally
+              console.log('[ElevenLabs Handler] Creating calendar event...');
               const calResponse = await fetch(
                 `${Deno.env.get('SUPABASE_URL')}/functions/v1/create-calendar-event`,
                 {
@@ -716,21 +753,17 @@ serve(async (req) => {
                 }
               );
               const calResult = await calResponse.json();
-              console.log('[ElevenLabs Handler] Calendar event result:', calResult);
-            } else {
-              console.log('[ElevenLabs Handler] No calendar connection for contractor');
+              console.log('[ElevenLabs Handler] Calendar result:', calResult);
             }
           } catch (calError) {
-            console.error('[ElevenLabs Handler] Calendar event error:', calError);
-            // Don't fail the whole operation if calendar fails
+            console.error('[ElevenLabs Handler] Calendar error:', calError);
           }
           
-          // 3. Send email confirmation if customer email provided
+          // Send email confirmation
           if (customerEmail) {
             try {
-              console.log('[ElevenLabs Handler] Sending email confirmation to:', customerEmail);
+              console.log('[ElevenLabs Handler] Sending email to:', customerEmail);
               
-              // Get contractor profile for business info
               const { data: profile } = await supabase
                 .from('profiles')
                 .select('business_name, business_phone, business_email')
@@ -745,7 +778,7 @@ serve(async (req) => {
                 duration: 60,
                 location: location,
                 notes: `Scheduled by ${profile?.business_name || businessName} AI Assistant.\n\nWe look forward to seeing you!`,
-                contractorId: contractorId, // Pass for service role call
+                contractorId: contractorId,
               };
               
               const emailResponse = await fetch(
@@ -763,23 +796,20 @@ serve(async (req) => {
               console.log('[ElevenLabs Handler] Email result:', emailResult);
             } catch (emailError) {
               console.error('[ElevenLabs Handler] Email error:', emailError);
-              // Don't fail the operation if email fails
             }
           }
           
-          // Track that we scheduled a meeting
-          lastScheduledMeeting = `Appointment with ${customerName} on ${scheduledDate} at ${scheduledTime}. Location: ${location || 'TBD'}. Phone: ${customerPhone || 'Not provided'}. Email: ${customerEmail || 'Not provided'}.`;
+          lastScheduledMeeting = `Appointment with ${customerName} on ${scheduledDate} at ${scheduledTime}. Location: ${location || 'TBD'}. Phone: ${customerPhone || 'Not provided'}.`;
           
           result = { 
             success: true, 
-            message: `Appointment scheduled for ${scheduledDate} at ${scheduledTime}. ${customerEmail ? 'Confirmation email sent.' : 'No email provided for confirmation.'}`,
+            message: `Appointment scheduled for ${scheduledDate} at ${scheduledTime}. ${customerEmail ? 'Confirmation email sent.' : ''}`,
             meeting_id: meeting?.id
           };
           break;
         }
           
         case 'take_voicemail': {
-          // Save voicemail message
           const voicemailData = toolCall.parameters;
           await supabase.from('calls').update({
             ai_summary: `Voicemail from ${voicemailData.name} (${voicemailData.phone}): ${voicemailData.message}`,
@@ -787,15 +817,13 @@ serve(async (req) => {
             message_type: voicemailData.urgency || 'normal'
           }).eq('call_sid', callSid);
           
-          // Track the voicemail
-          lastVoicemail = `Voicemail from ${voicemailData.name || 'Unknown'} (${voicemailData.phone || 'No phone'}): ${voicemailData.message || 'No message'}. Urgency: ${voicemailData.urgency || 'normal'}.`;
+          lastVoicemail = `Voicemail from ${voicemailData.name || 'Unknown'} (${voicemailData.phone || 'No phone'}): ${voicemailData.message || 'No message'}.`;
           
           result = { success: true, message: "Voicemail saved successfully" };
           break;
         }
           
         case 'lookup_job': {
-          // Look up job by reference number
           const { reference_number } = toolCall.parameters;
           const { data: job } = await supabase
             .from('jobs')
@@ -821,25 +849,22 @@ serve(async (req) => {
         }
           
         case 'end_call': {
-          // Agent is ready to end the call gracefully
-          console.log('[ElevenLabs Handler] Agent ending call gracefully');
+          console.log('[ElevenLabs Handler] Agent ending call');
           result = { 
             success: true, 
             message: `Call ended. Thank you for calling ${businessName}.`
           };
           
-          // Wait a moment to let the farewell play, then clean up
           setTimeout(() => {
             console.log('[ElevenLabs Handler] Closing connections after farewell');
             if (twilioWs.readyState === WebSocket.OPEN) {
-              // Send a stop event to Twilio to end the call
               twilioWs.send(JSON.stringify({
                 event: 'stop',
                 streamSid: streamSid
               }));
             }
             cleanup();
-          }, 3000); // 3 second delay to let farewell play
+          }, 3000);
           break;
         }
           
@@ -851,7 +876,6 @@ serve(async (req) => {
       result = { success: false, message: "Error executing tool" };
     }
     
-    // Send tool result back to ElevenLabs
     if (elevenLabsWs && elevenLabsWs.readyState === WebSocket.OPEN) {
       elevenLabsWs.send(JSON.stringify({
         type: 'client_tool_result',
@@ -866,6 +890,8 @@ serve(async (req) => {
     if (isCleaningUp) return;
     isCleaningUp = true;
     
+    console.log('[ElevenLabs Handler] Cleaning up...');
+    
     stopKeepAlive();
     
     if (reconnectTimer) {
@@ -874,14 +900,15 @@ serve(async (req) => {
     }
     
     if (elevenLabsWs) {
-      elevenLabsWs.close();
+      try {
+        elevenLabsWs.close();
+      } catch {}
       elevenLabsWs = null;
     }
     
     // Save final conversation and generate summary
     if (callSid && conversationMessages.length > 0) {
       try {
-        // Determine outcome and action taken
         let outcome = 'call_completed';
         let actionTaken = '';
         
@@ -893,7 +920,7 @@ serve(async (req) => {
           actionTaken = lastVoicemail;
         }
         
-        // Generate AI summary using conversation transcript
+        // Generate AI summary
         let aiSummary = '';
         try {
           const transcriptText = conversationMessages.map(m => 
@@ -925,37 +952,34 @@ serve(async (req) => {
           if (summaryResponse.ok) {
             const summaryData = await summaryResponse.json();
             aiSummary = summaryData.choices?.[0]?.message?.content || '';
-            console.log('[ElevenLabs Handler] Generated AI summary:', aiSummary);
+            console.log('[ElevenLabs Handler] Generated summary:', aiSummary);
           }
         } catch (summaryError) {
           console.error('[ElevenLabs Handler] Summary generation error:', summaryError);
-          // Fallback summary from conversation
-          aiSummary = `Call with ${conversationMessages.length} exchanges. ${outcome === 'meeting_scheduled' ? 'Appointment was scheduled.' : outcome === 'voicemail' ? 'Voicemail was taken.' : 'General inquiry.'}`;
         }
         
-        // Update call_sessions with final data
+        // Update call session
         await supabase.from('call_sessions').update({
+          status: 'completed',
           conversation_history: conversationMessages,
-          ai_summary: aiSummary,
+          ai_summary: aiSummary || actionTaken || 'Call completed',
           outcome: outcome,
           action_taken: actionTaken,
-          status: 'completed',
           updated_at: new Date().toISOString()
         }).eq('call_sid', callSid);
         
-        console.log('[ElevenLabs Handler] Call session updated with transcript and summary');
-      } catch (updateError) {
-        console.error('[ElevenLabs Handler] Error updating call session:', updateError);
+        // Update calls record
+        await supabase.from('calls').update({
+          call_status: 'completed',
+          ai_summary: aiSummary || actionTaken || 'Call completed',
+          outcome: outcome,
+          updated_at: new Date().toISOString()
+        }).eq('call_sid', callSid);
+        
+        console.log('[ElevenLabs Handler] Final conversation saved');
+      } catch (saveError) {
+        console.error('[ElevenLabs Handler] Error saving final conversation:', saveError);
       }
-    }
-    
-    // Update call record
-    if (callSid) {
-      await supabase.from('calls').update({
-        call_status: 'completed',
-        ai_handled: true
-      }).eq('call_sid', callSid);
-      console.log('[ElevenLabs Handler] Call record updated');
     }
   }
 
