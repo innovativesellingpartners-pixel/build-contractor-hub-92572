@@ -49,6 +49,7 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const [viewMode, setViewMode] = useState<CalendarViewMode>('month');
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedDay, setSelectedDay] = useState<Date | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -313,6 +314,18 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
       const endDate = addDays(currentDate, viewMode === '3-day' ? 2 : 4);
       return `${format(currentDate, 'MMM d')} - ${format(endDate, 'MMM d, yyyy')}`;
     }
+  };
+
+  // Handler for day click - opens day events dialog
+  const handleDayClick = (day: Date) => {
+    setSelectedDay(day);
+  };
+
+  // Switch to day view for selected day
+  const viewDayInDayMode = (day: Date) => {
+    setCurrentDate(day);
+    setViewMode('day');
+    setSelectedDay(null);
   };
 
   return (
@@ -596,7 +609,8 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
                     return (
                       <div
                         key={idx}
-                        className={`min-h-[80px] sm:min-h-[100px] p-1 border rounded-lg transition-colors ${
+                        onClick={() => handleDayClick(day)}
+                        className={`min-h-[80px] sm:min-h-[100px] p-1 border rounded-lg transition-colors cursor-pointer hover:bg-muted/50 ${
                           isCurrentMonth ? 'bg-background' : 'bg-muted/30'
                         } ${isCurrentDay ? 'border-primary border-2' : 'border-border'}`}
                       >
@@ -609,14 +623,23 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
                           {dayEvents.slice(0, 2).map((event) => (
                             <div
                               key={event.id}
-                              onClick={() => setSelectedEvent(event)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedEvent(event);
+                              }}
                               className="text-[10px] sm:text-xs p-0.5 sm:p-1 rounded bg-primary/10 text-primary truncate cursor-pointer hover:bg-primary/20 transition-colors"
                             >
                               {event.summary || 'Event'}
                             </div>
                           ))}
                           {dayEvents.length > 2 && (
-                            <div className="text-[10px] text-muted-foreground">
+                            <div 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDayClick(day);
+                              }}
+                              className="text-[10px] text-muted-foreground hover:text-primary cursor-pointer"
+                            >
                               +{dayEvents.length - 2} more
                             </div>
                           )}
@@ -804,6 +827,80 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Day Events Dialog */}
+      <Dialog open={!!selectedDay} onOpenChange={(open) => !open && setSelectedDay(null)}>
+        <DialogContent className="sm:max-w-lg max-h-[80vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CalendarIcon className="h-5 w-5 text-primary" />
+              {selectedDay && format(selectedDay, 'EEEE, MMMM d, yyyy')}
+            </DialogTitle>
+            <DialogDescription>
+              {selectedDay && (() => {
+                const dayEvents = getEventsForDay(selectedDay);
+                return `${dayEvents.length} event${dayEvents.length !== 1 ? 's' : ''} scheduled`;
+              })()}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedDay && (
+            <div className="flex-1 overflow-y-auto space-y-2 py-2">
+              {(() => {
+                const dayEvents = getEventsForDay(selectedDay);
+                
+                if (dayEvents.length === 0) {
+                  return (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <CalendarIcon className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                      <p>No events scheduled for this day</p>
+                    </div>
+                  );
+                }
+                
+                return dayEvents.map((event) => (
+                  <div
+                    key={event.id}
+                    onClick={() => {
+                      setSelectedDay(null);
+                      setSelectedEvent(event);
+                    }}
+                    className="p-3 rounded-lg border bg-card hover:bg-muted/50 cursor-pointer transition-colors"
+                  >
+                    <div className="font-medium truncate">{event.summary || 'Untitled Event'}</div>
+                    <div className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
+                      <Clock className="h-3 w-3" />
+                      {formatEventTimeShort(event)}
+                    </div>
+                    {event.location && (
+                      <div className="text-sm text-muted-foreground flex items-center gap-1 mt-0.5 truncate">
+                        <MapPin className="h-3 w-3 flex-shrink-0" />
+                        <span className="truncate">{event.location}</span>
+                      </div>
+                    )}
+                  </div>
+                ));
+              })()}
+            </div>
+          )}
+          
+          <div className="flex gap-2 pt-4 border-t">
+            <Button 
+              variant="outline" 
+              className="flex-1"
+              onClick={() => setSelectedDay(null)}
+            >
+              Close
+            </Button>
+            <Button 
+              className="flex-1"
+              onClick={() => selectedDay && viewDayInDayMode(selectedDay)}
+            >
+              View in Day Mode
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
