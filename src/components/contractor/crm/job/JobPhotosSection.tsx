@@ -1,26 +1,45 @@
 import { useState, useRef } from 'react';
-import { Camera, Upload, Trash2, X, Image as ImageIcon } from 'lucide-react';
+import { Camera, Upload, X, Image as ImageIcon, StickyNote } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useJobPhotos, JobPhoto } from '@/hooks/useJobPhotos';
 import { ImageViewer } from '@/components/ui/image-viewer';
-import { format } from 'date-fns';
-import { toast } from 'sonner';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
 
 interface JobPhotosSectionProps {
   jobId: string;
 }
 
 export function JobPhotosSection({ jobId }: JobPhotosSectionProps) {
-  const { photos, loading, uploading, uploadPhoto, deletePhoto, refreshPhotos } = useJobPhotos(jobId);
+  const { photos, loading, uploading, uploadPhoto, deletePhoto, updatePhotoCaption } = useJobPhotos(jobId);
   const [caption, setCaption] = useState('');
   const [viewerOpen, setViewerOpen] = useState(false);
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number>(-1);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+  
+  // Notes editing state
+  const [notesDialogOpen, setNotesDialogOpen] = useState(false);
+  const [editingPhoto, setEditingPhoto] = useState<JobPhoto | null>(null);
+  const [editingNotes, setEditingNotes] = useState('');
 
   const selectedPhoto = selectedPhotoIndex >= 0 ? photos[selectedPhotoIndex] : null;
+  
+  const handleEditNotes = (photo: JobPhoto, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setEditingPhoto(photo);
+    setEditingNotes(photo.caption || '');
+    setNotesDialogOpen(true);
+  };
+
+  const handleSaveNotes = async () => {
+    if (!editingPhoto) return;
+    await updatePhotoCaption(editingPhoto.id, editingNotes);
+    setNotesDialogOpen(false);
+    setEditingPhoto(null);
+  };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -154,18 +173,36 @@ export function JobPhotosSection({ jobId }: JobPhotosSectionProps) {
                   e.currentTarget.src = '/placeholder.svg';
                 }}
               />
+              {/* Delete button */}
               <button
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleDelete(photo);
                 }}
-                className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute top-1 right-1 p-1 bg-destructive text-destructive-foreground rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
               >
                 <X className="h-3 w-3" />
               </button>
+              {/* Notes button */}
+              <button
+                type="button"
+                onClick={(e) => handleEditNotes(photo, e)}
+                className={`absolute top-1 left-1 p-1 rounded-full transition-opacity ${
+                  photo.caption 
+                    ? 'bg-primary text-primary-foreground opacity-80 group-hover:opacity-100' 
+                    : 'bg-muted text-muted-foreground opacity-0 group-hover:opacity-100'
+                }`}
+                title={photo.caption ? 'Edit notes' : 'Add notes'}
+              >
+                <StickyNote className="h-3 w-3" />
+              </button>
+              {/* Caption display */}
               {photo.caption && (
-                <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs p-1 truncate rounded-b-lg">
+                <div 
+                  className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs p-1 truncate rounded-b-lg cursor-pointer hover:bg-black/80"
+                  onClick={(e) => handleEditNotes(photo, e)}
+                >
                   {photo.caption}
                 </div>
               )}
@@ -190,8 +227,51 @@ export function JobPhotosSection({ jobId }: JobPhotosSectionProps) {
           hasNext={selectedPhotoIndex < photos.length - 1}
           currentIndex={selectedPhotoIndex}
           totalCount={photos.length}
+          caption={selectedPhoto.caption}
+          onEditCaption={() => handleEditNotes(selectedPhoto)}
         />
       )}
+
+      {/* Notes Edit Dialog */}
+      <Dialog open={notesDialogOpen} onOpenChange={setNotesDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <StickyNote className="h-5 w-5" />
+              Photo Notes
+            </DialogTitle>
+          </DialogHeader>
+          {editingPhoto && (
+            <div className="space-y-4">
+              <div className="aspect-video w-full overflow-hidden rounded-lg bg-muted">
+                <img
+                  src={editingPhoto.signed_url || editingPhoto.photo_url}
+                  alt="Photo preview"
+                  className="w-full h-full object-contain"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="photo-notes">Notes</Label>
+                <Textarea
+                  id="photo-notes"
+                  placeholder="Add notes about this photo..."
+                  value={editingNotes}
+                  onChange={(e) => setEditingNotes(e.target.value)}
+                  rows={4}
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setNotesDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveNotes}>
+              Save Notes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
