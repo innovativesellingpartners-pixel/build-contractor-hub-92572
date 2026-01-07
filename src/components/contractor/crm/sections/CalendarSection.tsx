@@ -1,15 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar, Plug, Check, Loader2, X, RefreshCw, Clock, MapPin, ChevronDown, ChevronUp, Trash2, Plus, Briefcase, FileText, ExternalLink } from 'lucide-react';
+import { Calendar as CalendarIcon, Plug, Check, Loader2, X, RefreshCw, Clock, MapPin, ChevronDown, ChevronUp, Trash2, Plus, Briefcase, FileText, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, addMonths, subMonths, isSameMonth, isSameDay, isToday } from 'date-fns';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { ScheduleMeetingDialog } from '../ScheduleMeetingDialog';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+
+type CalendarViewMode = 'day' | '3-day' | '5-day' | 'month';
 
 interface CalendarConnection {
   id: string;
@@ -44,6 +47,8 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
   const [deletingEventId, setDeletingEventId] = useState<string | null>(null);
   const [scheduleMeetingOpen, setScheduleMeetingOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+  const [viewMode, setViewMode] = useState<CalendarViewMode>('month');
+  const [currentDate, setCurrentDate] = useState(new Date());
 
   useEffect(() => {
     if (user) {
@@ -212,23 +217,103 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
     }
   };
 
-  const getEventDateGroup = (event: CalendarEvent) => {
+  const formatEventTimeShort = (event: CalendarEvent) => {
     const start = event.start?.dateTime || event.start?.date;
-    if (!start) return 'Unknown';
+    if (!start) return '';
     try {
-      return format(parseISO(start), 'EEEE, MMMM d');
+      const startDate = parseISO(start);
+      const isAllDay = !event.start?.dateTime;
+      return isAllDay ? 'All Day' : format(startDate, 'h:mm a');
     } catch {
-      return 'Unknown';
+      return '';
     }
   };
 
-  // Group events by date
-  const groupedEvents = events.reduce((groups, event) => {
-    const date = getEventDateGroup(event);
-    if (!groups[date]) groups[date] = [];
-    groups[date].push(event);
-    return groups;
-  }, {} as Record<string, CalendarEvent[]>);
+  const getEventDate = (event: CalendarEvent): Date | null => {
+    const start = event.start?.dateTime || event.start?.date;
+    if (!start) return null;
+    try {
+      return parseISO(start);
+    } catch {
+      return null;
+    }
+  };
+
+  // Get days to display based on view mode
+  const daysToDisplay = useMemo(() => {
+    const days: Date[] = [];
+    
+    if (viewMode === 'month') {
+      const monthStart = startOfMonth(currentDate);
+      const monthEnd = endOfMonth(currentDate);
+      const calendarStart = startOfWeek(monthStart);
+      const calendarEnd = endOfWeek(monthEnd);
+      
+      let day = calendarStart;
+      while (day <= calendarEnd) {
+        days.push(day);
+        day = addDays(day, 1);
+      }
+    } else if (viewMode === 'day') {
+      days.push(currentDate);
+    } else if (viewMode === '3-day') {
+      for (let i = 0; i < 3; i++) {
+        days.push(addDays(currentDate, i));
+      }
+    } else if (viewMode === '5-day') {
+      for (let i = 0; i < 5; i++) {
+        days.push(addDays(currentDate, i));
+      }
+    }
+    
+    return days;
+  }, [currentDate, viewMode]);
+
+  // Get events for a specific day
+  const getEventsForDay = (day: Date) => {
+    return events.filter(event => {
+      const eventDate = getEventDate(event);
+      return eventDate && isSameDay(eventDate, day);
+    });
+  };
+
+  // Navigation handlers
+  const goToToday = () => setCurrentDate(new Date());
+  
+  const goToPrevious = () => {
+    if (viewMode === 'month') {
+      setCurrentDate(subMonths(currentDate, 1));
+    } else if (viewMode === 'day') {
+      setCurrentDate(addDays(currentDate, -1));
+    } else if (viewMode === '3-day') {
+      setCurrentDate(addDays(currentDate, -3));
+    } else if (viewMode === '5-day') {
+      setCurrentDate(addDays(currentDate, -5));
+    }
+  };
+  
+  const goToNext = () => {
+    if (viewMode === 'month') {
+      setCurrentDate(addMonths(currentDate, 1));
+    } else if (viewMode === 'day') {
+      setCurrentDate(addDays(currentDate, 1));
+    } else if (viewMode === '3-day') {
+      setCurrentDate(addDays(currentDate, 3));
+    } else if (viewMode === '5-day') {
+      setCurrentDate(addDays(currentDate, 5));
+    }
+  };
+
+  const getHeaderTitle = () => {
+    if (viewMode === 'month') {
+      return format(currentDate, 'MMMM yyyy');
+    } else if (viewMode === 'day') {
+      return format(currentDate, 'EEEE, MMMM d, yyyy');
+    } else {
+      const endDate = addDays(currentDate, viewMode === '3-day' ? 2 : 4);
+      return `${format(currentDate, 'MMM d')} - ${format(endDate, 'MMM d, yyyy')}`;
+    }
+  };
 
   return (
     <div className="w-full h-full overflow-y-auto overflow-x-hidden pb-20 bg-background">
@@ -445,97 +530,158 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
           </div>
         )}
 
-        {/* Calendar Events */}
+        {/* Calendar View with View Mode Toggle */}
         {hasAnyConnection && (
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-primary" />
-              Upcoming Events
-            </h2>
-            
+            {/* View Mode Toggle & Navigation */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="icon" onClick={goToPrevious}>
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <Button variant="outline" size="sm" onClick={goToToday}>
+                  Today
+                </Button>
+                <Button variant="outline" size="icon" onClick={goToNext}>
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+                <h2 className="text-lg font-semibold ml-2">{getHeaderTitle()}</h2>
+              </div>
+              
+              <ToggleGroup 
+                type="single" 
+                value={viewMode} 
+                onValueChange={(value) => value && setViewMode(value as CalendarViewMode)}
+                className="justify-start"
+              >
+                <ToggleGroupItem value="day" aria-label="Day view" className="text-xs sm:text-sm px-2 sm:px-3">
+                  Day
+                </ToggleGroupItem>
+                <ToggleGroupItem value="3-day" aria-label="3-day view" className="text-xs sm:text-sm px-2 sm:px-3">
+                  3-Day
+                </ToggleGroupItem>
+                <ToggleGroupItem value="5-day" aria-label="5-day view" className="text-xs sm:text-sm px-2 sm:px-3">
+                  5-Day
+                </ToggleGroupItem>
+                <ToggleGroupItem value="month" aria-label="Month view" className="text-xs sm:text-sm px-2 sm:px-3">
+                  Month
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </div>
+
             {loadingEvents ? (
               <Card className="p-8 text-center">
                 <Loader2 className="h-8 w-8 mx-auto mb-4 animate-spin text-primary" />
                 <p className="text-muted-foreground">Loading calendar events...</p>
               </Card>
-            ) : events.length === 0 ? (
-              <Card className="p-8 text-center bg-gradient-to-br from-muted/30 to-muted/10">
-                <Calendar className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-                <p className="text-muted-foreground font-medium">No upcoming events in the next 30 days</p>
-                <p className="text-sm text-muted-foreground mt-1">Events from your connected calendars will appear here</p>
+            ) : viewMode === 'month' ? (
+              /* Month View */
+              <Card className="p-4">
+                {/* Weekday Headers */}
+                <div className="grid grid-cols-7 gap-1 mb-2">
+                  {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                    <div key={day} className="text-center text-xs font-medium text-muted-foreground py-2">
+                      {day}
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Calendar Grid */}
+                <div className="grid grid-cols-7 gap-1">
+                  {daysToDisplay.map((day, idx) => {
+                    const dayEvents = getEventsForDay(day);
+                    const isCurrentMonth = isSameMonth(day, currentDate);
+                    const isCurrentDay = isToday(day);
+                    
+                    return (
+                      <div
+                        key={idx}
+                        className={`min-h-[80px] sm:min-h-[100px] p-1 border rounded-lg transition-colors ${
+                          isCurrentMonth ? 'bg-background' : 'bg-muted/30'
+                        } ${isCurrentDay ? 'border-primary border-2' : 'border-border'}`}
+                      >
+                        <div className={`text-xs sm:text-sm font-medium mb-1 ${
+                          isCurrentDay ? 'text-primary' : isCurrentMonth ? 'text-foreground' : 'text-muted-foreground'
+                        }`}>
+                          {format(day, 'd')}
+                        </div>
+                        <div className="space-y-0.5 overflow-hidden">
+                          {dayEvents.slice(0, 2).map((event) => (
+                            <div
+                              key={event.id}
+                              onClick={() => setSelectedEvent(event)}
+                              className="text-[10px] sm:text-xs p-0.5 sm:p-1 rounded bg-primary/10 text-primary truncate cursor-pointer hover:bg-primary/20 transition-colors"
+                            >
+                              {event.summary || 'Event'}
+                            </div>
+                          ))}
+                          {dayEvents.length > 2 && (
+                            <div className="text-[10px] text-muted-foreground">
+                              +{dayEvents.length - 2} more
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </Card>
             ) : (
-              <div className="space-y-6">
-                {Object.entries(groupedEvents).map(([date, dateEvents]) => (
-                  <div key={date}>
-                    <h3 className="text-sm font-semibold text-muted-foreground mb-3 sticky top-0 bg-background py-1">
-                      {date}
-                    </h3>
-                    <div className="space-y-2">
-                      {dateEvents.map((event) => (
-                        <Card 
-                          key={event.id} 
-                          className="p-4 hover:shadow-md transition-shadow border-l-4 border-l-primary/50 cursor-pointer"
-                          onClick={() => setSelectedEvent(event)}
-                        >
-                          <div className="flex items-start gap-4">
-                            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                              <Calendar className="h-5 w-5 text-primary" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <h4 className="font-semibold truncate">{event.summary || 'Untitled Event'}</h4>
-                              <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                                <Clock className="h-4 w-4 flex-shrink-0" />
-                                <span>{formatEventTime(event)}</span>
+              /* Day / 3-Day / 5-Day View */
+              <div className={`grid gap-4 ${
+                viewMode === 'day' ? 'grid-cols-1' : 
+                viewMode === '3-day' ? 'grid-cols-1 sm:grid-cols-3' : 
+                'grid-cols-1 sm:grid-cols-5'
+              }`}>
+                {daysToDisplay.map((day, idx) => {
+                  const dayEvents = getEventsForDay(day);
+                  const isCurrentDay = isToday(day);
+                  
+                  return (
+                    <Card 
+                      key={idx} 
+                      className={`p-4 ${isCurrentDay ? 'border-primary border-2' : ''}`}
+                    >
+                      <div className={`text-center pb-3 border-b mb-3 ${isCurrentDay ? 'text-primary' : ''}`}>
+                        <div className="text-xs text-muted-foreground uppercase">
+                          {format(day, 'EEE')}
+                        </div>
+                        <div className={`text-2xl font-bold ${isCurrentDay ? 'text-primary' : ''}`}>
+                          {format(day, 'd')}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {format(day, 'MMM')}
+                        </div>
+                      </div>
+                      
+                      {dayEvents.length === 0 ? (
+                        <p className="text-center text-sm text-muted-foreground py-4">No events</p>
+                      ) : (
+                        <div className="space-y-2">
+                          {dayEvents.map((event) => (
+                            <div
+                              key={event.id}
+                              onClick={() => setSelectedEvent(event)}
+                              className="p-2 rounded-lg bg-primary/10 hover:bg-primary/20 cursor-pointer transition-colors"
+                            >
+                              <div className="font-medium text-sm truncate">{event.summary || 'Untitled'}</div>
+                              <div className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                                <Clock className="h-3 w-3" />
+                                {formatEventTimeShort(event)}
                               </div>
                               {event.location && (
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                                  <MapPin className="h-4 w-4 flex-shrink-0" />
+                                <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5 truncate">
+                                  <MapPin className="h-3 w-3 flex-shrink-0" />
                                   <span className="truncate">{event.location}</span>
                                 </div>
                               )}
-                              <p className="text-xs text-muted-foreground/70 mt-2 flex items-center gap-1">
-                                <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                                {event.calendar_email}
-                              </p>
                             </div>
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button 
-                                  variant="ghost" 
-                                  size="icon"
-                                  className="text-muted-foreground hover:text-destructive flex-shrink-0"
-                                  disabled={deletingEventId === event.id}
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  {deletingEventId === event.id ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                  ) : (
-                                    <Trash2 className="h-4 w-4" />
-                                  )}
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent onClick={(e) => e.stopPropagation()}>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Delete Event</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    Are you sure you want to delete "{event.summary || 'this event'}"? This will also remove it from your {event.provider === 'google' ? 'Google' : 'Outlook'} Calendar.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction onClick={() => handleDeleteEvent(event)} className="bg-destructive hover:bg-destructive/90">
-                                    Delete
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          </div>
-                        </Card>
-                      ))}
-                    </div>
-                  </div>
-                ))}
+                          ))}
+                        </div>
+                      )}
+                    </Card>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -544,7 +690,7 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
         {/* Empty state when no connections */}
         {!hasAnyConnection && !loading && (
           <Card className="p-12 text-center bg-gradient-to-br from-primary/5 to-primary/10 border-dashed border-2">
-            <Calendar className="h-16 w-16 mx-auto mb-4 text-primary/40" />
+            <CalendarIcon className="h-16 w-16 mx-auto mb-4 text-primary/40" />
             <h3 className="text-xl font-semibold mb-2">Connect Your Calendar</h3>
             <p className="text-muted-foreground mb-4 max-w-md mx-auto">
               Connect your Google or Outlook calendar to sync appointments, view your schedule, and automatically create events when jobs are scheduled.
@@ -565,7 +711,7 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-primary" />
+              <CalendarIcon className="h-5 w-5 text-primary" />
               {selectedEvent?.summary || 'Event Details'}
             </DialogTitle>
             <DialogDescription>
