@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Plus, FileText, Trash2, Eye, Send, CheckCircle, Clock, AlertCircle, RefreshCw, Users, Copy, ArrowLeft, Briefcase, ChevronRight, LayoutTemplate } from 'lucide-react';
 import { useEstimates, EstimateLineItem } from '@/hooks/useEstimates';
 import { useLeads } from '@/hooks/useLeads';
-import EstimateForm from '../EstimateForm';
+import EstimateBuilder from '../EstimateBuilder';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -459,7 +459,7 @@ export default function EstimatesSection({ onSectionChange, initialEstimateId, o
         </Card>
       )}
 
-      {/* Estimate Form Dialog */}
+      {/* Estimate Builder Dialog */}
       <Dialog open={isFormOpen} onOpenChange={(open) => {
         if (!open) {
           handleCloseEditForm();
@@ -467,19 +467,12 @@ export default function EstimatesSection({ onSectionChange, initialEstimateId, o
           setIsFormOpen(open);
         }
       }}>
-        <DialogContent className="max-w-6xl h-[calc(100vh-5rem)] top-[45%] sm:top-[50%] p-0 flex flex-col overflow-hidden">
-          <DialogHeader className="px-6 pt-6 flex-shrink-0">
-            <DialogTitle>
-              {selectedEstimate ? 'Edit Estimate' : 'Create New Estimate'}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="flex-1 overflow-hidden">
-            <EstimateForm
-              onSubmit={handleSubmit}
-              onCancel={handleCloseEditForm}
-              initialData={selectedEstimate}
-            />
-          </div>
+        <DialogContent className="max-w-6xl h-[calc(100vh-3rem)] top-[48%] sm:top-[50%] p-0 flex flex-col overflow-hidden">
+          <EstimateBuilder
+            onSave={handleSubmit}
+            onCancel={handleCloseEditForm}
+            initialData={selectedEstimate}
+          />
         </DialogContent>
       </Dialog>
 

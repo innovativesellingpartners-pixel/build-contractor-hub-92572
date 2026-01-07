@@ -1,0 +1,424 @@
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { ArrowLeft, ArrowRight, Check, Save, Send } from 'lucide-react';
+import { Estimate, EstimateLineItem, useEstimates } from '@/hooks/useEstimates';
+import { useAuth } from '@/contexts/AuthContext';
+import { useContractorProfile } from '@/hooks/useContractorProfile';
+import { toast } from 'sonner';
+import ProjectInfoStep from './estimate/BuilderSteps/ProjectInfoStep';
+import LineItemsStep from './estimate/BuilderSteps/LineItemsStep';
+import ScopeTermsStep from './estimate/BuilderSteps/ScopeTermsStep';
+import ReviewStep from './estimate/BuilderSteps/ReviewStep';
+
+export interface EstimateBuilderData {
+  // Project Info
+  title: string;
+  project_name: string;
+  client_name: string;
+  client_email: string;
+  client_phone: string;
+  client_address: string;
+  site_address: string;
+  prepared_by: string;
+  referred_by: string;
+  trade_type: string;
+  
+  // Line Items
+  line_items: EstimateLineItem[];
+  
+  // Scope
+  scope_objective: string;
+  scope_key_deliverables: string[];
+  scope_exclusions: string[];
+  scope_timeline: string;
+  
+  // Financial
+  subtotal: number;
+  tax_rate: number;
+  tax_amount: number;
+  permit_fee: number;
+  grand_total: number;
+  required_deposit_percent: number;
+  required_deposit: number;
+  balance_due: number;
+  
+  // Terms
+  terms_validity: string;
+  terms_payment_schedule: string;
+  terms_change_orders: string;
+  terms_insurance: string;
+  terms_warranty_years: number;
+}
+
+interface EstimateBuilderProps {
+  initialData?: any;
+  onSave: (data: any, isDraft: boolean) => Promise<void>;
+  onCancel: () => void;
+}
+
+const STEPS = [
+  { id: 1, name: 'Project Info', description: 'Client & project details' },
+  { id: 2, name: 'Line Items', description: 'Services & pricing' },
+  { id: 3, name: 'Scope & Terms', description: 'Deliverables & conditions' },
+  { id: 4, name: 'Review', description: 'Preview & send' },
+];
+
+export default function EstimateBuilder({ initialData, onSave, onCancel }: EstimateBuilderProps) {
+  const { user } = useAuth();
+  const { profile, getEstimateDefaults } = useContractorProfile();
+  const [currentStep, setCurrentStep] = useState(1);
+  const [isSaving, setIsSaving] = useState(false);
+  
+  // Initialize form data
+  const [formData, setFormData] = useState<EstimateBuilderData>(() => {
+    const defaults = profile ? getEstimateDefaults() : { salesTaxRate: 6, depositPercent: 30, warrantyYears: 2 };
+    
+    return {
+      title: initialData?.title || initialData?.project_name || '',
+      project_name: initialData?.project_name || initialData?.title || '',
+      client_name: initialData?.client_name || '',
+      client_email: initialData?.client_email || '',
+      client_phone: initialData?.client_phone || '',
+      client_address: initialData?.client_address || '',
+      site_address: initialData?.site_address || '',
+      prepared_by: initialData?.prepared_by || user?.user_metadata?.full_name || '',
+      referred_by: initialData?.referred_by || '',
+      trade_type: initialData?.trade_type || '',
+      
+      line_items: initialData?.line_items?.length > 0 
+        ? normalizeLineItems(initialData.line_items) 
+        : [createEmptyLineItem()],
+      
+      scope_objective: initialData?.scope_objective || '',
+      scope_key_deliverables: initialData?.scope_key_deliverables || [],
+      scope_exclusions: initialData?.scope_exclusions || [],
+      scope_timeline: initialData?.scope_timeline || '',
+      
+      subtotal: initialData?.subtotal || 0,
+      tax_rate: initialData?.tax_rate || initialData?.sales_tax_rate_percent || defaults.salesTaxRate,
+      tax_amount: initialData?.tax_amount || 0,
+      permit_fee: initialData?.permit_fee || 0,
+      grand_total: initialData?.grand_total || initialData?.total_amount || 0,
+      required_deposit_percent: initialData?.required_deposit_percent || defaults.depositPercent,
+      required_deposit: initialData?.required_deposit || 0,
+      balance_due: initialData?.balance_due || 0,
+      
+      terms_validity: initialData?.terms_validity || 'This estimate is valid for 30 days from the date of issue.',
+      terms_payment_schedule: initialData?.terms_payment_schedule || '30% deposit required to begin work, 40% upon completion of rough work, 30% upon final completion.',
+      terms_change_orders: initialData?.terms_change_orders || 'Any changes to the scope of work must be documented in writing and may result in additional charges.',
+      terms_insurance: initialData?.terms_insurance || 'Contractor carries general liability insurance. Certificate of insurance available upon request.',
+      terms_warranty_years: initialData?.terms_warranty_years || defaults.warrantyYears,
+    };
+  });
+
+  // Recalculate financials whenever line items or rates change
+  useEffect(() => {
+    const subtotal = formData.line_items
+      .filter(item => item.included !== false)
+      .reduce((sum, item) => {
+        const qty = item.quantity || 0;
+        const price = item.unit_cost || item.unitPrice || 0;
+        return sum + (qty * price);
+      }, 0);
+    
+    const taxAmount = subtotal * (formData.tax_rate / 100);
+    const grandTotal = subtotal + taxAmount + formData.permit_fee;
+    const requiredDeposit = grandTotal * (formData.required_deposit_percent / 100);
+    const balanceDue = grandTotal - requiredDeposit;
+    
+    setFormData(prev => ({
+      ...prev,
+      subtotal,
+      tax_amount: taxAmount,
+      grand_total: grandTotal,
+      required_deposit: requiredDeposit,
+      balance_due: balanceDue,
+    }));
+  }, [formData.line_items, formData.tax_rate, formData.permit_fee, formData.required_deposit_percent]);
+
+  const updateFormData = (updates: Partial<EstimateBuilderData>) => {
+    setFormData(prev => ({ ...prev, ...updates }));
+  };
+
+  const canProceed = (): boolean => {
+    switch (currentStep) {
+      case 1:
+        return !!(formData.title || formData.project_name) && !!formData.client_name;
+      case 2:
+        return formData.line_items.length > 0;
+      case 3:
+        return true; // Optional step
+      case 4:
+        return true;
+      default:
+        return true;
+    }
+  };
+
+  const handleNext = () => {
+    if (currentStep < STEPS.length && canProceed()) {
+      setCurrentStep(prev => prev + 1);
+    }
+  };
+
+  const handleBack = () => {
+    if (currentStep > 1) {
+      setCurrentStep(prev => prev - 1);
+    }
+  };
+
+  const handleSaveDraft = async () => {
+    setIsSaving(true);
+    try {
+      await onSave(buildEstimatePayload(), true);
+    } catch (error) {
+      console.error('Failed to save draft:', error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleSendEstimate = async () => {
+    if (!formData.client_email) {
+      toast.error('Client email is required to send the estimate');
+      return;
+    }
+    
+    setIsSaving(true);
+    try {
+      await onSave(buildEstimatePayload(), false);
+    } catch (error) {
+      console.error('Failed to send estimate:', error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const buildEstimatePayload = (): Estimate => {
+    return {
+      ...initialData,
+      title: formData.title || formData.project_name,
+      project_name: formData.project_name || formData.title,
+      client_name: formData.client_name,
+      client_email: formData.client_email,
+      client_phone: formData.client_phone,
+      client_address: formData.client_address,
+      site_address: formData.site_address,
+      prepared_by: formData.prepared_by,
+      referred_by: formData.referred_by,
+      trade_type: formData.trade_type,
+      
+      line_items: formData.line_items,
+      
+      scope_objective: formData.scope_objective,
+      scope_key_deliverables: formData.scope_key_deliverables,
+      scope_exclusions: formData.scope_exclusions,
+      scope_timeline: formData.scope_timeline,
+      
+      subtotal: formData.subtotal,
+      tax_rate: formData.tax_rate,
+      sales_tax_rate_percent: formData.tax_rate,
+      tax_amount: formData.tax_amount,
+      permit_fee: formData.permit_fee,
+      grand_total: formData.grand_total,
+      total_amount: formData.grand_total,
+      required_deposit_percent: formData.required_deposit_percent,
+      required_deposit: formData.required_deposit,
+      balance_due: formData.balance_due,
+      
+      terms_validity: formData.terms_validity,
+      terms_payment_schedule: formData.terms_payment_schedule,
+      terms_change_orders: formData.terms_change_orders,
+      terms_insurance: formData.terms_insurance,
+      terms_warranty_years: formData.terms_warranty_years,
+      
+      status: 'draft',
+      date_issued: new Date().toISOString(),
+    };
+  };
+
+  const progress = (currentStep / STEPS.length) * 100;
+
+  return (
+    <div className="h-full flex flex-col bg-background">
+      {/* Header with Progress */}
+      <div className="flex-shrink-0 border-b bg-card px-6 py-4">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="sm" onClick={onCancel}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Cancel
+            </Button>
+            <div>
+              <h2 className="text-lg font-semibold">
+                {initialData?.id ? 'Edit Estimate' : 'New Estimate'}
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                Step {currentStep} of {STEPS.length}: {STEPS[currentStep - 1].name}
+              </p>
+            </div>
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleSaveDraft}
+            disabled={isSaving}
+          >
+            <Save className="h-4 w-4 mr-2" />
+            Save Draft
+          </Button>
+        </div>
+        
+        {/* Step Indicators */}
+        <div className="flex items-center gap-2">
+          {STEPS.map((step, index) => (
+            <div key={step.id} className="flex items-center">
+              <button
+                onClick={() => setCurrentStep(step.id)}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm transition-colors ${
+                  currentStep === step.id
+                    ? 'bg-primary text-primary-foreground'
+                    : currentStep > step.id
+                    ? 'bg-primary/20 text-primary'
+                    : 'bg-muted text-muted-foreground'
+                }`}
+              >
+                {currentStep > step.id ? (
+                  <Check className="h-3.5 w-3.5" />
+                ) : (
+                  <span className="w-5 h-5 rounded-full bg-current/20 flex items-center justify-center text-xs">
+                    {step.id}
+                  </span>
+                )}
+                <span className="hidden sm:inline">{step.name}</span>
+              </button>
+              {index < STEPS.length - 1 && (
+                <div className={`w-8 h-0.5 mx-1 ${
+                  currentStep > step.id ? 'bg-primary' : 'bg-muted'
+                }`} />
+              )}
+            </div>
+          ))}
+        </div>
+        
+        <Progress value={progress} className="mt-4 h-1" />
+      </div>
+
+      {/* Step Content */}
+      <div className="flex-1 overflow-auto p-6">
+        {currentStep === 1 && (
+          <ProjectInfoStep
+            data={formData}
+            onChange={updateFormData}
+          />
+        )}
+        {currentStep === 2 && (
+          <LineItemsStep
+            data={formData}
+            onChange={updateFormData}
+          />
+        )}
+        {currentStep === 3 && (
+          <ScopeTermsStep
+            data={formData}
+            onChange={updateFormData}
+          />
+        )}
+        {currentStep === 4 && (
+          <ReviewStep
+            data={formData}
+            onChange={updateFormData}
+          />
+        )}
+      </div>
+
+      {/* Footer Navigation */}
+      <div className="flex-shrink-0 border-t bg-card px-6 py-4">
+        <div className="flex items-center justify-between">
+          <Button
+            variant="outline"
+            onClick={handleBack}
+            disabled={currentStep === 1}
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
+          
+          <div className="flex items-center gap-3">
+            {/* Running Total */}
+            <div className="hidden sm:block text-right mr-4">
+              <p className="text-xs text-muted-foreground">Estimate Total</p>
+              <p className="text-lg font-semibold text-primary">
+                ${formData.grand_total.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+              </p>
+            </div>
+            
+            {currentStep < STEPS.length ? (
+              <Button onClick={handleNext} disabled={!canProceed()}>
+                Next
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Button>
+            ) : (
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={handleSaveDraft}
+                  disabled={isSaving}
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Draft
+                </Button>
+                <Button
+                  onClick={handleSendEstimate}
+                  disabled={isSaving || !formData.client_email}
+                >
+                  <Send className="h-4 w-4 mr-2" />
+                  Send to Client
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Helper functions
+function normalizeLineItems(items: any[]): EstimateLineItem[] {
+  return items.map((item: any, index: number) => ({
+    id: item.id || `item-${index}`,
+    itemNumber: item.itemNumber || item.item_number || `${index + 1}`,
+    category: item.category || 'Materials',
+    description: item.description || item.item_description || '',
+    item_description: item.item_description || item.description || '',
+    quantity: item.quantity ?? 1,
+    unit: item.unit || item.unit_type || 'EA',
+    unit_type: item.unit_type || item.unit || 'EA',
+    unitPrice: item.unitPrice ?? item.unit_cost ?? 0,
+    unit_cost: item.unit_cost ?? item.unitPrice ?? 0,
+    totalPrice: item.totalPrice ?? item.line_total ?? ((item.quantity ?? 1) * (item.unitPrice ?? item.unit_cost ?? 0)),
+    line_total: item.line_total ?? item.totalPrice ?? ((item.quantity ?? 1) * (item.unit_cost ?? item.unitPrice ?? 0)),
+    included: item.included !== false,
+  }));
+}
+
+function createEmptyLineItem(): EstimateLineItem {
+  return {
+    id: `item-${Date.now()}`,
+    itemNumber: '1',
+    category: 'Materials',
+    description: '',
+    item_description: '',
+    quantity: 1,
+    unit: 'EA',
+    unit_type: 'EA',
+    unitPrice: 0,
+    unit_cost: 0,
+    totalPrice: 0,
+    line_total: 0,
+    included: true,
+  };
+}
