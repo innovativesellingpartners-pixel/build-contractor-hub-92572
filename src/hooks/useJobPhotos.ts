@@ -173,12 +173,40 @@ export const useJobPhotos = (jobId?: string) => {
     }
   };
 
+  const updatePhotoCaption = async (photoId: string, caption: string) => {
+    try {
+      const { error } = await supabase
+        .from('job_photos')
+        .update({ caption })
+        .eq('id', photoId);
+
+      if (error) throw error;
+
+      setPhotos(photos.map(photo => 
+        photo.id === photoId ? { ...photo, caption } : photo
+      ));
+      
+      toast({
+        title: 'Notes updated',
+        description: 'Photo notes have been saved',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error updating notes',
+        description: error.message,
+        variant: 'destructive',
+      });
+      throw error;
+    }
+  };
+
   return {
     photos,
     loading,
     uploading,
     uploadPhoto,
     deletePhoto,
+    updatePhotoCaption,
     refreshPhotos: fetchPhotos,
   };
 };

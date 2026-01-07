@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useState, useRef, useEffect } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { X, ZoomIn, ZoomOut, RotateCw, Download, Maximize2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, ZoomIn, ZoomOut, RotateCw, Download, Maximize2, ChevronLeft, ChevronRight, StickyNote } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface ImageViewerProps {
@@ -17,6 +17,9 @@ interface ImageViewerProps {
   hasNext?: boolean;
   currentIndex?: number;
   totalCount?: number;
+  // Caption/notes props
+  caption?: string;
+  onEditCaption?: () => void;
 }
 
 export function ImageViewer({ 
@@ -29,7 +32,9 @@ export function ImageViewer({
   hasPrevious = false,
   hasNext = false,
   currentIndex,
-  totalCount
+  totalCount,
+  caption,
+  onEditCaption
 }: ImageViewerProps) {
   const [scale, setScale] = useState(1);
   const [rotation, setRotation] = useState(0);
@@ -319,6 +324,30 @@ export function ImageViewer({
             draggable={false}
           />
         </div>
+
+        {/* Caption/Notes display */}
+        {(caption || onEditCaption) && (
+          <div className="absolute bottom-12 left-4 right-4 z-10">
+            <div 
+              className={cn(
+                "bg-black/70 rounded-lg p-3 backdrop-blur-sm",
+                onEditCaption && "cursor-pointer hover:bg-black/80 transition-colors"
+              )}
+              onClick={onEditCaption}
+            >
+              <div className="flex items-start gap-2">
+                <StickyNote className="h-4 w-4 text-white/70 mt-0.5 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  {caption ? (
+                    <p className="text-white text-sm">{caption}</p>
+                  ) : (
+                    <p className="text-white/50 text-sm italic">No notes - tap to add</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Help text */}
         <div className="absolute bottom-3 left-1/2 -translate-x-1/2 text-white/60 text-xs text-center">
