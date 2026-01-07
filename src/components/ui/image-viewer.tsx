@@ -43,10 +43,10 @@ export function ImageViewer({
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
   
-  // Swipe tracking
-  const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
-  const [touchEnd, setTouchEnd] = useState<{ x: number; y: number } | null>(null);
-  const minSwipeDistance = 50;
+  // Pointer-based swipe tracking (more reliable on mobile)
+  const pointerStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
+  const [isSwiping, setIsSwiping] = useState(false);
+  const minSwipeDistance = 40;
 
   // Reset state when dialog opens or src changes
   useEffect(() => {
@@ -119,80 +119,72 @@ export function ImageViewer({
 
   const handleMouseUp = () => setIsDragging(false);
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    // Prevent default to stop dialog from intercepting
-    if (scale === 1) {
-      e.stopPropagation();
-    }
-    
-    if (e.touches.length === 1) {
-      const touch = e.touches[0];
-      setTouchStart({ x: touch.clientX, y: touch.clientY });
-      setTouchEnd(null);
+  // Pointer events for reliable swipe detection on mobile
+  const handlePointerDown = (e: React.PointerEvent) => {
+    // Only handle single touch/click
+    if (e.pointerType === 'touch' || e.pointerType === 'mouse') {
+      pointerStartRef.current = { x: e.clientX, y: e.clientY, time: Date.now() };
+      setIsSwiping(false);
       
-      // Only enable drag if zoomed
+      // Enable drag when zoomed
       if (scale > 1) {
         setIsDragging(true);
-        setDragStart({
-          x: touch.clientX - position.x,
-          y: touch.clientY - position.y,
-        });
+        setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
+        (e.target as HTMLElement).setPointerCapture(e.pointerId);
       }
     }
   };
 
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (e.touches.length === 1) {
-      const touch = e.touches[0];
-      const currentX = touch.clientX;
-      const currentY = touch.clientY;
-      
-      setTouchEnd({ x: currentX, y: currentY });
-      
-      // Prevent default scroll when swiping horizontally at scale 1
-      if (scale === 1 && touchStart) {
-        const deltaX = Math.abs(currentX - touchStart.x);
-        const deltaY = Math.abs(currentY - touchStart.y);
-        if (deltaX > deltaY) {
-          e.preventDefault();
-          e.stopPropagation();
-        }
-      }
-      
-      // Only drag if zoomed
-      if (isDragging && scale > 1) {
-        e.preventDefault();
-        setPosition({
-          x: currentX - dragStart.x,
-          y: currentY - dragStart.y,
-        });
-      }
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!pointerStartRef.current) return;
+    
+    const deltaX = e.clientX - pointerStartRef.current.x;
+    const deltaY = e.clientY - pointerStartRef.current.y;
+    
+    // When zoomed, handle panning
+    if (isDragging && scale > 1) {
+      setPosition({
+        x: e.clientX - dragStart.x,
+        y: e.clientY - dragStart.y,
+      });
+      return;
+    }
+    
+    // When not zoomed, track horizontal swipe
+    if (scale === 1 && Math.abs(deltaX) > 10 && Math.abs(deltaX) > Math.abs(deltaY)) {
+      setIsSwiping(true);
     }
   };
 
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    e.stopPropagation();
+  const handlePointerUp = (e: React.PointerEvent) => {
+    const start = pointerStartRef.current;
+    pointerStartRef.current = null;
     setIsDragging(false);
     
-    // Handle swipe navigation only when not zoomed
-    if (scale === 1 && touchStart && touchEnd) {
-      const distanceX = touchStart.x - touchEnd.x;
-      const distanceY = Math.abs(touchStart.y - touchEnd.y);
-      
-      // Only trigger if horizontal swipe is dominant
-      if (Math.abs(distanceX) > minSwipeDistance && distanceY < 100) {
-        if (distanceX > 0 && hasNext && onNext) {
-          // Swiped left - go to next
-          onNext();
-        } else if (distanceX < 0 && hasPrevious && onPrevious) {
-          // Swiped right - go to previous
-          onPrevious();
-        }
+    if (!start) return;
+    
+    const deltaX = e.clientX - start.x;
+    const deltaY = Math.abs(e.clientY - start.y);
+    const elapsed = Date.now() - start.time;
+    
+    // Swipe navigation when not zoomed
+    if (scale === 1 && Math.abs(deltaX) > minSwipeDistance && deltaY < 100 && elapsed < 500) {
+      if (deltaX < 0 && hasNext && onNext) {
+        // Swiped left - go to next
+        onNext();
+      } else if (deltaX > 0 && hasPrevious && onPrevious) {
+        // Swiped right - go to previous
+        onPrevious();
       }
     }
     
-    setTouchStart(null);
-    setTouchEnd(null);
+    setIsSwiping(false);
+  };
+
+  const handlePointerCancel = () => {
+    pointerStartRef.current = null;
+    setIsDragging(false);
+    setIsSwiping(false);
   };
 
   const showNavigation = hasPrevious || hasNext;
@@ -253,6 +245,17 @@ export function ImageViewer({
             </Button>
           </div>
           <div className="flex items-center gap-2">
+            {onEditCaption && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onEditCaption}
+                className="text-white hover:bg-white/20"
+                title="Edit notes"
+              >
+                <StickyNote className="h-5 w-5" />
+              </Button>
+            )}
             {currentIndex !== undefined && totalCount !== undefined && (
               <span className="text-white text-sm mr-2">
                 {currentIndex + 1} / {totalCount}
@@ -303,15 +306,16 @@ export function ImageViewer({
             scale > 1 ? 'cursor-grab' : 'cursor-default',
             isDragging && 'cursor-grabbing'
           )}
-          style={{ touchAction: scale > 1 ? 'none' : 'pan-y' }}
+          style={{ touchAction: scale > 1 ? 'none' : 'none' }}
           onWheel={handleWheel}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerCancel}
         >
           <img
             src={src}

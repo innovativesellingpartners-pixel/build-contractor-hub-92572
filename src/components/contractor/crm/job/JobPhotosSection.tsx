@@ -184,14 +184,14 @@ export function JobPhotosSection({ jobId }: JobPhotosSectionProps) {
               >
                 <X className="h-3 w-3" />
               </button>
-              {/* Notes button */}
+              {/* Notes button - always visible on mobile */}
               <button
                 type="button"
                 onClick={(e) => handleEditNotes(photo, e)}
-                className={`absolute top-1 left-1 p-1 rounded-full transition-opacity ${
+                className={`absolute top-1 left-1 p-1.5 rounded-full transition-opacity ${
                   photo.caption 
-                    ? 'bg-primary text-primary-foreground opacity-80 group-hover:opacity-100' 
-                    : 'bg-muted text-muted-foreground opacity-0 group-hover:opacity-100'
+                    ? 'bg-primary text-primary-foreground opacity-100' 
+                    : 'bg-muted/90 text-muted-foreground opacity-80 sm:opacity-0 sm:group-hover:opacity-100'
                 }`}
                 title={photo.caption ? 'Edit notes' : 'Add notes'}
               >

@@ -3,7 +3,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { 
   Navigation, Copy, Pencil, FileText, Camera, ClipboardList, Package, 
-  Receipt, DollarSign, Calendar, Clock, Info, Briefcase, Upload, X
+  Receipt, DollarSign, Calendar, Clock, Info, Briefcase, Upload, X, StickyNote
 } from 'lucide-react';
 import { useJobs, Job } from '@/hooks/useJobs';
 import { format } from 'date-fns';
@@ -41,14 +41,21 @@ interface JobDetailViewBlueProps {
   onDuplicateJob?: (jobId: string) => Promise<Job | undefined>;
 }
 
-// Photos Tab Component with camera support and image viewer
+// Photos Tab Component with camera support, image viewer, and notes
 function PhotosTabContent({ jobId }: { jobId: string }) {
-  const { photos, uploading, uploadPhoto, deletePhoto } = useJobPhotos(jobId);
+  const { photos, uploading, uploadPhoto, deletePhoto, updatePhotoCaption } = useJobPhotos(jobId);
   const [photoCaption, setPhotoCaption] = useState('');
   const [viewerOpen, setViewerOpen] = useState(false);
-  const [selectedPhoto, setSelectedPhoto] = useState<JobPhoto | null>(null);
+  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number>(-1);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+  
+  // Notes editing state
+  const [notesDialogOpen, setNotesDialogOpen] = useState(false);
+  const [editingPhoto, setEditingPhoto] = useState<JobPhoto | null>(null);
+  const [editingNotes, setEditingNotes] = useState('');
+
+  const selectedPhoto = selectedPhotoIndex >= 0 && photos ? photos[selectedPhotoIndex] : null;
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -62,9 +69,35 @@ function PhotosTabContent({ jobId }: { jobId: string }) {
     if (cameraInputRef.current) cameraInputRef.current.value = '';
   };
 
-  const handlePhotoClick = (photo: JobPhoto) => {
-    setSelectedPhoto(photo);
+  const handlePhotoClick = (index: number) => {
+    setSelectedPhotoIndex(index);
     setViewerOpen(true);
+  };
+
+  const handlePrevious = () => {
+    if (selectedPhotoIndex > 0) {
+      setSelectedPhotoIndex(selectedPhotoIndex - 1);
+    }
+  };
+
+  const handleNext = () => {
+    if (photos && selectedPhotoIndex < photos.length - 1) {
+      setSelectedPhotoIndex(selectedPhotoIndex + 1);
+    }
+  };
+
+  const handleEditNotes = (photo: JobPhoto, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setEditingPhoto(photo);
+    setEditingNotes(photo.caption || '');
+    setNotesDialogOpen(true);
+  };
+
+  const handleSaveNotes = async () => {
+    if (!editingPhoto) return;
+    await updatePhotoCaption(editingPhoto.id, editingNotes);
+    setNotesDialogOpen(false);
+    setEditingPhoto(null);
   };
 
   const handleDelete = async (photo: JobPhoto, e: React.MouseEvent) => {
@@ -129,11 +162,11 @@ function PhotosTabContent({ jobId }: { jobId: string }) {
 
       <div className="grid grid-cols-2 gap-3">
         {photos && photos.length > 0 ? (
-          photos.map((photo) => (
+          photos.map((photo, index) => (
             <div 
               key={photo.id} 
               className="relative group cursor-pointer"
-              onClick={() => handlePhotoClick(photo)}
+              onClick={() => handlePhotoClick(index)}
             >
               <InfoCard className="overflow-hidden">
                 <img
@@ -151,11 +184,24 @@ function PhotosTabContent({ jobId }: { jobId: string }) {
                   </p>
                 </div>
               </InfoCard>
+              {/* Delete button */}
               <button
                 onClick={(e) => handleDelete(photo, e)}
-                className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-80 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
               >
                 <X className="w-3 h-3" />
+              </button>
+              {/* Notes button - always visible on mobile */}
+              <button
+                onClick={(e) => handleEditNotes(photo, e)}
+                className={`absolute top-2 left-2 p-1.5 rounded-full transition-opacity ${
+                  photo.caption 
+                    ? 'bg-primary text-primary-foreground opacity-100' 
+                    : 'bg-muted/90 text-muted-foreground opacity-80 sm:opacity-0 sm:group-hover:opacity-100'
+                }`}
+                title={photo.caption ? 'Edit notes' : 'Add notes'}
+              >
+                <StickyNote className="w-3 h-3" />
               </button>
             </div>
           ))
@@ -166,15 +212,67 @@ function PhotosTabContent({ jobId }: { jobId: string }) {
         )}
       </div>
 
-      {/* Image Viewer */}
+      {/* Image Viewer with navigation */}
       {selectedPhoto && (
         <ImageViewer
           src={selectedPhoto.signed_url || selectedPhoto.photo_url}
           alt={selectedPhoto.caption || 'Job photo'}
           open={viewerOpen}
-          onOpenChange={setViewerOpen}
+          onOpenChange={(open) => {
+            setViewerOpen(open);
+            if (!open) setSelectedPhotoIndex(-1);
+          }}
+          onPrevious={handlePrevious}
+          onNext={handleNext}
+          hasPrevious={selectedPhotoIndex > 0}
+          hasNext={photos ? selectedPhotoIndex < photos.length - 1 : false}
+          currentIndex={selectedPhotoIndex}
+          totalCount={photos?.length || 0}
+          caption={selectedPhoto.caption}
+          onEditCaption={() => handleEditNotes(selectedPhoto)}
         />
       )}
+
+      {/* Notes Edit Dialog */}
+      <Dialog open={notesDialogOpen} onOpenChange={setNotesDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <StickyNote className="h-5 w-5" />
+              Photo Notes
+            </h3>
+            {editingPhoto && (
+              <>
+                <div className="aspect-video w-full overflow-hidden rounded-lg bg-muted">
+                  <img
+                    src={editingPhoto.signed_url || editingPhoto.photo_url}
+                    alt="Photo preview"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Notes</label>
+                  <textarea
+                    placeholder="Add notes about this photo..."
+                    value={editingNotes}
+                    onChange={(e) => setEditingNotes(e.target.value)}
+                    rows={4}
+                    className="w-full px-3 py-2 border border-border rounded-md text-sm bg-background resize-none"
+                  />
+                </div>
+                <div className="flex gap-2 justify-end">
+                  <Button variant="outline" onClick={() => setNotesDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleSaveNotes}>
+                    Save Notes
+                  </Button>
+                </div>
+              </>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
