@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Estimate } from '@/hooks/useEstimates';
 import { ContractorProfile } from './types';
 import { PDFPageWrapper } from './PDFStyles';
@@ -28,7 +28,25 @@ export function EstimatePDFPreview({ estimate, onClose, onDownload }: EstimatePD
   const [contractor, setContractor] = useState<ContractorProfile>({});
   const [isLoading, setIsLoading] = useState(true);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [scale, setScale] = useState(1);
   const printRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Calculate scale to fit PDF on screen
+  const calculateScale = useCallback(() => {
+    if (containerRef.current) {
+      const containerWidth = containerRef.current.clientWidth - 32; // Account for padding
+      const pdfWidth = 816; // Standard PDF width
+      const newScale = Math.min(1, containerWidth / pdfWidth);
+      setScale(newScale);
+    }
+  }, []);
+
+  useEffect(() => {
+    calculateScale();
+    window.addEventListener('resize', calculateScale);
+    return () => window.removeEventListener('resize', calculateScale);
+  }, [calculateScale]);
 
   // Fetch contractor profile
   useEffect(() => {
@@ -163,40 +181,52 @@ export function EstimatePDFPreview({ estimate, onClose, onDownload }: EstimatePD
       </div>
 
       {/* PDF Preview - Scrollable container */}
-      <div className="flex-1 overflow-auto py-4 px-4 print:p-0 print:bg-white print:overflow-visible">
-        <PDFPageWrapper className="mb-8">
-          <div ref={printRef}>
-            {/* Header */}
-            <PDFHeaderSection estimate={estimate} contractor={contractor} />
-            
-            {/* Parties - Contractor & Client Details */}
-            <PDFPartiesSection estimate={estimate} contractor={contractor} />
-            
-            {/* Scope of Work */}
-            <PDFScopeSection estimate={estimate} />
-            
-            {/* Line Items / Cost Details */}
-            <PDFLineItemsSection estimate={estimate} />
-            
-            {/* Totals Summary */}
-            <PDFTotalsSection estimate={estimate} />
-            
-            {/* Terms & Conditions */}
-            <PDFTermsSection estimate={estimate} />
-            
-            {/* Acceptance / Signatures */}
-            <PDFAcceptanceSection estimate={estimate} />
-            
-            {/* Catch-All for unmapped fields */}
-            <PDFCatchAllSection estimate={estimate} />
-            
-            {/* Footer */}
-            <PDFFooterSection 
-              contractor={contractor}
-              publicUrl={publicUrl}
-            />
-          </div>
-        </PDFPageWrapper>
+      <div 
+        ref={containerRef}
+        className="flex-1 overflow-auto py-4 px-4 print:p-0 print:bg-white print:overflow-visible"
+      >
+        <div 
+          style={{ 
+            transform: `scale(${scale})`,
+            transformOrigin: 'top center',
+            width: scale < 1 ? `${100 / scale}%` : '100%',
+          }}
+          className="print:!transform-none print:!w-full"
+        >
+          <PDFPageWrapper className="mb-8" scaleMobile>
+            <div ref={printRef}>
+              {/* Header */}
+              <PDFHeaderSection estimate={estimate} contractor={contractor} />
+              
+              {/* Parties - Contractor & Client Details */}
+              <PDFPartiesSection estimate={estimate} contractor={contractor} />
+              
+              {/* Scope of Work */}
+              <PDFScopeSection estimate={estimate} />
+              
+              {/* Line Items / Cost Details */}
+              <PDFLineItemsSection estimate={estimate} />
+              
+              {/* Totals Summary */}
+              <PDFTotalsSection estimate={estimate} />
+              
+              {/* Terms & Conditions */}
+              <PDFTermsSection estimate={estimate} />
+              
+              {/* Acceptance / Signatures */}
+              <PDFAcceptanceSection estimate={estimate} />
+              
+              {/* Catch-All for unmapped fields */}
+              <PDFCatchAllSection estimate={estimate} />
+              
+              {/* Footer */}
+              <PDFFooterSection 
+                contractor={contractor}
+                publicUrl={publicUrl}
+              />
+            </div>
+          </PDFPageWrapper>
+        </div>
       </div>
 
       {/* Print Styles */}

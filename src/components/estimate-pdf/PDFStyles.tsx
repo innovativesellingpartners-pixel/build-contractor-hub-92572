@@ -22,14 +22,17 @@ export const pdfStyles = {
 };
 
 // CSS class utilities
-export const PDFPageWrapper = ({ children, className }: { children: React.ReactNode; className?: string }) => (
+export const PDFPageWrapper = ({ children, className, scaleMobile = false }: { children: React.ReactNode; className?: string; scaleMobile?: boolean }) => (
   <div 
     className={cn(
       'bg-white w-full max-w-[816px] mx-auto shadow-2xl print:shadow-none print:max-w-none',
       'font-sans text-[#222222]',
+      scaleMobile && 'origin-top',
       className
     )}
-    style={{ fontFamily: pdfStyles.fontFamily }}
+    style={{ 
+      fontFamily: pdfStyles.fontFamily,
+    }}
   >
     {children}
   </div>
