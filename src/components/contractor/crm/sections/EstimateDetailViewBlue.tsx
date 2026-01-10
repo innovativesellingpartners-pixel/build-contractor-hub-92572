@@ -29,6 +29,7 @@ interface EstimateDetailViewBlueProps {
   estimate: Estimate;
   onClose: () => void;
   onSectionChange?: (section: string) => void;
+  onNavigateToJob?: (jobId: string) => void;
   onEdit?: () => void;
   onSend?: () => void;
   onDuplicate?: () => void;
@@ -38,6 +39,7 @@ export function EstimateDetailViewBlue({
   estimate, 
   onClose, 
   onSectionChange,
+  onNavigateToJob,
   onEdit,
   onSend,
   onDuplicate
@@ -121,7 +123,12 @@ export function EstimateDetailViewBlue({
   const handleConvertToJob = async () => {
     if (estimate.job_id) {
       toast.info('This estimate already has a job');
-      onSectionChange?.('jobs');
+      // Navigate directly to the existing job
+      if (onNavigateToJob) {
+        onNavigateToJob(estimate.job_id);
+      } else {
+        onSectionChange?.('jobs');
+      }
       return;
     }
 
@@ -133,7 +140,13 @@ export function EstimateDetailViewBlue({
 
       if (error) throw error;
       toast.success('Job created from estimate!');
-      onSectionChange?.('jobs');
+      
+      // Navigate directly to the newly created job
+      if (data?.jobId && onNavigateToJob) {
+        onNavigateToJob(data.jobId);
+      } else {
+        onSectionChange?.('jobs');
+      }
     } catch (error: any) {
       toast.error(`Failed to create job: ${error.message}`);
     } finally {

@@ -485,6 +485,10 @@ export default function EstimatesSection({ onSectionChange, initialEstimateId, o
               estimate={selectedEstimateForDetail}
               onClose={() => setDetailViewOpen(false)}
               onSectionChange={onSectionChange}
+              onNavigateToJob={(jobId) => {
+                setDetailViewOpen(false);
+                onSectionChange?.(`job:${jobId}`);
+              }}
               onEdit={() => handleEditFromDetail(selectedEstimateForDetail)}
               onSend={() => handleSendFromDetail(selectedEstimateForDetail)}
               onDuplicate={() => handleDuplicateFromDetail(selectedEstimateForDetail.id)}
