@@ -4,16 +4,14 @@ import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { Send, Users, Briefcase, Eye, Copy, FileText, Receipt, Save, Download, LayoutTemplate, BookmarkPlus, PenTool } from 'lucide-react';
+import { Send, Users, Briefcase, Eye, Copy, FileText, Receipt, Save, Download, LayoutTemplate, BookmarkPlus } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { CustomerDetailViewBlue } from './CustomerDetailViewBlue';
 import { Customer } from '@/hooks/useCustomers';
 import { SendToGCDialog } from '../SendToGCDialog';
 import { TemplateSearchModal } from '../estimate/TemplateSearchModal';
 import { SaveAsTemplateModal } from '../estimate/SaveAsTemplateModal';
 import { EstimatePDFPreview } from '@/components/estimate-pdf';
-import { EstimateStatusBadge } from '../estimate/EstimateStatusBadge';
 import {
   BlueBackground,
   SectionHeader,
@@ -403,14 +401,11 @@ export function EstimateDetailViewBlue({
         <InfoCard className="rounded-none">
           <InfoRow label="Title" value={estimate.title} />
           <InfoRow label="Estimate #" value={estimate.estimate_number} />
-          <InfoRow label="Status" value={<EstimateStatusBadge status={estimate.status} />} />
+          <InfoRow label="Status" value={<StatusBadge status={estimate.status} />} />
           <InfoRow label="Delivery" value={getDeliveryStatus()} />
           {estimate.project_name && <InfoRow label="Project" value={estimate.project_name} />}
           {estimate.valid_until && (
             <InfoRow label="Valid Until" value={format(new Date(estimate.valid_until), 'MMM d, yyyy')} />
-          )}
-          {estimate.expires_at && (
-            <InfoRow label="Expires" value={format(new Date(estimate.expires_at), 'MMM d, yyyy')} />
           )}
         </InfoCard>
 
@@ -550,73 +545,6 @@ export function EstimateDetailViewBlue({
           </>
         )}
 
-        {/* Signature Information - Show when signed */}
-        {(estimate.signed_at || estimate.client_signature) && (
-          <>
-            <SectionHeader>SIGNATURE</SectionHeader>
-            <InfoCard className="rounded-none bg-green-50/50">
-              <InfoRow 
-                label="Status" 
-                value={<EstimateStatusBadge status="signed" />} 
-              />
-              {estimate.signed_at && (
-                <InfoRow 
-                  label="Signed Date" 
-                  value={format(new Date(estimate.signed_at), 'MMM d, yyyy h:mm a')} 
-                />
-              )}
-              {estimate.signed_by_name && (
-                <InfoRow label="Signed By" value={estimate.signed_by_name} />
-              )}
-              {estimate.signed_by_email && (
-                <InfoRow label="Signer Email" value={estimate.signed_by_email} />
-              )}
-              {estimate.client_signature && (
-                <div className="px-4 py-3 border-t border-sky-100">
-                  <p className="text-xs text-slate-500 mb-2">Client Signature</p>
-                  <div className="bg-white border border-slate-200 rounded-lg p-2">
-                    <img 
-                      src={estimate.client_signature} 
-                      alt="Client Signature" 
-                      className="max-h-16 w-auto"
-                    />
-                  </div>
-                </div>
-              )}
-              {/* Signed PDF Actions */}
-              {estimate.signed_document_url && (
-                <div className="px-4 py-3 border-t border-sky-100">
-                  <div className="flex gap-2">
-                    <Button 
-                      size="sm" 
-                      variant="outline"
-                      className="flex items-center gap-2"
-                      onClick={() => window.open(estimate.signed_document_url, '_blank')}
-                    >
-                      <Eye className="h-4 w-4" />
-                      View Signed PDF
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      variant="outline"
-                      className="flex items-center gap-2"
-                      onClick={() => {
-                        const link = document.createElement('a');
-                        link.href = estimate.signed_document_url!;
-                        link.download = `Signed_Estimate_${estimate.estimate_number || estimate.id}.pdf`;
-                        link.click();
-                      }}
-                    >
-                      <Download className="h-4 w-4" />
-                      Download
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </InfoCard>
-          </>
-        )}
-
         {/* Timeline */}
         <SectionHeader>TIMELINE</SectionHeader>
         <InfoCard className="rounded-none">
@@ -640,18 +568,6 @@ export function EstimateDetailViewBlue({
             <InfoRow 
               label="Signed" 
               value={format(new Date(estimate.signed_at), 'MMM d, yyyy h:mm a')} 
-            />
-          )}
-          {estimate.declined_at && (
-            <InfoRow 
-              label="Declined" 
-              value={format(new Date(estimate.declined_at), 'MMM d, yyyy h:mm a')} 
-            />
-          )}
-          {estimate.voided_at && (
-            <InfoRow 
-              label="Voided" 
-              value={format(new Date(estimate.voided_at), 'MMM d, yyyy h:mm a')} 
             />
           )}
         </InfoCard>

@@ -29,7 +29,7 @@ export interface Estimate {
   job_id?: string;
   title: string;
   description?: string;
-  status: 'draft' | 'pending' | 'sent' | 'viewed' | 'signed' | 'accepted' | 'rejected' | 'declined' | 'expired' | 'voided' | 'sold' | 'lost' | 'cancelled';
+  status: 'draft' | 'sent' | 'accepted' | 'rejected' | 'pending' | 'sold' | 'lost' | 'cancelled';
   total_amount: number;
   valid_until?: string;
   line_items?: EstimateLineItem[];
@@ -92,21 +92,10 @@ export interface Estimate {
   sent_at?: string;
   viewed_at?: string;
   signed_at?: string;
-  declined_at?: string;
-  expires_at?: string;
-  voided_at?: string;
   paid_at?: string;
   payment_amount?: number;
   payment_method?: string;
   public_token?: string;
-  
-  // Signature tracking fields
-  signed_by_name?: string;
-  signed_by_email?: string;
-  signed_document_url?: string;
-  signed_document_file_id?: string;
-  signature_audit_trail_url?: string;
-  last_status_event_at?: string;
 }
 
 export interface SendEstimateParams {

@@ -1286,50 +1286,6 @@ export type Database = {
           },
         ]
       }
-      estimate_status_history: {
-        Row: {
-          created_at: string
-          estimate_id: string
-          event_metadata: Json | null
-          event_source: string | null
-          event_type: string
-          from_status: string | null
-          id: string
-          to_status: string
-          user_id: string | null
-        }
-        Insert: {
-          created_at?: string
-          estimate_id: string
-          event_metadata?: Json | null
-          event_source?: string | null
-          event_type: string
-          from_status?: string | null
-          id?: string
-          to_status: string
-          user_id?: string | null
-        }
-        Update: {
-          created_at?: string
-          estimate_id?: string
-          event_metadata?: Json | null
-          event_source?: string | null
-          event_type?: string
-          from_status?: string | null
-          id?: string
-          to_status?: string
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "estimate_status_history_estimate_id_fkey"
-            columns: ["estimate_id"]
-            isOneToOne: false
-            referencedRelation: "estimates"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       estimate_templates: {
         Row: {
           created_at: string
@@ -1491,17 +1447,14 @@ export type Database = {
           created_at: string
           customer_id: string | null
           date_issued: string | null
-          declined_at: string | null
           description: string | null
           email_provider_id: string | null
           email_send_error: string | null
           estimate_number: string | null
-          expires_at: string | null
           grand_total: number | null
           id: string
           job_id: string | null
           last_send_attempt: string | null
-          last_status_event_at: string | null
           lead_id: string | null
           line_items: Json | null
           opportunity_id: string | null
@@ -1524,12 +1477,7 @@ export type Database = {
           scope_objective: string | null
           scope_timeline: string | null
           sent_at: string | null
-          signature_audit_trail_url: string | null
           signed_at: string | null
-          signed_by_email: string | null
-          signed_by_name: string | null
-          signed_document_file_id: string | null
-          signed_document_url: string | null
           site_address: string | null
           status: string
           stripe_payment_link: string | null
@@ -1549,7 +1497,6 @@ export type Database = {
           user_id: string
           valid_until: string | null
           viewed_at: string | null
-          voided_at: string | null
         }
         Insert: {
           assumptions_and_exclusions?: string | null
@@ -1568,17 +1515,14 @@ export type Database = {
           created_at?: string
           customer_id?: string | null
           date_issued?: string | null
-          declined_at?: string | null
           description?: string | null
           email_provider_id?: string | null
           email_send_error?: string | null
           estimate_number?: string | null
-          expires_at?: string | null
           grand_total?: number | null
           id?: string
           job_id?: string | null
           last_send_attempt?: string | null
-          last_status_event_at?: string | null
           lead_id?: string | null
           line_items?: Json | null
           opportunity_id?: string | null
@@ -1601,12 +1545,7 @@ export type Database = {
           scope_objective?: string | null
           scope_timeline?: string | null
           sent_at?: string | null
-          signature_audit_trail_url?: string | null
           signed_at?: string | null
-          signed_by_email?: string | null
-          signed_by_name?: string | null
-          signed_document_file_id?: string | null
-          signed_document_url?: string | null
           site_address?: string | null
           status?: string
           stripe_payment_link?: string | null
@@ -1626,7 +1565,6 @@ export type Database = {
           user_id: string
           valid_until?: string | null
           viewed_at?: string | null
-          voided_at?: string | null
         }
         Update: {
           assumptions_and_exclusions?: string | null
@@ -1645,17 +1583,14 @@ export type Database = {
           created_at?: string
           customer_id?: string | null
           date_issued?: string | null
-          declined_at?: string | null
           description?: string | null
           email_provider_id?: string | null
           email_send_error?: string | null
           estimate_number?: string | null
-          expires_at?: string | null
           grand_total?: number | null
           id?: string
           job_id?: string | null
           last_send_attempt?: string | null
-          last_status_event_at?: string | null
           lead_id?: string | null
           line_items?: Json | null
           opportunity_id?: string | null
@@ -1678,12 +1613,7 @@ export type Database = {
           scope_objective?: string | null
           scope_timeline?: string | null
           sent_at?: string | null
-          signature_audit_trail_url?: string | null
           signed_at?: string | null
-          signed_by_email?: string | null
-          signed_by_name?: string | null
-          signed_document_file_id?: string | null
-          signed_document_url?: string | null
           site_address?: string | null
           status?: string
           stripe_payment_link?: string | null
@@ -1703,7 +1633,6 @@ export type Database = {
           user_id?: string
           valid_until?: string | null
           viewed_at?: string | null
-          voided_at?: string | null
         }
         Relationships: [
           {
