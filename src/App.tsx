@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { GlobalPocketbot } from "@/components/GlobalPocketbot";
+import { usePWABackNavigation } from "@/hooks/usePWABackNavigation";
 import { NewLandingPage } from "@/components/NewLandingPage";
 import { About } from "@/pages/About";
 import { Contact } from "@/pages/Contact";
@@ -95,6 +96,12 @@ function PocketbotWrapper() {
   return null;
 }
 
+// Component to handle PWA back navigation (must be inside BrowserRouter)
+function PWABackHandler() {
+  usePWABackNavigation();
+  return null;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
@@ -103,6 +110,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
+          <PWABackHandler />
           <PocketbotWrapper />
           <Routes>
             <Route path="/" element={<NewLandingPage />} />
