@@ -3968,6 +3968,62 @@ export type Database = {
           },
         ]
       }
+      user_meetings: {
+        Row: {
+          calendar_event_id: string | null
+          created_at: string
+          end_time: string
+          id: string
+          job_id: string | null
+          location: string | null
+          meeting_type: string
+          notes: string | null
+          provider: string | null
+          start_time: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          calendar_event_id?: string | null
+          created_at?: string
+          end_time: string
+          id?: string
+          job_id?: string | null
+          location?: string | null
+          meeting_type?: string
+          notes?: string | null
+          provider?: string | null
+          start_time: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          calendar_event_id?: string | null
+          created_at?: string
+          end_time?: string
+          id?: string
+          job_id?: string | null
+          location?: string | null
+          meeting_type?: string
+          notes?: string | null
+          provider?: string | null
+          start_time?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_meetings_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_progress: {
         Row: {
           completed_at: string | null

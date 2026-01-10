@@ -23,7 +23,8 @@ interface CalendarEvent {
   start?: { dateTime?: string; date?: string };
   end?: { dateTime?: string; date?: string };
   provider: string;
-  calendar_email: string;
+  calendar_email?: string;
+  isLocal?: boolean;
 }
 
 interface EditEventDialogProps {
@@ -161,21 +162,39 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess }: EditEv
         endDateTime = new Date(startDateTime.getTime() + duration * 60000);
       }
 
-      const { error } = await supabase.functions.invoke('update-calendar-event', {
-        body: {
-          eventId: event.id,
-          provider: event.provider,
-          calendarEmail: event.calendar_email,
-          summary: title,
-          description: description || undefined,
-          location: location || undefined,
-          startDate: startDateTime.toISOString(),
-          endDate: endDateTime.toISOString(),
-        },
-        headers: { Authorization: `Bearer ${session.access_token}` }
-      });
+      // Check if this is a local meeting (from user_meetings table)
+      if (event.isLocal || event.provider === 'local') {
+        // Update local meeting in database
+        const { error: dbError } = await supabase
+          .from('user_meetings')
+          .update({
+            title: title,
+            notes: description || null,
+            location: location || null,
+            start_time: startDateTime.toISOString(),
+            end_time: endDateTime.toISOString(),
+          })
+          .eq('id', event.id);
 
-      if (error) throw error;
+        if (dbError) throw dbError;
+      } else {
+        // Update external calendar event
+        const { error } = await supabase.functions.invoke('update-calendar-event', {
+          body: {
+            eventId: event.id,
+            provider: event.provider,
+            calendarEmail: event.calendar_email,
+            summary: title,
+            description: description || undefined,
+            location: location || undefined,
+            startDate: startDateTime.toISOString(),
+            endDate: endDateTime.toISOString(),
+          },
+          headers: { Authorization: `Bearer ${session.access_token}` }
+        });
+
+        if (error) throw error;
+      }
 
       toast.success('Event updated successfully');
       onOpenChange(false);

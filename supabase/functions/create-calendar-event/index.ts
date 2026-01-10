@@ -102,8 +102,9 @@ serve(async (req) => {
     
     console.log('Creating calendar event for job:', jobName, 'user:', effectiveUserId);
 
-    if (!jobId || !jobName) {
-      return new Response(JSON.stringify({ error: 'Missing required fields' }), {
+    // Only require jobName (event title) - jobId is optional
+    if (!jobName) {
+      return new Response(JSON.stringify({ error: 'Missing event title' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
