@@ -217,7 +217,7 @@ export default function CustomersSection({ onSectionChange }: CustomersSectionPr
                 {/* Info */}
                 <RowContent>
                   <RowTitleLine>
-                    <h3 className="font-semibold text-sm sm:text-base truncate max-w-[250px]">
+                    <h3 className="font-semibold text-sm sm:text-base break-words">
                       {customer.name}
                     </h3>
                     <Badge variant="secondary" className="text-xs">

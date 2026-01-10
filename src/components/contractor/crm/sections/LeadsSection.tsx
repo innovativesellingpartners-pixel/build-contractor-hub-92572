@@ -320,7 +320,7 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
             {/* Info */}
             <RowContent>
               <RowTitleLine>
-                <h3 className="font-semibold text-sm sm:text-base truncate max-w-[250px]">
+                <h3 className="font-semibold text-sm sm:text-base break-words">
                   {lead.name}
                 </h3>
                 <Badge className={`${getStatusColor(lead.status)} text-white text-xs`}>
