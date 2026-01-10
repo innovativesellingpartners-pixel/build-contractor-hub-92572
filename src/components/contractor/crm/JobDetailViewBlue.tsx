@@ -436,17 +436,15 @@ export default function JobDetailViewBlue({ job, open, onOpenChange, onCreateEst
       return;
     }
     const encodedAddress = encodeURIComponent(address);
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
     
-    if (isMobile) {
-      const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-      const url = isIOS 
-        ? `maps://maps.apple.com/?daddr=${encodedAddress}&dirflg=d`
-        : `google.navigation:q=${encodedAddress}`;
-      window.location.href = url;
-    } else {
-      window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodedAddress}`, '_blank');
-    }
+    // Always use window.open to keep the app running in the background
+    // Use Google Maps URL which works universally and opens in new tab/app
+    const mapsUrl = isIOS 
+      ? `https://maps.apple.com/?daddr=${encodedAddress}&dirflg=d`
+      : `https://www.google.com/maps/dir/?api=1&destination=${encodedAddress}`;
+    
+    window.open(mapsUrl, '_blank', 'noopener,noreferrer');
   };
 
   const handleStatusChange = (newStatus: string) => {
