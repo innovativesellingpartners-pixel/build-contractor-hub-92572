@@ -122,7 +122,7 @@ export const useEstimatePhotos = (estimateId?: string) => {
         signed_url: signedData?.signedUrl,
       };
 
-      setPhotos([photoWithSignedUrl, ...photos]);
+      setPhotos(prev => [photoWithSignedUrl, ...prev]);
       toast({
         title: 'Photo uploaded',
         description: `${photoType === 'risk_shot' ? 'Risk shot' : 'Photo'} has been added successfully`,
