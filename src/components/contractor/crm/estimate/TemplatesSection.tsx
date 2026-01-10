@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { Search, FileText, Tag, Trash2, Plus, Lock, Globe, ArrowLeft, FolderOpen } from 'lucide-react';
+import { Search, FileText, Tag, Trash2, Plus, Lock, Globe, ArrowLeft, FolderOpen, Receipt } from 'lucide-react';
 import { useEstimateTemplates, TRADES, Trade, EstimateTemplate } from '@/hooks/useEstimateTemplates';
 import { MobileOptimizedWrapper, MobileStack } from '../sections/MobileOptimizedWrapper';
 import { HorizontalRowCard, RowAvatar, RowContent, RowTitleLine, RowMetaLine, RowActions } from '../sections/HorizontalRowCard';
@@ -15,6 +15,7 @@ import { useJobs } from '@/hooks/useJobs';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { CreateTemplateDialog } from './CreateTemplateDialog';
+import PlumbingInvoiceCreator from '../PlumbingInvoiceCreator';
 
 interface TemplatesSectionProps {
   onBack: () => void;
@@ -72,6 +73,12 @@ export function TemplatesSection({ onBack, onAddToEstimate }: TemplatesSectionPr
   
   // For create template dialog
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+
+  // For Plumbing Invoice Creator
+  const [showPlumbingInvoiceCreator, setShowPlumbingInvoiceCreator] = useState(false);
+  
+  // Check if selected trade is plumbing
+  const isPlumbingTrade = selectedTrade?.toLowerCase().includes('plumbing');
 
   // Count templates per trade
   const templateCountByTrade = useMemo(() => {
@@ -141,6 +148,7 @@ export function TemplatesSection({ onBack, onAddToEstimate }: TemplatesSectionPr
   const handleBackFromTrade = () => {
     setSelectedTrade(null);
     setSearchQuery('');
+    setShowPlumbingInvoiceCreator(false);
   };
 
   const activeJobs = jobs.filter(j => j.status !== 'completed' && j.status !== 'cancelled');
@@ -208,18 +216,62 @@ export function TemplatesSection({ onBack, onAddToEstimate }: TemplatesSectionPr
     );
   }
 
+  // Show Plumbing Invoice Creator if activated
+  if (showPlumbingInvoiceCreator) {
+    return (
+      <MobileOptimizedWrapper
+        title="Plumbing Invoice Creator"
+        onBackClick={() => setShowPlumbingInvoiceCreator(false)}
+      >
+        <PlumbingInvoiceCreator />
+      </MobileOptimizedWrapper>
+    );
+  }
+
   // Trade-specific templates view
   return (
     <MobileOptimizedWrapper
       title={selectedTrade}
       onBackClick={handleBackFromTrade}
       actions={
-        <Button onClick={() => setCreateDialogOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Create Template
-        </Button>
+        <div className="flex gap-2">
+          {isPlumbingTrade && (
+            <Button variant="outline" onClick={() => setShowPlumbingInvoiceCreator(true)}>
+              <Receipt className="h-4 w-4 mr-2" />
+              Invoice Creator
+            </Button>
+          )}
+          <Button onClick={() => setCreateDialogOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Create Template
+          </Button>
+        </div>
       }
     >
+      {/* Plumbing Quick Action Card */}
+      {isPlumbingTrade && (
+        <div className="px-4 sm:px-0 mb-4">
+          <Card 
+            className="cursor-pointer hover:shadow-lg transition-all border-blue-200 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 dark:border-blue-800"
+            onClick={() => setShowPlumbingInvoiceCreator(true)}
+          >
+            <CardContent className="py-4">
+              <div className="flex items-center gap-4">
+                <div className="p-3 rounded-lg bg-blue-600 text-white">
+                  <Receipt className="h-6 w-6" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold">Plumbing Invoice Creator</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Quickly create professional plumbing invoices with pre-built service items
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* Filters */}
       <div className="space-y-3 mb-4 px-4 sm:px-0">
         <div className="flex flex-col sm:flex-row gap-3">
