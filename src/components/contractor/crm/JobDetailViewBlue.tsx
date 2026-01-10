@@ -3,7 +3,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { 
   Navigation, Copy, Pencil, FileText, Camera, ClipboardList, Package, 
-  Receipt, DollarSign, Calendar, Clock, Info, Briefcase, Upload, X, StickyNote, Archive
+  Receipt, DollarSign, Calendar, Clock, Info, Briefcase, Upload, X, StickyNote, Archive, FilePlus
 } from 'lucide-react';
 import { useJobs, Job } from '@/hooks/useJobs';
 import { format } from 'date-fns';
@@ -544,12 +544,14 @@ export default function JobDetailViewBlue({ job, open, onOpenChange, onCreateEst
                 START TRAVEL
               </ActionButton>
             )}
-            {onCreateEstimate && (
-              <ActionButton variant="secondary" onClick={onCreateEstimate} className="flex-1 flex items-center justify-center gap-2">
-                <FileText className="w-4 h-4" />
-                CREATE ESTIMATE
-              </ActionButton>
-            )}
+            <ActionButton 
+              variant="secondary" 
+              onClick={() => setActiveTab('changes')} 
+              className="flex-1 flex items-center justify-center gap-2"
+            >
+              <FilePlus className="w-4 h-4" />
+              CHANGE ORDER
+            </ActionButton>
             {job.status === 'scheduled' && (
               <ActionButton variant="success" onClick={() => handleStatusChange('in_progress')} className="flex-1">
                 START JOB
