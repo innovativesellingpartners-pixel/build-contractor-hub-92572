@@ -113,6 +113,7 @@ async function updateGoogleCalendarEvent(
     location?: string;
     start?: Date;
     end?: Date;
+    attendees?: string[];
   }
 ): Promise<any> {
   const eventBody: any = {};
@@ -135,8 +136,13 @@ async function updateGoogleCalendarEvent(
     };
   }
 
+  // Add attendees if provided
+  if (updates.attendees && updates.attendees.length > 0) {
+    eventBody.attendees = updates.attendees.map(email => ({ email }));
+  }
+
   const response = await fetch(
-    `https://www.googleapis.com/calendar/v3/calendars/primary/events/${eventId}`,
+    `https://www.googleapis.com/calendar/v3/calendars/primary/events/${eventId}?sendUpdates=all`,
     {
       method: 'PATCH',
       headers: { 
@@ -164,6 +170,7 @@ async function updateOutlookCalendarEvent(
     location?: string;
     start?: Date;
     end?: Date;
+    attendees?: string[];
   }
 ): Promise<any> {
   const eventBody: any = {};
@@ -195,13 +202,22 @@ async function updateOutlookCalendarEvent(
     };
   }
 
+  // Add attendees if provided
+  if (updates.attendees && updates.attendees.length > 0) {
+    eventBody.attendees = updates.attendees.map(email => ({
+      emailAddress: { address: email },
+      type: 'required'
+    }));
+  }
+
   const response = await fetch(
     `https://graph.microsoft.com/v1.0/me/events/${eventId}`,
     {
       method: 'PATCH',
       headers: { 
         Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Prefer': 'outlook.timezone="America/Detroit"'
       },
       body: JSON.stringify(eventBody),
     }
@@ -253,6 +269,7 @@ Deno.serve(async (req) => {
       location,
       startDate,
       endDate,
+      attendees,
     } = await req.json();
     
     if (!eventId || !provider) {
@@ -293,6 +310,7 @@ Deno.serve(async (req) => {
       location?: string;
       start?: Date;
       end?: Date;
+      attendees?: string[];
     } = {};
     
     if (summary !== undefined) updates.summary = summary;
@@ -300,6 +318,7 @@ Deno.serve(async (req) => {
     if (location !== undefined) updates.location = location;
     if (startDate) updates.start = new Date(startDate);
     if (endDate) updates.end = new Date(endDate);
+    if (attendees && Array.isArray(attendees)) updates.attendees = attendees;
 
     let result;
     
