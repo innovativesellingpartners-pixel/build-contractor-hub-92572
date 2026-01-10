@@ -88,6 +88,42 @@ export function Dashboard() {
   const [chatButtonDragOffset, setChatButtonDragOffset] = useState({ x: 0, y: 0 });
   const dragStartPosition = useRef<{ x: number; y: number } | null>(null);
   const chatButtonRef = useRef<HTMLButtonElement | null>(null);
+  
+  // Check if we're on the CRM dashboard (landing page)
+  const isOnCRMDashboard = (): boolean => {
+    if (activeSection !== 'leads') return false;
+    const crmSection = sessionStorage.getItem('ct1CrmActiveSection');
+    const showLanding = sessionStorage.getItem('ct1CrmShowLanding');
+    // Show pocketbot on dashboard/landing only
+    return (!crmSection || crmSection === 'dashboard') && showLanding !== 'false';
+  };
+  
+  const [showPocketbot, setShowPocketbot] = useState(isOnCRMDashboard());
+  
+  // Listen for CRM section changes
+  useEffect(() => {
+    const checkCRMSection = () => {
+      setShowPocketbot(isOnCRMDashboard());
+    };
+    
+    // Check on mount and when activeSection changes
+    checkCRMSection();
+    
+    // Listen for storage changes (when CRM updates sessionStorage)
+    const handleStorageChange = () => {
+      checkCRMSection();
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Also use a polling approach as sessionStorage changes in same tab don't trigger storage event
+    const interval = setInterval(checkCRMSection, 500);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
+  }, [activeSection]);
 
   useEffect(() => {
     if (!chatButtonRef.current || chatButtonPosition) return;
@@ -593,8 +629,8 @@ export function Dashboard() {
         </div>
       </div>
 
-      {/* Floating Pocketbot Widget */}
-      {pocketbotOpen && (
+      {/* Floating Pocketbot Widget - Only show on CRM dashboard */}
+      {showPocketbot && pocketbotOpen && (
         <FloatingPocketbot 
           onClose={() => setPocketbotOpen(false)} 
           onPositionChange={setPocketbotPosition}
@@ -660,29 +696,31 @@ export function Dashboard() {
         />
       )}
       
-      {/* Floating Chat Button */}
-      <button
-        ref={chatButtonRef}
-        onClick={handleChatButtonClick}
-        onMouseDown={handleChatButtonDragStart}
-        onTouchStart={handleChatButtonDragStart}
-        className="fixed z-[100] group cursor-pointer"
-        style={
-          chatButtonPosition
-            ? { left: chatButtonPosition.x, top: chatButtonPosition.y }
-            : { bottom: isMobile && activeSection !== 'leads' ? 84 : 24, right: 24 }
-        }
-        aria-label="Open CT1 Pocketbot"
-      >
-        <div className="bg-foreground/95 backdrop-blur-md text-background p-3 md:p-4 rounded-full shadow-2xl hover:shadow-primary/50 transition-all duration-300 hover:scale-105 border-2 border-primary/30">
-          <div className="relative">
-            <div className="h-10 w-10 md:h-12 md:w-12 bg-primary/20 rounded-full flex items-center justify-center border border-primary/30">
-              <img src={ct1Logo} alt="CT1" className="h-6 w-6 md:h-7 md:w-7" />
+      {/* Floating Chat Button - Only show on CRM dashboard */}
+      {showPocketbot && (
+        <button
+          ref={chatButtonRef}
+          onClick={handleChatButtonClick}
+          onMouseDown={handleChatButtonDragStart}
+          onTouchStart={handleChatButtonDragStart}
+          className="fixed z-[100] group cursor-pointer"
+          style={
+            chatButtonPosition
+              ? { left: chatButtonPosition.x, top: chatButtonPosition.y }
+              : { bottom: isMobile && activeSection !== 'leads' ? 84 : 24, right: 24 }
+          }
+          aria-label="Open CT1 Pocketbot"
+        >
+          <div className="bg-foreground/95 backdrop-blur-md text-background p-3 md:p-4 rounded-full shadow-2xl hover:shadow-primary/50 transition-all duration-300 hover:scale-105 border-2 border-primary/30">
+            <div className="relative">
+              <div className="h-10 w-10 md:h-12 md:w-12 bg-primary/20 rounded-full flex items-center justify-center border border-primary/30">
+                <img src={ct1Logo} alt="CT1" className="h-6 w-6 md:h-7 md:w-7" />
+              </div>
+              <div className="absolute -top-1 -right-1 h-3 w-3 md:h-3.5 md:w-3.5 bg-primary rounded-full animate-pulse"></div>
             </div>
-            <div className="absolute -top-1 -right-1 h-3 w-3 md:h-3.5 md:w-3.5 bg-primary rounded-full animate-pulse"></div>
           </div>
-        </div>
-      </button>
+        </button>
+      )}
     </div>
   );
 }
