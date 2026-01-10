@@ -37,6 +37,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useJobs, Job } from '@/hooks/useJobs';
+import { useContractorProfile } from '@/hooks/useContractorProfile';
 import { cn } from '@/lib/utils';
 
 interface CalendarConnection {
@@ -112,6 +113,7 @@ export function ScheduleMeetingDialog({
 }: ScheduleMeetingDialogProps) {
   const { user } = useAuth();
   const { jobs } = useJobs();
+  const { profile: contractorProfile } = useContractorProfile();
   const formMemory = useFormMemory('schedule_meeting');
   
   const [step, setStep] = useState<'date' | 'day-view' | 'details'>('date');
@@ -513,6 +515,57 @@ export function ScheduleMeetingDialog({
         }
       }
 
+      // Send SMS notifications if we have phone data from lead or job/customer
+      let smsPhone: string | null = null;
+      let smsRecipientName: string | null = null;
+      
+      if (leadData?.phone) {
+        smsPhone = leadData.phone;
+        smsRecipientName = leadData.name || 'Customer';
+      } else if (selectedJob?.customer_id) {
+        // Get customer phone from the job's linked customer
+        try {
+          const { data: customerData } = await supabase
+            .from('customers')
+            .select('phone, name')
+            .eq('id', selectedJob.customer_id)
+            .single();
+          
+          if (customerData?.phone) {
+            smsPhone = customerData.phone;
+            smsRecipientName = customerData.name || selectedJob.name || 'Customer';
+          }
+        } catch (custErr) {
+          console.warn('Could not fetch customer phone:', custErr);
+        }
+      }
+      
+      let smsSent = false;
+      if (smsPhone) {
+        try {
+          console.log('Sending SMS meeting reminder to:', smsPhone);
+          await supabase.functions.invoke('send-meeting-sms', {
+            body: {
+              meetingId: meetingData.id,
+              recipientPhone: smsPhone,
+              recipientName: smsRecipientName,
+              meetingTitle: eventTitle,
+              meetingDate: format(selectedDate, 'EEEE, MMMM d, yyyy'),
+              meetingTime: format(startDateTime, 'h:mm a'),
+              location: location || undefined,
+              contractorName: contractorProfile?.company_name || contractorProfile?.contact_name,
+              contractorPhone: contractorProfile?.phone,
+            },
+            headers: { Authorization: `Bearer ${session.access_token}` }
+          });
+          smsSent = true;
+          console.log('SMS meeting reminders scheduled successfully');
+        } catch (smsError) {
+          console.warn('Failed to send SMS reminders:', smsError);
+          // Don't fail the meeting creation if SMS fails
+        }
+      }
+
       // Record values to form memory for future predictions
       formMemory.recordValues({
         title: title.trim(),
@@ -530,6 +583,9 @@ export function ScheduleMeetingDialog({
         } else {
           successMsg = `Meeting scheduled! ${recipients.length} invite(s) sent via email`;
         }
+      }
+      if (smsSent) {
+        successMsg += ' • SMS reminders scheduled';
       }
       toast.success(successMsg);
       

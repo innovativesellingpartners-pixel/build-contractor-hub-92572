@@ -3372,6 +3372,54 @@ export type Database = {
         }
         Relationships: []
       }
+      scheduled_sms_reminders: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          id: string
+          meeting_id: string
+          message: string
+          recipient_name: string | null
+          recipient_phone: string
+          reminder_type: string
+          scheduled_for: string
+          sent_at: string | null
+          status: string
+          twilio_sid: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          meeting_id: string
+          message: string
+          recipient_name?: string | null
+          recipient_phone: string
+          reminder_type: string
+          scheduled_for: string
+          sent_at?: string | null
+          status?: string
+          twilio_sid?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          meeting_id?: string
+          message?: string
+          recipient_name?: string | null
+          recipient_phone?: string
+          reminder_type?: string
+          scheduled_for?: string
+          sent_at?: string | null
+          status?: string
+          twilio_sid?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       signatures: {
         Row: {
           customer_name: string

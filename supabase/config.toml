@@ -131,3 +131,9 @@ verify_jwt = true
 
 [functions.elevenlabs-stream-handler]
 verify_jwt = false
+
+[functions.send-meeting-sms]
+verify_jwt = true
+
+[functions.process-sms-reminders]
+verify_jwt = false
