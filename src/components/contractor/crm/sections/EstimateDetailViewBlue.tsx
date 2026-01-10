@@ -354,7 +354,7 @@ export function EstimateDetailViewBlue({
             TO CUSTOMER
           </ActionButton>
         )}
-        {!estimate.job_id && (estimate.status === 'accepted' || estimate.status === 'sold' || estimate.signed_at || estimate.customer_id) && (
+        {!estimate.job_id && (
           <ActionButton 
             variant="primary" 
             onClick={handleConvertToJob}
