@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   LayoutDashboard, 
   ClipboardList, 
@@ -47,9 +47,10 @@ type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calenda
 
 interface CT1CRMProps {
   onOpenPocketbot?: () => void;
+  onSectionChange?: (section: string) => void;
 }
 
-export default function CT1CRM({ onOpenPocketbot }: CT1CRMProps = {}) {
+export default function CT1CRM({ onOpenPocketbot, onSectionChange }: CT1CRMProps = {}) {
 
 const navItems = [
   { id: 'dashboard' as Section, label: 'Dashboard', icon: LayoutDashboard },
@@ -114,6 +115,7 @@ const navItems = [
       sessionStorage.setItem('ct1CrmActiveSection', 'estimates');
       setShowMobileLanding(false);
       sessionStorage.setItem('ct1CrmShowLanding', 'false');
+      onSectionChange?.('estimates');
       if (isMobile) {
         setMobileMenuOpen(false);
       }
@@ -128,6 +130,7 @@ const navItems = [
     
     setActiveSection(section as Section);
     sessionStorage.setItem('ct1CrmActiveSection', section);
+    onSectionChange?.(section);
     
     // Hide landing page when navigating to any non-dashboard section
     if (section !== 'dashboard' && showMobileLanding) {
@@ -143,6 +146,11 @@ const navItems = [
       setMobileMenuOpen(false);
     }
   };
+  
+  // Notify parent of initial section on mount
+  useEffect(() => {
+    onSectionChange?.(activeSection);
+  }, []);
 
   // Handle back navigation using internal history stack
   const handleBack = () => {

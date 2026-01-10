@@ -82,6 +82,10 @@ export function Dashboard() {
   const [pocketbotPosition, setPocketbotPosition] = useState('20px');
   const [contactSupportOpen, setContactSupportOpen] = useState(false);
   const [upgradePlanOpen, setUpgradePlanOpen] = useState(false);
+  const [crmActiveSection, setCrmActiveSection] = useState<string>(() => {
+    // Initialize from sessionStorage to sync with CRM
+    return sessionStorage.getItem('ct1CrmActiveSection') || 'dashboard';
+  });
   const [chatButtonPosition, setChatButtonPosition] = useState<{ x: number; y: number } | null>(null);
   const [isDraggingChatButton, setIsDraggingChatButton] = useState(false);
   const [hasDragged, setHasDragged] = useState(false);
@@ -371,7 +375,12 @@ export function Dashboard() {
                 <TrainingHub />
               </div>
             )}
-            {activeSection === 'leads' && <CT1CRM onOpenPocketbot={() => setPocketbotOpen(true)} />}
+            {activeSection === 'leads' && (
+              <CT1CRM 
+                onOpenPocketbot={() => setPocketbotOpen(true)} 
+                onSectionChange={setCrmActiveSection}
+              />
+            )}
             {activeSection === 'insurance' && (
               <div className="p-3 md:p-4 lg:p-6 min-h-[400px] md:min-h-[600px] pb-20">
                 <BackNavigation 
@@ -660,29 +669,31 @@ export function Dashboard() {
         />
       )}
       
-      {/* Floating Chat Button */}
-      <button
-        ref={chatButtonRef}
-        onClick={handleChatButtonClick}
-        onMouseDown={handleChatButtonDragStart}
-        onTouchStart={handleChatButtonDragStart}
-        className="fixed z-[100] group cursor-pointer"
-        style={
-          chatButtonPosition
-            ? { left: chatButtonPosition.x, top: chatButtonPosition.y }
-            : { bottom: isMobile && activeSection !== 'leads' ? 84 : 24, right: 24 }
-        }
-        aria-label="Open CT1 Pocketbot"
-      >
-        <div className="bg-foreground/95 backdrop-blur-md text-background p-3 md:p-4 rounded-full shadow-2xl hover:shadow-primary/50 transition-all duration-300 hover:scale-105 border-2 border-primary/30">
-          <div className="relative">
-            <div className="h-10 w-10 md:h-12 md:w-12 bg-primary/20 rounded-full flex items-center justify-center border border-primary/30">
-              <img src={ct1Logo} alt="CT1" className="h-6 w-6 md:h-7 md:w-7" />
+      {/* Floating Chat Button - Only show on CRM dashboard section */}
+      {(activeSection !== 'leads' || crmActiveSection === 'dashboard') && (
+        <button
+          ref={chatButtonRef}
+          onClick={handleChatButtonClick}
+          onMouseDown={handleChatButtonDragStart}
+          onTouchStart={handleChatButtonDragStart}
+          className="fixed z-[100] group cursor-pointer"
+          style={
+            chatButtonPosition
+              ? { left: chatButtonPosition.x, top: chatButtonPosition.y }
+              : { bottom: isMobile && activeSection !== 'leads' ? 84 : 24, right: 24 }
+          }
+          aria-label="Open CT1 Pocketbot"
+        >
+          <div className="bg-foreground/95 backdrop-blur-md text-background p-3 md:p-4 rounded-full shadow-2xl hover:shadow-primary/50 transition-all duration-300 hover:scale-105 border-2 border-primary/30">
+            <div className="relative">
+              <div className="h-10 w-10 md:h-12 md:w-12 bg-primary/20 rounded-full flex items-center justify-center border border-primary/30">
+                <img src={ct1Logo} alt="CT1" className="h-6 w-6 md:h-7 md:w-7" />
+              </div>
+              <div className="absolute -top-1 -right-1 h-3 w-3 md:h-3.5 md:w-3.5 bg-primary rounded-full animate-pulse"></div>
             </div>
-            <div className="absolute -top-1 -right-1 h-3 w-3 md:h-3.5 md:w-3.5 bg-primary rounded-full animate-pulse"></div>
           </div>
-        </div>
-      </button>
+        </button>
+      )}
     </div>
   );
 }
