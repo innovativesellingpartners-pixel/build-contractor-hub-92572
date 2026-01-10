@@ -18,7 +18,7 @@ interface AddJobDialogProps {
 
 export function AddJobDialog({ onAdd }: AddJobDialogProps) {
   const [open, setOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('ai');
+  const [activeTab, setActiveTab] = useState('manual');
   const [formData, setFormData] = useState({
     name: '',
     description: '',
