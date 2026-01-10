@@ -814,6 +814,7 @@ export type Database = {
           city: string | null
           company: string | null
           created_at: string
+          customer_number: string | null
           customer_type: string | null
           email: string | null
           estimate_id: string | null
@@ -835,6 +836,7 @@ export type Database = {
           city?: string | null
           company?: string | null
           created_at?: string
+          customer_number?: string | null
           customer_type?: string | null
           email?: string | null
           estimate_id?: string | null
@@ -856,6 +858,7 @@ export type Database = {
           city?: string | null
           company?: string | null
           created_at?: string
+          customer_number?: string | null
           customer_type?: string | null
           email?: string | null
           estimate_id?: string | null
@@ -2488,6 +2491,7 @@ export type Database = {
           email: string | null
           id: string
           last_contact_date: string | null
+          lead_number: string | null
           name: string
           notes: string | null
           phone: string | null
@@ -2513,6 +2517,7 @@ export type Database = {
           email?: string | null
           id?: string
           last_contact_date?: string | null
+          lead_number?: string | null
           name: string
           notes?: string | null
           phone?: string | null
@@ -2538,6 +2543,7 @@ export type Database = {
           email?: string | null
           id?: string
           last_contact_date?: string | null
+          lead_number?: string | null
           name?: string
           notes?: string | null
           phone?: string | null
@@ -4327,9 +4333,11 @@ export type Database = {
       cleanup_expired_oauth_states: { Args: never; Returns: undefined }
       drop_quickbooks_plaintext_columns: { Args: never; Returns: undefined }
       generate_contractor_number: { Args: never; Returns: string }
+      generate_customer_number: { Args: never; Returns: string }
       generate_estimate_number: { Args: never; Returns: string }
       generate_invoice_number: { Args: never; Returns: string }
       generate_job_number: { Args: never; Returns: string }
+      generate_lead_number: { Args: never; Returns: string }
       get_quickbooks_tokens: {
         Args: { p_encryption_key: string; p_user_id: string }
         Returns: {
