@@ -4,7 +4,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { Send, Users, Briefcase, Eye, Copy, FileText, Receipt, Save, Download, LayoutTemplate, BookmarkPlus } from 'lucide-react';
+import { Send, Users, Briefcase, Eye, Copy, FileText, Receipt, Save, Download, LayoutTemplate, BookmarkPlus, Camera } from 'lucide-react';
+import { EstimatePhotosSection } from '../estimate/EstimatePhotosSection';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { CustomerDetailViewBlue } from './CustomerDetailViewBlue';
 import { Customer } from '@/hooks/useCustomers';
@@ -570,6 +571,19 @@ export function EstimateDetailViewBlue({
               value={format(new Date(estimate.signed_at), 'MMM d, yyyy h:mm a')} 
             />
           )}
+        </InfoCard>
+
+        {/* Photos Section - Mirroring Jobs */}
+        <SectionHeader>
+          <div className="flex items-center gap-2">
+            <Camera className="h-4 w-4" />
+            SITE PHOTOS
+          </div>
+        </SectionHeader>
+        <InfoCard className="rounded-none">
+          <div className="p-4">
+            <EstimatePhotosSection estimateId={estimate.id} showRiskShotWarning={true} />
+          </div>
         </InfoCard>
         </div>
       </div>

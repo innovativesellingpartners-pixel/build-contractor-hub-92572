@@ -6,7 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-async function sendSMS(to: string, body: string): Promise<{ success: boolean; sid?: string; error?: string }> {
+async function sendSMS(to: string, body: string, fromNumber: string): Promise<{ success: boolean; sid?: string; error?: string }> {
   const accountSid = Deno.env.get("TWILIO_ACCOUNT_SID");
   const authToken = Deno.env.get("TWILIO_AUTH_TOKEN");
   
@@ -15,7 +15,10 @@ async function sendSMS(to: string, body: string): Promise<{ success: boolean; si
     return { success: false, error: "Twilio not configured" };
   }
 
-  const fromNumber = Deno.env.get("TWILIO_PHONE_NUMBER") || "+18885551234";
+  if (!fromNumber) {
+    console.error("No Twilio phone number provided");
+    return { success: false, error: "No Twilio number for this contractor" };
+  }
   
   try {
     const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
@@ -90,9 +93,30 @@ serve(async (req: Request): Promise<Response> => {
     
     let sentCount = 0;
     let failedCount = 0;
+    let skippedCount = 0;
 
     for (const reminder of pendingReminders) {
-      const smsResult = await sendSMS(reminder.recipient_phone, reminder.message);
+      // Skip if no contractor Twilio number stored
+      if (!reminder.contractor_twilio_number) {
+        console.warn(`Skipping reminder ${reminder.id}: No contractor Twilio number`);
+        
+        await supabase
+          .from("scheduled_sms_reminders")
+          .update({
+            status: "failed",
+            error_message: "No contractor Twilio number stored",
+          })
+          .eq("id", reminder.id);
+        
+        skippedCount++;
+        continue;
+      }
+
+      const smsResult = await sendSMS(
+        reminder.recipient_phone, 
+        reminder.message,
+        reminder.contractor_twilio_number
+      );
       
       // Update the reminder status
       const { error: updateError } = await supabase
@@ -119,7 +143,7 @@ serve(async (req: Request): Promise<Response> => {
       await new Promise(resolve => setTimeout(resolve, 100));
     }
 
-    console.log(`Processed ${pendingReminders.length} reminders: ${sentCount} sent, ${failedCount} failed`);
+    console.log(`Processed ${pendingReminders.length} reminders: ${sentCount} sent, ${failedCount} failed, ${skippedCount} skipped`);
 
     return new Response(
       JSON.stringify({
@@ -127,6 +151,7 @@ serve(async (req: Request): Promise<Response> => {
         processed: pendingReminders.length,
         sent: sentCount,
         failed: failedCount,
+        skipped: skippedCount,
       }),
       {
         status: 200,

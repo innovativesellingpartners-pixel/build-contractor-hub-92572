@@ -18,7 +18,28 @@ interface SMSRequest {
   contractorPhone?: string;
 }
 
-async function sendSMS(to: string, body: string): Promise<{ success: boolean; sid?: string; error?: string }> {
+async function getContractorTwilioNumber(supabase: any, userId: string): Promise<string | null> {
+  try {
+    const { data, error } = await supabase
+      .from("phone_numbers")
+      .select("twilio_number")
+      .eq("contractor_id", userId)
+      .eq("is_active", true)
+      .single();
+
+    if (error || !data) {
+      console.log("No provisioned Twilio number found for contractor, using fallback");
+      return null;
+    }
+
+    return data.twilio_number;
+  } catch (error) {
+    console.error("Error fetching contractor Twilio number:", error);
+    return null;
+  }
+}
+
+async function sendSMS(to: string, body: string, fromNumber: string): Promise<{ success: boolean; sid?: string; error?: string }> {
   const accountSid = Deno.env.get("TWILIO_ACCOUNT_SID");
   const authToken = Deno.env.get("TWILIO_AUTH_TOKEN");
   
@@ -27,8 +48,10 @@ async function sendSMS(to: string, body: string): Promise<{ success: boolean; si
     return { success: false, error: "Twilio not configured" };
   }
 
-  // Get the contractor's Twilio phone number or use a default
-  const fromNumber = Deno.env.get("TWILIO_PHONE_NUMBER") || "+18885551234";
+  if (!fromNumber) {
+    console.error("No Twilio phone number available");
+    return { success: false, error: "No Twilio number configured for this contractor" };
+  }
   
   try {
     const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
@@ -125,6 +148,18 @@ serve(async (req: Request): Promise<Response> => {
 
     const formattedPhone = formatPhoneNumber(recipientPhone);
     
+    // Get contractor's provisioned Twilio number
+    const contractorTwilioNumber = await getContractorTwilioNumber(supabase, user.id);
+    if (!contractorTwilioNumber) {
+      return new Response(JSON.stringify({ 
+        error: "No Twilio phone number provisioned for this contractor. Please set up Voice AI first.",
+        success: false 
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    
     // Build the immediate confirmation message
     const locationText = location ? `\n📍 Location: ${location}` : '';
     const contractorInfo = contractorName ? `\n👷 Contractor: ${contractorName}` : '';
@@ -142,8 +177,8 @@ You'll receive reminders:
 
 Reply STOP to unsubscribe.`;
 
-    // Send immediate confirmation SMS
-    const smsResult = await sendSMS(formattedPhone, immediateMessage);
+    // Send immediate confirmation SMS from contractor's number
+    const smsResult = await sendSMS(formattedPhone, immediateMessage, contractorTwilioNumber);
 
     // Record the sent SMS
     await supabase.from("scheduled_sms_reminders").insert({
@@ -158,6 +193,7 @@ Reply STOP to unsubscribe.`;
       status: smsResult.success ? "sent" : "failed",
       error_message: smsResult.error || null,
       twilio_sid: smsResult.sid || null,
+      contractor_twilio_number: contractorTwilioNumber,
     });
 
     // Parse meeting datetime to schedule future reminders
@@ -181,6 +217,7 @@ Reply STOP to unsubscribe.`;
         reminder_type: "24_hours",
         scheduled_for: reminder24h.toISOString(),
         status: "pending",
+        contractor_twilio_number: contractorTwilioNumber,
       });
     }
 
@@ -203,6 +240,7 @@ ${contractorPhone ? `Need to reach us? Call: ${contractorPhone}` : 'See you soon
         reminder_type: "30_minutes",
         scheduled_for: reminder30min.toISOString(),
         status: "pending",
+        contractor_twilio_number: contractorTwilioNumber,
       });
     }
 
