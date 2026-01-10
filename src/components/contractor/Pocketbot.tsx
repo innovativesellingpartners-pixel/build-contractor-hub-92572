@@ -79,15 +79,26 @@ export function Pocketbot() {
   };
 
   const transcribeAudio = async (audioBlob: Blob) => {
+    // Prevent double transcription
+    if (isTranscribing) {
+      console.log('Already transcribing, skipping duplicate call');
+      return;
+    }
+    
     setIsTranscribing(true);
+    let hasProcessed = false; // Guard against multiple onloadend calls
+    
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData?.session?.access_token;
+
+      if (!accessToken) {
         toast({
           title: "Authentication Required",
           description: "Please sign in to use voice input.",
           variant: "destructive"
         });
+        setIsTranscribing(false);
         return;
       }
 
@@ -95,29 +106,51 @@ export function Pocketbot() {
       const reader = new FileReader();
       reader.readAsDataURL(audioBlob);
       reader.onloadend = async () => {
-        const base64Audio = (reader.result as string).split(',')[1];
+        // Guard against multiple calls
+        if (hasProcessed) {
+          console.log('Already processed this audio, skipping');
+          return;
+        }
+        hasProcessed = true;
         
-        const response = await fetch(
-          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/voice-to-text`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${session.access_token}`,
-            },
-            body: JSON.stringify({ audio: base64Audio }),
+        try {
+          const base64Audio = (reader.result as string).split(',')[1];
+          
+          console.log('Sending audio for transcription, length:', base64Audio?.length);
+          
+          const response = await fetch(
+            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/voice-to-text`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${accessToken}`,
+              },
+              body: JSON.stringify({ audio: base64Audio }),
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error("Failed to transcribe audio");
           }
-        );
 
-        if (!response.ok) {
-          throw new Error("Failed to transcribe audio");
+          const data = await response.json();
+          console.log('Transcription result:', data.text);
+          
+          if (data.text) {
+            // Replace input entirely instead of appending to prevent doubling
+            setInput(data.text);
+          }
+        } catch (error) {
+          console.error("Transcription error:", error);
+          toast({
+            title: "Transcription Error",
+            description: "Failed to transcribe audio. Please try again.",
+            variant: "destructive",
+          });
+        } finally {
+          setIsTranscribing(false);
         }
-
-        const data = await response.json();
-        if (data.text) {
-          setInput(prev => prev ? `${prev} ${data.text}` : data.text);
-        }
-        setIsTranscribing(false);
       };
     } catch (error) {
       console.error("Transcription error:", error);
