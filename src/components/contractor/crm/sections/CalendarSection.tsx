@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar as CalendarIcon, Plug, Check, Loader2, X, RefreshCw, Clock, MapPin, ChevronDown, ChevronUp, Trash2, Plus, Briefcase, FileText, ExternalLink, ChevronLeft, ChevronRight, Pencil } from 'lucide-react';
+import { Calendar as CalendarIcon, Plug, Check, Loader2, X, RefreshCw, Clock, MapPin, ChevronDown, ChevronUp, Trash2, Plus, Briefcase, FileText, ExternalLink, ChevronLeft, ChevronRight, Pencil, CheckSquare } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -12,6 +12,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { ScheduleMeetingDialog } from '../ScheduleMeetingDialog';
 import { EditEventDialog } from '../EditEventDialog';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { usePersonalTasks, PersonalTask } from '@/hooks/usePersonalTasks';
+import { Checkbox } from '@/components/ui/checkbox';
 
 type CalendarViewMode = 'day' | '3-day' | '5-day' | 'month';
 
@@ -50,9 +52,12 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const [editEventOpen, setEditEventOpen] = useState(false);
   const [eventToEdit, setEventToEdit] = useState<CalendarEvent | null>(null);
-  const [viewMode, setViewMode] = useState<CalendarViewMode>('month');
+  const [viewMode, setViewMode] = useState<CalendarViewMode>('day');
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
+
+  // Fetch personal tasks
+  const { tasks: personalTasks, toggleComplete } = usePersonalTasks();
 
   useEffect(() => {
     if (user) {
@@ -279,6 +284,27 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
       const eventDate = getEventDate(event);
       return eventDate && isSameDay(eventDate, day);
     });
+  };
+
+  // Get tasks for a specific day
+  const getTasksForDay = (day: Date) => {
+    return personalTasks.filter(task => {
+      if (!task.due_date) return false;
+      try {
+        return isSameDay(parseISO(task.due_date), day);
+      } catch {
+        return false;
+      }
+    });
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'high': return 'bg-red-500';
+      case 'medium': return 'bg-yellow-500';
+      case 'low': return 'bg-green-500';
+      default: return 'bg-muted';
+    }
   };
 
   // Navigation handlers
@@ -606,6 +632,8 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
                 <div className="grid grid-cols-7 gap-1">
                   {daysToDisplay.map((day, idx) => {
                     const dayEvents = getEventsForDay(day);
+                    const dayTasks = getTasksForDay(day);
+                    const totalItems = dayEvents.length + dayTasks.length;
                     const isCurrentMonth = isSameMonth(day, currentDate);
                     const isCurrentDay = isToday(day);
                     
@@ -623,6 +651,7 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
                           {format(day, 'd')}
                         </div>
                         <div className="space-y-0.5 overflow-hidden">
+                          {/* Show events first */}
                           {dayEvents.slice(0, 2).map((event) => (
                             <div
                               key={event.id}
@@ -635,7 +664,20 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
                               {event.summary || 'Event'}
                             </div>
                           ))}
-                          {dayEvents.length > 2 && (
+                          {/* Show tasks if space permits */}
+                          {dayEvents.length < 2 && dayTasks.slice(0, 2 - dayEvents.length).map((task) => (
+                            <div
+                              key={task.id}
+                              onClick={(e) => e.stopPropagation()}
+                              className={`text-[10px] sm:text-xs p-0.5 sm:p-1 rounded bg-amber-500/10 text-amber-700 dark:text-amber-400 truncate flex items-center gap-1 ${
+                                task.status === 'completed' ? 'line-through opacity-60' : ''
+                              }`}
+                            >
+                              <CheckSquare className="h-2.5 w-2.5 flex-shrink-0" />
+                              {task.title}
+                            </div>
+                          ))}
+                          {totalItems > 2 && (
                             <div 
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -643,7 +685,7 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
                               }}
                               className="text-[10px] text-muted-foreground hover:text-primary cursor-pointer"
                             >
-                              +{dayEvents.length - 2} more
+                              +{totalItems - 2} more
                             </div>
                           )}
                         </div>
@@ -661,7 +703,9 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
               }`}>
                 {daysToDisplay.map((day, idx) => {
                   const dayEvents = getEventsForDay(day);
+                  const dayTasks = getTasksForDay(day);
                   const isCurrentDay = isToday(day);
+                  const hasItems = dayEvents.length > 0 || dayTasks.length > 0;
                   
                   return (
                     <Card 
@@ -680,29 +724,78 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
                         </div>
                       </div>
                       
-                      {dayEvents.length === 0 ? (
-                        <p className="text-center text-sm text-muted-foreground py-4">No events</p>
+                      {!hasItems ? (
+                        <p className="text-center text-sm text-muted-foreground py-4">No events or tasks</p>
                       ) : (
-                        <div className="space-y-2">
-                          {dayEvents.map((event) => (
-                            <div
-                              key={event.id}
-                              onClick={() => setSelectedEvent(event)}
-                              className="p-2 rounded-lg bg-primary/10 hover:bg-primary/20 cursor-pointer transition-colors"
-                            >
-                              <div className="font-medium text-sm truncate">{event.summary || 'Untitled'}</div>
-                              <div className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                                <Clock className="h-3 w-3" />
-                                {formatEventTimeShort(event)}
+                        <div className="space-y-3">
+                          {/* Events Section */}
+                          {dayEvents.length > 0 && (
+                            <div className="space-y-2">
+                              <div className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                                <CalendarIcon className="h-3 w-3" />
+                                Events ({dayEvents.length})
                               </div>
-                              {event.location && (
-                                <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5 truncate">
-                                  <MapPin className="h-3 w-3 flex-shrink-0" />
-                                  <span className="truncate">{event.location}</span>
+                              {dayEvents.map((event) => (
+                                <div
+                                  key={event.id}
+                                  onClick={() => setSelectedEvent(event)}
+                                  className="p-2 rounded-lg bg-primary/10 hover:bg-primary/20 cursor-pointer transition-colors"
+                                >
+                                  <div className="font-medium text-sm truncate">{event.summary || 'Untitled'}</div>
+                                  <div className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                                    <Clock className="h-3 w-3" />
+                                    {formatEventTimeShort(event)}
+                                  </div>
+                                  {event.location && (
+                                    <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5 truncate">
+                                      <MapPin className="h-3 w-3 flex-shrink-0" />
+                                      <span className="truncate">{event.location}</span>
+                                    </div>
+                                  )}
                                 </div>
-                              )}
+                              ))}
                             </div>
-                          ))}
+                          )}
+                          
+                          {/* Tasks Section */}
+                          {dayTasks.length > 0 && (
+                            <div className="space-y-2">
+                              <div className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                                <CheckSquare className="h-3 w-3" />
+                                Tasks ({dayTasks.length})
+                              </div>
+                              {dayTasks.map((task) => (
+                                <div
+                                  key={task.id}
+                                  className={`p-2 rounded-lg bg-amber-500/10 transition-colors ${
+                                    task.status === 'completed' ? 'opacity-60' : ''
+                                  }`}
+                                >
+                                  <div className="flex items-start gap-2">
+                                    <Checkbox
+                                      checked={task.status === 'completed'}
+                                      onCheckedChange={() => toggleComplete.mutate(task)}
+                                      className="mt-0.5"
+                                    />
+                                    <div className="flex-1 min-w-0">
+                                      <div className={`font-medium text-sm truncate ${
+                                        task.status === 'completed' ? 'line-through' : ''
+                                      }`}>
+                                        {task.title}
+                                      </div>
+                                      <div className="flex items-center gap-2 mt-1">
+                                        <div className={`w-2 h-2 rounded-full ${getPriorityColor(task.priority)}`} />
+                                        <span className="text-xs text-muted-foreground capitalize">{task.priority}</span>
+                                        {task.category && (
+                                          <span className="text-xs text-muted-foreground">• {task.category}</span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       )}
                     </Card>
@@ -856,47 +949,108 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
             <DialogDescription>
               {selectedDay && (() => {
                 const dayEvents = getEventsForDay(selectedDay);
-                return `${dayEvents.length} event${dayEvents.length !== 1 ? 's' : ''} scheduled`;
+                const dayTasks = getTasksForDay(selectedDay);
+                const parts = [];
+                if (dayEvents.length > 0) parts.push(`${dayEvents.length} event${dayEvents.length !== 1 ? 's' : ''}`);
+                if (dayTasks.length > 0) parts.push(`${dayTasks.length} task${dayTasks.length !== 1 ? 's' : ''}`);
+                return parts.length > 0 ? parts.join(', ') : 'Nothing scheduled';
               })()}
             </DialogDescription>
           </DialogHeader>
           
           {selectedDay && (
-            <div className="flex-1 overflow-y-auto space-y-2 py-2">
+            <div className="flex-1 overflow-y-auto space-y-4 py-2">
               {(() => {
                 const dayEvents = getEventsForDay(selectedDay);
+                const dayTasks = getTasksForDay(selectedDay);
                 
-                if (dayEvents.length === 0) {
+                if (dayEvents.length === 0 && dayTasks.length === 0) {
                   return (
                     <div className="text-center py-8 text-muted-foreground">
                       <CalendarIcon className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                      <p>No events scheduled for this day</p>
+                      <p>No events or tasks scheduled for this day</p>
                     </div>
                   );
                 }
                 
-                return dayEvents.map((event) => (
-                  <div
-                    key={event.id}
-                    onClick={() => {
-                      setSelectedDay(null);
-                      setSelectedEvent(event);
-                    }}
-                    className="p-3 rounded-lg border bg-card hover:bg-muted/50 cursor-pointer transition-colors"
-                  >
-                    <div className="font-medium truncate">{event.summary || 'Untitled Event'}</div>
-                    <div className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
-                      <Clock className="h-3 w-3" />
-                      {formatEventTimeShort(event)}
-                    </div>
-                    {event.location && (
-                      <div className="text-sm text-muted-foreground flex items-center gap-1 mt-0.5 truncate">
-                        <MapPin className="h-3 w-3 flex-shrink-0" />
-                        <span className="truncate">{event.location}</span>
+                return (
+                  <>
+                    {/* Events Section */}
+                    {dayEvents.length > 0 && (
+                      <div className="space-y-2">
+                        <div className="text-xs font-medium text-muted-foreground flex items-center gap-1 px-1">
+                          <CalendarIcon className="h-3 w-3" />
+                          Events ({dayEvents.length})
+                        </div>
+                        {dayEvents.map((event) => (
+                          <div
+                            key={event.id}
+                            onClick={() => {
+                              setSelectedDay(null);
+                              setSelectedEvent(event);
+                            }}
+                            className="p-3 rounded-lg border bg-card hover:bg-muted/50 cursor-pointer transition-colors"
+                          >
+                            <div className="font-medium truncate">{event.summary || 'Untitled Event'}</div>
+                            <div className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
+                              <Clock className="h-3 w-3" />
+                              {formatEventTimeShort(event)}
+                            </div>
+                            {event.location && (
+                              <div className="text-sm text-muted-foreground flex items-center gap-1 mt-0.5 truncate">
+                                <MapPin className="h-3 w-3 flex-shrink-0" />
+                                <span className="truncate">{event.location}</span>
+                              </div>
+                            )}
+                          </div>
+                        ))}
                       </div>
                     )}
-                  </div>
-                ));
+                    
+                    {/* Tasks Section */}
+                    {dayTasks.length > 0 && (
+                      <div className="space-y-2">
+                        <div className="text-xs font-medium text-muted-foreground flex items-center gap-1 px-1">
+                          <CheckSquare className="h-3 w-3" />
+                          Tasks ({dayTasks.length})
+                        </div>
+                        {dayTasks.map((task) => (
+                          <div
+                            key={task.id}
+                            className={`p-3 rounded-lg border bg-amber-500/10 transition-colors ${
+                              task.status === 'completed' ? 'opacity-60' : ''
+                            }`}
+                          >
+                            <div className="flex items-start gap-2">
+                              <Checkbox
+                                checked={task.status === 'completed'}
+                                onCheckedChange={() => toggleComplete.mutate(task)}
+                                className="mt-0.5"
+                              />
+                              <div className="flex-1 min-w-0">
+                                <div className={`font-medium truncate ${
+                                  task.status === 'completed' ? 'line-through' : ''
+                                }`}>
+                                  {task.title}
+                                </div>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <div className={`w-2 h-2 rounded-full ${getPriorityColor(task.priority)}`} />
+                                  <span className="text-xs text-muted-foreground capitalize">{task.priority}</span>
+                                  {task.category && (
+                                    <span className="text-xs text-muted-foreground">• {task.category}</span>
+                                  )}
+                                </div>
+                                {task.notes && (
+                                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{task.notes}</p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                );
               })()}
             </div>
           )}
