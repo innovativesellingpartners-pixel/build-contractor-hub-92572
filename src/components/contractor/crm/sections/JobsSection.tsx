@@ -17,7 +17,7 @@ interface JobsSectionProps {
 }
 
 export default function JobsSection({ onSectionChange }: JobsSectionProps) {
-  const { jobs, loading, addJob, updateJob, refreshJobs, duplicateJob } = useJobs();
+  const { jobs, loading, addJob, updateJob, refreshJobs, duplicateJob, archiveJob } = useJobs();
   const { createEstimateAsync } = useEstimates();
   const { customers } = useCustomers();
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
@@ -248,6 +248,7 @@ export default function JobsSection({ onSectionChange }: JobsSectionProps) {
           onCreateEstimate={handleCreateEstimateFromJob}
           onEditJob={handleEditJob}
           onDuplicateJob={handleDuplicateJob}
+          onArchiveJob={archiveJob}
         />
 
         <EditJobDialog
