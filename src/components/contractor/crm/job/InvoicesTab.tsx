@@ -279,13 +279,12 @@ export default function InvoicesTab({ jobId, customerId }: InvoicesTabProps) {
                     </div>
                     <div className="flex gap-2 flex-wrap justify-end">
                       <Button 
-                        variant="outline" 
-                        size="sm" 
+                        variant="default" 
                         onClick={() => handleOpenWaiverDialog(invoice)}
-                        className="text-emerald-600 border-emerald-200 hover:bg-emerald-50"
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white"
                       >
-                        <FileCheck className="h-4 w-4 mr-1" />
-                        Waiver
+                        <FileCheck className="h-4 w-4 mr-2" />
+                        Attach Waiver
                       </Button>
                       <Button variant="outline" size="sm" onClick={() => handleEdit(invoice)}>
                         Edit
@@ -488,11 +487,11 @@ export default function InvoicesTab({ jobId, customerId }: InvoicesTabProps) {
             )}
 
             <div className="space-y-2">
-              <Label>General Contractor / Recipient *</Label>
+              <Label>Send to Requiring Party *</Label>
               {gcContacts.length > 0 ? (
                 <Select value={selectedGcId} onValueChange={setSelectedGcId}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select GC..." />
+                    <SelectValue placeholder="Select recipient..." />
                   </SelectTrigger>
                   <SelectContent>
                     {gcContacts.map((gc) => (
@@ -504,7 +503,7 @@ export default function InvoicesTab({ jobId, customerId }: InvoicesTabProps) {
                 </Select>
               ) : (
                 <p className="text-sm text-muted-foreground p-3 bg-muted rounded-md">
-                  No GC contacts found. Add a GC contact in the More section first.
+                  No contacts found. Add a contact in the More section first.
                 </p>
               )}
             </div>
