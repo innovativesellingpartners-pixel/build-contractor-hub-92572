@@ -8,14 +8,17 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Plus, FileText, Trash2, ChevronDown, ChevronUp, Download, Printer, FileCheck, Loader2 } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Plus, FileText, Trash2, ChevronDown, ChevronUp, Download, Printer, FileCheck, Loader2, Send, Mail } from 'lucide-react';
 import { useInvoices, Invoice } from '@/hooks/useInvoices';
-import { useInvoiceWaivers, InvoiceWaiver } from '@/hooks/useInvoiceWaivers';
+import { useInvoiceWaivers, InvoiceWaiver, WaiverSignatureData } from '@/hooks/useInvoiceWaivers';
 import { useGCContacts } from '@/hooks/useGCContacts';
+import { useContractorProfile } from '@/hooks/useContractorProfile';
+import { useJobs } from '@/hooks/useJobs';
 import { WaiverSelection, SelectedWaiver, WAIVER_TYPES } from '@/components/contractor/crm/WaiverSelection';
+import { WaiverPreview } from '@/components/contractor/crm/WaiverPreview';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
-
 interface InvoicesTabProps {
   jobId: string;
   customerId?: string;
@@ -30,8 +33,10 @@ function parseMoneyInput(value: string): number {
 
 export default function InvoicesTab({ jobId, customerId }: InvoicesTabProps) {
   const { invoices, isLoading, createInvoice, updateInvoice, deleteInvoice } = useInvoices(jobId);
-  const { isGenerating, generateWaivers, fetchInvoiceWaivers, downloadWaiverAsHtml, printWaiver } = useInvoiceWaivers();
+  const { isGenerating, isSending, generateWaivers, fetchInvoiceWaivers, downloadWaiverAsHtml, printWaiver, sendInvoiceWithWaivers } = useInvoiceWaivers();
   const { gcContacts } = useGCContacts();
+  const { profile } = useContractorProfile();
+  const { jobs } = useJobs();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
   const [expandedWaivers, setExpandedWaivers] = useState<Record<string, boolean>>({});
@@ -42,6 +47,11 @@ export default function InvoicesTab({ jobId, customerId }: InvoicesTabProps) {
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [selectedGcId, setSelectedGcId] = useState<string>('');
   const [selectedWaivers, setSelectedWaivers] = useState<SelectedWaiver[]>([]);
+  const [signatureData, setSignatureData] = useState<string | null>(null);
+  const [signerInfo, setSignerInfo] = useState<{ name: string; title: string }>({ name: '', title: '' });
+
+  // Get current job info
+  const currentJob = jobs?.find(j => j.id === jobId);
 
   // Invoice form state (keep numeric inputs free-form; do NOT auto-populate 0s)
   const [formData, setFormData] = useState<Invoice>({
@@ -171,7 +181,13 @@ export default function InvoicesTab({ jobId, customerId }: InvoicesTabProps) {
     }
 
     try {
-      const generated = await generateWaivers(selectedInvoice.id, selectedGcId, selectedWaivers);
+      const signatureInfo: WaiverSignatureData = {
+        signatureData: signatureData || undefined,
+        signerName: signerInfo.name || undefined,
+        signerTitle: signerInfo.title || undefined,
+      };
+
+      const generated = await generateWaivers(selectedInvoice.id, selectedGcId, selectedWaivers, signatureInfo);
       
       // Update local state with new waivers
       setInvoiceWaivers(prev => ({
@@ -182,11 +198,32 @@ export default function InvoicesTab({ jobId, customerId }: InvoicesTabProps) {
       toast.success(`Generated ${generated.length} waiver(s) successfully`);
       setWaiverDialogOpen(false);
       setSelectedWaivers([]);
+      setSignatureData(null);
+      setSignerInfo({ name: '', title: '' });
       
       // Auto-expand waivers for this invoice
       setExpandedWaivers(prev => ({ ...prev, [selectedInvoice.id!]: true }));
     } catch (error) {
       // Error already handled in hook
+    }
+  };
+
+  const handleSendInvoice = async (invoice: Invoice, includeWaivers: boolean, mode: 'combined' | 'separate' = 'combined') => {
+    const waivers = invoiceWaivers[invoice.id!] || [];
+    const gc = waivers.length > 0 && waivers[0].gc_id 
+      ? gcContacts.find(g => g.id === waivers[0].gc_id)
+      : null;
+    
+    const email = gc?.email;
+    if (!email) {
+      toast.error('No email address found. Please add an email to the contact.');
+      return;
+    }
+
+    try {
+      await sendInvoiceWithWaivers(invoice.id!, email, gc?.name, includeWaivers, mode);
+    } catch (error) {
+      // Error handled in hook
     }
   };
 
@@ -286,6 +323,42 @@ export default function InvoicesTab({ jobId, customerId }: InvoicesTabProps) {
                         <FileCheck className="h-4 w-4 mr-2" />
                         Attach Waiver
                       </Button>
+                      {/* Send Invoice Dropdown */}
+                      {(invoiceWaivers[invoice.id!] || []).length > 0 ? (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="sm" disabled={isSending}>
+                              {isSending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4 mr-1" />}
+                              Send
+                              <ChevronDown className="h-3 w-3 ml-1" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleSendInvoice(invoice, false)}>
+                              <Mail className="h-4 w-4 mr-2" />
+                              Invoice Only
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleSendInvoice(invoice, true, 'combined')}>
+                              <FileText className="h-4 w-4 mr-2" />
+                              Invoice + Waivers (Combined)
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleSendInvoice(invoice, true, 'separate')}>
+                              <FileCheck className="h-4 w-4 mr-2" />
+                              Invoice + Waivers (Separate)
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      ) : (
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => handleSendInvoice(invoice, false)}
+                          disabled={isSending}
+                        >
+                          {isSending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4 mr-1" />}
+                          Send
+                        </Button>
+                      )}
                       <Button variant="outline" size="sm" onClick={() => handleEdit(invoice)}>
                         Edit
                       </Button>
@@ -467,70 +540,89 @@ export default function InvoicesTab({ jobId, customerId }: InvoicesTabProps) {
         </DialogContent>
       </Dialog>
 
-      {/* Generate Waivers Dialog */}
+      {/* Generate Waivers Dialog with Preview */}
       <Dialog open={waiverDialogOpen} onOpenChange={setWaiverDialogOpen}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden">
           <DialogHeader>
-            <DialogTitle>Generate Lien Waivers</DialogTitle>
+            <DialogTitle>Attach Lien Waiver</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
-            {selectedInvoice && (
-              <div className="p-3 bg-muted rounded-md">
-                <p className="text-sm font-medium">
-                  {selectedInvoice.invoice_number || `Invoice #${selectedInvoice.id?.slice(0, 8)}`}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Amount: ${selectedInvoice.amount_due.toFixed(2)} • 
-                  Paid: ${selectedInvoice.amount_paid.toFixed(2)}
-                </p>
-              </div>
-            )}
-
-            <div className="space-y-2">
-              <Label>Send to Requiring Party *</Label>
-              {gcContacts.length > 0 ? (
-                <Select value={selectedGcId} onValueChange={setSelectedGcId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select recipient..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {gcContacts.map((gc) => (
-                      <SelectItem key={gc.id} value={gc.id}>
-                        {gc.name} {gc.company ? `(${gc.company})` : ''}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              ) : (
-                <p className="text-sm text-muted-foreground p-3 bg-muted rounded-md">
-                  No contacts found. Add a contact in the More section first.
-                </p>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-h-[calc(90vh-120px)] overflow-y-auto">
+            {/* Left: Selection */}
+            <div className="space-y-4">
+              {selectedInvoice && (
+                <div className="p-3 bg-muted rounded-md">
+                  <p className="text-sm font-medium">
+                    {selectedInvoice.invoice_number || `Invoice #${selectedInvoice.id?.slice(0, 8)}`}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Amount: ${selectedInvoice.amount_due.toFixed(2)} • 
+                    Paid: ${selectedInvoice.amount_paid.toFixed(2)}
+                  </p>
+                </div>
               )}
+
+              <div className="space-y-2">
+                <Label>Send to Requiring Party *</Label>
+                {gcContacts.length > 0 ? (
+                  <Select value={selectedGcId} onValueChange={setSelectedGcId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select recipient..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {gcContacts.map((gc) => (
+                        <SelectItem key={gc.id} value={gc.id}>
+                          {gc.name} {gc.company ? `(${gc.company})` : ''}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <p className="text-sm text-muted-foreground p-3 bg-muted rounded-md">
+                    No contacts found. Add a contact in the More section first.
+                  </p>
+                )}
+              </div>
+
+              <WaiverSelection
+                selectedWaivers={selectedWaivers}
+                onWaiversChange={setSelectedWaivers}
+                defaultAmount={selectedInvoice?.amount_due || 0}
+              />
+
+              <div className="flex justify-end gap-2 pt-4">
+                <Button variant="outline" onClick={() => setWaiverDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleGenerateWaivers}
+                  disabled={isGenerating || !selectedGcId || selectedWaivers.length === 0}
+                >
+                  {isGenerating ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>Generate {selectedWaivers.length} Waiver{selectedWaivers.length > 1 ? 's' : ''}</>
+                  )}
+                </Button>
+              </div>
             </div>
 
-            <WaiverSelection
-              selectedWaivers={selectedWaivers}
-              onWaiversChange={setSelectedWaivers}
-              defaultAmount={selectedInvoice?.amount_due || 0}
-            />
-
-            <div className="flex justify-end gap-2 pt-4">
-              <Button variant="outline" onClick={() => setWaiverDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button 
-                onClick={handleGenerateWaivers}
-                disabled={isGenerating || !selectedGcId || selectedWaivers.length === 0}
-              >
-                {isGenerating ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Generating...
-                  </>
-                ) : (
-                  <>Generate {selectedWaivers.length} Waiver{selectedWaivers.length > 1 ? 's' : ''}</>
-                )}
-              </Button>
+            {/* Right: Preview */}
+            <div className="hidden lg:block">
+              <WaiverPreview
+                invoice={selectedInvoice}
+                waiver={selectedWaivers[0] || null}
+                gcName={gcContacts.find(g => g.id === selectedGcId)?.name}
+                gcCompany={gcContacts.find(g => g.id === selectedGcId)?.company || undefined}
+                contractorName={profile?.company_name || 'Contractor'}
+                contractorAddress={profile?.address || ''}
+                jobName={currentJob?.name || 'Project'}
+                jobAddress={currentJob?.address || ''}
+                onSignatureChange={setSignatureData}
+                onSignerInfoChange={setSignerInfo}
+              />
             </div>
           </div>
         </DialogContent>

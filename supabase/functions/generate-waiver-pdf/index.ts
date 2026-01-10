@@ -14,6 +14,9 @@ interface WaiverRequest {
   billingPeriodStart?: string;
   billingPeriodEnd?: string;
   retainage?: number;
+  signatureData?: string;
+  signerName?: string;
+  signerTitle?: string;
 }
 
 const WAIVER_TEMPLATES = {
@@ -41,13 +44,6 @@ This waiver covers the final payment only and becomes effective upon actual clea
   },
 };
 
-const WAIVER_TYPE_LABELS: Record<string, string> = {
-  conditional_progress: 'Conditional Progress',
-  unconditional_progress: 'Unconditional Progress',
-  conditional_final: 'Conditional Final',
-  unconditional_final: 'Unconditional Final',
-};
-
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -72,12 +68,57 @@ function generateWaiverHtml(
   waiverType: string,
   vars: Record<string, string>,
   contractorName: string,
-  contractorAddress: string
+  contractorAddress: string,
+  invoiceData: any,
+  signatureData?: string,
+  signerName?: string,
+  signerTitle?: string
 ): string {
   const template = WAIVER_TEMPLATES[waiverType as keyof typeof WAIVER_TEMPLATES];
   if (!template) throw new Error(`Unknown waiver type: ${waiverType}`);
 
   const body = replaceTemplateVars(template.body, vars);
+  const lineItems = (invoiceData.line_items as any[]) || [];
+  
+  const lineItemsHtml = lineItems.length > 0 
+    ? lineItems.map((item: any) => `
+        <tr>
+          <td style="padding: 8px; border-bottom: 1px solid #eee; font-size: 11pt;">${item.description || item.name || 'Item'}</td>
+          <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center; font-size: 11pt;">${item.quantity || 1}</td>
+          <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right; font-size: 11pt;">$${((item.quantity || 1) * (item.unit_price || 0)).toFixed(2)}</td>
+        </tr>
+      `).join('')
+    : '';
+
+  const signatureSection = signatureData 
+    ? `<div class="signature-block">
+        <img src="${signatureData}" alt="Signature" style="max-height: 60px; border-bottom: 1px solid #000; padding-bottom: 5px;" />
+        <div class="signature-label">Signature</div>
+      </div>`
+    : `<div class="signature-block">
+        <div class="signature-line"></div>
+        <div class="signature-label">Signature</div>
+      </div>`;
+
+  const signerNameSection = signerName
+    ? `<div class="signature-block">
+        <div style="border-bottom: 1px solid #000; padding: 5px 0; min-width: 300px;">${signerName}</div>
+        <div class="signature-label">Printed Name</div>
+      </div>`
+    : `<div class="signature-block">
+        <div class="signature-line"></div>
+        <div class="signature-label">Printed Name</div>
+      </div>`;
+
+  const signerTitleSection = signerTitle
+    ? `<div class="signature-block">
+        <div style="border-bottom: 1px solid #000; padding: 5px 0; min-width: 300px;">${signerTitle}</div>
+        <div class="signature-label">Title</div>
+      </div>`
+    : `<div class="signature-block">
+        <div class="signature-line"></div>
+        <div class="signature-label">Title</div>
+      </div>`;
 
   return `
 <!DOCTYPE html>
@@ -100,7 +141,7 @@ function generateWaiverHtml(
       text-align: center;
       margin-bottom: 30px;
       padding-bottom: 20px;
-      border-bottom: 2px solid #1e3a5f;
+      border-bottom: 3px solid #1e3a5f;
     }
     .title {
       font-size: 16pt;
@@ -128,6 +169,70 @@ function generateWaiverHtml(
       font-weight: bold;
       display: inline-block;
       min-width: 180px;
+    }
+    .invoice-details {
+      margin: 25px 0;
+      padding: 20px;
+      background: #fafafa;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+    }
+    .invoice-details h3 {
+      margin: 0 0 15px 0;
+      font-size: 14pt;
+      color: #1e3a5f;
+      border-bottom: 2px solid #d4af37;
+      padding-bottom: 8px;
+    }
+    .invoice-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    .invoice-item {
+      font-size: 11pt;
+    }
+    .invoice-item .label {
+      color: #666;
+      font-size: 10pt;
+    }
+    .invoice-item .value {
+      font-weight: bold;
+    }
+    .line-items-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    .line-items-table th {
+      background: #1e3a5f;
+      color: white;
+      padding: 10px;
+      text-align: left;
+      font-size: 11pt;
+    }
+    .line-items-table th:nth-child(2),
+    .line-items-table th:nth-child(3) {
+      text-align: center;
+    }
+    .line-items-table th:last-child {
+      text-align: right;
+    }
+    .totals-section {
+      margin-top: 15px;
+      text-align: right;
+      padding-top: 10px;
+      border-top: 2px solid #1e3a5f;
+    }
+    .total-row {
+      font-size: 12pt;
+      margin: 5px 0;
+    }
+    .total-row.grand {
+      font-size: 14pt;
+      font-weight: bold;
+      color: #1e3a5f;
     }
     .signature-section {
       margin-top: 50px;
@@ -174,6 +279,55 @@ function generateWaiverHtml(
     ${vars.retainage && vars.retainage !== '$0.00' ? `<div class="info-row"><span class="info-label">Retainage:</span> ${vars.retainage}</div>` : ''}
   </div>
 
+  <div class="invoice-details">
+    <h3>Invoice Details</h3>
+    <div class="invoice-grid">
+      <div class="invoice-item">
+        <div class="label">Issue Date</div>
+        <div class="value">${vars.issue_date}</div>
+      </div>
+      <div class="invoice-item">
+        <div class="label">Due Date</div>
+        <div class="value">${vars.due_date}</div>
+      </div>
+      <div class="invoice-item">
+        <div class="label">Invoice Amount</div>
+        <div class="value">${vars.invoice_amount}</div>
+      </div>
+      <div class="invoice-item">
+        <div class="label">Amount Paid</div>
+        <div class="value">${vars.amount_paid}</div>
+      </div>
+      <div class="invoice-item">
+        <div class="label">Balance Due</div>
+        <div class="value" style="color: ${parseFloat(vars.balance_due?.replace(/[^0-9.-]/g, '') || '0') > 0 ? '#c00' : '#060'}">${vars.balance_due}</div>
+      </div>
+      <div class="invoice-item">
+        <div class="label">Waiver Amount</div>
+        <div class="value" style="color: #1e3a5f;">${vars.amount}</div>
+      </div>
+    </div>
+    
+    ${lineItemsHtml ? `
+    <table class="line-items-table">
+      <thead>
+        <tr>
+          <th>Description</th>
+          <th>Qty</th>
+          <th>Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${lineItemsHtml}
+      </tbody>
+    </table>
+    <div class="totals-section">
+      <div class="total-row">Subtotal: ${vars.invoice_amount}</div>
+      <div class="total-row grand">Total: ${vars.invoice_amount}</div>
+    </div>
+    ` : ''}
+  </div>
+
   <div class="signature-section">
     <div class="contractor-info">
       Contractor:<br/>
@@ -181,20 +335,9 @@ function generateWaiverHtml(
       ${contractorAddress}
     </div>
     
-    <div class="signature-block">
-      <div class="signature-line"></div>
-      <div class="signature-label">Signature</div>
-    </div>
-
-    <div class="signature-block">
-      <div class="signature-line"></div>
-      <div class="signature-label">Printed Name</div>
-    </div>
-
-    <div class="signature-block">
-      <div class="signature-line"></div>
-      <div class="signature-label">Title</div>
-    </div>
+    ${signatureSection}
+    ${signerNameSection}
+    ${signerTitleSection}
 
     <div class="signature-block">
       <div class="signature-line"></div>
@@ -240,7 +383,18 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    const { invoiceId, waiverType, gcId, amount, billingPeriodStart, billingPeriodEnd, retainage }: WaiverRequest = await req.json();
+    const { 
+      invoiceId, 
+      waiverType, 
+      gcId, 
+      amount, 
+      billingPeriodStart, 
+      billingPeriodEnd, 
+      retainage,
+      signatureData,
+      signerName,
+      signerTitle
+    }: WaiverRequest = await req.json();
 
     console.log(`Generating ${waiverType} waiver for invoice ${invoiceId}`);
 
@@ -291,7 +445,7 @@ const handler = async (req: Request): Promise<Response> => {
       ? `${invoice.jobs.address || ''}${invoice.jobs.city ? ', ' + invoice.jobs.city : ''}${invoice.jobs.state ? ', ' + invoice.jobs.state : ''} ${invoice.jobs.zip_code || ''}`.trim()
       : "";
 
-    // Build template variables
+    // Build template variables with full invoice data
     const templateVars: Record<string, string> = {
       contractor_name: contractorName,
       contractor_address: contractorAddress,
@@ -304,17 +458,30 @@ const handler = async (req: Request): Promise<Response> => {
       billing_period_end: formatDate(billingPeriodEnd),
       invoice_number: invoice.invoice_number || `INV-${invoice.id.slice(0, 8)}`,
       date: formatDate(),
+      // New invoice-specific fields
+      issue_date: formatDate(invoice.issue_date),
+      due_date: invoice.due_date ? formatDate(invoice.due_date) : 'Due upon receipt',
+      invoice_amount: formatCurrency(invoice.amount_due || 0),
+      amount_paid: formatCurrency(invoice.amount_paid || 0),
+      balance_due: formatCurrency((invoice.amount_due || 0) - (invoice.amount_paid || 0)),
     };
 
-    // Generate HTML
-    const html = generateWaiverHtml(waiverType, templateVars, contractorName, contractorAddress);
+    // Generate HTML with full invoice data
+    const html = generateWaiverHtml(
+      waiverType, 
+      templateVars, 
+      contractorName, 
+      contractorAddress,
+      invoice,
+      signatureData,
+      signerName,
+      signerTitle
+    );
 
-    // Convert HTML to PDF using a simple approach - store as HTML that can be printed as PDF
-    // For a production system, you'd use a proper PDF generation service
+    // Store the HTML file
     const fileName = `waiver_${waiverType}_${invoice.invoice_number || invoice.id.slice(0, 8)}_${Date.now()}.html`;
     const filePath = `waivers/${user.id}/${fileName}`;
 
-    // Store the HTML file
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from("documents")
       .upload(filePath, new Blob([html], { type: "text/html" }), {
@@ -324,10 +491,6 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (uploadError) {
       console.error("Failed to upload waiver:", uploadError);
-      // If bucket doesn't exist, try to create it
-      if (uploadError.message?.includes("not found")) {
-        console.log("Documents bucket may not exist, attempting without storage");
-      }
     }
 
     // Get public URL if upload succeeded
@@ -337,7 +500,7 @@ const handler = async (req: Request): Promise<Response> => {
       pdfUrl = urlData?.publicUrl || "";
     }
 
-    // Create waiver record
+    // Create waiver record with signature data
     const { data: waiver, error: waiverError } = await supabase
       .from("invoice_waivers")
       .insert({
@@ -350,6 +513,10 @@ const handler = async (req: Request): Promise<Response> => {
         retainage: retainage || 0,
         pdf_url: pdfUrl,
         created_by: user.id,
+        signature_data: signatureData || null,
+        signer_name: signerName || null,
+        signer_title: signerTitle || null,
+        signed_at: signatureData ? new Date().toISOString() : null,
       })
       .select()
       .single();
@@ -369,7 +536,7 @@ const handler = async (req: Request): Promise<Response> => {
         success: true, 
         waiver: {
           ...waiver,
-          html: html, // Return HTML for immediate rendering/download
+          html: html,
         }
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
