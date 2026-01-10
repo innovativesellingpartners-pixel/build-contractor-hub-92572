@@ -74,23 +74,57 @@ const EstimateAssistant: React.FC<EstimateAssistantProps> = ({ onDataExtracted, 
   };
 
   const transcribeAudio = async (audioBlob: Blob) => {
+    // Prevent double transcription
+    if (isLoading) {
+      console.log('Already processing, skipping duplicate call');
+      return;
+    }
+    
+    let hasProcessed = false; // Guard against multiple onloadend calls
+    
     try {
       setIsLoading(true);
       const reader = new FileReader();
       reader.readAsDataURL(audioBlob);
       reader.onloadend = async () => {
-        const base64Audio = reader.result?.toString().split(',')[1];
-        if (!base64Audio) return;
-
-        const { data, error } = await supabase.functions.invoke('voice-to-text', {
-          body: { audio: base64Audio }
-        });
-
-        if (error) throw error;
-        if (data?.text) {
-          setInput(data.text);
+        // Guard against multiple calls
+        if (hasProcessed) {
+          console.log('Already processed this audio, skipping');
+          return;
         }
-        setIsLoading(false);
+        hasProcessed = true;
+        
+        try {
+          const base64Audio = reader.result?.toString().split(',')[1];
+          if (!base64Audio) {
+            setIsLoading(false);
+            return;
+          }
+
+          console.log('Sending audio for transcription, length:', base64Audio?.length);
+
+          const { data, error } = await supabase.functions.invoke('voice-to-text', {
+            body: { audio: base64Audio }
+          });
+
+          if (error) throw error;
+          
+          console.log('Transcription result:', data?.text);
+          
+          if (data?.text) {
+            // Replace input entirely instead of appending to prevent doubling
+            setInput(data.text);
+          }
+        } catch (error) {
+          console.error('Transcription error:', error);
+          toast({
+            title: "Transcription Error",
+            description: "Could not transcribe audio. Please try again.",
+            variant: "destructive"
+          });
+        } finally {
+          setIsLoading(false);
+        }
       };
     } catch (error) {
       console.error('Transcription error:', error);
