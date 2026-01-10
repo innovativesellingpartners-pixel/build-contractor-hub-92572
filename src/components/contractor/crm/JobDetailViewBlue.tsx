@@ -565,8 +565,8 @@ export default function JobDetailViewBlue({ job, open, onOpenChange, onCreateEst
           {/* Tab Navigation */}
           <TabNav tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
 
-          {/* Content */}
-          <div className="flex-1 overflow-y-auto">
+          {/* Content - extra bottom padding to clear nav bar */}
+          <div className="flex-1 overflow-y-auto pb-32">
             {activeTab === 'info' && (
               <div className="space-y-0">
                 {/* Job Information */}

@@ -297,10 +297,10 @@ const navItems = [
             </div>
           )}
 
-          {/* Main Content with bottom padding for nav */}
-          <main className="flex-1 overflow-hidden w-full pb-20 bg-background">
+          {/* Main Content with bottom padding for nav - extra padding for form buttons */}
+          <main className="flex-1 overflow-hidden w-full pb-28 bg-background">
             <div className="h-full overflow-y-auto overflow-x-hidden">
-              <div className="min-h-full w-full pb-4">
+              <div className="min-h-full w-full pb-6">
                 {renderSection()}
               </div>
             </div>

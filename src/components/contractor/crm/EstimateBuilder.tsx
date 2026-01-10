@@ -334,8 +334,8 @@ export default function EstimateBuilder({ initialData, onSave, onCancel }: Estim
         )}
       </div>
 
-      {/* Footer Navigation - elevated z-index to stay above floating elements */}
-      <div className="flex-shrink-0 border-t bg-card px-6 py-4 relative z-50">
+      {/* Footer Navigation - elevated z-index and extra margin to stay above bottom nav */}
+      <div className="flex-shrink-0 border-t bg-card px-6 py-4 mb-20 md:mb-0 relative z-50">
         <div className="flex items-center justify-between max-w-full">
           <Button
             variant="outline"

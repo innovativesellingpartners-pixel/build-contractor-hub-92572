@@ -147,7 +147,7 @@ export function EditLeadDialog({ lead, open, onOpenChange, onUpdate, onDelete, s
           <DialogTitle>Edit Lead</DialogTitle>
           <DialogDescription>Update the details of this lead</DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="flex-1 space-y-4 overflow-y-auto pb-4">
+        <form onSubmit={handleSubmit} className="flex-1 space-y-4 overflow-y-auto pb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="edit-name">Name *</Label>

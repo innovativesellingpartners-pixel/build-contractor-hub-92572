@@ -198,8 +198,8 @@ export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSecti
         </p>
       </div>
 
-      {/* Scrollable Content */}
-      <div className="flex-1 min-h-0 overflow-y-auto pb-24">
+      {/* Scrollable Content - extra bottom padding to clear nav bar */}
+      <div className="flex-1 min-h-0 overflow-y-auto pb-32">
         <div className="space-y-0">
           {/* Converted Status */}
           {isConverted && linkedJob && (

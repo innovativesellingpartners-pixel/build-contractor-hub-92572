@@ -82,7 +82,7 @@ export function EditCustomerDialog({ customer, open, onOpenChange }: EditCustome
           <DialogTitle>Edit Customer</DialogTitle>
           <DialogDescription>Update customer information</DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="flex-1 space-y-4 overflow-y-auto pb-4">
+        <form onSubmit={handleSubmit} className="flex-1 space-y-4 overflow-y-auto pb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="name">Name *</Label>
