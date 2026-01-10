@@ -7,7 +7,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
-import { FileText, Briefcase, ArrowRight, Mail, Phone, Plus, Pencil, Navigation } from 'lucide-react';
+import { FileText, Briefcase, ArrowRight, Phone, Plus, Pencil, Navigation, CalendarPlus } from 'lucide-react';
+import { ScheduleMeetingDialog } from '../ScheduleMeetingDialog';
 import {
   BlueBackground,
   SectionHeader,
@@ -34,6 +35,7 @@ export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSecti
   const { user } = useAuth();
   const [isConverting, setIsConverting] = useState(false);
   const [isCreatingEstimate, setIsCreatingEstimate] = useState(false);
+  const [showScheduleDialog, setShowScheduleDialog] = useState(false);
 
   const leadEstimates = estimates?.filter(e => e.lead_id === lead.id) || [];
   const linkedCustomer = lead.customer_id ? customers?.find(c => c.id === lead.customer_id) : null;
@@ -291,15 +293,13 @@ export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSecti
                 CALL
               </a>
             )}
-            {lead.email && (
-              <a 
-                href={`mailto:${lead.email}`}
-                className="flex-1 flex items-center justify-center gap-2 bg-sky-500 text-white py-3 rounded-lg font-semibold"
-              >
-                <Mail className="w-4 h-4" />
-                EMAIL
-              </a>
-            )}
+            <button 
+              onClick={() => setShowScheduleDialog(true)}
+              className="flex-1 flex items-center justify-center gap-2 bg-sky-500 text-white py-3 rounded-lg font-semibold"
+            >
+              <CalendarPlus className="w-4 h-4" />
+              SCHEDULE
+            </button>
             {getFullAddress() && (
               <button 
                 onClick={handleStartTravel}
@@ -392,6 +392,14 @@ export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSecti
         )}
         </div>
       </div>
+
+      {/* Schedule Meeting Dialog */}
+      <ScheduleMeetingDialog
+        open={showScheduleDialog}
+        onOpenChange={setShowScheduleDialog}
+        onSuccess={() => toast.success('Site visit scheduled!')}
+        initialDate={undefined}
+      />
     </BlueBackground>
   );
 }
