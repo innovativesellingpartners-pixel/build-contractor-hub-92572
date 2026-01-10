@@ -11,6 +11,7 @@ import { Plus, Bot, FileText, MapPin, DollarSign } from 'lucide-react';
 import { Job } from '@/hooks/useJobs';
 import { JobAIAssistant } from './JobAIAssistant';
 import { JobMeetingsSection, MeetingFormData } from './JobMeetingsSection';
+import { AIScopeNotes } from './AIScopeNotes';
 
 interface AddJobDialogProps {
   onAdd: (jobData: Omit<Job, 'id' | 'user_id' | 'job_number' | 'created_at' | 'updated_at'>, meetings?: MeetingFormData[]) => Promise<any>;
@@ -288,17 +289,13 @@ export function AddJobDialog({ onAdd }: AddJobDialogProps) {
                 jobLocation={jobLocation}
               />
 
-              {/* Notes */}
-              <div className="space-y-2">
-                <Label htmlFor="notes">Additional Notes</Label>
-                <Textarea
-                  id="notes"
-                  value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  rows={3}
-                  placeholder="Any additional information about this job"
-                />
-              </div>
+              {/* AI Scope Notes */}
+              <AIScopeNotes
+                notes={formData.notes}
+                onNotesChange={(notes) => setFormData({ ...formData, notes })}
+                label="Job Notes"
+                placeholder="Record your walk-around or type notes about site conditions and scope"
+              />
 
               <div className="flex justify-end gap-2 pt-4 border-t sticky bottom-0 bg-background py-4">
                 <Button type="button" variant="outline" onClick={() => setOpen(false)}>
