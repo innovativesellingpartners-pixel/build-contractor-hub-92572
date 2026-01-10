@@ -354,7 +354,7 @@ export function EstimateDetailViewBlue({
             TO CUSTOMER
           </ActionButton>
         )}
-        {estimate.customer_id && !estimate.job_id && (
+        {!estimate.job_id && (estimate.status === 'accepted' || estimate.status === 'sold' || estimate.signed_at || estimate.customer_id) && (
           <ActionButton 
             variant="primary" 
             onClick={handleConvertToJob}
@@ -362,7 +362,7 @@ export function EstimateDetailViewBlue({
             className="flex items-center gap-2"
           >
             <Briefcase className="w-4 h-4" />
-            TO JOB
+            {isConverting ? 'CONVERTING...' : 'CONVERT TO JOB'}
           </ActionButton>
         )}
         {canSaveAsInvoice && (
