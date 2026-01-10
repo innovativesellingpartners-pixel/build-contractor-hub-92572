@@ -87,6 +87,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Fetch contractor profile for branding (only if we have a profile ID)
     let businessName = "CT1 Contractor";
     let businessPhone = "";
+    let businessEmail = "";
     
     if (profileId) {
       const { data: profile } = await supabase
@@ -97,6 +98,7 @@ const handler = async (req: Request): Promise<Response> => {
       
       businessName = profile?.business_name || "CT1 Contractor";
       businessPhone = profile?.business_phone || "";
+      businessEmail = profile?.business_email || "";
     }
 
     // Format duration
@@ -198,6 +200,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     const emailResponse = await resend.emails.send({
       from: fromEmail,
+      reply_to: businessEmail || undefined,
       to: [recipientEmail],
       subject: `Meeting Invitation: ${meetingTitle} - ${meetingDate}`,
       html: emailHtml,
