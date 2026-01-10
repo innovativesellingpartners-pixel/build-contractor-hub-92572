@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
-import { MapPin, Loader2, Navigation, Keyboard } from 'lucide-react';
+import { MapPin, Loader2, Navigation, Keyboard, MapPinOff, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { supabase } from '@/integrations/supabase/client';
 
 export interface AddressData {
   address1: string;
@@ -14,6 +13,8 @@ export interface AddressData {
   lat?: number;
   lng?: number;
   formattedAddress: string;
+  placeId?: string;
+  source?: string;
 }
 
 interface Prediction {
@@ -21,6 +22,7 @@ interface Prediction {
   description: string;
   mainText: string;
   secondaryText: string;
+  distanceMeters?: number | null;
 }
 
 interface LocationAutocompleteProps {
@@ -32,6 +34,53 @@ interface LocationAutocompleteProps {
   showGpsButton?: boolean;
   disabled?: boolean;
   required?: boolean;
+  label?: string;
+  nearLat?: number;
+  nearLng?: number;
+  radiusMeters?: number;
+  countryCodes?: string[];
+}
+
+// Local storage key for persisting last used location
+const LOCATION_STORAGE_KEY = 'ct1_last_search_location';
+
+// Default fallback location (approximate center of US)
+const DEFAULT_LOCATION = { lat: 39.8283, lng: -98.5795, city: 'United States' };
+
+interface StoredLocation {
+  lat: number;
+  lng: number;
+  city?: string;
+  timestamp: number;
+}
+
+function getStoredLocation(): StoredLocation | null {
+  try {
+    const stored = localStorage.getItem(LOCATION_STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      // Only use if less than 30 days old
+      if (parsed.timestamp && Date.now() - parsed.timestamp < 30 * 24 * 60 * 60 * 1000) {
+        return parsed;
+      }
+    }
+  } catch (e) {
+    console.log('Could not read stored location');
+  }
+  return null;
+}
+
+function storeLocation(lat: number, lng: number, city?: string): void {
+  try {
+    localStorage.setItem(LOCATION_STORAGE_KEY, JSON.stringify({
+      lat,
+      lng,
+      city,
+      timestamp: Date.now(),
+    }));
+  } catch (e) {
+    console.log('Could not store location');
+  }
 }
 
 export function LocationAutocomplete({
@@ -43,6 +92,11 @@ export function LocationAutocomplete({
   showGpsButton = true,
   disabled = false,
   required = false,
+  label,
+  nearLat,
+  nearLng,
+  radiusMeters = 48280, // 30 miles default
+  countryCodes = ['us'],
 }: LocationAutocompleteProps) {
   const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -53,7 +107,10 @@ export function LocationAutocomplete({
   const [isManualMode, setIsManualMode] = useState(false);
   const [hasSelected, setHasSelected] = useState(false);
   const [noResults, setNoResults] = useState(false);
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [searchLocation, setSearchLocation] = useState<{ lat: number; lng: number; city?: string } | null>(null);
+  const [locationStatus, setLocationStatus] = useState<'pending' | 'granted' | 'denied' | 'unavailable'>('pending');
+  const [expandedSearch, setExpandedSearch] = useState(false);
+  const [hasRequestedLocation, setHasRequestedLocation] = useState(false);
   
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -62,49 +119,89 @@ export function LocationAutocomplete({
   // Session token for billing optimization - reset on each selection
   const sessionToken = useMemo(() => crypto.randomUUID(), [hasSelected]);
 
-  // Get user's location on mount for biasing search results
+  // Initialize search location from props, stored location, or geolocation
   useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setUserLocation({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          });
-          console.log('User location obtained for address biasing:', position.coords.latitude, position.coords.longitude);
-        },
-        (error) => {
-          console.log('Could not get user location for biasing:', error.message);
-        },
-        { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 }
-      );
+    // Priority: props > stored location > geolocation
+    if (nearLat !== undefined && nearLng !== undefined) {
+      setSearchLocation({ lat: nearLat, lng: nearLng });
+      setLocationStatus('granted');
+      return;
     }
-  }, []);
 
-  // Debounced search function - 250ms delay with location biasing
+    const stored = getStoredLocation();
+    if (stored) {
+      setSearchLocation({ lat: stored.lat, lng: stored.lng, city: stored.city });
+      setLocationStatus('granted');
+      console.log('Using stored location:', stored);
+      return;
+    }
+
+    // Will request on first focus
+    setLocationStatus('pending');
+  }, [nearLat, nearLng]);
+
+  // Request geolocation on first focus
+  const requestGeolocation = useCallback(() => {
+    if (hasRequestedLocation || locationStatus !== 'pending') return;
+    
+    setHasRequestedLocation(true);
+    
+    if (!navigator.geolocation) {
+      setLocationStatus('unavailable');
+      setSearchLocation(DEFAULT_LOCATION);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const loc = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        };
+        setSearchLocation(loc);
+        setLocationStatus('granted');
+        storeLocation(loc.lat, loc.lng);
+        console.log('Got user location:', loc);
+      },
+      (error) => {
+        console.log('Geolocation denied/unavailable:', error.message);
+        setLocationStatus('denied');
+        // Use stored or default
+        const stored = getStoredLocation();
+        setSearchLocation(stored || DEFAULT_LOCATION);
+      },
+      { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 }
+    );
+  }, [hasRequestedLocation, locationStatus]);
+
+  // Debounced search function - 250ms delay, starts at 2 chars
   const searchPlaces = useCallback(async (query: string) => {
-    if (query.length < 3) {
+    // Start at 2 characters
+    if (query.length < 2) {
       setPredictions([]);
       setNoResults(false);
+      setExpandedSearch(false);
       return;
     }
 
     setIsLoading(true);
     setNoResults(false);
+    setExpandedSearch(false);
     
     try {
-      const { data, error } = await supabase.functions.invoke('places-autocomplete', {
-        body: null,
-        headers: {},
+      // Build URL with parameters
+      const params = new URLSearchParams({
+        q: query,
+        sessionToken,
+        radius: radiusMeters.toString(),
       });
       
-      // Build URL with location biasing parameters
-      let url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/places-autocomplete?q=${encodeURIComponent(query)}&sessionToken=${sessionToken}`;
-      
-      // Add location biasing if we have user's location
-      if (userLocation) {
-        url += `&lat=${userLocation.lat}&lng=${userLocation.lng}`;
+      if (searchLocation) {
+        params.set('lat', searchLocation.lat.toString());
+        params.set('lng', searchLocation.lng.toString());
       }
+
+      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/places-autocomplete?${params}`;
       
       const response = await fetch(url, {
         headers: {
@@ -123,6 +220,7 @@ export function LocationAutocomplete({
         setPredictions(result.predictions);
         setShowDropdown(true);
         setNoResults(false);
+        setExpandedSearch(result.expanded || false);
       } else {
         setPredictions([]);
         setShowDropdown(true);
@@ -135,7 +233,7 @@ export function LocationAutocomplete({
     } finally {
       setIsLoading(false);
     }
-  }, [sessionToken, userLocation]);
+  }, [sessionToken, searchLocation, radiusMeters]);
 
   // Handle input change with 250ms debounce
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -152,6 +250,14 @@ export function LocationAutocomplete({
       debounceRef.current = setTimeout(() => {
         searchPlaces(newValue);
       }, 250);
+    }
+  };
+
+  // Handle input focus - request location and show dropdown
+  const handleFocus = () => {
+    requestGeolocation();
+    if (predictions.length > 0) {
+      setShowDropdown(true);
     }
   };
 
@@ -180,6 +286,11 @@ export function LocationAutocomplete({
       
       onChange(data.formattedAddress);
       setHasSelected(true);
+      
+      // Store the location for future searches
+      if (data.lat && data.lng) {
+        storeLocation(data.lat, data.lng, data.city);
+      }
       
       if (onAddressSelect) {
         onAddressSelect(data);
@@ -228,7 +339,7 @@ export function LocationAutocomplete({
     }
   };
 
-  // Get current GPS location
+  // Get current GPS location and reverse geocode
   const handleGetLocation = async () => {
     if (!navigator.geolocation) {
       console.error('Geolocation not supported');
@@ -246,6 +357,10 @@ export function LocationAutocomplete({
       });
 
       const { latitude, longitude } = position.coords;
+      
+      // Update search location
+      setSearchLocation({ lat: latitude, lng: longitude });
+      storeLocation(latitude, longitude);
       
       // Use reverse geocoding via Nominatim (free) for GPS lookup
       const response = await fetch(
@@ -265,6 +380,8 @@ export function LocationAutocomplete({
           onChange(data.display_name);
           setHasSelected(true);
           
+          storeLocation(latitude, longitude, city);
+          
           if (onAddressSelect) {
             onAddressSelect({
               address1,
@@ -275,6 +392,7 @@ export function LocationAutocomplete({
               lat: latitude,
               lng: longitude,
               formattedAddress: data.display_name,
+              source: 'gps',
             });
           }
         }
@@ -291,7 +409,7 @@ export function LocationAutocomplete({
     setIsManualMode(true);
     setShowDropdown(false);
     setPredictions([]);
-    setHasSelected(true); // Mark as valid when in manual mode
+    setHasSelected(true);
   };
 
   // Close dropdown when clicking outside
@@ -320,6 +438,13 @@ export function LocationAutocomplete({
 
   return (
     <div ref={containerRef} className="relative">
+      {label && (
+        <label className="block text-sm font-medium text-foreground mb-1.5">
+          {label}
+          {required && <span className="text-destructive ml-1">*</span>}
+        </label>
+      )}
+      
       <div className="relative flex items-center gap-2">
         <div className="relative flex-1">
           <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -328,7 +453,7 @@ export function LocationAutocomplete({
             value={value}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
-            onFocus={() => predictions.length > 0 && setShowDropdown(true)}
+            onFocus={handleFocus}
             placeholder={placeholder}
             className={cn(
               "pl-10 pr-8",
@@ -364,12 +489,28 @@ export function LocationAutocomplete({
         )}
       </div>
 
+      {/* Search near indicator */}
+      {searchLocation && searchLocation.city && !isLoading && (
+        <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+          <MapPin className="h-3 w-3" />
+          Searching near {searchLocation.city}
+        </p>
+      )}
+
       {/* Dropdown */}
       {showDropdown && (
         <div 
-          className="absolute z-50 w-full mt-1 bg-background border border-input rounded-md shadow-lg max-h-60 overflow-auto"
+          className="absolute z-50 w-full mt-1 bg-background border border-input rounded-md shadow-lg max-h-72 overflow-auto"
           role="listbox"
         >
+          {/* Expanded search notice */}
+          {expandedSearch && predictions.length > 0 && (
+            <div className="px-3 py-2 bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-300 text-xs flex items-center gap-1.5 border-b border-input">
+              <AlertCircle className="h-3 w-3" />
+              No nearby matches. Showing results from expanded area.
+            </div>
+          )}
+          
           {/* Loading state */}
           {isLoading && (
             <div className="px-3 py-4 flex items-center justify-center text-sm text-muted-foreground">
@@ -415,8 +556,9 @@ export function LocationAutocomplete({
           
           {/* No results */}
           {!isLoading && noResults && (
-            <div className="px-3 py-4 text-center text-sm text-muted-foreground">
-              No results found
+            <div className="px-3 py-4 text-center text-sm text-muted-foreground flex flex-col items-center gap-2">
+              <MapPinOff className="h-5 w-5" />
+              <span>No addresses found</span>
             </div>
           )}
           
