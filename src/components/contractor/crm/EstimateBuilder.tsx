@@ -242,20 +242,20 @@ export default function EstimateBuilder({ initialData, onSave, onCancel }: Estim
   const progress = (currentStep / STEPS.length) * 100;
 
   return (
-    <div className="h-full flex flex-col bg-background pb-safe">
+    <div className="h-full flex flex-col bg-background">
       {/* Header with Progress */}
-      <div className="flex-shrink-0 border-b bg-card px-4 sm:px-6 py-4">
+      <div className="flex-shrink-0 border-b bg-card px-6 py-4">
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2 sm:gap-4">
+          <div className="flex items-center gap-4">
             <Button variant="ghost" size="sm" onClick={onCancel}>
-              <ArrowLeft className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">Cancel</span>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Cancel
             </Button>
             <div>
-              <h2 className="text-base sm:text-lg font-semibold">
+              <h2 className="text-lg font-semibold">
                 {initialData?.id ? 'Edit Estimate' : 'New Estimate'}
               </h2>
-              <p className="text-xs sm:text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
                 Step {currentStep} of {STEPS.length}: {STEPS[currentStep - 1].name}
               </p>
             </div>
@@ -265,7 +265,6 @@ export default function EstimateBuilder({ initialData, onSave, onCancel }: Estim
             size="sm" 
             onClick={handleSaveDraft}
             disabled={isSaving}
-            className="hidden sm:flex"
           >
             <Save className="h-4 w-4 mr-2" />
             Save Draft
@@ -273,12 +272,12 @@ export default function EstimateBuilder({ initialData, onSave, onCancel }: Estim
         </div>
         
         {/* Step Indicators */}
-        <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto pb-1">
+        <div className="flex items-center gap-2">
           {STEPS.map((step, index) => (
-            <div key={step.id} className="flex items-center shrink-0">
+            <div key={step.id} className="flex items-center">
               <button
                 onClick={() => setCurrentStep(step.id)}
-                className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 rounded-full text-xs sm:text-sm transition-colors ${
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm transition-colors ${
                   currentStep === step.id
                     ? 'bg-primary text-primary-foreground'
                     : currentStep > step.id
@@ -287,16 +286,16 @@ export default function EstimateBuilder({ initialData, onSave, onCancel }: Estim
                 }`}
               >
                 {currentStep > step.id ? (
-                  <Check className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                  <Check className="h-3.5 w-3.5" />
                 ) : (
-                  <span className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-current/20 flex items-center justify-center text-[10px] sm:text-xs">
+                  <span className="w-5 h-5 rounded-full bg-current/20 flex items-center justify-center text-xs">
                     {step.id}
                   </span>
                 )}
                 <span className="hidden sm:inline">{step.name}</span>
               </button>
               {index < STEPS.length - 1 && (
-                <div className={`w-4 sm:w-8 h-0.5 mx-0.5 sm:mx-1 ${
+                <div className={`w-8 h-0.5 mx-1 ${
                   currentStep > step.id ? 'bg-primary' : 'bg-muted'
                 }`} />
               )}
@@ -307,8 +306,8 @@ export default function EstimateBuilder({ initialData, onSave, onCancel }: Estim
         <Progress value={progress} className="mt-4 h-1" />
       </div>
 
-      {/* Step Content - with bottom padding to ensure footer visibility */}
-      <div className="flex-1 overflow-auto p-4 sm:p-6 pb-4">
+      {/* Step Content */}
+      <div className="flex-1 overflow-auto p-6">
         {currentStep === 1 && (
           <ProjectInfoStep
             data={formData}
@@ -335,23 +334,22 @@ export default function EstimateBuilder({ initialData, onSave, onCancel }: Estim
         )}
       </div>
 
-      {/* Footer Navigation - always visible with safe area padding */}
-      <div className="flex-shrink-0 border-t bg-card px-4 sm:px-6 py-3 sm:py-4 relative z-30 shadow-[0_-2px_10px_rgba(0,0,0,0.1)]">
-        <div className="flex items-center justify-between max-w-full gap-2">
+      {/* Footer Navigation - elevated z-index to stay above floating elements */}
+      <div className="flex-shrink-0 border-t bg-card px-6 py-4 relative z-50">
+        <div className="flex items-center justify-between max-w-full">
           <Button
             variant="outline"
             onClick={handleBack}
             disabled={currentStep === 1}
             className="shrink-0"
-            size="sm"
           >
-            <ArrowLeft className="h-4 w-4 sm:mr-2" />
-            <span className="hidden sm:inline">Back</span>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
           </Button>
           
-          <div className="flex items-center gap-2 sm:gap-3">
-            {/* Running Total - hide on small screens */}
-            <div className="hidden lg:block text-right mr-2">
+          <div className="flex items-center gap-2 sm:gap-3 ml-2">
+            {/* Running Total - hide on very small screens */}
+            <div className="hidden md:block text-right mr-2">
               <p className="text-xs text-muted-foreground">Estimate Total</p>
               <p className="text-lg font-semibold text-primary">
                 ${formData.grand_total.toLocaleString('en-US', { minimumFractionDigits: 2 })}
@@ -359,18 +357,17 @@ export default function EstimateBuilder({ initialData, onSave, onCancel }: Estim
             </div>
             
             {currentStep < STEPS.length ? (
-              <Button onClick={handleNext} disabled={!canProceed()} className="shrink-0" size="sm">
+              <Button onClick={handleNext} disabled={!canProceed()} className="shrink-0">
                 Next
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
             ) : (
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap justify-end">
                 <Button
                   variant="outline"
                   onClick={handleSaveDraft}
                   disabled={isSaving}
                   className="shrink-0"
-                  size="sm"
                 >
                   <Save className="h-4 w-4 sm:mr-2" />
                   <span className="hidden sm:inline">Save Draft</span>
@@ -379,7 +376,6 @@ export default function EstimateBuilder({ initialData, onSave, onCancel }: Estim
                   onClick={handleSendEstimate}
                   disabled={isSaving || !formData.client_email}
                   className="shrink-0"
-                  size="sm"
                 >
                   <Send className="h-4 w-4 sm:mr-2" />
                   <span className="hidden sm:inline">Send to Client</span>

@@ -2,81 +2,15 @@ import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Trash2, FileCheck, FileX, Save, Loader2 } from 'lucide-react';
-import { useTrades, useAssumptionTemplates, useExclusionTemplates, useEstimateAssumptionsExclusions } from '@/hooks/useTrades';
+import { useTrades, useAssumptionTemplates, useExclusionTemplates, useEstimateAssumptionsExclusions, Trade, AssumptionTemplate, ExclusionTemplate } from '@/hooks/useTrades';
 import { toast } from 'sonner';
-
-// Predefined exclusion options organized by category
-const PREDEFINED_EXCLUSION_OPTIONS = [
-  {
-    category: 'Permits & Fees',
-    options: [
-      { title: 'Permit Fees', text: 'All permit fees, inspection fees, and governmental charges are excluded from this estimate.' },
-      { title: 'Impact Fees', text: 'Impact fees, development fees, or any municipal charges are not included.' },
-      { title: 'Tap Fees', text: 'Water, sewer, or utility tap fees are excluded from the scope of work.' },
-    ]
-  },
-  {
-    category: 'Hazardous Materials',
-    options: [
-      { title: 'Asbestos Abatement', text: 'Testing, removal, or abatement of asbestos-containing materials is excluded.' },
-      { title: 'Lead Paint Removal', text: 'Lead paint testing, removal, or remediation is not included in this estimate.' },
-      { title: 'Mold Remediation', text: 'Mold testing, removal, or remediation work is excluded from this scope.' },
-    ]
-  },
-  {
-    category: 'Design Services',
-    options: [
-      { title: 'Architectural Design', text: 'Architectural design, drawings, or engineering services are not included.' },
-      { title: 'Structural Engineering', text: 'Structural engineering analysis, design, or stamped drawings are excluded.' },
-      { title: 'MEP Engineering', text: 'Mechanical, electrical, or plumbing engineering services are not included.' },
-    ]
-  },
-  {
-    category: 'Existing Conditions',
-    options: [
-      { title: 'Concealed Damage', text: 'Repair of any concealed damage discovered during construction is excluded and will be addressed via change order.' },
-      { title: 'Hidden Defects', text: 'Correction of hidden structural defects or code violations is not included.' },
-      { title: 'Unknown Conditions', text: 'Work required due to unforeseen or unknown existing conditions is excluded.' },
-    ]
-  },
-  {
-    category: 'Finish Work',
-    options: [
-      { title: 'Painting', text: 'All painting, staining, or finish coating work is excluded from this estimate.' },
-      { title: 'Drywall Repair', text: 'Drywall patching, finishing, or texture matching is not included.' },
-      { title: 'Flooring', text: 'Flooring installation, repair, or replacement is excluded from the scope.' },
-    ]
-  },
-  {
-    category: 'Structural',
-    options: [
-      { title: 'Framing Repair', text: 'Structural framing repair or modifications are excluded unless specifically noted.' },
-      { title: 'Foundation Work', text: 'Foundation repair, underpinning, or modification work is not included.' },
-      { title: 'Load-Bearing Modifications', text: 'Modifications to load-bearing walls or structural elements are excluded.' },
-    ]
-  },
-  {
-    category: 'Utilities',
-    options: [
-      { title: 'Electrical Upgrades', text: 'Electrical panel upgrades, rewiring, or code compliance work is excluded.' },
-      { title: 'Plumbing Upgrades', text: 'Plumbing system upgrades or modifications beyond the immediate work area are not included.' },
-      { title: 'HVAC Work', text: 'HVAC system modifications, ductwork, or equipment installation is excluded.' },
-    ]
-  },
-  {
-    category: 'Site Work',
-    options: [
-      { title: 'Excavation', text: 'Excavation, grading, or earthwork beyond immediate project needs is excluded.' },
-      { title: 'Landscaping', text: 'Landscaping, irrigation, or lawn restoration is not included in this estimate.' },
-      { title: 'Tree Removal', text: 'Tree or stump removal is excluded from the scope of work.' },
-    ]
-  },
-];
 
 interface AssumptionRow {
   id?: string;
@@ -114,7 +48,6 @@ export function AssumptionsExclusionsTab({ estimateId, onSave }: AssumptionsExcl
   const [exclusionRows, setExclusionRows] = useState<AssumptionRow[]>([]);
   const [saving, setSaving] = useState(false);
   const [initialized, setInitialized] = useState(false);
-  const [showExclusionPicker, setShowExclusionPicker] = useState(false);
 
   // Initialize from saved data or templates
   useEffect(() => {
@@ -251,21 +184,6 @@ export function AssumptionsExclusionsTab({ estimateId, onSave }: AssumptionsExcl
       selected: true,
       isCustom: true,
     }]);
-    setShowExclusionPicker(false);
-  };
-
-  const handleAddPredefinedExclusion = (option: { title: string; text: string }, category: string) => {
-    setExclusionRows(prev => [...prev, {
-      templateId: null,
-      title: option.title,
-      text: option.text,
-      category: category,
-      priority: 999,
-      selected: true,
-      isCustom: true,
-    }]);
-    setShowExclusionPicker(false);
-    toast.success(`Added: ${option.title}`);
   };
 
   const handleRemoveRow = (type: 'assumption' | 'exclusion', index: number) => {
@@ -460,50 +378,10 @@ export function AssumptionsExclusionsTab({ estimateId, onSave }: AssumptionsExcl
                 <FileX className="h-5 w-5 text-destructive" />
                 <CardTitle>Exclusions</CardTitle>
               </div>
-              <Dialog open={showExclusionPicker} onOpenChange={setShowExclusionPicker}>
-                <DialogTrigger asChild>
-                  <Button size="sm" variant="outline">
-                    <Plus className="h-4 w-4 mr-1" />
-                    Add
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-lg max-h-[80vh]">
-                  <DialogHeader>
-                    <DialogTitle>Add Exclusion</DialogTitle>
-                  </DialogHeader>
-                  <ScrollArea className="h-[50vh] pr-4">
-                    <div className="space-y-4">
-                      {PREDEFINED_EXCLUSION_OPTIONS.map((group) => (
-                        <div key={group.category}>
-                          <h4 className="text-sm font-semibold text-muted-foreground mb-2">{group.category}</h4>
-                          <div className="space-y-1">
-                            {group.options.map((option) => (
-                              <Button
-                                key={option.title}
-                                variant="ghost"
-                                className="w-full justify-start text-left h-auto py-2 px-3"
-                                onClick={() => handleAddPredefinedExclusion(option, group.category)}
-                              >
-                                <span className="text-sm">{option.title}</span>
-                              </Button>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </ScrollArea>
-                  <div className="pt-2 border-t">
-                    <Button 
-                      variant="outline" 
-                      className="w-full" 
-                      onClick={handleAddCustomExclusion}
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Custom Exclusion
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
+              <Button size="sm" variant="outline" onClick={handleAddCustomExclusion}>
+                <Plus className="h-4 w-4 mr-1" />
+                Add Custom
+              </Button>
             </div>
           </CardHeader>
           <CardContent>
