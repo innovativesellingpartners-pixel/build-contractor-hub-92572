@@ -99,14 +99,22 @@ const handler = async (req: Request): Promise<Response> => {
     // Fetch contractor profile for branding
     const { data: profile } = await supabase
       .from('profiles')
-      .select('company_name, logo_url, phone, business_address, city, state')
+      .select('company_name, logo_url, phone, business_address, city, state, business_email')
       .eq('user_id', estimate.user_id)
       .single();
+    
+    // Get the authenticated user's email address
+    const { data: { user: estimateUser } } = await supabase.auth.admin.getUserById(estimate.user_id);
+    const authenticatedUserEmail = estimateUser?.email || '';
 
     const companyName = profile?.company_name || contractorName;
     const logoSrc = profile?.logo_url || 'https://faqrzzodtmsybofakcvv.supabase.co/storage/v1/object/public/company-logos/ct1-logo-circle.png';
     const companyPhone = profile?.phone || '';
     const companyAddress = [profile?.business_address, profile?.city, profile?.state].filter(Boolean).join(', ');
+    
+    // Use profile's business_email, or contractor's email from request, or authenticated user email
+    const replyToEmail = profile?.business_email || contractorEmail || authenticatedUserEmail;
+    console.log('Using reply-to email:', replyToEmail, 'Authenticated user email:', authenticatedUserEmail);
 
     // Send email to client
     const recipients = [estimate.client_email];
@@ -118,7 +126,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const effectiveFromEmail = FROM_EMAIL;
-    console.log('Attempting to send estimate email', { to: recipients, bcc, from: effectiveFromEmail });
+    console.log('Attempting to send estimate email', { to: recipients, bcc, from: effectiveFromEmail, replyTo: replyToEmail });
     
     // Generate PDF and attach to email
     const { data: pdfData, error: pdfError } = await supabase.functions.invoke('generate-estimate-pdf', {
@@ -319,10 +327,10 @@ const handler = async (req: Request): Promise<Response> => {
     `;
 
     const emailData: any = {
-      from: `${contractorName} <${effectiveFromEmail}>`,
+      from: `${companyName} <${effectiveFromEmail}>`,
       to: recipients,
       bcc,
-      reply_to: contractorEmail || undefined,
+      reply_to: replyToEmail || contractorEmail || undefined,
       subject: `Estimate from ${companyName} - ${estimate.title}`,
       html: emailHtml,
     };

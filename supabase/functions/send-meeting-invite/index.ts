@@ -36,6 +36,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Check for auth header - allow service-role calls from voice AI
     const authHeader = req.headers.get("authorization");
     let userId: string | null = null;
+    let userEmail: string | null = null;
     
     if (authHeader) {
       const token = authHeader.replace("Bearer ", "");
@@ -54,6 +55,8 @@ const handler = async (req: Request): Promise<Response> => {
           );
         }
         userId = user.id;
+        userEmail = user.email || null;
+        console.log("Authenticated user:", userId, "email:", userEmail);
       }
     } else {
       return new Response(
@@ -88,17 +91,34 @@ const handler = async (req: Request): Promise<Response> => {
     let businessName = "CT1 Contractor";
     let businessPhone = "";
     let businessEmail = "";
+    let senderEmail = userEmail || ""; // Start with authenticated user's email
     
     if (profileId) {
+      // If we have a contractorId but no userEmail, fetch the user's email from auth
+      if (!userEmail && contractorId) {
+        const { data: { user: contractorUser } } = await supabase.auth.admin.getUserById(contractorId);
+        if (contractorUser?.email) {
+          senderEmail = contractorUser.email;
+          console.log("Fetched contractor email from auth:", senderEmail);
+        }
+      }
+      
       const { data: profile } = await supabase
         .from("profiles")
-        .select("business_name, business_email, business_phone")
-        .eq("id", profileId)
+        .select("company_name, business_email, phone")
+        .eq("user_id", profileId)
         .single();
       
-      businessName = profile?.business_name || "CT1 Contractor";
-      businessPhone = profile?.business_phone || "";
-      businessEmail = profile?.business_email || "";
+      businessName = profile?.company_name || "CT1 Contractor";
+      businessPhone = profile?.phone || "";
+      businessEmail = profile?.business_email || senderEmail || "";
+      
+      // Prefer business_email if set, otherwise use authenticated user's email
+      if (!senderEmail && businessEmail) {
+        senderEmail = businessEmail;
+      }
+      
+      console.log("Contractor profile loaded:", { businessName, businessEmail, senderEmail });
     }
 
     // Format duration
@@ -194,13 +214,19 @@ const handler = async (req: Request): Promise<Response> => {
       </html>
     `;
 
-    console.log(`Sending meeting invite to ${recipientEmail}`);
+    console.log(`Sending meeting invite to ${recipientEmail} from contractor: ${senderEmail || businessEmail}`);
 
-    const fromEmail = Deno.env.get("EMAIL_FROM") || "CT1 <noreply@myct1.com>";
+    // Use contractor's email in display name, but send through verified domain
+    const baseFromEmail = Deno.env.get("EMAIL_FROM") || "noreply@myct1.com";
+    const fromName = businessName || "CT1 Contractor";
+    const fromEmail = `${fromName} <${baseFromEmail}>`;
+    const replyToEmail = senderEmail || businessEmail;
+
+    console.log("Email config:", { fromEmail, replyToEmail });
 
     const emailResponse = await resend.emails.send({
       from: fromEmail,
-      reply_to: businessEmail || undefined,
+      reply_to: replyToEmail || undefined,
       to: [recipientEmail],
       subject: `Meeting Invitation: ${meetingTitle} - ${meetingDate}`,
       html: emailHtml,
