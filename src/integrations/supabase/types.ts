@@ -428,56 +428,155 @@ export type Database = {
         }
         Relationships: []
       }
+      change_order_views: {
+        Row: {
+          change_order_id: string | null
+          id: string
+          ip_address: string | null
+          user_agent: string | null
+          viewed_at: string | null
+        }
+        Insert: {
+          change_order_id?: string | null
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          viewed_at?: string | null
+        }
+        Update: {
+          change_order_id?: string | null
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          viewed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "change_order_views_change_order_id_fkey"
+            columns: ["change_order_id"]
+            isOneToOne: false
+            referencedRelation: "change_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       change_orders: {
         Row: {
           additional_cost: number
           approved_by: string | null
+          change_order_number: string | null
+          client_address: string | null
+          client_email: string | null
+          client_name: string | null
+          client_phone: string | null
+          client_printed_name: string | null
+          client_signature: string | null
           created_at: string
           date_approved: string | null
           date_requested: string
           description: string
+          estimate_id: string | null
           id: string
           job_id: string
+          line_items: Json | null
           notes: string | null
+          pdf_url: string | null
+          public_token: string | null
           reason: string | null
           requested_by: string | null
+          scope_of_work: string | null
+          sent_at: string | null
+          signed_at: string | null
           status: Database["public"]["Enums"]["change_order_status"]
+          subtotal: number | null
+          tax_amount: number | null
+          tax_rate: number | null
+          terms_and_conditions: string | null
+          total_amount: number | null
           updated_at: string
           user_id: string
+          viewed_at: string | null
         }
         Insert: {
           additional_cost?: number
           approved_by?: string | null
+          change_order_number?: string | null
+          client_address?: string | null
+          client_email?: string | null
+          client_name?: string | null
+          client_phone?: string | null
+          client_printed_name?: string | null
+          client_signature?: string | null
           created_at?: string
           date_approved?: string | null
           date_requested?: string
           description: string
+          estimate_id?: string | null
           id?: string
           job_id: string
+          line_items?: Json | null
           notes?: string | null
+          pdf_url?: string | null
+          public_token?: string | null
           reason?: string | null
           requested_by?: string | null
+          scope_of_work?: string | null
+          sent_at?: string | null
+          signed_at?: string | null
           status?: Database["public"]["Enums"]["change_order_status"]
+          subtotal?: number | null
+          tax_amount?: number | null
+          tax_rate?: number | null
+          terms_and_conditions?: string | null
+          total_amount?: number | null
           updated_at?: string
           user_id: string
+          viewed_at?: string | null
         }
         Update: {
           additional_cost?: number
           approved_by?: string | null
+          change_order_number?: string | null
+          client_address?: string | null
+          client_email?: string | null
+          client_name?: string | null
+          client_phone?: string | null
+          client_printed_name?: string | null
+          client_signature?: string | null
           created_at?: string
           date_approved?: string | null
           date_requested?: string
           description?: string
+          estimate_id?: string | null
           id?: string
           job_id?: string
+          line_items?: Json | null
           notes?: string | null
+          pdf_url?: string | null
+          public_token?: string | null
           reason?: string | null
           requested_by?: string | null
+          scope_of_work?: string | null
+          sent_at?: string | null
+          signed_at?: string | null
           status?: Database["public"]["Enums"]["change_order_status"]
+          subtotal?: number | null
+          tax_amount?: number | null
+          tax_rate?: number | null
+          terms_and_conditions?: string | null
+          total_amount?: number | null
           updated_at?: string
           user_id?: string
+          viewed_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "change_orders_estimate_id_fkey"
+            columns: ["estimate_id"]
+            isOneToOne: false
+            referencedRelation: "estimates"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "change_orders_job_id_fkey"
             columns: ["job_id"]
