@@ -129,14 +129,24 @@ export function useEstimates() {
     mutationFn: async (estimate: Estimate) => {
       if (!user?.id) throw new Error('Not authenticated');
 
-      // Generate estimate number
-      const { data: estimateNumber } = await supabase.rpc('generate_estimate_number');
+      // Generate estimate number if not provided
+      let finalEstimateNumber = estimate.estimate_number;
+      if (!finalEstimateNumber) {
+        const { data: generatedNumber, error: rpcError } = await supabase.rpc('generate_estimate_number');
+        if (rpcError) {
+          console.error('Failed to generate estimate number:', rpcError);
+          // Fallback to a timestamp-based number
+          finalEstimateNumber = `EST-${Date.now()}`;
+        } else {
+          finalEstimateNumber = generatedNumber;
+        }
+      }
 
       const { data, error } = await supabase
         .from('estimates')
         .insert([{
           user_id: user.id,
-          estimate_number: estimate.estimate_number || estimateNumber,
+          estimate_number: finalEstimateNumber,
           customer_id: estimate.customer_id,
           opportunity_id: estimate.opportunity_id,
           lead_id: estimate.lead_id,
