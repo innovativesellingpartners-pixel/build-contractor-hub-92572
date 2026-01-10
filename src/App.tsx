@@ -42,6 +42,7 @@ import { AdminEstimates } from "@/components/admin/AdminEstimates";
 import { AdminInvoices } from "@/components/admin/AdminInvoices";
 import { AdminJobs } from "@/components/admin/AdminJobs";
 import { AdminCustomers } from "@/components/admin/AdminCustomers";
+import { AdminGCContacts } from "@/components/admin/AdminGCContacts";
 import { AdminSettings } from "@/components/admin/AdminSettings";
 import { PocketbotAccessManagement } from "@/components/admin/PocketbotAccessManagement";
 import { BusinessSuite } from "@/pages/BusinessSuite";
@@ -212,6 +213,7 @@ const App = () => (
               <Route path="invoices" element={<AdminInvoices />} />
               <Route path="jobs" element={<AdminJobs />} />
               <Route path="customers" element={<AdminCustomers />} />
+              <Route path="gc-contacts" element={<AdminGCContacts />} />
               <Route path="support" element={<SupportTickets />} />
               <Route path="marketplace" element={<MarketplaceManagement />} />
               <Route path="settings" element={<AdminSettings />} />

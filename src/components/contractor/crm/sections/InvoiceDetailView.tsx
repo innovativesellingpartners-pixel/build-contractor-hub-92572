@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
-import { FileText, Send, Download, ArrowLeft, Mail, ExternalLink, Loader2, Eye, Paperclip } from 'lucide-react';
+import { FileText, Send, Download, ArrowLeft, Mail, ExternalLink, Loader2, Eye, Paperclip, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -15,7 +15,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { WaiverSelection, SelectedWaiver, WAIVER_TYPES } from '../WaiverSelection';
 import { WaiverPreview } from '../WaiverPreview';
 import { useContractorProfile } from '@/hooks/useContractorProfile';
-import { useGCContacts } from '@/hooks/useGCContacts';
+import { useGCContacts, GCContact } from '@/hooks/useGCContacts';
 import { useInvoiceWaivers } from '@/hooks/useInvoiceWaivers';
 import {
   BlueBackground,
@@ -58,7 +58,7 @@ interface EstimateData {
 export function InvoiceDetailView({ invoice, onClose, onSectionChange }: InvoiceDetailViewProps) {
   const { updateInvoice } = useInvoices();
   const { profile } = useContractorProfile();
-  const { gcContacts } = useGCContacts();
+  const { gcContacts, addGCContact, refreshGCContacts } = useGCContacts();
   const { generateWaivers, isGenerating: waiverGenerating } = useInvoiceWaivers();
   const [job, setJob] = useState<JobData | null>(null);
   const [customer, setCustomer] = useState<CustomerData | null>(null);
@@ -81,6 +81,15 @@ export function InvoiceDetailView({ invoice, onClose, onSectionChange }: Invoice
   const [signatureData, setSignatureData] = useState<string>('');
   const [signerName, setSignerName] = useState<string>('');
   const [signerTitle, setSignerTitle] = useState<string>('');
+  const [showAddGCDialog, setShowAddGCDialog] = useState(false);
+  const [newGCData, setNewGCData] = useState({
+    name: '',
+    company: '',
+    email: '',
+    phone: '',
+    address: '',
+  });
+  const [savingGC, setSavingGC] = useState(false);
 
   useEffect(() => {
     const fetchRelatedData = async () => {
@@ -584,18 +593,30 @@ export function InvoiceDetailView({ invoice, onClose, onSectionChange }: Invoice
               {/* GC Selection */}
               <div className="space-y-2">
                 <Label>Select GC / Recipient</Label>
-                <select
-                  className="w-full px-3 py-2 border border-border rounded-md text-sm bg-background"
-                  value={selectedGcId}
-                  onChange={(e) => setSelectedGcId(e.target.value)}
-                >
-                  <option value="">Select a GC...</option>
-                  {gcContacts.map(gc => (
-                    <option key={gc.id} value={gc.id}>
-                      {gc.name} {gc.company ? `(${gc.company})` : ''}
-                    </option>
-                  ))}
-                </select>
+                <div className="flex gap-2">
+                  <select
+                    className="flex-1 px-3 py-2 border border-border rounded-md text-sm bg-background"
+                    value={selectedGcId}
+                    onChange={(e) => setSelectedGcId(e.target.value)}
+                  >
+                    <option value="">Select a GC...</option>
+                    {gcContacts.map(gc => (
+                      <option key={gc.id} value={gc.id}>
+                        {gc.name} {gc.company ? `(${gc.company})` : ''}
+                      </option>
+                    ))}
+                  </select>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowAddGCDialog(true)}
+                    className="flex items-center gap-1"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Add GC
+                  </Button>
+                </div>
               </div>
 
               {/* Waiver Selection */}
@@ -680,6 +701,87 @@ export function InvoiceDetailView({ invoice, onClose, onSectionChange }: Invoice
                 </Button>
               </>
             )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add New GC Dialog */}
+      <Dialog open={showAddGCDialog} onOpenChange={setShowAddGCDialog}>
+        <DialogContent className="sm:max-w-[450px]">
+          <DialogHeader>
+            <DialogTitle>Add New GC Contact</DialogTitle>
+            <DialogDescription>
+              Add a new general contractor to your contacts
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="gcName">Name *</Label>
+              <Input
+                id="gcName"
+                placeholder="Contact name"
+                value={newGCData.name}
+                onChange={(e) => setNewGCData(prev => ({ ...prev, name: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="gcCompany">Company</Label>
+              <Input
+                id="gcCompany"
+                placeholder="Company name"
+                value={newGCData.company}
+                onChange={(e) => setNewGCData(prev => ({ ...prev, company: e.target.value }))}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="gcEmail">Email</Label>
+                <Input
+                  id="gcEmail"
+                  type="email"
+                  placeholder="email@example.com"
+                  value={newGCData.email}
+                  onChange={(e) => setNewGCData(prev => ({ ...prev, email: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="gcPhone">Phone</Label>
+                <Input
+                  id="gcPhone"
+                  placeholder="(555) 123-4567"
+                  value={newGCData.phone}
+                  onChange={(e) => setNewGCData(prev => ({ ...prev, phone: e.target.value }))}
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAddGCDialog(false)} disabled={savingGC}>
+              Cancel
+            </Button>
+            <Button
+              onClick={async () => {
+                if (!newGCData.name.trim()) {
+                  toast.error('Name is required');
+                  return;
+                }
+                setSavingGC(true);
+                try {
+                  const newGC = await addGCContact(newGCData);
+                  setSelectedGcId(newGC.id);
+                  setShowAddGCDialog(false);
+                  setNewGCData({ name: '', company: '', email: '', phone: '', address: '' });
+                  toast.success('GC contact added');
+                } catch (error: any) {
+                  toast.error(error.message || 'Failed to add GC');
+                } finally {
+                  setSavingGC(false);
+                }
+              }}
+              disabled={savingGC || !newGCData.name.trim()}
+            >
+              {savingGC ? 'Adding...' : 'Add GC'}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

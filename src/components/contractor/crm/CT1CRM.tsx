@@ -16,7 +16,9 @@ import {
   LayoutTemplate,
   ArrowLeft,
   CreditCard,
-  Receipt
+  Receipt,
+  Building2,
+  Contact
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -35,6 +37,8 @@ import EstimatesSection from './sections/EstimatesSection';
 import FinancialsSection from './sections/FinancialsSection';
 import MoreSection from './sections/MoreSection';
 import InvoicesSection from './sections/InvoicesSection';
+import GCSection from './sections/GCSection';
+import ContactsSection from './sections/ContactsSection';
 
 import ct1Logo from '@/assets/ct1-round-logo-new.png';
 import Reporting from '@/pages/Reporting';
@@ -43,7 +47,7 @@ import { MobileLandingPage } from './MobileLandingPage';
 import { PaymentsBankingSection } from './sections/PaymentsBankingSection';
 import { TemplatesSection } from './estimate/TemplatesSection';
 
-type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calendar' | 'emails' | 'estimates' | 'reporting' | 'financials' | 'more' | 'payments' | 'accounting' | 'invoices' | 'templates';
+type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calendar' | 'emails' | 'estimates' | 'reporting' | 'financials' | 'more' | 'payments' | 'accounting' | 'invoices' | 'templates' | 'gc' | 'contacts';
 
 interface CT1CRMProps {
   onOpenPocketbot?: () => void;
@@ -66,6 +70,8 @@ const navItems = [
   { id: 'payments' as Section, label: 'Payments', icon: CreditCard },
   { id: 'reporting' as Section, label: 'Reporting', icon: BarChart2 },
   { id: 'customers' as Section, label: 'Customers', icon: Users },
+  { id: 'gc' as Section, label: 'General Contractors', icon: Building2 },
+  { id: 'contacts' as Section, label: 'Contacts', icon: Contact },
 ];
 
 // Component moved to accept props - see above
@@ -75,7 +81,7 @@ const navItems = [
     // Check for URL param from OAuth callback
     const params = new URLSearchParams(window.location.search);
     const crmSection = params.get('crm_section') as Section | null;
-    if (crmSection && ['dashboard', 'leads', 'jobs', 'customers', 'calls', 'calendar', 'emails', 'estimates', 'reporting', 'financials', 'more', 'payments', 'accounting', 'invoices', 'templates'].includes(crmSection)) {
+    if (crmSection && ['dashboard', 'leads', 'jobs', 'customers', 'calls', 'calendar', 'emails', 'estimates', 'reporting', 'financials', 'more', 'payments', 'accounting', 'invoices', 'templates', 'gc', 'contacts'].includes(crmSection)) {
       sessionStorage.setItem('ct1CrmActiveSection', crmSection);
       // Clean URL param
       params.delete('crm_section');
@@ -245,6 +251,10 @@ const navItems = [
         return <PaymentsBankingSection />;
       case 'accounting':
         return <Accounting />;
+      case 'gc':
+        return <GCSection onSectionChange={handleSectionChange} />;
+      case 'contacts':
+        return <ContactsSection onSectionChange={handleSectionChange} />;
       default:
         return <CRMDashboard onSectionChange={handleSectionChange} />;
     }
