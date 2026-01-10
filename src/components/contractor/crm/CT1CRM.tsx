@@ -101,6 +101,7 @@ const navItems = [
   const [showMobileLanding, setShowMobileLanding] = useState(getInitialLandingState);
   const [navigationHistory, setNavigationHistory] = useState<Section[]>([]);
   const [initialEstimateId, setInitialEstimateId] = useState<string | null>(null);
+  const [initialJobId, setInitialJobId] = useState<string | null>(null);
   const isMobile = useIsMobile();
 
   // Save active section to sessionStorage whenever it changes
@@ -109,6 +110,7 @@ const navItems = [
     if (section.startsWith('estimate:')) {
       const estimateId = section.split(':')[1];
       setInitialEstimateId(estimateId);
+      setInitialJobId(null);
       // Push current section to navigation history before switching
       setNavigationHistory(prev => [...prev, activeSection]);
       setActiveSection('estimates');
@@ -122,8 +124,27 @@ const navItems = [
       return;
     }
     
-    // Clear initial estimate ID when navigating normally
+    // Check if navigating to a specific job (format: "job:uuid")
+    if (section.startsWith('job:')) {
+      const jobId = section.split(':')[1];
+      setInitialJobId(jobId);
+      setInitialEstimateId(null);
+      // Push current section to navigation history before switching
+      setNavigationHistory(prev => [...prev, activeSection]);
+      setActiveSection('jobs');
+      sessionStorage.setItem('ct1CrmActiveSection', 'jobs');
+      setShowMobileLanding(false);
+      sessionStorage.setItem('ct1CrmShowLanding', 'false');
+      onSectionChange?.('jobs');
+      if (isMobile) {
+        setMobileMenuOpen(false);
+      }
+      return;
+    }
+    
+    // Clear initial IDs when navigating normally
     setInitialEstimateId(null);
+    setInitialJobId(null);
     
     // Push current section to navigation history before switching
     setNavigationHistory(prev => [...prev, activeSection]);
@@ -199,7 +220,7 @@ const navItems = [
       case 'leads':
         return <LeadsSection onSectionChange={handleSectionChange} />;
       case 'jobs':
-        return <JobsSection onSectionChange={handleSectionChange} />;
+        return <JobsSection onSectionChange={handleSectionChange} initialJobId={initialJobId} onClearInitialJob={() => setInitialJobId(null)} />;
       case 'customers':
         return <CustomersSection onSectionChange={handleSectionChange} />;
       case 'calls':

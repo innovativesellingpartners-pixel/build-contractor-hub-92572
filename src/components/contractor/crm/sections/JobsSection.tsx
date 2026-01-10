@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useJobs, Job } from '@/hooks/useJobs';
 import { useEstimates } from '@/hooks/useEstimates';
 import { useCustomers } from '@/hooks/useCustomers';
@@ -14,9 +14,11 @@ import { PredictiveSearch } from '../PredictiveSearch';
 
 interface JobsSectionProps {
   onSectionChange?: (section: string) => void;
+  initialJobId?: string | null;
+  onClearInitialJob?: () => void;
 }
 
-export default function JobsSection({ onSectionChange }: JobsSectionProps) {
+export default function JobsSection({ onSectionChange, initialJobId, onClearInitialJob }: JobsSectionProps) {
   const { jobs, loading, addJob, updateJob, refreshJobs, duplicateJob, archiveJob } = useJobs();
   const { createEstimateAsync } = useEstimates();
   const { customers } = useCustomers();
@@ -24,6 +26,19 @@ export default function JobsSection({ onSectionChange }: JobsSectionProps) {
   const [detailOpen, setDetailOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [editingJob, setEditingJob] = useState<Job | null>(null);
+
+  // Handle initial job ID to auto-open the detail view
+  useEffect(() => {
+    if (initialJobId && jobs && jobs.length > 0) {
+      const job = jobs.find(j => j.id === initialJobId);
+      if (job) {
+        setSelectedJob(job);
+        setDetailOpen(true);
+        // Clear the initial job ID after opening
+        onClearInitialJob?.();
+      }
+    }
+  }, [initialJobId, jobs, onClearInitialJob]);
 
   const handleJobClick = (job: Job) => {
     setSelectedJob(job);
