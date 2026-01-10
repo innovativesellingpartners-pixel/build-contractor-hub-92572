@@ -4,9 +4,55 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Slider } from '@/components/ui/slider';
-import { Plus, X, FileText, DollarSign, Shield, Clock, ListChecks } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Plus, X, FileText, DollarSign, Shield, ListChecks } from 'lucide-react';
 import { EstimateBuilderData } from '../../EstimateBuilder';
+
+// Preset options for dropdowns
+const TAX_RATE_OPTIONS = [
+  { value: '0', label: 'No Tax (0%)' },
+  { value: '5', label: '5%' },
+  { value: '6', label: '6%' },
+  { value: '6.5', label: '6.5%' },
+  { value: '7', label: '7%' },
+  { value: '7.5', label: '7.5%' },
+  { value: '8', label: '8%' },
+  { value: '8.25', label: '8.25%' },
+  { value: '8.5', label: '8.5%' },
+  { value: '9', label: '9%' },
+  { value: '10', label: '10%' },
+];
+
+const DEPOSIT_OPTIONS = [
+  { value: '0', label: 'No Deposit' },
+  { value: '10', label: '10%' },
+  { value: '20', label: '20%' },
+  { value: '25', label: '25%' },
+  { value: '30', label: '30%' },
+  { value: '33', label: '33% (1/3)' },
+  { value: '50', label: '50%' },
+  { value: '75', label: '75%' },
+  { value: '100', label: '100% (Full Upfront)' },
+];
+
+const WARRANTY_OPTIONS = [
+  { value: '0', label: 'No Warranty' },
+  { value: '1', label: '1 Year' },
+  { value: '2', label: '2 Years' },
+  { value: '3', label: '3 Years' },
+  { value: '5', label: '5 Years' },
+  { value: '10', label: '10 Years' },
+];
+
+const PAYMENT_SCHEDULE_PRESETS = [
+  { value: 'custom', label: 'Custom Schedule' },
+  { value: 'upfront', label: '100% Upfront', text: '100% of the contract amount is due upon acceptance of this estimate before work begins.' },
+  { value: 'half', label: '50/50 Split', text: '50% deposit due upon acceptance. Remaining 50% due upon completion of work.' },
+  { value: 'thirds', label: '1/3 Increments', text: '1/3 due upon acceptance, 1/3 due at project midpoint, final 1/3 due upon completion.' },
+  { value: 'progress', label: 'Progress Payments', text: 'Deposit due upon acceptance. Progress payments will be billed monthly based on percentage of work completed.' },
+  { value: 'net30', label: 'Net 30', text: 'Full payment due within 30 days of invoice date. A late fee of 1.5% per month will be applied to overdue balances.' },
+  { value: 'completion', label: 'Upon Completion', text: 'Full payment is due upon satisfactory completion of all work outlined in this estimate.' },
+];
 
 interface ScopeTermsStepProps {
   data: EstimateBuilderData;
@@ -15,6 +61,7 @@ interface ScopeTermsStepProps {
 
 export default function ScopeTermsStep({ data, onChange }: ScopeTermsStepProps) {
   const [newExclusion, setNewExclusion] = useState('');
+  const [paymentScheduleMode, setPaymentScheduleMode] = useState<string>('custom');
 
   const addExclusion = () => {
     if (newExclusion.trim()) {
@@ -178,34 +225,49 @@ export default function ScopeTermsStep({ data, onChange }: ScopeTermsStepProps) 
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="grid gap-6 sm:grid-cols-2">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <Label>Tax Rate</Label>
-                <span className="text-sm font-medium">{data.tax_rate}%</span>
-              </div>
-              <Slider
-                value={[data.tax_rate]}
-                onValueChange={(value) => onChange({ tax_rate: value[0] })}
-                max={15}
-                step={0.25}
-              />
+          <div className="grid gap-4 sm:grid-cols-2">
+            {/* Tax Rate Dropdown */}
+            <div className="space-y-2">
+              <Label>Tax Rate</Label>
+              <Select
+                value={String(data.tax_rate)}
+                onValueChange={(value) => onChange({ tax_rate: parseFloat(value) })}
+              >
+                <SelectTrigger className="bg-background">
+                  <SelectValue placeholder="Select tax rate" />
+                </SelectTrigger>
+                <SelectContent className="bg-background z-50">
+                  {TAX_RATE_OPTIONS.map(option => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <Label>Required Deposit</Label>
-                <span className="text-sm font-medium">{data.required_deposit_percent}%</span>
-              </div>
-              <Slider
-                value={[data.required_deposit_percent]}
-                onValueChange={(value) => onChange({ required_deposit_percent: value[0] })}
-                max={100}
-                step={5}
-              />
+            {/* Deposit Dropdown */}
+            <div className="space-y-2">
+              <Label>Required Deposit</Label>
+              <Select
+                value={String(data.required_deposit_percent)}
+                onValueChange={(value) => onChange({ required_deposit_percent: parseInt(value) })}
+              >
+                <SelectTrigger className="bg-background">
+                  <SelectValue placeholder="Select deposit amount" />
+                </SelectTrigger>
+                <SelectContent className="bg-background z-50">
+                  {DEPOSIT_OPTIONS.map(option => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
+          {/* Permit Fees */}
           <div className="space-y-2">
             <Label htmlFor="permit_fee">Permit Fees / Surcharges</Label>
             <div className="relative">
@@ -274,12 +336,37 @@ export default function ScopeTermsStep({ data, onChange }: ScopeTermsStepProps) 
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="terms_payment_schedule">Payment Schedule</Label>
+            <Label>Payment Schedule</Label>
+            <Select
+              value={paymentScheduleMode}
+              onValueChange={(value) => {
+                setPaymentScheduleMode(value);
+                const preset = PAYMENT_SCHEDULE_PRESETS.find(p => p.value === value);
+                if (preset && value !== 'custom') {
+                  onChange({ terms_payment_schedule: preset.text });
+                }
+              }}
+            >
+              <SelectTrigger className="bg-background">
+                <SelectValue placeholder="Select payment schedule" />
+              </SelectTrigger>
+              <SelectContent className="bg-background z-50">
+                {PAYMENT_SCHEDULE_PRESETS.map(option => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Textarea
               id="terms_payment_schedule"
               value={data.terms_payment_schedule}
-              onChange={(e) => onChange({ terms_payment_schedule: e.target.value })}
+              onChange={(e) => {
+                setPaymentScheduleMode('custom');
+                onChange({ terms_payment_schedule: e.target.value });
+              }}
               rows={2}
+              placeholder="Enter custom payment schedule terms..."
             />
           </div>
 
@@ -303,18 +390,23 @@ export default function ScopeTermsStep({ data, onChange }: ScopeTermsStepProps) 
             />
           </div>
 
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <Label>Warranty Period</Label>
-              <span className="text-sm font-medium">{data.terms_warranty_years} year{data.terms_warranty_years !== 1 ? 's' : ''}</span>
-            </div>
-            <Slider
-              value={[data.terms_warranty_years]}
-              onValueChange={(value) => onChange({ terms_warranty_years: value[0] })}
-              max={10}
-              min={0}
-              step={1}
-            />
+          <div className="space-y-2">
+            <Label>Warranty Period</Label>
+            <Select
+              value={String(data.terms_warranty_years)}
+              onValueChange={(value) => onChange({ terms_warranty_years: parseInt(value) })}
+            >
+              <SelectTrigger className="bg-background">
+                <SelectValue placeholder="Select warranty period" />
+              </SelectTrigger>
+              <SelectContent className="bg-background z-50">
+                {WARRANTY_OPTIONS.map(option => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>
