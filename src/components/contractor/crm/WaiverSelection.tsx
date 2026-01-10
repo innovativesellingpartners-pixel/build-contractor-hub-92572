@@ -5,7 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { AlertTriangle, FileText, Info } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { AlertTriangle, FileText, Info, ChevronDown, ChevronUp } from 'lucide-react';
 
 export interface WaiverType {
   id: 'conditional_progress' | 'unconditional_progress' | 'conditional_final' | 'unconditional_final';
@@ -63,6 +64,59 @@ interface WaiverSelectionProps {
 export function WaiverSelection({ selectedWaivers, onWaiversChange, defaultAmount }: WaiverSelectionProps) {
   const [showUnconditionalWarning, setShowUnconditionalWarning] = useState(false);
   const [pendingWaiver, setPendingWaiver] = useState<WaiverType['id'] | null>(null);
+  const [expandedWaiver, setExpandedWaiver] = useState<WaiverType['id'] | null>(null);
+
+  // Generate sample waiver text for preview
+  const getWaiverFullText = (waiverId: WaiverType['id']) => {
+    const gcPlaceholder = '[General Contractor]';
+    const amountPlaceholder = '$[Amount]';
+    const contractorPlaceholder = '[Your Company]';
+    const jobPlaceholder = '[Project Name]';
+    const datePlaceholder = '[Through Date]';
+
+    switch (waiverId) {
+      case 'conditional_progress':
+        return `CONDITIONAL WAIVER AND RELEASE ON PROGRESS PAYMENT
+
+Upon receipt by the undersigned of a check from ${gcPlaceholder} in the sum of ${amountPlaceholder} payable to ${contractorPlaceholder}, and when the check has been properly endorsed and has been paid by the bank upon which it is drawn, this document becomes effective to release and waive any mechanics lien, stop payment notice, or bond right the undersigned has for labor, services, equipment, or materials furnished to ${jobPlaceholder} through ${datePlaceholder} only.
+
+This release covers a progress payment for labor, services, equipment, or materials furnished to ${jobPlaceholder} through ${datePlaceholder} only and does not cover any retention, pending contract modifications, or items furnished after the through date specified above.
+
+NOTICE: This document waives the claimant's lien, stop payment notice, and payment bond rights effective on receipt of payment. A person should not rely on this document unless satisfied that the claimant has received payment.`;
+
+      case 'unconditional_progress':
+        return `UNCONDITIONAL WAIVER AND RELEASE ON PROGRESS PAYMENT
+
+The undersigned has been paid and has received a progress payment in the sum of ${amountPlaceholder} for labor, services, equipment, or materials furnished to ${jobPlaceholder} and does hereby release any mechanics lien, stop payment notice, or bond right the undersigned has for labor, services, equipment, or materials furnished to ${jobPlaceholder} through ${datePlaceholder}.
+
+This release covers a progress payment for labor, services, equipment, or materials furnished through ${datePlaceholder} only and does not cover any retention, extras, or items furnished after said date.
+
+NOTICE: This document waives and releases lien, stop payment notice, and payment bond rights unconditionally and states that you have been paid for giving up those rights. This document is enforceable against you if you sign it, even if you have not been paid. If you have not been paid, use a conditional waiver and release form.`;
+
+      case 'conditional_final':
+        return `CONDITIONAL WAIVER AND RELEASE ON FINAL PAYMENT
+
+Upon receipt by the undersigned of a check from ${gcPlaceholder} in the amount of ${amountPlaceholder} payable to ${contractorPlaceholder} and when the check has been properly endorsed and has been paid by the bank on which it is drawn, this document shall become effective to release any mechanics lien, stop payment notice, or bond right the undersigned has for all labor, services, equipment, or materials furnished to ${jobPlaceholder}.
+
+This release covers the final payment to the undersigned for all labor, services, equipment, or materials furnished to ${jobPlaceholder}.
+
+Before any recipient of this document relies on it, said party should verify evidence of payment to the undersigned.
+
+NOTICE: This document waives the claimant's lien, stop payment notice, and payment bond rights effective on receipt of payment. A person should not rely on this document unless satisfied that the claimant has received payment.`;
+
+      case 'unconditional_final':
+        return `UNCONDITIONAL WAIVER AND RELEASE ON FINAL PAYMENT
+
+The undersigned has been paid in full for all labor, services, equipment, or materials furnished to ${jobPlaceholder} and does hereby waive and release any right to a mechanics lien, stop payment notice, or any right against a labor and material bond on the job, except for disputed claims for extra work in the amount of $0.00.
+
+This release covers the final payment to the undersigned for all labor, services, equipment, or materials furnished on the job or project.
+
+NOTICE: This document waives and releases lien, stop payment notice, and payment bond rights unconditionally and states that you have been paid for giving up those rights. This document is enforceable against you if you sign it, even if you have not been paid. If you have not been paid, use a conditional waiver and release form.`;
+
+      default:
+        return '';
+    }
+  };
 
   const isWaiverSelected = (id: WaiverType['id']) => 
     selectedWaivers.some(w => w.type === id);
@@ -162,92 +216,134 @@ export function WaiverSelection({ selectedWaivers, onWaiversChange, defaultAmoun
           {WAIVER_TYPES.map((waiver) => {
             const selected = isWaiverSelected(waiver.id);
             const waiverData = getWaiverData(waiver.id);
+            const isExpanded = expandedWaiver === waiver.id;
 
             return (
-              <div
+              <Collapsible
                 key={waiver.id}
-                className={`border rounded-lg p-3 transition-colors ${
-                  selected ? 'border-primary bg-primary/5' : 'border-border'
-                }`}
+                open={isExpanded}
+                onOpenChange={(open) => setExpandedWaiver(open ? waiver.id : null)}
               >
-                <div className="flex items-start gap-3">
-                  <Checkbox
-                    id={waiver.id}
-                    checked={selected}
-                    onCheckedChange={(checked) => handleWaiverToggle(waiver, checked === true)}
-                    disabled={showUnconditionalWarning}
-                  />
-                  <div className="flex-1 space-y-1">
-                    <div className="flex items-center gap-2">
-                      <Label 
-                        htmlFor={waiver.id} 
-                        className="text-sm font-medium cursor-pointer leading-tight"
-                      >
-                        {waiver.label}
-                      </Label>
-                      <div className="flex gap-1">
-                        {waiver.isUnconditional && (
-                          <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700 border-amber-200">
-                            Unconditional
-                          </Badge>
-                        )}
-                        {waiver.isFinal && (
-                          <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
-                            Final
-                          </Badge>
-                        )}
-                      </div>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
-                        </TooltipTrigger>
-                        <TooltipContent side="right" className="max-w-xs">
-                          <p className="text-xs">{waiver.description}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                  </div>
-                </div>
-
-                {selected && waiverData && (
-                  <div className="mt-3 pt-3 border-t border-border/50 grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <Label className="text-xs text-muted-foreground">Amount</Label>
-                      <Input
-                        type="number"
-                        value={waiverData.amount}
-                        onChange={(e) => updateWaiver(waiver.id, { amount: parseFloat(e.target.value) || 0 })}
-                        className="h-8 text-sm"
-                        min={0}
-                        step={0.01}
+                <div
+                  className={`border rounded-lg transition-colors ${
+                    selected ? 'border-primary bg-primary/5' : 'border-border'
+                  }`}
+                >
+                  <div className="p-3">
+                    <div className="flex items-start gap-3">
+                      <Checkbox
+                        id={waiver.id}
+                        checked={selected}
+                        onCheckedChange={(checked) => handleWaiverToggle(waiver, checked === true)}
+                        disabled={showUnconditionalWarning}
                       />
+                      <div className="flex-1 space-y-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Label 
+                            htmlFor={waiver.id} 
+                            className="text-sm font-medium cursor-pointer leading-tight"
+                          >
+                            {waiver.label}
+                          </Label>
+                          <div className="flex gap-1">
+                            {waiver.isUnconditional && (
+                              <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700 border-amber-200">
+                                Unconditional
+                              </Badge>
+                            )}
+                            {waiver.isFinal && (
+                              <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                                Final
+                              </Badge>
+                            )}
+                          </div>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent side="right" className="max-w-xs">
+                              <p className="text-xs">{waiver.description}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </div>
+                        
+                        {/* Expand/Collapse button */}
+                        <CollapsibleTrigger asChild>
+                          <button
+                            type="button"
+                            className="flex items-center gap-1 text-xs text-primary hover:underline mt-1"
+                          >
+                            {isExpanded ? (
+                              <>
+                                <ChevronUp className="h-3 w-3" />
+                                Hide full waiver text
+                              </>
+                            ) : (
+                              <>
+                                <ChevronDown className="h-3 w-3" />
+                                Read full waiver text
+                              </>
+                            )}
+                          </button>
+                        </CollapsibleTrigger>
+                      </div>
                     </div>
-                    {!waiver.isFinal && (
-                      <div className="space-y-1">
-                        <Label className="text-xs text-muted-foreground">Through Date</Label>
-                        <Input
-                          type="date"
-                          value={waiverData.billingPeriodEnd || ''}
-                          onChange={(e) => updateWaiver(waiver.id, { billingPeriodEnd: e.target.value })}
-                          className="h-8 text-sm"
-                        />
+
+                    {selected && waiverData && (
+                      <div className="mt-3 pt-3 border-t border-border/50 grid grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <Label className="text-xs text-muted-foreground">Amount</Label>
+                          <Input
+                            type="number"
+                            value={waiverData.amount}
+                            onChange={(e) => updateWaiver(waiver.id, { amount: parseFloat(e.target.value) || 0 })}
+                            className="h-8 text-sm"
+                            min={0}
+                            step={0.01}
+                          />
+                        </div>
+                        {!waiver.isFinal && (
+                          <div className="space-y-1">
+                            <Label className="text-xs text-muted-foreground">Through Date</Label>
+                            <Input
+                              type="date"
+                              value={waiverData.billingPeriodEnd || ''}
+                              onChange={(e) => updateWaiver(waiver.id, { billingPeriodEnd: e.target.value })}
+                              className="h-8 text-sm"
+                            />
+                          </div>
+                        )}
+                        <div className="space-y-1">
+                          <Label className="text-xs text-muted-foreground">Retainage</Label>
+                          <Input
+                            type="number"
+                            value={waiverData.retainage || 0}
+                            onChange={(e) => updateWaiver(waiver.id, { retainage: parseFloat(e.target.value) || 0 })}
+                            className="h-8 text-sm"
+                            min={0}
+                            step={0.01}
+                            placeholder="0.00"
+                          />
+                        </div>
                       </div>
                     )}
-                    <div className="space-y-1">
-                      <Label className="text-xs text-muted-foreground">Retainage</Label>
-                      <Input
-                        type="number"
-                        value={waiverData.retainage || 0}
-                        onChange={(e) => updateWaiver(waiver.id, { retainage: parseFloat(e.target.value) || 0 })}
-                        className="h-8 text-sm"
-                        min={0}
-                        step={0.01}
-                        placeholder="0.00"
-                      />
-                    </div>
                   </div>
-                )}
-              </div>
+
+                  {/* Collapsible full waiver text */}
+                  <CollapsibleContent>
+                    <div className="px-3 pb-3">
+                      <div className="bg-muted/50 rounded-lg p-4 border border-border/50">
+                        <p className="text-xs text-muted-foreground mb-2 font-medium uppercase tracking-wide">
+                          Full Waiver Text Preview
+                        </p>
+                        <div className="text-sm text-foreground whitespace-pre-wrap leading-relaxed max-h-64 overflow-y-auto">
+                          {getWaiverFullText(waiver.id)}
+                        </div>
+                      </div>
+                    </div>
+                  </CollapsibleContent>
+                </div>
+              </Collapsible>
             );
           })}
         </div>
