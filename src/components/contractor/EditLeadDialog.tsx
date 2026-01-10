@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { AddressAutocomplete } from '@/components/ui/address-autocomplete';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Lead, LeadSource } from '@/hooks/useLeads';
+import { Lead, LeadSource, OTHER_SOURCE_ID } from '@/hooks/useLeads';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Users } from 'lucide-react';
@@ -35,12 +35,15 @@ export function EditLeadDialog({ lead, open, onOpenChange, onUpdate, onDelete, s
     value: '',
     status: 'new' as Lead['status'],
     source_id: '',
+    source_other: '',
     address: '',
     city: '',
     state: '',
     zip_code: '',
     notes: '',
   });
+
+  const isOtherSource = formData.source_id === OTHER_SOURCE_ID;
 
   useEffect(() => {
     if (lead) {
@@ -53,6 +56,7 @@ export function EditLeadDialog({ lead, open, onOpenChange, onUpdate, onDelete, s
         value: lead.value?.toString() || '',
         status: lead.status,
         source_id: lead.source_id || '',
+        source_other: lead.source_other || '',
         address: lead.address || '',
         city: lead.city || '',
         state: lead.state || '',
@@ -71,6 +75,7 @@ export function EditLeadDialog({ lead, open, onOpenChange, onUpdate, onDelete, s
         ...formData,
         value: formData.value ? parseFloat(formData.value) : undefined,
         source_id: formData.source_id || undefined,
+        source_other: isOtherSource ? formData.source_other : undefined,
       });
       onOpenChange(false);
     } catch (error) {
@@ -210,7 +215,7 @@ export function EditLeadDialog({ lead, open, onOpenChange, onUpdate, onDelete, s
               <Label htmlFor="edit-source">Lead Source</Label>
               <SearchableSelect
                 value={formData.source_id}
-                onValueChange={(value) => setFormData({ ...formData, source_id: value })}
+                onValueChange={(value) => setFormData({ ...formData, source_id: value, source_other: value !== OTHER_SOURCE_ID ? '' : formData.source_other })}
                 placeholder="Select a source"
                 searchPlaceholder="Search sources..."
                 options={sources.map((source) => ({
@@ -219,6 +224,17 @@ export function EditLeadDialog({ lead, open, onOpenChange, onUpdate, onDelete, s
                 }))}
               />
             </div>
+            {isOtherSource && (
+              <div className="space-y-2">
+                <Label htmlFor="edit-source_other">Please Specify</Label>
+                <Input
+                  id="edit-source_other"
+                  value={formData.source_other}
+                  onChange={(e) => setFormData({ ...formData, source_other: e.target.value })}
+                  placeholder="Where did they hear about you?"
+                />
+              </div>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="edit-address">Address</Label>

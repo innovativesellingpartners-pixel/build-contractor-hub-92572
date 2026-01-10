@@ -14,6 +14,7 @@ export interface Lead {
   value?: number;
   status: 'new' | 'contacted' | 'qualified' | 'quoted' | 'won' | 'lost';
   source_id?: string;
+  source_other?: string;
   address?: string;
   city?: string;
   state?: string;
@@ -27,6 +28,9 @@ export interface Lead {
   converted_to_job_id?: string;
   converted_at?: string;
 }
+
+// The ID of the "Other" lead source option
+export const OTHER_SOURCE_ID = 'f0ea5b7b-6354-474d-bf5b-fa28ac62b68f';
 
 export interface LeadSource {
   id: string;
