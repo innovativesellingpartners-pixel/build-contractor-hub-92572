@@ -33,7 +33,7 @@ serve(async (req) => {
 
     console.log('Converting lead to job', { leadId, contractorId: user.id });
 
-    // Get the lead
+    // Get the lead with all fields
     const { data: lead, error: leadError } = await supabase
       .from('leads')
       .select('*')
@@ -77,7 +77,8 @@ serve(async (req) => {
           zip_code: lead.zip_code,
           notes: lead.notes,
           customer_type: 'residential',
-          lifetime_value: 0,
+          lifetime_value: lead.value || 0,
+          referral_source: lead.source_id ? 'lead_source' : null,
         })
         .select()
         .single();
@@ -100,22 +101,31 @@ serve(async (req) => {
       customer = existingCustomer;
     }
 
-    // Step 2: Create Job
-    const fullAddress = [lead.address, lead.city, lead.state, lead.zip_code].filter(Boolean).join(', ');
-    
+    // Step 2: Create Job with all lead data
     const { data: newJob, error: jobError } = await supabase
       .from('jobs')
       .insert({
         user_id: user.id,
         customer_id: customerId,
-        name: jobName || `Job for ${lead.name}`,
+        lead_id: leadId, // Link back to original lead
+        name: jobName || lead.project_type || `Job for ${lead.name}`,
+        description: lead.notes || null,
         address: lead.address || null,
         city: lead.city || null,
         state: lead.state || null,
         zip_code: lead.zip_code || null,
         status: 'scheduled',
+        job_status: 'scheduled',
         notes: lead.notes || null,
         contract_value: lead.value || 0,
+        total_contract_value: lead.value || 0,
+        budget_amount: lead.value || 0,
+        trade_type: lead.project_type || null, // Map project_type to trade_type
+        change_orders_total: 0,
+        payments_collected: 0,
+        expenses_total: 0,
+        profit: 0,
+        converted_at: new Date().toISOString(),
       })
       .select()
       .single();
@@ -127,7 +137,22 @@ serve(async (req) => {
 
     console.log('Job created', { jobId: newJob.id, jobNumber: newJob.job_number });
 
-    // Step 3: Update lead - mark as converted with links to both customer and job
+    // Step 3: Update customer with job reference and lifetime value
+    const { error: updateCustomerError } = await supabase
+      .from('customers')
+      .update({
+        job_id: newJob.id,
+        lifetime_value: (customer?.lifetime_value || 0) + (lead.value || 0),
+      })
+      .eq('id', customerId)
+      .eq('user_id', user.id);
+
+    if (updateCustomerError) {
+      console.error('Error updating customer', updateCustomerError);
+      // Don't throw - not critical
+    }
+
+    // Step 4: Update lead - mark as converted with links to both customer and job
     const { error: updateLeadError } = await supabase
       .from('leads')
       .update({
@@ -145,25 +170,49 @@ serve(async (req) => {
       throw updateLeadError;
     }
 
-    // Step 4: Update any existing estimates for this lead to link to customer and job
-    const { error: updateEstimatesError } = await supabase
+    // Step 5: Update any existing estimates for this lead to link to customer and job
+    const { data: updatedEstimates, error: updateEstimatesError } = await supabase
       .from('estimates')
       .update({ 
         customer_id: customerId,
-        job_id: newJob.id 
+        job_id: newJob.id,
+        status: 'sold',
       })
       .eq('lead_id', leadId)
-      .eq('user_id', user.id);
+      .eq('user_id', user.id)
+      .select();
 
     if (updateEstimatesError) {
       console.error('Error updating estimates', updateEstimatesError);
       // Don't throw - not critical
     }
 
+    // Step 6: If there are estimates, update job with estimate data (use the first/most recent)
+    if (updatedEstimates && updatedEstimates.length > 0) {
+      const primaryEstimate = updatedEstimates[0];
+      const { error: updateJobError } = await supabase
+        .from('jobs')
+        .update({
+          original_estimate_id: primaryEstimate.id,
+          contract_value: primaryEstimate.grand_total || primaryEstimate.total_amount || newJob.contract_value,
+          total_contract_value: primaryEstimate.grand_total || primaryEstimate.total_amount || newJob.total_contract_value,
+          budget_amount: primaryEstimate.grand_total || primaryEstimate.total_amount || newJob.budget_amount,
+          trade_type: primaryEstimate.trade_type || newJob.trade_type,
+          description: primaryEstimate.project_description || primaryEstimate.description || newJob.description,
+        })
+        .eq('id', newJob.id)
+        .eq('user_id', user.id);
+
+      if (updateJobError) {
+        console.error('Error updating job with estimate data', updateJobError);
+      }
+    }
+
     console.log('Lead converted successfully', { 
       leadId, 
       customerId, 
-      jobId: newJob.id 
+      jobId: newJob.id,
+      estimatesLinked: updatedEstimates?.length || 0
     });
 
     return new Response(
@@ -172,7 +221,8 @@ serve(async (req) => {
         customerId,
         jobId: newJob.id,
         job: newJob,
-        customer
+        customer,
+        estimatesLinked: updatedEstimates?.length || 0
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
