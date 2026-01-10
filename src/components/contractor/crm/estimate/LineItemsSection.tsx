@@ -12,6 +12,7 @@ import { MacroGroup, LineItemMacro } from '@/hooks/useEstimateMacros';
 import MacroSelector from './MacroSelector';
 
 const categories = [
+  'Labor & Materials',
   'Materials',
   'Labor',
   'Equipment',
@@ -30,13 +31,13 @@ interface LineItemsSectionProps {
 export default function LineItemsSection({ lineItems, onChange, macroGroups = [] }: LineItemsSectionProps) {
   const [isOpen, setIsOpen] = useState(true);
 
-  const addLineItem = () => {
+  const addLineItem = (category: string = 'Labor & Materials') => {
     const newItemNumber = `${lineItems.length + 1}.0`;
     onChange([
       ...lineItems,
       {
         itemNumber: newItemNumber,
-        category: 'Materials',
+        category: category,
         item_description: '',
         description: '',
         quantity: 1,
@@ -291,15 +292,33 @@ export default function LineItemsSection({ lineItems, onChange, macroGroups = []
             ))}
 
             {/* Add Buttons */}
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                variant="default"
+                onClick={() => addLineItem('Labor & Materials')}
+                className="flex-1 min-w-[180px]"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Labor & Materials
+              </Button>
               <Button
                 type="button"
                 variant="outline"
-                onClick={addLineItem}
-                className="flex-1 border-dashed"
+                onClick={() => addLineItem('Materials')}
+                className="border-dashed"
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Add Line Item
+                Materials Only
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => addLineItem('Labor')}
+                className="border-dashed"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Labor Only
               </Button>
               {macroGroups.length > 0 && (
                 <MacroSelector
