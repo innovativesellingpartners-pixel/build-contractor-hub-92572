@@ -334,21 +334,22 @@ export default function EstimateBuilder({ initialData, onSave, onCancel }: Estim
         )}
       </div>
 
-      {/* Footer Navigation */}
-      <div className="flex-shrink-0 border-t bg-card px-6 py-4">
-        <div className="flex items-center justify-between">
+      {/* Footer Navigation - elevated z-index to stay above floating elements */}
+      <div className="flex-shrink-0 border-t bg-card px-6 py-4 relative z-50">
+        <div className="flex items-center justify-between max-w-full">
           <Button
             variant="outline"
             onClick={handleBack}
             disabled={currentStep === 1}
+            className="shrink-0"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
           
-          <div className="flex items-center gap-3">
-            {/* Running Total */}
-            <div className="hidden sm:block text-right mr-4">
+          <div className="flex items-center gap-2 sm:gap-3 ml-2">
+            {/* Running Total - hide on very small screens */}
+            <div className="hidden md:block text-right mr-2">
               <p className="text-xs text-muted-foreground">Estimate Total</p>
               <p className="text-lg font-semibold text-primary">
                 ${formData.grand_total.toLocaleString('en-US', { minimumFractionDigits: 2 })}
@@ -356,26 +357,28 @@ export default function EstimateBuilder({ initialData, onSave, onCancel }: Estim
             </div>
             
             {currentStep < STEPS.length ? (
-              <Button onClick={handleNext} disabled={!canProceed()}>
+              <Button onClick={handleNext} disabled={!canProceed()} className="shrink-0">
                 Next
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
             ) : (
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap justify-end">
                 <Button
                   variant="outline"
                   onClick={handleSaveDraft}
                   disabled={isSaving}
+                  className="shrink-0"
                 >
-                  <Save className="h-4 w-4 mr-2" />
-                  Save Draft
+                  <Save className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Save Draft</span>
                 </Button>
                 <Button
                   onClick={handleSendEstimate}
                   disabled={isSaving || !formData.client_email}
+                  className="shrink-0"
                 >
-                  <Send className="h-4 w-4 mr-2" />
-                  Send to Client
+                  <Send className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Send to Client</span>
                 </Button>
               </div>
             )}
