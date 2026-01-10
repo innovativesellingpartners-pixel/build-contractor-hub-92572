@@ -30,6 +30,8 @@ export interface Job {
   payments_collected?: number;
   expenses_total?: number;
   profit?: number;
+  archived?: boolean;
+  archived_at?: string;
 }
 
 export const useJobs = () => {
@@ -46,6 +48,7 @@ export const useJobs = () => {
         .from('jobs')
         .select('*')
         .eq('user_id', user.id)
+        .eq('archived', false)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -261,6 +264,90 @@ export const useJobs = () => {
     }
   };
 
+  const archiveJob = async (id: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('jobs')
+        .update({ 
+          archived: true, 
+          archived_at: new Date().toISOString() 
+        })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setJobs(jobs.filter(job => job.id !== id));
+      toast({
+        title: 'Job archived',
+        description: 'Job has been archived successfully',
+      });
+      return data as Job;
+    } catch (error: any) {
+      toast({
+        title: 'Error archiving job',
+        description: error.message,
+        variant: 'destructive',
+      });
+      throw error;
+    }
+  };
+
+  const fetchArchivedJobs = async () => {
+    if (!user) return [];
+
+    try {
+      const { data, error } = await supabase
+        .from('jobs')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('archived', true)
+        .order('archived_at', { ascending: false });
+
+      if (error) throw error;
+      return (data || []) as Job[];
+    } catch (error: any) {
+      toast({
+        title: 'Error fetching archived jobs',
+        description: error.message,
+        variant: 'destructive',
+      });
+      return [];
+    }
+  };
+
+  const unarchiveJob = async (id: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('jobs')
+        .update({ 
+          archived: false, 
+          archived_at: null 
+        })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Add back to active jobs list
+      setJobs([data as Job, ...jobs]);
+      toast({
+        title: 'Job restored',
+        description: 'Job has been restored from archive',
+      });
+      return data as Job;
+    } catch (error: any) {
+      toast({
+        title: 'Error restoring job',
+        description: error.message,
+        variant: 'destructive',
+      });
+      throw error;
+    }
+  };
+
   return {
     jobs,
     loading,
@@ -268,6 +355,9 @@ export const useJobs = () => {
     updateJob,
     deleteJob,
     duplicateJob,
+    archiveJob,
+    unarchiveJob,
+    fetchArchivedJobs,
     refreshJobs: fetchJobs,
   };
 };

@@ -2216,6 +2216,8 @@ export type Database = {
           actual_start_date: string | null
           address: string | null
           adjusted_budget_amount: number | null
+          archived: boolean | null
+          archived_at: string | null
           budget_amount: number | null
           change_orders_total: number | null
           city: string | null
@@ -2257,6 +2259,8 @@ export type Database = {
           actual_start_date?: string | null
           address?: string | null
           adjusted_budget_amount?: number | null
+          archived?: boolean | null
+          archived_at?: string | null
           budget_amount?: number | null
           change_orders_total?: number | null
           city?: string | null
@@ -2298,6 +2302,8 @@ export type Database = {
           actual_start_date?: string | null
           address?: string | null
           adjusted_budget_amount?: number | null
+          archived?: boolean | null
+          archived_at?: string | null
           budget_amount?: number | null
           change_orders_total?: number | null
           city?: string | null
@@ -4248,6 +4254,7 @@ export type Database = {
       get_user_tier: { Args: { user_id: string }; Returns: string }
       has_full_access: { Args: { user_id: string }; Returns: boolean }
       has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
+      is_super_admin: { Args: { _user_id: string }; Returns: boolean }
       store_calendar_tokens: {
         Args: {
           p_access_token: string
