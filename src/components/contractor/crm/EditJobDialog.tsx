@@ -122,7 +122,7 @@ export function EditJobDialog({ job, open, onOpenChange, onUpdate }: EditJobDial
           <DialogDescription>Update job details - Job #{job.job_number}</DialogDescription>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto space-y-6 mt-4">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto space-y-6 mt-4 pb-6">
           {/* Basic Information */}
           <div className="space-y-4">
             <div className="flex items-center gap-2 text-sm font-semibold text-primary">
