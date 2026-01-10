@@ -8,14 +8,14 @@ export function GlobalPocketbot() {
 
   return (
     <>
-      {/* Pocketbot Trigger Button */}
-      <div className="fixed top-28 right-4 z-50">
+      {/* Pocketbot Trigger Button - positioned to avoid footer overlap */}
+      <div className="fixed top-4 right-4 z-40">
         <Button
           onClick={() => setShowPocketbot(true)}
-          className="bg-foreground/95 backdrop-blur-md text-background hover:bg-foreground hover:text-background h-12 min-w-[160px] px-6 rounded-full font-semibold shadow-2xl hover:shadow-primary/50 transition-all duration-300 hover:scale-105"
+          className="bg-foreground/95 backdrop-blur-md text-background hover:bg-foreground hover:text-background h-10 min-w-[140px] px-4 rounded-full font-semibold shadow-xl hover:shadow-primary/50 transition-all duration-300 hover:scale-105"
         >
           <Bot className="h-4 w-4 text-primary" />
-          Try Pocketbot
+          Pocketbot
         </Button>
       </div>
 
