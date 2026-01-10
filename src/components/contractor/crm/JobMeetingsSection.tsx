@@ -4,6 +4,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { PredictiveInput } from '@/components/ui/predictive-input';
+import { AddressAutocomplete } from '@/components/ui/address-autocomplete';
+import { useFormMemory } from '@/hooks/useFormMemory';
 import { Calendar, Clock, Plus, Trash2, MapPin, Pencil } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -45,13 +48,26 @@ const DEFAULT_FORM_DATA: MeetingFormData = {
 };
 
 export function JobMeetingsSection({ meetings, onAddMeeting, onRemoveMeeting, onUpdateMeeting, jobLocation }: JobMeetingsSectionProps) {
+  const formMemory = useFormMemory('job_meetings');
   const [showForm, setShowForm] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [sameAsJob, setSameAsJob] = useState(true);
+  
+  // Get remembered defaults
+  const rememberedType = formMemory.getMostFrequent('meeting_type');
+  const rememberedTime = formMemory.getMostFrequent('scheduled_time');
+  const rememberedDuration = formMemory.getMostFrequent('duration_minutes');
+  
   const [formData, setFormData] = useState<MeetingFormData>({
     ...DEFAULT_FORM_DATA,
+    meeting_type: rememberedType || DEFAULT_FORM_DATA.meeting_type,
+    scheduled_time: rememberedTime || DEFAULT_FORM_DATA.scheduled_time,
+    duration_minutes: rememberedDuration ? parseInt(rememberedDuration) : DEFAULT_FORM_DATA.duration_minutes,
     location: jobLocation || '',
   });
+  
+  // Get suggestions for title
+  const titleSuggestions = formMemory.getSuggestions('title', formData.title);
 
   // Update location when sameAsJob changes or jobLocation changes
   useEffect(() => {
@@ -63,6 +79,9 @@ export function JobMeetingsSection({ meetings, onAddMeeting, onRemoveMeeting, on
   const resetForm = () => {
     setFormData({
       ...DEFAULT_FORM_DATA,
+      meeting_type: rememberedType || DEFAULT_FORM_DATA.meeting_type,
+      scheduled_time: rememberedTime || DEFAULT_FORM_DATA.scheduled_time,
+      duration_minutes: rememberedDuration ? parseInt(rememberedDuration) : DEFAULT_FORM_DATA.duration_minutes,
       location: jobLocation || '',
     });
     setSameAsJob(true);
@@ -72,12 +91,26 @@ export function JobMeetingsSection({ meetings, onAddMeeting, onRemoveMeeting, on
 
   const handleAdd = () => {
     if (!formData.title || !formData.scheduled_date) return;
+    // Record values to memory
+    formMemory.recordValues({
+      title: formData.title,
+      meeting_type: formData.meeting_type,
+      scheduled_time: formData.scheduled_time,
+      duration_minutes: formData.duration_minutes.toString(),
+    });
     onAddMeeting(formData);
     resetForm();
   };
 
   const handleUpdate = () => {
     if (!formData.title || !formData.scheduled_date || editingIndex === null) return;
+    // Record values to memory
+    formMemory.recordValues({
+      title: formData.title,
+      meeting_type: formData.meeting_type,
+      scheduled_time: formData.scheduled_time,
+      duration_minutes: formData.duration_minutes.toString(),
+    });
     if (onUpdateMeeting) {
       onUpdateMeeting(editingIndex, formData);
     }
@@ -178,11 +211,13 @@ export function JobMeetingsSection({ meetings, onAddMeeting, onRemoveMeeting, on
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="meeting_title">Meeting Title *</Label>
-              <Input
+              <PredictiveInput
                 id="meeting_title"
                 value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                onChange={(value) => setFormData({ ...formData, title: value })}
+                suggestions={titleSuggestions}
                 placeholder="e.g., Initial Site Visit"
+                autoCapitalize={true}
               />
             </div>
             <div className="space-y-2">
