@@ -14,13 +14,15 @@ import {
   CreditCard,
   BarChart2,
   LayoutTemplate,
-  Receipt
+  Receipt,
+  Building2,
+  Contact
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import ct1Logo from '@/assets/ct1-round-logo-new.png';
 
-type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calendar' | 'emails' | 'estimates' | 'reporting' | 'financials' | 'more' | 'payments' | 'accounting' | 'invoices' | 'templates';
+type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calendar' | 'emails' | 'estimates' | 'reporting' | 'financials' | 'more' | 'payments' | 'accounting' | 'invoices' | 'templates' | 'gc' | 'contacts';
 
 interface BottomNavProps {
   activeSection: Section;
@@ -49,6 +51,8 @@ const allNavItems = [
   { id: 'payments' as Section, label: 'Payments', icon: CreditCard },
   { id: 'reporting' as Section, label: 'Reporting', icon: BarChart2 },
   { id: 'customers' as Section, label: 'Customers', icon: Users },
+  { id: 'gc' as Section, label: 'General Contractors', icon: Building2 },
+  { id: 'contacts' as Section, label: 'Contacts', icon: Contact },
 ];
 
 export function BottomNav({ activeSection, onSectionChange }: BottomNavProps) {

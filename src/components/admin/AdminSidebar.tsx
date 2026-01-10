@@ -9,7 +9,8 @@ import {
   Briefcase,
   UserCheck,
   FileText,
-  Receipt
+  Receipt,
+  Building2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ct1Logo from '@/assets/ct1-round-logo-new.png';
@@ -21,6 +22,7 @@ const navItems = [
   { to: '/admin/invoices', icon: Receipt, label: 'Invoices' },
   { to: '/admin/jobs', icon: Briefcase, label: 'Jobs' },
   { to: '/admin/customers', icon: UserCheck, label: 'Customers' },
+  { to: '/admin/gc-contacts', icon: Building2, label: 'GC Contacts' },
   { to: '/admin/support', icon: LifeBuoy, label: 'Support Tickets' },
   { to: '/admin/marketplace', icon: ShoppingCart, label: 'Marketplace' },
   { to: '/admin/settings', icon: Settings, label: 'Settings' },
