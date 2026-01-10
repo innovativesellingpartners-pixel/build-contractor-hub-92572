@@ -21,6 +21,13 @@ interface InvoicesTabProps {
   customerId?: string;
 }
 
+function parseMoneyInput(value: string): number {
+  // Keep it permissive; validation handled elsewhere.
+  const cleaned = value.replace(/[^0-9.\-]/g, '');
+  const num = Number.parseFloat(cleaned);
+  return Number.isFinite(num) ? num : NaN;
+}
+
 export default function InvoicesTab({ jobId, customerId }: InvoicesTabProps) {
   const { invoices, isLoading, createInvoice, updateInvoice, deleteInvoice } = useInvoices(jobId);
   const { isGenerating, generateWaivers, fetchInvoiceWaivers, downloadWaiverAsHtml, printWaiver } = useInvoiceWaivers();
@@ -29,13 +36,14 @@ export default function InvoicesTab({ jobId, customerId }: InvoicesTabProps) {
   const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
   const [expandedWaivers, setExpandedWaivers] = useState<Record<string, boolean>>({});
   const [invoiceWaivers, setInvoiceWaivers] = useState<Record<string, InvoiceWaiver[]>>({});
-  
+
   // Waiver generation state
   const [waiverDialogOpen, setWaiverDialogOpen] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [selectedGcId, setSelectedGcId] = useState<string>('');
   const [selectedWaivers, setSelectedWaivers] = useState<SelectedWaiver[]>([]);
 
+  // Invoice form state (keep numeric inputs free-form; do NOT auto-populate 0s)
   const [formData, setFormData] = useState<Invoice>({
     job_id: jobId,
     customer_id: customerId,
@@ -44,6 +52,8 @@ export default function InvoicesTab({ jobId, customerId }: InvoicesTabProps) {
     amount_paid: 0,
     status: 'draft',
   });
+  const [amountDueInput, setAmountDueInput] = useState<string>('');
+  const [amountPaidInput, setAmountPaidInput] = useState<string>('');
 
   // Load waivers for all invoices
   useEffect(() => {
@@ -69,10 +79,28 @@ export default function InvoicesTab({ jobId, customerId }: InvoicesTabProps) {
   };
 
   const handleSubmit = () => {
+    const amount_due = parseMoneyInput(amountDueInput);
+    const amount_paid = amountPaidInput.trim() === '' ? 0 : parseMoneyInput(amountPaidInput);
+
+    if (!Number.isFinite(amount_due) || amountDueInput.trim() === '') {
+      toast.error('Amount Due is required');
+      return;
+    }
+    if (amountPaidInput.trim() !== '' && !Number.isFinite(amount_paid)) {
+      toast.error('Amount Paid must be a valid number');
+      return;
+    }
+
+    const payload: Invoice = {
+      ...formData,
+      amount_due,
+      amount_paid: Number.isFinite(amount_paid) ? amount_paid : 0,
+    };
+
     if (editingInvoice) {
-      updateInvoice({ ...formData, id: editingInvoice.id! });
+      updateInvoice({ ...payload, id: editingInvoice.id! });
     } else {
-      createInvoice(formData);
+      createInvoice(payload);
     }
     setIsDialogOpen(false);
     resetForm();
@@ -87,12 +115,16 @@ export default function InvoicesTab({ jobId, customerId }: InvoicesTabProps) {
       amount_paid: 0,
       status: 'draft',
     });
+    setAmountDueInput('');
+    setAmountPaidInput('');
     setEditingInvoice(null);
   };
 
   const handleEdit = (invoice: Invoice) => {
     setEditingInvoice(invoice);
     setFormData(invoice);
+    setAmountDueInput(invoice.amount_due != null ? String(invoice.amount_due) : '');
+    setAmountPaidInput(invoice.amount_paid != null && invoice.amount_paid !== 0 ? String(invoice.amount_paid) : '');
     setIsDialogOpen(true);
   };
 
@@ -184,7 +216,12 @@ export default function InvoicesTab({ jobId, customerId }: InvoicesTabProps) {
             <span>Balance: <span className="font-semibold text-primary">${balance.toFixed(2)}</span></span>
           </div>
         </div>
-        <Button onClick={() => setIsDialogOpen(true)}>
+        <Button
+          onClick={() => {
+            resetForm();
+            setIsDialogOpen(true);
+          }}
+        >
           <Plus className="h-4 w-4 mr-2" />
           Create Invoice
         </Button>
@@ -356,20 +393,22 @@ export default function InvoicesTab({ jobId, customerId }: InvoicesTabProps) {
                 <Label htmlFor="amount_due">Amount Due *</Label>
                 <Input
                   id="amount_due"
-                  type="number"
-                  step="0.01"
-                  value={formData.amount_due}
-                  onChange={(e) => setFormData({ ...formData, amount_due: parseFloat(e.target.value) || 0 })}
+                  type="text"
+                  inputMode="decimal"
+                  placeholder=""
+                  value={amountDueInput}
+                  onChange={(e) => setAmountDueInput(e.target.value)}
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="amount_paid">Amount Paid</Label>
                 <Input
                   id="amount_paid"
-                  type="number"
-                  step="0.01"
-                  value={formData.amount_paid}
-                  onChange={(e) => setFormData({ ...formData, amount_paid: parseFloat(e.target.value) || 0 })}
+                  type="text"
+                  inputMode="decimal"
+                  placeholder=""
+                  value={amountPaidInput}
+                  onChange={(e) => setAmountPaidInput(e.target.value)}
                 />
               </div>
             </div>
