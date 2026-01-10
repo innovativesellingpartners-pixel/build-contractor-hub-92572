@@ -368,7 +368,7 @@ export default function EstimatesSection({ onSectionChange, initialEstimateId, o
               {/* Main Content */}
               <RowContent>
                 <RowTitleLine>
-                  <h3 className="font-semibold text-sm sm:text-base truncate max-w-[250px]">
+                  <h3 className="font-semibold text-sm sm:text-base break-words">
                     {estimate.client_name || 'No Client'}
                   </h3>
                   <Badge variant={getStatusColor(estimate.status)} className="text-xs h-5">
