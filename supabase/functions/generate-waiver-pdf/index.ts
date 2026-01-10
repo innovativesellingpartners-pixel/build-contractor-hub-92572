@@ -361,40 +361,67 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.error("Missing SUPABASE_URL or SUPABASE_ANON_KEY env vars");
+      return new Response(
+        JSON.stringify({ error: "Server misconfigured" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
 
     const authHeader = req.headers.get("authorization");
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: "No authorization header" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Get user from auth header
-    const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    if (authError || !user) {
+    if (!authHeader?.startsWith("Bearer ")) {
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
-    const { 
-      invoiceId, 
-      waiverType, 
-      gcId, 
-      amount, 
-      billingPeriodStart, 
-      billingPeriodEnd, 
+    // Use user-scoped client (RLS + storage policies)
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims?.sub) {
+      console.error("JWT validation failed", claimsError);
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    const user = { id: claimsData.claims.sub };
+
+    let bodyJson: WaiverRequest;
+    try {
+      bodyJson = await req.json();
+    } catch (e) {
+      console.error("Invalid JSON body", e);
+      return new Response(
+        JSON.stringify({ error: "Invalid request body" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+
+    const {
+      invoiceId,
+      waiverType,
+      gcId,
+      amount,
+      billingPeriodStart,
+      billingPeriodEnd,
       retainage,
       signatureData,
       signerName,
-      signerTitle
-    }: WaiverRequest = await req.json();
+      signerTitle,
+    }: WaiverRequest = bodyJson;
+
 
     console.log(`Generating ${waiverType} waiver for invoice ${invoiceId}`);
 
@@ -491,7 +518,15 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (uploadError) {
       console.error("Failed to upload waiver:", uploadError);
+      return new Response(
+        JSON.stringify({
+          error: "Failed to upload waiver",
+          details: uploadError.message,
+        }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
+
 
     // Get public URL if upload succeeded
     let pdfUrl = "";
