@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
-import { FileText, Send, Download, ArrowLeft, Mail, ExternalLink, Loader2, Eye } from 'lucide-react';
+import { FileText, Send, Download, ArrowLeft, Mail, ExternalLink, Loader2, Eye, Paperclip } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +12,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
+import { WaiverSelection, SelectedWaiver, WAIVER_TYPES } from '../WaiverSelection';
+import { WaiverPreview } from '../WaiverPreview';
+import { useContractorProfile } from '@/hooks/useContractorProfile';
+import { useGCContacts } from '@/hooks/useGCContacts';
+import { useInvoiceWaivers } from '@/hooks/useInvoiceWaivers';
 import {
   BlueBackground,
   SectionHeader,
@@ -52,6 +57,9 @@ interface EstimateData {
 
 export function InvoiceDetailView({ invoice, onClose, onSectionChange }: InvoiceDetailViewProps) {
   const { updateInvoice } = useInvoices();
+  const { profile } = useContractorProfile();
+  const { gcContacts } = useGCContacts();
+  const { generateWaivers, isGenerating: waiverGenerating } = useInvoiceWaivers();
   const [job, setJob] = useState<JobData | null>(null);
   const [customer, setCustomer] = useState<CustomerData | null>(null);
   const [sourceEstimate, setSourceEstimate] = useState<EstimateData | null>(null);
@@ -66,6 +74,13 @@ export function InvoiceDetailView({ invoice, onClose, onSectionChange }: Invoice
   const [pdfLoading, setPdfLoading] = useState(false);
   const [showPdfPreview, setShowPdfPreview] = useState(false);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [showWaiverDialog, setShowWaiverDialog] = useState(false);
+  const [selectedWaivers, setSelectedWaivers] = useState<SelectedWaiver[]>([]);
+  const [selectedGcId, setSelectedGcId] = useState<string>('');
+  const [waiverStep, setWaiverStep] = useState<'select' | 'preview'>('select');
+  const [signatureData, setSignatureData] = useState<string>('');
+  const [signerName, setSignerName] = useState<string>('');
+  const [signerTitle, setSignerTitle] = useState<string>('');
 
   useEffect(() => {
     const fetchRelatedData = async () => {
@@ -287,6 +302,14 @@ export function InvoiceDetailView({ invoice, onClose, onSectionChange }: Invoice
             VIEW ESTIMATE
           </ActionButton>
         )}
+        <ActionButton 
+          variant="secondary" 
+          onClick={() => setShowWaiverDialog(true)}
+          className="flex items-center gap-2"
+        >
+          <Paperclip className="w-4 h-4" />
+          ATTACH WAIVER
+        </ActionButton>
       </ActionButtonRow>
 
       {/* Content */}
@@ -527,6 +550,136 @@ export function InvoiceDetailView({ invoice, onClose, onSectionChange }: Invoice
               <Download className="mr-2 h-4 w-4" />
               Download PDF
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Attach Waiver Dialog */}
+      <Dialog open={showWaiverDialog} onOpenChange={(open) => {
+        setShowWaiverDialog(open);
+        if (!open) {
+          setWaiverStep('select');
+          setSelectedWaivers([]);
+          setSelectedGcId('');
+          setSignatureData('');
+          setSignerName('');
+          setSignerTitle('');
+        }
+      }}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Paperclip className="h-5 w-5" />
+              {waiverStep === 'select' ? 'Attach Waiver to Invoice' : 'Preview & Sign Waiver'}
+            </DialogTitle>
+            <DialogDescription>
+              {waiverStep === 'select' 
+                ? 'Select the waiver type(s) to attach to this invoice'
+                : 'Review the waiver and add your signature'}
+            </DialogDescription>
+          </DialogHeader>
+
+          {waiverStep === 'select' && (
+            <div className="space-y-4 py-4">
+              {/* GC Selection */}
+              <div className="space-y-2">
+                <Label>Select GC / Recipient</Label>
+                <select
+                  className="w-full px-3 py-2 border border-border rounded-md text-sm bg-background"
+                  value={selectedGcId}
+                  onChange={(e) => setSelectedGcId(e.target.value)}
+                >
+                  <option value="">Select a GC...</option>
+                  {gcContacts.map(gc => (
+                    <option key={gc.id} value={gc.id}>
+                      {gc.name} {gc.company ? `(${gc.company})` : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Waiver Selection */}
+              <WaiverSelection
+                selectedWaivers={selectedWaivers}
+                onWaiversChange={setSelectedWaivers}
+                defaultAmount={invoice.amount_due || 0}
+              />
+            </div>
+          )}
+
+          {waiverStep === 'preview' && selectedWaivers.length > 0 && (
+            <div className="py-4">
+              <WaiverPreview
+                invoice={invoice}
+                waiver={selectedWaivers[0]}
+                gcName={gcContacts.find(g => g.id === selectedGcId)?.name}
+                gcCompany={gcContacts.find(g => g.id === selectedGcId)?.company || undefined}
+                contractorName={profile?.company_name || 'Contractor'}
+                contractorAddress={profile?.business_address || ''}
+                jobName={job?.name || 'Project'}
+                jobAddress={job?.address || ''}
+                onSignatureChange={setSignatureData}
+                onSignerInfoChange={(info) => {
+                  setSignerName(info.name);
+                  setSignerTitle(info.title);
+                }}
+              />
+            </div>
+          )}
+
+          <DialogFooter className="gap-2">
+            {waiverStep === 'select' ? (
+              <>
+                <Button variant="outline" onClick={() => setShowWaiverDialog(false)}>
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={() => setWaiverStep('preview')}
+                  disabled={selectedWaivers.length === 0 || !selectedGcId}
+                >
+                  Preview Waiver
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="outline" onClick={() => setWaiverStep('select')}>
+                  Back
+                </Button>
+                <Button 
+                  onClick={async () => {
+                    try {
+                      await generateWaivers(
+                        invoice.id,
+                        selectedGcId,
+                        selectedWaivers,
+                        {
+                          signatureData,
+                          signerName,
+                          signerTitle,
+                        }
+                      );
+                      toast.success('Waiver(s) attached to invoice');
+                      setShowWaiverDialog(false);
+                    } catch (error) {
+                      // Error already handled in hook
+                    }
+                  }}
+                  disabled={waiverGenerating || !signatureData || !signerName}
+                >
+                  {waiverGenerating ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Paperclip className="mr-2 h-4 w-4" />
+                      Attach Waiver
+                    </>
+                  )}
+                </Button>
+              </>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
