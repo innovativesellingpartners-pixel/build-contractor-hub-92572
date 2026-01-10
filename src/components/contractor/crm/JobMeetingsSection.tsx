@@ -294,17 +294,17 @@ export function JobMeetingsSection({ meetings, onAddMeeting, onRemoveMeeting, on
                 </label>
               </div>
             )}
-            <Input
-              id="meeting_location"
+            <AddressAutocomplete
               value={formData.location}
-              onChange={(e) => {
-                setFormData({ ...formData, location: e.target.value });
-                if (e.target.value !== jobLocation) {
+              onChange={(value) => {
+                setFormData({ ...formData, location: value });
+                if (value !== jobLocation) {
                   setSameAsJob(false);
                 }
               }}
               placeholder={sameAsJob ? "Using job address" : "Enter custom location"}
-              disabled={sameAsJob && !!jobLocation}
+              showGpsButton={!sameAsJob || !jobLocation}
+              className={sameAsJob && !!jobLocation ? "opacity-50" : ""}
             />
           </div>
 
