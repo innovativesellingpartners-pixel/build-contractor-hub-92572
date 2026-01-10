@@ -8,6 +8,7 @@ import { AddressAutocomplete } from '@/components/ui/address-autocomplete';
 import { Plus } from 'lucide-react';
 import { Lead, LeadSource, OTHER_SOURCE_ID } from '@/hooks/useLeads';
 import { AIScopeNotes } from '@/components/contractor/crm/AIScopeNotes';
+import { VoiceInputField } from '@/components/ui/voice-input-field';
 
 interface AddLeadDialogProps {
   onAdd: (leadData: Omit<Lead, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => Promise<any>;
@@ -83,37 +84,41 @@ export function AddLeadDialog({ onAdd, sources }: AddLeadDialogProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="name">Name *</Label>
-              <Input
+              <VoiceInputField
                 id="name"
                 required
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onVoiceInput={(text) => setFormData({ ...formData, name: text })}
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input
+              <VoiceInputField
                 id="email"
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                onVoiceInput={(text) => setFormData({ ...formData, email: text })}
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="phone">Phone</Label>
-              <Input
+              <VoiceInputField
                 id="phone"
                 type="tel"
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                onVoiceInput={(text) => setFormData({ ...formData, phone: text })}
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="project_type">Project Type</Label>
-              <Input
+              <VoiceInputField
                 id="project_type"
                 value={formData.project_type}
                 onChange={(e) => setFormData({ ...formData, project_type: e.target.value })}
+                onVoiceInput={(text) => setFormData({ ...formData, project_type: text })}
                 placeholder="e.g., Kitchen Remodel"
               />
             </div>
@@ -168,10 +173,11 @@ export function AddLeadDialog({ onAdd, sources }: AddLeadDialogProps) {
             {isOtherSource && (
               <div className="space-y-2">
                 <Label htmlFor="source_other">Please Specify</Label>
-                <Input
+                <VoiceInputField
                   id="source_other"
                   value={formData.source_other}
                   onChange={(e) => setFormData({ ...formData, source_other: e.target.value })}
+                  onVoiceInput={(text) => setFormData({ ...formData, source_other: text })}
                   placeholder="Where did they hear about you?"
                 />
               </div>
@@ -197,28 +203,31 @@ export function AddLeadDialog({ onAdd, sources }: AddLeadDialogProps) {
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="city">City</Label>
-              <Input
+              <VoiceInputField
                 id="city"
                 value={formData.city}
                 onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                onVoiceInput={(text) => setFormData({ ...formData, city: text })}
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="state">State</Label>
-              <Input
+              <VoiceInputField
                 id="state"
                 value={formData.state}
                 onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                onVoiceInput={(text) => setFormData({ ...formData, state: text })}
                 maxLength={2}
                 placeholder="CA"
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="zip_code">Zip Code</Label>
-              <Input
+              <VoiceInputField
                 id="zip_code"
                 value={formData.zip_code}
                 onChange={(e) => setFormData({ ...formData, zip_code: e.target.value })}
+                onVoiceInput={(text) => setFormData({ ...formData, zip_code: text })}
               />
             </div>
           </div>

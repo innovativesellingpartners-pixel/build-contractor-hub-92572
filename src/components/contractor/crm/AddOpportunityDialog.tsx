@@ -3,11 +3,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { AddressAutocomplete } from '@/components/ui/address-autocomplete';
 import { Plus } from 'lucide-react';
 import { OpportunityStage, LeadSource } from '@/hooks/useOpportunities';
+import { VoiceInputField } from '@/components/ui/voice-input-field';
+import { VoiceTextareaField } from '@/components/ui/voice-textarea-field';
 
 interface AddOpportunityDialogProps {
   onAdd: (opportunityData: any) => Promise<any>;
@@ -72,44 +73,48 @@ export function AddOpportunityDialog({ onAdd }: AddOpportunityDialogProps) {
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="title">Opportunity Title *</Label>
-              <Input
+              <VoiceInputField
                 id="title"
                 required
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                onVoiceInput={(text) => setFormData({ ...formData, title: text })}
                 placeholder="e.g., Kitchen Remodel - Smith Residence"
               />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="customer_name">Customer Name *</Label>
-              <Input
+              <VoiceInputField
                 id="customer_name"
                 required
                 value={formData.customer_name}
                 onChange={(e) => setFormData({ ...formData, customer_name: e.target.value })}
+                onVoiceInput={(text) => setFormData({ ...formData, customer_name: text })}
                 placeholder="John Smith"
               />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="customer_phone">Phone</Label>
-              <Input
+              <VoiceInputField
                 id="customer_phone"
                 type="tel"
                 value={formData.customer_phone}
                 onChange={(e) => setFormData({ ...formData, customer_phone: e.target.value })}
+                onVoiceInput={(text) => setFormData({ ...formData, customer_phone: text })}
                 placeholder="(555) 123-4567"
               />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="customer_email">Email</Label>
-              <Input
+              <VoiceInputField
                 id="customer_email"
                 type="email"
                 value={formData.customer_email}
                 onChange={(e) => setFormData({ ...formData, customer_email: e.target.value })}
+                onVoiceInput={(text) => setFormData({ ...formData, customer_email: text })}
                 placeholder="john@example.com"
               />
             </div>
@@ -188,10 +193,11 @@ export function AddOpportunityDialog({ onAdd }: AddOpportunityDialogProps) {
 
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="notes">Notes</Label>
-              <Textarea
+              <VoiceTextareaField
                 id="notes"
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                onVoiceInput={(text) => setFormData({ ...formData, notes: text })}
                 placeholder="Additional information about this opportunity..."
                 rows={3}
               />
