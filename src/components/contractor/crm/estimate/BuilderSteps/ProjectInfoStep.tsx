@@ -3,6 +3,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { AddressAutocomplete } from '@/components/ui/address-autocomplete';
 import { User, Building, MapPin, Phone, Mail, Briefcase } from 'lucide-react';
 import { EstimateBuilderData } from '../../EstimateBuilder';
 
@@ -157,16 +158,12 @@ export default function ProjectInfoStep({ data, onChange }: ProjectInfoStepProps
             
             <div className="sm:col-span-2 space-y-2">
               <Label htmlFor="client_address">Client Address</Label>
-              <div className="relative">
-                <Building className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Textarea
-                  id="client_address"
-                  value={data.client_address}
-                  onChange={(e) => onChange({ client_address: e.target.value })}
-                  placeholder="123 Main St, City, State 12345"
-                  className="pl-10 min-h-[80px]"
-                />
-              </div>
+              <AddressAutocomplete
+                value={data.client_address || ''}
+                onChange={(value) => onChange({ client_address: value })}
+                placeholder="Start typing an address..."
+                showGpsButton={true}
+              />
             </div>
           </div>
         </CardContent>
@@ -186,12 +183,11 @@ export default function ProjectInfoStep({ data, onChange }: ProjectInfoStepProps
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="site_address">Site Address</Label>
-            <Textarea
-              id="site_address"
-              value={data.site_address}
-              onChange={(e) => onChange({ site_address: e.target.value })}
+            <AddressAutocomplete
+              value={data.site_address || ''}
+              onChange={(value) => onChange({ site_address: value })}
               placeholder="Leave empty if same as client address"
-              className="min-h-[80px]"
+              showGpsButton={true}
             />
           </div>
           

@@ -21,6 +21,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { SearchableSelect } from '@/components/ui/searchable-select';
+import { AddressAutocomplete } from '@/components/ui/address-autocomplete';
 import { useCustomers } from '@/hooks/useCustomers';
 
 const customerSchema = z.object({
@@ -230,7 +231,17 @@ export default function AddCustomerDialog({ open, onOpenChange }: AddCustomerDia
                   <FormItem className="md:col-span-2">
                     <FormLabel>Address</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="123 Main St" />
+                      <AddressAutocomplete
+                        value={field.value || ''}
+                        onChange={field.onChange}
+                        onAddressParsed={(parsed) => {
+                          form.setValue('address', parsed.street);
+                          form.setValue('city', parsed.city);
+                          form.setValue('state', parsed.state);
+                          form.setValue('zip_code', parsed.zipCode);
+                        }}
+                        placeholder="Start typing an address..."
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
