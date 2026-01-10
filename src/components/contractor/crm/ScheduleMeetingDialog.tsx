@@ -10,6 +10,9 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { PredictiveInput } from '@/components/ui/predictive-input';
+import { AddressAutocomplete } from '@/components/ui/address-autocomplete';
+import { useFormMemory } from '@/hooks/useFormMemory';
 import { 
   CalendarIcon, 
   Clock, 
@@ -74,6 +77,7 @@ export function ScheduleMeetingDialog({
 }: ScheduleMeetingDialogProps) {
   const { user } = useAuth();
   const { jobs } = useJobs();
+  const formMemory = useFormMemory('schedule_meeting');
   
   const [step, setStep] = useState<'date' | 'details'>('date');
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(initialDate);
@@ -91,15 +95,26 @@ export function ScheduleMeetingDialog({
   const [recipients, setRecipients] = useState<string[]>([]);
   const [newRecipient, setNewRecipient] = useState('');
 
-  // Reset form when dialog opens
+  // Get suggestions from memory
+  const titleSuggestions = formMemory.getSuggestions('title', title);
+  const locationSuggestions = formMemory.getSuggestions('location', location);
+  const recipientSuggestions = formMemory.getSuggestions('recipients', newRecipient);
+
+  // Reset form when dialog opens - use memory defaults
   useEffect(() => {
     if (open) {
       setStep('date');
       setSelectedDate(initialDate || undefined);
       setTitle('');
-      setMeetingType('site_visit');
-      setSelectedTime('09:00');
-      setDuration(60);
+      // Use most frequent meeting type from memory, fallback to site_visit
+      const rememberedType = formMemory.getMostFrequent('meetingType');
+      setMeetingType(rememberedType || 'site_visit');
+      // Use most frequent time from memory, fallback to 09:00
+      const rememberedTime = formMemory.getMostFrequent('time');
+      setSelectedTime(rememberedTime || '09:00');
+      // Use most frequent duration from memory, fallback to 60
+      const rememberedDuration = formMemory.getMostFrequent('duration');
+      setDuration(rememberedDuration ? parseInt(rememberedDuration) : 60);
       setLocation('');
       setNotes('');
       setSelectedJobId('');
@@ -147,6 +162,8 @@ export function ScheduleMeetingDialog({
     }
     
     setRecipients([...recipients, email]);
+    // Remember email for future suggestions
+    formMemory.recordValue('recipients', email);
     setNewRecipient('');
   };
 
@@ -233,6 +250,15 @@ export function ScheduleMeetingDialog({
         }
       }
 
+      // Record values to form memory for future predictions
+      formMemory.recordValues({
+        title: title.trim(),
+        meetingType: meetingType,
+        time: selectedTime,
+        duration: duration.toString(),
+        location: location.trim(),
+      });
+
       toast.success(
         recipients.length > 0 
           ? `Meeting scheduled and ${recipients.length} invite(s) sent` 
@@ -282,14 +308,13 @@ export function ScheduleMeetingDialog({
               {/* Meeting Title */}
               <div className="space-y-2">
                 <Label htmlFor="title">Meeting Title *</Label>
-                <Input
+                <PredictiveInput
                   id="title"
                   placeholder="e.g., Site Inspection, Project Kickoff"
                   value={title}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setTitle(val.charAt(0).toUpperCase() + val.slice(1));
-                  }}
+                  onChange={setTitle}
+                  suggestions={titleSuggestions}
+                  autoCapitalize={true}
                 />
               </div>
 
@@ -416,13 +441,11 @@ export function ScheduleMeetingDialog({
                   <MapPin className="h-4 w-4" />
                   Location
                 </Label>
-                <Input
-                  placeholder="Meeting address or location"
+                <AddressAutocomplete
                   value={location}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setLocation(val.charAt(0).toUpperCase() + val.slice(1));
-                  }}
+                  onChange={setLocation}
+                  placeholder="Meeting address or location"
+                  showGpsButton={true}
                 />
               </div>
 
@@ -433,17 +456,13 @@ export function ScheduleMeetingDialog({
                   Send Invite To (Optional)
                 </Label>
                 <div className="flex gap-2">
-                  <Input
+                  <PredictiveInput
                     type="email"
                     placeholder="recipient@email.com"
                     value={newRecipient}
-                    onChange={(e) => setNewRecipient(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        handleAddRecipient();
-                      }
-                    }}
+                    onChange={setNewRecipient}
+                    suggestions={recipientSuggestions}
+                    autoCapitalize={false}
                   />
                   <Button 
                     type="button" 
