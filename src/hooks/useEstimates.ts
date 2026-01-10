@@ -129,10 +129,30 @@ export function useEstimates() {
     mutationFn: async (estimate: Estimate) => {
       if (!user?.id) throw new Error('Not authenticated');
 
+      // Generate the next estimate number
+      const { data: maxEstimate } = await supabase
+        .from('estimates')
+        .select('estimate_number')
+        .eq('user_id', user.id)
+        .not('estimate_number', 'is', null)
+        .order('estimate_number', { ascending: false })
+        .limit(1)
+        .single();
+
+      let nextNumber = 99; // Starting number (will be 0000099)
+      if (maxEstimate?.estimate_number) {
+        const currentNumber = parseInt(maxEstimate.estimate_number, 10);
+        if (!isNaN(currentNumber)) {
+          nextNumber = currentNumber + 1;
+        }
+      }
+      const estimateNumber = String(nextNumber).padStart(7, '0');
+
       const { data, error } = await supabase
         .from('estimates')
         .insert([{
           user_id: user.id,
+          estimate_number: estimateNumber,
           customer_id: estimate.customer_id,
           opportunity_id: estimate.opportunity_id,
           lead_id: estimate.lead_id,
