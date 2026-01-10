@@ -8,8 +8,9 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Badge } from '@/components/ui/badge';
 import { AddressAutocomplete } from '@/components/ui/address-autocomplete';
-import { CalendarIcon, Clock, MapPin, Loader2, FileText } from 'lucide-react';
+import { CalendarIcon, Clock, MapPin, Loader2, FileText, Users, Mail, X, Plus } from 'lucide-react';
 import { format, parseISO, differenceInMinutes } from 'date-fns';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -25,6 +26,7 @@ interface CalendarEvent {
   provider: string;
   calendar_email?: string;
   isLocal?: boolean;
+  attendees?: Array<{ email: string; responseStatus?: string }>;
 }
 
 interface EditEventDialogProps {
@@ -65,6 +67,8 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess }: EditEv
   const [location, setLocation] = useState('');
   const [description, setDescription] = useState('');
   const [isAllDay, setIsAllDay] = useState(false);
+  const [recipients, setRecipients] = useState<string[]>([]);
+  const [newRecipient, setNewRecipient] = useState('');
 
   // Parse event data when dialog opens or event changes
   useEffect(() => {
@@ -72,6 +76,14 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess }: EditEv
       setTitle(event.summary || '');
       setLocation(event.location || '');
       setDescription(event.description || '');
+      
+      // Parse existing attendees
+      if (event.attendees && Array.isArray(event.attendees)) {
+        setRecipients(event.attendees.map(a => a.email).filter(Boolean));
+      } else {
+        setRecipients([]);
+      }
+      setNewRecipient('');
       
       const startStr = event.start?.dateTime || event.start?.date;
       const endStr = event.end?.dateTime || event.end?.date;
@@ -121,6 +133,37 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess }: EditEv
       }
     }
   }, [open, event]);
+
+  const handleAddRecipient = () => {
+    const email = newRecipient.trim().toLowerCase();
+    if (!email) return;
+    
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
+    
+    if (recipients.includes(email)) {
+      toast.error('This email is already added');
+      return;
+    }
+    
+    setRecipients([...recipients, email]);
+    setNewRecipient('');
+  };
+
+  const handleRemoveRecipient = (email: string) => {
+    setRecipients(recipients.filter(r => r !== email));
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAddRecipient();
+    }
+  };
 
   const parseTimeToMinutes = (time: string): number => {
     const [hours, minutes] = time.split(':').map(Number);
@@ -177,8 +220,30 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess }: EditEv
           .eq('id', event.id);
 
         if (dbError) throw dbError;
+
+        // Send email invitations to new recipients
+        if (recipients.length > 0) {
+          for (const email of recipients) {
+            await supabase.functions.invoke('send-meeting-invite', {
+              body: {
+                recipientEmail: email,
+                meetingTitle: title,
+                meetingDate: format(selectedDate, 'EEEE, MMMM d, yyyy'),
+                meetingTime: format(startDateTime, 'h:mm a'),
+                duration: duration,
+                location: location || 'TBD',
+                notes: description || undefined,
+                startDateTime: startDateTime.toISOString(),
+                endDateTime: endDateTime.toISOString(),
+              },
+              headers: { Authorization: `Bearer ${session.access_token}` }
+            }).catch(err => {
+              console.warn(`Failed to send invite to ${email}:`, err);
+            });
+          }
+        }
       } else {
-        // Update external calendar event
+        // Update external calendar event with attendees
         const { error } = await supabase.functions.invoke('update-calendar-event', {
           body: {
             eventId: event.id,
@@ -189,6 +254,7 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess }: EditEv
             location: location || undefined,
             startDate: startDateTime.toISOString(),
             endDate: endDateTime.toISOString(),
+            attendees: recipients.length > 0 ? recipients : undefined,
           },
           headers: { Authorization: `Bearer ${session.access_token}` }
         });
@@ -196,7 +262,11 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess }: EditEv
         if (error) throw error;
       }
 
-      toast.success('Event updated successfully');
+      toast.success(
+        recipients.length > 0 
+          ? 'Event updated and invites sent' 
+          : 'Event updated successfully'
+      );
       onOpenChange(false);
       onSuccess?.();
     } catch (error: any) {
@@ -340,6 +410,61 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess }: EditEv
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}
               />
+            </div>
+
+            {/* Recipients/Attendees */}
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                Recipients
+              </Label>
+              
+              {/* Existing Recipients */}
+              {recipients.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {recipients.map((email) => (
+                    <Badge 
+                      key={email} 
+                      variant="secondary"
+                      className="flex items-center gap-1 px-2 py-1"
+                    >
+                      <Mail className="h-3 w-3" />
+                      {email}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveRecipient(email)}
+                        className="ml-1 hover:text-destructive"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              )}
+              
+              {/* Add New Recipient */}
+              <div className="flex gap-2">
+                <Input
+                  type="email"
+                  placeholder="Enter email address"
+                  value={newRecipient}
+                  onChange={(e) => setNewRecipient(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={handleAddRecipient}
+                  disabled={!newRecipient.trim()}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Add email addresses to send calendar invitations
+              </p>
             </div>
           </div>
         </ScrollArea>
