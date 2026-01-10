@@ -617,7 +617,7 @@ export default function InvoicesTab({ jobId, customerId }: InvoicesTabProps) {
                 gcName={gcContacts.find(g => g.id === selectedGcId)?.name}
                 gcCompany={gcContacts.find(g => g.id === selectedGcId)?.company || undefined}
                 contractorName={profile?.company_name || 'Contractor'}
-                contractorAddress={profile?.address || ''}
+                contractorAddress={profile?.business_address || ''}
                 jobName={currentJob?.name || 'Project'}
                 jobAddress={currentJob?.address || ''}
                 onSignatureChange={setSignatureData}
