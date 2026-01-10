@@ -17,12 +17,12 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { LocationAutocomplete, AddressData } from '@/components/ui/location-autocomplete';
 import { useCustomers } from '@/hooks/useCustomers';
+import { VoiceInputField } from '@/components/ui/voice-input-field';
+import { VoiceTextareaField } from '@/components/ui/voice-textarea-field';
 
 const customerSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -115,7 +115,11 @@ export default function AddCustomerDialog({ open, onOpenChange }: AddCustomerDia
                   <FormItem>
                     <FormLabel>Name *</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="John Doe" />
+                      <VoiceInputField 
+                        {...field} 
+                        placeholder="John Doe"
+                        onVoiceInput={(text) => form.setValue('name', text)}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -152,7 +156,12 @@ export default function AddCustomerDialog({ open, onOpenChange }: AddCustomerDia
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input {...field} type="email" placeholder="john@example.com" />
+                      <VoiceInputField 
+                        {...field} 
+                        type="email" 
+                        placeholder="john@example.com"
+                        onVoiceInput={(text) => form.setValue('email', text)}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -166,7 +175,11 @@ export default function AddCustomerDialog({ open, onOpenChange }: AddCustomerDia
                   <FormItem>
                     <FormLabel>Phone</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="(555) 123-4567" />
+                      <VoiceInputField 
+                        {...field} 
+                        placeholder="(555) 123-4567"
+                        onVoiceInput={(text) => form.setValue('phone', text)}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -216,7 +229,11 @@ export default function AddCustomerDialog({ open, onOpenChange }: AddCustomerDia
                     <FormItem className="md:col-span-2">
                       <FormLabel>Please specify</FormLabel>
                       <FormControl>
-                        <Input {...field} placeholder="Enter custom referral source" />
+                        <VoiceInputField 
+                          {...field} 
+                          placeholder="Enter custom referral source"
+                          onVoiceInput={(text) => form.setValue('referral_source_other', text)}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -255,7 +272,11 @@ export default function AddCustomerDialog({ open, onOpenChange }: AddCustomerDia
                   <FormItem>
                     <FormLabel>City</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="New York" />
+                      <VoiceInputField 
+                        {...field} 
+                        placeholder="New York"
+                        onVoiceInput={(text) => form.setValue('city', text)}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -269,7 +290,11 @@ export default function AddCustomerDialog({ open, onOpenChange }: AddCustomerDia
                   <FormItem>
                     <FormLabel>State</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="NY" />
+                      <VoiceInputField 
+                        {...field} 
+                        placeholder="NY"
+                        onVoiceInput={(text) => form.setValue('state', text)}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -283,7 +308,11 @@ export default function AddCustomerDialog({ open, onOpenChange }: AddCustomerDia
                   <FormItem>
                     <FormLabel>Zip Code</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="10001" />
+                      <VoiceInputField 
+                        {...field} 
+                        placeholder="10001"
+                        onVoiceInput={(text) => form.setValue('zip_code', text)}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -298,7 +327,12 @@ export default function AddCustomerDialog({ open, onOpenChange }: AddCustomerDia
                 <FormItem>
                   <FormLabel>Notes</FormLabel>
                   <FormControl>
-                    <Textarea {...field} rows={3} placeholder="Any additional notes..." />
+                    <VoiceTextareaField 
+                      {...field} 
+                      rows={3} 
+                      placeholder="Any additional notes..."
+                      onVoiceInput={(text) => form.setValue('notes', text)}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

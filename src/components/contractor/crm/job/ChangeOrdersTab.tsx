@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +9,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Plus, FileEdit, Check, X, Clock, Trash2 } from 'lucide-react';
 import { useChangeOrders, ChangeOrder } from '@/hooks/useChangeOrders';
 import { format } from 'date-fns';
+import { VoiceInputField } from '@/components/ui/voice-input-field';
+import { VoiceTextareaField } from '@/components/ui/voice-textarea-field';
 
 interface ChangeOrdersTabProps {
   jobId: string;
@@ -194,19 +195,21 @@ export default function ChangeOrdersTab({ jobId }: ChangeOrdersTabProps) {
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="description">Description *</Label>
-              <Input
+              <VoiceInputField
                 id="description"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                onVoiceInput={(text) => setFormData({ ...formData, description: text })}
               />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="reason">Reason for Change</Label>
-              <Textarea
+              <VoiceTextareaField
                 id="reason"
-                value={formData.reason}
+                value={formData.reason || ''}
                 onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
+                onVoiceInput={(text) => setFormData({ ...formData, reason: text })}
                 rows={2}
               />
             </div>
@@ -215,10 +218,17 @@ export default function ChangeOrdersTab({ jobId }: ChangeOrdersTabProps) {
               <Label htmlFor="additional_cost">Additional Cost *</Label>
               <Input
                 id="additional_cost"
-                type="number"
-                step="0.01"
-                value={formData.additional_cost}
-                onChange={(e) => setFormData({ ...formData, additional_cost: parseFloat(e.target.value) || 0 })}
+                type="text"
+                inputMode="decimal"
+                placeholder="0.00"
+                value={formData.additional_cost === 0 ? '' : formData.additional_cost}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  // Allow empty, numbers, and decimal point
+                  if (value === '' || /^[0-9]*\.?[0-9]*$/.test(value)) {
+                    setFormData({ ...formData, additional_cost: value === '' ? 0 : parseFloat(value) || 0 });
+                  }
+                }}
               />
             </div>
 
@@ -241,10 +251,11 @@ export default function ChangeOrdersTab({ jobId }: ChangeOrdersTabProps) {
 
             <div className="space-y-2">
               <Label htmlFor="notes">Additional Notes</Label>
-              <Textarea
+              <VoiceTextareaField
                 id="notes"
-                value={formData.notes}
+                value={formData.notes || ''}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                onVoiceInput={(text) => setFormData({ ...formData, notes: text })}
                 rows={3}
               />
             </div>

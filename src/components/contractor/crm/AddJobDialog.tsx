@@ -4,7 +4,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { LocationAutocomplete, AddressData } from '@/components/ui/location-autocomplete';
 import { Plus, Bot, FileText, MapPin, DollarSign } from 'lucide-react';
@@ -12,6 +11,8 @@ import { Job } from '@/hooks/useJobs';
 import { JobAIAssistant } from './JobAIAssistant';
 import { JobMeetingsSection, MeetingFormData } from './JobMeetingsSection';
 import { AIScopeNotes } from './AIScopeNotes';
+import { VoiceInputField } from '@/components/ui/voice-input-field';
+import { VoiceTextareaField } from '@/components/ui/voice-textarea-field';
 
 interface AddJobDialogProps {
   onAdd: (jobData: Omit<Job, 'id' | 'user_id' | 'job_number' | 'created_at' | 'updated_at'>, meetings?: MeetingFormData[]) => Promise<any>;
@@ -141,21 +142,23 @@ export function AddJobDialog({ onAdd }: AddJobDialogProps) {
                 
                 <div className="space-y-2">
                   <Label htmlFor="name">Job Name *</Label>
-                  <Input
+                  <VoiceInputField
                     id="name"
                     required
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onVoiceInput={(text) => setFormData({ ...formData, name: text })}
                     placeholder="e.g., Smith Kitchen Renovation"
                   />
                 </div>
                 
                 <div className="space-y-2">
                   <Label htmlFor="description">Description</Label>
-                  <Textarea
+                  <VoiceTextareaField
                     id="description"
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    onVoiceInput={(text) => setFormData({ ...formData, description: text })}
                     rows={3}
                     placeholder="Brief description of the work to be done"
                   />
@@ -219,29 +222,32 @@ export function AddJobDialog({ onAdd }: AddJobDialogProps) {
                 <div className="grid grid-cols-6 gap-4">
                   <div className="space-y-2 col-span-3">
                     <Label htmlFor="city">City</Label>
-                    <Input
+                    <VoiceInputField
                       id="city"
                       value={formData.city}
                       onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                      onVoiceInput={(text) => setFormData({ ...formData, city: text })}
                       placeholder="San Francisco"
                     />
                   </div>
                   <div className="space-y-2 col-span-1">
                     <Label htmlFor="state">State</Label>
-                    <Input
+                    <VoiceInputField
                       id="state"
                       value={formData.state}
                       onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                      onVoiceInput={(text) => setFormData({ ...formData, state: text })}
                       maxLength={2}
                       placeholder="CA"
                     />
                   </div>
                   <div className="space-y-2 col-span-2">
                     <Label htmlFor="zip_code">Zip Code</Label>
-                    <Input
+                    <VoiceInputField
                       id="zip_code"
                       value={formData.zip_code}
                       onChange={(e) => setFormData({ ...formData, zip_code: e.target.value })}
+                      onVoiceInput={(text) => setFormData({ ...formData, zip_code: text })}
                       placeholder="94105"
                     />
                   </div>
