@@ -268,7 +268,7 @@ export function ScheduleMeetingDialog({
         console.warn('Calendar sync failed (meeting still saved locally):', calSyncError);
       }
 
-      // Send email invitations to recipients
+      // Send email invitations to recipients with ICS calendar attachment
       if (recipients.length > 0) {
         for (const email of recipients) {
           await supabase.functions.invoke('send-meeting-invite', {
@@ -281,6 +281,8 @@ export function ScheduleMeetingDialog({
               location: location || 'TBD',
               notes: notes || undefined,
               jobNumber: selectedJob?.job_number || undefined,
+              startDateTime: startDateTime.toISOString(),
+              endDateTime: endDateTime.toISOString(),
             },
             headers: { Authorization: `Bearer ${session.access_token}` }
           }).catch(err => {
