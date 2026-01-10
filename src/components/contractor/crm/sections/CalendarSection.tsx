@@ -32,7 +32,21 @@ interface CalendarEvent {
   start?: { dateTime?: string; date?: string };
   end?: { dateTime?: string; date?: string };
   provider: string;
-  calendar_email: string;
+  calendar_email?: string;
+  isLocal?: boolean;
+}
+
+interface UserMeeting {
+  id: string;
+  title: string;
+  meeting_type: string;
+  start_time: string;
+  end_time: string;
+  location: string | null;
+  notes: string | null;
+  calendar_event_id: string | null;
+  provider: string | null;
+  job_id: string | null;
 }
 
 interface CalendarSectionProps {
@@ -43,6 +57,7 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
   const { user } = useAuth();
   const [connections, setConnections] = useState<CalendarConnection[]>([]);
   const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [localMeetings, setLocalMeetings] = useState<UserMeeting[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingEvents, setLoadingEvents] = useState(false);
   const [connecting, setConnecting] = useState<string | null>(null);
@@ -62,6 +77,7 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
   useEffect(() => {
     if (user) {
       fetchConnections();
+      fetchLocalMeetings(); // Always fetch local meetings
     }
   }, [user]);
 
@@ -120,6 +136,21 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
       toast.error('Failed to fetch calendar events');
     } finally {
       setLoadingEvents(false);
+    }
+  };
+
+  const fetchLocalMeetings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('user_meetings')
+        .select('*')
+        .eq('user_id', user?.id)
+        .order('start_time', { ascending: true });
+
+      if (error) throw error;
+      setLocalMeetings(data || []);
+    } catch (error: any) {
+      console.error('Error fetching local meetings:', error);
     }
   };
 
@@ -278,12 +309,49 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
     return days;
   }, [currentDate, viewMode]);
 
-  // Get events for a specific day
+  // Get events for a specific day (combining external calendar events and local meetings)
   const getEventsForDay = (day: Date) => {
-    return events.filter(event => {
+    // Get external calendar events
+    const externalEvents = events.filter(event => {
       const eventDate = getEventDate(event);
       return eventDate && isSameDay(eventDate, day);
     });
+
+    // Get local meetings that aren't already synced to external calendar
+    // (to avoid duplicates)
+    const syncedEventIds = new Set(
+      localMeetings
+        .filter(m => m.calendar_event_id)
+        .map(m => m.calendar_event_id)
+    );
+
+    const localOnlyMeetings = localMeetings
+      .filter(meeting => {
+        // Skip if already synced (will show from external events)
+        if (meeting.calendar_event_id && syncedEventIds.has(meeting.calendar_event_id)) {
+          // Check if it's actually in the external events
+          const isInExternal = events.some(e => e.id === meeting.calendar_event_id);
+          if (isInExternal) return false;
+        }
+        
+        try {
+          return isSameDay(parseISO(meeting.start_time), day);
+        } catch {
+          return false;
+        }
+      })
+      .map(meeting => ({
+        id: meeting.id,
+        summary: meeting.title,
+        description: meeting.notes || undefined,
+        location: meeting.location || undefined,
+        start: { dateTime: meeting.start_time },
+        end: { dateTime: meeting.end_time },
+        provider: meeting.provider || 'local',
+        isLocal: true,
+      } as CalendarEvent));
+
+    return [...externalEvents, ...localOnlyMeetings];
   };
 
   // Get tasks for a specific day
@@ -822,7 +890,10 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
       <ScheduleMeetingDialog
         open={scheduleMeetingOpen}
         onOpenChange={setScheduleMeetingOpen}
-        onSuccess={fetchEvents}
+        onSuccess={() => {
+          fetchEvents();
+          fetchLocalMeetings();
+        }}
       />
 
       {/* Event Detail Dialog */}
@@ -834,7 +905,9 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
               {selectedEvent?.summary || 'Event Details'}
             </DialogTitle>
             <DialogDescription>
-              {selectedEvent?.provider === 'google' ? 'Google Calendar' : 'Outlook Calendar'} • {selectedEvent?.calendar_email}
+              {selectedEvent?.isLocal || selectedEvent?.provider === 'local' 
+                ? 'Local Meeting' 
+                : `${selectedEvent?.provider === 'google' ? 'Google Calendar' : 'Outlook Calendar'} • ${selectedEvent?.calendar_email || ''}`}
             </DialogDescription>
           </DialogHeader>
           
@@ -1080,6 +1153,7 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
         event={eventToEdit}
         onSuccess={() => {
           fetchEvents();
+          fetchLocalMeetings();
           setEventToEdit(null);
         }}
       />

@@ -196,7 +196,29 @@ export function ScheduleMeetingDialog({
         eventTitle = `${selectedJob.job_number} - ${title} - ${selectedJob.name}`;
       }
 
-      // Save meeting to database if linked to a job
+      // ALWAYS save meeting to user_meetings table first (guaranteed local save)
+      const { data: meetingData, error: meetingError } = await supabase
+        .from('user_meetings')
+        .insert({
+          user_id: user?.id,
+          job_id: selectedJobId || null,
+          title: title,
+          meeting_type: meetingType,
+          start_time: startDateTime.toISOString(),
+          end_time: endDateTime.toISOString(),
+          location: location || null,
+          notes: notes || null,
+        })
+        .select()
+        .single();
+
+      if (meetingError) {
+        console.error('Failed to save meeting:', meetingError);
+        toast.error('Failed to save meeting');
+        return;
+      }
+
+      // Also save to job_meetings if linked to a job (for backward compatibility)
       if (selectedJobId) {
         await supabase.from('job_meetings').insert({
           job_id: selectedJobId,
@@ -211,22 +233,39 @@ export function ScheduleMeetingDialog({
         });
       }
 
-      // Create calendar event
-      const { error: calError } = await supabase.functions.invoke('create-calendar-event', {
-        body: {
-          jobId: selectedJobId || undefined,
-          jobName: eventTitle,
-          description: notes || undefined,
-          startDate: startDateTime.toISOString(),
-          endDate: endDateTime.toISOString(),
-          location: location || undefined,
-          attendees: recipients.length > 0 ? recipients : undefined,
-        },
-        headers: { Authorization: `Bearer ${session.access_token}` }
-      });
+      // Attempt calendar sync (optional - don't fail if calendar isn't connected)
+      let calendarEventId: string | null = null;
+      let calendarProvider: string | null = null;
+      
+      try {
+        const { data: calResponse, error: calError } = await supabase.functions.invoke('create-calendar-event', {
+          body: {
+            jobId: selectedJobId || undefined,
+            jobName: eventTitle,
+            description: notes || undefined,
+            startDate: startDateTime.toISOString(),
+            endDate: endDateTime.toISOString(),
+            location: location || undefined,
+            attendees: recipients.length > 0 ? recipients : undefined,
+          },
+          headers: { Authorization: `Bearer ${session.access_token}` }
+        });
 
-      if (calError) {
-        console.warn('Calendar event creation failed:', calError);
+        if (!calError && calResponse?.results?.[0]?.eventId) {
+          calendarEventId = calResponse.results[0].eventId;
+          calendarProvider = calResponse.results[0].provider;
+          
+          // Update meeting with external calendar event ID
+          await supabase
+            .from('user_meetings')
+            .update({
+              calendar_event_id: calendarEventId,
+              provider: calendarProvider,
+            })
+            .eq('id', meetingData.id);
+        }
+      } catch (calSyncError) {
+        console.warn('Calendar sync failed (meeting still saved locally):', calSyncError);
       }
 
       // Send email invitations to recipients
