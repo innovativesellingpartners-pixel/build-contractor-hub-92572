@@ -153,35 +153,42 @@ export default function JobsSection({ onSectionChange }: JobsSectionProps) {
 
         {/* Horizontal List */}
         <div className="space-y-3">
-          {jobs.map((job) => (
-            <HorizontalRowCard key={job.id} onClick={() => handleJobClick(job)}>
-              {/* Avatar */}
-              <RowAvatar 
-                initials="" 
-                icon={<Briefcase className="h-5 w-5 text-primary" />} 
-              />
+          {jobs.map((job) => {
+            const customer = job.customer_id ? customers?.find(c => c.id === job.customer_id) : null;
+            const displayName = customer?.name || job.name;
+            
+            return (
+              <HorizontalRowCard key={job.id} onClick={() => handleJobClick(job)}>
+                {/* Avatar */}
+                <RowAvatar 
+                  initials={displayName.substring(0, 2).toUpperCase()} 
+                  icon={<Briefcase className="h-5 w-5 text-primary" />} 
+                />
 
-              {/* Info */}
-              <RowContent>
-                <RowTitleLine>
-                  <h3 className="font-semibold text-sm sm:text-base truncate max-w-[200px]">
-                    {job.name}
-                  </h3>
-                  <Badge className={`${getStatusColor(job.status)} text-white text-xs`}>
-                    {job.status.replace('_', ' ')}
-                  </Badge>
-                </RowTitleLine>
-                
-                <RowMetaLine>
-                  {job.job_number && <span className="font-medium">#{job.job_number}</span>}
-                  {(job.city || job.state) && (
-                    <span className="flex items-center gap-1 truncate max-w-[180px]">
-                      <MapPin className="h-3 w-3 flex-shrink-0" />
-                      {job.city}{job.city && job.state && ', '}{job.state}
-                    </span>
-                  )}
-                </RowMetaLine>
-              </RowContent>
+                {/* Info */}
+                <RowContent>
+                  <RowTitleLine>
+                    <h3 className="font-semibold text-sm sm:text-base truncate max-w-[200px]">
+                      {displayName}
+                    </h3>
+                    <Badge className={`${getStatusColor(job.status)} text-white text-xs`}>
+                      {job.status.replace('_', ' ')}
+                    </Badge>
+                  </RowTitleLine>
+                  
+                  <RowMetaLine>
+                    {job.job_number && <span className="font-medium">#{job.job_number}</span>}
+                    {customer?.name && job.name !== customer.name && (
+                      <span className="truncate max-w-[120px]">{job.name}</span>
+                    )}
+                    {(job.city || job.state) && (
+                      <span className="flex items-center gap-1 truncate max-w-[180px]">
+                        <MapPin className="h-3 w-3 flex-shrink-0" />
+                        {job.city}{job.city && job.state && ', '}{job.state}
+                      </span>
+                    )}
+                  </RowMetaLine>
+                </RowContent>
 
               {/* Amount */}
               {job.contract_value && job.contract_value > 0 ? (
@@ -217,7 +224,8 @@ export default function JobsSection({ onSectionChange }: JobsSectionProps) {
                 <ChevronRight className="h-4 w-4 text-muted-foreground ml-1" />
               </RowActions>
             </HorizontalRowCard>
-          ))}
+            );
+          })}
 
           {jobs.length === 0 && (
             <div className="text-center py-8 text-muted-foreground">
