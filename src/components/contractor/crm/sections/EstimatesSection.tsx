@@ -368,18 +368,19 @@ export default function EstimatesSection({ onSectionChange, initialEstimateId, o
               {/* Main Content */}
               <RowContent>
                 <RowTitleLine>
-                  <h3 className="font-semibold text-sm truncate">
-                    {estimate.title || 'Untitled'}
+                  <h3 className="font-semibold text-sm sm:text-base truncate max-w-[250px]">
+                    {estimate.client_name || 'No Client'}
                   </h3>
-                </RowTitleLine>
-                
-                <RowMetaLine>
-                  <span className="truncate">
-                    {estimate.client_name || 'No client'}
-                  </span>
                   <Badge variant={getStatusColor(estimate.status)} className="text-xs h-5">
                     {estimate.status}
                   </Badge>
+                </RowTitleLine>
+                
+                <RowMetaLine>
+                  {estimate.estimate_number && <span className="font-medium">#{estimate.estimate_number}</span>}
+                  <span className="truncate max-w-[180px]">
+                    {estimate.title || estimate.project_name || 'Untitled'}
+                  </span>
                 </RowMetaLine>
               </RowContent>
 
