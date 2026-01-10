@@ -118,7 +118,7 @@ export const useJobPhotos = (jobId?: string) => {
         signed_url: signedData?.signedUrl,
       };
 
-      setPhotos([photoWithSignedUrl, ...photos]);
+      setPhotos(prev => [photoWithSignedUrl, ...prev]);
       toast({
         title: 'Photo uploaded',
         description: 'Photo has been added to the job successfully',
