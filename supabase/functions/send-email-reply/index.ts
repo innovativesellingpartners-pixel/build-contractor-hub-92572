@@ -66,16 +66,21 @@ serve(async (req) => {
       });
     }
 
-    const { provider, threadId, to, subject, body, inReplyTo } = await req.json();
+    const requestBody = await req.json();
+    const { provider, threadId, to, subject, body, inReplyTo } = requestBody;
+    
+    console.log('Request body received:', JSON.stringify(requestBody));
+    console.log('Body value:', body, 'Body type:', typeof body, 'Body length:', body?.length);
     
     if (!to || !body) {
+      console.log('Missing required fields - to:', to, 'body:', body);
       return new Response(JSON.stringify({ error: 'To and body are required' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    console.log('Sending email reply to:', to, 'subject:', subject);
+    console.log('Sending email reply to:', to, 'subject:', subject, 'body preview:', body?.substring(0, 100));
 
     // Get email connection
     const { data: connections, error: connError } = await supabase
