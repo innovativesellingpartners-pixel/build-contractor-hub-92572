@@ -6,6 +6,8 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  const startTime = Date.now();
+  
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -36,7 +38,7 @@ serve(async (req) => {
     const googleUrl = new URL('https://maps.googleapis.com/maps/api/place/details/json');
     googleUrl.searchParams.set('place_id', placeId);
     googleUrl.searchParams.set('key', apiKey);
-    googleUrl.searchParams.set('fields', 'address_components,formatted_address,geometry');
+    googleUrl.searchParams.set('fields', 'address_components,formatted_address,geometry,name,place_id');
     if (sessionToken) {
       googleUrl.searchParams.set('sessiontoken', sessionToken);
     }
@@ -80,6 +82,9 @@ serve(async (req) => {
     const lat = result.geometry?.location?.lat;
     const lng = result.geometry?.location?.lng;
 
+    const latency = Date.now() - startTime;
+    console.log(`Places details fetched for ${placeId}, latency: ${latency}ms`);
+
     return new Response(
       JSON.stringify({
         address1,
@@ -87,10 +92,12 @@ serve(async (req) => {
         city,
         state,
         postalCode,
-        country,
+        country: country || 'US',
         lat,
         lng,
         formattedAddress: result.formatted_address || '',
+        placeId: result.place_id,
+        source: 'geo_autocomplete',
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
