@@ -7,7 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
-import { FileText, Briefcase, ArrowRight, Mail, Phone, Plus, Pencil } from 'lucide-react';
+import { FileText, Briefcase, ArrowRight, Mail, Phone, Plus, Pencil, Navigation } from 'lucide-react';
 import {
   BlueBackground,
   SectionHeader,
@@ -110,6 +110,23 @@ export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSecti
 
   const getFullAddress = () => {
     return [lead.address, lead.city, lead.state, lead.zip_code].filter(Boolean).join(', ');
+  };
+
+  const handleStartTravel = () => {
+    const address = getFullAddress();
+    if (!address) {
+      toast.error('No address available for navigation');
+      return;
+    }
+    const encodedAddress = encodeURIComponent(address);
+    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    
+    // Use window.open to keep the app running in the background
+    const mapsUrl = isIOS 
+      ? `https://maps.apple.com/?daddr=${encodedAddress}&dirflg=d`
+      : `https://www.google.com/maps/dir/?api=1&destination=${encodedAddress}`;
+    
+    window.open(mapsUrl, '_blank', 'noopener,noreferrer');
   };
 
   const isConverted = !!lead.converted_to_job_id;
@@ -263,7 +280,7 @@ export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSecti
         </InfoCard>
 
         {/* Quick Contact Buttons */}
-        {(lead.email || lead.phone) && (
+        {(lead.email || lead.phone || getFullAddress()) && (
           <div className="flex gap-2 px-4 py-3 bg-white border-b border-sky-100">
             {lead.phone && (
               <a 
@@ -282,6 +299,15 @@ export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSecti
                 <Mail className="w-4 h-4" />
                 EMAIL
               </a>
+            )}
+            {getFullAddress() && (
+              <button 
+                onClick={handleStartTravel}
+                className="flex-1 flex items-center justify-center gap-2 bg-orange-500 text-white py-3 rounded-lg font-semibold"
+              >
+                <Navigation className="w-4 h-4" />
+                START TRAVEL
+              </button>
             )}
           </div>
         )}
