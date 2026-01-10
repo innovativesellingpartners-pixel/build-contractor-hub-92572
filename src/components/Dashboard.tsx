@@ -54,7 +54,9 @@ import ct1Logo from "@/assets/ct1-round-logo-new.png";
 import { VoiceAI } from "@/components/contractor/VoiceAI";
 import Reporting from "@/pages/Reporting";
 
-type ActiveSection = 'training' | 'crm' | 'marketplace' | 'leads' | 'insurance' | 'account' | 'voiceai' | 'reporting';
+import { PersonalTasks } from "@/components/contractor/PersonalTasks";
+
+type ActiveSection = 'training' | 'crm' | 'marketplace' | 'leads' | 'insurance' | 'account' | 'voiceai' | 'reporting' | 'tasks';
 
 export function Dashboard() {
   const { user, profile, signOut } = useAuth();
@@ -394,7 +396,16 @@ export function Dashboard() {
                   onBackToDashboard={() => handleSectionChange('leads')}
                   className="mb-4"
                 />
-                <Reporting />
+              <Reporting />
+              </div>
+            )}
+            {activeSection === 'tasks' && (
+              <div className="p-3 md:p-4 lg:p-6 min-h-[400px] md:min-h-[600px] pb-20">
+                <BackNavigation 
+                  onBackToDashboard={() => handleSectionChange('leads')}
+                  className="mb-4"
+                />
+                <PersonalTasks />
               </div>
             )}
             {activeSection === 'marketplace' && (
@@ -769,6 +780,19 @@ function SidebarNav({ activeSection, setActiveSection, tierFeatures }: SidebarNa
       >
         <BarChart3 className="h-4 w-4 mr-3" />
         Reporting
+      </Button>
+      
+      <Button
+        variant={activeSection === 'tasks' ? 'default' : 'ghost'}
+        className={`w-full justify-start transition-all ${
+          activeSection === 'tasks' 
+            ? 'shadow-md' 
+            : 'hover:bg-red-50 hover:border-red-500 hover:text-black border border-transparent'
+        }`}
+        onClick={() => setActiveSection('tasks')}
+      >
+        <ClipboardList className="h-4 w-4 mr-3" />
+        My Tasks
       </Button>
       
       {tierFeatures.insurance && (

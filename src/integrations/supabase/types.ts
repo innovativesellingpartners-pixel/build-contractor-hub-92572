@@ -2926,6 +2926,48 @@ export type Database = {
           },
         ]
       }
+      personal_tasks: {
+        Row: {
+          category: string | null
+          created_at: string
+          due_date: string | null
+          id: string
+          notes: string | null
+          priority: Database["public"]["Enums"]["task_priority"] | null
+          source: string | null
+          status: Database["public"]["Enums"]["task_status"] | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          priority?: Database["public"]["Enums"]["task_priority"] | null
+          source?: string | null
+          status?: Database["public"]["Enums"]["task_status"] | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          priority?: Database["public"]["Enums"]["task_priority"] | null
+          source?: string | null
+          status?: Database["public"]["Enums"]["task_status"] | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       phone_numbers: {
         Row: {
           active: boolean
@@ -4132,6 +4174,7 @@ export type Database = {
         | "negotiation"
         | "close"
         | "psfu"
+      task_priority: "low" | "medium" | "high"
       task_status: "not_started" | "in_progress" | "completed" | "blocked"
       ticket_priority: "low" | "medium" | "high"
       ticket_status: "open" | "in_progress" | "resolved" | "closed"
@@ -4283,6 +4326,7 @@ export const Constants = {
         "close",
         "psfu",
       ],
+      task_priority: ["low", "medium", "high"],
       task_status: ["not_started", "in_progress", "completed", "blocked"],
       ticket_priority: ["low", "medium", "high"],
       ticket_status: ["open", "in_progress", "resolved", "closed"],

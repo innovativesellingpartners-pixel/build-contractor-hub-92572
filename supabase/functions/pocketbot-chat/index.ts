@@ -228,6 +228,40 @@ serve(async (req) => {
             required: ["title", "sections"]
           }
         }
+      },
+      {
+        type: "function",
+        function: {
+          name: "add_task",
+          description: "Add a task to the user's personal task list. Use this when the user says things like 'add a task', 'remind me to', 'I need to', 'create a task for', 'add to my tasks', 'make a note to', etc.",
+          parameters: {
+            type: "object",
+            properties: {
+              title: {
+                type: "string",
+                description: "The task title/description - what needs to be done"
+              },
+              priority: {
+                type: "string",
+                enum: ["low", "medium", "high"],
+                description: "Task priority level. Default to medium if not specified."
+              },
+              due_date: {
+                type: "string",
+                description: "Optional due date in YYYY-MM-DD format. Parse natural language like 'tomorrow', 'next week', 'Friday' into actual dates."
+              },
+              category: {
+                type: "string",
+                description: "Optional category like 'sales', 'estimating', 'follow-up', 'project', 'admin'. Infer from context if possible."
+              },
+              notes: {
+                type: "string",
+                description: "Optional additional notes or context for the task"
+              }
+            },
+            required: ["title"]
+          }
+        }
       }
     ];
 
@@ -251,6 +285,16 @@ IMPORTANT: You ONLY provide guidance on these specific topics:
 - Sales training and sales data
 - Customer relationship management
 - Construction industry best practices
+- Task management (adding tasks to the user's task list)
+
+TASK MANAGEMENT:
+You can add tasks to the user's personal task list. When users say things like:
+- "Add a task to..."
+- "Remind me to..."
+- "I need to..."
+- "Create a task for..."
+- "Make a note to..."
+Use the add_task tool to create the task. Parse natural language dates like "tomorrow", "next Friday", "in 2 days" into actual dates. Infer priority and category from context when possible.
 
 You can generate PDF documents for users when they request guides, checklists, reports, or any business documents.
 
@@ -350,12 +394,29 @@ You are knowledgeable, professional, friendly, and provide actionable advice wit
     if (toolCalls.length > 0) {
       console.log("Tool calls detected:", toolCalls);
       
-      for (const toolCall of toolCalls) {
-        if (toolCall.function?.name === "generate_pdf") {
-          const args = JSON.parse(toolCall.function.arguments);
+      // Accumulate arguments from streamed tool calls
+      const toolCallMap: Record<number, { name: string; arguments: string }> = {};
+      
+      for (const tc of toolCalls) {
+        const idx = tc.index ?? 0;
+        if (!toolCallMap[idx]) {
+          toolCallMap[idx] = { name: '', arguments: '' };
+        }
+        if (tc.function?.name) {
+          toolCallMap[idx].name = tc.function.name;
+        }
+        if (tc.function?.arguments) {
+          toolCallMap[idx].arguments += tc.function.arguments;
+        }
+      }
+      
+      for (const idx in toolCallMap) {
+        const toolCall = toolCallMap[idx];
+        
+        if (toolCall.name === "generate_pdf") {
+          const args = JSON.parse(toolCall.arguments);
           const pdfDataUrl = generatePDF(args);
           
-          // Return the PDF as a special message format
           return new Response(
             JSON.stringify({ 
               type: "pdf",
@@ -367,6 +428,77 @@ You are knowledgeable, professional, friendly, and provide actionable advice wit
               headers: { ...corsHeaders, "Content-Type": "application/json" },
             }
           );
+        }
+        
+        if (toolCall.name === "add_task") {
+          try {
+            const args = JSON.parse(toolCall.arguments);
+            console.log("Adding task:", args);
+            
+            // Insert task into personal_tasks table
+            const { data: taskData, error: taskError } = await supabase
+              .from('personal_tasks')
+              .insert({
+                user_id: user.id,
+                title: args.title,
+                notes: args.notes || null,
+                priority: args.priority || 'medium',
+                status: 'not_started',
+                due_date: args.due_date ? new Date(args.due_date).toISOString() : null,
+                category: args.category || null,
+                source: 'pocketbot'
+              })
+              .select()
+              .single();
+            
+            if (taskError) {
+              console.error("Error inserting task:", taskError);
+              return new Response(
+                JSON.stringify({ 
+                  type: "task_error",
+                  content: `I tried to add the task "${args.title}" but encountered an error. Please try again or add it manually in your Tasks section.`
+                }),
+                {
+                  headers: { ...corsHeaders, "Content-Type": "application/json" },
+                }
+              );
+            }
+            
+            // Build confirmation message
+            let confirmationMsg = `✅ I've added "${args.title}" to your task list`;
+            if (args.priority && args.priority !== 'medium') {
+              confirmationMsg += ` with ${args.priority} priority`;
+            }
+            if (args.due_date) {
+              confirmationMsg += ` due ${args.due_date}`;
+            }
+            if (args.category) {
+              confirmationMsg += ` (${args.category})`;
+            }
+            confirmationMsg += `. You can view and manage it in your My Tasks section.`;
+            
+            return new Response(
+              JSON.stringify({ 
+                type: "task_added",
+                content: confirmationMsg,
+                task: taskData
+              }),
+              {
+                headers: { ...corsHeaders, "Content-Type": "application/json" },
+              }
+            );
+          } catch (parseError) {
+            console.error("Error parsing add_task arguments:", parseError);
+            return new Response(
+              JSON.stringify({ 
+                type: "task_error",
+                content: "I had trouble understanding the task details. Could you please try again?"
+              }),
+              {
+                headers: { ...corsHeaders, "Content-Type": "application/json" },
+              }
+            );
+          }
         }
       }
     }
@@ -392,6 +524,16 @@ IMPORTANT: You ONLY provide guidance on these specific topics:
 - Sales training and sales data
 - Customer relationship management
 - Construction industry best practices
+- Task management (adding tasks to the user's task list)
+
+TASK MANAGEMENT:
+You can add tasks to the user's personal task list. When users say things like:
+- "Add a task to..."
+- "Remind me to..."
+- "I need to..."
+- "Create a task for..."
+- "Make a note to..."
+Use the add_task tool to create the task. Parse natural language dates like "tomorrow", "next Friday", "in 2 days" into actual dates. Infer priority and category from context when possible.
 
 You can generate PDF documents for users when they request guides, checklists, reports, or any business documents.
 

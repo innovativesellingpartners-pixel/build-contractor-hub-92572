@@ -204,16 +204,28 @@ export function Pocketbot() {
         throw new Error("Failed to get response from AI");
       }
 
-      // Check if response is JSON (PDF response) or streaming
+      // Check if response is JSON (PDF/task response) or streaming
       const contentType = response.headers.get("content-type");
       if (contentType?.includes("application/json")) {
-        const pdfResponse = await response.json();
-        if (pdfResponse.type === "pdf") {
+        const jsonResponse = await response.json();
+        
+        // Handle PDF response
+        if (jsonResponse.type === "pdf") {
           setMessages([...newMessages, {
             role: "assistant",
-            content: pdfResponse.content,
-            pdfData: pdfResponse.pdfData,
-            fileName: pdfResponse.fileName
+            content: jsonResponse.content,
+            pdfData: jsonResponse.pdfData,
+            fileName: jsonResponse.fileName
+          }]);
+          setIsLoading(false);
+          return;
+        }
+        
+        // Handle task added response
+        if (jsonResponse.type === "task_added" || jsonResponse.type === "task_error") {
+          setMessages([...newMessages, {
+            role: "assistant",
+            content: jsonResponse.content
           }]);
           setIsLoading(false);
           return;
