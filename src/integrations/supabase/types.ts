@@ -2378,6 +2378,7 @@ export type Database = {
           phone: string | null
           project_type: string | null
           source_id: string | null
+          source_other: string | null
           state: string | null
           status: string
           updated_at: string
@@ -2402,6 +2403,7 @@ export type Database = {
           phone?: string | null
           project_type?: string | null
           source_id?: string | null
+          source_other?: string | null
           state?: string | null
           status?: string
           updated_at?: string
@@ -2426,6 +2428,7 @@ export type Database = {
           phone?: string | null
           project_type?: string | null
           source_id?: string | null
+          source_other?: string | null
           state?: string | null
           status?: string
           updated_at?: string

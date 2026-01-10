@@ -7,7 +7,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { AddressAutocomplete } from '@/components/ui/address-autocomplete';
 import { Plus } from 'lucide-react';
-import { Lead, LeadSource } from '@/hooks/useLeads';
+import { Lead, LeadSource, OTHER_SOURCE_ID } from '@/hooks/useLeads';
+
 interface AddLeadDialogProps {
   onAdd: (leadData: Omit<Lead, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => Promise<any>;
   sources: LeadSource[];
@@ -24,12 +25,15 @@ export function AddLeadDialog({ onAdd, sources }: AddLeadDialogProps) {
     value: '',
     status: 'new' as Lead['status'],
     source_id: '',
+    source_other: '',
     address: '',
     city: '',
     state: '',
     zip_code: '',
     notes: '',
   });
+
+  const isOtherSource = formData.source_id === OTHER_SOURCE_ID;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,6 +42,7 @@ export function AddLeadDialog({ onAdd, sources }: AddLeadDialogProps) {
         ...formData,
         value: formData.value ? parseFloat(formData.value) : undefined,
         source_id: formData.source_id || undefined,
+        source_other: isOtherSource ? formData.source_other : undefined,
       });
       setOpen(false);
       setFormData({
@@ -49,6 +54,7 @@ export function AddLeadDialog({ onAdd, sources }: AddLeadDialogProps) {
         value: '',
         status: 'new',
         source_id: '',
+        source_other: '',
         address: '',
         city: '',
         state: '',
@@ -150,7 +156,7 @@ export function AddLeadDialog({ onAdd, sources }: AddLeadDialogProps) {
               <Label htmlFor="source">Lead Source</Label>
               <SearchableSelect
                 value={formData.source_id}
-                onValueChange={(value) => setFormData({ ...formData, source_id: value })}
+                onValueChange={(value) => setFormData({ ...formData, source_id: value, source_other: value !== OTHER_SOURCE_ID ? '' : formData.source_other })}
                 placeholder="Select a source"
                 searchPlaceholder="Search sources..."
                 options={sources.map((source) => ({
@@ -159,6 +165,17 @@ export function AddLeadDialog({ onAdd, sources }: AddLeadDialogProps) {
                 }))}
               />
             </div>
+            {isOtherSource && (
+              <div className="space-y-2">
+                <Label htmlFor="source_other">Please Specify</Label>
+                <Input
+                  id="source_other"
+                  value={formData.source_other}
+                  onChange={(e) => setFormData({ ...formData, source_other: e.target.value })}
+                  placeholder="Where did they hear about you?"
+                />
+              </div>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="address">Address</Label>
