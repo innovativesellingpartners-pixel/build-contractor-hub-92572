@@ -1286,6 +1286,44 @@ export type Database = {
           },
         ]
       }
+      estimate_photos: {
+        Row: {
+          caption: string | null
+          created_at: string
+          estimate_id: string
+          id: string
+          photo_type: string
+          photo_url: string
+          user_id: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          estimate_id: string
+          id?: string
+          photo_type?: string
+          photo_url: string
+          user_id: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          estimate_id?: string
+          id?: string
+          photo_type?: string
+          photo_url?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estimate_photos_estimate_id_fkey"
+            columns: ["estimate_id"]
+            isOneToOne: false
+            referencedRelation: "estimates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       estimate_status_history: {
         Row: {
           created_at: string
@@ -3374,6 +3412,7 @@ export type Database = {
       }
       scheduled_sms_reminders: {
         Row: {
+          contractor_twilio_number: string | null
           created_at: string
           error_message: string | null
           id: string
@@ -3389,6 +3428,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          contractor_twilio_number?: string | null
           created_at?: string
           error_message?: string | null
           id?: string
@@ -3404,6 +3444,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          contractor_twilio_number?: string | null
           created_at?: string
           error_message?: string | null
           id?: string
