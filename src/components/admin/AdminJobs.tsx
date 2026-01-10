@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -8,9 +8,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Search, MapPin, ExternalLink, DollarSign } from 'lucide-react';
 import { useState } from 'react';
 import { format } from 'date-fns';
+import { EditJobDialog } from '@/components/contractor/crm/EditJobDialog';
+import { Job } from '@/hooks/useJobs';
+import { toast } from 'sonner';
 
 export const AdminJobs = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data: jobs, isLoading, error } = useQuery({
     queryKey: ['adminJobs'],
@@ -60,6 +66,26 @@ export const AdminJobs = () => {
     return colors[status] || 'bg-gray-500';
   };
 
+  const handleRowClick = (job: any) => {
+    setSelectedJob(job as Job);
+    setEditDialogOpen(true);
+  };
+
+  const handleUpdateJob = async (id: string, updates: Partial<Job>) => {
+    const { error } = await supabase
+      .from('jobs')
+      .update(updates)
+      .eq('id', id);
+    
+    if (error) {
+      toast.error('Failed to update job');
+      throw error;
+    }
+    
+    toast.success('Job updated successfully');
+    queryClient.invalidateQueries({ queryKey: ['adminJobs'] });
+  };
+
   if (isLoading) {
     return <div className="flex items-center justify-center h-64">Loading...</div>;
   }
@@ -106,7 +132,11 @@ export const AdminJobs = () => {
             </TableHeader>
             <TableBody>
               {filteredJobs?.map((job) => (
-                <TableRow key={job.id}>
+                <TableRow 
+                  key={job.id} 
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => handleRowClick(job)}
+                >
                   <TableCell>
                     <div>
                       <div className="font-medium">{job.name}</div>
@@ -166,7 +196,14 @@ export const AdminJobs = () => {
                     )}
                   </TableCell>
                   <TableCell>
-                    <Button variant="ghost" size="sm">
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRowClick(job);
+                      }}
+                    >
                       <ExternalLink className="h-4 w-4" />
                     </Button>
                   </TableCell>
@@ -183,6 +220,13 @@ export const AdminJobs = () => {
           </Table>
         </CardContent>
       </Card>
+
+      <EditJobDialog
+        job={selectedJob}
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        onUpdate={handleUpdateJob}
+      />
     </div>
   );
 };
