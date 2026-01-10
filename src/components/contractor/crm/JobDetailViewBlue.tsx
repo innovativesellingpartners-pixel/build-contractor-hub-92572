@@ -3,9 +3,10 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { 
   Navigation, Copy, Pencil, FileText, Camera, ClipboardList, Package, 
-  Receipt, DollarSign, Calendar, Clock, Info, Briefcase, Upload, X, StickyNote, Archive, FilePlus
+  Receipt, DollarSign, Calendar, Clock, Info, Briefcase, Upload, X, StickyNote, Archive, FilePlus, Phone, Mail, User
 } from 'lucide-react';
 import { useJobs, Job } from '@/hooks/useJobs';
+import { useCustomers } from '@/hooks/useCustomers';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -400,8 +401,12 @@ function LogsTabContent({ jobId }: { jobId: string }) {
 
 export default function JobDetailViewBlue({ job, open, onOpenChange, onCreateEstimate, onEditJob, onDuplicateJob, onArchiveJob }: JobDetailViewBlueProps) {
   const { updateJob } = useJobs();
+  const { customers } = useCustomers();
   const { user } = useAuth();
   const [isDuplicating, setIsDuplicating] = useState(false);
+  
+  // Find the customer associated with this job
+  const customer = job?.customer_id ? customers.find(c => c.id === job.customer_id) : null;
   const [isArchiving, setIsArchiving] = useState(false);
   
   // Persist activeTab in sessionStorage to maintain state across refreshes
@@ -583,6 +588,54 @@ export default function JobDetailViewBlue({ job, open, onOpenChange, onCreateEst
                   {job.description && <InfoRow label="Description" value={job.description} />}
                 </InfoCard>
 
+                {/* Customer Contact */}
+                {customer && (
+                  <>
+                    <SectionHeader>CUSTOMER CONTACT</SectionHeader>
+                    <InfoCard className="rounded-none">
+                      <InfoRow 
+                        label="Name" 
+                        value={
+                          <span className="flex items-center gap-2">
+                            <User className="w-4 h-4 text-muted-foreground" />
+                            {customer.name}
+                          </span>
+                        } 
+                      />
+                      {customer.phone && (
+                        <InfoRow 
+                          label="Phone" 
+                          value={
+                            <a 
+                              href={`tel:${customer.phone}`} 
+                              className="flex items-center gap-2 text-primary hover:underline"
+                            >
+                              <Phone className="w-4 h-4" />
+                              {customer.phone}
+                            </a>
+                          } 
+                        />
+                      )}
+                      {customer.email && (
+                        <InfoRow 
+                          label="Email" 
+                          value={
+                            <a 
+                              href={`mailto:${customer.email}`} 
+                              className="flex items-center gap-2 text-primary hover:underline"
+                            >
+                              <Mail className="w-4 h-4" />
+                              {customer.email}
+                            </a>
+                          } 
+                        />
+                      )}
+                      {customer.company && (
+                        <InfoRow label="Company" value={customer.company} />
+                      )}
+                    </InfoCard>
+                  </>
+                )}
                 {/* Location */}
                 {getFullAddress() && (
                   <>
