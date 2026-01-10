@@ -95,12 +95,26 @@ serve(async (req) => {
       });
     }
 
-    const { jobId, jobName, description, startDate, endDate, location, address, city, state, contractorId } = await req.json();
+    const { 
+      jobId, 
+      jobName, 
+      description, 
+      startDate, 
+      endDate, 
+      location, 
+      address, 
+      city, 
+      state, 
+      contractorId,
+      attendees, // Array of email addresses to invite
+      sendInvites = true // Whether to send email invites to attendees
+    } = await req.json();
     
     // Use contractorId from request (for service calls) or userId from auth
     const effectiveUserId = contractorId || userId;
     
     console.log('Creating calendar event for job:', jobName, 'user:', effectiveUserId);
+    console.log('Attendees:', attendees);
 
     // Only require jobName (event title) - jobId is optional
     if (!jobName) {
@@ -117,7 +131,7 @@ serve(async (req) => {
       });
     }
 
-    // Get user's calendar connections
+    // Get user's calendar connections - CRITICAL: Only use contractor's own connection
     const { data: connections, error: connError } = await supabase
       .from('calendar_connections')
       .select('*')
@@ -131,44 +145,47 @@ serve(async (req) => {
       });
     }
 
+    // HARD GUARD: If no calendar connection, return clear message - NEVER use admin credentials
     if (!connections || connections.length === 0) {
-      console.log('No calendar connections found for user');
-      return new Response(JSON.stringify({ message: 'No calendar connected', created: false }), {
+      console.log('No calendar connections found for contractor:', effectiveUserId);
+      return new Response(JSON.stringify({ 
+        message: 'No calendar connected', 
+        created: false,
+        requiresCalendarConnection: true,
+        // Indicate what the caller should do
+        action: attendees?.length > 0 
+          ? 'Connect your calendar to send customer invites from your account'
+          : 'Connect your calendar to sync events'
+      }), {
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    console.log('Found', connections.length, 'calendar connections');
+    console.log('Found', connections.length, 'calendar connections for contractor');
     const results = [];
 
     for (const connection of connections) {
       try {
         console.log('Processing connection:', connection.provider, connection.calendar_email);
         
-        // Decode hex-encoded tokens - same logic as fetch-calendar-events
+        // Decode hex-encoded tokens
         const storedRefreshToken = connection.refresh_token_encrypted;
         const storedAccessToken = connection.access_token_encrypted;
-        
-        console.log('Stored refresh token length:', storedRefreshToken?.length);
-        console.log('Stored access token length:', storedAccessToken?.length);
         
         const refreshTokenDecoded = decodeToken(storedRefreshToken);
         const accessTokenDecoded = decodeToken(storedAccessToken);
         
-        console.log('Decoded access token preview:', accessTokenDecoded.substring(0, 20) + '...');
         console.log('Token expires at:', connection.expires_at, 'Current time:', new Date().toISOString());
 
         let accessToken = accessTokenDecoded;
 
         // Always refresh token to ensure it's valid
         console.log('Attempting token refresh for fresh credentials...');
-        console.log('Using refresh token preview:', refreshTokenDecoded.substring(0, 20) + '...');
         
         try {
           accessToken = await refreshToken(connection.provider, refreshTokenDecoded, connection, supabase);
           console.log('Got fresh access token, length:', accessToken.length);
-          console.log('Using refreshed token');
         } catch (refreshErr: any) {
           console.error('Token refresh failed:', refreshErr.message);
           // Try with existing decoded token if refresh fails
@@ -184,6 +201,7 @@ serve(async (req) => {
         const eventEnd = endDate ? new Date(endDate) : new Date(eventStart.getTime() + 2 * 60 * 60 * 1000);
 
         console.log('Creating event:', jobName, 'at', eventLocation, 'from', eventStart, 'to', eventEnd);
+        console.log('Contractor calendar email (organizer):', connection.calendar_email);
 
         if (connection.provider === 'google') {
           const event = await createGoogleCalendarEvent(accessToken, {
@@ -192,9 +210,18 @@ serve(async (req) => {
             location: eventLocation,
             start: eventStart,
             end: eventEnd,
+            attendees: attendees || [],
+            sendInvites: sendInvites && attendees?.length > 0,
           });
           console.log('Google Calendar event created:', event.id);
-          results.push({ provider: 'google', success: true, eventId: event.id });
+          console.log('Event organizer:', event.organizer?.email);
+          results.push({ 
+            provider: 'google', 
+            success: true, 
+            eventId: event.id,
+            organizerEmail: connection.calendar_email,
+            attendeesInvited: attendees?.length || 0
+          });
         } else if (connection.provider === 'outlook') {
           const event = await createOutlookCalendarEvent(accessToken, {
             subject: `${jobName}`,
@@ -202,9 +229,17 @@ serve(async (req) => {
             location: eventLocation,
             start: eventStart,
             end: eventEnd,
+            attendees: attendees || [],
+            sendInvites: sendInvites && attendees?.length > 0,
           });
           console.log('Outlook Calendar event created:', event.id);
-          results.push({ provider: 'outlook', success: true, eventId: event.id });
+          results.push({ 
+            provider: 'outlook', 
+            success: true, 
+            eventId: event.id,
+            organizerEmail: connection.calendar_email,
+            attendeesInvited: attendees?.length || 0
+          });
         }
       } catch (err: any) {
         console.error(`Error creating event for ${connection.provider}:`, err);
@@ -307,8 +342,22 @@ async function createGoogleCalendarEvent(accessToken: string, event: {
   location: string;
   start: Date;
   end: Date;
+  attendees: string[];
+  sendInvites: boolean;
 }) {
-  const response = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
+  // Build attendees array for Google Calendar API
+  const attendeesPayload = event.attendees.map(email => ({
+    email: email,
+    responseStatus: 'needsAction'
+  }));
+
+  // CRITICAL: Use sendUpdates=all to send email invites from contractor's account
+  // This ensures invites come FROM the contractor's calendar, not an admin
+  const sendUpdates = event.sendInvites ? 'all' : 'none';
+  
+  console.log(`Creating Google event with sendUpdates=${sendUpdates}, attendees:`, event.attendees);
+
+  const response = await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events?sendUpdates=${sendUpdates}`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${accessToken}`,
@@ -326,15 +375,32 @@ async function createGoogleCalendarEvent(accessToken: string, event: {
         dateTime: event.end.toISOString(),
         timeZone: 'America/Detroit',
       },
+      // Add attendees - they will receive invites from the contractor's calendar
+      attendees: attendeesPayload.length > 0 ? attendeesPayload : undefined,
+      // Reminder for the contractor
+      reminders: {
+        useDefault: false,
+        overrides: [
+          { method: 'popup', minutes: 30 },
+          { method: 'email', minutes: 60 },
+        ],
+      },
+      // Guest can modify setting - controlled by contractor
+      guestsCanModify: false,
+      guestsCanInviteOthers: false,
+      guestsCanSeeOtherGuests: true,
     }),
   });
 
   if (!response.ok) {
     const error = await response.text();
+    console.error('Google Calendar API error:', error);
     throw new Error(`Google Calendar API error: ${error}`);
   }
 
-  return response.json();
+  const result = await response.json();
+  console.log('Google event created - organizer:', result.organizer?.email, 'creator:', result.creator?.email);
+  return result;
 }
 
 async function createOutlookCalendarEvent(accessToken: string, event: {
@@ -343,37 +409,60 @@ async function createOutlookCalendarEvent(accessToken: string, event: {
   location: string;
   start: Date;
   end: Date;
+  attendees: string[];
+  sendInvites: boolean;
 }) {
+  // Build attendees array for Microsoft Graph API
+  const attendeesPayload = event.attendees.map(email => ({
+    emailAddress: {
+      address: email
+    },
+    type: 'required'
+  }));
+
+  console.log(`Creating Outlook event, attendees:`, event.attendees);
+
+  const requestBody: any = {
+    subject: event.subject,
+    body: {
+      contentType: 'Text',
+      content: event.body,
+    },
+    location: {
+      displayName: event.location,
+    },
+    start: {
+      dateTime: event.start.toISOString(),
+      timeZone: 'America/Detroit',
+    },
+    end: {
+      dateTime: event.end.toISOString(),
+      timeZone: 'America/Detroit',
+    },
+    // Add attendees - they will receive invites from contractor's Outlook
+    attendees: attendeesPayload.length > 0 ? attendeesPayload : undefined,
+  };
+
+  // For Outlook, invites are sent automatically when attendees are added
+  // The organizer is automatically set to the authenticated user (contractor)
   const response = await fetch('https://graph.microsoft.com/v1.0/me/events', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${accessToken}`,
       'Content-Type': 'application/json',
+      // Prefer header to control notification behavior
+      'Prefer': event.sendInvites ? 'outlook.body-content-type="text"' : 'outlook.body-content-type="text", outlook.allow-unsafe-html',
     },
-    body: JSON.stringify({
-      subject: event.subject,
-      body: {
-        contentType: 'Text',
-        content: event.body,
-      },
-      location: {
-        displayName: event.location,
-      },
-      start: {
-        dateTime: event.start.toISOString(),
-        timeZone: 'America/Detroit',
-      },
-      end: {
-        dateTime: event.end.toISOString(),
-        timeZone: 'America/Detroit',
-      },
-    }),
+    body: JSON.stringify(requestBody),
   });
 
   if (!response.ok) {
     const error = await response.text();
+    console.error('Outlook Calendar API error:', error);
     throw new Error(`Outlook Calendar API error: ${error}`);
   }
 
-  return response.json();
+  const result = await response.json();
+  console.log('Outlook event created - organizer:', result.organizer?.emailAddress?.address);
+  return result;
 }
