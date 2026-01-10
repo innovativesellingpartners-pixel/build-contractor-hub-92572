@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { 
@@ -401,9 +401,32 @@ function LogsTabContent({ jobId }: { jobId: string }) {
 export default function JobDetailViewBlue({ job, open, onOpenChange, onCreateEstimate, onEditJob, onDuplicateJob, onArchiveJob }: JobDetailViewBlueProps) {
   const { updateJob } = useJobs();
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState('info');
   const [isDuplicating, setIsDuplicating] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
+  
+  // Persist activeTab in sessionStorage to maintain state across refreshes
+  const storageKey = job ? `job-detail-tab-${job.id}` : 'job-detail-tab';
+  const [activeTab, setActiveTab] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return sessionStorage.getItem(storageKey) || 'info';
+    }
+    return 'info';
+  });
+  
+  // Update sessionStorage when activeTab changes
+  useEffect(() => {
+    if (job && open) {
+      sessionStorage.setItem(storageKey, activeTab);
+    }
+  }, [activeTab, job, open, storageKey]);
+  
+  // Clean up sessionStorage when dialog closes
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen && job) {
+      sessionStorage.removeItem(storageKey);
+    }
+    onOpenChange(newOpen);
+  };
 
   const handleDuplicateJob = async () => {
     if (!job || !onDuplicateJob) return;
@@ -479,14 +502,14 @@ export default function JobDetailViewBlue({ job, open, onOpenChange, onCreateEst
   ];
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-full sm:max-w-2xl h-[calc(100vh-5rem)] sm:h-[95vh] p-0 overflow-hidden bg-background border-0 sm:border top-[45%] sm:top-[50%]">
         <BlueBackground className="h-full flex flex-col overflow-hidden pb-0 sm:pb-0">
           {/* Header */}
           <DetailHeader
             title={job.name}
             subtitle={job.job_number || undefined}
-            onBack={() => onOpenChange(false)}
+            onBack={() => handleOpenChange(false)}
             rightContent={
               <div className="flex gap-2">
                 {onArchiveJob && (

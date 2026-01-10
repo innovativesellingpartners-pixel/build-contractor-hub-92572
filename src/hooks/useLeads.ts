@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 export interface Lead {
   id: string;
   user_id: string;
+  lead_number?: string;
   name: string;
   email?: string;
   phone?: string;
@@ -90,9 +91,12 @@ export const useLeads = () => {
     if (!user) return;
 
     try {
+      // Generate lead number
+      const { data: leadNumber } = await supabase.rpc('generate_lead_number');
+      
       const { data, error } = await supabase
         .from('leads')
-        .insert([{ ...leadData, user_id: user.id }])
+        .insert([{ ...leadData, user_id: user.id, lead_number: leadNumber }])
         .select()
         .single();
 

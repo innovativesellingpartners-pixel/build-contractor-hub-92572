@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 export interface Customer {
   id: string;
   user_id: string;
+  customer_number?: string;
   name: string;
   email?: string;
   phone?: string;
@@ -54,13 +55,16 @@ export const useCustomers = () => {
     fetchCustomers();
   }, [user]);
 
-  const addCustomer = async (customerData: Omit<Customer, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
+  const addCustomer = async (customerData: Omit<Customer, 'id' | 'user_id' | 'customer_number' | 'created_at' | 'updated_at'>) => {
     if (!user) return;
 
     try {
+      // Generate customer number
+      const { data: customerNumber } = await supabase.rpc('generate_customer_number');
+      
       const { data, error } = await supabase
         .from('customers')
-        .insert([{ ...customerData, user_id: user.id }])
+        .insert([{ ...customerData, user_id: user.id, customer_number: customerNumber }])
         .select()
         .single();
 
