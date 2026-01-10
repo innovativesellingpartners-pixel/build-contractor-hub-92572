@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { AddressAutocomplete } from "@/components/ui/address-autocomplete";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -268,7 +269,26 @@ export function ProfileEditDialog() {
           </div>
 
           <div className="space-y-4">
-            {renderField('business_address', 'Business Address')}
+            <div>
+              <Label htmlFor="business_address">Business Address</Label>
+              <div className="mt-2">
+                <AddressAutocomplete
+                  value={formData.business_address}
+                  onChange={(value) => setFormData({ ...formData, business_address: value })}
+                  onAddressParsed={(parsed) => {
+                    setFormData(prev => ({
+                      ...prev,
+                      business_address: parsed.street,
+                      city: parsed.city,
+                      state: parsed.state,
+                      zip_code: parsed.zipCode,
+                    }));
+                  }}
+                  placeholder="Start typing an address..."
+                  showGpsButton={true}
+                />
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-3 gap-4">

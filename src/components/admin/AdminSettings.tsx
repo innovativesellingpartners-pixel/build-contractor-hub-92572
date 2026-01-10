@@ -7,6 +7,7 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { AddressAutocomplete } from '@/components/ui/address-autocomplete';
 import { 
   Settings, 
   Building2, 
@@ -25,6 +26,7 @@ import { toast } from 'sonner';
 
 export const AdminSettings = () => {
   const [saving, setSaving] = useState(false);
+  const [companyAddress, setCompanyAddress] = useState("123 Construction Ave, Suite 100, City, ST 12345");
 
   const handleSave = (section: string) => {
     setSaving(true);
@@ -187,7 +189,12 @@ export const AdminSettings = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="company-address">Business Address</Label>
-                <Textarea id="company-address" rows={3} defaultValue="123 Construction Ave&#10;Suite 100&#10;City, ST 12345" />
+                <AddressAutocomplete
+                  value={companyAddress}
+                  onChange={setCompanyAddress}
+                  placeholder="Start typing an address..."
+                  showGpsButton={true}
+                />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
