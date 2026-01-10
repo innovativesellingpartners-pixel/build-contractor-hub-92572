@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { SearchableSelect } from '@/components/ui/searchable-select';
+import { AddressAutocomplete } from '@/components/ui/address-autocomplete';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Lead, LeadSource } from '@/hooks/useLeads';
 import { supabase } from '@/integrations/supabase/client';
@@ -229,10 +230,19 @@ export function EditLeadDialog({ lead, open, onOpenChange, onUpdate, onDelete, s
           </div>
           <div className="space-y-2">
             <Label htmlFor="edit-address">Address</Label>
-            <Input
-              id="edit-address"
+            <AddressAutocomplete
               value={formData.address}
-              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+              onChange={(value) => setFormData({ ...formData, address: value })}
+              onAddressParsed={(parsed) => {
+                setFormData(prev => ({
+                  ...prev,
+                  address: parsed.street,
+                  city: parsed.city,
+                  state: parsed.state,
+                  zip_code: parsed.zipCode,
+                }));
+              }}
+              placeholder="Start typing an address..."
             />
           </div>
           <div className="grid grid-cols-3 gap-4">

@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { SearchableSelect } from '@/components/ui/searchable-select';
+import { AddressAutocomplete } from '@/components/ui/address-autocomplete';
 import { Plus } from 'lucide-react';
 import { OpportunityStage, LeadSource } from '@/hooks/useOpportunities';
 
@@ -115,11 +116,10 @@ export function AddOpportunityDialog({ onAdd }: AddOpportunityDialogProps) {
 
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="job_address">Job Address</Label>
-              <Input
-                id="job_address"
+              <AddressAutocomplete
                 value={formData.job_address}
-                onChange={(e) => setFormData({ ...formData, job_address: e.target.value })}
-                placeholder="123 Main St, City, State ZIP"
+                onChange={(value) => setFormData({ ...formData, job_address: value })}
+                placeholder="Start typing an address..."
               />
             </div>
 
