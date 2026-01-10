@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar as CalendarIcon, Plug, Check, Loader2, X, RefreshCw, Clock, MapPin, ChevronDown, ChevronUp, Trash2, Plus, Briefcase, FileText, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Calendar as CalendarIcon, Plug, Check, Loader2, X, RefreshCw, Clock, MapPin, ChevronDown, ChevronUp, Trash2, Plus, Briefcase, FileText, ExternalLink, ChevronLeft, ChevronRight, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -10,6 +10,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { ScheduleMeetingDialog } from '../ScheduleMeetingDialog';
+import { EditEventDialog } from '../EditEventDialog';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 type CalendarViewMode = 'day' | '3-day' | '5-day' | 'month';
@@ -47,6 +48,8 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
   const [deletingEventId, setDeletingEventId] = useState<string | null>(null);
   const [scheduleMeetingOpen, setScheduleMeetingOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+  const [editEventOpen, setEditEventOpen] = useState(false);
+  const [eventToEdit, setEventToEdit] = useState<CalendarEvent | null>(null);
   const [viewMode, setViewMode] = useState<CalendarViewMode>('month');
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
@@ -796,11 +799,23 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
                 >
                   Close
                 </Button>
+                <Button 
+                  variant="outline" 
+                  className="flex-1"
+                  onClick={() => {
+                    setEventToEdit(selectedEvent);
+                    setEditEventOpen(true);
+                    setSelectedEvent(null);
+                  }}
+                >
+                  <Pencil className="h-4 w-4 mr-2" />
+                  Edit
+                </Button>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button variant="destructive" className="flex-1">
                       <Trash2 className="h-4 w-4 mr-2" />
-                      Delete Event
+                      Delete
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
@@ -903,6 +918,17 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Event Dialog */}
+      <EditEventDialog
+        open={editEventOpen}
+        onOpenChange={setEditEventOpen}
+        event={eventToEdit}
+        onSuccess={() => {
+          fetchEvents();
+          setEventToEdit(null);
+        }}
+      />
     </div>
   );
 }
