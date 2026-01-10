@@ -99,18 +99,21 @@ const handler = async (req: Request): Promise<Response> => {
     // Fetch contractor profile for branding
     const { data: profile } = await supabase
       .from('profiles')
-      .select('company_name, logo_url, phone, business_address, city, state, business_email')
-      .eq('user_id', estimate.user_id)
+      .select('company_name, logo_url, phone, business_address, city, state, zip_code, business_email, website_url, contact_name')
+      .eq('id', estimate.user_id)
       .single();
     
     // Get the authenticated user's email address
     const { data: { user: estimateUser } } = await supabase.auth.admin.getUserById(estimate.user_id);
     const authenticatedUserEmail = estimateUser?.email || '';
 
-    const companyName = profile?.company_name || contractorName;
-    const logoSrc = profile?.logo_url || 'https://faqrzzodtmsybofakcvv.supabase.co/storage/v1/object/public/company-logos/ct1-logo-circle.png';
+    // Use contractor's branding - NO CT1 fallbacks
+    const companyName = profile?.company_name || contractorName || 'Your Contractor';
+    const logoSrc = profile?.logo_url || null; // No default logo - only use contractor's logo if available
     const companyPhone = profile?.phone || '';
-    const companyAddress = [profile?.business_address, profile?.city, profile?.state].filter(Boolean).join(', ');
+    const companyAddress = [profile?.business_address, profile?.city, profile?.state, profile?.zip_code].filter(Boolean).join(', ');
+    const companyWebsite = profile?.website_url || '';
+    const contactName = profile?.contact_name || '';
     
     // Use profile's business_email, or contractor's email from request, or authenticated user email
     const replyToEmail = profile?.business_email || contractorEmail || authenticatedUserEmail;
@@ -186,7 +189,7 @@ const handler = async (req: Request): Promise<Response> => {
                     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                       <tr>
                         <td valign="middle">
-                          <img src="${logoSrc}" alt="${companyName}" width="48" height="48" style="display: inline-block; border-radius: 8px; margin-right: 16px; vertical-align: middle;">
+                          ${logoSrc ? `<img src="${logoSrc}" alt="${companyName}" width="48" height="48" style="display: inline-block; border-radius: 8px; margin-right: 16px; vertical-align: middle;">` : ''}
                           <span style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 22px; font-weight: 700; color: #ffffff; letter-spacing: -0.5px; vertical-align: middle;">${companyName.toUpperCase()}</span>
                         </td>
                         <td align="right" valign="middle">
@@ -294,7 +297,7 @@ const handler = async (req: Request): Promise<Response> => {
                     <p style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: #161e2c; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;">Questions? We're here to help.</p>
                     <p style="margin: 0; font-size: 14px; color: #666666; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;">
                       Reply to this email or contact us at 
-                      <a href="mailto:${contractorEmail}" style="color: #d59f47; text-decoration: none;">${contractorEmail}</a>
+                      <a href="mailto:${replyToEmail}" style="color: #d59f47; text-decoration: none;">${replyToEmail}</a>
                       ${companyPhone ? ` • ${companyPhone}` : ''}
                     </p>
                   </td>
@@ -306,14 +309,14 @@ const handler = async (req: Request): Promise<Response> => {
           <!-- Footer -->
           <tr>
             <td style="background-color: #161e2c; padding: 28px 40px; text-align: center;">
+              <p style="margin: 0 0 8px 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 14px; font-weight: 600; color: #ffffff;">
+                ${companyName}
+              </p>
               <p style="margin: 0 0 8px 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 12px; color: rgba(255,255,255,0.6);">
                 This estimate was prepared specifically for ${estimate.client_name || 'you'}.
               </p>
-              <p style="margin: 0 0 16px 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 11px; color: rgba(255,255,255,0.4);">
-                ${companyAddress ? `${companyAddress} • ` : ''}All pricing and terms are confidential.
-              </p>
-              <p style="margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 11px; color: #d59f47; font-weight: 600;">
-                Powered by CT1 Constructeam
+              <p style="margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 11px; color: rgba(255,255,255,0.4);">
+                ${companyAddress ? `${companyAddress}` : ''}${companyPhone ? ` • ${companyPhone}` : ''}${companyWebsite ? ` • ${companyWebsite}` : ''}
               </p>
             </td>
           </tr>
