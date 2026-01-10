@@ -168,7 +168,7 @@ export default function JobsSection({ onSectionChange }: JobsSectionProps) {
                 {/* Info */}
                 <RowContent>
                   <RowTitleLine>
-                    <h3 className="font-semibold text-sm sm:text-base truncate max-w-[200px]">
+                    <h3 className="font-semibold text-sm sm:text-base truncate max-w-[250px]">
                       {displayName}
                     </h3>
                     <Badge className={`${getStatusColor(job.status)} text-white text-xs`}>
