@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -42,9 +42,20 @@ export function WaiverPreview({
   onSignerInfoChange,
 }: WaiverPreviewProps) {
   const signatureRef = useRef<SignatureCanvas>(null);
-  const [signerName, setSignerName] = useState('');
-  const [signerTitle, setSignerTitle] = useState('');
+  // Auto-populate with contractor name and a default title
+  const [signerName, setSignerName] = useState(contractorName || '');
+  const [signerTitle, setSignerTitle] = useState('Owner');
+  const [hasInitialized, setHasInitialized] = useState(false);
 
+  // Initialize signer info when contractor name is available
+  useEffect(() => {
+    if (!hasInitialized && contractorName) {
+      setSignerName(contractorName);
+      setSignerTitle('Owner');
+      onSignerInfoChange?.({ name: contractorName, title: 'Owner' });
+      setHasInitialized(true);
+    }
+  }, [contractorName, hasInitialized, onSignerInfoChange]);
   if (!invoice || !waiver) {
     return (
       <div className="h-full flex items-center justify-center bg-muted/30 rounded-lg p-8">
@@ -220,11 +231,9 @@ This waiver covers the final payment only and becomes effective upon actual clea
           {/* Date */}
           <div className="space-y-1">
             <Label className="text-xs text-muted-foreground">Date Signed</Label>
-            <Input
-              type="date"
-              defaultValue={new Date().toISOString().split('T')[0]}
-              className="h-9 w-48"
-            />
+            <div className="h-9 w-48 px-3 flex items-center bg-muted/50 border rounded-md text-sm">
+              {format(new Date(), 'MMMM d, yyyy')}
+            </div>
           </div>
         </div>
       </div>
