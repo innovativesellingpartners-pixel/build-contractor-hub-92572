@@ -3,7 +3,6 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { AddressAutocomplete } from '@/components/ui/address-autocomplete';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -12,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Users } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { AIScopeNotes } from '@/components/contractor/crm/AIScopeNotes';
 
 interface EditLeadDialogProps {
   lead: Lead | null;
@@ -280,15 +280,13 @@ export function EditLeadDialog({ lead, open, onOpenChange, onUpdate, onDelete, s
               />
             </div>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="edit-notes">Notes</Label>
-            <Textarea
-              id="edit-notes"
-              value={formData.notes}
-              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              rows={3}
-            />
-          </div>
+          {/* AI Scope Notes */}
+          <AIScopeNotes
+            notes={formData.notes}
+            onNotesChange={(notes) => setFormData({ ...formData, notes })}
+            label="Lead Notes"
+            placeholder="Record your walk-around conversation or type notes about the project scope"
+          />
           <div className="flex justify-between">
             <div className="flex gap-2">
               <Button type="button" variant="destructive" onClick={handleDelete}>

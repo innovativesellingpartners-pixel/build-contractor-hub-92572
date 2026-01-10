@@ -11,6 +11,7 @@ import { Job } from '@/hooks/useJobs';
 import { JobMeetingsSection, MeetingFormData } from './JobMeetingsSection';
 import { useJobMeetings } from '@/hooks/useJobMeetings';
 import { JobPhotosSection } from './job/JobPhotosSection';
+import { AIScopeNotes } from './AIScopeNotes';
 
 interface EditJobDialogProps {
   job: Job | null;
@@ -335,17 +336,13 @@ export function EditJobDialog({ job, open, onOpenChange, onUpdate }: EditJobDial
             </div>
           )}
 
-          {/* Notes */}
-          <div className="space-y-2">
-            <Label htmlFor="notes">Additional Notes</Label>
-            <Textarea
-              id="notes"
-              value={formData.notes}
-              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              rows={3}
-              placeholder="Any additional information about this job"
-            />
-          </div>
+          {/* AI Scope Notes */}
+          <AIScopeNotes
+            notes={formData.notes}
+            onNotesChange={(notes) => setFormData({ ...formData, notes })}
+            label="Job Notes"
+            placeholder="Record your walk-around or type notes about site conditions, customer requests, and scope details"
+          />
 
           <div className="flex justify-end gap-2 pt-4 border-t">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
