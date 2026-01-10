@@ -155,13 +155,24 @@ export default function JobsSection({ onSectionChange }: JobsSectionProps) {
         <div className="space-y-3">
           {jobs.map((job) => {
             const customer = job.customer_id ? customers?.find(c => c.id === job.customer_id) : null;
-            const displayName = customer?.name || job.name;
+            const customerName = customer?.name || job.name;
+            
+            // Format name as "Last, First" if it contains a space
+            const nameParts = customerName.trim().split(' ');
+            const formattedName = nameParts.length > 1 
+              ? `${nameParts[nameParts.length - 1]}, ${nameParts.slice(0, -1).join(' ')}`
+              : customerName;
+            
+            // Build display: Job Number + Last, First
+            const displayLabel = job.job_number 
+              ? `#${job.job_number} - ${formattedName}`
+              : formattedName;
             
             return (
               <HorizontalRowCard key={job.id} onClick={() => handleJobClick(job)}>
                 {/* Avatar */}
                 <RowAvatar 
-                  initials={displayName.substring(0, 2).toUpperCase()} 
+                  initials={customerName.substring(0, 2).toUpperCase()} 
                   icon={<Briefcase className="h-5 w-5 text-primary" />} 
                 />
 
@@ -169,7 +180,7 @@ export default function JobsSection({ onSectionChange }: JobsSectionProps) {
                 <RowContent>
                   <RowTitleLine>
                     <h3 className="font-semibold text-sm sm:text-base break-words">
-                      {displayName}
+                      {displayLabel}
                     </h3>
                     <Badge className={`${getStatusColor(job.status)} text-white text-xs`}>
                       {job.status.replace('_', ' ')}
@@ -177,12 +188,8 @@ export default function JobsSection({ onSectionChange }: JobsSectionProps) {
                   </RowTitleLine>
                   
                   <RowMetaLine>
-                    {job.job_number && <span className="font-medium">#{job.job_number}</span>}
-                    {customer?.name && job.name !== customer.name && (
-                      <span className="truncate max-w-[120px]">{job.name}</span>
-                    )}
                     {(job.city || job.state) && (
-                      <span className="flex items-center gap-1 truncate max-w-[180px]">
+                      <span className="flex items-center gap-1">
                         <MapPin className="h-3 w-3 flex-shrink-0" />
                         {job.city}{job.city && job.state && ', '}{job.state}
                       </span>
