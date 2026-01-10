@@ -18,6 +18,7 @@ interface AddJobDialogProps {
 
 export function AddJobDialog({ onAdd }: AddJobDialogProps) {
   const [open, setOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('ai');
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -50,6 +51,10 @@ export function AddJobDialog({ onAdd }: AddJobDialogProps) {
       ...prev,
       ...details,
     }));
+  };
+
+  const handleAINext = () => {
+    setActiveTab('manual');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -97,7 +102,7 @@ export function AddJobDialog({ onAdd }: AddJobDialogProps) {
           <DialogDescription>Use AI to quickly extract details or fill them in manually</DialogDescription>
         </DialogHeader>
         
-        <Tabs defaultValue="ai" className="flex-1 overflow-hidden flex flex-col">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 overflow-hidden flex flex-col">
           <TabsList className="grid w-full grid-cols-2 flex-shrink-0">
             <TabsTrigger value="ai" className="flex items-center gap-2">
               <Bot className="h-4 w-4" />
@@ -110,7 +115,7 @@ export function AddJobDialog({ onAdd }: AddJobDialogProps) {
           </TabsList>
           
           <TabsContent value="ai" className="flex-1 overflow-y-auto mt-4 space-y-4 pb-20">
-            <JobAIAssistant onJobDetailsExtracted={handleAIExtract} />
+            <JobAIAssistant onJobDetailsExtracted={handleAIExtract} onNext={handleAINext} />
             
             {/* Preview of extracted data */}
             {(formData.name || formData.description) && (
