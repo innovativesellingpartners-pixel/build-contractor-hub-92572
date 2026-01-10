@@ -2059,6 +2059,10 @@ export type Database = {
           invoice_id: string
           pdf_url: string | null
           retainage: number | null
+          signature_data: string | null
+          signed_at: string | null
+          signer_name: string | null
+          signer_title: string | null
           waiver_type: string
         }
         Insert: {
@@ -2072,6 +2076,10 @@ export type Database = {
           invoice_id: string
           pdf_url?: string | null
           retainage?: number | null
+          signature_data?: string | null
+          signed_at?: string | null
+          signer_name?: string | null
+          signer_title?: string | null
           waiver_type: string
         }
         Update: {
@@ -2085,6 +2093,10 @@ export type Database = {
           invoice_id?: string
           pdf_url?: string | null
           retainage?: number | null
+          signature_data?: string | null
+          signed_at?: string | null
+          signer_name?: string | null
+          signer_title?: string | null
           waiver_type?: string
         }
         Relationships: [
