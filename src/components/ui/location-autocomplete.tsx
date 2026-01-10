@@ -53,6 +53,7 @@ export function LocationAutocomplete({
   const [isManualMode, setIsManualMode] = useState(false);
   const [hasSelected, setHasSelected] = useState(false);
   const [noResults, setNoResults] = useState(false);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -61,7 +62,26 @@ export function LocationAutocomplete({
   // Session token for billing optimization - reset on each selection
   const sessionToken = useMemo(() => crypto.randomUUID(), [hasSelected]);
 
-  // Debounced search function - 250ms delay
+  // Get user's location on mount for biasing search results
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          });
+          console.log('User location obtained for address biasing:', position.coords.latitude, position.coords.longitude);
+        },
+        (error) => {
+          console.log('Could not get user location for biasing:', error.message);
+        },
+        { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 }
+      );
+    }
+  }, []);
+
+  // Debounced search function - 250ms delay with location biasing
   const searchPlaces = useCallback(async (query: string) => {
     if (query.length < 3) {
       setPredictions([]);
@@ -78,16 +98,20 @@ export function LocationAutocomplete({
         headers: {},
       });
       
-      // Use query params via URL approach
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/places-autocomplete?q=${encodeURIComponent(query)}&sessionToken=${sessionToken}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+      // Build URL with location biasing parameters
+      let url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/places-autocomplete?q=${encodeURIComponent(query)}&sessionToken=${sessionToken}`;
+      
+      // Add location biasing if we have user's location
+      if (userLocation) {
+        url += `&lat=${userLocation.lat}&lng=${userLocation.lng}`;
+      }
+      
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      });
       
       if (!response.ok) {
         throw new Error('Failed to fetch predictions');
@@ -111,7 +135,7 @@ export function LocationAutocomplete({
     } finally {
       setIsLoading(false);
     }
-  }, [sessionToken]);
+  }, [sessionToken, userLocation]);
 
   // Handle input change with 250ms debounce
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

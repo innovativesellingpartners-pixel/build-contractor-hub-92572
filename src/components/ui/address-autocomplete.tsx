@@ -51,11 +51,31 @@ export function AddressAutocomplete({
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const [isGettingLocation, setIsGettingLocation] = useState(false);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lon: number } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Debounced search function
+  // Get user's location on mount for biasing search results
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation({
+            lat: position.coords.latitude,
+            lon: position.coords.longitude,
+          });
+          console.log('User location obtained for address biasing:', position.coords.latitude, position.coords.longitude);
+        },
+        (error) => {
+          console.log('Could not get user location for biasing:', error.message);
+        },
+        { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 }
+      );
+    }
+  }, []);
+
+  // Debounced search function with location biasing
   const searchAddresses = useCallback(async (query: string) => {
     if (query.length < 3) {
       setSuggestions([]);
@@ -64,18 +84,40 @@ export function AddressAutocomplete({
 
     setIsLoading(true);
     try {
-      // Using Nominatim (OpenStreetMap) - free geocoding API
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&countrycodes=us&limit=5&q=${encodeURIComponent(query)}`,
-        {
-          headers: {
-            'Accept-Language': 'en-US,en',
-          },
-        }
-      );
+      // Build URL with location biasing if available
+      let url = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&countrycodes=us&limit=5&q=${encodeURIComponent(query)}`;
+      
+      // Add viewbox parameter to bias results to nearby area (roughly 50 mile radius)
+      if (userLocation) {
+        const delta = 0.75; // Approximately 50 miles
+        const viewbox = `${userLocation.lon - delta},${userLocation.lat + delta},${userLocation.lon + delta},${userLocation.lat - delta}`;
+        url += `&viewbox=${viewbox}&bounded=0`; // bounded=0 allows results outside viewbox but prioritizes inside
+      }
+      
+      const response = await fetch(url, {
+        headers: {
+          'Accept-Language': 'en-US,en',
+        },
+      });
       
       if (response.ok) {
-        const data = await response.json();
+        let data = await response.json();
+        
+        // Sort results by distance from user if we have their location
+        if (userLocation && data.length > 0) {
+          data = data.sort((a: AddressSuggestion, b: AddressSuggestion) => {
+            const distA = Math.sqrt(
+              Math.pow(parseFloat(a.lat) - userLocation.lat, 2) +
+              Math.pow(parseFloat(a.lon) - userLocation.lon, 2)
+            );
+            const distB = Math.sqrt(
+              Math.pow(parseFloat(b.lat) - userLocation.lat, 2) +
+              Math.pow(parseFloat(b.lon) - userLocation.lon, 2)
+            );
+            return distA - distB;
+          });
+        }
+        
         console.log('Address suggestions received:', data.length);
         setSuggestions(data);
         setShowSuggestions(data.length > 0);
@@ -86,7 +128,7 @@ export function AddressAutocomplete({
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [userLocation]);
 
   // Handle input change with debounce
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

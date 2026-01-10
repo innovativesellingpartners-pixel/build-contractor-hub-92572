@@ -32,12 +32,24 @@ serve(async (req) => {
       );
     }
 
+    // Get optional location parameters for biasing
+    const lat = url.searchParams.get('lat');
+    const lng = url.searchParams.get('lng');
+
     // Use Google Places Autocomplete API (New)
     const googleUrl = new URL('https://maps.googleapis.com/maps/api/place/autocomplete/json');
     googleUrl.searchParams.set('input', query);
     googleUrl.searchParams.set('key', apiKey);
     googleUrl.searchParams.set('types', 'address');
     googleUrl.searchParams.set('components', 'country:us');
+    
+    // Add location biasing if coordinates are provided
+    if (lat && lng) {
+      // Set location bias to prioritize nearby results (50km radius)
+      googleUrl.searchParams.set('location', `${lat},${lng}`);
+      googleUrl.searchParams.set('radius', '80467'); // 50 miles in meters
+    }
+    
     if (sessionToken) {
       googleUrl.searchParams.set('sessiontoken', sessionToken);
     }
