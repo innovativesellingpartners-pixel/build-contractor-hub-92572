@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Plus, FileText, Trash2, Eye, Send, CheckCircle, Clock, AlertCircle, RefreshCw, Users, Copy, ArrowLeft, Briefcase, ChevronRight, LayoutTemplate } from 'lucide-react';
 import { useEstimates, EstimateLineItem } from '@/hooks/useEstimates';
 import { useLeads } from '@/hooks/useLeads';
@@ -16,12 +17,15 @@ import { HorizontalRowCard, RowAvatar, RowContent, RowTitleLine, RowMetaLine, Ro
 import { EstimateDetailViewBlue } from './EstimateDetailViewBlue';
 import { TemplatesSection } from '../estimate/TemplatesSection';
 import { PredictiveSearch } from '../PredictiveSearch';
+import { EstimateStatusBadge } from '../estimate/EstimateStatusBadge';
 
 interface EstimatesSectionProps {
   onSectionChange?: (section: string) => void;
   initialEstimateId?: string | null;
   onClearInitialEstimate?: () => void;
 }
+
+type StatusFilter = 'all' | 'drafts' | 'sent' | 'signed' | 'declined';
 
 export default function EstimatesSection({ onSectionChange, initialEstimateId, onClearInitialEstimate }: EstimatesSectionProps) {
   const { estimates, isLoading, createEstimate, createEstimateAsync, updateEstimate, updateEstimateAsync, deleteEstimate, sendEstimate, sendEstimateAsync, isSendingEstimate, duplicateEstimate, duplicateEstimateAsync, isDuplicatingEstimate } = useEstimates();
@@ -33,6 +37,38 @@ export default function EstimatesSection({ onSectionChange, initialEstimateId, o
   const [selectedEstimateForDetail, setSelectedEstimateForDetail] = useState<any>(null);
   const [isConverting, setIsConverting] = useState<string | null>(null);
   const [showTemplates, setShowTemplates] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+
+  // Filter estimates based on status tab
+  const filteredEstimates = useMemo(() => {
+    if (!estimates) return [];
+    
+    switch (statusFilter) {
+      case 'drafts':
+        return estimates.filter(e => e.status === 'draft' || e.status === 'pending');
+      case 'sent':
+        return estimates.filter(e => e.status === 'sent' || e.status === 'viewed');
+      case 'signed':
+        return estimates.filter(e => e.status === 'signed' || e.status === 'accepted' || e.status === 'sold' || e.signed_at);
+      case 'declined':
+        return estimates.filter(e => e.status === 'declined' || e.status === 'rejected' || e.status === 'expired' || e.status === 'voided' || e.status === 'lost');
+      default:
+        return estimates;
+    }
+  }, [estimates, statusFilter]);
+
+  // Count estimates by status for tab badges
+  const statusCounts = useMemo(() => {
+    if (!estimates) return { all: 0, drafts: 0, sent: 0, signed: 0, declined: 0 };
+    
+    return {
+      all: estimates.length,
+      drafts: estimates.filter(e => e.status === 'draft' || e.status === 'pending').length,
+      sent: estimates.filter(e => e.status === 'sent' || e.status === 'viewed').length,
+      signed: estimates.filter(e => e.status === 'signed' || e.status === 'accepted' || e.status === 'sold' || e.signed_at).length,
+      declined: estimates.filter(e => e.status === 'declined' || e.status === 'rejected' || e.status === 'expired' || e.status === 'voided' || e.status === 'lost').length,
+    };
+  }, [estimates]);
 
   // Handle initial estimate ID to auto-open the detail view
   React.useEffect(() => {
@@ -280,23 +316,15 @@ export default function EstimatesSection({ onSectionChange, initialEstimateId, o
         </Badge>
       );
     }
-    if (estimate.signed_at) {
-      return (
-        <Badge variant="outline" className="text-xs border-green-600 text-green-600">
-          <CheckCircle className="h-2.5 w-2.5 mr-1" />
-          Signed
-        </Badge>
-      );
-    }
-    if (estimate.viewed_at) {
-      return (
-        <Badge variant="outline" className="text-xs">
-          <Eye className="h-2.5 w-2.5 mr-1" />
-          Viewed
-        </Badge>
-      );
-    }
     return null;
+  };
+
+  // Get display status - prefer actual status, but show signed if signed_at exists
+  const getDisplayStatus = (estimate: any) => {
+    if (estimate.signed_at && estimate.status !== 'signed') {
+      return 'signed';
+    }
+    return estimate.status;
   };
 
   // Show templates section if active
@@ -333,10 +361,48 @@ export default function EstimatesSection({ onSectionChange, initialEstimateId, o
         Create, manage, and track project estimates
       </CardDescription>
 
+      {/* Status Filter Tabs */}
+      <div className="px-4 sm:px-0 mb-4">
+        <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
+          <TabsList className="w-full grid grid-cols-5 h-auto">
+            <TabsTrigger value="all" className="text-xs px-2 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              All
+              {statusCounts.all > 0 && (
+                <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">{statusCounts.all}</Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="drafts" className="text-xs px-2 py-2 data-[state=active]:bg-slate-600 data-[state=active]:text-white">
+              Drafts
+              {statusCounts.drafts > 0 && (
+                <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">{statusCounts.drafts}</Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="sent" className="text-xs px-2 py-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+              Sent
+              {statusCounts.sent > 0 && (
+                <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">{statusCounts.sent}</Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="signed" className="text-xs px-2 py-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">
+              Signed
+              {statusCounts.signed > 0 && (
+                <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">{statusCounts.signed}</Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="declined" className="text-xs px-2 py-2 data-[state=active]:bg-red-600 data-[state=active]:text-white">
+              Declined
+              {statusCounts.declined > 0 && (
+                <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">{statusCounts.declined}</Badge>
+              )}
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
+
       {/* Predictive Search */}
       <div className="px-4 sm:px-0 mb-4">
         <PredictiveSearch
-          items={estimates || []}
+          items={filteredEstimates || []}
           placeholder="Search estimates by title, client, or status..."
           getLabel={(estimate: any) => estimate.title || 'Untitled'}
           getSublabel={(estimate: any) => [estimate.client_name, estimate.status, estimate.total_amount ? `$${estimate.total_amount.toLocaleString()}` : null].filter(Boolean).join(' • ')}
@@ -358,9 +424,9 @@ export default function EstimatesSection({ onSectionChange, initialEstimateId, o
         <div className="flex justify-center p-8">
           <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
         </div>
-      ) : estimates && estimates.length > 0 ? (
+      ) : filteredEstimates && filteredEstimates.length > 0 ? (
         <MobileStack className="space-y-2">
-          {estimates.map((estimate: any) => (
+          {filteredEstimates.map((estimate: any) => (
             <HorizontalRowCard key={estimate.id} onClick={() => handleOpenDetail(estimate)}>
               {/* Avatar */}
               <RowAvatar initials={getInitials(estimate.client_name)} />
@@ -369,7 +435,7 @@ export default function EstimatesSection({ onSectionChange, initialEstimateId, o
               <RowContent>
                 <RowTitleLine>
                   <h3 className="font-semibold text-sm truncate">
-                    {estimate.title || 'Untitled'}
+                    {estimate.estimate_number ? `#${estimate.estimate_number} - ` : ''}{estimate.title || 'Untitled'}
                   </h3>
                 </RowTitleLine>
                 
@@ -377,10 +443,16 @@ export default function EstimatesSection({ onSectionChange, initialEstimateId, o
                   <span className="truncate">
                     {estimate.client_name || 'No client'}
                   </span>
-                  <Badge variant={getStatusColor(estimate.status)} className="text-xs h-5">
-                    {estimate.status}
-                  </Badge>
+                  <EstimateStatusBadge status={getDisplayStatus(estimate)} size="sm" />
+                  {getDeliveryBadge(estimate)}
                 </RowMetaLine>
+                
+                {/* Date info for signed estimates */}
+                {estimate.signed_at && (
+                  <div className="text-xs text-green-600 mt-0.5">
+                    Signed {format(new Date(estimate.signed_at), 'MMM d, yyyy')}
+                  </div>
+                )}
               </RowContent>
 
               {/* Amount & Chevron */}

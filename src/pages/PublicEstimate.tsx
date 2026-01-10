@@ -89,11 +89,16 @@ export default function PublicEstimate() {
     try {
       const signatureData = clientSigRef.current.toDataURL();
 
-      // Save signature to estimate
+      // Save signature to estimate with full status tracking
       const { error: sigError } = await supabase
         .from('estimates')
         .update({
           client_signature: signatureData,
+          status: 'signed',
+          signed_at: new Date().toISOString(),
+          signed_by_name: estimate.client_name || null,
+          signed_by_email: estimate.client_email || null,
+          last_status_event_at: new Date().toISOString(),
         })
         .eq('id', estimate.id);
 
