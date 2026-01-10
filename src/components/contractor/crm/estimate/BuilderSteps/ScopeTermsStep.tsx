@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
-import { Plus, X, FileText, DollarSign, Shield, Clock } from 'lucide-react';
+import { Plus, X, FileText, DollarSign, Shield, Clock, ListChecks } from 'lucide-react';
 import { EstimateBuilderData } from '../../EstimateBuilder';
 
 interface ScopeTermsStepProps {
@@ -14,23 +14,7 @@ interface ScopeTermsStepProps {
 }
 
 export default function ScopeTermsStep({ data, onChange }: ScopeTermsStepProps) {
-  const [newDeliverable, setNewDeliverable] = useState('');
   const [newExclusion, setNewExclusion] = useState('');
-
-  const addDeliverable = () => {
-    if (newDeliverable.trim()) {
-      onChange({ 
-        scope_key_deliverables: [...data.scope_key_deliverables, newDeliverable.trim()] 
-      });
-      setNewDeliverable('');
-    }
-  };
-
-  const removeDeliverable = (index: number) => {
-    onChange({ 
-      scope_key_deliverables: data.scope_key_deliverables.filter((_, i) => i !== index) 
-    });
-  };
 
   const addExclusion = () => {
     if (newExclusion.trim()) {
@@ -53,6 +37,9 @@ export default function ScopeTermsStep({ data, onChange }: ScopeTermsStepProps) 
       currency: 'USD',
     }).format(amount);
   };
+
+  // Get included line items for display
+  const includedLineItems = data.line_items.filter(item => item.included !== false);
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -89,38 +76,58 @@ export default function ScopeTermsStep({ data, onChange }: ScopeTermsStepProps) 
             />
           </div>
 
-          {/* Key Deliverables */}
+          {/* Line Items Summary (Read-only from Step 2) */}
           <div className="space-y-3">
-            <Label>Key Deliverables</Label>
-            <div className="flex gap-2">
-              <Input
-                value={newDeliverable}
-                onChange={(e) => setNewDeliverable(e.target.value)}
-                placeholder="Add a deliverable..."
-                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addDeliverable())}
-              />
-              <Button type="button" onClick={addDeliverable} size="icon">
-                <Plus className="h-4 w-4" />
-              </Button>
+            <div className="flex items-center gap-2">
+              <ListChecks className="h-4 w-4 text-primary" />
+              <Label>Work Items (from Step 2)</Label>
             </div>
-            {data.scope_key_deliverables.length > 0 && (
-              <ul className="space-y-2">
-                {data.scope_key_deliverables.map((item, index) => (
-                  <li key={index} className="flex items-center gap-2 p-2 bg-muted rounded-md">
-                    <span className="flex-1 text-sm">{item}</span>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6"
-                      onClick={() => removeDeliverable(index)}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </li>
+            {includedLineItems.length > 0 ? (
+              <div className="border rounded-lg divide-y bg-muted/30">
+                {includedLineItems.map((item, index) => (
+                  <div key={item.id || index} className="flex items-center justify-between p-3 text-sm">
+                    <div className="flex-1">
+                      <span className="font-medium">{item.description || item.item_description || 'Unnamed item'}</span>
+                      <span className="text-muted-foreground ml-2">
+                        ({item.quantity} {item.unit || item.unit_type})
+                      </span>
+                    </div>
+                    <span className="font-medium text-primary">
+                      {formatCurrency(item.line_total || item.totalPrice || 0)}
+                    </span>
+                  </div>
                 ))}
-              </ul>
+                <div className="flex items-center justify-between p-3 bg-muted font-semibold">
+                  <span>Subtotal</span>
+                  <span className="text-primary">{formatCurrency(data.subtotal)}</span>
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground italic p-3 border rounded-lg bg-muted/30">
+                No line items added yet. Go back to Step 2 to add items.
+              </p>
             )}
+          </div>
+
+          {/* Additional Items / Notes */}
+          <div className="space-y-2">
+            <Label htmlFor="additional_scope_notes">Additional Items / Notes</Label>
+            <Textarea
+              id="additional_scope_notes"
+              value={data.scope_key_deliverables?.join('\n') || ''}
+              onChange={(e) => {
+                const notes = e.target.value;
+                // Store as array for compatibility, but allow free-form text
+                onChange({ 
+                  scope_key_deliverables: notes ? notes.split('\n').filter(line => line.trim()) : [] 
+                });
+              }}
+              placeholder="Enter any additional work items, notes, or details not covered in line items above..."
+              rows={4}
+            />
+            <p className="text-xs text-muted-foreground">
+              Add any additional scope details, clarifications, or items not captured in the line items above.
+            </p>
           </div>
 
           {/* Exclusions */}
