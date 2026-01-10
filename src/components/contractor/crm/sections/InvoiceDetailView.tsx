@@ -266,7 +266,7 @@ export function InvoiceDetailView({ invoice, onClose, onSectionChange }: Invoice
           className="flex items-center gap-2"
         >
           <Send className="w-4 h-4" />
-          {invoice.status === 'sent' ? 'RESEND' : 'SEND TO GC'}
+          {invoice.status === 'sent' ? 'RESEND' : 'SEND TO REQUIRED'}
         </ActionButton>
         <ActionButton 
           variant="secondary" 
