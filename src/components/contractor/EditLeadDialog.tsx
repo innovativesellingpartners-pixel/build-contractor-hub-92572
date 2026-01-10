@@ -154,14 +154,6 @@ export function EditLeadDialog({ lead, open, onOpenChange, onUpdate, onDelete, s
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-company">Company</Label>
-              <Input
-                id="edit-company"
-                value={formData.company}
-                onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
               <Label htmlFor="edit-email">Email</Label>
               <Input
                 id="edit-email"

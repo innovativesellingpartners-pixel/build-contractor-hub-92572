@@ -85,14 +85,6 @@ export function AddLeadDialog({ onAdd, sources }: AddLeadDialogProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="company">Company</Label>
-              <Input
-                id="company"
-                value={formData.company}
-                onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
