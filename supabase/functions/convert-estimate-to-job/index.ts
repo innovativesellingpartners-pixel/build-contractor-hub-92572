@@ -50,10 +50,10 @@ serve(async (req) => {
 
     console.log('Converting estimate to job', { estimateId, contractorId: user.id });
 
-    // Get the estimate with all fields
+    // Get the estimate with all fields including linked lead
     const { data: estimate, error: estimateError } = await supabase
       .from('estimates')
-      .select('*')
+      .select('*, leads(*, lead_sources(id, name))')
       .eq('id', estimateId)
       .eq('user_id', user.id)
       .single();
@@ -75,6 +75,38 @@ serve(async (req) => {
       );
     }
 
+    // Get referral info from estimate or linked lead
+    let referralSource = estimate.referred_by || null;
+    let referralSourceOther = null;
+    
+    // If estimate has linked lead, get referral from there
+    const linkedLead = estimate.leads;
+    if (linkedLead && typeof linkedLead === 'object') {
+      const leadData = linkedLead as any;
+      if (!referralSource && leadData.lead_sources && typeof leadData.lead_sources === 'object') {
+        referralSource = leadData.lead_sources.name || null;
+      }
+      if (leadData.source_other) {
+        referralSourceOther = leadData.source_other;
+      }
+    }
+
+    console.log('Estimate data being transferred:', {
+      title: estimate.title,
+      project_name: estimate.project_name,
+      client_name: estimate.client_name,
+      client_email: estimate.client_email,
+      client_phone: estimate.client_phone,
+      client_address: estimate.client_address,
+      site_address: estimate.site_address,
+      trade_type: estimate.trade_type,
+      grand_total: estimate.grand_total,
+      total_amount: estimate.total_amount,
+      referred_by: estimate.referred_by,
+      referralSource,
+      referralSourceOther,
+    });
+
     // Determine customer - create if needed
     let customerId = estimate.customer_id;
     
@@ -94,6 +126,8 @@ serve(async (req) => {
           state: addressComponents.state,
           zip_code: addressComponents.zipCode,
           lifetime_value: estimate.grand_total || estimate.total_amount || 0,
+          referral_source: referralSource,
+          referral_source_other: referralSourceOther,
           notes: `Created from Estimate #${estimate.estimate_number || estimate.id}`,
         })
         .select()
@@ -120,7 +154,7 @@ serve(async (req) => {
     }
 
     // Parse address components from project/site address
-    const projectAddress = estimate.project_address || estimate.site_address;
+    const projectAddress = estimate.project_address || estimate.site_address || estimate.client_address;
     const addressComponents = parseAddressComponents(projectAddress);
 
     // Build comprehensive job description from estimate
@@ -139,9 +173,13 @@ serve(async (req) => {
     if (estimate.assumptions_and_exclusions) {
       jobNotes += `Assumptions & Exclusions:\n${estimate.assumptions_and_exclusions}\n\n`;
     }
-    if (estimate.referred_by) {
-      jobNotes += `Referred by: ${estimate.referred_by}\n`;
+    
+    // Add referral info to notes
+    const referralInfo = referralSourceOther || referralSource || estimate.referred_by;
+    if (referralInfo) {
+      jobNotes += `Referred by: ${referralInfo}\n`;
     }
+    
     if (estimate.prepared_by) {
       jobNotes += `Prepared by: ${estimate.prepared_by}\n`;
     }
@@ -150,15 +188,15 @@ serve(async (req) => {
     const contractValue = estimate.grand_total || estimate.total_amount || 0;
     const depositAmount = estimate.required_deposit || 0;
 
-    // Create job from estimate with all relevant data
+    // Create job from estimate with ALL relevant data
     const { data: job, error: jobError } = await supabase
       .from('jobs')
       .insert({
         user_id: user.id,
         customer_id: customerId,
-        lead_id: estimate.lead_id, // Preserve lead linkage
+        lead_id: estimate.lead_id,
         original_estimate_id: estimate.id,
-        opportunity_id: estimate.opportunity_id, // Preserve opportunity linkage
+        opportunity_id: estimate.opportunity_id,
         name: estimate.title || estimate.project_name || 'New Job',
         description: jobDescription.trim() || null,
         address: projectAddress,
@@ -172,7 +210,7 @@ serve(async (req) => {
         contract_value: contractValue,
         change_orders_total: 0,
         total_contract_value: contractValue,
-        payments_collected: depositAmount, // If deposit was paid
+        payments_collected: depositAmount,
         expenses_total: 0,
         profit: 0,
         budget_amount: contractValue,
@@ -203,20 +241,28 @@ serve(async (req) => {
       throw updateEstimateError;
     }
 
-    // Update customer with job reference and lifetime value
+    // Update customer with job reference, estimate reference, and lifetime value
     const { data: customer } = await supabase
       .from('customers')
-      .select('lifetime_value')
+      .select('lifetime_value, referral_source')
       .eq('id', customerId)
       .single();
 
+    const customerUpdate: any = {
+      job_id: job.id,
+      estimate_id: estimate.id,
+      lifetime_value: (customer?.lifetime_value || 0) + contractValue,
+    };
+    
+    // Update referral source if not already set
+    if (!customer?.referral_source && referralSource) {
+      customerUpdate.referral_source = referralSource;
+      customerUpdate.referral_source_other = referralSourceOther;
+    }
+
     await supabase
       .from('customers')
-      .update({
-        job_id: job.id,
-        estimate_id: estimate.id,
-        lifetime_value: (customer?.lifetime_value || 0) + contractValue,
-      })
+      .update(customerUpdate)
       .eq('id', customerId)
       .eq('user_id', user.id);
 

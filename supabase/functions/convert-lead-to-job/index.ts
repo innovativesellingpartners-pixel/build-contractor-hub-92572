@@ -33,10 +33,10 @@ serve(async (req) => {
 
     console.log('Converting lead to job', { leadId, contractorId: user.id });
 
-    // Get the lead with all fields
+    // Get the lead with all fields including source
     const { data: lead, error: leadError } = await supabase
       .from('leads')
-      .select('*')
+      .select('*, lead_sources(id, name)')
       .eq('id', leadId)
       .eq('user_id', user.id)
       .single();
@@ -58,6 +58,36 @@ serve(async (req) => {
       );
     }
 
+    // Get referral source name from the lead_sources join or source_other
+    let referralSource = null;
+    let referralSourceOther = null;
+    
+    if (lead.lead_sources && typeof lead.lead_sources === 'object') {
+      referralSource = (lead.lead_sources as any).name || null;
+    }
+    
+    if (referralSource === 'Other' && lead.source_other) {
+      referralSourceOther = lead.source_other;
+    } else if (lead.source_other && !referralSource) {
+      referralSourceOther = lead.source_other;
+    }
+
+    console.log('Lead data being transferred:', {
+      name: lead.name,
+      email: lead.email,
+      phone: lead.phone,
+      company: lead.company,
+      address: lead.address,
+      city: lead.city,
+      state: lead.state,
+      zip_code: lead.zip_code,
+      project_type: lead.project_type,
+      referralSource,
+      referralSourceOther,
+      value: lead.value,
+      notes: lead.notes,
+    });
+
     // Step 1: Create Customer from Lead (if not already exists)
     let customerId = lead.customer_id;
     let customer;
@@ -78,7 +108,8 @@ serve(async (req) => {
           notes: lead.notes,
           customer_type: 'residential',
           lifetime_value: lead.value || 0,
-          referral_source: lead.source_id ? 'lead_source' : null,
+          referral_source: referralSource,
+          referral_source_other: referralSourceOther,
         })
         .select()
         .single();
@@ -92,22 +123,43 @@ serve(async (req) => {
       customerId = newCustomer.id;
       console.log('Customer created', { customerId });
     } else {
-      // Get existing customer
+      // Get existing customer and update with any missing info
       const { data: existingCustomer } = await supabase
         .from('customers')
         .select('*')
         .eq('id', customerId)
         .single();
       customer = existingCustomer;
+      
+      // Update customer with referral info if not already set
+      if (existingCustomer && !existingCustomer.referral_source && referralSource) {
+        await supabase
+          .from('customers')
+          .update({
+            referral_source: referralSource,
+            referral_source_other: referralSourceOther,
+          })
+          .eq('id', customerId)
+          .eq('user_id', user.id);
+      }
     }
 
-    // Step 2: Create Job with all lead data
+    // Build job notes with referral info
+    let jobNotes = lead.notes || '';
+    if (referralSourceOther || referralSource) {
+      const referralInfo = referralSourceOther || referralSource;
+      if (!jobNotes.includes('Referral:') && !jobNotes.includes('Referred by:')) {
+        jobNotes = jobNotes ? `${jobNotes}\n\nReferred by: ${referralInfo}` : `Referred by: ${referralInfo}`;
+      }
+    }
+
+    // Step 2: Create Job with ALL lead data
     const { data: newJob, error: jobError } = await supabase
       .from('jobs')
       .insert({
         user_id: user.id,
         customer_id: customerId,
-        lead_id: leadId, // Link back to original lead
+        lead_id: leadId,
         name: jobName || lead.project_type || `Job for ${lead.name}`,
         description: lead.notes || null,
         address: lead.address || null,
@@ -116,11 +168,11 @@ serve(async (req) => {
         zip_code: lead.zip_code || null,
         status: 'scheduled',
         job_status: 'scheduled',
-        notes: lead.notes || null,
+        notes: jobNotes.trim() || null,
         contract_value: lead.value || 0,
         total_contract_value: lead.value || 0,
         budget_amount: lead.value || 0,
-        trade_type: lead.project_type || null, // Map project_type to trade_type
+        trade_type: lead.project_type || null,
         change_orders_total: 0,
         payments_collected: 0,
         expenses_total: 0,
@@ -149,7 +201,6 @@ serve(async (req) => {
 
     if (updateCustomerError) {
       console.error('Error updating customer', updateCustomerError);
-      // Don't throw - not critical
     }
 
     // Step 4: Update lead - mark as converted with links to both customer and job
@@ -170,6 +221,10 @@ serve(async (req) => {
       throw updateLeadError;
     }
 
+    // Build full client address for estimates
+    const clientAddressParts = [lead.address, lead.city, lead.state, lead.zip_code].filter(Boolean);
+    const clientAddress = clientAddressParts.length > 0 ? clientAddressParts.join(', ') : null;
+
     // Step 5: Update any existing estimates for this lead to link to customer and job
     const { data: updatedEstimates, error: updateEstimatesError } = await supabase
       .from('estimates')
@@ -177,6 +232,14 @@ serve(async (req) => {
         customer_id: customerId,
         job_id: newJob.id,
         status: 'sold',
+        // Transfer ALL client info from lead
+        client_name: lead.name,
+        client_email: lead.email,
+        client_phone: lead.phone,
+        client_address: clientAddress,
+        site_address: clientAddress,
+        referred_by: referralSourceOther || referralSource,
+        trade_type: lead.project_type,
       })
       .eq('lead_id', leadId)
       .eq('user_id', user.id)
@@ -184,7 +247,6 @@ serve(async (req) => {
 
     if (updateEstimatesError) {
       console.error('Error updating estimates', updateEstimatesError);
-      // Don't throw - not critical
     }
 
     // Step 6: If there are estimates, update job with estimate data (use the first/most recent)
