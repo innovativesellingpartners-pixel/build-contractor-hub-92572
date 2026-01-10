@@ -38,26 +38,51 @@ export function PDFTotalsSection({ estimate, currency = 'USD', locale = 'en-US' 
   const balanceDue = estimate.balance_due || (grandTotal - (estimate.payment_amount || 0));
   const amountPaid = estimate.payment_amount || 0;
 
+  // Calculate deposit tax - proportional tax on the deposit amount
+  const depositTaxAmount = requiredDeposit > 0 && grandTotal > 0 
+    ? (taxAmount * (requiredDeposit / grandTotal)) 
+    : 0;
+  
+  // Amount due now is the deposit plus proportional tax
+  const amountDueNow = requiredDeposit > 0 
+    ? requiredDeposit + depositTaxAmount 
+    : grandTotal;
+  
+  // Remaining balance after deposit
+  const remainingBalance = grandTotal - requiredDeposit;
+
   return (
     <>
       <PDFSectionHeader>Estimate Summary</PDFSectionHeader>
       <PDFContentSection>
         <div className="flex justify-between gap-8">
-          {/* Deposit Info (left side) */}
+          {/* Project Total Info (left side) */}
           <div className="flex-1">
+            <div className="bg-[#f5f3ef] p-4 rounded mb-4">
+              <div className="text-xs font-bold text-[#666666] uppercase tracking-wider mb-1">
+                Project Total
+              </div>
+              <div className="text-lg font-semibold text-[#161e2c]">
+                {format(grandTotal)}
+              </div>
+            </div>
+            
             {requiredDeposit > 0 && (
-              <div className="bg-[#f5f3ef] p-4 rounded">
-                <div className="text-xs font-bold text-[#d59f47] uppercase tracking-wider mb-1">
-                  Deposit Required
+              <div className="text-sm text-[#666666] space-y-1">
+                <div className="flex justify-between">
+                  <span>Deposit ({depositPercent || Math.round((requiredDeposit / grandTotal) * 100)}%):</span>
+                  <span>{format(requiredDeposit)}</span>
                 </div>
-                <div className="text-2xl font-bold text-[#161e2c]">
-                  {format(requiredDeposit)}
-                </div>
-                {depositPercent > 0 && (
-                  <div className="text-xs text-[#666666] mt-1">
-                    ({depositPercent}% of total)
+                {depositTaxAmount > 0 && (
+                  <div className="flex justify-between">
+                    <span>Tax on Deposit:</span>
+                    <span>{format(depositTaxAmount)}</span>
                   </div>
                 )}
+                <div className="flex justify-between pt-2 border-t border-[#e5e5e5]">
+                  <span>Balance Due at Completion:</span>
+                  <span className="font-medium">{format(remainingBalance)}</span>
+                </div>
               </div>
             )}
             
@@ -73,33 +98,52 @@ export function PDFTotalsSection({ estimate, currency = 'USD', locale = 'en-US' 
             )}
           </div>
 
-          {/* Summary Box (right side) */}
+          {/* Summary Box - Amount Due Now (right side) */}
           <PDFSummaryBox className="w-[280px]">
-            <PDFSummaryRow label="Subtotal" value={format(subtotal)} />
-            
-            {profitMarkup > 0 && (
-              <PDFSummaryRow 
-                label={`Profit/Markup${profitMarkupPercent ? ` (${profitMarkupPercent}%)` : ''}`} 
-                value={format(profitMarkup)} 
-              />
+            {requiredDeposit > 0 ? (
+              <>
+                <PDFSummaryRow label="Deposit Required" value={format(requiredDeposit)} />
+                {depositTaxAmount > 0 && (
+                  <PDFSummaryRow 
+                    label={`Sales Tax${taxRate ? ` (${taxRate}%)` : ''}`} 
+                    value={format(depositTaxAmount)} 
+                  />
+                )}
+                <PDFSummaryRow 
+                  label="AMOUNT DUE NOW" 
+                  value={format(amountDueNow)} 
+                  isTotal 
+                />
+              </>
+            ) : (
+              <>
+                <PDFSummaryRow label="Subtotal" value={format(subtotal)} />
+                
+                {profitMarkup > 0 && (
+                  <PDFSummaryRow 
+                    label={`Profit/Markup${profitMarkupPercent ? ` (${profitMarkupPercent}%)` : ''}`} 
+                    value={format(profitMarkup)} 
+                  />
+                )}
+                
+                {(taxAmount > 0 || taxRate > 0) && (
+                  <PDFSummaryRow 
+                    label={`Sales Tax${taxRate ? ` (${taxRate}%)` : ''}`} 
+                    value={format(taxAmount)} 
+                  />
+                )}
+                
+                {permitFee > 0 && (
+                  <PDFSummaryRow label="Permit Fee" value={format(permitFee)} />
+                )}
+                
+                <PDFSummaryRow 
+                  label="TOTAL DUE" 
+                  value={format(grandTotal)} 
+                  isTotal 
+                />
+              </>
             )}
-            
-            {(taxAmount > 0 || taxRate > 0) && (
-              <PDFSummaryRow 
-                label={`Sales Tax${taxRate ? ` (${taxRate}%)` : ''}`} 
-                value={format(taxAmount)} 
-              />
-            )}
-            
-            {permitFee > 0 && (
-              <PDFSummaryRow label="Permit Fee" value={format(permitFee)} />
-            )}
-            
-            <PDFSummaryRow 
-              label="TOTAL DUE" 
-              value={format(grandTotal)} 
-              isTotal 
-            />
             
             {amountPaid > 0 && balanceDue !== grandTotal && (
               <PDFSummaryRow 
