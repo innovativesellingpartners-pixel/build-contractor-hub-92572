@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,9 +28,11 @@ import {
   Check,
   ChevronsUpDown,
   AlertTriangle,
-  Plug
+  Plug,
+  ChevronLeft,
+  CalendarDays
 } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, isSameDay, parseISO, startOfDay, endOfDay } from 'date-fns';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -54,6 +56,15 @@ interface LeadData {
   zip_code?: string | null;
   company?: string | null;
   project_type?: string | null;
+}
+
+interface DayEvent {
+  id: string;
+  title: string;
+  startTime: Date;
+  endTime: Date;
+  location?: string;
+  source: 'calendar' | 'local';
 }
 
 interface ScheduleMeetingDialogProps {
@@ -103,7 +114,7 @@ export function ScheduleMeetingDialog({
   const { jobs } = useJobs();
   const formMemory = useFormMemory('schedule_meeting');
   
-  const [step, setStep] = useState<'date' | 'details'>('date');
+  const [step, setStep] = useState<'date' | 'day-view' | 'details'>('date');
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(initialDate);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [jobSearchOpen, setJobSearchOpen] = useState(false);
@@ -112,6 +123,10 @@ export function ScheduleMeetingDialog({
   const [calendarConnections, setCalendarConnections] = useState<CalendarConnection[]>([]);
   const [loadingConnections, setLoadingConnections] = useState(true);
   const [connectingCalendar, setConnectingCalendar] = useState(false);
+  
+  // Day view state
+  const [dayEvents, setDayEvents] = useState<DayEvent[]>([]);
+  const [loadingDayEvents, setLoadingDayEvents] = useState(false);
   
   // Form fields
   const [title, setTitle] = useState('');
@@ -224,11 +239,101 @@ export function ScheduleMeetingDialog({
 
   const getSelectedJob = () => jobs.find(j => j.id === selectedJobId);
 
+  // Fetch events for a specific day
+  const fetchDayEvents = useCallback(async (date: Date) => {
+    if (!user) return;
+    
+    setLoadingDayEvents(true);
+    setDayEvents([]);
+    
+    const events: DayEvent[] = [];
+    const dateStart = startOfDay(date);
+    const dateEnd = endOfDay(date);
+    
+    try {
+      // Fetch local meetings from user_meetings table
+      const { data: localMeetings, error: localError } = await supabase
+        .from('user_meetings')
+        .select('*')
+        .eq('user_id', user.id)
+        .gte('start_time', dateStart.toISOString())
+        .lte('start_time', dateEnd.toISOString());
+      
+      if (!localError && localMeetings) {
+        for (const meeting of localMeetings) {
+          events.push({
+            id: meeting.id,
+            title: meeting.title,
+            startTime: new Date(meeting.start_time),
+            endTime: new Date(meeting.end_time),
+            location: meeting.location || undefined,
+            source: 'local'
+          });
+        }
+      }
+      
+      // Fetch external calendar events if connected
+      if (hasCalendarConnection) {
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session) {
+            const { data: calData, error: calError } = await supabase.functions.invoke('fetch-calendar-events', {
+              headers: { Authorization: `Bearer ${session.access_token}` }
+            });
+            
+            if (!calError && calData?.events) {
+              for (const event of calData.events) {
+                const eventStart = event.start?.dateTime || event.start?.date;
+                const eventEnd = event.end?.dateTime || event.end?.date;
+                
+                if (!eventStart) continue;
+                
+                const startDate = new Date(eventStart);
+                
+                // Only include events for the selected day
+                if (isSameDay(startDate, date)) {
+                  // Skip if already exists locally (based on calendar_event_id match)
+                  const isDuplicate = localMeetings?.some(lm => lm.calendar_event_id === event.id);
+                  if (isDuplicate) continue;
+                  
+                  events.push({
+                    id: event.id,
+                    title: event.summary || 'Busy',
+                    startTime: startDate,
+                    endTime: eventEnd ? new Date(eventEnd) : new Date(startDate.getTime() + 60 * 60000),
+                    location: event.location,
+                    source: 'calendar'
+                  });
+                }
+              }
+            }
+          }
+        } catch (calErr) {
+          console.warn('Failed to fetch calendar events:', calErr);
+        }
+      }
+      
+      // Sort by start time
+      events.sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
+      setDayEvents(events);
+    } catch (err) {
+      console.error('Error fetching day events:', err);
+    } finally {
+      setLoadingDayEvents(false);
+    }
+  }, [user, hasCalendarConnection]);
+
   const handleDateSelect = (date: Date | undefined) => {
     setSelectedDate(date);
     if (date) {
-      setStep('details');
+      fetchDayEvents(date);
+      setStep('day-view');
     }
+  };
+
+  const handleSelectTimeSlot = (time: string) => {
+    setSelectedTime(time);
+    setStep('details');
   };
 
   const handleAddRecipient = () => {
@@ -449,6 +554,8 @@ export function ScheduleMeetingDialog({
           <DialogDescription>
             {step === 'date' 
               ? 'Select a date for your meeting' 
+              : step === 'day-view'
+              ? `Your schedule for ${selectedDate ? format(selectedDate, 'EEEE, MMMM d, yyyy') : ''}`
               : `Meeting on ${selectedDate ? format(selectedDate, 'EEEE, MMMM d, yyyy') : ''}`
             }
           </DialogDescription>
@@ -465,6 +572,101 @@ export function ScheduleMeetingDialog({
                 initialFocus
                 className="rounded-md border pointer-events-auto"
               />
+            </div>
+          ) : step === 'day-view' ? (
+            <div className="py-4 space-y-4">
+              {/* Day Schedule Header */}
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <CalendarDays className="h-4 w-4" />
+                <span>Select an available time slot to schedule your meeting</span>
+              </div>
+              
+              {loadingDayEvents ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                  <span className="ml-2 text-muted-foreground">Loading schedule...</span>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {/* Time slots with busy indicators */}
+                  {TIME_SLOTS.map((time) => {
+                    const slotTime = new Date(`${format(selectedDate!, 'yyyy-MM-dd')}T${time}`);
+                    const slotEnd = new Date(slotTime.getTime() + 30 * 60000); // 30 min slot
+                    
+                    // Check if this slot overlaps with any event
+                    const overlappingEvent = dayEvents.find(event => {
+                      return slotTime < event.endTime && slotEnd > event.startTime;
+                    });
+                    
+                    const isBusy = !!overlappingEvent;
+                    
+                    return (
+                      <div
+                        key={time}
+                        className={cn(
+                          "flex items-center gap-3 p-3 rounded-lg border transition-colors",
+                          isBusy 
+                            ? "bg-muted/50 border-muted cursor-not-allowed"
+                            : "hover:bg-accent hover:border-accent-foreground/20 cursor-pointer"
+                        )}
+                        onClick={() => !isBusy && handleSelectTimeSlot(time)}
+                      >
+                        <div className="flex items-center gap-2 min-w-[80px]">
+                          <Clock className={cn("h-4 w-4", isBusy ? "text-muted-foreground" : "text-primary")} />
+                          <span className={cn("font-medium", isBusy && "text-muted-foreground")}>
+                            {format(slotTime, 'h:mm a')}
+                          </span>
+                        </div>
+                        
+                        {isBusy ? (
+                          <div className="flex-1 flex items-center gap-2">
+                            <Badge variant="secondary" className="text-xs">
+                              {overlappingEvent?.source === 'calendar' ? 'Calendar' : 'Meeting'}
+                            </Badge>
+                            <span className="text-sm text-muted-foreground truncate">
+                              {overlappingEvent?.title}
+                            </span>
+                            {overlappingEvent?.location && (
+                              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                <MapPin className="h-3 w-3" />
+                                {overlappingEvent.location}
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="flex-1">
+                            <span className="text-sm text-green-600 dark:text-green-400">Available</span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              
+              {/* Quick info about existing events */}
+              {!loadingDayEvents && dayEvents.length > 0 && (
+                <div className="mt-4 p-3 bg-muted/30 rounded-lg">
+                  <p className="text-sm font-medium mb-2">Scheduled for this day:</p>
+                  <div className="space-y-1">
+                    {dayEvents.map((event) => (
+                      <div key={event.id} className="text-sm text-muted-foreground flex items-center gap-2">
+                        <Clock className="h-3 w-3" />
+                        <span>{format(event.startTime, 'h:mm a')} - {format(event.endTime, 'h:mm a')}</span>
+                        <span className="font-medium">{event.title}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {!loadingDayEvents && dayEvents.length === 0 && (
+                <div className="text-center py-4 text-muted-foreground">
+                  <CalendarDays className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">No meetings scheduled for this day</p>
+                  <p className="text-xs">All time slots are available</p>
+                </div>
+              )}
             </div>
           ) : (
             <div className="space-y-4 py-4">
@@ -710,12 +912,23 @@ export function ScheduleMeetingDialog({
         </ScrollArea>
 
         <DialogFooter className="gap-2 sm:gap-0">
-          {step === 'details' && (
+          {step === 'day-view' && (
             <Button 
               variant="outline" 
               onClick={() => setStep('date')}
+              className="mr-auto"
+            >
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Change Date
+            </Button>
+          )}
+          {step === 'details' && (
+            <Button 
+              variant="outline" 
+              onClick={() => setStep('day-view')}
               disabled={isSubmitting}
             >
+              <ChevronLeft className="h-4 w-4 mr-1" />
               Back
             </Button>
           )}
