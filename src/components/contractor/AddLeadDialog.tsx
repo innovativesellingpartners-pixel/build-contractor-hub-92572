@@ -123,10 +123,17 @@ export function AddLeadDialog({ onAdd, sources }: AddLeadDialogProps) {
               <Label htmlFor="value">Estimated Value</Label>
               <Input
                 id="value"
-                type="number"
-                step="0.01"
+                type="text"
+                inputMode="decimal"
+                pattern="[0-9]*\.?[0-9]*"
                 value={formData.value}
-                onChange={(e) => setFormData({ ...formData, value: e.target.value })}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  // Allow empty, digits, and one decimal point
+                  if (val === '' || /^\d*\.?\d*$/.test(val)) {
+                    setFormData({ ...formData, value: val });
+                  }
+                }}
                 placeholder="0.00"
               />
             </div>
