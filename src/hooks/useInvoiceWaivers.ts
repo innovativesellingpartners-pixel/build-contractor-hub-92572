@@ -45,9 +45,14 @@ export function useInvoiceWaivers() {
     const generatedWaivers: InvoiceWaiver[] = [];
 
     try {
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) throw sessionError;
+      const token = sessionData.session?.access_token;
+      if (!token) throw new Error('Not authenticated');
+
       for (const waiver of waivers) {
         console.log(`Generating waiver: ${waiver.type} for invoice ${invoiceId}`);
-        
+
         const { data, error } = await supabase.functions.invoke('generate-waiver-pdf', {
           body: {
             invoiceId,
@@ -60,6 +65,9 @@ export function useInvoiceWaivers() {
             signatureData: signatureInfo?.signatureData,
             signerName: signatureInfo?.signerName,
             signerTitle: signatureInfo?.signerTitle,
+          },
+          headers: {
+            Authorization: `Bearer ${token}`,
           },
         });
 
