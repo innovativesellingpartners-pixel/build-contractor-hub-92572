@@ -91,14 +91,14 @@ export function AddJobDialog({ onAdd }: AddJobDialogProps) {
           Add Job
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-        <DialogHeader>
+      <DialogContent className="max-w-4xl h-[calc(100vh-5rem)] top-[45%] sm:top-[50%] overflow-hidden flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>Add New Job</DialogTitle>
           <DialogDescription>Use AI to quickly extract details or fill them in manually</DialogDescription>
         </DialogHeader>
         
         <Tabs defaultValue="ai" className="flex-1 overflow-hidden flex flex-col">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-2 flex-shrink-0">
             <TabsTrigger value="ai" className="flex items-center gap-2">
               <Bot className="h-4 w-4" />
               AI Assistant
@@ -109,7 +109,7 @@ export function AddJobDialog({ onAdd }: AddJobDialogProps) {
             </TabsTrigger>
           </TabsList>
           
-          <TabsContent value="ai" className="flex-1 overflow-y-auto mt-4 space-y-4">
+          <TabsContent value="ai" className="flex-1 overflow-y-auto mt-4 space-y-4 pb-20">
             <JobAIAssistant onJobDetailsExtracted={handleAIExtract} />
             
             {/* Preview of extracted data */}
@@ -124,7 +124,7 @@ export function AddJobDialog({ onAdd }: AddJobDialogProps) {
             )}
           </TabsContent>
           
-          <TabsContent value="manual" className="flex-1 overflow-y-auto mt-4">
+          <TabsContent value="manual" className="flex-1 overflow-y-auto mt-4 pb-20">
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Basic Information */}
               <div className="space-y-4">
@@ -295,7 +295,7 @@ export function AddJobDialog({ onAdd }: AddJobDialogProps) {
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-4 border-t">
+              <div className="flex justify-end gap-2 pt-4 border-t sticky bottom-0 bg-background py-4">
                 <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                   Cancel
                 </Button>
