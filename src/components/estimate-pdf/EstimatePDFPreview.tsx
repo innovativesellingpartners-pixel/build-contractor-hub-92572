@@ -124,9 +124,9 @@ export function EstimatePDFPreview({ estimate, onClose, onDownload }: EstimatePD
     : undefined;
 
   return (
-    <div className="min-h-screen bg-muted">
+    <div className="h-full flex flex-col bg-muted">
       {/* Action Bar - Hidden when printing */}
-      <div className="print:hidden sticky top-0 z-50 bg-white border-b shadow-sm">
+      <div className="print:hidden flex-shrink-0 bg-white border-b shadow-sm z-50">
         <div className="max-w-[900px] mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-4">
             {onClose && (
@@ -162,9 +162,9 @@ export function EstimatePDFPreview({ estimate, onClose, onDownload }: EstimatePD
         </div>
       </div>
 
-      {/* PDF Preview */}
-      <div className="py-8 px-4 print:p-0 print:bg-white">
-        <PDFPageWrapper>
+      {/* PDF Preview - Scrollable container */}
+      <div className="flex-1 overflow-auto py-4 px-4 print:p-0 print:bg-white print:overflow-visible">
+        <PDFPageWrapper className="mb-8">
           <div ref={printRef}>
             {/* Header */}
             <PDFHeaderSection estimate={estimate} contractor={contractor} />
@@ -230,6 +230,10 @@ export function EstimatePDFPreview({ estimate, onClose, onDownload }: EstimatePD
           
           .print\\:max-w-none {
             max-width: none !important;
+          }
+          
+          .print\\:overflow-visible {
+            overflow: visible !important;
           }
         }
       `}</style>
