@@ -1,97 +1,149 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 /**
- * Hook to handle iOS PWA back button/swipe navigation
- * Prevents the app from exiting when user swipes back on iOS
+ * Hook to handle back button/swipe navigation across all browsers
+ * Works for PWA standalone mode, DuckDuckGo, Safari, Chrome, and all other browsers
+ * Prevents the app from exiting when user presses back on iOS/Android
  */
 export function usePWABackNavigation() {
   const navigate = useNavigate();
   const location = useLocation();
+  const historyStack = useRef<string[]>([]);
+  const isInitialized = useRef(false);
 
   // Check if running as a standalone PWA
-  const isStandalone = useCallback(() => {
+  const isStandalone = () => {
     return (
       window.matchMedia('(display-mode: standalone)').matches ||
       (window.navigator as any).standalone === true ||
       document.referrer.includes('android-app://') ||
       window.location.search.includes('source=pwa')
     );
-  }, []);
+  };
+
+  // Check if this is a mobile browser (where back navigation is more critical)
+  const isMobileBrowser = () => {
+    return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  };
 
   useEffect(() => {
-    // Only apply this logic for standalone PWA mode
-    if (!isStandalone()) return;
-
-    // Push initial state to ensure we have history to work with
-    // This prevents the first back gesture from exiting the app
-    const initialState = { pwa: true, path: location.pathname };
-    
-    // Only push if we don't already have a state
-    if (!window.history.state?.pwa) {
-      window.history.replaceState(initialState, '', location.pathname + location.search);
-    }
-
-    const handlePopState = (event: PopStateEvent) => {
-      // If we're at the root and trying to go back, prevent exit
-      if (location.pathname === '/' || location.pathname === '/dashboard') {
-        // Push a new state to prevent exiting
-        window.history.pushState({ pwa: true, preventExit: true }, '', location.pathname);
-        return;
-      }
-
-      // If the event has our PWA state, let React Router handle it
-      if (event.state?.pwa) {
-        return;
-      }
-
-      // Otherwise, navigate back within the app
-      event.preventDefault();
+    // Initialize history tracking
+    if (!isInitialized.current) {
+      historyStack.current = [location.pathname];
+      isInitialized.current = true;
       
-      // Determine where to go back to based on current location
-      const pathParts = location.pathname.split('/').filter(Boolean);
-      
-      if (pathParts.length > 1) {
-        // Go up one level in the path hierarchy
-        const parentPath = '/' + pathParts.slice(0, -1).join('/');
-        navigate(parentPath, { replace: true });
-      } else if (location.pathname.startsWith('/admin')) {
-        navigate('/admin', { replace: true });
-      } else if (location.pathname !== '/dashboard' && location.pathname !== '/') {
-        // Go to dashboard for authenticated routes, or home for public routes
-        const protectedPaths = ['/crm', '/reporting', '/accounting', '/pay-bill'];
-        const isProtected = protectedPaths.some(p => location.pathname.startsWith(p));
-        navigate(isProtected ? '/dashboard' : '/', { replace: true });
-      }
-    };
-
-    window.addEventListener('popstate', handlePopState);
-
-    // Also handle the beforeunload to try to prevent accidental exits
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      // Only show prompt if there are unsaved changes (you can customize this)
-      // For now, we just ensure proper history state
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
-    return () => {
-      window.removeEventListener('popstate', handlePopState);
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, [isStandalone, location.pathname, location.search, navigate]);
-
-  // Ensure each navigation adds proper history state
-  useEffect(() => {
-    if (!isStandalone()) return;
-
-    // Replace current state with PWA-aware state on each navigation
-    if (!window.history.state?.pwa) {
+      // Mark the initial state with our app marker
       window.history.replaceState(
-        { pwa: true, path: location.pathname },
+        { ct1App: true, path: location.pathname, index: 0 },
         '',
         location.pathname + location.search
       );
     }
-  }, [isStandalone, location.pathname, location.search]);
+  }, []);
+
+  // Track navigation changes
+  useEffect(() => {
+    const currentPath = location.pathname;
+    const stack = historyStack.current;
+    
+    // Add to stack if it's a new path (not going back)
+    if (stack[stack.length - 1] !== currentPath) {
+      // Check if we're going back (path matches earlier in stack)
+      const existingIndex = stack.lastIndexOf(currentPath);
+      if (existingIndex >= 0 && existingIndex < stack.length - 1) {
+        // We went back, trim the stack
+        historyStack.current = stack.slice(0, existingIndex + 1);
+      } else {
+        // New navigation, add to stack
+        historyStack.current.push(currentPath);
+      }
+    }
+
+    // Ensure current state has our marker
+    if (!window.history.state?.ct1App) {
+      window.history.replaceState(
+        { ct1App: true, path: currentPath, index: historyStack.current.length - 1 },
+        '',
+        location.pathname + location.search
+      );
+    }
+  }, [location.pathname, location.search]);
+
+  useEffect(() => {
+    // Apply to all mobile browsers and PWAs
+    if (!isMobileBrowser() && !isStandalone()) return;
+
+    const handlePopState = (event: PopStateEvent) => {
+      const stack = historyStack.current;
+      const currentPath = location.pathname;
+      
+      // If this is our app's state, the browser is handling it correctly
+      if (event.state?.ct1App) {
+        return;
+      }
+
+      // Prevent default browser behavior
+      event.preventDefault();
+      event.stopPropagation();
+
+      // Determine where to navigate
+      if (stack.length > 1) {
+        // Go to previous page in our internal stack
+        const previousPath = stack[stack.length - 2];
+        historyStack.current = stack.slice(0, -1);
+        navigate(previousPath, { replace: true });
+      } else {
+        // At root of our app - determine where to go based on context
+        if (currentPath === '/' || currentPath === '/dashboard') {
+          // Already at home, push state to prevent exit
+          window.history.pushState(
+            { ct1App: true, path: currentPath, preventExit: true },
+            '',
+            currentPath
+          );
+        } else {
+          // Navigate to appropriate home based on route type
+          const protectedPaths = ['/crm', '/reporting', '/accounting', '/pay-bill', '/dashboard'];
+          const isProtected = protectedPaths.some(p => currentPath.startsWith(p));
+          const homePath = isProtected ? '/dashboard' : '/';
+          historyStack.current = [homePath];
+          navigate(homePath, { replace: true });
+        }
+      }
+    };
+
+    // Use capture phase to intercept before React Router
+    window.addEventListener('popstate', handlePopState, true);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState, true);
+    };
+  }, [location.pathname, navigate]);
+
+  // Handle hardware back button on Android via visibilitychange
+  useEffect(() => {
+    if (!isMobileBrowser()) return;
+
+    let lastVisibilityTime = Date.now();
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        const timeDiff = Date.now() - lastVisibilityTime;
+        // If we're coming back very quickly (< 500ms), it might be a back button
+        // that caused a brief exit attempt - ensure we have valid state
+        if (timeDiff < 500 && historyStack.current.length === 0) {
+          historyStack.current = [location.pathname];
+        }
+      } else {
+        lastVisibilityTime = Date.now();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [location.pathname]);
 }
