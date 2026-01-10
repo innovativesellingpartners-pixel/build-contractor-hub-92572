@@ -33,10 +33,10 @@ serve(async (req) => {
 
     console.log('Converting lead to customer', { leadId, contractorId: user.id });
 
-    // Get the lead with all fields
+    // Get the lead with all fields including source
     const { data: lead, error: leadError } = await supabase
       .from('leads')
-      .select('*')
+      .select('*, lead_sources(id, name)')
       .eq('id', leadId)
       .eq('user_id', user.id)
       .single();
@@ -65,18 +65,37 @@ serve(async (req) => {
       );
     }
 
-    // Get lead source name if available
+    // Get referral source name from the lead_sources join or source_other
     let referralSource = null;
-    if (lead.source_id) {
-      const { data: source } = await supabase
-        .from('lead_sources')
-        .select('name')
-        .eq('id', lead.source_id)
-        .single();
-      referralSource = source?.name;
+    let referralSourceOther = null;
+    
+    if (lead.lead_sources && typeof lead.lead_sources === 'object') {
+      referralSource = (lead.lead_sources as any).name || null;
+    }
+    
+    // If source is "Other", use the source_other field
+    if (referralSource === 'Other' && lead.source_other) {
+      referralSourceOther = lead.source_other;
+    } else if (lead.source_other && !referralSource) {
+      // If no source_id but has source_other, use that
+      referralSourceOther = lead.source_other;
     }
 
-    // Create customer from lead with all available data
+    console.log('Lead data being transferred:', {
+      name: lead.name,
+      email: lead.email,
+      phone: lead.phone,
+      company: lead.company,
+      address: lead.address,
+      city: lead.city,
+      state: lead.state,
+      zip_code: lead.zip_code,
+      referralSource,
+      referralSourceOther,
+      value: lead.value,
+    });
+
+    // Create customer from lead with ALL available data
     const { data: customer, error: customerError } = await supabase
       .from('customers')
       .insert({
@@ -93,6 +112,7 @@ serve(async (req) => {
         customer_type: 'residential',
         lifetime_value: lead.value || 0,
         referral_source: referralSource,
+        referral_source_other: referralSourceOther,
       })
       .select()
       .single();
@@ -121,7 +141,11 @@ serve(async (req) => {
       throw updateLeadError;
     }
 
-    // Update any estimates that belong to this lead with customer info
+    // Build full client address for estimates
+    const clientAddressParts = [lead.address, lead.city, lead.state, lead.zip_code].filter(Boolean);
+    const clientAddress = clientAddressParts.length > 0 ? clientAddressParts.join(', ') : null;
+
+    // Update any estimates that belong to this lead with ALL customer info
     const { data: updatedEstimates, error: updateEstimatesError } = await supabase
       .from('estimates')
       .update({ 
@@ -129,7 +153,11 @@ serve(async (req) => {
         client_name: lead.name,
         client_email: lead.email,
         client_phone: lead.phone,
-        client_address: [lead.address, lead.city, lead.state, lead.zip_code].filter(Boolean).join(', '),
+        client_address: clientAddress,
+        // Also set site address if not already set
+        site_address: clientAddress,
+        // Transfer referred_by if we have a referral source
+        referred_by: referralSourceOther || referralSource,
       })
       .eq('lead_id', leadId)
       .eq('user_id', user.id)
