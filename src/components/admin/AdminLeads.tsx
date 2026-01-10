@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -8,9 +8,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Search, Mail, Phone, MapPin, ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 import { format } from 'date-fns';
+import { EditLeadDialog } from '@/components/contractor/EditLeadDialog';
+import { Lead, LeadSource } from '@/hooks/useLeads';
+import { toast } from 'sonner';
 
 export const AdminLeads = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data: leads, isLoading } = useQuery({
     queryKey: ['adminLeads'],
@@ -32,6 +38,18 @@ export const AdminLeads = () => {
     },
   });
 
+  const { data: sources = [] } = useQuery({
+    queryKey: ['leadSources'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('lead_sources')
+        .select('*')
+        .order('name');
+      if (error) throw error;
+      return data as LeadSource[];
+    },
+  });
+
   const filteredLeads = leads?.filter(lead =>
     lead.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     lead.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -49,6 +67,41 @@ export const AdminLeads = () => {
       lost: 'bg-red-500',
     };
     return colors[status] || 'bg-gray-500';
+  };
+
+  const handleRowClick = (lead: any) => {
+    setSelectedLead(lead as Lead);
+    setEditDialogOpen(true);
+  };
+
+  const handleUpdateLead = async (id: string, updates: Partial<Lead>) => {
+    const { error } = await supabase
+      .from('leads')
+      .update(updates)
+      .eq('id', id);
+    
+    if (error) {
+      toast.error('Failed to update lead');
+      throw error;
+    }
+    
+    toast.success('Lead updated successfully');
+    queryClient.invalidateQueries({ queryKey: ['adminLeads'] });
+  };
+
+  const handleDeleteLead = async (id: string) => {
+    const { error } = await supabase
+      .from('leads')
+      .delete()
+      .eq('id', id);
+    
+    if (error) {
+      toast.error('Failed to delete lead');
+      throw error;
+    }
+    
+    toast.success('Lead deleted successfully');
+    queryClient.invalidateQueries({ queryKey: ['adminLeads'] });
   };
 
   if (isLoading) {
@@ -96,7 +149,11 @@ export const AdminLeads = () => {
             </TableHeader>
             <TableBody>
               {filteredLeads?.map((lead) => (
-                <TableRow key={lead.id}>
+                <TableRow 
+                  key={lead.id} 
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => handleRowClick(lead)}
+                >
                   <TableCell>
                     <div>
                       <div className="font-medium">{lead.name}</div>
@@ -149,7 +206,14 @@ export const AdminLeads = () => {
                     {format(new Date(lead.created_at), 'MMM d, yyyy')}
                   </TableCell>
                   <TableCell>
-                    <Button variant="ghost" size="sm">
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRowClick(lead);
+                      }}
+                    >
                       <ExternalLink className="h-4 w-4" />
                     </Button>
                   </TableCell>
@@ -166,6 +230,18 @@ export const AdminLeads = () => {
           </Table>
         </CardContent>
       </Card>
+
+      <EditLeadDialog
+        lead={selectedLead}
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        onUpdate={handleUpdateLead}
+        onDelete={handleDeleteLead}
+        sources={sources}
+        onConvertToCustomer={() => {
+          queryClient.invalidateQueries({ queryKey: ['adminLeads'] });
+        }}
+      />
     </div>
   );
 };

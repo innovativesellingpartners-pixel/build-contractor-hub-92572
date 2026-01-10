@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -8,9 +8,17 @@ import { Search, ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { EstimateDetailViewBlue } from '@/components/contractor/crm/sections/EstimateDetailViewBlue';
+import { Estimate } from '@/hooks/useEstimates';
+import { useNavigate } from 'react-router-dom';
 
 export const AdminEstimates = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedEstimate, setSelectedEstimate] = useState<Estimate | null>(null);
+  const [detailViewOpen, setDetailViewOpen] = useState(false);
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const { data: estimates, isLoading } = useQuery({
     queryKey: ['adminEstimates'],
@@ -55,6 +63,11 @@ export const AdminEstimates = () => {
   const formatCurrency = (amount: number | null) => {
     if (!amount) return '-';
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+  };
+
+  const handleRowClick = (estimate: any) => {
+    setSelectedEstimate(estimate as Estimate);
+    setDetailViewOpen(true);
   };
 
   if (isLoading) {
@@ -102,7 +115,11 @@ export const AdminEstimates = () => {
             </TableHeader>
             <TableBody>
               {filteredEstimates?.map((estimate) => (
-                <TableRow key={estimate.id}>
+                <TableRow 
+                  key={estimate.id} 
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => handleRowClick(estimate)}
+                >
                   <TableCell>
                     <div>
                       <div className="font-medium">{estimate.title}</div>
@@ -136,7 +153,14 @@ export const AdminEstimates = () => {
                     {format(new Date(estimate.created_at), 'MMM d, yyyy')}
                   </TableCell>
                   <TableCell>
-                    <Button variant="ghost" size="sm">
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRowClick(estimate);
+                      }}
+                    >
                       <ExternalLink className="h-4 w-4" />
                     </Button>
                   </TableCell>
@@ -153,6 +177,20 @@ export const AdminEstimates = () => {
           </Table>
         </CardContent>
       </Card>
+
+      <Dialog open={detailViewOpen} onOpenChange={setDetailViewOpen}>
+        <DialogContent className="max-w-4xl h-[calc(100vh-5rem)] top-[45%] sm:top-[50%] p-0 flex flex-col overflow-hidden">
+          {selectedEstimate && (
+            <EstimateDetailViewBlue
+              estimate={selectedEstimate}
+              onClose={() => setDetailViewOpen(false)}
+              onSectionChange={() => {
+                queryClient.invalidateQueries({ queryKey: ['adminEstimates'] });
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
