@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
-import { FileText, Send, Download, ArrowLeft, Mail, ExternalLink, Loader2, Eye, Paperclip, Plus } from 'lucide-react';
+import { FileText, Send, Download, ArrowLeft, Mail, ExternalLink, Loader2, Eye, Paperclip, Plus, FileCheck, ScrollText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -59,10 +59,11 @@ export function InvoiceDetailView({ invoice, onClose, onSectionChange }: Invoice
   const { updateInvoice } = useInvoices();
   const { profile } = useContractorProfile();
   const { gcContacts, addGCContact, refreshGCContacts } = useGCContacts();
-  const { generateWaivers, isGenerating: waiverGenerating } = useInvoiceWaivers();
+  const { generateWaivers, isGenerating: waiverGenerating, fetchInvoiceWaivers, sendInvoiceWithWaivers, isSending: waiverSending } = useInvoiceWaivers();
   const [job, setJob] = useState<JobData | null>(null);
   const [customer, setCustomer] = useState<CustomerData | null>(null);
   const [sourceEstimate, setSourceEstimate] = useState<EstimateData | null>(null);
+  const [attachedWaivers, setAttachedWaivers] = useState<any[]>([]);
   const [sending, setSending] = useState(false);
   const [showSendDialog, setShowSendDialog] = useState(false);
   const [sendData, setSendData] = useState({
@@ -70,6 +71,12 @@ export function InvoiceDetailView({ invoice, onClose, onSectionChange }: Invoice
     recipientName: '',
     subject: '',
     body: '',
+  });
+  // Document selection state for send dialog
+  const [documentsToSend, setDocumentsToSend] = useState({
+    invoice: true,
+    waivers: false,
+    estimate: false,
   });
   const [pdfLoading, setPdfLoading] = useState(false);
   const [showPdfPreview, setShowPdfPreview] = useState(false);
@@ -122,6 +129,10 @@ export function InvoiceDetailView({ invoice, onClose, onSectionChange }: Invoice
           .single();
         if (estimateData) setSourceEstimate(estimateData);
       }
+
+      // Fetch attached waivers for this invoice
+      const waivers = await fetchInvoiceWaivers(invoice.id);
+      setAttachedWaivers(waivers);
     };
 
     fetchRelatedData();
@@ -135,17 +146,27 @@ export function InvoiceDetailView({ invoice, onClose, onSectionChange }: Invoice
 
     setSending(true);
     try {
-      const { error } = await supabase.functions.invoke('send-invoice-email', {
-        body: {
-          invoiceId: invoice.id,
-          recipientEmail: sendData.recipientEmail,
-          recipientName: sendData.recipientName || customer?.name,
-        }
-      });
+      // Use sendInvoiceWithWaivers if waivers are selected
+      if (documentsToSend.waivers && attachedWaivers.length > 0) {
+        await sendInvoiceWithWaivers(
+          invoice.id,
+          sendData.recipientEmail,
+          sendData.recipientName || customer?.name,
+          true, // includeWaivers
+          'combined'
+        );
+      } else {
+        const { error } = await supabase.functions.invoke('send-invoice-email', {
+          body: {
+            invoiceId: invoice.id,
+            recipientEmail: sendData.recipientEmail,
+            recipientName: sendData.recipientName || customer?.name,
+          }
+        });
+        if (error) throw error;
+        toast.success(`Invoice sent to ${sendData.recipientEmail}`);
+      }
 
-      if (error) throw error;
-
-      toast.success(`Invoice sent to ${sendData.recipientEmail}`);
       setShowSendDialog(false);
       
       // Refresh to show updated status
@@ -235,6 +256,12 @@ export function InvoiceDetailView({ invoice, onClose, onSectionChange }: Invoice
       recipientName: customer?.name || '',
       subject: `Invoice ${invoice.invoice_number} for ${job?.name || 'your project'}`,
       body: `Please find attached the invoice for your project. Contact us with any questions.`,
+    });
+    // Reset document selection with intelligent defaults
+    setDocumentsToSend({
+      invoice: true,
+      waivers: attachedWaivers.length > 0, // Default on if waivers exist
+      estimate: false,
     });
     setShowSendDialog(true);
   };
@@ -469,18 +496,111 @@ export function InvoiceDetailView({ invoice, onClose, onSectionChange }: Invoice
 
       {/* Send Invoice Dialog */}
       <Dialog open={showSendDialog} onOpenChange={setShowSendDialog}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[550px]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Mail className="h-5 w-5" />
-              Send Invoice to GC
+              Send Documents to GC
             </DialogTitle>
             <DialogDescription>
-              Send invoice {invoice.invoice_number} via email
+              Select documents to send with invoice {invoice.invoice_number}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
+            {/* Document Selection Section */}
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">Documents to Include</Label>
+              <div className="border rounded-lg divide-y bg-muted/30">
+                {/* Invoice - Always available */}
+                <div className="flex items-center gap-3 p-3">
+                  <Checkbox 
+                    id="doc-invoice"
+                    checked={documentsToSend.invoice}
+                    onCheckedChange={(checked) => setDocumentsToSend(prev => ({ ...prev, invoice: !!checked }))}
+                  />
+                  <div className="flex items-center gap-2 flex-1">
+                    <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded">
+                      <FileText className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div className="flex-1">
+                      <Label htmlFor="doc-invoice" className="font-medium cursor-pointer">Invoice</Label>
+                      <p className="text-xs text-muted-foreground">Invoice {invoice.invoice_number}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Waivers - Show count if any */}
+                <div className="flex items-center gap-3 p-3">
+                  <Checkbox 
+                    id="doc-waivers"
+                    checked={documentsToSend.waivers}
+                    onCheckedChange={(checked) => setDocumentsToSend(prev => ({ ...prev, waivers: !!checked }))}
+                    disabled={attachedWaivers.length === 0}
+                  />
+                  <div className="flex items-center gap-2 flex-1">
+                    <div className={`p-2 rounded ${attachedWaivers.length > 0 ? 'bg-green-100 dark:bg-green-900/30' : 'bg-muted'}`}>
+                      <FileCheck className={`h-4 w-4 ${attachedWaivers.length > 0 ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground'}`} />
+                    </div>
+                    <div className="flex-1">
+                      <Label htmlFor="doc-waivers" className={`font-medium cursor-pointer ${attachedWaivers.length === 0 ? 'text-muted-foreground' : ''}`}>
+                        Lien Waivers
+                      </Label>
+                      {attachedWaivers.length > 0 ? (
+                        <p className="text-xs text-green-600 dark:text-green-400">
+                          {attachedWaivers.length} waiver{attachedWaivers.length > 1 ? 's' : ''} attached
+                        </p>
+                      ) : (
+                        <p className="text-xs text-muted-foreground">No waivers attached</p>
+                      )}
+                    </div>
+                    {attachedWaivers.length === 0 && (
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="text-xs h-7"
+                        onClick={() => {
+                          setShowSendDialog(false);
+                          setShowWaiverDialog(true);
+                        }}
+                      >
+                        <Paperclip className="h-3 w-3 mr-1" />
+                        Attach
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Estimate - If exists */}
+                <div className="flex items-center gap-3 p-3">
+                  <Checkbox 
+                    id="doc-estimate"
+                    checked={documentsToSend.estimate}
+                    onCheckedChange={(checked) => setDocumentsToSend(prev => ({ ...prev, estimate: !!checked }))}
+                    disabled={!sourceEstimate}
+                  />
+                  <div className="flex items-center gap-2 flex-1">
+                    <div className={`p-2 rounded ${sourceEstimate ? 'bg-amber-100 dark:bg-amber-900/30' : 'bg-muted'}`}>
+                      <ScrollText className={`h-4 w-4 ${sourceEstimate ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'}`} />
+                    </div>
+                    <div className="flex-1">
+                      <Label htmlFor="doc-estimate" className={`font-medium cursor-pointer ${!sourceEstimate ? 'text-muted-foreground' : ''}`}>
+                        Estimate
+                      </Label>
+                      {sourceEstimate ? (
+                        <p className="text-xs text-amber-600 dark:text-amber-400">
+                          {sourceEstimate.estimate_number || sourceEstimate.title}
+                        </p>
+                      ) : (
+                        <p className="text-xs text-muted-foreground">No linked estimate</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Recipient Info */}
             <div className="space-y-2">
               <Label htmlFor="recipientEmail">Recipient Email *</Label>
               <Input
@@ -504,11 +624,11 @@ export function InvoiceDetailView({ invoice, onClose, onSectionChange }: Invoice
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowSendDialog(false)} disabled={sending}>
+            <Button variant="outline" onClick={() => setShowSendDialog(false)} disabled={sending || waiverSending}>
               Cancel
             </Button>
-            <Button onClick={handleSendInvoice} disabled={sending || !sendData.recipientEmail}>
-              {sending ? (
+            <Button onClick={handleSendInvoice} disabled={sending || waiverSending || !sendData.recipientEmail || !documentsToSend.invoice}>
+              {sending || waiverSending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Sending...
@@ -516,7 +636,7 @@ export function InvoiceDetailView({ invoice, onClose, onSectionChange }: Invoice
               ) : (
                 <>
                   <Send className="mr-2 h-4 w-4" />
-                  Send Invoice
+                  Send {documentsToSend.waivers && attachedWaivers.length > 0 ? 'Documents' : 'Invoice'}
                 </>
               )}
             </Button>
