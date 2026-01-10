@@ -10,6 +10,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { PredictiveInput } from '@/components/ui/predictive-input';
 import { AddressAutocomplete } from '@/components/ui/address-autocomplete';
 import { useFormMemory } from '@/hooks/useFormMemory';
@@ -25,7 +26,9 @@ import {
   Loader2, 
   Send,
   Check,
-  ChevronsUpDown
+  ChevronsUpDown,
+  AlertTriangle,
+  Plug
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -33,6 +36,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useJobs, Job } from '@/hooks/useJobs';
 import { cn } from '@/lib/utils';
+
+interface CalendarConnection {
+  id: string;
+  provider: string;
+  calendar_email: string;
+}
 
 interface ScheduleMeetingDialogProps {
   open: boolean;
@@ -84,6 +93,11 @@ export function ScheduleMeetingDialog({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [jobSearchOpen, setJobSearchOpen] = useState(false);
   
+  // Calendar connection state
+  const [calendarConnections, setCalendarConnections] = useState<CalendarConnection[]>([]);
+  const [loadingConnections, setLoadingConnections] = useState(true);
+  const [connectingCalendar, setConnectingCalendar] = useState(false);
+  
   // Form fields
   const [title, setTitle] = useState('');
   const [meetingType, setMeetingType] = useState('site_visit');
@@ -99,6 +113,35 @@ export function ScheduleMeetingDialog({
   const titleSuggestions = formMemory.getSuggestions('title', title);
   const locationSuggestions = formMemory.getSuggestions('location', location);
   const recipientSuggestions = formMemory.getSuggestions('recipients', newRecipient);
+  
+  // Derived state
+  const hasCalendarConnection = calendarConnections.length > 0;
+  const connectedCalendarEmail = calendarConnections[0]?.calendar_email;
+
+  // Fetch calendar connections when dialog opens
+  useEffect(() => {
+    const fetchConnections = async () => {
+      if (!user || !open) return;
+      
+      setLoadingConnections(true);
+      try {
+        const { data, error } = await supabase
+          .from('calendar_connections')
+          .select('id, provider, calendar_email')
+          .eq('user_id', user.id);
+        
+        if (!error && data) {
+          setCalendarConnections(data);
+        }
+      } catch (err) {
+        console.error('Error fetching calendar connections:', err);
+      } finally {
+        setLoadingConnections(false);
+      }
+    };
+    
+    fetchConnections();
+  }, [user, open]);
 
   // Reset form when dialog opens - use memory defaults
   useEffect(() => {
@@ -171,6 +214,30 @@ export function ScheduleMeetingDialog({
     setRecipients(recipients.filter(r => r !== email));
   };
 
+  // Handle connecting to Google Calendar
+  const handleConnectCalendar = async () => {
+    setConnectingCalendar(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error('Please sign in first');
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('google-oauth-init', {
+        body: { type: 'calendar' },
+        headers: { Authorization: `Bearer ${session.access_token}` }
+      });
+
+      if (error) throw error;
+      window.location.href = data.url;
+    } catch (error: any) {
+      console.error('Connect error:', error);
+      toast.error(error.message || 'Failed to start calendar connection');
+      setConnectingCalendar(false);
+    }
+  };
+
   const handleSubmit = async () => {
     if (!selectedDate || !title.trim()) {
       toast.error('Please fill in all required fields');
@@ -233,9 +300,10 @@ export function ScheduleMeetingDialog({
         });
       }
 
-      // Attempt calendar sync (optional - don't fail if calendar isn't connected)
+      // Attempt calendar sync - if connected, invites come from contractor's calendar
       let calendarEventId: string | null = null;
       let calendarProvider: string | null = null;
+      let invitesSentViaCalendar = false;
       
       try {
         const { data: calResponse, error: calError } = await supabase.functions.invoke('create-calendar-event', {
@@ -246,7 +314,10 @@ export function ScheduleMeetingDialog({
             startDate: startDateTime.toISOString(),
             endDate: endDateTime.toISOString(),
             location: location || undefined,
+            // Pass attendees to Google/Outlook API so invites come from contractor's calendar
             attendees: recipients.length > 0 ? recipients : undefined,
+            // Only send invites via calendar if contractor has calendar connected
+            sendInvites: hasCalendarConnection && recipients.length > 0,
           },
           headers: { Authorization: `Bearer ${session.access_token}` }
         });
@@ -254,6 +325,7 @@ export function ScheduleMeetingDialog({
         if (!calError && calResponse?.results?.[0]?.eventId) {
           calendarEventId = calResponse.results[0].eventId;
           calendarProvider = calResponse.results[0].provider;
+          invitesSentViaCalendar = calResponse.results[0].attendeesInvited > 0;
           
           // Update meeting with external calendar event ID
           await supabase
@@ -268,8 +340,10 @@ export function ScheduleMeetingDialog({
         console.warn('Calendar sync failed (meeting still saved locally):', calSyncError);
       }
 
-      // Send email invitations to recipients with ICS calendar attachment
-      if (recipients.length > 0) {
+      // Send email invitations ONLY if calendar invites weren't sent
+      // This prevents duplicate invites - calendar invite takes priority
+      if (recipients.length > 0 && !invitesSentViaCalendar) {
+        console.log('Calendar not connected or sync failed - sending email invites as fallback');
         for (const email of recipients) {
           await supabase.functions.invoke('send-meeting-invite', {
             body: {
@@ -300,11 +374,16 @@ export function ScheduleMeetingDialog({
         location: location.trim(),
       });
 
-      toast.success(
-        recipients.length > 0 
-          ? `Meeting scheduled and ${recipients.length} invite(s) sent` 
-          : 'Meeting scheduled successfully'
-      );
+      // Show appropriate success message
+      let successMsg = 'Meeting scheduled successfully';
+      if (recipients.length > 0) {
+        if (invitesSentViaCalendar) {
+          successMsg = `Meeting scheduled! ${recipients.length} invite(s) sent from your calendar (${connectedCalendarEmail})`;
+        } else {
+          successMsg = `Meeting scheduled! ${recipients.length} invite(s) sent via email`;
+        }
+      }
+      toast.success(successMsg);
       
       onOpenChange(false);
       onSuccess?.();
@@ -490,12 +569,45 @@ export function ScheduleMeetingDialog({
                 />
               </div>
 
-              {/* Recipients */}
+              {/* Recipients & Calendar Connection */}
               <div className="space-y-2">
                 <Label className="flex items-center gap-2">
                   <Users className="h-4 w-4" />
                   Send Invite To (Optional)
                 </Label>
+                
+                {/* Calendar Connection Status */}
+                {!loadingConnections && (
+                  hasCalendarConnection ? (
+                    <div className="flex items-center gap-2 text-xs text-green-600 bg-green-50 dark:bg-green-950/30 rounded-md px-3 py-1.5">
+                      <Check className="h-3 w-3" />
+                      <span>Invites will be sent from: <strong>{connectedCalendarEmail}</strong></span>
+                    </div>
+                  ) : recipients.length > 0 ? (
+                    <Alert variant="destructive" className="py-2">
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertTitle className="text-sm">Calendar not connected</AlertTitle>
+                      <AlertDescription className="text-xs">
+                        Invites will be sent via email only, but won't appear to come from your calendar.
+                        <Button 
+                          variant="link" 
+                          size="sm" 
+                          className="h-auto p-0 ml-1 text-xs"
+                          onClick={handleConnectCalendar}
+                          disabled={connectingCalendar}
+                        >
+                          {connectingCalendar ? (
+                            <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                          ) : (
+                            <Plug className="h-3 w-3 mr-1" />
+                          )}
+                          Connect Calendar
+                        </Button>
+                      </AlertDescription>
+                    </Alert>
+                  ) : null
+                )}
+                
                 <div className="flex gap-2">
                   <PredictiveInput
                     type="email"
