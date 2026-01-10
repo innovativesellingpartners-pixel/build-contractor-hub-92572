@@ -399,6 +399,18 @@ export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSecti
         onOpenChange={setShowScheduleDialog}
         onSuccess={() => toast.success('Site visit scheduled!')}
         initialDate={undefined}
+        leadData={{
+          id: lead.id,
+          name: lead.name,
+          email: lead.email,
+          phone: lead.phone,
+          address: lead.address,
+          city: lead.city,
+          state: lead.state,
+          zip_code: lead.zip_code,
+          company: lead.company,
+          project_type: lead.project_type,
+        }}
       />
     </BlueBackground>
   );

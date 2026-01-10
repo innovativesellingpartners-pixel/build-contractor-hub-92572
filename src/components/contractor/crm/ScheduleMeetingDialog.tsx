@@ -43,11 +43,25 @@ interface CalendarConnection {
   calendar_email: string;
 }
 
+interface LeadData {
+  id: string;
+  name: string;
+  email?: string | null;
+  phone?: string | null;
+  address?: string | null;
+  city?: string | null;
+  state?: string | null;
+  zip_code?: string | null;
+  company?: string | null;
+  project_type?: string | null;
+}
+
 interface ScheduleMeetingDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
   initialDate?: Date;
+  leadData?: LeadData;
 }
 
 const MEETING_TYPES = [
@@ -82,7 +96,8 @@ export function ScheduleMeetingDialog({
   open, 
   onOpenChange, 
   onSuccess,
-  initialDate 
+  initialDate,
+  leadData
 }: ScheduleMeetingDialogProps) {
   const { user } = useAuth();
   const { jobs } = useJobs();
@@ -143,28 +158,56 @@ export function ScheduleMeetingDialog({
     fetchConnections();
   }, [user, open]);
 
-  // Reset form when dialog opens - use memory defaults
+  // Reset form when dialog opens - use memory defaults or lead data
   useEffect(() => {
     if (open) {
       setStep('date');
       setSelectedDate(initialDate || undefined);
-      setTitle('');
-      // Use most frequent meeting type from memory, fallback to site_visit
-      const rememberedType = formMemory.getMostFrequent('meetingType');
-      setMeetingType(rememberedType || 'site_visit');
+      
+      // Pre-populate from lead data if available
+      if (leadData) {
+        setTitle(`Site Visit - ${leadData.name}`);
+        setMeetingType('site_visit');
+        
+        // Build address from lead data
+        const leadAddress = [leadData.address, leadData.city, leadData.state, leadData.zip_code]
+          .filter(Boolean)
+          .join(', ');
+        setLocation(leadAddress);
+        
+        // Add lead email as recipient if available
+        if (leadData.email) {
+          setRecipients([leadData.email]);
+        } else {
+          setRecipients([]);
+        }
+        
+        // Add notes with lead info
+        const notesParts = [];
+        if (leadData.company) notesParts.push(`Company: ${leadData.company}`);
+        if (leadData.project_type) notesParts.push(`Project Type: ${leadData.project_type}`);
+        if (leadData.phone) notesParts.push(`Phone: ${leadData.phone}`);
+        setNotes(notesParts.join('\n'));
+      } else {
+        setTitle('');
+        // Use most frequent meeting type from memory, fallback to site_visit
+        const rememberedType = formMemory.getMostFrequent('meetingType');
+        setMeetingType(rememberedType || 'site_visit');
+        setLocation('');
+        setNotes('');
+        setRecipients([]);
+      }
+      
       // Use most frequent time from memory, fallback to 09:00
       const rememberedTime = formMemory.getMostFrequent('time');
       setSelectedTime(rememberedTime || '09:00');
       // Use most frequent duration from memory, fallback to 60
       const rememberedDuration = formMemory.getMostFrequent('duration');
       setDuration(rememberedDuration ? parseInt(rememberedDuration) : 60);
-      setLocation('');
-      setNotes('');
       setSelectedJobId('');
-      setRecipients([]);
       setNewRecipient('');
     }
-  }, [open, initialDate]);
+  }, [open, initialDate, leadData]);
 
   // Auto-fill location when job is selected
   useEffect(() => {
