@@ -100,10 +100,13 @@ const MetricCard = ({ label, currentValue, previousValue, icon, isCurrency = fal
 };
 
 export default function ActivitySummaryWidget({ onSectionChange }: ActivitySummaryWidgetProps) {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  
+  // Wait for auth to complete before checking visibility
+  if (authLoading) return null;
   
   // Owner-only visibility check - return null for all other users
-  if (user?.id !== SITE_OWNER_ID) return null;
+  if (!user || user.id !== SITE_OWNER_ID) return null;
   
   const { leads, loading: leadsLoading } = useLeads();
   const { estimates, isLoading: estimatesLoading } = useEstimates();
