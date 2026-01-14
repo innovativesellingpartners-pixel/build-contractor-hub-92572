@@ -20,6 +20,9 @@ export function VoiceInput({ onTranscript, disabled, className, appendMode = tru
   const chunksRef = useRef<Blob[]>([]);
 
   const startRecording = useCallback(async () => {
+    // Prevent starting if already recording or processing
+    if (isRecording || isProcessing) return;
+    
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       

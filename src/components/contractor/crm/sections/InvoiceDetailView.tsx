@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
-import { FileText, Send, Download, ArrowLeft, Mail, ExternalLink, Loader2, Eye, Paperclip, Plus, FileCheck, ScrollText } from 'lucide-react';
+import { FileText, Send, Download, ArrowLeft, Mail, ExternalLink, Loader2, Eye, Paperclip, Plus, FileCheck, ScrollText, DollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -346,6 +346,30 @@ export function InvoiceDetailView({ invoice, onClose, onSectionChange }: Invoice
           <Paperclip className="w-4 h-4" />
           ATTACH WAIVER
         </ActionButton>
+        {/* Show Request Final Payment when partial payment has been made */}
+        {invoice.amount_paid > 0 && (invoice.amount_due - invoice.amount_paid) > 0 && (
+          <ActionButton 
+            variant="success" 
+            onClick={() => {
+              setSendData({
+                recipientEmail: customer?.email || '',
+                recipientName: customer?.name || '',
+                subject: `Final Payment Request - Invoice ${invoice.invoice_number}`,
+                body: `This is a request for the final payment of $${((invoice.amount_due || 0) - (invoice.amount_paid || 0)).toFixed(2)} for invoice ${invoice.invoice_number}. Please click the payment link to complete your payment.`,
+              });
+              setDocumentsToSend({
+                invoice: true,
+                waivers: attachedWaivers.length > 0,
+                estimate: false,
+              });
+              setShowSendDialog(true);
+            }}
+            className="flex items-center gap-2"
+          >
+            <DollarSign className="w-4 h-4" />
+            REQUEST FINAL PAYMENT
+          </ActionButton>
+        )}
       </ActionButtonRow>
 
       {/* Content */}

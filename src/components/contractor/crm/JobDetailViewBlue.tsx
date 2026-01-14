@@ -3,7 +3,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { 
   Navigation, Copy, Pencil, FileText, Camera, ClipboardList, Package, 
-  Receipt, DollarSign, Calendar, Clock, Info, Briefcase, Upload, X, StickyNote, Archive, FilePlus, Phone, Mail, User
+  Receipt, DollarSign, Calendar, Clock, Info, Briefcase, Upload, X, StickyNote, Archive, FilePlus, Phone, Mail, User, RefreshCw, MessageSquare
 } from 'lucide-react';
 import { useJobs, Job } from '@/hooks/useJobs';
 import { useCustomers } from '@/hooks/useCustomers';
@@ -43,12 +43,13 @@ interface JobDetailViewBlueProps {
   onArchiveJob?: (jobId: string) => Promise<Job | void>;
 }
 
-// Photos Tab Component with camera support, image viewer, and notes
+// Photos Tab Component with camera support, image viewer, notes, and refresh
 function PhotosTabContent({ jobId }: { jobId: string }) {
-  const { photos, uploading, uploadPhoto, deletePhoto, updatePhotoCaption } = useJobPhotos(jobId);
+  const { photos, uploading, uploadPhoto, deletePhoto, updatePhotoCaption, refreshPhotos } = useJobPhotos(jobId);
   const [photoCaption, setPhotoCaption] = useState('');
   const [viewerOpen, setViewerOpen] = useState(false);
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number>(-1);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   
@@ -109,16 +110,32 @@ function PhotosTabContent({ jobId }: { jobId: string }) {
     }
   };
 
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await refreshPhotos();
+    setIsRefreshing(false);
+    toast.success('Photos refreshed');
+  };
+
   return (
     <div className="p-4 space-y-4">
-      <div className="space-y-2">
+      <div className="flex items-center justify-between gap-2">
         <input
           type="text"
           placeholder="Photo caption (optional)"
-          className="w-full px-3 py-2 border border-border rounded-md text-sm bg-card focus:outline-none focus:ring-2 focus:ring-primary"
+          className="flex-1 px-3 py-2 border border-border rounded-md text-sm bg-card focus:outline-none focus:ring-2 focus:ring-primary"
           value={photoCaption}
           onChange={(e) => setPhotoCaption(e.target.value)}
         />
+        <button
+          type="button"
+          onClick={handleRefresh}
+          disabled={isRefreshing}
+          className="p-2 bg-muted hover:bg-muted/80 rounded-md disabled:opacity-50"
+          title="Refresh photos"
+        >
+          <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+        </button>
       </div>
 
       <div className="flex gap-2">
@@ -404,6 +421,9 @@ export default function JobDetailViewBlue({ job, open, onOpenChange, onCreateEst
   const { customers } = useCustomers();
   const { user } = useAuth();
   const [isDuplicating, setIsDuplicating] = useState(false);
+  const [showTravelDialog, setShowTravelDialog] = useState(false);
+  const [etaMinutes, setEtaMinutes] = useState('15');
+  const [isSendingETA, setIsSendingETA] = useState(false);
   
   // Find the customer associated with this job
   const customer = job?.customer_id ? customers.find(c => c.id === job.customer_id) : null;
@@ -479,16 +499,55 @@ export default function JobDetailViewBlue({ job, open, onOpenChange, onCreateEst
       toast.error('No address available');
       return;
     }
+    // Show travel dialog to optionally send ETA message
+    setShowTravelDialog(true);
+  };
+
+  const openMaps = () => {
+    const address = getFullAddress();
     const encodedAddress = encodeURIComponent(address);
     const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
     
-    // Always use window.open to keep the app running in the background
-    // Use Google Maps URL which works universally and opens in new tab/app
     const mapsUrl = isIOS 
       ? `https://maps.apple.com/?daddr=${encodedAddress}&dirflg=d`
       : `https://www.google.com/maps/dir/?api=1&destination=${encodedAddress}`;
     
     window.open(mapsUrl, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleSendETAAndNavigate = async () => {
+    if (!customer?.phone) {
+      toast.error('No customer phone number available');
+      openMaps();
+      setShowTravelDialog(false);
+      return;
+    }
+
+    setIsSendingETA(true);
+    try {
+      const { error } = await supabase.functions.invoke('send-meeting-sms', {
+        body: {
+          phoneNumber: customer.phone,
+          message: `Hi ${customer.name}, I'm on my way! Estimated arrival: ${etaMinutes} minutes.`,
+          type: 'en_route'
+        }
+      });
+
+      if (error) throw error;
+      toast.success(`"On my way" message sent to ${customer.name}`);
+    } catch (error: any) {
+      console.error('Error sending ETA:', error);
+      toast.error('Message could not be sent, but navigating anyway');
+    } finally {
+      setIsSendingETA(false);
+      openMaps();
+      setShowTravelDialog(false);
+    }
+  };
+
+  const handleSkipAndNavigate = () => {
+    openMaps();
+    setShowTravelDialog(false);
   };
 
   const handleStatusChange = (newStatus: string) => {
@@ -724,6 +783,76 @@ export default function JobDetailViewBlue({ job, open, onOpenChange, onCreateEst
           </div>
         </BlueBackground>
       </DialogContent>
+
+      {/* Start Travel ETA Dialog */}
+      <Dialog open={showTravelDialog} onOpenChange={setShowTravelDialog}>
+        <DialogContent className="sm:max-w-md">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-primary/10 rounded-full">
+                <MessageSquare className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold">Start Travel</h3>
+                <p className="text-sm text-muted-foreground">Send an "On my way" message?</p>
+              </div>
+            </div>
+
+            {customer?.phone ? (
+              <>
+                <div className="bg-muted/50 p-4 rounded-lg space-y-3">
+                  <p className="text-sm">
+                    Send a message to <strong>{customer?.name}</strong> at <strong>{customer?.phone}</strong> with your ETA.
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <label className="text-sm font-medium">ETA:</label>
+                    <select 
+                      value={etaMinutes}
+                      onChange={(e) => setEtaMinutes(e.target.value)}
+                      className="flex-1 px-3 py-2 border rounded-md text-sm bg-background"
+                    >
+                      <option value="5">5 minutes</option>
+                      <option value="10">10 minutes</option>
+                      <option value="15">15 minutes</option>
+                      <option value="20">20 minutes</option>
+                      <option value="30">30 minutes</option>
+                      <option value="45">45 minutes</option>
+                      <option value="60">1 hour</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={handleSkipAndNavigate}
+                    className="flex-1"
+                  >
+                    Skip & Navigate
+                  </Button>
+                  <Button
+                    onClick={handleSendETAAndNavigate}
+                    disabled={isSendingETA}
+                    className="flex-1"
+                  >
+                    {isSendingETA ? 'Sending...' : 'Send & Navigate'}
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="text-sm text-muted-foreground">
+                  No phone number available for this customer. You can still navigate to the job site.
+                </p>
+                <Button onClick={handleSkipAndNavigate} className="w-full">
+                  <Navigation className="w-4 h-4 mr-2" />
+                  Open Maps
+                </Button>
+              </>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 }
