@@ -124,21 +124,25 @@ export function AddLeadDialog({ onAdd, sources }: AddLeadDialogProps) {
             </div>
             <div className="space-y-2">
               <Label htmlFor="value">Estimated Value</Label>
-              <Input
-                id="value"
-                type="text"
-                inputMode="decimal"
-                pattern="[0-9]*\.?[0-9]*"
-                value={formData.value}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  // Allow empty, digits, and one decimal point
-                  if (val === '' || /^\d*\.?\d*$/.test(val)) {
-                    setFormData({ ...formData, value: val });
-                  }
-                }}
-                placeholder="0.00"
-              />
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                <Input
+                  id="value"
+                  type="text"
+                  inputMode="decimal"
+                  pattern="[0-9]*\.?[0-9]*"
+                  value={formData.value}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    // Allow empty, digits, and one decimal point
+                    if (val === '' || /^\d*\.?\d*$/.test(val)) {
+                      setFormData({ ...formData, value: val });
+                    }
+                  }}
+                  placeholder="0.00"
+                  className="pl-7"
+                />
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="status">Status</Label>

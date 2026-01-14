@@ -99,14 +99,18 @@ export default function PublicEstimate() {
 
       if (sigError) throw sigError;
 
-      // Initiate Clover payment
+      // Initiate Clover payment - use deposit amount if set, otherwise total
+      const paymentAmount = estimate.required_deposit && estimate.required_deposit > 0 
+        ? estimate.required_deposit 
+        : estimate.total_amount;
+      
       const { data: paymentData, error: paymentError } = await supabase.functions.invoke(
         'process-estimate-payment',
         {
           body: {
             estimate_id: estimate.id,
             public_token: token,
-            amount: estimate.total_amount,
+            amount: paymentAmount,
             customer_email: estimate.client_email,
           },
         }
@@ -491,13 +495,18 @@ export default function PublicEstimate() {
                       onClick={async () => {
                         setSigning(true);
                         try {
+                          // Use deposit amount if set, otherwise total
+                          const paymentAmount = estimate.required_deposit && estimate.required_deposit > 0 
+                            ? estimate.required_deposit 
+                            : estimate.total_amount;
+                          
                           const { data: paymentData, error: paymentError } = await supabase.functions.invoke(
                             'process-estimate-payment',
                             {
                               body: {
                                 estimate_id: estimate.id,
                                 public_token: token,
-                                amount: estimate.total_amount,
+                                amount: paymentAmount,
                                 customer_email: estimate.client_email,
                               },
                             }
@@ -532,7 +541,7 @@ export default function PublicEstimate() {
                       ) : (
                         <>
                           <CreditCard className="h-5 w-5 mr-2" />
-                          Pay Now - ${estimate.total_amount?.toFixed(2)}
+                          Pay Now - ${(estimate.required_deposit && estimate.required_deposit > 0 ? estimate.required_deposit : estimate.total_amount)?.toFixed(2)}
                         </>
                       )}
                     </Button>

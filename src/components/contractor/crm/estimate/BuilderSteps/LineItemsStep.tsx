@@ -13,6 +13,7 @@ import MacroSelector from '../MacroSelector';
 const CATEGORIES = [
   'Materials',
   'Labor',
+  'Labor & Materials',
   'Equipment',
   'Subcontractor',
   'Overhead',
