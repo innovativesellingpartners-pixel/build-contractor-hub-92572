@@ -206,7 +206,8 @@ const App = () => (
               } />
             {/* Admin Routes */}
             <Route path="/admin" element={<AdminLayout />}>
-              <Route index element={<UserManagement />} />
+              <Route index element={<AdminDashboard />} />
+              <Route path="users" element={<UserManagement />} />
               <Route path="users/:userId" element={<UserDetailPage />} />
               <Route path="leads" element={<AdminLeads />} />
               <Route path="estimates" element={<AdminEstimates />} />
