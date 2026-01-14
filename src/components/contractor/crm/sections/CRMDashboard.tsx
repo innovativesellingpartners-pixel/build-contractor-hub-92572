@@ -7,6 +7,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { ContactSupport } from '@/components/ContactSupport';
+import ActivitySummaryWidget from './ActivitySummaryWidget';
 
 type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'emails' | 'estimates' | 'reporting' | 'accounting' | 'more' | 'calendar' | 'invoices';
 
@@ -95,6 +96,9 @@ export default function CRMDashboard({ onSectionChange }: CRMDashboardProps) {
           <h1 className="text-2xl sm:text-3xl font-bold">MyCT1 Dashboard</h1>
           <p className="text-sm sm:text-base text-muted-foreground">Navigate to your workspace</p>
         </div>
+
+        {/* Admin-only Activity Summary Widget */}
+        <ActivitySummaryWidget onSectionChange={onSectionChange} />
 
         {/* Main Navigation Tiles */}
         {onSectionChange && (
