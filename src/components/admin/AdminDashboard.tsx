@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, BookOpen, ShoppingCart, Activity, ClipboardList, Briefcase, UserCheck } from 'lucide-react';
+import ActivitySummaryWidget from '@/components/contractor/crm/sections/ActivitySummaryWidget';
 
 export const AdminDashboard = () => {
   const { user } = useAuth();
@@ -103,6 +104,8 @@ export const AdminDashboard = () => {
           Overview of your ConstructeAM platform
         </p>
       </div>
+
+      <ActivitySummaryWidget />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {statCards.map((stat) => (
