@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 
 // Exclusive access - only this user can see the widget
-const SITE_OWNER_ID = '9135856d-2239-4ef2-b600-cb4b0ff90283';
+const SITE_OWNER_ID = '7ffdd1df-2232-4454-9335-ba6c20dc22b1';
 
 type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'emails' | 'estimates' | 'reporting' | 'accounting' | 'more' | 'calendar' | 'invoices';
 
