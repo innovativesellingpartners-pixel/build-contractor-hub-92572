@@ -2,7 +2,7 @@
  * Twilio Voice Fallback Handler
  * 
  * This endpoint handles calls that weren't answered by the contractor
- * within the configured timeout period. It connects them to the AI stream handler.
+ * within the configured timeout period. It connects them to the AI assistant.
  */
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
@@ -19,9 +19,10 @@ serve(async (req) => {
   }
 
   try {
-    const formData = await req.formData();
-    const callSid = formData.get('CallSid') as string;
-    const dialCallStatus = formData.get('DialCallStatus') as string;
+    const formData = await req.text();
+    const params = new URLSearchParams(formData);
+    const callSid = params.get('CallSid') || '';
+    const dialCallStatus = params.get('DialCallStatus') || '';
     
     console.log('Fallback handler called:', { callSid, dialCallStatus });
 
@@ -77,71 +78,32 @@ serve(async (req) => {
       })
       .eq('call_sid', callSid);
 
-    // Update call session status
+    // Update call session status and initialize conversation
     await supabase
       .from('call_sessions')
-      .update({ status: 'active' })
+      .update({ 
+        status: 'active',
+        conversation_history: []
+      })
       .eq('call_sid', callSid);
 
-    // Build the system prompt from AI profile
-    const systemPrompt = aiProfile.custom_instructions || `You are "Coral", the AI voice assistant for ${aiProfile.business_name}, a ${aiProfile.trade} contractor.
+    // Greeting - acknowledges missed call warmly
+    const greeting = aiProfile.custom_greeting || 
+      `Hey there! Thanks for calling ${aiProfile.business_name}. ${aiProfile.contractor_name || 'We'} couldn't grab the phone just now, but I'm here to help. What can I do for you?`;
 
-Business Information:
-- Business Name: ${aiProfile.business_name}
-- Contractor: ${aiProfile.contractor_name || 'the team'}
-- Trade: ${aiProfile.trade}
-- Service Area: ${aiProfile.service_area?.join(', ') || 'Not specified'}
-
-${aiProfile.service_description ? `About Us: ${aiProfile.service_description}` : ''}
-
-Services Offered: ${aiProfile.services_offered?.join(', ') || 'General services'}
-${aiProfile.services_not_offered?.length ? `Services NOT Offered: ${aiProfile.services_not_offered.join(', ')}` : ''}
-
-Pricing Policy: ${aiProfile.allow_pricing ? aiProfile.pricing_rules || 'Pricing available on request' : 'Do not discuss specific pricing. Tell callers we will provide a custom quote.'}
-
-Your role:
-- Answer questions about services
-- Help schedule appointments
-- Take messages for the contractor
-- Be warm, professional, and genuinely helpful
-- Use natural conversational tone
-
-Keep responses concise and conversational. This is a real phone call.`;
-
-    // Coral's greeting - acknowledges missed call warmly
-    const greeting = `Hey there! This is Coral, ${aiProfile.business_name}'s AI assistant. Sorry ${aiProfile.contractor_name || 'we'} couldn't grab the phone just now. I'm happy to help - what can I do for you?`;
-
-    // Get voice ID - default to 'coral' for warm, friendly tone
-    const supportedVoices = ['alloy', 'ash', 'ballad', 'coral', 'echo', 'sage', 'shimmer', 'verse', 'marin', 'cedar'];
-    let voiceId = aiProfile.voice_id || 'coral';
-    if (!supportedVoices.includes(voiceId)) {
-      voiceId = 'coral';
-    }
-
-    // Store configuration in session for WebSocket handler
-    await supabase.from('call_sessions').update({
-      conversation_history: [{
-        system_prompt: systemPrompt,
-        greeting: greeting,
-        voice_id: voiceId,
-        contractor_id: session.contractor_id,
-        business_name: aiProfile.business_name
-      }]
-    }).eq('call_sid', callSid);
-
-    // Return TwiML that connects to our WebSocket stream handler
-    const streamUrl = `wss://faqrzzodtmsybofakcvv.supabase.co/functions/v1/twilio-stream-handler`;
+    // Use Gather to start the conversation
+    const actionUrl = `https://${supabaseUrl.replace('https://', '')}/functions/v1/twilio-voice-inbound`;
     
-    const streamTwiml = `<?xml version="1.0" encoding="UTF-8"?>
+    const gatherTwiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Connect>
-    <Stream url="${streamUrl}">
-      <Parameter name="callSid" value="${callSid}" />
-    </Stream>
-  </Connect>
+  <Gather input="speech" timeout="5" speechTimeout="auto" action="${actionUrl}" method="POST">
+    <Say voice="Polly.Joanna">${escapeXml(greeting)}</Say>
+  </Gather>
+  <Say voice="Polly.Joanna">I didn't hear anything. Please call back if you need assistance. Goodbye!</Say>
+  <Hangup/>
 </Response>`;
 
-    return new Response(streamTwiml, {
+    return new Response(gatherTwiml, {
       headers: { 'Content-Type': 'text/xml', ...corsHeaders }
     });
 
@@ -156,3 +118,15 @@ Keep responses concise and conversational. This is a real phone call.`;
     });
   }
 });
+
+/**
+ * Escape XML special characters
+ */
+function escapeXml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
