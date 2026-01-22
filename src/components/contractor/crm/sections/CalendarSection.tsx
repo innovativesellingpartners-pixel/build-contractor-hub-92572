@@ -39,6 +39,8 @@ interface CalendarEvent {
   // For local meetings (user_meetings) that have been synced to an external calendar,
   // store the provider event ID so EditEventDialog can update the original event.
   calendarEventId?: string;
+  // For local meetings, pass through job linkage so edit can preserve job-aware title formatting
+  jobId?: string;
   // Lead ID if meeting is linked to a lead
   leadId?: string;
   isLocal?: boolean;
@@ -367,6 +369,7 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
         end: { dateTime: meeting.end_time },
         provider: meeting.provider || 'local',
         calendarEventId: meeting.calendar_event_id || undefined,
+        jobId: meeting.job_id || undefined,
         leadId: meeting.lead_id || undefined,
         isLocal: true,
       } as CalendarEvent));
