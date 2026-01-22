@@ -33,6 +33,8 @@ interface CalendarEvent {
   end?: { dateTime?: string; date?: string };
   provider: string;
   calendar_email?: string;
+  calendarId?: string;
+  calendarName?: string;
   isLocal?: boolean;
 }
 

@@ -107,6 +107,7 @@ async function refreshOutlookToken(refreshToken: string, connection: any, supaba
 async function updateGoogleCalendarEvent(
   accessToken: string, 
   eventId: string, 
+  calendarId: string,
   updates: {
     summary?: string;
     description?: string;
@@ -141,8 +142,12 @@ async function updateGoogleCalendarEvent(
     eventBody.attendees = updates.attendees.map(email => ({ email }));
   }
 
+  // Use the specific calendar ID, fallback to primary
+  const targetCalendarId = calendarId || 'primary';
+  console.log(`Updating event ${eventId} in calendar ${targetCalendarId}`);
+
   const response = await fetch(
-    `https://www.googleapis.com/calendar/v3/calendars/primary/events/${eventId}?sendUpdates=all`,
+    `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(targetCalendarId)}/events/${eventId}?sendUpdates=all`,
     {
       method: 'PATCH',
       headers: { 
@@ -264,6 +269,7 @@ Deno.serve(async (req) => {
       eventId, 
       provider, 
       calendarEmail,
+      calendarId,
       summary,
       description,
       location,
@@ -332,7 +338,7 @@ Deno.serve(async (req) => {
         console.warn('Token refresh failed, using existing token:', refreshErr.message);
       }
       
-      result = await updateGoogleCalendarEvent(accessToken, eventId, updates);
+      result = await updateGoogleCalendarEvent(accessToken, eventId, calendarId || 'primary', updates);
     } else if (provider === 'outlook') {
       let accessToken = accessTokenDecoded;
       try {
