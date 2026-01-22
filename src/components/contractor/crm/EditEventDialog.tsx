@@ -25,6 +25,7 @@ interface CalendarEvent {
   end?: { dateTime?: string; date?: string };
   provider: string;
   calendar_email?: string;
+  calendarId?: string;
   isLocal?: boolean;
   attendees?: Array<{ email: string; responseStatus?: string }>;
 }
@@ -279,6 +280,7 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess }: EditEv
             eventId: event.id,
             provider: event.provider,
             calendarEmail: event.calendar_email,
+            calendarId: event.calendarId,
             summary: title,
             description: description || undefined,
             location: location || undefined,
