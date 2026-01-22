@@ -220,14 +220,63 @@ async function fetchGoogleCalendarEvents(accessToken: string): Promise<any[]> {
     const timeMin = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString(); // 30 days ago
     const timeMax = new Date(now.getTime() + 180 * 24 * 60 * 60 * 1000).toISOString();
 
-    const url = `https://www.googleapis.com/calendar/v3/calendars/primary/events?` +
+    console.log('Calling Google Calendar API with timeMin:', timeMin, 'timeMax:', timeMax);
+
+    // First, get list of all calendars the user has access to
+    const calendarListUrl = 'https://www.googleapis.com/calendar/v3/users/me/calendarList';
+    const calendarListResponse = await fetch(calendarListUrl, {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
+
+    if (!calendarListResponse.ok) {
+      console.error('Failed to fetch calendar list:', calendarListResponse.status);
+      // Fallback to just primary calendar
+      return await fetchEventsFromCalendar(accessToken, 'primary', timeMin, timeMax);
+    }
+
+    const calendarListData = await calendarListResponse.json();
+    const calendars = calendarListData.items || [];
+    console.log('Found', calendars.length, 'calendars:', calendars.map((c: any) => c.summary || c.id).join(', '));
+
+    // Fetch events from all calendars
+    const allEvents: any[] = [];
+    
+    for (const calendar of calendars) {
+      // Only fetch from calendars where the user is owner or has write access
+      // Skip "other" calendars like holidays, birthdays, etc. if they're read-only
+      if (calendar.accessRole === 'freeBusyReader') {
+        console.log('Skipping read-only calendar:', calendar.summary);
+        continue;
+      }
+      
+      console.log('Fetching events from calendar:', calendar.summary || calendar.id, 'accessRole:', calendar.accessRole);
+      const events = await fetchEventsFromCalendar(accessToken, calendar.id, timeMin, timeMax);
+      console.log('Found', events.length, 'events in calendar:', calendar.summary || calendar.id);
+      
+      // Add calendar info to each event
+      allEvents.push(...events.map((e: any) => ({
+        ...e,
+        calendarId: calendar.id,
+        calendarName: calendar.summary
+      })));
+    }
+    
+    console.log('Total events from all calendars:', allEvents.length);
+    return allEvents;
+  } catch (error) {
+    console.error('Error fetching Google Calendar events:', error);
+    return [];
+  }
+}
+
+async function fetchEventsFromCalendar(accessToken: string, calendarId: string, timeMin: string, timeMax: string): Promise<any[]> {
+  try {
+    const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?` +
       `timeMin=${encodeURIComponent(timeMin)}&` +
       `timeMax=${encodeURIComponent(timeMax)}&` +
       `singleEvents=true&` +
       `orderBy=startTime&` +
       `maxResults=250`;
-      
-    console.log('Calling Google Calendar API with timeMin:', timeMin, 'timeMax:', timeMax);
 
     const response = await fetch(url, {
       headers: { Authorization: `Bearer ${accessToken}` }
@@ -235,34 +284,14 @@ async function fetchGoogleCalendarEvents(accessToken: string): Promise<any[]> {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Google Calendar API error:', response.status, errorText);
-      
-      // Log more details about the error
-      if (response.status === 401) {
-        console.error('Token might be invalid or expired');
-      } else if (response.status === 403) {
-        console.error('Access denied - check calendar permissions/scopes');
-      }
-      
+      console.error('Google Calendar API error for calendar', calendarId, ':', response.status, errorText);
       return [];
     }
 
     const data = await response.json();
-    console.log('Google Calendar API success, items count:', data.items?.length || 0);
-    
-    // Log first event for debugging
-    if (data.items && data.items.length > 0) {
-      console.log('First event sample:', JSON.stringify(data.items[0]).substring(0, 200));
-    } else {
-      console.log('No events found in calendar. This could mean:');
-      console.log('1. Calendar is empty');
-      console.log('2. User connected wrong Google account');
-      console.log('3. Events are on a different calendar (not primary)');
-    }
-    
     return data.items || [];
   } catch (error) {
-    console.error('Error fetching Google Calendar events:', error);
+    console.error('Error fetching events from calendar', calendarId, ':', error);
     return [];
   }
 }
