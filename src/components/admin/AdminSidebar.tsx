@@ -11,7 +11,8 @@ import {
   FileText,
   Receipt,
   Building2,
-  HelpCircle
+  HelpCircle,
+  Archive
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ct1Logo from '@/assets/ct1-round-logo-new.png';
@@ -24,6 +25,7 @@ const navItems = [
   { to: '/admin/jobs', icon: Briefcase, label: 'Jobs' },
   { to: '/admin/customers', icon: UserCheck, label: 'Customers' },
   { to: '/admin/gc-contacts', icon: Building2, label: 'GC Contacts' },
+  { to: '/admin/archive', icon: Archive, label: 'Archive' },
   { to: '/admin/support', icon: LifeBuoy, label: 'Support Tickets' },
   { to: '/admin/marketplace', icon: ShoppingCart, label: 'Marketplace' },
   { to: '/admin/help', icon: HelpCircle, label: 'Help Admin' },

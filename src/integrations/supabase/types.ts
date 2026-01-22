@@ -910,6 +910,7 @@ export type Database = {
       customers: {
         Row: {
           address: string | null
+          archived_at: string | null
           city: string | null
           company: string | null
           created_at: string
@@ -932,6 +933,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          archived_at?: string | null
           city?: string | null
           company?: string | null
           created_at?: string
@@ -954,6 +956,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          archived_at?: string | null
           city?: string | null
           company?: string | null
           created_at?: string
@@ -1615,6 +1618,7 @@ export type Database = {
       }
       estimates: {
         Row: {
+          archived_at: string | null
           assumptions_and_exclusions: string | null
           balance_due: number | null
           client_acceptance_date: string | null
@@ -1692,6 +1696,7 @@ export type Database = {
           voided_at: string | null
         }
         Insert: {
+          archived_at?: string | null
           assumptions_and_exclusions?: string | null
           balance_due?: number | null
           client_acceptance_date?: string | null
@@ -1769,6 +1774,7 @@ export type Database = {
           voided_at?: string | null
         }
         Update: {
+          archived_at?: string | null
           assumptions_and_exclusions?: string | null
           balance_due?: number | null
           client_acceptance_date?: string | null
@@ -2989,6 +2995,7 @@ export type Database = {
       leads: {
         Row: {
           address: string | null
+          archived_at: string | null
           city: string | null
           company: string | null
           converted_at: string | null
@@ -3015,6 +3022,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          archived_at?: string | null
           city?: string | null
           company?: string | null
           converted_at?: string | null
@@ -3041,6 +3049,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          archived_at?: string | null
           city?: string | null
           company?: string | null
           converted_at?: string | null

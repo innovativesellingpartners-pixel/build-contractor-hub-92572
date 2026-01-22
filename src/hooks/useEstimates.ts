@@ -117,12 +117,31 @@ export function useEstimates() {
         .from('estimates')
         .select('*')
         .eq('user_id', user.id)
+        .is('archived_at', null)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       return data || [];
     },
     enabled: !!user?.id,
+  });
+
+  const archiveEstimate = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('estimates')
+        .update({ archived_at: new Date().toISOString() })
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['estimates'] });
+      toast.success('Estimate archived successfully');
+    },
+    onError: (error) => {
+      toast.error(`Failed to archive estimate: ${error.message}`);
+    },
   });
 
   const createEstimate = useMutation({
@@ -449,5 +468,7 @@ export function useEstimates() {
     duplicateEstimate: duplicateEstimate.mutate,
     duplicateEstimateAsync: duplicateEstimate.mutateAsync,
     isDuplicatingEstimate: duplicateEstimate.isPending,
+    archiveEstimate: archiveEstimate.mutate,
+    archiveEstimateAsync: archiveEstimate.mutateAsync,
   };
 }

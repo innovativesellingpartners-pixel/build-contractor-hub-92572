@@ -15,13 +15,14 @@ import { toast } from 'sonner';
 import { HorizontalRowCard, RowAvatar, RowContent, RowTitleLine, RowMetaLine, RowBadgeGroup, RowActions } from './HorizontalRowCard';
 import { CustomerDetailViewBlue } from './CustomerDetailViewBlue';
 import { PredictiveSearch } from '../PredictiveSearch';
+import { SwipeToArchive } from '@/components/ui/swipe-to-archive';
 
 interface CustomersSectionProps {
   onSectionChange?: (section: string) => void;
 }
 
 export default function CustomersSection({ onSectionChange }: CustomersSectionProps) {
-  const { customers, loading, refreshCustomers } = useCustomers();
+  const { customers, loading, refreshCustomers, archiveCustomer } = useCustomers();
   const { estimates } = useEstimates();
   const { jobs } = useJobs();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -210,87 +211,92 @@ export default function CustomersSection({ onSectionChange }: CustomersSectionPr
             const { linkedEstimate, linkedJobs } = getCustomerData(customer);
             
             return (
-              <HorizontalRowCard key={customer.id} onClick={() => handleOpenDetail(customer)}>
-                {/* Avatar */}
-                <RowAvatar initials={customer.name.charAt(0).toUpperCase()} />
+              <SwipeToArchive 
+                key={customer.id} 
+                onArchive={() => archiveCustomer(customer.id)}
+              >
+                <HorizontalRowCard onClick={() => handleOpenDetail(customer)}>
+                  {/* Avatar */}
+                  <RowAvatar initials={customer.name.charAt(0).toUpperCase()} />
 
-                {/* Info */}
-                <RowContent>
-                  <RowTitleLine>
-                    <h3 className="font-semibold text-sm sm:text-base break-words">
-                      {customer.name}
-                    </h3>
-                    <Badge variant="secondary" className="text-xs">
-                      {customer.customer_type}
-                    </Badge>
-                  </RowTitleLine>
-                  
-                  <RowMetaLine>
-                    {customer.phone && <span className="truncate max-w-[120px]">{customer.phone}</span>}
-                    {customer.email && <span className="truncate max-w-[180px] hidden sm:inline">{customer.email}</span>}
-                  </RowMetaLine>
-
-                  {/* Linked Records */}
-                  <RowBadgeGroup>
-                    {linkedEstimate && (
-                      <Badge 
-                        variant="outline" 
-                        className="text-xs gap-1 cursor-pointer hover:bg-muted"
-                        onClick={() => onSectionChange?.('estimates')}
-                      >
-                        <FileText className="h-2.5 w-2.5" />
-                        Estimate
+                  {/* Info */}
+                  <RowContent>
+                    <RowTitleLine>
+                      <h3 className="font-semibold text-sm sm:text-base break-words">
+                        {customer.name}
+                      </h3>
+                      <Badge variant="secondary" className="text-xs">
+                        {customer.customer_type}
                       </Badge>
-                    )}
-                    {linkedJobs.length > 0 && (
-                      <Badge 
-                        variant="outline" 
-                        className="text-xs gap-1 cursor-pointer hover:bg-muted border-green-600 text-green-600"
-                        onClick={() => onSectionChange?.('jobs')}
-                      >
-                        <Briefcase className="h-2.5 w-2.5" />
-                        {linkedJobs.length} Job{linkedJobs.length > 1 ? 's' : ''}
-                      </Badge>
-                    )}
-                  </RowBadgeGroup>
-                </RowContent>
+                    </RowTitleLine>
+                    
+                    <RowMetaLine>
+                      {customer.phone && <span className="truncate max-w-[120px]">{customer.phone}</span>}
+                      {customer.email && <span className="truncate max-w-[180px] hidden sm:inline">{customer.email}</span>}
+                    </RowMetaLine>
 
-                {/* Actions */}
-                <RowActions>
-                  {customer.phone && (
-                    <Button variant="ghost" size="icon" className="h-8 w-8" asChild onClick={(e) => e.stopPropagation()}>
-                      <a href={`tel:${customer.phone}`}>
-                        <Phone className="h-4 w-4" />
-                      </a>
+                    {/* Linked Records */}
+                    <RowBadgeGroup>
+                      {linkedEstimate && (
+                        <Badge 
+                          variant="outline" 
+                          className="text-xs gap-1 cursor-pointer hover:bg-muted"
+                          onClick={() => onSectionChange?.('estimates')}
+                        >
+                          <FileText className="h-2.5 w-2.5" />
+                          Estimate
+                        </Badge>
+                      )}
+                      {linkedJobs.length > 0 && (
+                        <Badge 
+                          variant="outline" 
+                          className="text-xs gap-1 cursor-pointer hover:bg-muted border-green-600 text-green-600"
+                          onClick={() => onSectionChange?.('jobs')}
+                        >
+                          <Briefcase className="h-2.5 w-2.5" />
+                          {linkedJobs.length} Job{linkedJobs.length > 1 ? 's' : ''}
+                        </Badge>
+                      )}
+                    </RowBadgeGroup>
+                  </RowContent>
+
+                  {/* Actions */}
+                  <RowActions>
+                    {customer.phone && (
+                      <Button variant="ghost" size="icon" className="h-8 w-8" asChild onClick={(e) => e.stopPropagation()}>
+                        <a href={`tel:${customer.phone}`}>
+                          <Phone className="h-4 w-4" />
+                        </a>
+                      </Button>
+                    )}
+                    {customer.email && (
+                      <Button variant="ghost" size="icon" className="h-8 w-8" asChild onClick={(e) => e.stopPropagation()}>
+                        <a href={`mailto:${customer.email}`}>
+                          <Mail className="h-4 w-4" />
+                        </a>
+                      </Button>
+                    )}
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={(e) => { e.stopPropagation(); setConvertingCustomer(customer); }}
+                      className="hidden sm:flex"
+                    >
+                      <Briefcase className="h-4 w-4 mr-1" />
+                      {linkedJobs.length === 0 ? 'Create Job' : 'Add Job'}
                     </Button>
-                  )}
-                  {customer.email && (
-                    <Button variant="ghost" size="icon" className="h-8 w-8" asChild onClick={(e) => e.stopPropagation()}>
-                      <a href={`mailto:${customer.email}`}>
-                        <Mail className="h-4 w-4" />
-                      </a>
+                    <Button 
+                      variant="outline" 
+                      size="icon"
+                      onClick={(e) => { e.stopPropagation(); setConvertingCustomer(customer); }}
+                      className="sm:hidden h-8 w-8"
+                    >
+                      <Briefcase className="h-4 w-4" />
                     </Button>
-                  )}
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={(e) => { e.stopPropagation(); setConvertingCustomer(customer); }}
-                    className="hidden sm:flex"
-                  >
-                    <Briefcase className="h-4 w-4 mr-1" />
-                    {linkedJobs.length === 0 ? 'Create Job' : 'Add Job'}
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="icon"
-                    onClick={(e) => { e.stopPropagation(); setConvertingCustomer(customer); }}
-                    className="sm:hidden h-8 w-8"
-                  >
-                    <Briefcase className="h-4 w-4" />
-                  </Button>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground ml-1" />
-                </RowActions>
-              </HorizontalRowCard>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground ml-1" />
+                  </RowActions>
+                </HorizontalRowCard>
+              </SwipeToArchive>
             );
           })}
 
