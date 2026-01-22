@@ -14,6 +14,7 @@ import { EditEventDialog } from '../EditEventDialog';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { usePersonalTasks, PersonalTask } from '@/hooks/usePersonalTasks';
 import { Checkbox } from '@/components/ui/checkbox';
+import { cn } from '@/lib/utils';
 
 type CalendarViewMode = 'day' | '3-day' | '5-day' | 'month';
 
@@ -434,6 +435,29 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
         return false;
       }
     });
+  };
+
+  // Get the event that covers a given time slot (useful for clicking mid-event slots)
+  const getEventCoveringTimeSlot = (day: Date, timeSlot: string): CalendarEvent | null => {
+    const dayEvents = getEventsForDay(day);
+    const [hours, minutes] = timeSlot.split(':').map(Number);
+    const slotTime = new Date(day);
+    slotTime.setHours(hours, minutes, 0, 0);
+
+    return (
+      dayEvents.find((event) => {
+        const startStr = event.start?.dateTime;
+        const endStr = event.end?.dateTime;
+        if (!startStr || !endStr) return false;
+        try {
+          const eventStart = parseISO(startStr);
+          const eventEnd = parseISO(endStr);
+          return slotTime >= eventStart && slotTime < eventEnd;
+        } catch {
+          return false;
+        }
+      }) || null
+    );
   };
 
   // Format time slot for display
@@ -909,6 +933,7 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
                           const eventAtSlot = getEventAtTimeSlot(day, timeSlot);
                           const isBusy = isTimeSlotBusy(day, timeSlot);
                           const isAvailable = !isBusy;
+                          const coveringEvent = isBusy ? getEventCoveringTimeSlot(day, timeSlot) : null;
                           
                           // Only show the row if it has an event starting at this time OR is the start of an hour
                           const isHourStart = timeSlot.endsWith(':00');
@@ -923,7 +948,24 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
                                 <div className="w-16 text-xs text-muted-foreground py-2 flex-shrink-0">
                                   {formatTimeSlot(timeSlot)}
                                 </div>
-                                <div className="flex-1 p-2 rounded-lg bg-primary/10 border border-primary/20">
+                                <div
+                                  role="button"
+                                  tabIndex={0}
+                                  className="flex-1 p-2 rounded-lg bg-primary/10 border border-primary/20 cursor-pointer hover:bg-primary/15 transition-colors"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setEventToEdit(eventAtSlot);
+                                    setEditEventOpen(true);
+                                  }}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter' || e.key === ' ') {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      setEventToEdit(eventAtSlot);
+                                      setEditEventOpen(true);
+                                    }
+                                  }}
+                                >
                                   <div className="flex items-start justify-between gap-2">
                                     <div className="flex-1 min-w-0">
                                       <div className="font-medium text-sm truncate">{eventAtSlot.summary || 'Untitled'}</div>
@@ -961,12 +1003,53 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
                             return (
                               <div
                                 key={timeSlot}
-                                className="flex items-center gap-2 py-1"
+                                role={coveringEvent ? 'button' : undefined}
+                                tabIndex={coveringEvent ? 0 : undefined}
+                                className={cn(
+                                  'flex items-center gap-2 py-1 rounded transition-colors',
+                                  coveringEvent ? 'group cursor-pointer hover:bg-primary/10' : ''
+                                )}
+                                onClick={(e) => {
+                                  if (!coveringEvent) return;
+                                  e.stopPropagation();
+                                  setEventToEdit(coveringEvent);
+                                  setEditEventOpen(true);
+                                }}
+                                onKeyDown={(e) => {
+                                  if (!coveringEvent) return;
+                                  if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setEventToEdit(coveringEvent);
+                                    setEditEventOpen(true);
+                                  }
+                                }}
                               >
                                 <div className="w-16 text-xs text-muted-foreground/50 flex-shrink-0">
                                   {isHourStart ? formatTimeSlot(timeSlot) : ''}
                                 </div>
-                                <div className="flex-1 h-1 bg-primary/20 rounded"></div>
+                                <div className="flex-1 min-w-0 flex items-center gap-2">
+                                  <div className="flex-1 h-1 bg-primary/20 rounded" />
+                                  {isHourStart && coveringEvent && (
+                                    <div className="text-[11px] text-muted-foreground truncate">
+                                      {coveringEvent.summary || 'Busy'}
+                                    </div>
+                                  )}
+                                  {coveringEvent && (
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-6 px-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setEventToEdit(coveringEvent);
+                                        setEditEventOpen(true);
+                                      }}
+                                    >
+                                      <Pencil className="h-3.5 w-3.5" />
+                                    </Button>
+                                  )}
+                                </div>
                               </div>
                             );
                           } else if (isHourStart) {
