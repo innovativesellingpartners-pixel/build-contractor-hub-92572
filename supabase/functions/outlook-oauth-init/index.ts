@@ -68,11 +68,32 @@ serve(async (req) => {
         type,
         created_at: new Date().toISOString(),
         expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString()
-      });
+      })
+      // Force PostgREST to return the inserted row so we can detect silent failures
+      .select('state');
 
     if (insertError) {
       console.error('Failed to insert OAuth state:', insertError);
       throw new Error('Failed to create OAuth state');
+    }
+
+    // Double-check the row exists (defensive against env/schema/policy misconfig)
+    const { data: verifyRow, error: verifyError } = await supabase
+      .from('oauth_states')
+      .select('state, provider, type, user_id, contractor_id, expires_at')
+      .eq('state', state)
+      .eq('provider', 'outlook')
+      .maybeSingle();
+
+    if (verifyError || !verifyRow) {
+      console.error('OAuth state verification failed:', {
+        verifyError,
+        hasRow: !!verifyRow,
+        state,
+        provider: 'outlook',
+        type,
+      });
+      throw new Error('OAuth state verification failed');
     }
     
     console.log('OAuth state created successfully');
