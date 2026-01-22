@@ -26,6 +26,9 @@ interface CalendarEvent {
   provider: string;
   calendar_email?: string;
   calendarId?: string;
+  // When editing a locally-stored meeting (user_meetings) that was synced to an external calendar,
+  // this holds the external provider event ID so we can update it in-place.
+  calendarEventId?: string;
   isLocal?: boolean;
   attendees?: Array<{ email: string; responseStatus?: string }>;
 }
@@ -230,6 +233,32 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess }: EditEv
           .eq('id', event.id);
 
         if (dbError) throw dbError;
+
+        // If this local meeting was previously synced to an external calendar event,
+        // update that SAME external event so the old time doesn't remain on the calendar.
+        if (
+          event.calendarEventId &&
+          (event.provider === 'google' || event.provider === 'outlook')
+        ) {
+          const { error: calUpdateError } = await supabase.functions.invoke('update-calendar-event', {
+            body: {
+              eventId: event.calendarEventId,
+              provider: event.provider,
+              // Meetings created from CT1 currently go into the primary calendar.
+              // If we later store a specific calendarId, we'll pass it through here.
+              calendarId: event.provider === 'google' ? 'primary' : undefined,
+              summary: title,
+              description: description || undefined,
+              location: location || undefined,
+              startDate: startDateTime.toISOString(),
+              endDate: endDateTime.toISOString(),
+              attendees: recipients.length > 0 ? recipients : undefined,
+            },
+            headers: { Authorization: `Bearer ${session.access_token}` },
+          });
+
+          if (calUpdateError) throw calUpdateError;
+        }
 
         // Send UPDATED invites to existing recipients (they need the new details)
         // Use Promise.allSettled to ensure ALL recipients get their invites
