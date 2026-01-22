@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
-import { Mic, MicOff, Loader2, Sparkles, Play, Pause, Trash2, FileText } from 'lucide-react';
+import { Mic, MicOff, Loader2, Sparkles, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -22,17 +22,80 @@ export function AIScopeNotes({
   label = "Additional Notes"
 }: AIScopeNotesProps) {
   const [isRecording, setIsRecording] = useState(false);
-  const [isTranscribing, setIsTranscribing] = useState(false);
-  const [isSummarizing, setIsSummarizing] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [recordingDuration, setRecordingDuration] = useState(0);
-  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const { toast } = useToast();
+
+  const transcribeAndSummarize = useCallback(async (audioBlob: Blob) => {
+    setIsProcessing(true);
+    try {
+      // Convert blob to base64
+      const arrayBuffer = await audioBlob.arrayBuffer();
+      const base64Audio = btoa(
+        new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), '')
+      );
+      
+      toast({
+        title: "Transcribing...",
+        description: "Converting your recording to text.",
+      });
+
+      // Step 1: Transcribe
+      const { data: transcribeData, error: transcribeError } = await supabase.functions.invoke('voice-to-text', {
+        body: { 
+          audio: base64Audio,
+          mimeType: audioBlob.type
+        }
+      });
+      
+      if (transcribeError) throw transcribeError;
+      
+      if (!transcribeData?.text) {
+        throw new Error('No transcription returned');
+      }
+
+      const transcribedText = transcribeData.text;
+      
+      toast({
+        title: "Summarizing...",
+        description: "Organizing your notes into bullet points.",
+      });
+
+      // Step 2: Summarize the transcribed text
+      const { data: summarizeData, error: summarizeError } = await supabase.functions.invoke('summarize-scope-notes', {
+        body: { notes: transcribedText }
+      });
+      
+      if (summarizeError) throw summarizeError;
+      
+      const finalText = summarizeData?.summary || transcribedText;
+      
+      // Append to existing notes
+      const newNotes = notes 
+        ? `${notes}\n\n--- AI Scope Recording ---\n${finalText}`
+        : `--- AI Scope Recording ---\n${finalText}`;
+      onNotesChange(newNotes);
+      
+      toast({
+        title: "Recording processed!",
+        description: "Your walk-around notes have been transcribed and summarized.",
+      });
+    } catch (error: any) {
+      console.error('Error processing recording:', error);
+      toast({
+        title: "Processing failed",
+        description: error.message || "Failed to process the recording.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  }, [notes, onNotesChange, toast]);
 
   const startRecording = useCallback(async () => {
     try {
@@ -44,9 +107,19 @@ export function AIScopeNotes({
         }
       });
       
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4'
-      });
+      streamRef.current = stream;
+      
+      // Determine supported mime type
+      let mimeType = 'audio/webm';
+      if (!MediaRecorder.isTypeSupported('audio/webm')) {
+        if (MediaRecorder.isTypeSupported('audio/mp4')) {
+          mimeType = 'audio/mp4';
+        } else if (MediaRecorder.isTypeSupported('audio/ogg')) {
+          mimeType = 'audio/ogg';
+        }
+      }
+      
+      const mediaRecorder = new MediaRecorder(stream, { mimeType });
       
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
@@ -57,10 +130,20 @@ export function AIScopeNotes({
         }
       };
       
-      mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        setAudioBlob(audioBlob);
-        stream.getTracks().forEach(track => track.stop());
+      mediaRecorder.onstop = async () => {
+        // Create audio blob from chunks
+        const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
+        
+        // Stop all tracks
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach(track => track.stop());
+          streamRef.current = null;
+        }
+        
+        // Auto-transcribe and summarize
+        if (audioBlob.size > 0) {
+          await transcribeAndSummarize(audioBlob);
+        }
       };
       
       mediaRecorder.start(1000); // Collect data every second
@@ -83,7 +166,7 @@ export function AIScopeNotes({
         variant: "destructive",
       });
     }
-  }, [toast]);
+  }, [toast, transcribeAndSummarize]);
 
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && isRecording) {
@@ -97,118 +180,10 @@ export function AIScopeNotes({
       
       toast({
         title: "Recording stopped",
-        description: "Click 'Transcribe' to convert your recording to text.",
+        description: "Processing your recording...",
       });
     }
   }, [isRecording, toast]);
-
-  const transcribeRecording = useCallback(async () => {
-    if (!audioBlob) return;
-    
-    setIsTranscribing(true);
-    try {
-      // Convert blob to base64
-      const arrayBuffer = await audioBlob.arrayBuffer();
-      const base64Audio = btoa(
-        new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), '')
-      );
-      
-      const { data, error } = await supabase.functions.invoke('voice-to-text', {
-        body: { 
-          audio: base64Audio,
-          mimeType: audioBlob.type
-        }
-      });
-      
-      if (error) throw error;
-      
-      if (data?.text) {
-        // Append transcribed text to existing notes
-        const newNotes = notes 
-          ? `${notes}\n\n--- AI Scope Recording ---\n${data.text}`
-          : `--- AI Scope Recording ---\n${data.text}`;
-        onNotesChange(newNotes);
-        
-        toast({
-          title: "Transcription complete",
-          description: "Your recording has been converted to text.",
-        });
-      }
-    } catch (error: any) {
-      console.error('Error transcribing:', error);
-      toast({
-        title: "Transcription failed",
-        description: error.message || "Failed to transcribe the recording.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsTranscribing(false);
-    }
-  }, [audioBlob, notes, onNotesChange, toast]);
-
-  const summarizeNotes = useCallback(async () => {
-    if (!notes.trim()) {
-      toast({
-        title: "No notes to summarize",
-        description: "Please add some notes or record a scope conversation first.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    setIsSummarizing(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('summarize-scope-notes', {
-        body: { notes }
-      });
-      
-      if (error) throw error;
-      
-      if (data?.summary) {
-        onNotesChange(data.summary);
-        
-        toast({
-          title: "Notes summarized",
-          description: "Your notes have been organized into bullet points.",
-        });
-      }
-    } catch (error: any) {
-      console.error('Error summarizing:', error);
-      toast({
-        title: "Summarization failed",
-        description: error.message || "Failed to summarize the notes.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSummarizing(false);
-    }
-  }, [notes, onNotesChange, toast]);
-
-  const playRecording = useCallback(() => {
-    if (!audioBlob) return;
-    
-    if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.pause();
-        setIsPlaying(false);
-      } else {
-        audioRef.current.play();
-        setIsPlaying(true);
-      }
-    } else {
-      const audio = new Audio(URL.createObjectURL(audioBlob));
-      audioRef.current = audio;
-      audio.onended = () => setIsPlaying(false);
-      audio.play();
-      setIsPlaying(true);
-    }
-  }, [audioBlob, isPlaying]);
-
-  const deleteRecording = useCallback(() => {
-    setAudioBlob(null);
-    audioRef.current = null;
-    setRecordingDuration(0);
-  }, []);
 
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -239,9 +214,15 @@ export function AIScopeNotes({
               variant={isRecording ? "destructive" : "outline"}
               size="sm"
               onClick={isRecording ? stopRecording : startRecording}
+              disabled={isProcessing}
               className="gap-2"
             >
-              {isRecording ? (
+              {isProcessing ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Processing...
+                </>
+              ) : isRecording ? (
                 <>
                   <MicOff className="h-4 w-4" />
                   Stop ({formatDuration(recordingDuration)})
@@ -261,73 +242,10 @@ export function AIScopeNotes({
                 <span className="text-xs text-muted-foreground">Recording...</span>
               </div>
             )}
-            
-            {/* Audio playback controls */}
-            {audioBlob && !isRecording && (
-              <>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={playRecording}
-                  className="gap-2"
-                >
-                  {isPlaying ? (
-                    <Pause className="h-4 w-4" />
-                  ) : (
-                    <Play className="h-4 w-4" />
-                  )}
-                  {formatDuration(recordingDuration)}
-                </Button>
-                
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={transcribeRecording}
-                  disabled={isTranscribing}
-                  className="gap-2"
-                >
-                  {isTranscribing ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <FileText className="h-4 w-4" />
-                  )}
-                  Transcribe
-                </Button>
-                
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={deleteRecording}
-                  className="text-destructive hover:text-destructive"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </>
-            )}
-            
-            {/* Summarize button */}
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              onClick={summarizeNotes}
-              disabled={isSummarizing || !notes.trim()}
-              className="gap-2 ml-auto"
-            >
-              {isSummarizing ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Sparkles className="h-4 w-4" />
-              )}
-              Summarize Notes
-            </Button>
           </div>
           
           <p className="text-xs text-muted-foreground mt-2">
-            Record your walk-around conversation with the customer, then transcribe and summarize into organized notes.
+            Record your walk-around conversation. It will automatically transcribe and summarize when you stop.
           </p>
         </CardContent>
       </Card>
