@@ -29,6 +29,8 @@ interface CalendarEvent {
   // When editing a locally-stored meeting (user_meetings) that was synced to an external calendar,
   // this holds the external provider event ID so we can update it in-place.
   calendarEventId?: string;
+  // Optional linkage for title formatting when recreating synced events
+  jobId?: string;
   // Lead ID if meeting is linked to a lead
   leadId?: string;
   isLocal?: boolean;
@@ -246,30 +248,55 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess }: EditEv
             .eq('id', event.leadId);
         }
 
-        // If this local meeting was previously synced to an external calendar event,
-        // update that SAME external event so the old time doesn't remain on the calendar.
-        if (
-          event.calendarEventId &&
-          (event.provider === 'google' || event.provider === 'outlook')
-        ) {
-          const { error: calUpdateError } = await supabase.functions.invoke('update-calendar-event', {
+        // IMPORTANT: For synced meetings, we must delete the original external event and
+        // recreate it at the new time to guarantee the old slot becomes available.
+        // Some provider scenarios can leave the old instance behind when “updating”, causing
+        // stale busy blocks in the availability grid.
+        if (event.calendarEventId && (event.provider === 'google' || event.provider === 'outlook')) {
+          // 1) Delete the old external event
+          const { error: calDeleteError } = await supabase.functions.invoke('delete-calendar-event', {
             body: {
               eventId: event.calendarEventId,
               provider: event.provider,
-              // Meetings created from CT1 currently go into the primary calendar.
-              // If we later store a specific calendarId, we'll pass it through here.
-              calendarId: event.provider === 'google' ? 'primary' : undefined,
-              summary: title,
-              description: description || undefined,
-              location: location || undefined,
-              startDate: startDateTime.toISOString(),
-              endDate: endDateTime.toISOString(),
-              attendees: recipients.length > 0 ? recipients : undefined,
+              calendarEmail: event.calendar_email,
             },
             headers: { Authorization: `Bearer ${session.access_token}` },
           });
 
-          if (calUpdateError) throw calUpdateError;
+          if (calDeleteError) throw calDeleteError;
+
+          // 2) Create a new external event at the new time
+          const { data: calCreateData, error: calCreateError } = await supabase.functions.invoke('create-calendar-event', {
+            body: {
+              jobId: event.jobId || undefined,
+              jobName: title,
+              description: description || undefined,
+              startDate: startDateTime.toISOString(),
+              endDate: endDateTime.toISOString(),
+              location: location || undefined,
+              attendees: recipients.length > 0 ? recipients : undefined,
+              sendInvites: recipients.length > 0,
+            },
+            headers: { Authorization: `Bearer ${session.access_token}` },
+          });
+
+          if (calCreateError) throw calCreateError;
+
+          const newEventId: string | undefined = calCreateData?.results?.[0]?.eventId;
+          const newProvider: string | undefined = calCreateData?.results?.[0]?.provider;
+
+          if (newEventId) {
+            // 3) Persist the new external event ID so future edits/delete target the right one
+            const { error: meetingUpdateError } = await supabase
+              .from('user_meetings')
+              .update({
+                calendar_event_id: newEventId,
+                provider: newProvider || event.provider,
+              })
+              .eq('id', event.id);
+
+            if (meetingUpdateError) throw meetingUpdateError;
+          }
         }
 
         // Send UPDATED invites to existing recipients (they need the new details)
