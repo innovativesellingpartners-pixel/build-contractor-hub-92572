@@ -15,6 +15,7 @@ import { Plus, Trash2, Copy, X, Eye } from "lucide-react";
 import { Estimate, EstimateLineItem } from "@/hooks/useEstimates";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { AIScopeNotes } from "@/components/contractor/crm/AIScopeNotes";
 
 const estimateSchema = z.object({
   // Header
@@ -62,7 +63,7 @@ export function EnhancedEstimateForm({ onSubmit, onCancel, initialData }: Enhanc
   const [exclusions, setExclusions] = useState<string[]>([]);
   const [newDeliverable, setNewDeliverable] = useState("");
   const [newExclusion, setNewExclusion] = useState("");
-
+  const [scopeNotes, setScopeNotes] = useState("");
   const form = useForm<EstimateFormData>({
     resolver: zodResolver(estimateSchema),
     defaultValues: {
@@ -117,6 +118,9 @@ export function EnhancedEstimateForm({ onSubmit, onCancel, initialData }: Enhanc
       }
       if (initialData.scope_exclusions) {
         setExclusions(initialData.scope_exclusions);
+      }
+      if (initialData.description) {
+        setScopeNotes(initialData.description);
       }
     }
   }, [initialData]);
@@ -229,6 +233,7 @@ export function EnhancedEstimateForm({ onSubmit, onCancel, initialData }: Enhanc
       scope_key_deliverables: deliverables,
       scope_exclusions: exclusions,
       scope_timeline: formData.scope_timeline,
+      description: scopeNotes,
       line_items: lineItems,
       subtotal: financials.subtotal,
       tax_rate: formData.tax_rate,
@@ -418,6 +423,14 @@ export function EnhancedEstimateForm({ onSubmit, onCancel, initialData }: Enhanc
                     <Label>Timeline</Label>
                     <Textarea {...form.register("scope_timeline")} rows={2} />
                   </div>
+
+                  {/* AI Record Walk-Around */}
+                  <AIScopeNotes
+                    notes={scopeNotes}
+                    onNotesChange={setScopeNotes}
+                    label="Site Walk-Around Notes"
+                    placeholder="Record your walk-around conversation with the customer about the scope of work and site conditions"
+                  />
                 </CardContent>
               </Card>
             </TabsContent>
