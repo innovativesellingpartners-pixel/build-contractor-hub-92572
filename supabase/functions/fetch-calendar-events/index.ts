@@ -127,6 +127,26 @@ serve(async (req) => {
           provider: 'google',
           calendar_email: connection.calendar_email
         })));
+      } else if (connection.provider === 'outlook') {
+        // Try to refresh the Outlook token
+        console.log('Attempting Outlook token refresh...');
+        const refreshedToken = await refreshOutlookToken(connection, supabase);
+        
+        if (refreshedToken) {
+          accessToken = refreshedToken;
+          console.log('Using refreshed Outlook token');
+        } else {
+          console.log('Outlook refresh failed, trying stored token');
+        }
+        
+        console.log('Fetching Outlook Calendar events with token length:', accessToken?.length);
+        const events = await fetchOutlookCalendarEvents(accessToken);
+        console.log('Fetched', events.length, 'Outlook events');
+        allEvents.push(...events.map((e: any) => ({
+          ...e,
+          provider: 'outlook',
+          calendar_email: connection.calendar_email
+        })));
       }
     }
 
@@ -292,6 +312,161 @@ async function fetchEventsFromCalendar(accessToken: string, calendarId: string, 
     return data.items || [];
   } catch (error) {
     console.error('Error fetching events from calendar', calendarId, ':', error);
+    return [];
+  }
+}
+
+async function refreshOutlookToken(connection: any, supabase: any): Promise<string | null> {
+  try {
+    const OUTLOOK_CLIENT_ID = Deno.env.get('OUTLOOK_CLIENT_ID');
+    const OUTLOOK_CLIENT_SECRET = Deno.env.get('OUTLOOK_CLIENT_SECRET');
+
+    console.log('Attempting to refresh Outlook token for:', connection.calendar_email);
+
+    if (!connection.refresh_token_encrypted) {
+      console.error('No Outlook refresh token available');
+      return null;
+    }
+
+    // Decode the refresh token
+    const refreshToken = decodeToken(connection.refresh_token_encrypted);
+
+    console.log('Using Outlook refresh token preview:', refreshToken?.substring(0, 20) + '...');
+
+    const response = await fetch('https://login.microsoftonline.com/common/oauth2/v2.0/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        client_id: OUTLOOK_CLIENT_ID!,
+        client_secret: OUTLOOK_CLIENT_SECRET!,
+        refresh_token: refreshToken,
+        grant_type: 'refresh_token',
+      }),
+    });
+
+    const tokens = await response.json();
+    console.log('Outlook token refresh response status:', response.status);
+    
+    if (tokens.error) {
+      console.error('Outlook token refresh error:', tokens.error, tokens.error_description);
+      return null;
+    }
+
+    console.log('Got new Outlook access token, length:', tokens.access_token?.length);
+
+    const expiresAt = new Date(Date.now() + tokens.expires_in * 1000).toISOString();
+
+    // Update the stored token
+    const { error: updateError } = await supabase
+      .from('calendar_connections')
+      .update({
+        access_token_encrypted: tokens.access_token,
+        expires_at: expiresAt,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', connection.id);
+
+    if (updateError) {
+      console.error('Failed to update Outlook token in DB:', updateError);
+    }
+
+    return tokens.access_token;
+  } catch (error) {
+    console.error('Error refreshing Outlook token:', error);
+    return null;
+  }
+}
+
+async function fetchOutlookCalendarEvents(accessToken: string): Promise<any[]> {
+  try {
+    // Fetch events from past 30 days and next 6 months
+    const now = new Date();
+    const timeMin = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const timeMax = new Date(now.getTime() + 180 * 24 * 60 * 60 * 1000).toISOString();
+
+    console.log('Calling Outlook Calendar API with timeMin:', timeMin, 'timeMax:', timeMax);
+
+    // Get all calendars the user has access to
+    const calendarsUrl = 'https://graph.microsoft.com/v1.0/me/calendars';
+    const calendarsResponse = await fetch(calendarsUrl, {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
+
+    let calendars: any[] = [];
+    if (calendarsResponse.ok) {
+      const calendarsData = await calendarsResponse.json();
+      calendars = calendarsData.value || [];
+      console.log('Found', calendars.length, 'Outlook calendars:', calendars.map((c: any) => c.name).join(', '));
+    } else {
+      console.error('Failed to fetch Outlook calendar list:', calendarsResponse.status);
+      // Fallback to default calendar
+      calendars = [{ id: 'default', name: 'Calendar' }];
+    }
+
+    const allEvents: any[] = [];
+    
+    for (const calendar of calendars) {
+      // Use calendarView endpoint for better date range filtering
+      const calendarId = calendar.id === 'default' ? '' : `/calendars/${calendar.id}`;
+      const url = `https://graph.microsoft.com/v1.0/me${calendarId}/calendarView?` +
+        `startDateTime=${encodeURIComponent(timeMin)}&` +
+        `endDateTime=${encodeURIComponent(timeMax)}&` +
+        `$top=250&` +
+        `$orderby=start/dateTime`;
+
+      console.log('Fetching events from Outlook calendar:', calendar.name || calendar.id);
+
+      const response = await fetch(url, {
+        headers: { 
+          Authorization: `Bearer ${accessToken}`,
+          'Prefer': 'outlook.timezone="America/New_York"'
+        }
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Outlook Calendar API error for calendar', calendar.name, ':', response.status, errorText);
+        continue;
+      }
+
+      const data = await response.json();
+      const events = data.value || [];
+      console.log('Found', events.length, 'events in Outlook calendar:', calendar.name || calendar.id);
+      
+      // Transform Outlook events to match Google Calendar format for consistency
+      const transformedEvents = events.map((e: any) => ({
+        id: e.id,
+        summary: e.subject,
+        description: e.bodyPreview || e.body?.content,
+        location: e.location?.displayName || '',
+        start: {
+          dateTime: e.start?.dateTime,
+          timeZone: e.start?.timeZone || 'America/New_York'
+        },
+        end: {
+          dateTime: e.end?.dateTime,
+          timeZone: e.end?.timeZone || 'America/New_York'
+        },
+        htmlLink: e.webLink,
+        attendees: e.attendees?.map((a: any) => ({
+          email: a.emailAddress?.address,
+          responseStatus: a.status?.response
+        })) || [],
+        organizer: {
+          email: e.organizer?.emailAddress?.address,
+          displayName: e.organizer?.emailAddress?.name
+        },
+        calendarId: calendar.id,
+        calendarName: calendar.name
+      }));
+      
+      allEvents.push(...transformedEvents);
+    }
+    
+    console.log('Total events from all Outlook calendars:', allEvents.length);
+    return allEvents;
+  } catch (error) {
+    console.error('Error fetching Outlook Calendar events:', error);
     return [];
   }
 }
