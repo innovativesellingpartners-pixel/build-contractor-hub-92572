@@ -379,6 +379,32 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess }: EditEv
         });
 
         if (error) throw error;
+
+        // CRITICAL: If this external event was originally created from a local meeting,
+        // we also need to move/update that local `user_meetings` row.
+        // Otherwise the scheduler (ScheduleMeetingDialog) will still see the old local meeting
+        // at the original time and incorrectly mark the slot as busy.
+        //
+        // Mapping: user_meetings.calendar_event_id === external event.id
+        try {
+          const { error: localMirrorError } = await supabase
+            .from('user_meetings')
+            .update({
+              title: title,
+              notes: description || null,
+              location: location || null,
+              start_time: startDateTime.toISOString(),
+              end_time: endDateTime.toISOString(),
+            })
+            .eq('calendar_event_id', event.id);
+
+          if (localMirrorError) {
+            // Don't fail the whole edit if there isn't a linked local meeting.
+            console.warn('Failed to update linked local meeting for calendar event:', localMirrorError);
+          }
+        } catch (e) {
+          console.warn('Unexpected error updating linked local meeting for calendar event:', e);
+        }
       }
 
       // Build success message based on what happened
