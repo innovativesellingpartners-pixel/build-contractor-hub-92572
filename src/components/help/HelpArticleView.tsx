@@ -9,16 +9,16 @@ import { useToast } from '@/hooks/use-toast';
 import { useHelpArticle, useSubmitFeedback } from '@/hooks/useHelpCenter';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { Link } from 'react-router-dom';
 
 interface HelpArticleViewProps {
   slug: string;
   onBack: () => void;
   onNavigateToArticle: (slug: string) => void;
   onOpenChat: () => void;
+  onNavigateToFeature?: (route: string) => void;
 }
 
-export function HelpArticleView({ slug, onBack, onNavigateToArticle, onOpenChat }: HelpArticleViewProps) {
+export function HelpArticleView({ slug, onBack, onNavigateToArticle, onOpenChat, onNavigateToFeature }: HelpArticleViewProps) {
   const { toast } = useToast();
   const { data: article, isLoading, error } = useHelpArticle(slug);
   const submitFeedback = useSubmitFeedback();
@@ -257,19 +257,19 @@ export function HelpArticleView({ slug, onBack, onNavigateToArticle, onOpenChat 
           )}
 
           {/* Navigate to Feature */}
-          {article.related_route && (
+          {article.related_route && onNavigateToFeature && (
             <Card>
               <CardContent className="p-4">
-                <Link
-                  to={article.related_route}
-                  className="flex items-center justify-between hover:bg-muted/50 -m-4 p-4 rounded-lg transition-colors"
+                <button
+                  onClick={() => onNavigateToFeature(article.related_route!)}
+                  className="flex items-center justify-between hover:bg-muted/50 -m-4 p-4 rounded-lg transition-colors w-full text-left"
                 >
                   <div className="flex items-center gap-3">
                     <ExternalLink className="h-5 w-5 text-primary" />
                     <span className="font-medium">Open this feature in CT1</span>
                   </div>
                   <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                </Link>
+                </button>
               </CardContent>
             </Card>
           )}
