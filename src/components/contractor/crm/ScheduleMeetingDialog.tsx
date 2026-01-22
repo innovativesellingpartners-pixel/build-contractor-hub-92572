@@ -30,7 +30,8 @@ import {
   AlertTriangle,
   Plug,
   ChevronLeft,
-  CalendarDays
+  CalendarDays,
+  Pencil
 } from 'lucide-react';
 import { format, isSameDay, parseISO, startOfDay, endOfDay } from 'date-fns';
 import { toast } from 'sonner';
@@ -39,7 +40,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useJobs, Job } from '@/hooks/useJobs';
 import { useContractorProfile } from '@/hooks/useContractorProfile';
 import { cn } from '@/lib/utils';
-
+import { EditEventDialog } from './EditEventDialog';
 interface CalendarConnection {
   id: string;
   provider: string;
@@ -66,6 +67,14 @@ interface DayEvent {
   endTime: Date;
   location?: string;
   source: 'calendar' | 'local';
+  // Additional fields for editing
+  provider?: string;
+  calendarEmail?: string;
+  calendarId?: string;
+  calendarEventId?: string;
+  jobId?: string;
+  leadId?: string;
+  description?: string;
 }
 
 interface ScheduleMeetingDialogProps {
@@ -129,6 +138,10 @@ export function ScheduleMeetingDialog({
   // Day view state
   const [dayEvents, setDayEvents] = useState<DayEvent[]>([]);
   const [loadingDayEvents, setLoadingDayEvents] = useState(false);
+  
+  // Edit event state
+  const [editEventOpen, setEditEventOpen] = useState(false);
+  const [eventToEdit, setEventToEdit] = useState<DayEvent | null>(null);
   
   // Form fields
   const [title, setTitle] = useState('');
@@ -274,7 +287,12 @@ export function ScheduleMeetingDialog({
             startTime: new Date(meeting.start_time),
             endTime: new Date(meeting.end_time),
             location: meeting.location || undefined,
-            source: 'local'
+            source: 'local',
+            provider: meeting.provider || 'local',
+            calendarEventId: meeting.calendar_event_id || undefined,
+            jobId: meeting.job_id || undefined,
+            leadId: meeting.lead_id || undefined,
+            description: meeting.notes || undefined,
           });
         }
       }
@@ -305,7 +323,11 @@ export function ScheduleMeetingDialog({
                     startTime: startDate,
                     endTime: eventEnd ? new Date(eventEnd) : new Date(startDate.getTime() + 60 * 60000),
                     location: event.location,
-                    source: 'calendar'
+                    source: 'calendar',
+                    provider: event.provider || 'google',
+                    calendarEmail: event.calendar_email,
+                    calendarId: event.calendarId,
+                    description: event.description,
                   });
                 }
               }
@@ -682,7 +704,7 @@ export function ScheduleMeetingDialog({
               {/* Day Schedule Header */}
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <CalendarDays className="h-4 w-4" />
-                <span>Select an available time slot to schedule your meeting</span>
+                <span>Tap an available slot to schedule, or tap a meeting to edit</span>
               </div>
               
               {loadingDayEvents ? (
@@ -692,75 +714,100 @@ export function ScheduleMeetingDialog({
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {/* Time slots with busy indicators */}
-                  {TIME_SLOTS.map((time) => {
-                    const slotTime = new Date(`${format(selectedDate!, 'yyyy-MM-dd')}T${time}`);
-                    const slotEnd = new Date(slotTime.getTime() + 30 * 60000); // 30 min slot
+                  {/* Render time slots, but show each meeting only once (at its start time) */}
+                  {(() => {
+                    // Track which events we've already rendered
+                    const renderedEventIds = new Set<string>();
                     
-                    // Check if this slot overlaps with any event
-                    const overlappingEvent = dayEvents.find(event => {
-                      return slotTime < event.endTime && slotEnd > event.startTime;
-                    });
-                    
-                    const isBusy = !!overlappingEvent;
-                    
-                    return (
-                      <div
-                        key={time}
-                        className={cn(
-                          "flex items-center gap-3 p-3 rounded-lg border transition-colors",
-                          isBusy 
-                            ? "bg-muted/50 border-muted cursor-not-allowed"
-                            : "hover:bg-accent hover:border-accent-foreground/20 cursor-pointer"
-                        )}
-                        onClick={() => !isBusy && handleSelectTimeSlot(time)}
-                      >
-                        <div className="flex items-center gap-2 min-w-[80px]">
-                          <Clock className={cn("h-4 w-4", isBusy ? "text-muted-foreground" : "text-primary")} />
-                          <span className={cn("font-medium", isBusy && "text-muted-foreground")}>
-                            {format(slotTime, 'h:mm a')}
-                          </span>
-                        </div>
+                    return TIME_SLOTS.map((time) => {
+                      const slotTime = new Date(`${format(selectedDate!, 'yyyy-MM-dd')}T${time}`);
+                      const slotEnd = new Date(slotTime.getTime() + 30 * 60000);
+                      
+                      // Find event that STARTS at this slot (for rendering the meeting block)
+                      const eventStartingHere = dayEvents.find(event => {
+                        const eventStartHour = event.startTime.getHours();
+                        const eventStartMin = event.startTime.getMinutes();
+                        const [slotHour, slotMin] = time.split(':').map(Number);
+                        return eventStartHour === slotHour && eventStartMin === slotMin;
+                      });
+                      
+                      // Find any event that overlaps this slot (for checking busy)
+                      const overlappingEvent = dayEvents.find(event => {
+                        return slotTime < event.endTime && slotEnd > event.startTime;
+                      });
+                      
+                      const isBusy = !!overlappingEvent;
+                      
+                      // If an event starts here, render it as a single block
+                      if (eventStartingHere && !renderedEventIds.has(eventStartingHere.id)) {
+                        renderedEventIds.add(eventStartingHere.id);
+                        const durationMins = Math.round((eventStartingHere.endTime.getTime() - eventStartingHere.startTime.getTime()) / 60000);
                         
-                        {isBusy ? (
-                          <div className="flex-1 flex items-center gap-2">
-                            <Badge variant="secondary" className="text-xs">
-                              {overlappingEvent?.source === 'calendar' ? 'Calendar' : 'Meeting'}
-                            </Badge>
-                            <span className="text-sm text-muted-foreground truncate">
-                              {overlappingEvent?.title}
-                            </span>
-                            {overlappingEvent?.location && (
-                              <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                <MapPin className="h-3 w-3" />
-                                {overlappingEvent.location}
+                        return (
+                          <div
+                            key={time}
+                            className="flex items-center gap-3 p-3 rounded-lg border bg-primary/10 border-primary/30 cursor-pointer hover:bg-primary/20 transition-colors"
+                            onClick={() => {
+                              // Convert DayEvent to CalendarEvent format for EditEventDialog
+                              setEventToEdit(eventStartingHere);
+                              setEditEventOpen(true);
+                            }}
+                          >
+                            <div className="flex items-center gap-2 min-w-[80px]">
+                              <Clock className="h-4 w-4 text-primary" />
+                              <span className="font-medium">
+                                {format(eventStartingHere.startTime, 'h:mm a')}
                               </span>
-                            )}
+                            </div>
+                            
+                            <div className="flex-1 flex items-center gap-2">
+                              <Badge variant="secondary" className="text-xs shrink-0">
+                                {durationMins >= 60 ? `${Math.floor(durationMins / 60)}h${durationMins % 60 > 0 ? ` ${durationMins % 60}m` : ''}` : `${durationMins}m`}
+                              </Badge>
+                              <span className="text-sm font-medium truncate">
+                                {eventStartingHere.title}
+                              </span>
+                              {eventStartingHere.location && (
+                                <span className="text-xs text-muted-foreground flex items-center gap-1 shrink-0">
+                                  <MapPin className="h-3 w-3" />
+                                  <span className="truncate max-w-[120px]">{eventStartingHere.location}</span>
+                                </span>
+                              )}
+                              <Pencil className="h-3 w-3 ml-auto text-muted-foreground shrink-0" />
+                            </div>
                           </div>
-                        ) : (
-                          <div className="flex-1">
-                            <span className="text-sm text-green-600 dark:text-green-400">Available</span>
+                        );
+                      }
+                      
+                      // If slot is busy but event already rendered, skip this slot
+                      if (isBusy && overlappingEvent && renderedEventIds.has(overlappingEvent.id)) {
+                        return null;
+                      }
+                      
+                      // Available slot
+                      if (!isBusy) {
+                        return (
+                          <div
+                            key={time}
+                            className="flex items-center gap-3 p-3 rounded-lg border hover:bg-accent hover:border-accent-foreground/20 cursor-pointer transition-colors"
+                            onClick={() => handleSelectTimeSlot(time)}
+                          >
+                            <div className="flex items-center gap-2 min-w-[80px]">
+                              <Clock className="h-4 w-4 text-primary" />
+                              <span className="font-medium">
+                                {format(slotTime, 'h:mm a')}
+                              </span>
+                            </div>
+                            <div className="flex-1">
+                              <span className="text-sm text-emerald-600 dark:text-emerald-400">Available</span>
+                            </div>
                           </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-              
-              {/* Quick info about existing events */}
-              {!loadingDayEvents && dayEvents.length > 0 && (
-                <div className="mt-4 p-3 bg-muted/30 rounded-lg">
-                  <p className="text-sm font-medium mb-2">Scheduled for this day:</p>
-                  <div className="space-y-1">
-                    {dayEvents.map((event) => (
-                      <div key={event.id} className="text-sm text-muted-foreground flex items-center gap-2">
-                        <Clock className="h-3 w-3" />
-                        <span>{format(event.startTime, 'h:mm a')} - {format(event.endTime, 'h:mm a')}</span>
-                        <span className="font-medium">{event.title}</span>
-                      </div>
-                    ))}
-                  </div>
+                        );
+                      }
+                      
+                      return null;
+                    });
+                  })()}
                 </div>
               )}
               
@@ -1056,6 +1103,33 @@ export function ScheduleMeetingDialog({
           )}
         </DialogFooter>
       </DialogContent>
+
+      {/* Edit Event Dialog */}
+      <EditEventDialog
+        open={editEventOpen}
+        onOpenChange={setEditEventOpen}
+        event={eventToEdit ? {
+          id: eventToEdit.id,
+          summary: eventToEdit.title,
+          description: eventToEdit.description,
+          location: eventToEdit.location,
+          start: { dateTime: eventToEdit.startTime.toISOString() },
+          end: { dateTime: eventToEdit.endTime.toISOString() },
+          provider: eventToEdit.provider || (eventToEdit.source === 'calendar' ? 'google' : 'local'),
+          calendar_email: eventToEdit.calendarEmail,
+          calendarId: eventToEdit.calendarId,
+          calendarEventId: eventToEdit.calendarEventId,
+          jobId: eventToEdit.jobId,
+          leadId: eventToEdit.leadId,
+          isLocal: eventToEdit.source === 'local',
+        } : null}
+        onSuccess={() => {
+          // Refresh day events after edit
+          if (selectedDate) {
+            fetchDayEvents(selectedDate);
+          }
+        }}
+      />
     </Dialog>
   );
 }
