@@ -1,7 +1,7 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Mail, Plug, Check, Loader2, X, RefreshCw, Circle, ArrowLeft, Reply, Send, ChevronDown, ChevronUp, Search, PenSquare, Paperclip } from 'lucide-react';
+import { Mail, Plug, Check, Loader2, X, RefreshCw, Circle, ArrowLeft, Reply, Send, ChevronDown, ChevronUp, Search, PenSquare, Paperclip, ChevronLeft, ChevronRight, MailOpen } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -51,6 +51,7 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
   
   // Email detail view state
   const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
+  const [selectedEmailIndex, setSelectedEmailIndex] = useState<number>(-1);
   const [loadingEmailBody, setLoadingEmailBody] = useState(false);
   const [emailBody, setEmailBody] = useState<string>('');
   
@@ -176,10 +177,18 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
     }
   };
 
-  const handleOpenEmail = async (email: Email) => {
+  const handleOpenEmail = async (email: Email, index: number) => {
     setSelectedEmail(email);
+    setSelectedEmailIndex(index);
     setLoadingEmailBody(true);
     setEmailBody('');
+    
+    // Mark as read locally
+    if (email.isUnread) {
+      setEmails(prev => prev.map(e => 
+        e.id === email.id ? { ...e, isUnread: false } : e
+      ));
+    }
     
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -199,6 +208,7 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
       setLoadingEmailBody(false);
     }
   };
+
 
   const handleReply = () => {
     setReplyBody('');
@@ -294,6 +304,20 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
     );
   }, [emails, searchQuery]);
 
+  // Navigation logic - must be after filteredEmails is defined
+  const handleNavigateEmail = useCallback((direction: 'prev' | 'next') => {
+    const currentList = searchQuery.trim() ? filteredEmails : emails;
+    const newIndex = direction === 'prev' ? selectedEmailIndex - 1 : selectedEmailIndex + 1;
+    
+    if (newIndex >= 0 && newIndex < currentList.length) {
+      const nextEmail = currentList[newIndex];
+      handleOpenEmail(nextEmail, newIndex);
+    }
+  }, [selectedEmailIndex, emails, filteredEmails, searchQuery]);
+
+  const canNavigatePrev = selectedEmailIndex > 0;
+  const canNavigateNext = selectedEmailIndex < (searchQuery.trim() ? filteredEmails : emails).length - 1;
+
   const formatEmailDate = (dateStr: string) => {
     try {
       const date = new Date(dateStr);
@@ -324,15 +348,50 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
 
   // Email detail view
   if (selectedEmail) {
+    const currentList = searchQuery.trim() ? filteredEmails : emails;
+    const emailPosition = `${selectedEmailIndex + 1} of ${currentList.length}`;
+    
     return (
       <div className="w-full h-full overflow-y-auto overflow-x-hidden pb-20 bg-background">
         <div className="p-4 sm:p-6 space-y-4 w-full sm:max-w-4xl sm:mx-auto">
-          {/* Header */}
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" onClick={() => setSelectedEmail(null)}>
+          {/* Header with navigation */}
+          <div className="flex items-center justify-between">
+            <Button variant="ghost" size="sm" onClick={() => {
+              setSelectedEmail(null);
+              setSelectedEmailIndex(-1);
+            }}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back
             </Button>
+            
+            {/* Email navigation */}
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground hidden sm:inline">
+                {emailPosition}
+              </span>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleNavigateEmail('prev')}
+                  disabled={!canNavigatePrev}
+                  className="gap-1"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  <span className="hidden sm:inline">Previous</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleNavigateEmail('next')}
+                  disabled={!canNavigateNext}
+                  className="gap-1"
+                >
+                  <span className="hidden sm:inline">Next</span>
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
           </div>
 
           {/* Email Content */}
@@ -680,16 +739,25 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
               </Card>
             ) : (
               <div className="space-y-2">
-                {filteredEmails.map((email) => (
+                {filteredEmails.map((email, index) => (
                   <Card 
                     key={email.id} 
-                    className={`p-4 hover:bg-muted/50 cursor-pointer transition-all hover:shadow-md ${email.isUnread ? 'border-l-4 border-l-primary bg-primary/5' : ''}`}
-                    onClick={() => handleOpenEmail(email)}
+                    className={`p-4 hover:bg-muted/50 cursor-pointer transition-all hover:shadow-md ${
+                      email.isUnread 
+                        ? 'border-l-4 border-l-primary bg-primary/5' 
+                        : 'border-l-4 border-l-transparent'
+                    }`}
+                    onClick={() => handleOpenEmail(email, index)}
                   >
                     <div className="flex items-start gap-3">
-                      {email.isUnread && (
-                        <Circle className="h-2 w-2 fill-primary text-primary mt-2 flex-shrink-0" />
-                      )}
+                      {/* Read/Unread indicator */}
+                      <div className="flex-shrink-0 w-5 flex items-center justify-center mt-1">
+                        {email.isUnread ? (
+                          <Circle className="h-2.5 w-2.5 fill-primary text-primary" />
+                        ) : (
+                          <MailOpen className="h-4 w-4 text-muted-foreground/50" />
+                        )}
+                      </div>
                       <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
                         <span className="text-xs font-semibold">
                           {extractSenderName(email.from).charAt(0).toUpperCase()}
@@ -697,14 +765,14 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2">
-                          <p className={`truncate ${email.isUnread ? 'font-semibold' : 'font-medium'}`}>
+                          <p className={`truncate ${email.isUnread ? 'font-bold text-foreground' : 'font-medium text-muted-foreground'}`}>
                             {extractSenderName(email.from)}
                           </p>
                           <span className="text-xs text-muted-foreground flex-shrink-0">
                             {formatEmailDate(email.date)}
                           </span>
                         </div>
-                        <p className={`text-sm truncate ${email.isUnread ? 'font-medium' : ''}`}>
+                        <p className={`text-sm truncate ${email.isUnread ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}>
                           {email.subject || '(No subject)'}
                         </p>
                         <p className="text-sm text-muted-foreground truncate mt-1">
