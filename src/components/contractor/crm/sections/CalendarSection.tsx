@@ -38,6 +38,8 @@ interface CalendarEvent {
   // For local meetings (user_meetings) that have been synced to an external calendar,
   // store the provider event ID so EditEventDialog can update the original event.
   calendarEventId?: string;
+  // Lead ID if meeting is linked to a lead
+  leadId?: string;
   isLocal?: boolean;
 }
 
@@ -52,11 +54,21 @@ interface UserMeeting {
   calendar_event_id: string | null;
   provider: string | null;
   job_id: string | null;
+  lead_id: string | null;
 }
 
 interface CalendarSectionProps {
   onSectionChange?: (section: string) => void;
 }
+
+// Time slots for the day view grid (7am to 9pm)
+const TIME_SLOTS = [
+  '07:00', '07:30', '08:00', '08:30', '09:00', '09:30',
+  '10:00', '10:30', '11:00', '11:30', '12:00', '12:30',
+  '13:00', '13:30', '14:00', '14:30', '15:00', '15:30',
+  '16:00', '16:30', '17:00', '17:30', '18:00', '18:30',
+  '19:00', '19:30', '20:00', '20:30', '21:00',
+];
 
 export default function CalendarSection({ onSectionChange }: CalendarSectionProps) {
   const { user } = useAuth();
@@ -354,6 +366,7 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
         end: { dateTime: meeting.end_time },
         provider: meeting.provider || 'local',
         calendarEventId: meeting.calendar_event_id || undefined,
+        leadId: meeting.lead_id || undefined,
         isLocal: true,
       } as CalendarEvent));
 
@@ -379,6 +392,56 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
       case 'low': return 'bg-green-500';
       default: return 'bg-muted';
     }
+  };
+
+  // Helper to get event at a specific time slot
+  const getEventAtTimeSlot = (day: Date, timeSlot: string): CalendarEvent | null => {
+    const dayEvents = getEventsForDay(day);
+    const [hours, minutes] = timeSlot.split(':').map(Number);
+    const slotTime = new Date(day);
+    slotTime.setHours(hours, minutes, 0, 0);
+    
+    return dayEvents.find(event => {
+      const startStr = event.start?.dateTime;
+      if (!startStr) return false;
+      try {
+        const eventStart = parseISO(startStr);
+        const eventHour = eventStart.getHours();
+        const eventMinute = eventStart.getMinutes();
+        return eventHour === hours && eventMinute === minutes;
+      } catch {
+        return false;
+      }
+    }) || null;
+  };
+
+  // Check if a time slot is within an event's duration (busy)
+  const isTimeSlotBusy = (day: Date, timeSlot: string): boolean => {
+    const dayEvents = getEventsForDay(day);
+    const [hours, minutes] = timeSlot.split(':').map(Number);
+    const slotTime = new Date(day);
+    slotTime.setHours(hours, minutes, 0, 0);
+    
+    return dayEvents.some(event => {
+      const startStr = event.start?.dateTime;
+      const endStr = event.end?.dateTime;
+      if (!startStr || !endStr) return false;
+      try {
+        const eventStart = parseISO(startStr);
+        const eventEnd = parseISO(endStr);
+        return slotTime >= eventStart && slotTime < eventEnd;
+      } catch {
+        return false;
+      }
+    });
+  };
+
+  // Format time slot for display
+  const formatTimeSlot = (timeSlot: string): string => {
+    const [hours, minutes] = timeSlot.split(':').map(Number);
+    const date = new Date();
+    date.setHours(hours, minutes, 0, 0);
+    return format(date, 'h:mm a');
   };
 
   // Navigation handlers
@@ -769,7 +832,7 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
                 </div>
               </Card>
             ) : (
-              /* Day / 3-Day / 5-Day View */
+              /* Day / 3-Day / 5-Day View with Time Slots */
               <div className={`grid gap-4 ${
                 viewMode === 'day' ? 'grid-cols-1' : 
                 viewMode === '3-day' ? 'grid-cols-1 sm:grid-cols-3' : 
@@ -779,7 +842,6 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
                   const dayEvents = getEventsForDay(day);
                   const dayTasks = getTasksForDay(day);
                   const isCurrentDay = isToday(day);
-                  const hasItems = dayEvents.length > 0 || dayTasks.length > 0;
                   
                   return (
                     <Card 
@@ -794,84 +856,142 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
                           {format(day, 'd')}
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          {format(day, 'MMM')}
+                          {format(day, 'MMM yyyy')}
                         </div>
                       </div>
                       
-                      {!hasItems ? (
-                        <p className="text-center text-sm text-muted-foreground py-4">No events or tasks</p>
-                      ) : (
-                        <div className="space-y-3">
-                          {/* Events Section */}
-                          {dayEvents.length > 0 && (
-                            <div className="space-y-2">
-                              <div className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-                                <CalendarIcon className="h-3 w-3" />
-                                Events ({dayEvents.length})
-                              </div>
-                              {dayEvents.map((event) => (
-                                <div
-                                  key={event.id}
-                                  onClick={() => setSelectedEvent(event)}
-                                  className="p-2 rounded-lg bg-primary/10 hover:bg-primary/20 cursor-pointer transition-colors"
-                                >
-                                  <div className="font-medium text-sm truncate">{event.summary || 'Untitled'}</div>
-                                  <div className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                                    <Clock className="h-3 w-3" />
-                                    {formatEventTimeShort(event)}
-                                  </div>
-                                  {event.location && (
-                                    <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5 truncate">
-                                      <MapPin className="h-3 w-3 flex-shrink-0" />
-                                      <span className="truncate">{event.location}</span>
+                      {/* Tasks Section (above time slots) */}
+                      {dayTasks.length > 0 && (
+                        <div className="mb-4 pb-3 border-b">
+                          <div className="text-xs font-medium text-muted-foreground flex items-center gap-1 mb-2">
+                            <CheckSquare className="h-3 w-3" />
+                            Tasks ({dayTasks.length})
+                          </div>
+                          <div className="space-y-2">
+                            {dayTasks.map((task) => (
+                              <div
+                                key={task.id}
+                                className={`p-2 rounded-lg bg-amber-500/10 transition-colors ${
+                                  task.status === 'completed' ? 'opacity-60' : ''
+                                }`}
+                              >
+                                <div className="flex items-start gap-2">
+                                  <Checkbox
+                                    checked={task.status === 'completed'}
+                                    onCheckedChange={() => toggleComplete.mutate(task)}
+                                    className="mt-0.5"
+                                  />
+                                  <div className="flex-1 min-w-0">
+                                    <div className={`font-medium text-sm truncate ${
+                                      task.status === 'completed' ? 'line-through' : ''
+                                    }`}>
+                                      {task.title}
                                     </div>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                          
-                          {/* Tasks Section */}
-                          {dayTasks.length > 0 && (
-                            <div className="space-y-2">
-                              <div className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-                                <CheckSquare className="h-3 w-3" />
-                                Tasks ({dayTasks.length})
-                              </div>
-                              {dayTasks.map((task) => (
-                                <div
-                                  key={task.id}
-                                  className={`p-2 rounded-lg bg-amber-500/10 transition-colors ${
-                                    task.status === 'completed' ? 'opacity-60' : ''
-                                  }`}
-                                >
-                                  <div className="flex items-start gap-2">
-                                    <Checkbox
-                                      checked={task.status === 'completed'}
-                                      onCheckedChange={() => toggleComplete.mutate(task)}
-                                      className="mt-0.5"
-                                    />
-                                    <div className="flex-1 min-w-0">
-                                      <div className={`font-medium text-sm truncate ${
-                                        task.status === 'completed' ? 'line-through' : ''
-                                      }`}>
-                                        {task.title}
-                                      </div>
-                                      <div className="flex items-center gap-2 mt-1">
-                                        <div className={`w-2 h-2 rounded-full ${getPriorityColor(task.priority)}`} />
-                                        <span className="text-xs text-muted-foreground capitalize">{task.priority}</span>
-                                        {task.category && (
-                                          <span className="text-xs text-muted-foreground">• {task.category}</span>
-                                        )}
-                                      </div>
+                                    <div className="flex items-center gap-2 mt-1">
+                                      <div className={`w-2 h-2 rounded-full ${getPriorityColor(task.priority)}`} />
+                                      <span className="text-xs text-muted-foreground capitalize">{task.priority}</span>
                                     </div>
                                   </div>
                                 </div>
-                              ))}
-                            </div>
-                          )}
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       )}
+                      
+                      {/* Time Slots Grid */}
+                      <div className="space-y-0.5 max-h-[500px] overflow-y-auto">
+                        <div className="text-xs font-medium text-muted-foreground flex items-center gap-1 mb-2 sticky top-0 bg-background py-1">
+                          <Clock className="h-3 w-3" />
+                          Schedule
+                        </div>
+                        {TIME_SLOTS.map((timeSlot) => {
+                          const eventAtSlot = getEventAtTimeSlot(day, timeSlot);
+                          const isBusy = isTimeSlotBusy(day, timeSlot);
+                          const isAvailable = !isBusy;
+                          
+                          // Only show the row if it has an event starting at this time OR is the start of an hour
+                          const isHourStart = timeSlot.endsWith(':00');
+                          
+                          if (eventAtSlot) {
+                            // Event starts at this time slot - show event card with edit button
+                            return (
+                              <div
+                                key={timeSlot}
+                                className="flex items-stretch gap-2 group"
+                              >
+                                <div className="w-16 text-xs text-muted-foreground py-2 flex-shrink-0">
+                                  {formatTimeSlot(timeSlot)}
+                                </div>
+                                <div className="flex-1 p-2 rounded-lg bg-primary/10 border border-primary/20">
+                                  <div className="flex items-start justify-between gap-2">
+                                    <div className="flex-1 min-w-0">
+                                      <div className="font-medium text-sm truncate">{eventAtSlot.summary || 'Untitled'}</div>
+                                      <div className="text-xs text-muted-foreground mt-0.5">
+                                        {formatEventTimeShort(eventAtSlot)}
+                                        {eventAtSlot.end?.dateTime && (
+                                          <> - {format(parseISO(eventAtSlot.end.dateTime), 'h:mm a')}</>
+                                        )}
+                                      </div>
+                                      {eventAtSlot.location && (
+                                        <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5 truncate">
+                                          <MapPin className="h-3 w-3 flex-shrink-0" />
+                                          <span className="truncate">{eventAtSlot.location}</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-7 px-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setEventToEdit(eventAtSlot);
+                                        setEditEventOpen(true);
+                                      }}
+                                    >
+                                      <Pencil className="h-3.5 w-3.5" />
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          } else if (isBusy) {
+                            // This slot is during an event - show busy indicator (compact)
+                            return (
+                              <div
+                                key={timeSlot}
+                                className="flex items-center gap-2 py-1"
+                              >
+                                <div className="w-16 text-xs text-muted-foreground/50 flex-shrink-0">
+                                  {isHourStart ? formatTimeSlot(timeSlot) : ''}
+                                </div>
+                                <div className="flex-1 h-1 bg-primary/20 rounded"></div>
+                              </div>
+                            );
+                          } else if (isHourStart) {
+                            // Available hour slot - show clickable area
+                            return (
+                              <div
+                                key={timeSlot}
+                                className="flex items-center gap-2 py-1.5 hover:bg-muted/50 rounded cursor-pointer transition-colors"
+                                onClick={() => {
+                                  // Open schedule meeting dialog with this time pre-selected
+                                  setScheduleMeetingOpen(true);
+                                }}
+                              >
+                                <div className="w-16 text-xs text-muted-foreground flex-shrink-0">
+                                  {formatTimeSlot(timeSlot)}
+                                </div>
+                                <div className="flex-1 h-6 border border-dashed border-muted-foreground/30 rounded flex items-center justify-center">
+                                  <span className="text-xs text-muted-foreground/50">Available</span>
+                                </div>
+                              </div>
+                            );
+                          }
+                          return null;
+                        })}
+                      </div>
                     </Card>
                   );
                 })}

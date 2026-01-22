@@ -419,6 +419,7 @@ export function ScheduleMeetingDialog({
         .insert({
           user_id: user?.id,
           job_id: selectedJobId || null,
+          lead_id: leadData?.id || null,
           title: title,
           meeting_type: meetingType,
           start_time: startDateTime.toISOString(),
@@ -428,6 +429,16 @@ export function ScheduleMeetingDialog({
         })
         .select()
         .single();
+      
+      // If this meeting is linked to a lead, update the lead's last_contact_date
+      if (leadData?.id) {
+        await supabase
+          .from('leads')
+          .update({
+            last_contact_date: new Date().toISOString(),
+          })
+          .eq('id', leadData.id);
+      }
 
       if (meetingError) {
         console.error('Failed to save meeting:', meetingError);
