@@ -203,7 +203,18 @@ Deno.serve(async (req) => {
     const refreshToken = decodeToken(connection.refresh_token_encrypted);
     
     if (provider === 'google') {
-      const accessToken = await refreshGoogleToken(refreshToken);
+      // IMPORTANT: Token refresh can fail (missing env secrets, revoked refresh token, etc.).
+      // If it fails, we must still attempt deletion using the stored access token,
+      // otherwise the old time slot will remain blocked in the scheduler.
+      const storedAccessToken = decodeToken(connection.access_token_encrypted);
+
+      let accessToken = storedAccessToken;
+      try {
+        accessToken = await refreshGoogleToken(refreshToken);
+      } catch (e) {
+        console.warn('Google token refresh failed during delete, falling back to stored access token:', e);
+      }
+
       await deleteGoogleCalendarEvent(accessToken, eventId);
     } else if (provider === 'outlook') {
       // For Outlook, refresh token logic would go here
