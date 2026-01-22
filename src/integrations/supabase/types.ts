@@ -4667,6 +4667,7 @@ export type Database = {
           end_time: string
           id: string
           job_id: string | null
+          lead_id: string | null
           location: string | null
           meeting_type: string
           notes: string | null
@@ -4682,6 +4683,7 @@ export type Database = {
           end_time: string
           id?: string
           job_id?: string | null
+          lead_id?: string | null
           location?: string | null
           meeting_type?: string
           notes?: string | null
@@ -4697,6 +4699,7 @@ export type Database = {
           end_time?: string
           id?: string
           job_id?: string | null
+          lead_id?: string | null
           location?: string | null
           meeting_type?: string
           notes?: string | null
@@ -4712,6 +4715,13 @@ export type Database = {
             columns: ["job_id"]
             isOneToOne: false
             referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_meetings_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
             referencedColumns: ["id"]
           },
         ]

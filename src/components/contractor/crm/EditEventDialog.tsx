@@ -29,6 +29,8 @@ interface CalendarEvent {
   // When editing a locally-stored meeting (user_meetings) that was synced to an external calendar,
   // this holds the external provider event ID so we can update it in-place.
   calendarEventId?: string;
+  // Lead ID if meeting is linked to a lead
+  leadId?: string;
   isLocal?: boolean;
   attendees?: Array<{ email: string; responseStatus?: string }>;
 }
@@ -233,6 +235,16 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess }: EditEv
           .eq('id', event.id);
 
         if (dbError) throw dbError;
+
+        // If this meeting is linked to a lead, update the lead's last_contact_date
+        if (event.leadId) {
+          await supabase
+            .from('leads')
+            .update({
+              last_contact_date: new Date().toISOString(),
+            })
+            .eq('id', event.leadId);
+        }
 
         // If this local meeting was previously synced to an external calendar event,
         // update that SAME external event so the old time doesn't remain on the calendar.
