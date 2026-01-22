@@ -22,6 +22,10 @@ interface Profile {
   website_url?: string;
   license_number?: string;
   trade?: string;
+  // Brand colors
+  brand_primary_color?: string;
+  brand_secondary_color?: string;
+  brand_accent_color?: string;
   // Estimate defaults
   default_sales_tax_rate?: number;
   default_deposit_percent?: number;

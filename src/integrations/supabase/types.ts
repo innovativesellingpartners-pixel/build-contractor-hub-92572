@@ -3788,6 +3788,9 @@ export type Database = {
       }
       profiles: {
         Row: {
+          brand_accent_color: string | null
+          brand_primary_color: string | null
+          brand_secondary_color: string | null
           business_address: string | null
           business_email: string | null
           city: string | null
@@ -3823,6 +3826,9 @@ export type Database = {
           zip_code: string | null
         }
         Insert: {
+          brand_accent_color?: string | null
+          brand_primary_color?: string | null
+          brand_secondary_color?: string | null
           business_address?: string | null
           business_email?: string | null
           city?: string | null
@@ -3858,6 +3864,9 @@ export type Database = {
           zip_code?: string | null
         }
         Update: {
+          brand_accent_color?: string | null
+          brand_primary_color?: string | null
+          brand_secondary_color?: string | null
           business_address?: string | null
           business_email?: string | null
           city?: string | null
