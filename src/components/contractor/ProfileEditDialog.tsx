@@ -8,10 +8,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
-import { Pencil, Upload, Loader2, Check, X } from "lucide-react";
-
-type EditingField = 'company_name' | 'contact_name' | 'phone' | 'business_address' | 
-  'city' | 'state' | 'zip_code' | 'tax_id' | 'ct1_contractor_number' | null;
+import { Pencil, Upload, Loader2, Check, Building2, User, Globe, FileText, DollarSign, Shield, Percent } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 
 export function ProfileEditDialog() {
   const { profile, user } = useAuth();
@@ -20,8 +21,9 @@ export function ProfileEditDialog() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [editingField, setEditingField] = useState<EditingField>(null);
+  const [activeTab, setActiveTab] = useState("business");
   const [formData, setFormData] = useState({
+    // Business Info
     company_name: '',
     contact_name: '',
     phone: '',
@@ -32,6 +34,15 @@ export function ProfileEditDialog() {
     tax_id: '',
     ct1_contractor_number: '',
     logo_url: '',
+    // Branding & Contact
+    business_email: '',
+    website_url: '',
+    license_number: '',
+    trade: '',
+    // Estimate Defaults
+    default_sales_tax_rate: '',
+    default_deposit_percent: '',
+    default_warranty_years: '',
   });
 
   // Sync form data when dialog opens or profile changes
@@ -48,8 +59,15 @@ export function ProfileEditDialog() {
         tax_id: profile.tax_id || '',
         ct1_contractor_number: profile.ct1_contractor_number || '',
         logo_url: profile.logo_url || '',
+        business_email: profile.business_email || '',
+        website_url: profile.website_url || '',
+        license_number: profile.license_number || '',
+        trade: profile.trade || '',
+        default_sales_tax_rate: profile.default_sales_tax_rate?.toString() || '6.00',
+        default_deposit_percent: profile.default_deposit_percent?.toString() || '30.00',
+        default_warranty_years: profile.default_warranty_years?.toString() || '2',
       });
-      setEditingField(null);
+      setActiveTab("business");
     }
   }, [open, profile]);
 
@@ -90,9 +108,6 @@ export function ProfileEditDialog() {
         title: "Logo uploaded",
         description: "Your company logo has been uploaded successfully.",
       });
-      
-      // Refresh the page to show updated logo
-      setTimeout(() => window.location.reload(), 1000);
     } catch (error) {
       console.error('Error uploading logo:', error);
       toast({
@@ -110,7 +125,7 @@ export function ProfileEditDialog() {
 
     setLoading(true);
     try {
-      // Prepare update data - only include contractor number if user is super admin
+      // Prepare update data - exclude contractor number and account ID for regular users
       const updateData: any = {
         company_name: formData.company_name,
         contact_name: formData.contact_name,
@@ -120,6 +135,13 @@ export function ProfileEditDialog() {
         state: formData.state,
         zip_code: formData.zip_code,
         tax_id: formData.tax_id,
+        business_email: formData.business_email,
+        website_url: formData.website_url,
+        license_number: formData.license_number,
+        trade: formData.trade,
+        default_sales_tax_rate: formData.default_sales_tax_rate ? parseFloat(formData.default_sales_tax_rate) : 6.0,
+        default_deposit_percent: formData.default_deposit_percent ? parseFloat(formData.default_deposit_percent) : 30.0,
+        default_warranty_years: formData.default_warranty_years ? parseInt(formData.default_warranty_years) : 2,
       };
 
       // Only super admins can update contractor number
@@ -153,63 +175,6 @@ export function ProfileEditDialog() {
     }
   };
 
-  const handleSaveField = async (field: EditingField) => {
-    if (!user || !field) return;
-
-    setLoading(true);
-    try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ [field]: formData[field] })
-        .eq('user_id', user.id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Field updated",
-        description: "Your information has been updated successfully.",
-      });
-      setEditingField(null);
-      window.location.reload();
-    } catch (error) {
-      console.error('Error updating profile:', error);
-      toast({
-        title: "Update failed",
-        description: "Failed to update. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const renderField = (
-    field: EditingField,
-    label: string,
-    type: string = "text",
-    disabled: boolean = false
-  ) => {
-    const value = formData[field as keyof typeof formData];
-
-    return (
-      <div>
-        <Label htmlFor={field!}>{label}</Label>
-        <div className="mt-2">
-          <Input
-            id={field!}
-            name={field!}
-            type={type}
-            value={value}
-            onChange={handleChange}
-            placeholder={`Enter ${label.toLowerCase()}`}
-            disabled={disabled}
-            className={disabled ? "bg-muted/50 text-muted-foreground cursor-not-allowed" : ""}
-          />
-        </div>
-      </div>
-    );
-  };
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -218,107 +183,364 @@ export function ProfileEditDialog() {
           Edit Profile
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
-          <DialogTitle>Edit Contractor Profile</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <Building2 className="h-5 w-5" />
+            Edit Contractor Profile
+          </DialogTitle>
         </DialogHeader>
-        <div className="space-y-6">
-          {/* User Email (Read-only) */}
-          <div>
-            <Label>Email (Username)</Label>
-            <div className="px-3 py-2 border rounded-md bg-muted/50 text-muted-foreground mt-2">
-              {user?.email}
-            </div>
-          </div>
+        
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 overflow-hidden flex flex-col">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="business" className="gap-2">
+              <Building2 className="h-4 w-4" />
+              <span className="hidden sm:inline">Business</span>
+            </TabsTrigger>
+            <TabsTrigger value="branding" className="gap-2">
+              <Globe className="h-4 w-4" />
+              <span className="hidden sm:inline">Branding</span>
+            </TabsTrigger>
+            <TabsTrigger value="defaults" className="gap-2">
+              <DollarSign className="h-4 w-4" />
+              <span className="hidden sm:inline">Defaults</span>
+            </TabsTrigger>
+          </TabsList>
 
-          {/* Logo Upload */}
-          <div>
-            <Label htmlFor="logo">Company Logo</Label>
-            <div className="flex items-center gap-4 mt-2">
-              {formData.logo_url && (
-                <img src={formData.logo_url} alt="Logo" className="h-20 w-20 object-cover rounded border" />
-              )}
-              <div>
-                <Input
-                  id="logo"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleLogoUpload}
-                  disabled={uploading}
-                  className="hidden"
-                />
-                <Label htmlFor="logo" className="cursor-pointer">
-                  <div className="flex items-center gap-2 px-4 py-2 border rounded-md hover:bg-accent transition-colors">
-                    {uploading ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Upload className="h-4 w-4" />
-                    )}
-                    {uploading ? 'Uploading...' : 'Upload New Logo'}
+          <div className="flex-1 overflow-y-auto mt-4 pr-1">
+            {/* Business Information Tab */}
+            <TabsContent value="business" className="space-y-6 mt-0">
+              {/* Read-only fields */}
+              <Card className="border-dashed">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <Shield className="h-4 w-4" />
+                    Account Identifiers
+                    <Badge variant="secondary" className="ml-2">Read Only</Badge>
+                  </CardTitle>
+                  <CardDescription>These fields cannot be modified</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Email (Username)</Label>
+                      <div className="px-3 py-2 border rounded-md bg-muted/50 text-muted-foreground text-sm mt-1">
+                        {user?.email}
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Account ID</Label>
+                      <div className="px-3 py-2 border rounded-md bg-muted/50 text-muted-foreground text-sm mt-1 font-mono">
+                        {user?.id?.substring(0, 8)}...
+                      </div>
+                    </div>
                   </div>
-                </Label>
-              </div>
-            </div>
-          </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">CT1 Contractor Number</Label>
+                    <div className="px-3 py-2 border rounded-md bg-muted/50 text-muted-foreground text-sm mt-1 font-mono font-bold">
+                      {formData.ct1_contractor_number || 'Not assigned'}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">Auto-generated and immutable for business operations</p>
+                  </div>
+                </CardContent>
+              </Card>
 
-          <div className="grid grid-cols-2 gap-4">
-            {renderField('company_name', 'Company Name')}
-            {renderField('contact_name', 'Contact Name')}
-            {renderField('phone', 'Phone Number', 'tel')}
-            {renderField('ct1_contractor_number', 'CT1 Contractor Number', 'text', !isSuperAdmin)}
-          </div>
+              {/* Logo Upload */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm">Company Logo</CardTitle>
+                  <CardDescription>This logo will appear on estimates, invoices, and proposals</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center gap-4">
+                    <div className="h-24 w-24 rounded-lg border-2 border-dashed flex items-center justify-center bg-muted/30 overflow-hidden">
+                      {formData.logo_url ? (
+                        <img src={formData.logo_url} alt="Logo" className="h-full w-full object-contain" />
+                      ) : (
+                        <Building2 className="h-8 w-8 text-muted-foreground" />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <Input
+                        id="logo"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleLogoUpload}
+                        disabled={uploading}
+                        className="hidden"
+                      />
+                      <Label htmlFor="logo" className="cursor-pointer">
+                        <div className="inline-flex items-center gap-2 px-4 py-2 border rounded-md hover:bg-accent transition-colors">
+                          {uploading ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Upload className="h-4 w-4" />
+                          )}
+                          {uploading ? 'Uploading...' : 'Upload Logo'}
+                        </div>
+                      </Label>
+                      <p className="text-xs text-muted-foreground mt-2">PNG, JPG up to 5MB. Square logos work best.</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="business_address">Business Address</Label>
-              <div className="mt-2">
-                <AddressAutocomplete
-                  value={formData.business_address}
-                  onChange={(value) => setFormData({ ...formData, business_address: value })}
-                  onAddressParsed={(parsed) => {
-                    setFormData(prev => ({
-                      ...prev,
-                      business_address: parsed.street,
-                      city: parsed.city,
-                      state: parsed.state,
-                      zip_code: parsed.zipCode,
-                    }));
-                  }}
-                  placeholder="Start typing an address..."
-                  showGpsButton={true}
-                />
-              </div>
-            </div>
-          </div>
+              {/* Editable Business Info */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm">Business Details</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="company_name">Company Name</Label>
+                      <Input
+                        id="company_name"
+                        name="company_name"
+                        value={formData.company_name}
+                        onChange={handleChange}
+                        placeholder="Your Company LLC"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="contact_name">Contact Name</Label>
+                      <Input
+                        id="contact_name"
+                        name="contact_name"
+                        value={formData.contact_name}
+                        onChange={handleChange}
+                        placeholder="John Smith"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="phone">Phone Number</Label>
+                      <Input
+                        id="phone"
+                        name="phone"
+                        type="tel"
+                        value={formData.phone}
+                        onChange={handleChange}
+                        placeholder="(555) 123-4567"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="trade">Trade / Industry</Label>
+                      <Input
+                        id="trade"
+                        name="trade"
+                        value={formData.trade}
+                        onChange={handleChange}
+                        placeholder="Plumbing, Electrical, etc."
+                      />
+                    </div>
+                  </div>
 
-          <div className="grid grid-cols-3 gap-4">
-            {renderField('city', 'City')}
-            {renderField('state', 'State')}
-            {renderField('zip_code', 'ZIP Code')}
-          </div>
+                  <Separator />
 
-          <div>
-            {renderField('tax_id', 'Tax ID')}
-          </div>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="business_address">Business Address</Label>
+                      <AddressAutocomplete
+                        value={formData.business_address}
+                        onChange={(value) => setFormData({ ...formData, business_address: value })}
+                        onAddressParsed={(parsed) => {
+                          setFormData(prev => ({
+                            ...prev,
+                            business_address: parsed.street,
+                            city: parsed.city,
+                            state: parsed.state,
+                            zip_code: parsed.zipCode,
+                          }));
+                        }}
+                        placeholder="Start typing an address..."
+                        showGpsButton={true}
+                      />
+                    </div>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="city">City</Label>
+                        <Input
+                          id="city"
+                          name="city"
+                          value={formData.city}
+                          onChange={handleChange}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="state">State</Label>
+                        <Input
+                          id="state"
+                          name="state"
+                          value={formData.state}
+                          onChange={handleChange}
+                          maxLength={2}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="zip_code">ZIP Code</Label>
+                        <Input
+                          id="zip_code"
+                          name="zip_code"
+                          value={formData.zip_code}
+                          onChange={handleChange}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-          <div className="flex justify-end gap-2 pt-4 border-t">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-              Cancel
-            </Button>
-            <Button type="button" onClick={handleSaveAll} disabled={loading}>
-              {loading ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Check className="h-4 w-4 mr-2" />
-                  Save Changes
-                </>
-              )}
-            </Button>
+            {/* Branding Tab */}
+            <TabsContent value="branding" className="space-y-6 mt-0">
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <Globe className="h-4 w-4" />
+                    Online Presence
+                  </CardTitle>
+                  <CardDescription>These details appear on customer-facing documents</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="business_email">Business Email</Label>
+                    <Input
+                      id="business_email"
+                      name="business_email"
+                      type="email"
+                      value={formData.business_email}
+                      onChange={handleChange}
+                      placeholder="contact@yourcompany.com"
+                    />
+                    <p className="text-xs text-muted-foreground">Shown on estimates and invoices (separate from login email)</p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="website_url">Website URL</Label>
+                    <Input
+                      id="website_url"
+                      name="website_url"
+                      type="url"
+                      value={formData.website_url}
+                      onChange={handleChange}
+                      placeholder="https://www.yourcompany.com"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <FileText className="h-4 w-4" />
+                    Licensing & Compliance
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="license_number">License Number</Label>
+                      <Input
+                        id="license_number"
+                        name="license_number"
+                        value={formData.license_number}
+                        onChange={handleChange}
+                        placeholder="LIC-123456"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="tax_id">Tax ID / EIN</Label>
+                      <Input
+                        id="tax_id"
+                        name="tax_id"
+                        value={formData.tax_id}
+                        onChange={handleChange}
+                        placeholder="XX-XXXXXXX"
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Defaults Tab */}
+            <TabsContent value="defaults" className="space-y-6 mt-0">
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <Percent className="h-4 w-4" />
+                    Estimate Defaults
+                  </CardTitle>
+                  <CardDescription>Default values applied to new estimates (can be changed per estimate)</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="default_sales_tax_rate">Sales Tax Rate (%)</Label>
+                      <Input
+                        id="default_sales_tax_rate"
+                        name="default_sales_tax_rate"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        max="100"
+                        value={formData.default_sales_tax_rate}
+                        onChange={handleChange}
+                        placeholder="6.00"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="default_deposit_percent">Required Deposit (%)</Label>
+                      <Input
+                        id="default_deposit_percent"
+                        name="default_deposit_percent"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        max="100"
+                        value={formData.default_deposit_percent}
+                        onChange={handleChange}
+                        placeholder="30.00"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="default_warranty_years">Warranty (Years)</Label>
+                      <Input
+                        id="default_warranty_years"
+                        name="default_warranty_years"
+                        type="number"
+                        min="0"
+                        max="99"
+                        value={formData.default_warranty_years}
+                        onChange={handleChange}
+                        placeholder="2"
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
           </div>
+        </Tabs>
+
+        <Separator className="my-4" />
+
+        <div className="flex justify-end gap-2">
+          <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            Cancel
+          </Button>
+          <Button type="button" onClick={handleSaveAll} disabled={loading}>
+            {loading ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Check className="h-4 w-4 mr-2" />
+                Save Changes
+              </>
+            )}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

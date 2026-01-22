@@ -17,6 +17,16 @@ interface Profile {
   logo_url?: string;
   subscription_tier?: string;
   training_level?: number;
+  // Branding fields
+  business_email?: string;
+  website_url?: string;
+  license_number?: string;
+  trade?: string;
+  // Estimate defaults
+  default_sales_tax_rate?: number;
+  default_deposit_percent?: number;
+  default_warranty_years?: number;
+  // Timestamps
   created_at: string;
   updated_at: string;
 }

@@ -31,7 +31,9 @@ import {
   ClipboardList,
   Calendar,
   DollarSign,
-  Receipt
+  Receipt,
+  Globe,
+  Percent
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
@@ -460,10 +462,16 @@ export function Dashboard() {
                   className="mb-4"
                 />
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4 md:mb-6">
-                  <h2 className="text-2xl md:text-3xl font-bold">My Account</h2>
-                  <Badge variant="outline" className="text-xs md:text-sm">
-                    Account ID: {user?.id?.substring(0, 8)}
-                  </Badge>
+                  <div>
+                    <h2 className="text-2xl md:text-3xl font-bold">My Account</h2>
+                    <p className="text-sm text-muted-foreground">Manage your business profile and branding</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <ProfileEditDialog />
+                    <Badge variant="outline" className="text-xs md:text-sm">
+                      ID: {user?.id?.substring(0, 8)}
+                    </Badge>
+                  </div>
                 </div>
                 
                 {/* Billing & Upgrade Section */}
@@ -555,11 +563,18 @@ export function Dashboard() {
                       </h3>
                     </div>
                     <div className="p-6 space-y-4">
-                      <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                        <Building2 className="h-5 w-5 text-primary mt-0.5" />
+                      {/* Logo Display */}
+                      <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/30">
+                        <div className="h-16 w-16 rounded-lg border flex items-center justify-center bg-background overflow-hidden">
+                          {profile?.logo_url ? (
+                            <img src={profile.logo_url} alt="Logo" className="h-full w-full object-contain" />
+                          ) : (
+                            <Building2 className="h-6 w-6 text-muted-foreground" />
+                          )}
+                        </div>
                         <div className="flex-1">
-                          <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Company Name</p>
-                          <p className="font-medium">{profile?.company_name || 'Not set'}</p>
+                          <p className="font-semibold text-lg">{profile?.company_name || 'Your Company'}</p>
+                          {profile?.trade && <p className="text-sm text-muted-foreground">{profile.trade}</p>}
                         </div>
                       </div>
                       <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
@@ -574,12 +589,63 @@ export function Dashboard() {
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                        <FileText className="h-5 w-5 text-primary mt-0.5" />
-                        <div className="flex-1">
-                          <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Tax ID</p>
-                          <p className="font-medium">{profile?.tax_id || 'Not set'}</p>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                          <Mail className="h-5 w-5 text-primary mt-0.5" />
+                          <div className="flex-1">
+                            <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Business Email</p>
+                            <p className="font-medium text-sm truncate">{profile?.business_email || 'Not set'}</p>
+                          </div>
                         </div>
+                        <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                          <Globe className="h-5 w-5 text-primary mt-0.5" />
+                          <div className="flex-1">
+                            <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Website</p>
+                            <p className="font-medium text-sm truncate">{profile?.website_url || 'Not set'}</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                          <FileText className="h-5 w-5 text-primary mt-0.5" />
+                          <div className="flex-1">
+                            <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">License Number</p>
+                            <p className="font-medium">{profile?.license_number || 'Not set'}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                          <FileText className="h-5 w-5 text-primary mt-0.5" />
+                          <div className="flex-1">
+                            <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Tax ID</p>
+                            <p className="font-medium">{profile?.tax_id || 'Not set'}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Estimate Defaults Card */}
+                <div className="bg-gradient-to-br from-card to-muted/20 border border-border/50 rounded-xl shadow-md overflow-hidden">
+                  <div className="bg-primary/5 px-6 py-4 border-b border-border/50">
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      <Percent className="h-5 w-5 text-primary" />
+                      Estimate Defaults
+                    </h3>
+                  </div>
+                  <div className="p-6">
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="text-center p-4 bg-muted/30 rounded-lg">
+                        <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Sales Tax Rate</p>
+                        <p className="text-2xl font-bold">{profile?.default_sales_tax_rate || 6.0}%</p>
+                      </div>
+                      <div className="text-center p-4 bg-muted/30 rounded-lg">
+                        <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Required Deposit</p>
+                        <p className="text-2xl font-bold">{profile?.default_deposit_percent || 30.0}%</p>
+                      </div>
+                      <div className="text-center p-4 bg-muted/30 rounded-lg">
+                        <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Warranty</p>
+                        <p className="text-2xl font-bold">{profile?.default_warranty_years || 2} yr</p>
                       </div>
                     </div>
                   </div>
