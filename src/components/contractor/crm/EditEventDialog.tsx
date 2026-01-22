@@ -69,6 +69,9 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess }: EditEv
   const [isAllDay, setIsAllDay] = useState(false);
   const [recipients, setRecipients] = useState<string[]>([]);
   const [newRecipient, setNewRecipient] = useState('');
+  
+  // Track original recipients to identify newly added ones
+  const [originalRecipients, setOriginalRecipients] = useState<string[]>([]);
 
   // Parse event data when dialog opens or event changes
   useEffect(() => {
@@ -77,12 +80,13 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess }: EditEv
       setLocation(event.location || '');
       setDescription(event.description || '');
       
-      // Parse existing attendees
-      if (event.attendees && Array.isArray(event.attendees)) {
-        setRecipients(event.attendees.map(a => a.email).filter(Boolean));
-      } else {
-        setRecipients([]);
-      }
+      // Parse existing attendees and store as original recipients
+      const existingRecipients = event.attendees && Array.isArray(event.attendees)
+        ? event.attendees.map(a => a.email).filter(Boolean)
+        : [];
+      
+      setRecipients(existingRecipients);
+      setOriginalRecipients(existingRecipients); // Store original for comparison
       setNewRecipient('');
       
       const startStr = event.start?.dateTime || event.start?.date;
@@ -205,6 +209,11 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess }: EditEv
         endDateTime = new Date(startDateTime.getTime() + duration * 60000);
       }
 
+      // Identify newly added recipients (not in original list)
+      const newlyAddedRecipients = recipients.filter(r => !originalRecipients.includes(r));
+      // Identify existing recipients who should get updates
+      const existingRecipients = recipients.filter(r => originalRecipients.includes(r));
+      
       // Check if this is a local meeting (from user_meetings table)
       if (event.isLocal || event.provider === 'local') {
         // Update local meeting in database
@@ -221,29 +230,50 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess }: EditEv
 
         if (dbError) throw dbError;
 
-        // Send email invitations to new recipients
-        if (recipients.length > 0) {
-          for (const email of recipients) {
-            await supabase.functions.invoke('send-meeting-invite', {
-              body: {
-                recipientEmail: email,
-                meetingTitle: title,
-                meetingDate: format(selectedDate, 'EEEE, MMMM d, yyyy'),
-                meetingTime: format(startDateTime, 'h:mm a'),
-                duration: duration,
-                location: location || 'TBD',
-                notes: description || undefined,
-                startDateTime: startDateTime.toISOString(),
-                endDateTime: endDateTime.toISOString(),
-              },
-              headers: { Authorization: `Bearer ${session.access_token}` }
-            }).catch(err => {
-              console.warn(`Failed to send invite to ${email}:`, err);
-            });
-          }
+        // Send UPDATED invites to existing recipients (they need the new details)
+        for (const email of existingRecipients) {
+          await supabase.functions.invoke('send-meeting-invite', {
+            body: {
+              recipientEmail: email,
+              meetingTitle: title,
+              meetingDate: format(selectedDate, 'EEEE, MMMM d, yyyy'),
+              meetingTime: format(startDateTime, 'h:mm a'),
+              duration: duration,
+              location: location || 'TBD',
+              notes: description || undefined,
+              startDateTime: startDateTime.toISOString(),
+              endDateTime: endDateTime.toISOString(),
+              isUpdate: true, // Flag to indicate this is an update
+            },
+            headers: { Authorization: `Bearer ${session.access_token}` }
+          }).catch(err => {
+            console.warn(`Failed to send update to ${email}:`, err);
+          });
+        }
+
+        // Send NEW invites to newly added recipients
+        for (const email of newlyAddedRecipients) {
+          await supabase.functions.invoke('send-meeting-invite', {
+            body: {
+              recipientEmail: email,
+              meetingTitle: title,
+              meetingDate: format(selectedDate, 'EEEE, MMMM d, yyyy'),
+              meetingTime: format(startDateTime, 'h:mm a'),
+              duration: duration,
+              location: location || 'TBD',
+              notes: description || undefined,
+              startDateTime: startDateTime.toISOString(),
+              endDateTime: endDateTime.toISOString(),
+              isUpdate: false, // This is a new invite
+            },
+            headers: { Authorization: `Bearer ${session.access_token}` }
+          }).catch(err => {
+            console.warn(`Failed to send invite to ${email}:`, err);
+          });
         }
       } else {
         // Update external calendar event with attendees
+        // Google/Outlook APIs handle sending updates to all attendees via sendUpdates=all
         const { error } = await supabase.functions.invoke('update-calendar-event', {
           body: {
             eventId: event.id,
@@ -262,11 +292,17 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess }: EditEv
         if (error) throw error;
       }
 
-      toast.success(
-        recipients.length > 0 
-          ? 'Event updated and invites sent' 
-          : 'Event updated successfully'
-      );
+      // Build success message based on what happened
+      let successMessage = 'Event updated successfully';
+      if (newlyAddedRecipients.length > 0 && existingRecipients.length > 0) {
+        successMessage = `Event updated, invites sent to ${newlyAddedRecipients.length} new recipient(s) and updates sent to ${existingRecipients.length} existing recipient(s)`;
+      } else if (newlyAddedRecipients.length > 0) {
+        successMessage = `Event updated, invites sent to ${newlyAddedRecipients.length} new recipient(s)`;
+      } else if (existingRecipients.length > 0) {
+        successMessage = `Event updated, updates sent to ${existingRecipients.length} recipient(s)`;
+      }
+
+      toast.success(successMessage);
       onOpenChange(false);
       onSuccess?.();
     } catch (error: any) {

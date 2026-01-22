@@ -21,6 +21,7 @@ interface MeetingInviteRequest {
   contractorId?: string;
   startDateTime?: string; // ISO string for precise timing
   endDateTime?: string;   // ISO string for precise timing
+  isUpdate?: boolean;     // Flag to indicate this is an update to existing meeting
 }
 
 // Generate a unique ID for the calendar event
@@ -68,8 +69,9 @@ function generateICS(params: {
   organizerEmail: string;
   organizerName: string;
   attendeeEmail: string;
+  isUpdate?: boolean;
 }): string {
-  const { uid, summary, description, location, startDate, endDate, organizerEmail, organizerName, attendeeEmail } = params;
+  const { uid, summary, description, location, startDate, endDate, organizerEmail, organizerName, attendeeEmail, isUpdate } = params;
   
   const now = new Date();
   const dtStamp = formatToICS(now);
@@ -101,7 +103,7 @@ function generateICS(params: {
     location ? `LOCATION:${escapeText(location)}` : '',
     `ORGANIZER;CN=${escapeText(organizerName)}:mailto:${organizerEmail}`,
     `ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE;CN=${attendeeEmail}:mailto:${attendeeEmail}`,
-    'SEQUENCE:0',
+    `SEQUENCE:${isUpdate ? 1 : 0}`,
     'STATUS:CONFIRMED',
     'TRANSP:OPAQUE',
     'BEGIN:VALARM',
@@ -172,7 +174,10 @@ const handler = async (req: Request): Promise<Response> => {
       contractorId,
       startDateTime,
       endDateTime,
+      isUpdate,
     }: MeetingInviteRequest = await req.json();
+
+    console.log("Request received:", { recipientEmail, meetingTitle, isUpdate });
 
     if (!recipientEmail || !meetingTitle || !meetingDate || !meetingTime) {
       return new Response(
@@ -258,6 +263,7 @@ const handler = async (req: Request): Promise<Response> => {
       organizerEmail,
       organizerName: businessName,
       attendeeEmail: recipientEmail,
+      isUpdate: isUpdate || false,
     });
 
     console.log("Generated ICS content length:", icsContent.length);
@@ -267,16 +273,20 @@ const handler = async (req: Request): Promise<Response> => {
       ? `${Math.floor(duration / 60)} hour${Math.floor(duration / 60) > 1 ? 's' : ''}${duration % 60 > 0 ? ` ${duration % 60} min` : ''}`
       : `${duration} minutes`;
 
+    // Determine email title based on whether this is an update
+    const emailTitle = isUpdate ? 'Meeting Updated' : 'Meeting Invitation';
+    const emailSubjectPrefix = isUpdate ? 'Updated:' : 'Meeting Invitation:';
+
     const emailHtml = `
       <!DOCTYPE html>
       <html>
       <head>
         <meta charset="utf-8">
-        <title>Meeting Invitation</title>
+        <title>${emailTitle}</title>
       </head>
       <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
         <div style="background: linear-gradient(135deg, #1e3a5f 0%, #2d4a6f 100%); padding: 30px; border-radius: 8px 8px 0 0;">
-          <h1 style="color: #d4af37; margin: 0; font-size: 24px;">Meeting Invitation</h1>
+          <h1 style="color: #d4af37; margin: 0; font-size: 24px;">${emailTitle}</h1>
           <p style="color: #fff; margin: 10px 0 0; font-size: 14px;">From ${businessName}</p>
         </div>
         
@@ -375,7 +385,7 @@ const handler = async (req: Request): Promise<Response> => {
       from: fromEmail,
       reply_to: replyToEmail || undefined,
       to: [recipientEmail],
-      subject: `Meeting Invitation: ${meetingTitle} - ${meetingDate}`,
+      subject: `${emailSubjectPrefix} ${meetingTitle} - ${meetingDate}`,
       html: emailHtml,
       headers: {
         'Content-Type': 'multipart/mixed',
