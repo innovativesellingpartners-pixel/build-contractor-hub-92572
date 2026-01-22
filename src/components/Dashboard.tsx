@@ -446,7 +446,10 @@ export function Dashboard() {
             )}
             {activeSection === 'help' && (
               <div className="min-h-[400px] md:min-h-[600px] pb-20">
-                <HelpCenter onBack={() => handleSectionChange('leads')} />
+                <HelpCenter 
+                  onBack={() => handleSectionChange('leads')} 
+                  onNavigateToSection={(section) => handleSectionChange(section as ActiveSection)}
+                />
               </div>
             )}
             {activeSection === 'account' && (

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, MessageCircle } from 'lucide-react';
 import { HelpHome } from './HelpHome';
@@ -11,9 +12,11 @@ type HelpView = 'home' | 'article' | 'category' | 'support';
 
 interface HelpCenterProps {
   onBack?: () => void;
+  onNavigateToSection?: (section: string) => void;
 }
 
-export default function HelpCenter({ onBack }: HelpCenterProps) {
+export default function HelpCenter({ onBack, onNavigateToSection }: HelpCenterProps) {
+  const navigate = useNavigate();
   const [currentView, setCurrentView] = useState<HelpView>('home');
   const [selectedArticleSlug, setSelectedArticleSlug] = useState<string | null>(null);
   const [selectedCategorySlug, setSelectedCategorySlug] = useState<string | null>(null);
@@ -64,6 +67,20 @@ export default function HelpCenter({ onBack }: HelpCenterProps) {
     setSelectedCategorySlug(null);
   };
 
+  const handleNavigateToFeature = (route: string) => {
+    // Parse the route to extract section parameter
+    const url = new URL(route, window.location.origin);
+    const section = url.searchParams.get('section');
+    
+    if (section && onNavigateToSection) {
+      // Use the callback to change section within the Dashboard
+      onNavigateToSection(section);
+    } else {
+      // Fallback: navigate using router
+      navigate(route);
+    }
+  };
+
   return (
     <div className="min-h-full bg-background relative">
       {/* Header with back navigation */}
@@ -98,6 +115,7 @@ export default function HelpCenter({ onBack }: HelpCenterProps) {
             onBack={goBack}
             onNavigateToArticle={handleArticleClick}
             onOpenChat={handleOpenChat}
+            onNavigateToFeature={handleNavigateToFeature}
           />
         )}
 
