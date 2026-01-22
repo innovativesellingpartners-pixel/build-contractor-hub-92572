@@ -940,11 +940,11 @@ export function ScheduleMeetingDialog({
                   />
                   <Button 
                     type="button" 
-                    variant="outline" 
-                    size="icon"
+                    variant="default"
                     onClick={handleAddRecipient}
+                    className="bg-primary hover:bg-primary/90"
                   >
-                    <Plus className="h-4 w-4" />
+                    Save
                   </Button>
                 </div>
                 {recipients.length > 0 && (
