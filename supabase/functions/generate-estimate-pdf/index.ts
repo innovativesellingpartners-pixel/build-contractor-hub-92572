@@ -134,10 +134,10 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (estimateError || !estimate) throw new Error("Estimate not found");
 
-    // Fetch contractor profile for branding
+    // Fetch contractor profile for branding (including brand colors)
     const { data: profile } = await supabase
       .from("profiles")
-      .select("company_name, contact_name, logo_url, phone, business_address, city, state, zip_code, business_email, website_url, license_number")
+      .select("company_name, contact_name, logo_url, phone, business_address, city, state, zip_code, business_email, website_url, license_number, brand_primary_color, brand_secondary_color, brand_accent_color")
       .eq("id", estimate.user_id)
       .single();
 
@@ -169,9 +169,29 @@ const handler = async (req: Request): Promise<Response> => {
     const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
     const fontReg = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
-    // Premium Color Palette
-    const primaryNavy = rgb(0.086, 0.118, 0.173);      // Deep navy
-    const accentGold = rgb(0.835, 0.624, 0.278);       // Classic gold
+    // Helper to convert hex color to RGB
+    const hexToRgb = (hex: string) => {
+      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      return result ? {
+        r: parseInt(result[1], 16) / 255,
+        g: parseInt(result[2], 16) / 255,
+        b: parseInt(result[3], 16) / 255
+      } : { r: 0.086, g: 0.118, b: 0.173 }; // fallback to navy
+    };
+
+    // Use contractor brand colors or fallback to defaults
+    const primaryHex = profile?.brand_primary_color || '#D50A22';
+    const secondaryHex = profile?.brand_secondary_color || '#1e3a5f';
+    const accentHex = profile?.brand_accent_color || '#c9a227';
+    
+    const primaryRgb = hexToRgb(primaryHex);
+    const secondaryRgb = hexToRgb(secondaryHex);
+    const accentRgb = hexToRgb(accentHex);
+
+    // Premium Color Palette - using contractor brand colors
+    const primaryNavy = rgb(secondaryRgb.r, secondaryRgb.g, secondaryRgb.b);      // Secondary for headers
+    const accentGold = rgb(accentRgb.r, accentRgb.g, accentRgb.b);               // Accent color
+    const primaryColor = rgb(primaryRgb.r, primaryRgb.g, primaryRgb.b);          // Primary brand color
     const darkText = rgb(0.133, 0.133, 0.133);
     const mediumText = rgb(0.4, 0.4, 0.4);
     const lightText = rgb(0.55, 0.55, 0.55);

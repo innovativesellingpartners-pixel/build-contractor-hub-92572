@@ -91,6 +91,13 @@ serve(async (req) => {
       throw error;
     }
 
+    // Fetch contractor profile for branding (including brand colors)
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('company_name, contact_name, logo_url, phone, business_address, city, state, zip_code, business_email, website_url, license_number, brand_primary_color, brand_secondary_color, brand_accent_color')
+      .eq('id', estimate.user_id)
+      .single();
+
     // Log view with IP address
     await supabase.from('estimate_views').insert({
       estimate_id: estimate.id,
@@ -107,7 +114,10 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ estimate }),
+      JSON.stringify({ 
+        estimate,
+        contractor: profile || null
+      }),
       { 
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }

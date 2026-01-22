@@ -15,6 +15,7 @@ import ct1Logo from '@/assets/ct1-round-logo-new.png';
 export default function PublicEstimate() {
   const { token } = useParams();
   const [estimate, setEstimate] = useState<any>(null);
+  const [contractor, setContractor] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [signing, setSigning] = useState(false);
   const [signed, setSigned] = useState(false);
@@ -61,6 +62,7 @@ export default function PublicEstimate() {
       
       const estimateData = data.estimate;
       setEstimate(estimateData);
+      setContractor(data.contractor || null);
       setSigned(!!estimateData.signed_at);
     } catch (error) {
       console.error('Error fetching estimate:', error);
@@ -168,30 +170,44 @@ export default function PublicEstimate() {
   const lineItems = estimate.line_items || [];
   const costSummary = estimate.cost_summary || {};
 
+  // Get brand colors from contractor profile or use defaults
+  const brandColors = {
+    primary: contractor?.brand_primary_color || '#D50A22',
+    secondary: contractor?.brand_secondary_color || '#1e3a5f',
+    accent: contractor?.brand_accent_color || '#c9a227',
+  };
+
+  // Use contractor logo if available, otherwise fallback to CT1 logo
+  const displayLogo = contractor?.logo_url || ct1Logo;
+  const companyName = contractor?.company_name || 'Professional Estimate';
+
   return (
     <div className="min-h-screen bg-muted py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Professional Header with Branding */}
         <Card className="overflow-hidden border-2 shadow-xl">
-          <div className="bg-gradient-to-br from-primary via-primary-hover to-primary p-8 sm:p-12 relative">
+          <div 
+            className="p-8 sm:p-12 relative"
+            style={{ background: `linear-gradient(135deg, ${brandColors.secondary} 0%, ${brandColors.primary} 100%)` }}
+          >
             <div className="absolute inset-0 bg-black/10"></div>
             <div className="relative z-10">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
                 <div className="flex items-center gap-6">
                   <div className="bg-white rounded-full p-3 shadow-2xl">
                     <img 
-                      src={ct1Logo}
-                      alt="CT1 Logo" 
-                      className="w-14 h-14 sm:w-16 sm:h-16"
+                      src={displayLogo}
+                      alt="Company Logo" 
+                      className="w-14 h-14 sm:w-16 sm:h-16 object-contain"
                     />
                   </div>
                   <div>
-                    <h1 className="text-3xl sm:text-5xl font-black text-primary-foreground tracking-tight">
-                      Professional Estimate
+                    <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
+                      {companyName}
                     </h1>
                     {estimate.estimate_number && (
-                      <p className="text-primary-foreground/95 text-xl font-semibold mt-2">
-                        #{estimate.estimate_number}
+                      <p className="text-white/90 text-xl font-semibold mt-2">
+                        Estimate #{estimate.estimate_number}
                       </p>
                     )}
                   </div>
@@ -202,7 +218,7 @@ export default function PublicEstimate() {
                     Accepted
                   </Badge>
                 ) : (
-                  <Badge className="bg-white/20 text-primary-foreground border-white/30 text-lg px-6 py-3 backdrop-blur-sm">
+                  <Badge className="bg-white/20 text-white border-white/30 text-lg px-6 py-3 backdrop-blur-sm">
                     Awaiting Signature
                   </Badge>
                 )}
@@ -210,12 +226,15 @@ export default function PublicEstimate() {
             </div>
           </div>
           <CardContent className="p-8 sm:p-10 bg-gradient-to-br from-background to-muted/30">
-            <div className="border-l-4 border-primary pl-8 bg-white/50 backdrop-blur-sm p-6 rounded-r-lg shadow-sm">
+            <div 
+              className="pl-8 bg-white/50 backdrop-blur-sm p-6 rounded-r-lg shadow-sm"
+              style={{ borderLeft: `4px solid ${brandColors.primary}` }}
+            >
               <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">
                 {estimate.title}
               </h2>
               <p className="text-muted-foreground text-lg flex items-center gap-2">
-                <Building2 className="h-5 w-5 text-primary" />
+                <Building2 className="h-5 w-5" style={{ color: brandColors.primary }} />
                 Prepared for <span className="font-semibold text-foreground">{estimate.client_name}</span>
               </p>
             </div>
@@ -347,11 +366,14 @@ export default function PublicEstimate() {
                 )}
               </>
             )}
-            <Separator className="my-6 bg-primary/20" />
-            <div className="bg-gradient-to-r from-primary to-primary-hover p-6 rounded-xl shadow-lg">
+            <Separator className="my-6" style={{ backgroundColor: `${brandColors.primary}33` }} />
+            <div 
+              className="p-6 rounded-xl shadow-lg"
+              style={{ background: `linear-gradient(90deg, ${brandColors.primary} 0%, ${brandColors.secondary} 100%)` }}
+            >
               <div className="flex justify-between items-center">
-                <span className="text-2xl font-black text-primary-foreground">Total Investment</span>
-                <span className="text-4xl font-black text-primary-foreground">
+                <span className="text-2xl font-black text-white">Total Investment</span>
+                <span className="text-4xl font-black text-white">
                   ${estimate.total_amount?.toFixed(2) || '0.00'}
                 </span>
               </div>

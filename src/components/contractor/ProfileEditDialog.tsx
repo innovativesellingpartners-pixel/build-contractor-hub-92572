@@ -8,7 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
-import { Pencil, Upload, Loader2, Check, Building2, User, Globe, FileText, DollarSign, Shield, Percent } from "lucide-react";
+import { Pencil, Upload, Loader2, Check, Building2, User, Globe, FileText, DollarSign, Shield, Percent, Palette } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -39,6 +39,10 @@ export function ProfileEditDialog() {
     website_url: '',
     license_number: '',
     trade: '',
+    // Brand Colors
+    brand_primary_color: '#D50A22',
+    brand_secondary_color: '#1e3a5f',
+    brand_accent_color: '#c9a227',
     // Estimate Defaults
     default_sales_tax_rate: '',
     default_deposit_percent: '',
@@ -63,6 +67,9 @@ export function ProfileEditDialog() {
         website_url: profile.website_url || '',
         license_number: profile.license_number || '',
         trade: profile.trade || '',
+        brand_primary_color: profile.brand_primary_color || '#D50A22',
+        brand_secondary_color: profile.brand_secondary_color || '#1e3a5f',
+        brand_accent_color: profile.brand_accent_color || '#c9a227',
         default_sales_tax_rate: profile.default_sales_tax_rate?.toString() || '6.00',
         default_deposit_percent: profile.default_deposit_percent?.toString() || '30.00',
         default_warranty_years: profile.default_warranty_years?.toString() || '2',
@@ -139,6 +146,9 @@ export function ProfileEditDialog() {
         website_url: formData.website_url,
         license_number: formData.license_number,
         trade: formData.trade,
+        brand_primary_color: formData.brand_primary_color,
+        brand_secondary_color: formData.brand_secondary_color,
+        brand_accent_color: formData.brand_accent_color,
         default_sales_tax_rate: formData.default_sales_tax_rate ? parseFloat(formData.default_sales_tax_rate) : 6.0,
         default_deposit_percent: formData.default_deposit_percent ? parseFloat(formData.default_deposit_percent) : 30.0,
         default_warranty_years: formData.default_warranty_years ? parseInt(formData.default_warranty_years) : 2,
@@ -456,6 +466,113 @@ export function ProfileEditDialog() {
                         onChange={handleChange}
                         placeholder="XX-XXXXXXX"
                       />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Brand Colors */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <Palette className="h-4 w-4" />
+                    Brand Colors
+                  </CardTitle>
+                  <CardDescription>These colors will be used on estimates, invoices, and proposals sent to customers</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="brand_primary_color">Primary Color</Label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          id="brand_primary_color"
+                          name="brand_primary_color"
+                          value={formData.brand_primary_color}
+                          onChange={handleChange}
+                          className="w-12 h-10 rounded border cursor-pointer"
+                        />
+                        <Input
+                          value={formData.brand_primary_color}
+                          onChange={handleChange}
+                          name="brand_primary_color"
+                          placeholder="#D50A22"
+                          className="flex-1 font-mono text-sm"
+                        />
+                      </div>
+                      <p className="text-xs text-muted-foreground">Main brand color for headers & buttons</p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="brand_secondary_color">Secondary Color</Label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          id="brand_secondary_color"
+                          name="brand_secondary_color"
+                          value={formData.brand_secondary_color}
+                          onChange={handleChange}
+                          className="w-12 h-10 rounded border cursor-pointer"
+                        />
+                        <Input
+                          value={formData.brand_secondary_color}
+                          onChange={handleChange}
+                          name="brand_secondary_color"
+                          placeholder="#1e3a5f"
+                          className="flex-1 font-mono text-sm"
+                        />
+                      </div>
+                      <p className="text-xs text-muted-foreground">Background & section headers</p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="brand_accent_color">Accent Color</Label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          id="brand_accent_color"
+                          name="brand_accent_color"
+                          value={formData.brand_accent_color}
+                          onChange={handleChange}
+                          className="w-12 h-10 rounded border cursor-pointer"
+                        />
+                        <Input
+                          value={formData.brand_accent_color}
+                          onChange={handleChange}
+                          name="brand_accent_color"
+                          placeholder="#c9a227"
+                          className="flex-1 font-mono text-sm"
+                        />
+                      </div>
+                      <p className="text-xs text-muted-foreground">Highlights & accents</p>
+                    </div>
+                  </div>
+                  
+                  {/* Preview */}
+                  <Separator />
+                  <div className="space-y-2">
+                    <Label className="text-xs text-muted-foreground">Preview</Label>
+                    <div className="flex items-center gap-4 p-4 border rounded-lg bg-muted/30">
+                      <div 
+                        className="w-16 h-16 rounded-lg shadow-sm flex items-center justify-center text-white text-xs font-bold"
+                        style={{ backgroundColor: formData.brand_primary_color }}
+                      >
+                        Primary
+                      </div>
+                      <div 
+                        className="w-16 h-16 rounded-lg shadow-sm flex items-center justify-center text-white text-xs font-bold"
+                        style={{ backgroundColor: formData.brand_secondary_color }}
+                      >
+                        Secondary
+                      </div>
+                      <div 
+                        className="w-16 h-16 rounded-lg shadow-sm flex items-center justify-center text-white text-xs font-bold"
+                        style={{ backgroundColor: formData.brand_accent_color }}
+                      >
+                        Accent
+                      </div>
+                      <div className="flex-1 text-sm text-muted-foreground">
+                        These colors will appear on your estimates, invoices, and customer-facing documents.
+                      </div>
                     </div>
                   </div>
                 </CardContent>

@@ -21,6 +21,10 @@ export interface ContractorProfile {
   default_sales_tax_rate: number | null;
   default_deposit_percent: number | null;
   default_warranty_years: number | null;
+  // Brand colors
+  brand_primary_color: string | null;
+  brand_secondary_color: string | null;
+  brand_accent_color: string | null;
 }
 
 export function useContractorProfile() {
@@ -51,7 +55,10 @@ export function useContractorProfile() {
           trade,
           default_sales_tax_rate,
           default_deposit_percent,
-          default_warranty_years
+          default_warranty_years,
+          brand_primary_color,
+          brand_secondary_color,
+          brand_accent_color
         `)
         .eq('user_id', user.id)
         .single();
