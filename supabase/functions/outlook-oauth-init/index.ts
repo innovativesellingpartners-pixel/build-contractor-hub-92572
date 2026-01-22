@@ -56,7 +56,9 @@ serve(async (req) => {
 
     const state = crypto.randomUUID();
     
-    await supabase
+    console.log('Creating OAuth state for user:', user.id, 'type:', type, 'state:', state);
+    
+    const { error: insertError } = await supabase
       .from('oauth_states')
       .insert({
         state,
@@ -66,6 +68,13 @@ serve(async (req) => {
         created_at: new Date().toISOString(),
         expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString()
       });
+
+    if (insertError) {
+      console.error('Failed to insert OAuth state:', insertError);
+      throw new Error('Failed to create OAuth state');
+    }
+    
+    console.log('OAuth state created successfully');
 
     const redirectUri = `${SUPABASE_URL}/functions/v1/outlook-oauth-callback`;
     
