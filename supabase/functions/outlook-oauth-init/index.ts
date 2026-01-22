@@ -63,6 +63,7 @@ serve(async (req) => {
       .insert({
         state,
         user_id: user.id,
+        contractor_id: user.id, // Required field - contractor_id equals user_id
         provider: 'outlook',
         type,
         created_at: new Date().toISOString(),
