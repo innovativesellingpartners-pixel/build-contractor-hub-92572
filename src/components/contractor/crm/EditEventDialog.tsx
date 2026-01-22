@@ -511,12 +511,12 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess }: EditEv
                 />
                 <Button
                   type="button"
-                  variant="outline"
-                  size="icon"
+                  variant="default"
                   onClick={handleAddRecipient}
                   disabled={!newRecipient.trim()}
+                  className="bg-primary hover:bg-primary/90"
                 >
-                  <Plus className="h-4 w-4" />
+                  Save
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground">
