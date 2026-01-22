@@ -3,11 +3,11 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { AddressAutocomplete } from '@/components/ui/address-autocomplete';
 import { Plus } from 'lucide-react';
 import { Lead, LeadSource, OTHER_SOURCE_ID } from '@/hooks/useLeads';
-import { AIScopeNotes } from '@/components/contractor/crm/AIScopeNotes';
 import { VoiceInputField } from '@/components/ui/voice-input-field';
 
 interface AddLeadDialogProps {
@@ -235,13 +235,16 @@ export function AddLeadDialog({ onAdd, sources }: AddLeadDialogProps) {
               />
             </div>
           </div>
-          {/* AI Scope Notes */}
-          <AIScopeNotes
-            notes={formData.notes}
-            onNotesChange={(notes) => setFormData({ ...formData, notes })}
-            label="Lead Notes"
-            placeholder="Record your initial conversation or type notes about the project"
-          />
+          <div className="space-y-2">
+            <Label htmlFor="notes">Lead Notes</Label>
+            <Textarea
+              id="notes"
+              value={formData.notes}
+              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              placeholder="Notes about the project"
+              rows={4}
+            />
+          </div>
           <div className="flex justify-end gap-2 pt-4 border-t sticky bottom-0 bg-background py-4">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel
