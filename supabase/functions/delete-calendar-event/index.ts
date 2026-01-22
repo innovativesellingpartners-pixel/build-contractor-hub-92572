@@ -50,18 +50,79 @@ async function refreshGoogleToken(refreshToken: string): Promise<string> {
   return data.access_token;
 }
 
-async function deleteGoogleCalendarEvent(accessToken: string, eventId: string): Promise<void> {
-  const response = await fetch(
-    `https://www.googleapis.com/calendar/v3/calendars/primary/events/${eventId}`,
-    {
-      method: 'DELETE',
+async function listGoogleWritableCalendars(accessToken: string): Promise<string[]> {
+  try {
+    const calendarListUrl = 'https://www.googleapis.com/calendar/v3/users/me/calendarList';
+    const calendarListResponse = await fetch(calendarListUrl, {
       headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    if (!calendarListResponse.ok) {
+      // Fallback to primary only
+      console.warn('Failed to fetch Google calendar list, falling back to primary:', calendarListResponse.status);
+      return ['primary'];
     }
-  );
-  
-  if (!response.ok && response.status !== 404) {
+
+    const calendarListData = await calendarListResponse.json();
+    const calendars = calendarListData.items || [];
+
+    // Only calendars where user can delete events
+    const writable = calendars
+      .filter((c: any) => c?.id)
+      .filter((c: any) => c.accessRole && c.accessRole !== 'freeBusyReader')
+      .map((c: any) => c.id as string);
+
+    // Always include primary as a safe fallback
+    if (!writable.includes('primary')) writable.unshift('primary');
+
+    return writable;
+  } catch (err) {
+    console.warn('Error listing Google calendars, falling back to primary:', err);
+    return ['primary'];
+  }
+}
+
+async function deleteGoogleCalendarEvent(accessToken: string, eventId: string): Promise<void> {
+  // IMPORTANT: fetch-calendar-events aggregates ALL sub-calendars.
+  // If we only delete from `primary`, the old event may remain in another calendar and keep blocking availability.
+  const calendarIds = await listGoogleWritableCalendars(accessToken);
+
+  let deleted = false;
+  let lastNon404Error: string | null = null;
+
+  for (const calendarId of calendarIds) {
+    const response = await fetch(
+      `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}`,
+      {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${accessToken}` },
+      }
+    );
+
+    if (response.ok) {
+      deleted = true;
+      console.log('Deleted Google event from calendar:', calendarId);
+      break;
+    }
+
+    // 404 = not in this calendar; keep trying others
+    if (response.status === 404) continue;
+
+    // Common for read-only/subscribed calendars; keep trying
+    if (response.status === 401 || response.status === 403) {
+      const txt = await response.text().catch(() => '');
+      console.warn(`Google delete returned ${response.status} for calendar ${calendarId}:`, txt);
+      continue;
+    }
+
     const error = await response.text();
-    throw new Error(`Failed to delete Google Calendar event: ${error}`);
+    lastNon404Error = `calendar=${calendarId} status=${response.status} body=${error}`;
+    // keep trying other calendars just in case this one is not the right one
+  }
+
+  // If we never found it anywhere, that's fine (already gone)
+  if (!deleted && lastNon404Error) {
+    throw new Error(`Failed to delete Google Calendar event ${eventId}: ${lastNon404Error}`);
   }
 }
 
