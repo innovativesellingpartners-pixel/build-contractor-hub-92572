@@ -248,7 +248,12 @@ export function ScheduleMeetingDialog({
     setLoadingDayEvents(true);
     setDayEvents([]);
     
-    const events: DayEvent[] = [];
+    // We'll collect local + external events, then de-dupe.
+    // IMPORTANT: If an event exists both locally (user_meetings.calendar_event_id)
+    // and in the external calendar feed, we must prefer the external event times.
+    // Otherwise stale local rows can incorrectly mark slots as busy.
+    const localEvents: DayEvent[] = [];
+    const externalEvents: DayEvent[] = [];
     const dateStart = startOfDay(date);
     const dateEnd = endOfDay(date);
     
@@ -263,7 +268,7 @@ export function ScheduleMeetingDialog({
       
       if (!localError && localMeetings) {
         for (const meeting of localMeetings) {
-          events.push({
+          localEvents.push({
             id: meeting.id,
             title: meeting.title,
             startTime: new Date(meeting.start_time),
@@ -294,11 +299,7 @@ export function ScheduleMeetingDialog({
                 
                 // Only include events for the selected day
                 if (isSameDay(startDate, date)) {
-                  // Skip if already exists locally (based on calendar_event_id match)
-                  const isDuplicate = localMeetings?.some(lm => lm.calendar_event_id === event.id);
-                  if (isDuplicate) continue;
-                  
-                  events.push({
+                  externalEvents.push({
                     id: event.id,
                     title: event.summary || 'Busy',
                     startTime: startDate,
@@ -314,10 +315,26 @@ export function ScheduleMeetingDialog({
           console.warn('Failed to fetch calendar events:', calErr);
         }
       }
-      
-      // Sort by start time
-      events.sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
-      setDayEvents(events);
+
+      // De-dupe: if a local meeting is synced (user_meetings.calendar_event_id matches external id),
+      // prefer the external event and drop the local one.
+      const syncedLocalIdsToDrop = new Set<string>();
+      if (localMeetings && localMeetings.length > 0 && externalEvents.length > 0) {
+        const externalIds = new Set(externalEvents.map(e => e.id));
+        for (const lm of localMeetings) {
+          if (lm.calendar_event_id && externalIds.has(lm.calendar_event_id)) {
+            syncedLocalIdsToDrop.add(lm.id);
+          }
+        }
+      }
+
+      const merged: DayEvent[] = [
+        ...externalEvents,
+        ...localEvents.filter(e => !syncedLocalIdsToDrop.has(e.id)),
+      ];
+
+      merged.sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
+      setDayEvents(merged);
     } catch (err) {
       console.error('Error fetching day events:', err);
     } finally {
