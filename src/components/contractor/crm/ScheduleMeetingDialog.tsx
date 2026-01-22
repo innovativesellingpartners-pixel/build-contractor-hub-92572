@@ -490,12 +490,16 @@ export function ScheduleMeetingDialog({
         console.warn('Calendar sync failed (meeting still saved locally):', calSyncError);
       }
 
-      // Send email invitations ONLY if calendar invites weren't sent
-      // This prevents duplicate invites - calendar invite takes priority
+      // Send email invitations
+      // If calendar is connected, Google/Outlook APIs send invites via the calendar
+      // Only send email fallback invites if calendar sync failed or no calendar connected
       if (recipients.length > 0 && !invitesSentViaCalendar) {
         console.log('Calendar not connected or sync failed - sending email invites as fallback');
-        for (const email of recipients) {
-          await supabase.functions.invoke('send-meeting-invite', {
+        console.log(`Sending invites to ${recipients.length} recipients:`, recipients);
+        
+        // Use Promise.allSettled to ensure ALL recipients get invites even if some fail
+        const invitePromises = recipients.map(email => 
+          supabase.functions.invoke('send-meeting-invite', {
             body: {
               recipientEmail: email,
               meetingTitle: eventTitle,
@@ -509,9 +513,25 @@ export function ScheduleMeetingDialog({
               endDateTime: endDateTime.toISOString(),
             },
             headers: { Authorization: `Bearer ${session.access_token}` }
-          }).catch(err => {
-            console.warn(`Failed to send invite to ${email}:`, err);
-          });
+          })
+        );
+        
+        const results = await Promise.allSettled(invitePromises);
+        
+        // Log results for debugging
+        results.forEach((result, index) => {
+          if (result.status === 'fulfilled') {
+            console.log(`Successfully sent invite to ${recipients[index]}`);
+          } else {
+            console.warn(`Failed to send invite to ${recipients[index]}:`, result.reason);
+          }
+        });
+        
+        const successCount = results.filter(r => r.status === 'fulfilled').length;
+        const failCount = results.filter(r => r.status === 'rejected').length;
+        
+        if (failCount > 0) {
+          console.warn(`${failCount} of ${recipients.length} invites failed`);
         }
       }
 

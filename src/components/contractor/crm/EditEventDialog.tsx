@@ -232,44 +232,63 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess }: EditEv
         if (dbError) throw dbError;
 
         // Send UPDATED invites to existing recipients (they need the new details)
-        for (const email of existingRecipients) {
-          await supabase.functions.invoke('send-meeting-invite', {
-            body: {
-              recipientEmail: email,
-              meetingTitle: title,
-              meetingDate: format(selectedDate, 'EEEE, MMMM d, yyyy'),
-              meetingTime: format(startDateTime, 'h:mm a'),
-              duration: duration,
-              location: location || 'TBD',
-              notes: description || undefined,
-              startDateTime: startDateTime.toISOString(),
-              endDateTime: endDateTime.toISOString(),
-              isUpdate: true, // Flag to indicate this is an update
-            },
-            headers: { Authorization: `Bearer ${session.access_token}` }
-          }).catch(err => {
-            console.warn(`Failed to send update to ${email}:`, err);
+        // Use Promise.allSettled to ensure ALL recipients get their invites
+        if (existingRecipients.length > 0) {
+          console.log(`Sending updates to ${existingRecipients.length} existing recipients:`, existingRecipients);
+          
+          const updatePromises = existingRecipients.map(email =>
+            supabase.functions.invoke('send-meeting-invite', {
+              body: {
+                recipientEmail: email,
+                meetingTitle: title,
+                meetingDate: format(selectedDate, 'EEEE, MMMM d, yyyy'),
+                meetingTime: format(startDateTime, 'h:mm a'),
+                duration: duration,
+                location: location || 'TBD',
+                notes: description || undefined,
+                startDateTime: startDateTime.toISOString(),
+                endDateTime: endDateTime.toISOString(),
+                isUpdate: true,
+              },
+              headers: { Authorization: `Bearer ${session.access_token}` }
+            })
+          );
+          
+          const updateResults = await Promise.allSettled(updatePromises);
+          updateResults.forEach((result, index) => {
+            if (result.status === 'rejected') {
+              console.warn(`Failed to send update to ${existingRecipients[index]}:`, result.reason);
+            }
           });
         }
 
         // Send NEW invites to newly added recipients
-        for (const email of newlyAddedRecipients) {
-          await supabase.functions.invoke('send-meeting-invite', {
-            body: {
-              recipientEmail: email,
-              meetingTitle: title,
-              meetingDate: format(selectedDate, 'EEEE, MMMM d, yyyy'),
-              meetingTime: format(startDateTime, 'h:mm a'),
-              duration: duration,
-              location: location || 'TBD',
-              notes: description || undefined,
-              startDateTime: startDateTime.toISOString(),
-              endDateTime: endDateTime.toISOString(),
-              isUpdate: false, // This is a new invite
-            },
-            headers: { Authorization: `Bearer ${session.access_token}` }
-          }).catch(err => {
-            console.warn(`Failed to send invite to ${email}:`, err);
+        if (newlyAddedRecipients.length > 0) {
+          console.log(`Sending invites to ${newlyAddedRecipients.length} new recipients:`, newlyAddedRecipients);
+          
+          const newInvitePromises = newlyAddedRecipients.map(email =>
+            supabase.functions.invoke('send-meeting-invite', {
+              body: {
+                recipientEmail: email,
+                meetingTitle: title,
+                meetingDate: format(selectedDate, 'EEEE, MMMM d, yyyy'),
+                meetingTime: format(startDateTime, 'h:mm a'),
+                duration: duration,
+                location: location || 'TBD',
+                notes: description || undefined,
+                startDateTime: startDateTime.toISOString(),
+                endDateTime: endDateTime.toISOString(),
+                isUpdate: false,
+              },
+              headers: { Authorization: `Bearer ${session.access_token}` }
+            })
+          );
+          
+          const newResults = await Promise.allSettled(newInvitePromises);
+          newResults.forEach((result, index) => {
+            if (result.status === 'rejected') {
+              console.warn(`Failed to send invite to ${newlyAddedRecipients[index]}:`, result.reason);
+            }
           });
         }
       } else {
