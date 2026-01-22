@@ -760,20 +760,14 @@ export function ScheduleMeetingDialog({
                               </span>
                             </div>
                             
-                            <div className="flex-1 flex items-center gap-2">
+                            <div className="flex-1 min-w-0 flex items-center gap-2 overflow-hidden">
                               <Badge variant="secondary" className="text-xs shrink-0">
                                 {durationMins >= 60 ? `${Math.floor(durationMins / 60)}h${durationMins % 60 > 0 ? ` ${durationMins % 60}m` : ''}` : `${durationMins}m`}
                               </Badge>
-                              <span className="text-sm font-medium truncate">
+                              <span className="text-sm font-medium truncate min-w-0">
                                 {eventStartingHere.title}
                               </span>
-                              {eventStartingHere.location && (
-                                <span className="text-xs text-muted-foreground flex items-center gap-1 shrink-0">
-                                  <MapPin className="h-3 w-3" />
-                                  <span className="truncate max-w-[120px]">{eventStartingHere.location}</span>
-                                </span>
-                              )}
-                              <Pencil className="h-3 w-3 ml-auto text-muted-foreground shrink-0" />
+                              <Pencil className="h-3 w-3 text-muted-foreground shrink-0" />
                             </div>
                           </div>
                         );
