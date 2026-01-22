@@ -35,6 +35,9 @@ interface CalendarEvent {
   calendar_email?: string;
   calendarId?: string;
   calendarName?: string;
+  // For local meetings (user_meetings) that have been synced to an external calendar,
+  // store the provider event ID so EditEventDialog can update the original event.
+  calendarEventId?: string;
   isLocal?: boolean;
 }
 
@@ -350,6 +353,7 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
         start: { dateTime: meeting.start_time },
         end: { dateTime: meeting.end_time },
         provider: meeting.provider || 'local',
+        calendarEventId: meeting.calendar_event_id || undefined,
         isLocal: true,
       } as CalendarEvent));
 
