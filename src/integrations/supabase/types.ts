@@ -2632,12 +2632,13 @@ export type Database = {
           created_at: string
           duration_minutes: number | null
           id: string
-          job_id: string
+          job_id: string | null
           location: string | null
           meeting_type: string
           notes: string | null
           scheduled_date: string
           scheduled_time: string | null
+          source: string | null
           title: string
           updated_at: string
           user_id: string
@@ -2647,12 +2648,13 @@ export type Database = {
           created_at?: string
           duration_minutes?: number | null
           id?: string
-          job_id: string
+          job_id?: string | null
           location?: string | null
           meeting_type?: string
           notes?: string | null
           scheduled_date: string
           scheduled_time?: string | null
+          source?: string | null
           title: string
           updated_at?: string
           user_id: string
@@ -2662,12 +2664,13 @@ export type Database = {
           created_at?: string
           duration_minutes?: number | null
           id?: string
-          job_id?: string
+          job_id?: string | null
           location?: string | null
           meeting_type?: string
           notes?: string | null
           scheduled_date?: string
           scheduled_time?: string | null
+          source?: string | null
           title?: string
           updated_at?: string
           user_id?: string

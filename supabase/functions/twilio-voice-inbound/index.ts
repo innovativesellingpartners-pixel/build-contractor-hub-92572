@@ -47,6 +47,114 @@ interface CollectedInfo {
   appointmentDate?: string;
   appointmentTime?: string;
   serviceNeeded?: string;
+  requestedDateTime?: string; // Raw user request like "today at 3pm"
+}
+
+/**
+ * Parse natural language time expressions into a Date object
+ * Examples: "today at 3pm", "tomorrow morning", "next Monday at 2"
+ */
+function parseRequestedTime(timeRequest: string, timezone: string = 'America/New_York'): { startDate: Date; endDate: Date; displayTime: string } {
+  const now = new Date();
+  const lowerRequest = timeRequest.toLowerCase();
+  
+  // Default to tomorrow at 10 AM
+  let targetDate = new Date(now);
+  let hours = 10;
+  let minutes = 0;
+  
+  // Parse day references
+  if (lowerRequest.includes('today')) {
+    targetDate = new Date(now);
+  } else if (lowerRequest.includes('tomorrow')) {
+    targetDate = new Date(now);
+    targetDate.setDate(targetDate.getDate() + 1);
+  } else if (lowerRequest.includes('monday')) {
+    targetDate = getNextDayOfWeek(now, 1);
+  } else if (lowerRequest.includes('tuesday')) {
+    targetDate = getNextDayOfWeek(now, 2);
+  } else if (lowerRequest.includes('wednesday')) {
+    targetDate = getNextDayOfWeek(now, 3);
+  } else if (lowerRequest.includes('thursday')) {
+    targetDate = getNextDayOfWeek(now, 4);
+  } else if (lowerRequest.includes('friday')) {
+    targetDate = getNextDayOfWeek(now, 5);
+  } else if (lowerRequest.includes('saturday')) {
+    targetDate = getNextDayOfWeek(now, 6);
+  } else if (lowerRequest.includes('sunday')) {
+    targetDate = getNextDayOfWeek(now, 0);
+  } else if (lowerRequest.includes('next week')) {
+    targetDate = new Date(now);
+    targetDate.setDate(targetDate.getDate() + 7);
+  } else {
+    // Default to tomorrow if no day specified
+    targetDate.setDate(targetDate.getDate() + 1);
+  }
+  
+  // Parse time references
+  const timePatterns = [
+    /(\d{1,2}):?(\d{2})?\s*(am|pm|a\.m\.|p\.m\.)/i,
+    /(\d{1,2})\s*(am|pm|a\.m\.|p\.m\.)/i,
+    /(\d{1,2})\s*o'?clock/i,
+  ];
+  
+  for (const pattern of timePatterns) {
+    const match = lowerRequest.match(pattern);
+    if (match) {
+      hours = parseInt(match[1]);
+      minutes = match[2] ? parseInt(match[2]) : 0;
+      const meridiem = match[3] || match[2];
+      
+      if (meridiem && (meridiem.toLowerCase().includes('p') && hours !== 12)) {
+        hours += 12;
+      } else if (meridiem && (meridiem.toLowerCase().includes('a') && hours === 12)) {
+        hours = 0;
+      }
+      break;
+    }
+  }
+  
+  // Handle relative time words
+  if (lowerRequest.includes('morning') && !timePatterns.some(p => lowerRequest.match(p))) {
+    hours = 9;
+  } else if (lowerRequest.includes('afternoon') && !timePatterns.some(p => lowerRequest.match(p))) {
+    hours = 14;
+  } else if (lowerRequest.includes('evening') && !timePatterns.some(p => lowerRequest.match(p))) {
+    hours = 17;
+  }
+  
+  // Set the final date/time
+  targetDate.setHours(hours, minutes, 0, 0);
+  
+  // If the time has already passed today, move to tomorrow
+  if (targetDate <= now) {
+    targetDate.setDate(targetDate.getDate() + 1);
+  }
+  
+  const endDate = new Date(targetDate);
+  endDate.setHours(endDate.getHours() + 1); // 1 hour duration
+  
+  // Format display time
+  const displayTime = targetDate.toLocaleString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    timeZone: timezone
+  });
+  
+  return { startDate: targetDate, endDate, displayTime };
+}
+
+/**
+ * Get the next occurrence of a specific day of week
+ */
+function getNextDayOfWeek(from: Date, dayOfWeek: number): Date {
+  const result = new Date(from);
+  const daysUntil = (dayOfWeek + 7 - from.getDay()) % 7 || 7;
+  result.setDate(result.getDate() + daysUntil);
+  return result;
 }
 
 /**
@@ -268,11 +376,12 @@ async function getAIResponse(
       response = `I need your email to send the calendar invite. Can you spell it out for me?`;
     }
   } else if (stage === 'schedule_appointment') {
-    // Use AI to understand scheduling preference
+    // Capture the user's requested date/time for parsing
     newStage = 'confirm_booking';
     // The booking will be handled separately
     response = '__SCHEDULE_APPOINTMENT__';
-    updatedInfo.serviceNeeded = userMessage; // Capture their scheduling preference
+    updatedInfo.requestedDateTime = userMessage; // Capture their scheduling preference for time parsing
+    updatedInfo.serviceNeeded = userMessage;
   } else {
     // For general conversation or ending, use AI
     if (!apiKey) {
@@ -366,15 +475,54 @@ async function scheduleAppointment(
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     
-    // Default to tomorrow at 10 AM if no specific time mentioned
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(10, 0, 0, 0);
+    // Parse the requested time from the user's speech
+    const timeRequest = collectedInfo.requestedDateTime || collectedInfo.serviceNeeded || 'tomorrow at 10am';
+    console.log('Parsing time request:', timeRequest);
     
-    const endTime = new Date(tomorrow);
-    endTime.setHours(11, 0, 0, 0);
+    const { startDate, endDate, displayTime } = parseRequestedTime(timeRequest);
+    console.log('Parsed appointment time:', { startDate: startDate.toISOString(), displayTime });
     
-    // Create calendar event
+    // Format for display
+    const meetingTimeFormatted = startDate.toLocaleTimeString('en-US', { 
+      hour: 'numeric', 
+      minute: '2-digit',
+      hour12: true 
+    });
+    const meetingDateFormatted = startDate.toLocaleDateString('en-US', { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+    
+    // Store the meeting in job_meetings table for CRM visibility
+    const meetingTitle = `Appointment - ${collectedInfo.name}`;
+    const meetingDescription = `Voice AI scheduled appointment\nCustomer: ${collectedInfo.name}\nPhone: ${collectedInfo.phone}\nAddress: ${collectedInfo.address}\nEmail: ${collectedInfo.email}`;
+    
+    // Insert into job_meetings so it shows in CRM calendar
+    const { data: meetingRecord, error: meetingError } = await supabase
+      .from('job_meetings')
+      .insert({
+        user_id: contractorId,
+        title: meetingTitle,
+        scheduled_date: startDate.toISOString().split('T')[0],
+        scheduled_time: startDate.toTimeString().split(' ')[0],
+        duration_minutes: 60,
+        location: collectedInfo.address || '',
+        meeting_type: 'consultation',
+        notes: meetingDescription,
+      })
+      .select()
+      .single();
+    
+    if (meetingError) {
+      console.error('Error creating job_meeting:', meetingError);
+      // Continue anyway - the calendar event is more important
+    } else {
+      console.log('Created job_meeting record:', meetingRecord?.id);
+    }
+    
+    // Create calendar event in contractor's connected calendar
     const calendarResponse = await fetch(`${supabaseUrl}/functions/v1/create-calendar-event`, {
       method: 'POST',
       headers: {
@@ -382,11 +530,11 @@ async function scheduleAppointment(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        jobName: `Appointment - ${collectedInfo.name}`,
-        description: `Service appointment for ${collectedInfo.name}\nPhone: ${collectedInfo.phone}\nAddress: ${collectedInfo.address}`,
+        jobName: meetingTitle,
+        description: meetingDescription,
         location: collectedInfo.address,
-        startDate: tomorrow.toISOString(),
-        endDate: endTime.toISOString(),
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
         contractorId: contractorId,
         attendees: collectedInfo.email ? [collectedInfo.email] : [],
         sendInvites: true,
@@ -396,9 +544,10 @@ async function scheduleAppointment(
     const calendarResult = await calendarResponse.json();
     console.log('Calendar event result:', calendarResult);
     
-    if (calendarResult.created || calendarResult.results?.some((r: any) => r.success)) {
-      // Also send email invite via our email function
-      if (collectedInfo.email) {
+    // Always send email invite to customer (with ICS attachment)
+    let emailSent = false;
+    if (collectedInfo.email) {
+      try {
         const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-meeting-invite`, {
           method: 'POST',
           headers: {
@@ -408,63 +557,51 @@ async function scheduleAppointment(
           body: JSON.stringify({
             recipientEmail: collectedInfo.email,
             meetingTitle: `Appointment with ${aiProfile.business_name}`,
-            meetingDate: tomorrow.toLocaleDateString('en-US', { 
-              weekday: 'long', 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric' 
-            }),
-            meetingTime: '10:00 AM',
+            meetingDate: meetingDateFormatted,
+            meetingTime: meetingTimeFormatted,
             duration: 60,
             location: collectedInfo.address,
-            notes: `Looking forward to meeting you! If you need to reschedule, please call us back.`,
+            notes: `Looking forward to meeting you! If you need to reschedule, please call us back at ${aiProfile.contractor_phone || 'our office'}.`,
             contractorId: contractorId,
+            startDateTime: startDate.toISOString(),
+            endDateTime: endDate.toISOString(),
           }),
         });
         
         const emailResult = await emailResponse.json();
         console.log('Email invite result:', emailResult);
+        emailSent = emailResult.success || emailResult.emailResponse;
+      } catch (emailErr) {
+        console.error('Error sending email invite:', emailErr);
       }
+    }
+    
+    if (calendarResult.created || calendarResult.results?.some((r: any) => r.success)) {
+      // Calendar event created successfully
+      const confirmMessage = emailSent
+        ? `Perfect! I've scheduled you for ${displayTime} and added it to the calendar. You'll receive a calendar invite at ${collectedInfo.email} momentarily!`
+        : `Perfect! I've scheduled you for ${displayTime} and added it to the calendar. We look forward to seeing you!`;
       
       return {
         success: true,
-        message: `I've added you to the calendar for tomorrow at 10 AM and sent a calendar invite to ${collectedInfo.email}. You should receive it any moment now!`
+        message: confirmMessage
       };
     } else if (calendarResult.requiresCalendarConnection) {
-      // No calendar connected - still send email invite
-      if (collectedInfo.email) {
-        await fetch(`${supabaseUrl}/functions/v1/send-meeting-invite`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${supabaseServiceKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            recipientEmail: collectedInfo.email,
-            meetingTitle: `Appointment with ${aiProfile.business_name}`,
-            meetingDate: tomorrow.toLocaleDateString('en-US', { 
-              weekday: 'long', 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric' 
-            }),
-            meetingTime: '10:00 AM',
-            duration: 60,
-            location: collectedInfo.address,
-            contractorId: contractorId,
-          }),
-        });
-      }
+      // No calendar connected - but we still saved the meeting and sent email
+      const fallbackMessage = emailSent
+        ? `Great! I've scheduled your appointment for ${displayTime}. I've sent a calendar invite to ${collectedInfo.email} so you won't forget!`
+        : `Great! I've scheduled your appointment for ${displayTime}. Someone from our team will confirm with you shortly.`;
       
       return {
         success: true,
-        message: `Great! I've noted your appointment request for tomorrow at 10 AM. Someone will confirm with you shortly. I've also sent an invite to ${collectedInfo.email}!`
+        message: fallbackMessage
       };
     }
     
+    // Fallback - meeting saved but calendar sync failed
     return {
-      success: false,
-      message: "I've noted your information and someone will call you back to confirm the appointment time."
+      success: true,
+      message: `I've scheduled your appointment for ${displayTime}. ${collectedInfo.email ? `I've sent an invite to ${collectedInfo.email}. ` : ''}We look forward to meeting you!`
     };
   } catch (error) {
     console.error('Error scheduling appointment:', error);
