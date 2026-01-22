@@ -53,10 +53,11 @@ import ct1Logo from "@/assets/ct1-round-logo-new.png";
 
 import { VoiceAI } from "@/components/contractor/VoiceAI";
 import Reporting from "@/pages/Reporting";
+import HelpCenter from "@/components/help/HelpCenter";
 
 import { PersonalTasks } from "@/components/contractor/PersonalTasks";
 
-type ActiveSection = 'training' | 'crm' | 'marketplace' | 'leads' | 'insurance' | 'account' | 'voiceai' | 'reporting' | 'tasks';
+type ActiveSection = 'training' | 'crm' | 'marketplace' | 'leads' | 'insurance' | 'account' | 'voiceai' | 'reporting' | 'tasks' | 'help';
 
 export function Dashboard() {
   const { user, profile, signOut } = useAuth();
@@ -309,6 +310,17 @@ export function Dashboard() {
                 <span className="hidden sm:inline">Account</span>
               </Button>
               
+              {/* Help Button */}
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => handleSectionChange('help')}
+                className="flex items-center gap-2 hover:bg-primary/10 transition-colors"
+              >
+                <HelpCircle className="h-4 w-4" />
+                <span className="hidden sm:inline">Help</span>
+              </Button>
+              
               {/* Get App Button */}
               <Button 
                 variant="outline" 
@@ -378,7 +390,13 @@ export function Dashboard() {
             {activeSection === 'leads' && (
               <CT1CRM 
                 onOpenPocketbot={() => setPocketbotOpen(true)} 
-                onSectionChange={setCrmActiveSection}
+                onSectionChange={(section) => {
+                  if (section === 'help') {
+                    handleSectionChange('help');
+                  } else {
+                    setCrmActiveSection(section);
+                  }
+                }}
               />
             )}
             {activeSection === 'insurance' && (
@@ -424,6 +442,11 @@ export function Dashboard() {
                   className="mb-4"
                 />
                 <Marketplace />
+              </div>
+            )}
+            {activeSection === 'help' && (
+              <div className="min-h-[400px] md:min-h-[600px] pb-20">
+                <HelpCenter onBack={() => handleSectionChange('leads')} />
               </div>
             )}
             {activeSection === 'account' && (
@@ -864,10 +887,23 @@ function SidebarNav({ activeSection, setActiveSection, tierFeatures }: SidebarNa
       
       <div className="my-2 border-t border-border/50" />
       
+      <Button
+        variant={activeSection === 'help' ? 'default' : 'ghost'}
+        className={`w-full justify-start transition-all ${
+          activeSection === 'help' 
+            ? 'shadow-md' 
+            : 'hover:bg-primary/10 hover:border-primary hover:text-foreground border border-transparent'
+        }`}
+        onClick={() => setActiveSection('help')}
+      >
+        <HelpCircle className="h-4 w-4 mr-3" />
+        Help Center
+      </Button>
+      
       {tierFeatures.home && (
         <Button
           variant="ghost"
-          className="w-full justify-start transition-all hover:bg-red-50 hover:border-red-500 hover:text-black border border-transparent"
+          className="w-full justify-start transition-all hover:bg-primary/10 hover:border-primary hover:text-foreground border border-transparent"
           asChild
         >
           <a href="/">

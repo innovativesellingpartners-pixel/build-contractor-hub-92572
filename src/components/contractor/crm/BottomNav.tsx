@@ -16,13 +16,14 @@ import {
   LayoutTemplate,
   Receipt,
   Building2,
-  Contact
+  Contact,
+  HelpCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import ct1Logo from '@/assets/ct1-round-logo-new.png';
 
-type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calendar' | 'emails' | 'estimates' | 'reporting' | 'financials' | 'more' | 'payments' | 'accounting' | 'invoices' | 'templates' | 'gc' | 'contacts';
+type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calendar' | 'emails' | 'estimates' | 'reporting' | 'financials' | 'more' | 'payments' | 'accounting' | 'invoices' | 'templates' | 'gc' | 'contacts' | 'help';
 
 interface BottomNavProps {
   activeSection: Section;
@@ -53,6 +54,7 @@ const allNavItems = [
   { id: 'customers' as Section, label: 'Customers', icon: Users },
   { id: 'gc' as Section, label: 'General Contractors', icon: Building2 },
   { id: 'contacts' as Section, label: 'Contacts', icon: Contact },
+  { id: 'help' as Section, label: 'Help Center', icon: HelpCircle },
 ];
 
 export function BottomNav({ activeSection, onSectionChange }: BottomNavProps) {

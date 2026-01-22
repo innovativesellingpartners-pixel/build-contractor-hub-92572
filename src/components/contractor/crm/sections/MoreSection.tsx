@@ -1,8 +1,8 @@
 import { Card, CardContent } from '@/components/ui/card';
-import { ClipboardList, Users, BarChart2, CreditCard } from 'lucide-react';
+import { ClipboardList, Users, BarChart2, CreditCard, HelpCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'estimates' | 'reporting' | 'financials' | 'calls' | 'calendar' | 'emails' | 'payments' | 'accounting';
+type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'estimates' | 'reporting' | 'financials' | 'calls' | 'calendar' | 'emails' | 'payments' | 'accounting' | 'help';
 
 interface MoreSectionProps {
   onSectionChange: (section: Section) => void;
@@ -40,6 +40,14 @@ const moreFeatures = [
     gradient: 'from-emerald-500 to-emerald-600',
     borderColor: 'border-emerald-400',
     description: 'Stripe & Banking'
+  },
+  { 
+    id: 'help' as Section, 
+    label: 'Help Center', 
+    icon: HelpCircle, 
+    gradient: 'from-primary to-primary/80',
+    borderColor: 'border-primary/40',
+    description: 'Get support'
   },
 ];
 
