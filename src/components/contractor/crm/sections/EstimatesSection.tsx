@@ -16,6 +16,7 @@ import { HorizontalRowCard, RowAvatar, RowContent, RowTitleLine, RowMetaLine, Ro
 import { EstimateDetailViewBlue } from './EstimateDetailViewBlue';
 import { TemplatesSection } from '../estimate/TemplatesSection';
 import { PredictiveSearch } from '../PredictiveSearch';
+import { SwipeToArchive } from '@/components/ui/swipe-to-archive';
 
 interface EstimatesSectionProps {
   onSectionChange?: (section: string) => void;
@@ -24,7 +25,7 @@ interface EstimatesSectionProps {
 }
 
 export default function EstimatesSection({ onSectionChange, initialEstimateId, onClearInitialEstimate }: EstimatesSectionProps) {
-  const { estimates, isLoading, createEstimate, createEstimateAsync, updateEstimate, updateEstimateAsync, deleteEstimate, sendEstimate, sendEstimateAsync, isSendingEstimate, duplicateEstimate, duplicateEstimateAsync, isDuplicatingEstimate } = useEstimates();
+  const { estimates, isLoading, createEstimate, createEstimateAsync, updateEstimate, updateEstimateAsync, deleteEstimate, sendEstimate, sendEstimateAsync, isSendingEstimate, duplicateEstimate, duplicateEstimateAsync, isDuplicatingEstimate, archiveEstimate } = useEstimates();
   const { leads } = useLeads();
   const { user } = useAuth();
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -361,87 +362,92 @@ export default function EstimatesSection({ onSectionChange, initialEstimateId, o
       ) : estimates && estimates.length > 0 ? (
         <MobileStack className="space-y-2">
           {estimates.map((estimate: any) => (
-            <HorizontalRowCard key={estimate.id} onClick={() => handleOpenDetail(estimate)}>
-              {/* Avatar */}
-              <RowAvatar initials={getInitials(estimate.client_name)} />
+            <SwipeToArchive 
+              key={estimate.id} 
+              onArchive={() => archiveEstimate(estimate.id)}
+            >
+              <HorizontalRowCard onClick={() => handleOpenDetail(estimate)}>
+                {/* Avatar */}
+                <RowAvatar initials={getInitials(estimate.client_name)} />
 
-              {/* Main Content */}
-              <RowContent>
-                <RowTitleLine>
-                  <h3 className="font-semibold text-sm sm:text-base break-words">
-                    {estimate.client_name || 'No Client'}
-                  </h3>
-                  <Badge variant={getStatusColor(estimate.status)} className="text-xs h-5">
-                    {estimate.status}
-                  </Badge>
-                </RowTitleLine>
-                
-                <RowMetaLine>
-                  {estimate.estimate_number && <span className="font-medium">#{estimate.estimate_number}</span>}
-                  <span className="truncate max-w-[180px]">
-                    {estimate.title || estimate.project_name || 'Untitled'}
-                  </span>
-                </RowMetaLine>
-              </RowContent>
+                {/* Main Content */}
+                <RowContent>
+                  <RowTitleLine>
+                    <h3 className="font-semibold text-sm sm:text-base break-words">
+                      {estimate.client_name || 'No Client'}
+                    </h3>
+                    <Badge variant={getStatusColor(estimate.status)} className="text-xs h-5">
+                      {estimate.status}
+                    </Badge>
+                  </RowTitleLine>
+                  
+                  <RowMetaLine>
+                    {estimate.estimate_number && <span className="font-medium">#{estimate.estimate_number}</span>}
+                    <span className="truncate max-w-[180px]">
+                      {estimate.title || estimate.project_name || 'Untitled'}
+                    </span>
+                  </RowMetaLine>
+                </RowContent>
 
-              {/* Amount & Chevron */}
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <RowAmount amount={estimate.total_amount} />
-                <ChevronRight className="h-4 w-4 text-muted-foreground" />
-              </div>
+                {/* Amount & Chevron */}
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <RowAmount amount={estimate.total_amount} />
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                </div>
 
-              {/* Desktop Actions - hidden on mobile */}
-              <RowActions>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={(e) => { e.stopPropagation(); handleEdit(estimate); }}
-                  title="Edit"
-                >
-                  <Eye className="h-4 w-4" />
-                </Button>
-                
-                {estimate.client_email && (
+                {/* Desktop Actions - hidden on mobile */}
+                <RowActions>
                   <Button
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8"
-                    onClick={(e) => { e.stopPropagation(); handleSendEstimate(estimate); }}
-                    disabled={isSendingEstimate}
-                    title={estimate.status === 'draft' ? 'Send' : 'Resend'}
+                    onClick={(e) => { e.stopPropagation(); handleEdit(estimate); }}
+                    title="Edit"
                   >
-                    <Send className="h-4 w-4" />
+                    <Eye className="h-4 w-4" />
                   </Button>
-                )}
+                  
+                  {estimate.client_email && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={(e) => { e.stopPropagation(); handleSendEstimate(estimate); }}
+                      disabled={isSendingEstimate}
+                      title={estimate.status === 'draft' ? 'Send' : 'Resend'}
+                    >
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  )}
 
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={(e) => { e.stopPropagation(); handleDuplicateFromList(estimate.id); }}
-                  disabled={isDuplicatingEstimate}
-                  title="Duplicate"
-                >
-                  <Copy className="h-4 w-4" />
-                </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={(e) => { e.stopPropagation(); handleDuplicateFromList(estimate.id); }}
+                    disabled={isDuplicatingEstimate}
+                    title="Duplicate"
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
 
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-destructive hover:text-destructive"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (window.confirm('Delete this estimate?')) {
-                      deleteEstimate(estimate.id);
-                    }
-                  }}
-                  title="Delete"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </RowActions>
-            </HorizontalRowCard>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-destructive hover:text-destructive"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (window.confirm('Delete this estimate?')) {
+                        deleteEstimate(estimate.id);
+                      }
+                    }}
+                    title="Delete"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </RowActions>
+              </HorizontalRowCard>
+            </SwipeToArchive>
           ))}
         </MobileStack>
       ) : (

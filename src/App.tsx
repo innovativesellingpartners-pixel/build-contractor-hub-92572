@@ -46,6 +46,7 @@ import { AdminGCContacts } from "@/components/admin/AdminGCContacts";
 import { AdminSettings } from "@/components/admin/AdminSettings";
 import { PocketbotAccessManagement } from "@/components/admin/PocketbotAccessManagement";
 import { HelpAdmin } from "@/components/admin/HelpAdmin";
+import ArchiveManagement from "@/components/admin/ArchiveManagement";
 import { BusinessSuite } from "@/pages/BusinessSuite";
 import { Training } from "@/pages/features/Training";
 import { CRM } from "@/pages/features/CRM";
@@ -216,6 +217,7 @@ const App = () => (
               <Route path="jobs" element={<AdminJobs />} />
               <Route path="customers" element={<AdminCustomers />} />
               <Route path="gc-contacts" element={<AdminGCContacts />} />
+              <Route path="archive" element={<ArchiveManagement />} />
               <Route path="support" element={<SupportTickets />} />
               <Route path="marketplace" element={<MarketplaceManagement />} />
               <Route path="help" element={<HelpAdmin />} />

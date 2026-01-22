@@ -11,6 +11,7 @@ import { AddJobDialog } from '../AddJobDialog';
 import { EditJobDialog } from '../EditJobDialog';
 import { HorizontalRowCard, RowAvatar, RowContent, RowTitleLine, RowMetaLine, RowAmount, RowActions } from './HorizontalRowCard';
 import { PredictiveSearch } from '../PredictiveSearch';
+import { SwipeToArchive } from '@/components/ui/swipe-to-archive';
 
 interface JobsSectionProps {
   onSectionChange?: (section: string) => void;
@@ -184,68 +185,73 @@ export default function JobsSection({ onSectionChange, initialJobId, onClearInit
               : formattedName;
             
             return (
-              <HorizontalRowCard key={job.id} onClick={() => handleJobClick(job)}>
-                {/* Avatar */}
-                <RowAvatar 
-                  initials={customerName.substring(0, 2).toUpperCase()} 
-                  icon={<Briefcase className="h-5 w-5 text-primary" />} 
-                />
+              <SwipeToArchive 
+                key={job.id} 
+                onArchive={() => archiveJob(job.id)}
+              >
+                <HorizontalRowCard onClick={() => handleJobClick(job)}>
+                  {/* Avatar */}
+                  <RowAvatar 
+                    initials={customerName.substring(0, 2).toUpperCase()} 
+                    icon={<Briefcase className="h-5 w-5 text-primary" />} 
+                  />
 
-                {/* Info */}
-                <RowContent>
-                  <RowTitleLine>
-                    <h3 className="font-semibold text-sm sm:text-base break-words">
-                      {displayLabel}
-                    </h3>
-                    <Badge className={`${getStatusColor(job.status)} text-white text-xs`}>
-                      {job.status.replace('_', ' ')}
-                    </Badge>
-                  </RowTitleLine>
-                  
-                  <RowMetaLine>
-                    {(job.city || job.state) && (
-                      <span className="flex items-center gap-1">
-                        <MapPin className="h-3 w-3 flex-shrink-0" />
-                        {job.city}{job.city && job.state && ', '}{job.state}
-                      </span>
-                    )}
-                  </RowMetaLine>
-                </RowContent>
+                  {/* Info */}
+                  <RowContent>
+                    <RowTitleLine>
+                      <h3 className="font-semibold text-sm sm:text-base break-words">
+                        {displayLabel}
+                      </h3>
+                      <Badge className={`${getStatusColor(job.status)} text-white text-xs`}>
+                        {job.status.replace('_', ' ')}
+                      </Badge>
+                    </RowTitleLine>
+                    
+                    <RowMetaLine>
+                      {(job.city || job.state) && (
+                        <span className="flex items-center gap-1">
+                          <MapPin className="h-3 w-3 flex-shrink-0" />
+                          {job.city}{job.city && job.state && ', '}{job.state}
+                        </span>
+                      )}
+                    </RowMetaLine>
+                  </RowContent>
 
-              {/* Amount */}
-              {job.contract_value && job.contract_value > 0 ? (
-                <RowAmount amount={job.contract_value} />
-              ) : (
-                <div className="min-w-[100px]" />
-              )}
+                  {/* Amount */}
+                  {job.contract_value && job.contract_value > 0 ? (
+                    <RowAmount amount={job.contract_value} />
+                  ) : (
+                    <div className="min-w-[100px]" />
+                  )}
 
-              {/* Actions */}
-              <RowActions>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-8 w-8"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleJobClick(job);
-                  }}
-                >
-                  <Eye className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDuplicateJob(job.id);
-                  }}
-                >
-                  <Copy className="h-4 w-4" />
-                </Button>
-                <ChevronRight className="h-4 w-4 text-muted-foreground ml-1" />
-              </RowActions>
-            </HorizontalRowCard>
+                  {/* Actions */}
+                  <RowActions>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-8 w-8"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleJobClick(job);
+                      }}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDuplicateJob(job.id);
+                      }}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground ml-1" />
+                  </RowActions>
+                </HorizontalRowCard>
+              </SwipeToArchive>
             );
           })}
 

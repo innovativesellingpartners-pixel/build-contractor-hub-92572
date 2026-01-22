@@ -36,6 +36,7 @@ export const useCustomers = () => {
         .from('customers')
         .select('*')
         .eq('user_id', user.id)
+        .is('archived_at', null)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -48,6 +49,30 @@ export const useCustomers = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const archiveCustomer = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('customers')
+        .update({ archived_at: new Date().toISOString() })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      setCustomers(customers.filter(customer => customer.id !== id));
+      toast({
+        title: 'Customer archived',
+        description: 'Customer has been archived successfully',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error archiving customer',
+        description: error.message,
+        variant: 'destructive',
+      });
+      throw error;
     }
   };
 
@@ -143,6 +168,7 @@ export const useCustomers = () => {
     addCustomer,
     updateCustomer,
     deleteCustomer,
+    archiveCustomer,
     refreshCustomers: fetchCustomers,
   };
 };

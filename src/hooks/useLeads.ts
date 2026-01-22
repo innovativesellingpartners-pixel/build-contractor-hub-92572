@@ -53,6 +53,7 @@ export const useLeads = () => {
         .from('leads')
         .select('*')
         .eq('user_id', user.id)
+        .is('archived_at', null)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -65,6 +66,30 @@ export const useLeads = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const archiveLead = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('leads')
+        .update({ archived_at: new Date().toISOString() })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      setLeads(leads.filter(lead => lead.id !== id));
+      toast({
+        title: 'Lead archived',
+        description: 'Lead has been archived successfully',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error archiving lead',
+        description: error.message,
+        variant: 'destructive',
+      });
+      throw error;
     }
   };
 
@@ -207,6 +232,7 @@ export const useLeads = () => {
     deleteLead,
     updateLeadStatus,
     convertToCustomer,
+    archiveLead,
     refreshLeads: fetchLeads,
   };
 };

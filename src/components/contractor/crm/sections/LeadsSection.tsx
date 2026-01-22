@@ -14,13 +14,14 @@ import * as XLSX from 'xlsx';
 import { HorizontalRowCard, RowAvatar, RowContent, RowTitleLine, RowMetaLine, RowAmount, RowActions } from './HorizontalRowCard';
 import { LeadDetailViewBlue } from './LeadDetailViewBlue';
 import { PredictiveSearch } from '../PredictiveSearch';
+import { SwipeToArchive } from '@/components/ui/swipe-to-archive';
 
 interface LeadsSectionProps {
   onSectionChange?: (section: string) => void;
 }
 
 export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
-  const { leads, sources, loading, addLead, updateLead, deleteLead, refreshLeads } = useLeads();
+  const { leads, sources, loading, addLead, updateLead, deleteLead, refreshLeads, archiveLead } = useLeads();
   const { customers } = useCustomers();
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<any>(null);
@@ -313,94 +314,99 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
             leads.find(l => l.id === lead.id && l.customer_id === c.id)
           );
           return (
-          <HorizontalRowCard key={lead.id} onClick={() => handleOpenDetail(lead)}>
-            {/* Avatar */}
-            <RowAvatar initials={lead.name.charAt(0).toUpperCase()} />
+          <SwipeToArchive 
+            key={lead.id} 
+            onArchive={() => archiveLead(lead.id)}
+          >
+            <HorizontalRowCard onClick={() => handleOpenDetail(lead)}>
+              {/* Avatar */}
+              <RowAvatar initials={lead.name.charAt(0).toUpperCase()} />
 
-            {/* Info */}
-            <RowContent>
-              <RowTitleLine>
-                <h3 className="font-semibold text-sm sm:text-base break-words">
-                  {lead.name}
-                </h3>
-                <Badge className={`${getStatusColor(lead.status)} text-white text-xs`}>
-                  {lead.status}
-                </Badge>
-              </RowTitleLine>
-              
-              <RowMetaLine>
-                {lead.company && <span className="truncate max-w-[150px]">{lead.company}</span>}
-                {lead.project_type && <span className="truncate max-w-[120px]">{lead.project_type}</span>}
-              </RowMetaLine>
-            </RowContent>
+              {/* Info */}
+              <RowContent>
+                <RowTitleLine>
+                  <h3 className="font-semibold text-sm sm:text-base break-words">
+                    {lead.name}
+                  </h3>
+                  <Badge className={`${getStatusColor(lead.status)} text-white text-xs`}>
+                    {lead.status}
+                  </Badge>
+                </RowTitleLine>
+                
+                <RowMetaLine>
+                  {lead.company && <span className="truncate max-w-[150px]">{lead.company}</span>}
+                  {lead.project_type && <span className="truncate max-w-[120px]">{lead.project_type}</span>}
+                </RowMetaLine>
+              </RowContent>
 
-            {/* Amount */}
-            {lead.value ? (
-              <RowAmount amount={lead.value} />
-            ) : (
-              <div className="min-w-[100px]" />
-            )}
+              {/* Amount */}
+              {lead.value ? (
+                <RowAmount amount={lead.value} />
+              ) : (
+                <div className="min-w-[100px]" />
+              )}
 
-            {/* Actions */}
-            <RowActions>
-              {!(lead as any).converted_at && (
-                <Button 
-                  variant="default" 
-                  size="sm"
-                  onClick={(e) => { e.stopPropagation(); setConvertToOpportunityLead(lead); }}
-                  className="gap-1 hidden sm:flex"
-                >
-                  <TrendingUp className="h-4 w-4" />
-                  <span>Opportunity</span>
-                </Button>
-              )}
-              {!(lead as any).converted_at && (
-                <Button 
-                  variant="default" 
-                  size="icon"
-                  onClick={(e) => { e.stopPropagation(); setConvertToOpportunityLead(lead); }}
-                  className="h-8 w-8 sm:hidden"
-                  title="Convert to Opportunity"
-                >
-                  <TrendingUp className="h-4 w-4" />
-                </Button>
-              )}
-              {lead.phone && (
-                <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-                  <a href={`tel:${lead.phone}`}>
-                    <Phone className="h-4 w-4" />
-                  </a>
-                </Button>
-              )}
-              {lead.email && (
-                <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-                  <a href={`mailto:${lead.email}`}>
-                    <Mail className="h-4 w-4" />
-                  </a>
-                </Button>
-              )}
-              <Button 
-                variant="ghost" 
-                size="icon"
-                className="h-8 w-8"
-                onClick={(e) => { e.stopPropagation(); handleEditLead(lead); }}
-              >
-                <Edit className="h-4 w-4" />
-              </Button>
-              {!(lead as any).converted_at && (
+              {/* Actions */}
+              <RowActions>
+                {!(lead as any).converted_at && (
+                  <Button 
+                    variant="default" 
+                    size="sm"
+                    onClick={(e) => { e.stopPropagation(); setConvertToOpportunityLead(lead); }}
+                    className="gap-1 hidden sm:flex"
+                  >
+                    <TrendingUp className="h-4 w-4" />
+                    <span>Opportunity</span>
+                  </Button>
+                )}
+                {!(lead as any).converted_at && (
+                  <Button 
+                    variant="default" 
+                    size="icon"
+                    onClick={(e) => { e.stopPropagation(); setConvertToOpportunityLead(lead); }}
+                    className="h-8 w-8 sm:hidden"
+                    title="Convert to Opportunity"
+                  >
+                    <TrendingUp className="h-4 w-4" />
+                  </Button>
+                )}
+                {lead.phone && (
+                  <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+                    <a href={`tel:${lead.phone}`}>
+                      <Phone className="h-4 w-4" />
+                    </a>
+                  </Button>
+                )}
+                {lead.email && (
+                  <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+                    <a href={`mailto:${lead.email}`}>
+                      <Mail className="h-4 w-4" />
+                    </a>
+                  </Button>
+                )}
                 <Button 
                   variant="ghost" 
                   size="icon"
                   className="h-8 w-8"
-                  onClick={(e) => { e.stopPropagation(); setConvertingLead(lead); }}
-                  title="Convert to Customer"
+                  onClick={(e) => { e.stopPropagation(); handleEditLead(lead); }}
                 >
-                  <Users className="h-4 w-4" />
+                  <Edit className="h-4 w-4" />
                 </Button>
-              )}
-              <ChevronRight className="h-4 w-4 text-muted-foreground ml-1" />
-            </RowActions>
-          </HorizontalRowCard>
+                {!(lead as any).converted_at && (
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={(e) => { e.stopPropagation(); setConvertingLead(lead); }}
+                    title="Convert to Customer"
+                  >
+                    <Users className="h-4 w-4" />
+                  </Button>
+                )}
+                <ChevronRight className="h-4 w-4 text-muted-foreground ml-1" />
+              </RowActions>
+            </HorizontalRowCard>
+          </SwipeToArchive>
         )})}
 
         {leads.length === 0 && (
