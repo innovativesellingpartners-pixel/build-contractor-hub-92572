@@ -677,15 +677,26 @@ export default function JobDetailViewBlue({ job, open, onOpenChange, onCreateEst
           />
 
           {/* Action Buttons */}
-          <ActionButtonRow>
+          <ActionButtonRow className="flex-wrap">
+            {/* Convert to Estimate - Top priority action */}
+            {onCreateEstimate && (
+              <ActionButton 
+                variant="primary" 
+                onClick={onCreateEstimate}
+                className="flex-1 flex items-center justify-center gap-2"
+              >
+                <FileText className="w-4 h-4" />
+                CONVERT TO ESTIMATE
+              </ActionButton>
+            )}
             {getFullAddress() && (
-              <ActionButton variant="primary" onClick={handleNavigate} className="flex-1 flex items-center justify-center gap-2">
+              <ActionButton variant="secondary" onClick={handleNavigate} className="flex-1 flex items-center justify-center gap-2">
                 <Navigation className="w-4 h-4" />
                 START TRAVEL
               </ActionButton>
             )}
             <ActionButton 
-              variant="secondary" 
+              variant="muted" 
               onClick={() => setActiveTab('changes')} 
               className="flex-1 flex items-center justify-center gap-2"
             >

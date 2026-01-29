@@ -15,7 +15,7 @@ import {
 } from './sections';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Download, Printer, ArrowLeft, Loader2 } from 'lucide-react';
+import { Download, Printer, ArrowLeft, Loader2, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface EstimatePDFPreviewProps {
@@ -141,6 +141,15 @@ export function EstimatePDFPreview({ estimate, onClose, onDownload }: EstimatePD
     ? `${window.location.origin}/estimate/${estimate.public_token}` 
     : undefined;
 
+  // Handle View & Sign action
+  const handleViewAndSign = () => {
+    if (publicUrl) {
+      window.open(publicUrl, '_blank');
+    } else {
+      toast.error('No public link available. Please send the estimate first.');
+    }
+  };
+
   return (
     <div className="h-full flex flex-col bg-muted">
       {/* Action Bar - Hidden when printing */}
@@ -159,6 +168,18 @@ export function EstimatePDFPreview({ estimate, onClose, onDownload }: EstimatePD
           </div>
           
           <div className="flex items-center gap-2">
+            {/* View & Sign Online Button - Prominent and clickable */}
+            {publicUrl && (
+              <Button 
+                variant="default" 
+                size="sm" 
+                onClick={handleViewAndSign}
+                className="bg-success hover:bg-success/90"
+              >
+                <ExternalLink className="h-4 w-4 mr-2" />
+                View & Sign Online
+              </Button>
+            )}
             <Button variant="outline" size="sm" onClick={handlePrint}>
               <Printer className="h-4 w-4 mr-2" />
               Print

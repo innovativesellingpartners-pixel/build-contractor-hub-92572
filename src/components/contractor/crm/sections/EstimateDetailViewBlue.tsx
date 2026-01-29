@@ -4,9 +4,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { Send, Users, Briefcase, Eye, Copy, FileText, Receipt, Save, Download, LayoutTemplate, BookmarkPlus, Camera, MessageSquare, Loader2 } from 'lucide-react';
+import { Send, Users, Briefcase, Eye, Copy, FileText, Receipt, Save, Download, LayoutTemplate, BookmarkPlus, Camera, MessageSquare, Loader2, CheckCircle, CreditCard, AlertCircle } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { EstimatePhotosSection } from '../estimate/EstimatePhotosSection';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { CustomerDetailViewBlue } from './CustomerDetailViewBlue';
 import { Customer } from '@/hooks/useCustomers';
@@ -57,6 +58,11 @@ export function EstimateDetailViewBlue({
   const [showPdfPreview, setShowPdfPreview] = useState(false);
   const [isSendingSMS, setIsSendingSMS] = useState(false);
   const [showSMSConfirmDialog, setShowSMSConfirmDialog] = useState(false);
+  const [showPaymentRequiredDialog, setShowPaymentRequiredDialog] = useState(false);
+  const [isClosingWon, setIsClosingWon] = useState(false);
+
+  // Check if estimate is paid (payment_amount > 0 indicates deposit/payment received)
+  const isPaid = estimate.paid_at != null || (estimate.payment_amount != null && estimate.payment_amount > 0);
 
   // Fetch linked customer data
   useEffect(() => {
@@ -157,7 +163,87 @@ export function EstimateDetailViewBlue({
     }
   };
 
-  // Save estimate as draft invoice (for sending later)
+  // Handle "Closed Won" - creates customer and marks estimate as sold
+  const handleClosedWon = async () => {
+    // If not paid, show payment required dialog
+    if (!isPaid) {
+      setShowPaymentRequiredDialog(true);
+      return;
+    }
+
+    // If already has customer, just update status and navigate
+    if (estimate.customer_id) {
+      try {
+        await supabase
+          .from('estimates')
+          .update({ status: 'sold' })
+          .eq('id', estimate.id);
+        toast.success('Estimate marked as Closed Won!');
+        onSectionChange?.('customers');
+      } catch (error: any) {
+        toast.error(`Failed to update estimate: ${error.message}`);
+      }
+      return;
+    }
+
+    setIsClosingWon(true);
+    try {
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (!currentUser) throw new Error('Not authenticated');
+
+      // Create customer from estimate
+      const { data: newCustomer, error: customerError } = await supabase
+        .from('customers')
+        .insert([{
+          user_id: currentUser.id,
+          name: estimate.client_name || 'Unknown Customer',
+          email: estimate.client_email || null,
+          phone: estimate.client_phone || null,
+          address: estimate.site_address || estimate.client_address || null,
+          customer_type: 'residential',
+          estimate_id: estimate.id,
+          lifetime_value: estimate.payment_amount || estimate.grand_total || estimate.total_amount,
+          notes: `Closed Won from estimate: ${estimate.title}`,
+        }])
+        .select()
+        .single();
+
+      if (customerError) throw customerError;
+
+      // Update estimate with customer link and sold status
+      await supabase
+        .from('estimates')
+        .update({ 
+          customer_id: newCustomer.id, 
+          status: 'sold' 
+        })
+        .eq('id', estimate.id);
+
+      // Update lead if exists
+      if (estimate.lead_id) {
+        await supabase
+          .from('leads')
+          .update({ customer_id: newCustomer.id, converted_to_customer: true, status: 'won' })
+          .eq('id', estimate.lead_id);
+      }
+
+      toast.success('Closed Won! Customer created successfully.');
+      onSectionChange?.('customers');
+    } catch (error: any) {
+      toast.error(`Failed to close won: ${error.message}`);
+    } finally {
+      setIsClosingWon(false);
+    }
+  };
+
+  // Open public estimate page for signing/payment
+  const handleViewAndSign = () => {
+    if (estimate.public_token) {
+      window.open(`/estimate/${estimate.public_token}`, '_blank');
+    } else {
+      toast.error('No public link available. Please send the estimate first.');
+    }
+  };
   const handleSaveAsInvoice = async () => {
     setIsCreatingInvoice(true);
     try {
@@ -364,6 +450,22 @@ export function EstimateDetailViewBlue({
 
       {/* Action Buttons - Fixed */}
       <ActionButtonRow className="flex-wrap flex-shrink-0">
+        {/* Closed Won - Top priority action */}
+        <ActionButton 
+          variant={isPaid ? "success" : "muted"} 
+          onClick={handleClosedWon}
+          disabled={isClosingWon}
+          className="flex items-center gap-2"
+        >
+          {isClosingWon ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : isPaid ? (
+            <CheckCircle className="w-4 h-4" />
+          ) : (
+            <AlertCircle className="w-4 h-4" />
+          )}
+          {isClosingWon ? 'PROCESSING...' : 'CLOSED WON'}
+        </ActionButton>
         {onEdit && (
           <ActionButton variant="secondary" onClick={onEdit} className="flex items-center gap-2">
             <Eye className="w-4 h-4" />
@@ -752,6 +854,53 @@ export function EstimateDetailViewBlue({
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Payment Required Dialog */}
+      <Dialog open={showPaymentRequiredDialog} onOpenChange={setShowPaymentRequiredDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-amber-500" />
+              Payment Required
+            </DialogTitle>
+            <DialogDescription>
+              This estimate must be paid before it can be marked as Closed Won.
+            </DialogDescription>
+          </DialogHeader>
+          <Alert className="border-amber-200 bg-amber-50">
+            <CreditCard className="h-4 w-4 text-amber-600" />
+            <AlertDescription className="text-amber-800">
+              The customer needs to view, sign, and pay the estimate first. Send them the estimate link or use the button below to open the payment page.
+            </AlertDescription>
+          </Alert>
+          <div className="space-y-2 text-sm">
+            <p><span className="font-medium">Customer:</span> {estimate.client_name || 'Unknown'}</p>
+            <p><span className="font-medium">Total:</span> ${(estimate.grand_total || estimate.total_amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+            {estimate.required_deposit && estimate.required_deposit > 0 && (
+              <p><span className="font-medium">Deposit Required:</span> ${estimate.required_deposit.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+            )}
+          </div>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button 
+              variant="outline" 
+              className="flex-1"
+              onClick={() => setShowPaymentRequiredDialog(false)}
+            >
+              Cancel
+            </Button>
+            <Button 
+              className="flex-1"
+              onClick={() => {
+                handleViewAndSign();
+                setShowPaymentRequiredDialog(false);
+              }}
+            >
+              <CreditCard className="w-4 h-4 mr-2" />
+              View & Sign Online
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </BlueBackground>
