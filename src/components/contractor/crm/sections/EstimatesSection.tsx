@@ -17,6 +17,7 @@ import { EstimateDetailViewBlue } from './EstimateDetailViewBlue';
 import { TemplatesSection } from '../estimate/TemplatesSection';
 import { PredictiveSearch } from '../PredictiveSearch';
 import { SwipeToArchive } from '@/components/ui/swipe-to-archive';
+import { CrmNavHeader } from '../CrmNavHeader';
 
 interface EstimatesSectionProps {
   onSectionChange?: (section: string) => void;
@@ -330,6 +331,17 @@ export default function EstimatesSection({ onSectionChange, initialEstimateId, o
         </div>
       }
     >
+      {/* Navigation Header */}
+      <div className="px-4 sm:px-0 mb-4">
+        <CrmNavHeader
+          back
+          dashboard
+          onBack={() => onSectionChange?.('dashboard')}
+          onDashboard={() => onSectionChange?.('dashboard')}
+          sectionLabel="Estimates"
+        />
+      </div>
+      
       <CardDescription className="px-4 sm:px-0 mb-4">
         Create, manage, and track project estimates
       </CardDescription>

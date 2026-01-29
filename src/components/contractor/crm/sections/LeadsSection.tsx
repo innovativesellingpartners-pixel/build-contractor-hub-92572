@@ -15,6 +15,7 @@ import { HorizontalRowCard, RowAvatar, RowContent, RowTitleLine, RowMetaLine, Ro
 import { LeadDetailViewBlue } from './LeadDetailViewBlue';
 import { PredictiveSearch } from '../PredictiveSearch';
 import { SwipeToArchive } from '@/components/ui/swipe-to-archive';
+import { CrmNavHeader } from '../CrmNavHeader';
 
 interface LeadsSectionProps {
   onSectionChange?: (section: string) => void;
@@ -263,6 +264,15 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
   return (
     <div className="w-full h-full overflow-y-auto overflow-x-hidden pb-20 bg-background">
       <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 w-full sm:max-w-7xl sm:mx-auto">
+        {/* Navigation Header */}
+        <CrmNavHeader
+          back
+          dashboard
+          onBack={() => onSectionChange?.('dashboard')}
+          onDashboard={() => onSectionChange?.('dashboard')}
+          sectionLabel="Leads"
+        />
+        
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold">Leads</h1>

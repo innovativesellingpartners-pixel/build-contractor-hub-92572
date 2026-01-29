@@ -13,6 +13,7 @@ import {
   SectionHeader,
   InfoCard,
 } from './ProvenJobsTheme';
+import { CrmNavHeader } from '../CrmNavHeader';
 
 interface GCSectionProps {
   onSectionChange?: (section: string) => void;
@@ -103,6 +104,17 @@ export default function GCSection({ onSectionChange }: GCSectionProps) {
 
   return (
     <BlueBackground className="min-h-full">
+      {/* Navigation Header */}
+      <div className="px-4 pt-4">
+        <CrmNavHeader
+          back
+          dashboard
+          onBack={() => onSectionChange?.('dashboard')}
+          onDashboard={() => onSectionChange?.('dashboard')}
+          sectionLabel="GC Contacts"
+        />
+      </div>
+      
       {/* Header */}
       <div className="bg-sky-600 text-white px-4 py-4">
         <div className="flex items-center justify-between">
