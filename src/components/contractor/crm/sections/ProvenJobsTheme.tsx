@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import { ArrowLeft, LayoutDashboard } from 'lucide-react';
+import ct1Logo from '@/assets/ct1-round-logo-new.png';
 
 // Elegant light background wrapper with safe area for mobile browsers
 export function BlueBackground({ children, className }: { children: ReactNode; className?: string }) {
@@ -93,7 +94,7 @@ export function ActionButton({ children, variant = 'primary', onClick, disabled,
   );
 }
 
-// Header with back button, title, and optional dashboard shortcut
+// Header with back button, title, logo and optional dashboard shortcut
 interface DetailHeaderProps {
   title: string;
   subtitle?: string;
@@ -104,16 +105,22 @@ interface DetailHeaderProps {
 
 export function DetailHeader({ title, subtitle, onBack, onDashboard, rightContent }: DetailHeaderProps) {
   return (
-    <div className="sticky top-0 z-50 bg-foreground text-background px-3 py-2 flex flex-col gap-2 pt-[calc(6rem+env(safe-area-inset-top))] sm:pt-[max(0.75rem,env(safe-area-inset-top))]">
-      {/* Navigation Buttons Row - Always visible on first row */}
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
+    <div className="sticky top-0 z-50 bg-foreground text-background pt-[calc(1rem+env(safe-area-inset-top))] sm:pt-[max(0.5rem,env(safe-area-inset-top))]">
+      {/* Compact header with logo, nav, and actions in one row */}
+      <div className="flex items-center justify-between gap-2 px-3 py-2">
+        {/* Left: Logo + Nav buttons */}
+        <div className="flex items-center gap-2 min-w-0">
+          <img 
+            src={ct1Logo} 
+            alt="CT1" 
+            className="h-9 w-9 rounded-full flex-shrink-0"
+          />
           {onBack && (
             <button 
               onClick={onBack} 
-              className="flex items-center justify-center gap-1.5 min-w-[40px] h-9 px-3 bg-white/20 hover:bg-white/30 rounded-md transition-colors text-sm font-medium"
+              className="flex items-center justify-center gap-1 h-8 px-2.5 bg-white/15 hover:bg-white/25 rounded-md transition-colors text-xs font-medium"
             >
-              <ArrowLeft className="w-5 h-5 flex-shrink-0" />
+              <ArrowLeft className="w-4 h-4 flex-shrink-0" />
               <span className="hidden sm:inline">Back</span>
             </button>
           )}
@@ -121,22 +128,25 @@ export function DetailHeader({ title, subtitle, onBack, onDashboard, rightConten
             <button
               type="button"
               onClick={onDashboard}
-              className="flex items-center justify-center gap-1.5 min-w-[40px] h-9 px-3 bg-primary hover:bg-primary/90 rounded-md transition-colors text-sm font-medium text-primary-foreground"
+              className="flex items-center justify-center gap-1 h-8 px-2.5 bg-primary hover:bg-primary/90 rounded-md transition-colors text-xs font-medium text-primary-foreground"
             >
-              <LayoutDashboard className="w-5 h-5 flex-shrink-0" />
+              <LayoutDashboard className="w-4 h-4 flex-shrink-0" />
               <span className="hidden sm:inline">Dashboard</span>
             </button>
           )}
         </div>
+        
+        {/* Right: Action buttons */}
         {rightContent && (
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 flex-shrink-0">
             {rightContent}
           </div>
         )}
       </div>
-      {/* Title Row */}
-      <div className="min-w-0">
-        <h1 className="font-bold text-base truncate">{title}</h1>
+      
+      {/* Title bar - compact */}
+      <div className="px-3 pb-2 min-w-0">
+        <h1 className="font-bold text-base truncate leading-tight">{title}</h1>
         {subtitle && <p className="text-background/70 text-xs truncate">{subtitle}</p>}
       </div>
     </div>
