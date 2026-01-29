@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-route
 import { ThemeProvider } from "next-themes";
 import { GlobalPocketbot } from "@/components/GlobalPocketbot";
 import { usePWABackNavigation } from "@/hooks/usePWABackNavigation";
+import { HomeRedirect } from "@/components/HomeRedirect";
 import { NewLandingPage } from "@/components/NewLandingPage";
 import { About } from "@/pages/About";
 import { Contact } from "@/pages/Contact";
@@ -118,7 +119,7 @@ const App = () => (
           <PWABackHandler />
           <PocketbotWrapper />
           <Routes>
-            <Route path="/" element={<NewLandingPage />} />
+            <Route path="/" element={<HomeRedirect />} />
             <Route path="/savings" element={<Savings />} />
             <Route path="/platform" element={<Platform />} />
             <Route path="/for-consumers" element={<ForConsumers />} />
