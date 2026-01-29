@@ -644,7 +644,11 @@ export default function JobDetailViewBlue({ job, open, onOpenChange, onCreateEst
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-full sm:max-w-2xl h-[calc(100vh-5rem)] sm:h-[95vh] p-0 overflow-hidden bg-background border-0 sm:border top-[45%] sm:top-[50%]">
+      <DialogContent 
+        className="max-w-full sm:max-w-2xl h-[calc(100vh-5rem)] sm:h-[95vh] p-0 overflow-hidden bg-background border-0 sm:border top-[45%] sm:top-[50%]"
+        onInteractOutside={(e) => e.preventDefault()}
+        onPointerDownOutside={(e) => e.preventDefault()}
+      >
         <BlueBackground className="h-full flex flex-col overflow-hidden pb-0 sm:pb-0">
           {/* Header */}
           <DetailHeader
