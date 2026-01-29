@@ -251,25 +251,62 @@ const handler = async (req: Request): Promise<Response> => {
                   <td style="padding: 28px; text-align: center;">
                     <span style="display: block; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #d59f47; margin-bottom: 8px; font-weight: 600;">Total Investment</span>
                     <span style="display: block; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 36px; font-weight: 700; color: #ffffff;">${formatCurrency(estimate.total_amount || estimate.grand_total || 0)}</span>
-                    ${estimate.required_deposit ? `<span style="display: block; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 13px; color: #d59f47; margin-top: 12px;">Deposit Required: ${formatCurrency(estimate.required_deposit)}</span>` : ''}
+                    ${estimate.required_deposit && estimate.required_deposit > 0 ? `
+                      <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(213, 159, 71, 0.3);">
+                        <span style="display: block; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 12px; color: #d59f47; margin-bottom: 4px;">Deposit Due Now</span>
+                        <span style="display: block; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 24px; font-weight: 700; color: #d59f47;">${formatCurrency(estimate.required_deposit)}</span>
+                        <span style="display: block; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 8px;">Remaining Balance: ${formatCurrency((estimate.total_amount || estimate.grand_total || 0) - estimate.required_deposit)}</span>
+                      </div>
+                    ` : ''}
                   </td>
                 </tr>
               </table>
               
-              <!-- CTA Button -->
+              <!-- Payment CTA Buttons -->
+              ${estimate.required_deposit && estimate.required_deposit > 0 ? `
+              <!-- Dual Button Layout for Deposit Required -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom: 16px;">
+                <tr>
+                  <td align="center" style="padding: 8px 0;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td style="padding-right: 8px;">
+                          <a href="${publicUrl}?pay=deposit" target="_blank" style="display: inline-block; background-color: #d59f47; color: #161e2c; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 13px; font-weight: 700; padding: 14px 24px; border-radius: 6px; text-decoration: none; letter-spacing: 0.5px;">
+                            💳 PAY DEPOSIT NOW
+                          </a>
+                        </td>
+                        <td style="padding-left: 8px;">
+                          <a href="${publicUrl}?pay=full" target="_blank" style="display: inline-block; background-color: #161e2c; color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 13px; font-weight: 700; padding: 14px 24px; border-radius: 6px; text-decoration: none; letter-spacing: 0.5px; border: 2px solid #d59f47;">
+                            💰 PAY IN FULL
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+              ` : `
+              <!-- Single Button for No Deposit Required -->
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                 <tr>
                   <td align="center" style="padding: 8px 0 24px 0;">
-                    <a href="${publicUrl}" target="_blank" style="display: inline-block; background-color: #d59f47; color: #161e2c; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 14px; font-weight: 700; padding: 16px 40px; border-radius: 6px; text-decoration: none; letter-spacing: 0.5px;">
+                    <a href="${publicUrl}?pay=full" target="_blank" style="display: inline-block; background-color: #d59f47; color: #161e2c; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 14px; font-weight: 700; padding: 16px 40px; border-radius: 6px; text-decoration: none; letter-spacing: 0.5px;">
                       VIEW, SIGN &amp; PAY ONLINE →
                     </a>
                   </td>
                 </tr>
               </table>
+              `}
               
-              <p style="margin: 0; font-size: 13px; color: #999999; text-align: center; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;">
-                Click the button above to review the complete estimate online
-              </p>
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-top: 8px;">
+                <tr>
+                  <td align="center">
+                    <a href="${publicUrl}" target="_blank" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 13px; color: #666666; text-decoration: underline;">
+                      Or view full estimate details online
+                    </a>
+                  </td>
+                </tr>
+              </table>
             </td>
           </tr>
           
