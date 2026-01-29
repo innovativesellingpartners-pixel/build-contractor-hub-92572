@@ -47,6 +47,12 @@ export function ImageViewer({
   const pointerStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
   const [isSwiping, setIsSwiping] = useState(false);
   const minSwipeDistance = 40;
+  
+  // Pinch-to-zoom tracking
+  const [isPinching, setIsPinching] = useState(false);
+  const initialPinchDistance = useRef<number | null>(null);
+  const initialPinchScale = useRef<number>(1);
+  const lastPinchCenter = useRef<{ x: number; y: number } | null>(null);
 
   // Reset state when dialog opens or src changes
   useEffect(() => {
@@ -187,6 +193,65 @@ export function ImageViewer({
     setIsSwiping(false);
   };
 
+  // Calculate distance between two touch points
+  const getTouchDistance = (touches: React.TouchList): number => {
+    if (touches.length < 2) return 0;
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  };
+
+  // Calculate center point between two touches
+  const getTouchCenter = (touches: React.TouchList): { x: number; y: number } => {
+    if (touches.length < 2) return { x: 0, y: 0 };
+    return {
+      x: (touches[0].clientX + touches[1].clientX) / 2,
+      y: (touches[0].clientY + touches[1].clientY) / 2,
+    };
+  };
+
+  // Handle touch start for pinch-to-zoom
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      e.preventDefault();
+      setIsPinching(true);
+      setIsDragging(false);
+      initialPinchDistance.current = getTouchDistance(e.touches);
+      initialPinchScale.current = scale;
+      lastPinchCenter.current = getTouchCenter(e.touches);
+    }
+  };
+
+  // Handle touch move for pinch-to-zoom
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length === 2 && isPinching && initialPinchDistance.current) {
+      e.preventDefault();
+      const currentDistance = getTouchDistance(e.touches);
+      const scaleChange = currentDistance / initialPinchDistance.current;
+      const newScale = Math.max(0.5, Math.min(5, initialPinchScale.current * scaleChange));
+      setScale(newScale);
+      
+      // Track pinch center for panning while zooming
+      const center = getTouchCenter(e.touches);
+      if (lastPinchCenter.current && newScale > 1) {
+        setPosition(prev => ({
+          x: prev.x + (center.x - lastPinchCenter.current!.x),
+          y: prev.y + (center.y - lastPinchCenter.current!.y),
+        }));
+      }
+      lastPinchCenter.current = center;
+    }
+  };
+
+  // Handle touch end for pinch-to-zoom
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (e.touches.length < 2) {
+      setIsPinching(false);
+      initialPinchDistance.current = null;
+      lastPinchCenter.current = null;
+    }
+  };
+
   const showNavigation = hasPrevious || hasNext;
 
   return (
@@ -306,7 +371,7 @@ export function ImageViewer({
             scale > 1 ? 'cursor-grab' : 'cursor-default',
             isDragging && 'cursor-grabbing'
           )}
-          style={{ touchAction: scale > 1 ? 'none' : 'none' }}
+          style={{ touchAction: 'none' }}
           onWheel={handleWheel}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
@@ -316,6 +381,9 @@ export function ImageViewer({
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
           onPointerCancel={handlePointerCancel}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
         >
           <img
             src={src}
@@ -323,7 +391,7 @@ export function ImageViewer({
             className="max-w-full max-h-full object-contain select-none"
             style={{
               transform: `translate(${position.x}px, ${position.y}px) scale(${scale}) rotate(${rotation}deg)`,
-              transition: isDragging ? 'none' : 'transform 0.15s ease-out',
+              transition: isDragging || isPinching ? 'none' : 'transform 0.15s ease-out',
             }}
             draggable={false}
           />
@@ -355,7 +423,7 @@ export function ImageViewer({
 
         {/* Help text */}
         <div className="absolute bottom-3 left-1/2 -translate-x-1/2 text-white/60 text-xs text-center">
-          {showNavigation ? 'Swipe or use arrows to navigate • ' : ''}Scroll to zoom • Drag to pan when zoomed
+          {showNavigation ? 'Swipe or use arrows to navigate • ' : ''}Pinch to zoom • Drag to pan
         </div>
       </DialogContent>
     </Dialog>
