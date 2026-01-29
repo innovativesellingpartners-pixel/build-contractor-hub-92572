@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -40,6 +41,43 @@ interface ProjectInfoStepProps {
 }
 
 export default function ProjectInfoStep({ data, onChange }: ProjectInfoStepProps) {
+  // Check if the current referred_by value is a custom "Other" value
+  const isOtherReferral = data.referred_by && !REFERRAL_SOURCES.includes(data.referred_by) && data.referred_by !== '';
+  const [showOtherInput, setShowOtherInput] = useState(isOtherReferral);
+  const [otherValue, setOtherValue] = useState(isOtherReferral ? data.referred_by : '');
+  const [selectedSource, setSelectedSource] = useState(isOtherReferral ? 'Other' : data.referred_by);
+
+  // Sync state when data changes (e.g., loading existing estimate)
+  useEffect(() => {
+    const isOther = data.referred_by && !REFERRAL_SOURCES.includes(data.referred_by) && data.referred_by !== '';
+    if (isOther) {
+      setShowOtherInput(true);
+      setOtherValue(data.referred_by);
+      setSelectedSource('Other');
+    } else {
+      setShowOtherInput(false);
+      setOtherValue('');
+      setSelectedSource(data.referred_by);
+    }
+  }, [data.referred_by]);
+
+  const handleReferralChange = (value: string) => {
+    setSelectedSource(value);
+    if (value === 'Other') {
+      setShowOtherInput(true);
+      // Don't update referred_by yet, wait for custom input
+    } else {
+      setShowOtherInput(false);
+      setOtherValue('');
+      onChange({ referred_by: value });
+    }
+  };
+
+  const handleOtherInputChange = (value: string) => {
+    setOtherValue(value);
+    onChange({ referred_by: value });
+  };
+
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       {/* Project Details */}
@@ -194,8 +232,8 @@ export default function ProjectInfoStep({ data, onChange }: ProjectInfoStepProps
           <div className="space-y-2">
             <Label htmlFor="referred_by">Referred By</Label>
             <Select
-              value={data.referred_by}
-              onValueChange={(value) => onChange({ referred_by: value })}
+              value={selectedSource}
+              onValueChange={handleReferralChange}
             >
               <SelectTrigger id="referred_by">
                 <SelectValue placeholder="How did they find you?" />
@@ -206,6 +244,14 @@ export default function ProjectInfoStep({ data, onChange }: ProjectInfoStepProps
                 ))}
               </SelectContent>
             </Select>
+            {showOtherInput && (
+              <Input
+                className="mt-2"
+                value={otherValue}
+                onChange={(e) => handleOtherInputChange(e.target.value)}
+                placeholder="Please specify how they found you"
+              />
+            )}
           </div>
         </CardContent>
       </Card>
