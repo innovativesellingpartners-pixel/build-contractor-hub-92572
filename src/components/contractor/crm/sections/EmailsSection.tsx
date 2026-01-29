@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Mail, Plug, Check, Loader2, X, RefreshCw, Circle, ArrowLeft, Reply, Send, ChevronDown, ChevronUp, Search, PenSquare, Paperclip, ChevronLeft, ChevronRight, MailOpen } from 'lucide-react';
@@ -45,6 +45,11 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
   const [loadingEmails, setLoadingEmails] = useState(false);
   const [connecting, setConnecting] = useState<string | null>(null);
   const [connectionsExpanded, setConnectionsExpanded] = useState(false);
+  
+  // Track if emails have been fetched to prevent re-fetching on tab switches
+  const emailsFetchedRef = useRef(false);
+  // Track emails that have been marked as read locally (for optimistic updates)
+  const readEmailIdsRef = useRef<Set<string>>(new Set());
   
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
@@ -114,7 +119,13 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
     }
   };
 
-  const fetchEmails = async () => {
+  const fetchEmails = async (forceRefresh = false) => {
+    // Skip if emails already fetched and not forcing refresh
+    if (emailsFetchedRef.current && !forceRefresh) {
+      console.log('Skipping email fetch - already loaded');
+      return;
+    }
+    
     setLoadingEmails(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -125,7 +136,16 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
       });
 
       if (error) throw error;
-      setEmails(data?.emails || []);
+      
+      // Apply locally tracked read states to fetched emails
+      const fetchedEmails = (data?.emails || []).map((email: Email) => ({
+        ...email,
+        // If we've marked this email as read locally, keep it read even if API says unread
+        isUnread: readEmailIdsRef.current.has(email.id) ? false : email.isUnread
+      }));
+      
+      setEmails(fetchedEmails);
+      emailsFetchedRef.current = true;
     } catch (error: any) {
       console.error('Error fetching emails:', error);
       toast.error('Failed to fetch emails');
@@ -183,13 +203,39 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
     setLoadingEmailBody(true);
     setEmailBody('');
     
-    // Mark as read locally
+    // Optimistically mark as read locally
     if (email.isUnread) {
+      // Update local state immediately (optimistic update)
       setEmails(prev => prev.map(e => 
         e.id === email.id ? { ...e, isUnread: false } : e
       ));
+      // Track this email as read locally
+      readEmailIdsRef.current.add(email.id);
+      // Also update the selected email reference
+      setSelectedEmail({ ...email, isUnread: false });
+      
+      // Persist to Gmail API in background (don't block UI)
+      (async () => {
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (!session) return;
+
+          const { error } = await supabase.functions.invoke('mark-email-read', {
+            headers: { Authorization: `Bearer ${session.access_token}` },
+            body: { emailId: email.id, provider: email.provider }
+          });
+
+          if (error) {
+            console.error('Failed to mark email as read on server:', error);
+            // Don't revert UI - the local state is what matters for UX
+          }
+        } catch (err) {
+          console.error('Error marking email as read:', err);
+        }
+      })();
     }
     
+    // Fetch email body
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
@@ -280,7 +326,7 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
       toast.success('Email sent successfully');
       setShowComposeDialog(false);
       setComposeData({ to: '', subject: '', body: '', fromAccount: '' });
-      fetchEmails();
+      fetchEmails(true); // Force refresh after sending
     } catch (error: any) {
       console.error('Error sending email:', error);
       toast.error('Failed to send email');
@@ -505,7 +551,7 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={fetchEmails}
+                  onClick={() => fetchEmails(true)}
                   disabled={loadingEmails}
                   className="gap-2"
                 >
