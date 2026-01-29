@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useInvoices, Invoice } from '@/hooks/useInvoices';
 import { InvoiceDetailView } from './InvoiceDetailView';
 import { PredictiveSearch } from '../PredictiveSearch';
+import { CrmNavHeader } from '../CrmNavHeader';
 
 interface InvoicesSectionProps {
   onSectionChange?: (section: string) => void;
@@ -74,6 +75,15 @@ export default function InvoicesSection({ onSectionChange }: InvoicesSectionProp
   return (
     <div className="w-full h-full overflow-y-auto overflow-x-hidden pb-20 bg-background">
       <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 w-full sm:max-w-7xl sm:mx-auto">
+        {/* Navigation Header */}
+        <CrmNavHeader
+          back
+          dashboard
+          onBack={() => onSectionChange?.('dashboard')}
+          onDashboard={() => onSectionChange?.('dashboard')}
+          sectionLabel="Invoices"
+        />
+        
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>

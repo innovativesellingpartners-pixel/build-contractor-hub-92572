@@ -1,6 +1,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { ClipboardList, Users, BarChart2, CreditCard, HelpCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { CrmNavHeader } from '../CrmNavHeader';
 
 type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'estimates' | 'reporting' | 'financials' | 'calls' | 'calendar' | 'emails' | 'payments' | 'accounting' | 'help';
 
@@ -55,6 +56,15 @@ export default function MoreSection({ onSectionChange }: MoreSectionProps) {
   return (
     <div className="w-full h-full overflow-y-auto overflow-x-hidden pb-20 bg-background">
       <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 w-full sm:max-w-7xl sm:mx-auto">
+        {/* Navigation Header */}
+        <CrmNavHeader
+          back
+          dashboard
+          onBack={() => onSectionChange('dashboard')}
+          onDashboard={() => onSectionChange('dashboard')}
+          sectionLabel="More"
+        />
+        
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold">More</h1>
           <p className="text-sm sm:text-base text-muted-foreground">Additional tools and features</p>

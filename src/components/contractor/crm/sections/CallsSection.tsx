@@ -24,6 +24,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { formatPhoneNumber } from '@/lib/phoneUtils';
+import { CrmNavHeader } from '../CrmNavHeader';
 
 interface CallsSectionProps {
   onSectionChange?: (section: string) => void;
@@ -143,6 +144,15 @@ export default function CallsSection({ onSectionChange }: CallsSectionProps) {
   return (
     <div className="w-full h-full overflow-y-auto overflow-x-hidden pb-20 bg-background">
       <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 w-full sm:max-w-7xl sm:mx-auto">
+        {/* Navigation Header */}
+        <CrmNavHeader
+          back
+          dashboard
+          onBack={() => onSectionChange?.('dashboard')}
+          onDashboard={() => onSectionChange?.('dashboard')}
+          sectionLabel="Calls"
+        />
+        
         <div>
           <h1 className="text-3xl font-bold">Calls</h1>
           <p className="text-muted-foreground">Manage your call history and phone number</p>
