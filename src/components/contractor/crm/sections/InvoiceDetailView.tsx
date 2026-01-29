@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
-import { FileText, Send, Download, ArrowLeft, Mail, ExternalLink, Loader2, Eye, Paperclip, Plus, FileCheck, ScrollText, DollarSign } from 'lucide-react';
+import { FileText, Send, Download, ArrowLeft, Mail, ExternalLink, Loader2, Eye, Paperclip, Plus, FileCheck, ScrollText, DollarSign, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -17,6 +17,7 @@ import { WaiverPreview } from '../WaiverPreview';
 import { useContractorProfile } from '@/hooks/useContractorProfile';
 import { useGCContacts, GCContact } from '@/hooks/useGCContacts';
 import { useInvoiceWaivers } from '@/hooks/useInvoiceWaivers';
+import { RequestPaymentDialog } from '../RequestPaymentDialog';
 import {
   BlueBackground,
   SectionHeader,
@@ -97,6 +98,7 @@ export function InvoiceDetailView({ invoice, onClose, onSectionChange }: Invoice
     address: '',
   });
   const [savingGC, setSavingGC] = useState(false);
+  const [showPaymentRequestDialog, setShowPaymentRequestDialog] = useState(false);
 
   useEffect(() => {
     const fetchRelatedData = async () => {
@@ -346,28 +348,15 @@ export function InvoiceDetailView({ invoice, onClose, onSectionChange }: Invoice
           <Paperclip className="w-4 h-4" />
           ATTACH WAIVER
         </ActionButton>
-        {/* Show Request Final Payment when partial payment has been made */}
-        {invoice.amount_paid > 0 && (invoice.amount_due - invoice.amount_paid) > 0 && (
+        {/* Show Request Remainder Payment when there's a balance due */}
+        {(invoice.amount_due - invoice.amount_paid) > 0 && (
           <ActionButton 
             variant="success" 
-            onClick={() => {
-              setSendData({
-                recipientEmail: customer?.email || '',
-                recipientName: customer?.name || '',
-                subject: `Final Payment Request - Invoice ${invoice.invoice_number}`,
-                body: `This is a request for the final payment of $${((invoice.amount_due || 0) - (invoice.amount_paid || 0)).toFixed(2)} for invoice ${invoice.invoice_number}. Please click the payment link to complete your payment.`,
-              });
-              setDocumentsToSend({
-                invoice: true,
-                waivers: attachedWaivers.length > 0,
-                estimate: false,
-              });
-              setShowSendDialog(true);
-            }}
+            onClick={() => setShowPaymentRequestDialog(true)}
             className="flex items-center gap-2"
           >
-            <DollarSign className="w-4 h-4" />
-            REQUEST FINAL PAYMENT
+            <MessageSquare className="w-4 h-4" />
+            REQUEST REMAINDER PAYMENT
           </ActionButton>
         )}
       </ActionButtonRow>
@@ -929,6 +918,20 @@ export function InvoiceDetailView({ invoice, onClose, onSectionChange }: Invoice
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Request Payment Dialog */}
+      <RequestPaymentDialog
+        open={showPaymentRequestDialog}
+        onOpenChange={setShowPaymentRequestDialog}
+        invoice={{
+          id: invoice.id || '',
+          invoice_number: invoice.invoice_number,
+          amount_due: invoice.amount_due,
+          amount_paid: invoice.amount_paid,
+        }}
+        customer={customer}
+        job={job}
+      />
     </BlueBackground>
   );
 }

@@ -2459,6 +2459,97 @@ export type Database = {
         }
         Relationships: []
       }
+      invoice_payment_requests: {
+        Row: {
+          amount_requested: number
+          created_at: string | null
+          email_sent: boolean | null
+          id: string
+          invoice_id: string
+          recipient_email: string | null
+          recipient_phone: string | null
+          sms_sent: boolean | null
+          user_id: string
+        }
+        Insert: {
+          amount_requested: number
+          created_at?: string | null
+          email_sent?: boolean | null
+          id?: string
+          invoice_id: string
+          recipient_email?: string | null
+          recipient_phone?: string | null
+          sms_sent?: boolean | null
+          user_id: string
+        }
+        Update: {
+          amount_requested?: number
+          created_at?: string | null
+          email_sent?: boolean | null
+          id?: string
+          invoice_id?: string
+          recipient_email?: string | null
+          recipient_phone?: string | null
+          sms_sent?: boolean | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_payment_requests_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoice_payment_sessions: {
+        Row: {
+          amount: number
+          clover_payment_id: string | null
+          clover_session_id: string
+          created_at: string | null
+          customer_email: string
+          id: string
+          invoice_id: string
+          paid_at: string | null
+          payment_intent: string | null
+          status: string | null
+        }
+        Insert: {
+          amount: number
+          clover_payment_id?: string | null
+          clover_session_id: string
+          created_at?: string | null
+          customer_email: string
+          id?: string
+          invoice_id: string
+          paid_at?: string | null
+          payment_intent?: string | null
+          status?: string | null
+        }
+        Update: {
+          amount?: number
+          clover_payment_id?: string | null
+          clover_session_id?: string
+          created_at?: string | null
+          customer_email?: string
+          id?: string
+          invoice_id?: string
+          paid_at?: string | null
+          payment_intent?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_payment_sessions_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invoice_waivers: {
         Row: {
           amount: number
@@ -2533,6 +2624,7 @@ export type Database = {
           amount_due: number
           amount_paid: number
           balance_due: number | null
+          clover_payment_id: string | null
           created_at: string
           customer_id: string | null
           due_date: string | null
@@ -2540,8 +2632,14 @@ export type Database = {
           invoice_number: string | null
           issue_date: string
           job_id: string
+          last_payment_request_at: string | null
           line_items: Json | null
           notes: string | null
+          paid_at: string | null
+          payment_intent: string | null
+          payment_status: string | null
+          public_token: string | null
+          receipt_sent_at: string | null
           status: Database["public"]["Enums"]["invoice_status"]
           stripe_payment_id: string | null
           stripe_payment_link: string | null
@@ -2552,6 +2650,7 @@ export type Database = {
           amount_due?: number
           amount_paid?: number
           balance_due?: number | null
+          clover_payment_id?: string | null
           created_at?: string
           customer_id?: string | null
           due_date?: string | null
@@ -2559,8 +2658,14 @@ export type Database = {
           invoice_number?: string | null
           issue_date?: string
           job_id: string
+          last_payment_request_at?: string | null
           line_items?: Json | null
           notes?: string | null
+          paid_at?: string | null
+          payment_intent?: string | null
+          payment_status?: string | null
+          public_token?: string | null
+          receipt_sent_at?: string | null
           status?: Database["public"]["Enums"]["invoice_status"]
           stripe_payment_id?: string | null
           stripe_payment_link?: string | null
@@ -2571,6 +2676,7 @@ export type Database = {
           amount_due?: number
           amount_paid?: number
           balance_due?: number | null
+          clover_payment_id?: string | null
           created_at?: string
           customer_id?: string | null
           due_date?: string | null
@@ -2578,8 +2684,14 @@ export type Database = {
           invoice_number?: string | null
           issue_date?: string
           job_id?: string
+          last_payment_request_at?: string | null
           line_items?: Json | null
           notes?: string | null
+          paid_at?: string | null
+          payment_intent?: string | null
+          payment_status?: string | null
+          public_token?: string | null
+          receipt_sent_at?: string | null
           status?: Database["public"]["Enums"]["invoice_status"]
           stripe_payment_id?: string | null
           stripe_payment_link?: string | null

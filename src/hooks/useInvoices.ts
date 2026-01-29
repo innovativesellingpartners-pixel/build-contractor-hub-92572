@@ -13,9 +13,16 @@ export interface Invoice {
   due_date?: string;
   amount_due: number;
   amount_paid: number;
+  balance_due?: number;
   line_items?: any;
   status: 'draft' | 'sent' | 'partial' | 'paid' | 'overdue';
   notes?: string;
+  public_token?: string;
+  payment_status?: string;
+  clover_payment_id?: string;
+  paid_at?: string;
+  last_payment_request_at?: string;
+  receipt_sent_at?: string;
   created_at?: string;
   updated_at?: string;
 }
