@@ -301,15 +301,15 @@ export function Dashboard() {
                 <span className="font-semibold text-sm">{profile?.company_name || 'Your Company'}</span>
               </div>
               
-              {/* Account Button - Always Visible */}
+              {/* Account Button */}
               <Button 
                 variant="outline" 
                 size="sm"
                 onClick={() => handleSectionChange('account')}
-                className="flex items-center gap-2 hover:bg-primary/10 transition-colors"
+                className="flex items-center gap-1 px-2 hover:bg-primary/10 transition-colors"
               >
                 <User className="h-4 w-4" />
-                <span className="hidden sm:inline">Account</span>
+                <span className="text-xs">Acct</span>
               </Button>
               
               {/* Help Button */}
@@ -317,10 +317,10 @@ export function Dashboard() {
                 variant="outline" 
                 size="sm"
                 onClick={() => handleSectionChange('help')}
-                className="flex items-center gap-2 hover:bg-primary/10 transition-colors"
+                className="flex items-center gap-1 px-2 hover:bg-primary/10 transition-colors"
               >
                 <HelpCircle className="h-4 w-4" />
-                <span className="hidden sm:inline">Help</span>
+                <span className="text-xs">Help</span>
               </Button>
               
               {/* Get App Button */}
@@ -328,25 +328,25 @@ export function Dashboard() {
                 variant="outline" 
                 size="sm"
                 asChild
-                className="flex items-center gap-2 hover:bg-primary/10 transition-colors"
+                className="flex items-center gap-1 px-2 hover:bg-primary/10 transition-colors"
               >
                 <Link to="/app-install">
                   <Smartphone className="h-4 w-4" />
-                  <span className="hidden sm:inline">Get App</span>
+                  <span className="text-xs">App</span>
                 </Link>
               </Button>
               
               {isAdmin && (
-                <Button variant="outline" size="sm" asChild className="hover:bg-primary/10 transition-colors">
+                <Button variant="outline" size="sm" asChild className="flex items-center gap-1 px-2 hover:bg-primary/10 transition-colors">
                   <Link to="/admin">
-                    <Shield className="h-4 w-4 sm:mr-2" />
-                    <span className="hidden sm:inline">Admin Dashboard</span>
+                    <Shield className="h-4 w-4" />
+                    <span className="text-xs">Admin</span>
                   </Link>
                 </Button>
               )}
-              <Button variant="ghost" size="sm" onClick={handleLogout} className="hover:bg-destructive/10 hover:text-destructive transition-colors">
-                <LogOut className="h-4 w-4 md:mr-2" />
-                <span className="hidden md:inline">Logout</span>
+              <Button variant="ghost" size="sm" onClick={handleLogout} className="flex items-center gap-1 px-2 hover:bg-destructive/10 hover:text-destructive transition-colors">
+                <LogOut className="h-4 w-4" />
+                <span className="text-xs hidden sm:inline">Logout</span>
               </Button>
             </div>
           </div>
