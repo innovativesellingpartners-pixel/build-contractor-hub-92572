@@ -5,7 +5,14 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
-import { Plus, X, FileText, DollarSign, Shield, Clock } from 'lucide-react';
+import { Plus, X, FileText, DollarSign, Shield } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import { EstimateBuilderData } from '../../EstimateBuilder';
 
 interface ScopeTermsStepProps {
@@ -14,6 +21,8 @@ interface ScopeTermsStepProps {
 }
 
 export default function ScopeTermsStep({ data, onChange }: ScopeTermsStepProps) {
+  const [deliverableDialogOpen, setDeliverableDialogOpen] = useState(false);
+  const [exclusionDialogOpen, setExclusionDialogOpen] = useState(false);
   const [newDeliverable, setNewDeliverable] = useState('');
   const [newExclusion, setNewExclusion] = useState('');
 
@@ -23,6 +32,7 @@ export default function ScopeTermsStep({ data, onChange }: ScopeTermsStepProps) 
         scope_key_deliverables: [...data.scope_key_deliverables, newDeliverable.trim()] 
       });
       setNewDeliverable('');
+      setDeliverableDialogOpen(false);
     }
   };
 
@@ -38,6 +48,7 @@ export default function ScopeTermsStep({ data, onChange }: ScopeTermsStepProps) 
         scope_exclusions: [...data.scope_exclusions, newExclusion.trim()] 
       });
       setNewExclusion('');
+      setExclusionDialogOpen(false);
     }
   };
 
@@ -91,19 +102,20 @@ export default function ScopeTermsStep({ data, onChange }: ScopeTermsStepProps) 
 
           {/* Key Deliverables */}
           <div className="space-y-3">
-            <Label>Key Deliverables</Label>
-            <div className="flex gap-2">
-              <Input
-                value={newDeliverable}
-                onChange={(e) => setNewDeliverable(e.target.value)}
-                placeholder="Add a deliverable..."
-                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addDeliverable())}
-              />
-              <Button type="button" onClick={addDeliverable} size="icon">
+            <div className="flex items-center justify-between">
+              <Label>Key Deliverables</Label>
+              <Button 
+                type="button" 
+                onClick={() => setDeliverableDialogOpen(true)} 
+                size="sm"
+                variant="outline"
+                className="gap-1"
+              >
                 <Plus className="h-4 w-4" />
+                Add
               </Button>
             </div>
-            {data.scope_key_deliverables.length > 0 && (
+            {data.scope_key_deliverables.length > 0 ? (
               <ul className="space-y-2">
                 {data.scope_key_deliverables.map((item, index) => (
                   <li key={index} className="flex items-center gap-2 p-2 bg-muted rounded-md">
@@ -120,24 +132,27 @@ export default function ScopeTermsStep({ data, onChange }: ScopeTermsStepProps) 
                   </li>
                 ))}
               </ul>
+            ) : (
+              <p className="text-sm text-muted-foreground italic">No deliverables added yet. Click "Add" to add one.</p>
             )}
           </div>
 
           {/* Exclusions */}
           <div className="space-y-3">
-            <Label>Exclusions (What's NOT included)</Label>
-            <div className="flex gap-2">
-              <Input
-                value={newExclusion}
-                onChange={(e) => setNewExclusion(e.target.value)}
-                placeholder="Add an exclusion..."
-                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addExclusion())}
-              />
-              <Button type="button" onClick={addExclusion} size="icon">
+            <div className="flex items-center justify-between">
+              <Label>Exclusions (What's NOT included)</Label>
+              <Button 
+                type="button" 
+                onClick={() => setExclusionDialogOpen(true)} 
+                size="sm"
+                variant="outline"
+                className="gap-1"
+              >
                 <Plus className="h-4 w-4" />
+                Add
               </Button>
             </div>
-            {data.scope_exclusions.length > 0 && (
+            {data.scope_exclusions.length > 0 ? (
               <ul className="space-y-2">
                 {data.scope_exclusions.map((item, index) => (
                   <li key={index} className="flex items-center gap-2 p-2 bg-destructive/10 rounded-md">
@@ -154,10 +169,72 @@ export default function ScopeTermsStep({ data, onChange }: ScopeTermsStepProps) 
                   </li>
                 ))}
               </ul>
+            ) : (
+              <p className="text-sm text-muted-foreground italic">No exclusions added yet. Click "Add" to add one.</p>
             )}
           </div>
         </CardContent>
       </Card>
+
+      {/* Add Deliverable Dialog */}
+      <Dialog open={deliverableDialogOpen} onOpenChange={setDeliverableDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add Key Deliverable</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="new-deliverable">Deliverable Description</Label>
+              <Textarea
+                id="new-deliverable"
+                value={newDeliverable}
+                onChange={(e) => setNewDeliverable(e.target.value)}
+                placeholder="e.g., Install new 50-gallon water heater with expansion tank"
+                rows={3}
+                autoFocus
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setDeliverableDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="button" onClick={addDeliverable} disabled={!newDeliverable.trim()}>
+              Add Deliverable
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Exclusion Dialog */}
+      <Dialog open={exclusionDialogOpen} onOpenChange={setExclusionDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add Exclusion</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="new-exclusion">Exclusion Description</Label>
+              <Textarea
+                id="new-exclusion"
+                value={newExclusion}
+                onChange={(e) => setNewExclusion(e.target.value)}
+                placeholder="e.g., Drywall repair or painting not included"
+                rows={3}
+                autoFocus
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setExclusionDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="button" onClick={addExclusion} disabled={!newExclusion.trim()}>
+              Add Exclusion
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Financial Terms */}
       <Card>
