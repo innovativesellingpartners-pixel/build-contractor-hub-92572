@@ -1359,27 +1359,39 @@ export type Database = {
       estimate_payment_sessions: {
         Row: {
           amount: number
+          clover_payment_id: string | null
           clover_session_id: string
           created_at: string
           customer_email: string
           estimate_id: string
           id: string
+          paid_at: string | null
+          payment_intent: string | null
+          status: string | null
         }
         Insert: {
           amount: number
+          clover_payment_id?: string | null
           clover_session_id: string
           created_at?: string
           customer_email: string
           estimate_id: string
           id?: string
+          paid_at?: string | null
+          payment_intent?: string | null
+          status?: string | null
         }
         Update: {
           amount?: number
+          clover_payment_id?: string | null
           clover_session_id?: string
           created_at?: string
           customer_email?: string
           estimate_id?: string
           id?: string
+          paid_at?: string | null
+          payment_intent?: string | null
+          status?: string | null
         }
         Relationships: [
           {

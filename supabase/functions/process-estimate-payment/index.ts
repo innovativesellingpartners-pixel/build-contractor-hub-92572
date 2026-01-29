@@ -6,24 +6,34 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+interface PaymentRequest {
+  estimate_id: string;
+  public_token: string;
+  payment_intent: 'deposit' | 'full' | 'remaining';
+  customer_email: string;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { estimate_id, public_token, amount, customer_email } = await req.json();
+    const { estimate_id, public_token, payment_intent, customer_email }: PaymentRequest = await req.json();
 
     console.log('Processing estimate payment:', {
       estimate_id,
-      amount,
+      payment_intent,
       customer_email,
     });
 
     // Validate inputs
-    if (!estimate_id || !amount || !customer_email || !public_token) {
+    if (!estimate_id || !customer_email || !public_token) {
       throw new Error('Missing required fields');
     }
+
+    // Default to 'full' if not specified
+    const intent = payment_intent || 'full';
 
     // Verify the estimate exists and get details
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -39,6 +49,92 @@ serve(async (req) => {
 
     if (estimateError || !estimate) {
       throw new Error('Invalid estimate');
+    }
+
+    // Calculate amounts based on estimate data
+    const totalAmount = estimate.grand_total || estimate.total_amount || 0;
+    const depositAmount = estimate.required_deposit || 0;
+    const amountPaid = estimate.payment_amount || 0;
+    const remainingBalance = totalAmount - amountPaid;
+
+    // Prevent overpayment
+    if (remainingBalance <= 0) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: 'This estimate has already been fully paid',
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    // Calculate the amount to charge based on intent
+    let amountToCharge: number;
+    let paymentDescription: string;
+
+    if (intent === 'deposit') {
+      // Deposit payment - charge the deposit amount (or remaining if less)
+      if (depositAmount <= 0) {
+        throw new Error('No deposit required for this estimate');
+      }
+      // If already paid something, only charge what's left of the deposit
+      const depositRemaining = Math.max(0, depositAmount - amountPaid);
+      amountToCharge = Math.min(depositRemaining, remainingBalance);
+      paymentDescription = `Deposit for Estimate ${estimate.estimate_number}`;
+    } else if (intent === 'remaining') {
+      // Pay remaining balance
+      amountToCharge = remainingBalance;
+      paymentDescription = `Remaining Balance for Estimate ${estimate.estimate_number}`;
+    } else {
+      // Full payment - charge remaining balance
+      amountToCharge = remainingBalance;
+      paymentDescription = `Payment for Estimate ${estimate.estimate_number}`;
+    }
+
+    // Round to 2 decimal places
+    amountToCharge = Math.round(amountToCharge * 100) / 100;
+
+    if (amountToCharge <= 0) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: 'Invalid payment amount',
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    console.log('Calculated payment:', {
+      intent,
+      totalAmount,
+      depositAmount,
+      amountPaid,
+      remainingBalance,
+      amountToCharge,
+    });
+
+    // Check for duplicate pending payment sessions (idempotency)
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    const { data: existingSession } = await supabase
+      .from('estimate_payment_sessions')
+      .select('*')
+      .eq('estimate_id', estimate_id)
+      .eq('payment_intent', intent)
+      .eq('amount', amountToCharge)
+      .eq('status', 'pending')
+      .gte('created_at', fiveMinutesAgo)
+      .single();
+
+    if (existingSession) {
+      console.log('Found existing pending session, returning it');
+      // Return the existing session's checkout URL if still valid
+      // Note: Clover sessions may expire, so we proceed to create a new one
     }
 
     // Get Clover credentials
@@ -66,9 +162,9 @@ serve(async (req) => {
       shoppingCart: {
         lineItems: [
           {
-            name: `Estimate ${estimate.estimate_number}`,
+            name: paymentDescription,
             unitQty: 1,
-            price: Math.round(amount * 100), // Convert to cents
+            price: Math.round(amountToCharge * 100), // Convert to cents
           },
         ],
       },
@@ -125,11 +221,25 @@ serve(async (req) => {
         const prodData = await prodResponse.json();
         console.log('Production Clover response:', prodData);
 
+        // Store the payment session
+        await supabase
+          .from('estimate_payment_sessions')
+          .insert({
+            estimate_id,
+            clover_session_id: prodData.id,
+            amount: amountToCharge,
+            customer_email,
+            payment_intent: intent,
+            status: 'pending',
+          });
+
         return new Response(
           JSON.stringify({
             success: true,
             checkout_url: prodData.href,
             session_id: prodData.id,
+            amount: amountToCharge,
+            payment_intent: intent,
           }),
           {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -149,8 +259,10 @@ serve(async (req) => {
       .insert({
         estimate_id,
         clover_session_id: cloverData.id,
-        amount,
+        amount: amountToCharge,
         customer_email,
+        payment_intent: intent,
+        status: 'pending',
       });
 
     return new Response(
@@ -158,6 +270,8 @@ serve(async (req) => {
         success: true,
         checkout_url: cloverData.href,
         session_id: cloverData.id,
+        amount: amountToCharge,
+        payment_intent: intent,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
