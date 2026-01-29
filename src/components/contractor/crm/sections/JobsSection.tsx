@@ -292,6 +292,7 @@ export default function JobsSection({ onSectionChange, initialJobId, onClearInit
           onEditJob={handleEditJob}
           onDuplicateJob={handleDuplicateJob}
           onArchiveJob={archiveJob}
+          onSectionChange={onSectionChange}
         />
 
         <EditJobDialog
