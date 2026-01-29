@@ -204,8 +204,8 @@ export function AddLeadDialog({ onAdd, sources }: AddLeadDialogProps) {
               placeholder="Start typing an address..."
             />
           </div>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="space-y-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+            <div className="space-y-2 col-span-2 sm:col-span-1">
               <Label htmlFor="city">City</Label>
               <VoiceInputField
                 id="city"
@@ -214,7 +214,7 @@ export function AddLeadDialog({ onAdd, sources }: AddLeadDialogProps) {
                 onVoiceInput={(text) => setFormData({ ...formData, city: text })}
               />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 col-span-1">
               <Label htmlFor="state">State</Label>
               <VoiceInputField
                 id="state"
@@ -225,7 +225,7 @@ export function AddLeadDialog({ onAdd, sources }: AddLeadDialogProps) {
                 placeholder="CA"
               />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 col-span-1">
               <Label htmlFor="zip_code">Zip Code</Label>
               <VoiceInputField
                 id="zip_code"

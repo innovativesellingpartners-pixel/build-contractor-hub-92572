@@ -151,8 +151,8 @@ export function EditCustomerDialog({ customer, open, onOpenChange }: EditCustome
               placeholder="Start typing an address..."
             />
           </div>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="space-y-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+            <div className="space-y-2 col-span-2 sm:col-span-1">
               <Label htmlFor="city">City</Label>
               <Input
                 id="city"
@@ -160,7 +160,7 @@ export function EditCustomerDialog({ customer, open, onOpenChange }: EditCustome
                 onChange={(e) => setFormData({ ...formData, city: e.target.value })}
               />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 col-span-1">
               <Label htmlFor="state">State</Label>
               <Input
                 id="state"
@@ -169,7 +169,7 @@ export function EditCustomerDialog({ customer, open, onOpenChange }: EditCustome
                 maxLength={2}
               />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 col-span-1">
               <Label htmlFor="zip_code">Zip Code</Label>
               <Input
                 id="zip_code"

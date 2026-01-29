@@ -366,8 +366,8 @@ export function ProfileEditDialog() {
                         showGpsButton={true}
                       />
                     </div>
-                    <div className="grid grid-cols-3 gap-4">
-                      <div className="space-y-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+                      <div className="space-y-2 col-span-2 sm:col-span-1">
                         <Label htmlFor="city">City</Label>
                         <Input
                           id="city"
@@ -376,7 +376,7 @@ export function ProfileEditDialog() {
                           onChange={handleChange}
                         />
                       </div>
-                      <div className="space-y-2">
+                      <div className="space-y-2 col-span-1">
                         <Label htmlFor="state">State</Label>
                         <Input
                           id="state"
@@ -386,7 +386,7 @@ export function ProfileEditDialog() {
                           maxLength={2}
                         />
                       </div>
-                      <div className="space-y-2">
+                      <div className="space-y-2 col-span-1">
                         <Label htmlFor="zip_code">ZIP Code</Label>
                         <Input
                           id="zip_code"

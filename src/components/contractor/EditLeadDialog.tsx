@@ -253,8 +253,8 @@ export function EditLeadDialog({ lead, open, onOpenChange, onUpdate, onDelete, s
               placeholder="Start typing an address..."
             />
           </div>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="space-y-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+            <div className="space-y-2 col-span-2 sm:col-span-1">
               <Label htmlFor="edit-city">City</Label>
               <Input
                 id="edit-city"
@@ -262,7 +262,7 @@ export function EditLeadDialog({ lead, open, onOpenChange, onUpdate, onDelete, s
                 onChange={(e) => setFormData({ ...formData, city: e.target.value })}
               />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 col-span-1">
               <Label htmlFor="edit-state">State</Label>
               <Input
                 id="edit-state"
@@ -271,7 +271,7 @@ export function EditLeadDialog({ lead, open, onOpenChange, onUpdate, onDelete, s
                 maxLength={2}
               />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 col-span-1">
               <Label htmlFor="edit-zip_code">Zip Code</Label>
               <Input
                 id="edit-zip_code"
