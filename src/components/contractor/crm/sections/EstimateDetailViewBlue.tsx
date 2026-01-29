@@ -4,9 +4,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { Send, Users, Briefcase, Eye, Copy, FileText, Receipt, Save, Download, LayoutTemplate, BookmarkPlus, Camera } from 'lucide-react';
+import { Send, Users, Briefcase, Eye, Copy, FileText, Receipt, Save, Download, LayoutTemplate, BookmarkPlus, Camera, MessageSquare, Loader2 } from 'lucide-react';
 import { EstimatePhotosSection } from '../estimate/EstimatePhotosSection';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import { CustomerDetailViewBlue } from './CustomerDetailViewBlue';
 import { Customer } from '@/hooks/useCustomers';
 import { SendToGCDialog } from '../SendToGCDialog';
@@ -54,6 +55,8 @@ export function EstimateDetailViewBlue({
   const [saveTemplateOpen, setSaveTemplateOpen] = useState(false);
   const [isPdfLoading, setIsPdfLoading] = useState(false);
   const [showPdfPreview, setShowPdfPreview] = useState(false);
+  const [isSendingSMS, setIsSendingSMS] = useState(false);
+  const [showSMSConfirmDialog, setShowSMSConfirmDialog] = useState(false);
 
   // Fetch linked customer data
   useEffect(() => {
@@ -303,6 +306,51 @@ export function EstimateDetailViewBlue({
   const handlePreviewPDF = () => setShowPdfPreview(true);
   const handleDownloadPDF = () => handlePDFAction('download');
 
+  // Send Estimate via SMS
+  const handleSendSMS = async () => {
+    if (!estimate.client_phone) {
+      toast.error('Client phone number is required to send SMS');
+      return;
+    }
+
+    setIsSendingSMS(true);
+    try {
+      // Get contractor profile for name
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('company_name, contact_name')
+        .eq('user_id', user?.id)
+        .single();
+
+      const contractorName = profile?.company_name || 
+        profile?.contact_name || 
+        user?.user_metadata?.full_name || 
+        'Your Contractor';
+
+      const { data, error } = await supabase.functions.invoke('send-estimate-sms', {
+        body: {
+          estimateId: estimate.id,
+          phoneNumber: estimate.client_phone,
+          contractorName,
+        },
+      });
+
+      if (error) throw error;
+      
+      if (data?.success) {
+        toast.success('Estimate sent via SMS!');
+        setShowSMSConfirmDialog(false);
+      } else {
+        throw new Error(data?.error || 'Failed to send SMS');
+      }
+    } catch (error: any) {
+      console.error('SMS send error:', error);
+      toast.error(error.message || 'Failed to send SMS');
+    } finally {
+      setIsSendingSMS(false);
+    }
+  };
+
   return (
     <BlueBackground className="min-h-full flex flex-col">
       {/* Header - Fixed */}
@@ -353,7 +401,18 @@ export function EstimateDetailViewBlue({
         {onSend && estimate.client_email && (
           <ActionButton variant="success" onClick={onSend} className="flex items-center gap-2">
             <Send className="w-4 h-4" />
-            {estimate.sent_at ? 'RESEND' : 'SEND ESTIMATE'}
+            {estimate.sent_at ? 'RESEND' : 'SEND EMAIL'}
+          </ActionButton>
+        )}
+        {estimate.client_phone && (
+          <ActionButton 
+            variant="secondary" 
+            onClick={() => setShowSMSConfirmDialog(true)}
+            disabled={isSendingSMS}
+            className="flex items-center gap-2"
+          >
+            {isSendingSMS ? <Loader2 className="w-4 h-4 animate-spin" /> : <MessageSquare className="w-4 h-4" />}
+            {isSendingSMS ? 'SENDING...' : 'SEND SMS'}
           </ActionButton>
         )}
         {!estimate.customer_id && (estimate.status === 'sent' || estimate.status === 'accepted' || estimate.signed_at) && (
@@ -641,6 +700,58 @@ export function EstimateDetailViewBlue({
             onClose={() => setShowPdfPreview(false)}
             onDownload={handleDownloadPDF}
           />
+        </DialogContent>
+      </Dialog>
+
+      {/* SMS Confirmation Dialog */}
+      <Dialog open={showSMSConfirmDialog} onOpenChange={setShowSMSConfirmDialog}>
+        <DialogContent className="sm:max-w-md">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-primary/10 rounded-full">
+                <MessageSquare className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="text-lg font-semibold">Send Estimate via SMS</h3>
+            </div>
+            <div className="space-y-2 text-sm">
+              <p><span className="font-medium">To:</span> {estimate.client_name || 'Customer'}</p>
+              <p><span className="font-medium">Phone:</span> {estimate.client_phone}</p>
+              <p><span className="font-medium">Amount:</span> ${(estimate.grand_total || estimate.total_amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+              {estimate.required_deposit && estimate.required_deposit > 0 && (
+                <p><span className="font-medium">Deposit:</span> ${estimate.required_deposit.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+              )}
+            </div>
+            <p className="text-sm text-muted-foreground">
+              The customer will receive a text message with a link to view, sign, and pay this estimate.
+            </p>
+            <div className="flex gap-2 pt-2">
+              <Button 
+                variant="outline" 
+                className="flex-1"
+                onClick={() => setShowSMSConfirmDialog(false)}
+                disabled={isSendingSMS}
+              >
+                Cancel
+              </Button>
+              <Button 
+                className="flex-1"
+                onClick={handleSendSMS}
+                disabled={isSendingSMS}
+              >
+                {isSendingSMS ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <MessageSquare className="w-4 h-4 mr-2" />
+                    Send SMS
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </BlueBackground>

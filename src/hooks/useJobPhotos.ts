@@ -94,6 +94,10 @@ export const useJobPhotos = (jobId?: string) => {
       // Store the file path (not public URL since bucket is now private)
       const filePath = fileName;
 
+      // Check if this is the first photo - auto-tag as "Front of Property"
+      const isFirstPhoto = photos.length === 0;
+      const photoCaption = isFirstPhoto && !caption ? 'Front of Property' : caption;
+
       // Save to database
       const { data, error } = await supabase
         .from('job_photos')
@@ -101,7 +105,7 @@ export const useJobPhotos = (jobId?: string) => {
           job_id: jobId,
           user_id: user.id,
           photo_url: filePath, // Store path, not public URL
-          caption,
+          caption: photoCaption,
         }])
         .select()
         .single();
@@ -121,7 +125,64 @@ export const useJobPhotos = (jobId?: string) => {
       setPhotos(prev => [photoWithSignedUrl, ...prev]);
       toast({
         title: 'Photo uploaded',
-        description: 'Photo has been added to the job successfully',
+        description: isFirstPhoto ? 'Front of property photo added' : 'Photo has been added to the job successfully',
+      });
+      return photoWithSignedUrl as JobPhoto;
+    } catch (error: any) {
+      toast({
+        title: 'Error uploading photo',
+        description: error.message,
+        variant: 'destructive',
+      });
+      throw error;
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // Special function for explicitly uploading the first photo with "Front of Property" caption
+  const uploadPhotoAsFirst = async (file: File, caption: string = 'Front of Property') => {
+    if (!user || !jobId) return;
+
+    setUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/${jobId}/${Date.now()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('job-photos')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const filePath = fileName;
+
+      const { data, error } = await supabase
+        .from('job_photos')
+        .insert([{
+          job_id: jobId,
+          user_id: user.id,
+          photo_url: filePath,
+          caption: caption,
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const { data: signedData } = await supabase.storage
+        .from('job-photos')
+        .createSignedUrl(filePath, 3600);
+
+      const photoWithSignedUrl = {
+        ...(data as JobPhoto),
+        signed_url: signedData?.signedUrl,
+      };
+
+      setPhotos(prev => [photoWithSignedUrl, ...prev]);
+      toast({
+        title: 'Front of property photo added',
+        description: 'Photo has been tagged as "Front of Property"',
       });
       return photoWithSignedUrl as JobPhoto;
     } catch (error: any) {
@@ -205,6 +266,7 @@ export const useJobPhotos = (jobId?: string) => {
     loading,
     uploading,
     uploadPhoto,
+    uploadPhotoAsFirst,
     deletePhoto,
     updatePhotoCaption,
     refreshPhotos: fetchPhotos,

@@ -69,26 +69,28 @@ export function FloatingPocketbot({ onClose, onPositionChange, initialPosition }
     }
     
     const saved = localStorage.getItem('ct1_pocketbot_position');
-    let defaultPosition = { x: window.innerWidth - 400, y: 20 };
+    const isMobile = window.innerWidth < 768;
+    const cardWidth = isMobile ? window.innerWidth - 32 : 360;
+    const cardHeight = 450;
+    const bottomNavHeight = isMobile ? 80 : 0; // Account for mobile bottom nav
+    const safeAreaBottom = 16;
+    
+    // Default to bottom-right corner, above mobile bottom nav
+    let defaultPosition = { 
+      x: isMobile ? 16 : window.innerWidth - cardWidth - 16, 
+      y: window.innerHeight - cardHeight - bottomNavHeight - safeAreaBottom
+    };
     
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
         // Validate that saved position is still within viewport
-        const isMobile = window.innerWidth < 768;
-        const cardWidth = isMobile ? window.innerWidth - 32 : 380;
         const maxX = window.innerWidth - cardWidth;
-        const maxY = window.innerHeight - 200; // Approximate min height
+        const maxY = window.innerHeight - cardHeight - bottomNavHeight - safeAreaBottom;
         
         // If saved position is valid, use it; otherwise use default
         if (parsed.x >= 0 && parsed.x <= maxX && parsed.y >= 0 && parsed.y <= maxY) {
           defaultPosition = parsed;
-        } else {
-          // Reset to default for current screen size
-          defaultPosition = { 
-            x: isMobile ? 16 : Math.max(0, window.innerWidth - 400), 
-            y: 20 
-          };
         }
       } catch {
         // Keep default position on parse error
@@ -582,7 +584,7 @@ export function FloatingPocketbot({ onClose, onPositionChange, initialPosition }
         left: `${position.x}px`,
         top: `${position.y}px`,
         height: '450px',
-        maxHeight: 'min(450px, calc(100vh - 100px))',
+        maxHeight: `min(450px, calc(100vh - ${window.innerWidth < 768 ? '100px' : '32px'}))`,
         width: window.innerWidth < 768 ? 'calc(100vw - 32px)' : '360px',
         touchAction: 'none'
       }}
