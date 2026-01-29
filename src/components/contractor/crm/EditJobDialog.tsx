@@ -18,9 +18,10 @@ interface EditJobDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onUpdate: (id: string, updates: Partial<Job>) => Promise<any>;
+  onJobUpdated?: (job: Job) => void;
 }
 
-export function EditJobDialog({ job, open, onOpenChange, onUpdate }: EditJobDialogProps) {
+export function EditJobDialog({ job, open, onOpenChange, onUpdate, onJobUpdated }: EditJobDialogProps) {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -77,7 +78,7 @@ export function EditJobDialog({ job, open, onOpenChange, onUpdate }: EditJobDial
     if (!job) return;
     
     try {
-      await onUpdate(job.id!, {
+      const updatedJob = await onUpdate(job.id!, {
         name: formData.name,
         description: formData.description || undefined,
         status: formData.status,
@@ -107,6 +108,10 @@ export function EditJobDialog({ job, open, onOpenChange, onUpdate }: EditJobDial
       }
       
       onOpenChange(false);
+      // Navigate to the updated job detail view
+      if (updatedJob && onJobUpdated) {
+        onJobUpdated(updatedJob);
+      }
     } catch (error) {
       console.error('Error updating job:', error);
     }

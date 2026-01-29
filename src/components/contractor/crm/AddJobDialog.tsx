@@ -16,9 +16,10 @@ import { VoiceTextareaField } from '@/components/ui/voice-textarea-field';
 
 interface AddJobDialogProps {
   onAdd: (jobData: Omit<Job, 'id' | 'user_id' | 'job_number' | 'created_at' | 'updated_at'>, meetings?: MeetingFormData[]) => Promise<any>;
+  onJobCreated?: (job: Job) => void;
 }
 
-export function AddJobDialog({ onAdd }: AddJobDialogProps) {
+export function AddJobDialog({ onAdd, onJobCreated }: AddJobDialogProps) {
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('manual');
   const [formData, setFormData] = useState({
@@ -62,7 +63,7 @@ export function AddJobDialog({ onAdd }: AddJobDialogProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await onAdd({
+      const newJob = await onAdd({
         ...formData,
         total_cost: parseFloat(formData.total_cost),
         start_date: formData.start_date || undefined,
@@ -83,6 +84,10 @@ export function AddJobDialog({ onAdd }: AddJobDialogProps) {
         notes: '',
       });
       setMeetings([]);
+      // Navigate to the newly created job
+      if (newJob && onJobCreated) {
+        onJobCreated(newJob);
+      }
     } catch (error) {
       console.error('Error adding job:', error);
     }

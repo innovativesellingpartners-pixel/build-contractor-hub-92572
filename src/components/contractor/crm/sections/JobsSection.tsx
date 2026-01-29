@@ -143,7 +143,13 @@ export default function JobsSection({ onSectionChange, initialJobId, onClearInit
             <p className="text-sm sm:text-base text-muted-foreground">Manage your active and completed jobs</p>
           </div>
           <div className="flex gap-2 flex-shrink-0">
-            <AddJobDialog onAdd={addJob} />
+            <AddJobDialog 
+              onAdd={addJob} 
+              onJobCreated={(job) => {
+                setSelectedJob(job);
+                setDetailOpen(true);
+              }}
+            />
           </div>
         </div>
 
@@ -277,6 +283,10 @@ export default function JobsSection({ onSectionChange, initialJobId, onClearInit
           open={editOpen}
           onOpenChange={handleCloseEditDialog}
           onUpdate={handleUpdateJob}
+          onJobUpdated={(job) => {
+            setSelectedJob(job);
+            setDetailOpen(true);
+          }}
         />
       </div>
     </div>
