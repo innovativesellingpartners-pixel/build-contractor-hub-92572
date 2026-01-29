@@ -109,10 +109,16 @@ export default function JobsSection({ onSectionChange, initialJobId, onClearInit
         total_amount: selectedJob.contract_value || 0,
       };
 
-      await createEstimateAsync(estimateData);
+      const newEstimate = await createEstimateAsync(estimateData);
       toast.success('Estimate created for job!');
       
-      if (onSectionChange) {
+      // Close the job detail view
+      setDetailOpen(false);
+      
+      // Navigate to the specific estimate to open it directly
+      if (onSectionChange && newEstimate?.id) {
+        onSectionChange(`estimate:${newEstimate.id}`);
+      } else if (onSectionChange) {
         onSectionChange('estimates');
       }
     } catch (error: any) {
