@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Lead } from '@/hooks/useLeads';
+import { Lead, useLeads } from '@/hooks/useLeads';
 import { useEstimates } from '@/hooks/useEstimates';
 import { useCustomers } from '@/hooks/useCustomers';
 import { useJobs } from '@/hooks/useJobs';
@@ -8,7 +8,10 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { FileText, Briefcase, ArrowRight, Phone, Plus, Pencil, Navigation, CalendarPlus } from 'lucide-react';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
+import { PullToRefreshIndicator } from '@/components/ui/pull-to-refresh';
 import { ScheduleMeetingDialog } from '../ScheduleMeetingDialog';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   BlueBackground,
   SectionHeader,
@@ -29,13 +32,27 @@ interface LeadDetailViewBlueProps {
 }
 
 export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSectionChange, onEdit }: LeadDetailViewBlueProps) {
+  const queryClient = useQueryClient();
   const { estimates, createEstimateAsync } = useEstimates();
   const { customers } = useCustomers();
-  const { jobs } = useJobs();
+  const { jobs, refreshJobs } = useJobs();
+  const { refreshLeads } = useLeads();
   const { user } = useAuth();
   const [isConverting, setIsConverting] = useState(false);
   const [isCreatingEstimate, setIsCreatingEstimate] = useState(false);
   const [showScheduleDialog, setShowScheduleDialog] = useState(false);
+
+  const { isRefreshing, pullDistance, handlers, containerRef } = usePullToRefresh({
+    onRefresh: async () => {
+      await Promise.all([
+        refreshLeads(), 
+        refreshJobs(),
+        queryClient.invalidateQueries({ queryKey: ['estimates'] })
+      ]);
+      toast.success('Refreshed!');
+    },
+    threshold: 80,
+  });
 
   const leadEstimates = estimates?.filter(e => e.lead_id === lead.id) || [];
   const linkedCustomer = lead.customer_id ? customers?.find(c => c.id === lead.customer_id) : null;
@@ -134,7 +151,7 @@ export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSecti
   const isConverted = !!lead.converted_to_job_id;
 
   return (
-    <BlueBackground className="min-h-full flex flex-col">
+    <BlueBackground className="min-h-full flex flex-col relative overflow-hidden">
       {/* Header - Fixed */}
       <DetailHeader
         title={lead.name}
@@ -199,8 +216,19 @@ export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSecti
       </div>
 
       {/* Scrollable Content - extra bottom padding to clear nav bar */}
-      <div className="flex-1 min-h-0 overflow-y-auto pb-32">
-        <div className="space-y-0">
+      <div 
+        ref={containerRef as React.RefObject<HTMLDivElement>}
+        className="flex-1 min-h-0 overflow-y-auto pb-32"
+        {...handlers}
+      >
+        <PullToRefreshIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} />
+        <div 
+          className="space-y-0"
+          style={{
+            transform: `translateY(${pullDistance}px)`,
+            transition: isRefreshing ? 'none' : 'transform 0.2s ease-out'
+          }}
+        >
           {/* Converted Status */}
           {isConverted && linkedJob && (
           <>
