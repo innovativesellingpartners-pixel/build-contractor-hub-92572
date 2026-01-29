@@ -105,15 +105,15 @@ interface DetailHeaderProps {
 export function DetailHeader({ title, subtitle, onBack, onDashboard, rightContent }: DetailHeaderProps) {
   return (
     <div className="bg-foreground text-background px-3 py-2 flex flex-col gap-2 pt-[max(0.75rem,env(safe-area-inset-top))]">
-      {/* Navigation Buttons Row - Always visible */}
-      <div className="flex items-center justify-between gap-2 flex-wrap">
-        <div className="flex items-center gap-2 flex-shrink-0">
+      {/* Navigation Buttons Row - Always visible on first row */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
           {onBack && (
             <button 
               onClick={onBack} 
-              className="flex items-center gap-1.5 h-8 px-2 bg-background/15 hover:bg-background/25 rounded-md transition-colors text-sm font-medium flex-shrink-0"
+              className="flex items-center justify-center gap-1.5 min-w-[40px] h-9 px-3 bg-white/20 hover:bg-white/30 rounded-md transition-colors text-sm font-medium"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="w-5 h-5 flex-shrink-0" />
               <span className="hidden sm:inline">Back</span>
             </button>
           )}
@@ -121,21 +121,21 @@ export function DetailHeader({ title, subtitle, onBack, onDashboard, rightConten
             <button
               type="button"
               onClick={onDashboard}
-              className="flex items-center gap-1.5 h-8 px-2 bg-primary/80 hover:bg-primary rounded-md transition-colors text-sm font-medium text-primary-foreground flex-shrink-0"
+              className="flex items-center justify-center gap-1.5 min-w-[40px] h-9 px-3 bg-primary hover:bg-primary/90 rounded-md transition-colors text-sm font-medium text-primary-foreground"
             >
-              <LayoutDashboard className="w-4 h-4" />
+              <LayoutDashboard className="w-5 h-5 flex-shrink-0" />
               <span className="hidden sm:inline">Dashboard</span>
             </button>
           )}
         </div>
         {rightContent && (
-          <div className="flex items-center flex-shrink-0">
+          <div className="flex items-center gap-1">
             {rightContent}
           </div>
         )}
       </div>
       {/* Title Row */}
-      <div className="flex-1 min-w-0">
+      <div className="min-w-0">
         <h1 className="font-bold text-base truncate">{title}</h1>
         {subtitle && <p className="text-background/70 text-xs truncate">{subtitle}</p>}
       </div>
