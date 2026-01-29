@@ -21,7 +21,7 @@ const CATEGORIES = [
   'Fees',
 ];
 
-const UNITS = ['EA', 'LF', 'SF', 'SY', 'HR', 'DAY', 'LS', 'GAL', 'CY', 'TON'];
+const UNITS = ['EA', 'LF', 'SF', 'SQ', 'SY', 'HR', 'DAY', 'LS', 'GAL', 'CY', 'TON'];
 
 interface LineItemsStepProps {
   data: EstimateBuilderData;

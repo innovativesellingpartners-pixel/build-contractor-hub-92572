@@ -19,7 +19,7 @@ interface CreateTemplateDialogProps {
   defaultTrade?: Trade;
 }
 
-const UNIT_OPTIONS = ['EA', 'SF', 'SY', 'LF', 'HR', 'DAY', 'LS', 'CY', 'GAL', 'TON'];
+const UNIT_OPTIONS = ['EA', 'SF', 'SQ', 'SY', 'LF', 'HR', 'DAY', 'LS', 'CY', 'GAL', 'TON'];
 
 export function CreateTemplateDialog({ open, onOpenChange, onSuccess, defaultTrade }: CreateTemplateDialogProps) {
   const { createTemplate } = useEstimateTemplates();

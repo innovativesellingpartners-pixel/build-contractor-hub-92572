@@ -72,12 +72,17 @@ export function useInvoiceWaivers() {
         });
 
         if (error) {
-          const ctx: any = (error as any).context;
-          const details = ctx?.body?.error || ctx?.body?.message || ctx?.body?.details;
-          console.error(`Failed to generate ${waiver.type} waiver:`, error, ctx?.body);
-          throw new Error(
-            `Failed to generate ${waiver.type} waiver: ${details ? String(details) : error.message}`
-          );
+          console.error(`Failed to generate ${waiver.type} waiver:`, error);
+          let errorDetails = error.message;
+          try {
+            if (error.context && typeof error.context.json === 'function') {
+              const errorBody = await error.context.json();
+              errorDetails = errorBody?.error || errorBody?.message || errorBody?.details || error.message;
+            }
+          } catch (parseError) {
+            // Ignore JSON parse errors
+          }
+          throw new Error(`Failed to generate ${waiver.type} waiver: ${errorDetails}`);
         }
 
         if (data?.waiver) {
