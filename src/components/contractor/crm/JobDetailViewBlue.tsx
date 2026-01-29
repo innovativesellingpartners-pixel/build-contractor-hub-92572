@@ -41,6 +41,7 @@ interface JobDetailViewBlueProps {
   onEditJob?: (job: Job) => void;
   onDuplicateJob?: (jobId: string) => Promise<Job | undefined>;
   onArchiveJob?: (jobId: string) => Promise<Job | void>;
+  onSectionChange?: (section: string) => void;
 }
 
 // Photos Tab Component with camera support, image viewer, notes, refresh, and first photo requirement
@@ -492,7 +493,7 @@ function LogsTabContent({ jobId }: { jobId: string }) {
   );
 }
 
-export default function JobDetailViewBlue({ job, open, onOpenChange, onCreateEstimate, onEditJob, onDuplicateJob, onArchiveJob }: JobDetailViewBlueProps) {
+export default function JobDetailViewBlue({ job, open, onOpenChange, onCreateEstimate, onEditJob, onDuplicateJob, onArchiveJob, onSectionChange }: JobDetailViewBlueProps) {
   const { updateJob } = useJobs();
   const { customers } = useCustomers();
   const { user } = useAuth();
@@ -650,6 +651,7 @@ export default function JobDetailViewBlue({ job, open, onOpenChange, onCreateEst
             title={job.name}
             subtitle={job.job_number || undefined}
             onBack={() => handleOpenChange(false)}
+            onDashboard={onSectionChange ? () => { onSectionChange('dashboard'); handleOpenChange(false); } : undefined}
             rightContent={
               <div className="flex gap-2">
                 {onArchiveJob && (
