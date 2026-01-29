@@ -43,9 +43,9 @@ interface JobDetailViewBlueProps {
   onArchiveJob?: (jobId: string) => Promise<Job | void>;
 }
 
-// Photos Tab Component with camera support, image viewer, notes, and refresh
+// Photos Tab Component with camera support, image viewer, notes, refresh, and first photo requirement
 function PhotosTabContent({ jobId }: { jobId: string }) {
-  const { photos, uploading, uploadPhoto, deletePhoto, updatePhotoCaption, refreshPhotos } = useJobPhotos(jobId);
+  const { photos, uploading, uploadPhoto, deletePhoto, updatePhotoCaption, refreshPhotos, uploadPhotoAsFirst } = useJobPhotos(jobId);
   const [photoCaption, setPhotoCaption] = useState('');
   const [viewerOpen, setViewerOpen] = useState(false);
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number>(-1);
@@ -57,12 +57,32 @@ function PhotosTabContent({ jobId }: { jobId: string }) {
   const [notesDialogOpen, setNotesDialogOpen] = useState(false);
   const [editingPhoto, setEditingPhoto] = useState<JobPhoto | null>(null);
   const [editingNotes, setEditingNotes] = useState('');
+  
+  // First photo prompt state
+  const [showFirstPhotoPrompt, setShowFirstPhotoPrompt] = useState(false);
+  const [hasShownFirstPhotoPrompt, setHasShownFirstPhotoPrompt] = useState(false);
+  const [pendingFirstPhoto, setPendingFirstPhoto] = useState<File | null>(null);
 
   const selectedPhoto = selectedPhotoIndex >= 0 && photos ? photos[selectedPhotoIndex] : null;
+
+  // Show first photo prompt when tab opens and no photos exist
+  useEffect(() => {
+    if (photos && photos.length === 0 && !hasShownFirstPhotoPrompt) {
+      setShowFirstPhotoPrompt(true);
+      setHasShownFirstPhotoPrompt(true);
+    }
+  }, [photos, hasShownFirstPhotoPrompt]);
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
+    
+    // If this is the first photo (no photos exist yet), prompt for confirmation
+    if (photos && photos.length === 0 && !pendingFirstPhoto) {
+      setPendingFirstPhoto(files[0]);
+      setShowFirstPhotoPrompt(true);
+      return;
+    }
     
     for (const file of Array.from(files)) {
       await uploadPhoto(file, photoCaption);
@@ -70,6 +90,19 @@ function PhotosTabContent({ jobId }: { jobId: string }) {
     setPhotoCaption('');
     if (fileInputRef.current) fileInputRef.current.value = '';
     if (cameraInputRef.current) cameraInputRef.current.value = '';
+  };
+
+  const handleConfirmFirstPhoto = async () => {
+    setShowFirstPhotoPrompt(false);
+    if (pendingFirstPhoto) {
+      await uploadPhotoAsFirst(pendingFirstPhoto, 'Front of Property');
+      setPendingFirstPhoto(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      if (cameraInputRef.current) cameraInputRef.current.value = '';
+    } else {
+      // User tapped "Take Front Photo" from initial prompt
+      cameraInputRef.current?.click();
+    }
   };
 
   const handlePhotoClick = (index: number) => {
@@ -119,6 +152,49 @@ function PhotosTabContent({ jobId }: { jobId: string }) {
 
   return (
     <div className="p-4 space-y-4">
+      {/* First Photo Requirement Dialog */}
+      <Dialog open={showFirstPhotoPrompt} onOpenChange={setShowFirstPhotoPrompt}>
+        <DialogContent className="sm:max-w-md">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-amber-100 rounded-full">
+                <Camera className="h-6 w-6 text-amber-600" />
+              </div>
+              <h3 className="text-lg font-semibold">First Photo Required</h3>
+            </div>
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+              <p className="text-sm text-amber-800">
+                <strong>The first photo for this job should be the front of the property with the address visible.</strong>
+              </p>
+              <p className="text-sm text-amber-700 mt-2">
+                This helps verify the job location for documentation purposes and ensures accurate record-keeping.
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                className="flex-1"
+                onClick={() => {
+                  setShowFirstPhotoPrompt(false);
+                  setPendingFirstPhoto(null);
+                  if (fileInputRef.current) fileInputRef.current.value = '';
+                  if (cameraInputRef.current) cameraInputRef.current.value = '';
+                }}
+              >
+                Cancel
+              </Button>
+              <Button 
+                className="flex-1 bg-emerald-500 hover:bg-emerald-600"
+                onClick={handleConfirmFirstPhoto}
+              >
+                <Camera className="w-4 h-4 mr-2" />
+                {pendingFirstPhoto ? 'Confirm Photo' : 'Take Front Photo'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <div className="flex items-center justify-between gap-2">
         <input
           type="text"

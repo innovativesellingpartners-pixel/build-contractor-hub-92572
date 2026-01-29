@@ -137,3 +137,6 @@ verify_jwt = true
 
 [functions.process-sms-reminders]
 verify_jwt = false
+
+[functions.send-estimate-sms]
+verify_jwt = true
