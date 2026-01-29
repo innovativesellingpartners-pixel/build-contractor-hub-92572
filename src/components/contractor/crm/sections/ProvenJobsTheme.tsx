@@ -104,7 +104,7 @@ interface DetailHeaderProps {
 
 export function DetailHeader({ title, subtitle, onBack, onDashboard, rightContent }: DetailHeaderProps) {
   return (
-    <div className="bg-foreground text-background px-3 py-2 flex flex-col gap-2 pt-[max(0.75rem,env(safe-area-inset-top))]">
+    <div className="sticky top-0 z-50 bg-foreground text-background px-3 py-2 flex flex-col gap-2 pt-[calc(3rem+env(safe-area-inset-top))] sm:pt-[max(0.75rem,env(safe-area-inset-top))]">
       {/* Navigation Buttons Row - Always visible on first row */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
