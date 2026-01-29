@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
+import { ArrowLeft, LayoutDashboard } from 'lucide-react';
 
 // Elegant light background wrapper with safe area for mobile browsers
 export function BlueBackground({ children, className }: { children: ReactNode; className?: string }) {
@@ -103,29 +104,40 @@ interface DetailHeaderProps {
 
 export function DetailHeader({ title, subtitle, onBack, onDashboard, rightContent }: DetailHeaderProps) {
   return (
-    <div className="bg-foreground text-background px-4 py-3 flex items-center gap-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
-      {onBack && (
-        <button onClick={onBack} className="p-1 hover:bg-background/10 rounded transition-colors">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
-      )}
+    <div className="bg-foreground text-background px-3 py-2 flex flex-col gap-2 pt-[max(0.75rem,env(safe-area-inset-top))]">
+      {/* Navigation Buttons Row - Always visible */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          {onBack && (
+            <button 
+              onClick={onBack} 
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-background/15 hover:bg-background/25 rounded-md transition-colors text-sm font-medium"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span className="hidden sm:inline">Back</span>
+            </button>
+          )}
+          {onDashboard && (
+            <button
+              type="button"
+              onClick={onDashboard}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/80 hover:bg-primary rounded-md transition-colors text-sm font-medium text-primary-foreground"
+            >
+              <LayoutDashboard className="w-4 h-4" />
+              <span className="hidden sm:inline">Dashboard</span>
+            </button>
+          )}
+        </div>
+        {rightContent && (
+          <div className="flex items-center">
+            {rightContent}
+          </div>
+        )}
+      </div>
+      {/* Title Row */}
       <div className="flex-1 min-w-0">
         <h1 className="font-bold text-base truncate">{title}</h1>
         {subtitle && <p className="text-background/70 text-xs truncate">{subtitle}</p>}
-      </div>
-      <div className="flex items-center gap-2">
-        {onDashboard && (
-          <button
-            type="button"
-            onClick={onDashboard}
-            className="px-2 py-1 rounded-md text-xs font-semibold bg-background/10 hover:bg-background/15 transition-colors"
-          >
-            Dashboard
-          </button>
-        )}
-        {rightContent}
       </div>
     </div>
   );
