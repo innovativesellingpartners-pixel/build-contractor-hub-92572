@@ -290,9 +290,9 @@ const navItems = [
       {isMobile ? (
         <>
 
-          {/* Back Navigation for Mobile - Always visible */}
+          {/* Back Navigation for Mobile - Condensed with logo */}
           {isMobile && !showMobileLanding && (
-            <div className="border-b bg-card px-4 py-2">
+            <div className="border-b bg-card px-3 py-2 overflow-hidden max-w-full">
               <BackNavigation 
                 onBack={handleBack}
                 onBackToDashboard={() => {
@@ -307,10 +307,10 @@ const navItems = [
             </div>
           )}
 
-          {/* Main Content with bottom padding for nav - extra padding for form buttons */}
-          <main className="flex-1 overflow-hidden w-full pb-28 bg-background">
-            <div className="h-full overflow-y-auto overflow-x-hidden">
-              <div className="min-h-full w-full pb-6">
+          {/* Main Content with bottom padding for nav - overflow protected */}
+          <main className="flex-1 overflow-hidden w-full max-w-full pb-28 bg-background">
+            <div className="h-full overflow-y-auto overflow-x-hidden max-w-full">
+              <div className="min-h-full w-full max-w-full pb-6 overflow-hidden">
                 {renderSection()}
               </div>
             </div>

@@ -12,7 +12,8 @@ export function HorizontalRowCard({ children, onClick, className }: HorizontalRo
   return (
     <div
       className={cn(
-        'flex items-center gap-3 px-3 py-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors overflow-hidden',
+        'flex items-center gap-3 px-3 py-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors',
+        'overflow-hidden max-w-full w-full',
         onClick && 'cursor-pointer',
         className
       )}
@@ -59,7 +60,7 @@ interface RowTitleLineProps {
 
 export function RowTitleLine({ children, className }: RowTitleLineProps) {
   return (
-    <div className={cn('flex items-center gap-2 min-w-0', className)}>
+    <div className={cn('flex items-center gap-2 min-w-0 max-w-full overflow-hidden', className)}>
       {children}
     </div>
   );
@@ -72,7 +73,7 @@ interface RowMetaLineProps {
 
 export function RowMetaLine({ children, className }: RowMetaLineProps) {
   return (
-    <div className={cn('flex items-center gap-2 text-xs text-muted-foreground mt-0.5', className)}>
+    <div className={cn('flex items-center gap-2 text-xs text-muted-foreground mt-0.5 max-w-full overflow-hidden flex-wrap', className)}>
       {children}
     </div>
   );
