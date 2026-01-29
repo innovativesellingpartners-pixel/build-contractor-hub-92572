@@ -60,7 +60,8 @@ const allNavItems = [
 export function BottomNav({ activeSection, onSectionChange }: BottomNavProps) {
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const handleNavClick = (section: Section) => {
+  const handleNavClick = (e: React.MouseEvent, section: Section) => {
+    e.stopPropagation();
     onSectionChange(section);
     setMenuOpen(false);
   };
@@ -80,7 +81,11 @@ export function BottomNav({ activeSection, onSectionChange }: BottomNavProps) {
           return (
             <button
               key={item.id}
-              onClick={() => onSectionChange(item.id)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onSectionChange(item.id);
+              }}
+              onPointerDown={(e) => e.stopPropagation()}
               className={cn(
                 'flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl transition-all duration-200 min-w-[64px]',
                 isActive
@@ -102,6 +107,8 @@ export function BottomNav({ activeSection, onSectionChange }: BottomNavProps) {
         <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
           <SheetTrigger asChild>
             <button
+              onClick={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
               className={cn(
                 'flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl transition-all duration-200 min-w-[64px]',
                 menuOpen
@@ -136,7 +143,7 @@ export function BottomNav({ activeSection, onSectionChange }: BottomNavProps) {
                   return (
                     <li key={item.id}>
                       <button
-                        onClick={() => handleNavClick(item.id)}
+                        onClick={(e) => handleNavClick(e, item.id)}
                         className={cn(
                           'w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors',
                           'hover:bg-accent',

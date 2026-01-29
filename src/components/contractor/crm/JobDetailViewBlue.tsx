@@ -1,10 +1,12 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { 
   Navigation, Copy, Pencil, FileText, Camera, ClipboardList, Package, 
   Receipt, DollarSign, Calendar, Clock, Info, Briefcase, Upload, X, StickyNote, Archive, FilePlus, Phone, Mail, User, RefreshCw, MessageSquare
 } from 'lucide-react';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
+import { PullToRefreshIndicator } from '@/components/ui/pull-to-refresh';
 import { useJobs, Job } from '@/hooks/useJobs';
 import { useCustomers } from '@/hooks/useCustomers';
 import { format } from 'date-fns';
@@ -494,8 +496,8 @@ function LogsTabContent({ jobId }: { jobId: string }) {
 }
 
 export default function JobDetailViewBlue({ job, open, onOpenChange, onCreateEstimate, onEditJob, onDuplicateJob, onArchiveJob, onSectionChange }: JobDetailViewBlueProps) {
-  const { updateJob } = useJobs();
-  const { customers } = useCustomers();
+  const { updateJob, refreshJobs } = useJobs();
+  const { customers, refreshCustomers } = useCustomers();
   const { user } = useAuth();
   const [isDuplicating, setIsDuplicating] = useState(false);
   const [showTravelDialog, setShowTravelDialog] = useState(false);
@@ -505,6 +507,17 @@ export default function JobDetailViewBlue({ job, open, onOpenChange, onCreateEst
   // Find the customer associated with this job
   const customer = job?.customer_id ? customers.find(c => c.id === job.customer_id) : null;
   const [isArchiving, setIsArchiving] = useState(false);
+  
+  // Pull to refresh functionality
+  const handleRefresh = useCallback(async () => {
+    await Promise.all([refreshJobs(), refreshCustomers()]);
+    toast.success('Refreshed!');
+  }, [refreshJobs, refreshCustomers]);
+  
+  const { isRefreshing, pullDistance, handlers, containerRef } = usePullToRefresh({
+    onRefresh: handleRefresh,
+    threshold: 80,
+  });
   
   // Persist activeTab in sessionStorage to maintain state across refreshes
   const storageKey = job ? `job-detail-tab-${job.id}` : 'job-detail-tab';
@@ -724,8 +737,23 @@ export default function JobDetailViewBlue({ job, open, onOpenChange, onCreateEst
           {/* Tab Navigation */}
           <TabNav tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
 
-          {/* Content - extra bottom padding to clear nav bar */}
-          <div className="flex-1 overflow-y-auto pb-32">
+          {/* Content - extra bottom padding to clear nav bar with pull-to-refresh */}
+          <div 
+            ref={containerRef}
+            className="flex-1 overflow-y-auto pb-32 relative"
+            onTouchStart={handlers.onTouchStart}
+            onTouchMove={handlers.onTouchMove}
+            onTouchEnd={handlers.onTouchEnd}
+            style={{ 
+              transform: pullDistance > 0 ? `translateY(${pullDistance * 0.3}px)` : 'none',
+              transition: isRefreshing ? 'none' : 'transform 0.2s ease-out'
+            }}
+          >
+            <PullToRefreshIndicator 
+              pullDistance={pullDistance} 
+              isRefreshing={isRefreshing} 
+              threshold={80}
+            />
             {activeTab === 'info' && (
               <div className="space-y-0">
                 {/* Job Information */}
