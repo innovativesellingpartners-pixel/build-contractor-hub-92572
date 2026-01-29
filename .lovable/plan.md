@@ -1,154 +1,385 @@
 
-# Mobile Overflow Fix: Content Bleeding Off Screen Edges
+# Feature Verification Matrix & Implementation Plan
 
-## Problem Summary
-Content in dialog forms (especially "Add New Job" and "Edit Job") is bleeding off the left edge of the screen on mobile devices. Labels like "ob Name", "escription", "tatus" appear cut off because the first letters are hidden beyond the viewport boundary.
+## Feature Verification Matrix
 
-## Root Causes Identified
+| # | Feature | Location | Status | Notes |
+|---|---------|----------|--------|-------|
+| **A** | **Start Travel → Client Message + Maps** | JobDetailViewBlue.tsx | ✅ Already Working | Lines 496-551: ETA dialog prompts for SMS before maps launch |
+| **B** | **Address Autocomplete Everywhere** | Various dialogs | ✅ Already Working | Used in 13+ components (AddJobDialog, AddLeadDialog, EditJobDialog, etc.) |
+| **C** | **Change Order Customer Signature** | PublicChangeOrder.tsx | ✅ Already Working | Full signature flow with SignatureCanvas, agreement checkbox, status update |
+| **D** | **Chatbot Floating Widget UI Fix** | FloatingPocketbot.tsx | ⚠️ Needs Fix | Draggable but can overlap controls, needs collapse behavior |
+| **E** | **Job Photos: Multi-Capture + Auto Upload + Refresh** | JobPhotosSection.tsx, JobDetailViewBlue.tsx | ✅ Already Working | Multiple file input, RefreshCw button, auto-upload loop |
+| **F** | **First Job Photo Requirement** | JobDetailViewBlue.tsx | ❌ Missing | No enforced prompt for "front of property" photo |
+| **G1** | **Estimate Deposit Consistency** | send-estimate/index.ts | ✅ Already Working | Email shows deposit (line 254), PDF attached |
+| **G2** | **Preview Estimate PDF Before Sending** | EstimateDetailViewBlue.tsx | ✅ Already Working | "REVIEW PDF" button (line 326-334), EstimatePDFPreview component |
+| **G3** | **"Labor & Materials" Option** | LineItemsStep.tsx | ✅ Already Working | In CATEGORIES array (line 16) |
+| **G4** | **Estimate Next/Back Button Spacing** | EstimateBuilder.tsx | ✅ Already Working | Has `mb-20 md:mb-0 relative z-50` (line 338) |
+| **G5** | **Insurance Section on Estimates** | EstimateBuilder.tsx, EnhancedEstimateForm.tsx | ✅ Already Working | `terms_insurance` field exists throughout |
+| **G6** | **Send Estimate by SMS (Twilio)** | EstimateDetailViewBlue.tsx | ❌ Missing | Only email sending exists, no SMS option |
+| **H** | **Invoices: Send to Customer** | (cut off in requirements) | Needs verification | |
 
-1. **DialogContent Base Component** (`src/components/ui/dialog.tsx`)
-   - Uses fixed `p-6` padding which is too generous for narrow mobile screens
-   - Missing `overflow-x-hidden` to prevent horizontal content bleed
-   - No explicit mobile-first width constraints
+---
 
-2. **Fixed Grid Column Layouts**
-   - `grid-cols-6` used in AddJobDialog and EditJobDialog for City/State/Zip fields
-   - `grid-cols-3` in AddLeadDialog for the same address fields
-   - These don't collapse to single column on mobile, forcing content to squeeze
+## Items Requiring Implementation
 
-3. **Nested Flex/Grid Containers**
-   - Some form sections don't have `min-w-0` to prevent flex children from overflowing
+### 1. Chatbot Widget UI Fix (Feature D)
 
-## Implementation Plan
+**Problem**: FloatingPocketbot can overlap primary UI controls and lacks minimize behavior.
 
-### Phase 1: Fix Core Dialog Component (Highest Impact)
+**Implementation**:
 
-**File: `src/components/ui/dialog.tsx`**
+**File: `src/components/contractor/FloatingPocketbot.tsx`**
 
-Update `DialogContent` to:
-- Add `overflow-x-hidden` to prevent horizontal bleed
-- Change padding from `p-6` to `px-4 py-6 sm:p-6` for mobile-friendly spacing
-- Add `max-w-[calc(100vw-2rem)]` to ensure dialogs never exceed viewport width on mobile
-
-### Phase 2: Fix Job Dialog Grid Layouts
-
-**File: `src/components/contractor/crm/AddJobDialog.tsx`**
-
-Update the City/State/Zip grid from:
-```tsx
-<div className="grid grid-cols-6 gap-4">
-```
-To:
-```tsx
-<div className="grid grid-cols-2 sm:grid-cols-6 gap-4">
-```
-
-Adjust column spans:
-- City: `col-span-2 sm:col-span-3`
-- State: `col-span-1`
-- Zip: `col-span-1 sm:col-span-2`
-
-**File: `src/components/contractor/crm/EditJobDialog.tsx`**
-
-Apply the same grid layout fixes as AddJobDialog.
-
-### Phase 3: Fix Lead Dialog Grid Layouts
-
-**File: `src/components/contractor/AddLeadDialog.tsx`**
-
-Update City/State/Zip grid from:
-```tsx
-<div className="grid grid-cols-3 gap-4">
-```
-To:
-```tsx
-<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-```
-
-### Phase 4: Add Global Mobile Overflow Prevention
-
-**File: `src/components/ui/dialog.tsx`**
-
-Add to the DialogContent inner container:
-- `min-w-0` to prevent flex/grid overflow
-- Ensure all children respect container boundaries
-
-### Phase 5: Audit and Fix Other Affected Dialogs
-
-Apply similar mobile-first grid patterns to:
-- `src/components/contractor/crm/AddCustomerDialog.tsx`
-- `src/components/contractor/crm/EditCustomerDialog.tsx`
-- `src/components/contractor/crm/AddOpportunityDialog.tsx`
-- `src/components/contractor/EditLeadDialog.tsx`
-- `src/components/contractor/crm/ScheduleMeetingDialog.tsx`
-- `src/components/contractor/ProfileEditDialog.tsx`
-
-Each dialog will be checked for:
-- Fixed grid column counts without mobile breakpoints
-- Proper padding on mobile
-- `min-w-0` on flex containers
-
-## Technical Details
-
-### DialogContent Component Changes
+- Add minimize/collapse state and button
+- Adjust default position to bottom-right corner (safer for mobile)
+- Add safe area padding for mobile bottom nav
+- Collapsed state shows only small icon that can expand
 
 ```tsx
-// Before
-className={cn(
-  "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg ...",
-  className,
-)}
+// Add minimize state
+const [isMinimized, setIsMinimized] = useState(false);
 
-// After
-className={cn(
-  "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg max-w-[calc(100vw-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background px-4 py-6 sm:p-6 shadow-lg overflow-x-hidden ...",
-  className,
+// Adjust initial position to bottom-right
+const defaultPosition = { 
+  x: isMobile ? 16 : Math.max(0, window.innerWidth - 400), 
+  y: isMobile ? window.innerHeight - 520 : window.innerHeight - 560
+};
+
+// Collapsed view
+{isMinimized ? (
+  <Card className="fixed w-14 h-14 rounded-full shadow-xl cursor-pointer">
+    <Button onClick={() => setIsMinimized(false)}>
+      <Bot className="h-6 w-6" />
+    </Button>
+  </Card>
+) : (
+  // Full chat card with minimize button in header
 )}
 ```
 
-### Grid Layout Pattern (Mobile-First)
+**File: `src/components/GlobalPocketbot.tsx`**
+
+- Move trigger button to avoid overlap with page content
+- Add `bottom-safe` padding for iOS
+
+---
+
+### 2. First Job Photo Requirement (Feature F)
+
+**Problem**: No enforced prompt when taking the first job photo.
+
+**Implementation**:
+
+**File: `src/components/contractor/crm/JobDetailViewBlue.tsx`**
+
+Add state and dialog for first photo prompt:
 
 ```tsx
-// Location fields - 2 columns on mobile, 6 on desktop
-<div className="grid grid-cols-2 sm:grid-cols-6 gap-3 sm:gap-4">
-  <div className="col-span-2 sm:col-span-3">City</div>
-  <div className="col-span-1">State</div>
-  <div className="col-span-1 sm:col-span-2">Zip</div>
-</div>
+// Add state
+const [showFirstPhotoPrompt, setShowFirstPhotoPrompt] = useState(false);
+const [hasShownFirstPhotoPrompt, setHasShownFirstPhotoPrompt] = useState(false);
+
+// In PhotosTabContent
+useEffect(() => {
+  if (photos.length === 0 && !hasShownFirstPhotoPrompt) {
+    setShowFirstPhotoPrompt(true);
+    setHasShownFirstPhotoPrompt(true);
+  }
+}, [photos.length, hasShownFirstPhotoPrompt]);
+
+// Add dialog
+<Dialog open={showFirstPhotoPrompt} onOpenChange={setShowFirstPhotoPrompt}>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>First Photo Required</DialogTitle>
+    </DialogHeader>
+    <Alert>
+      <AlertDescription>
+        The first photo for this job should be the **front of the property with the address visible**. 
+        This helps verify the job location for documentation purposes.
+      </AlertDescription>
+    </Alert>
+    <Button onClick={() => {
+      setShowFirstPhotoPrompt(false);
+      cameraInputRef.current?.click();
+    }}>
+      Take Front Photo
+    </Button>
+  </DialogContent>
+</Dialog>
 ```
 
-## Files to Modify
+**File: `src/hooks/useJobPhotos.ts`**
 
-| File | Change Type |
-|------|-------------|
-| `src/components/ui/dialog.tsx` | Core fix - padding, overflow, max-width |
-| `src/components/contractor/crm/AddJobDialog.tsx` | Grid layout responsive fix |
-| `src/components/contractor/crm/EditJobDialog.tsx` | Grid layout responsive fix |
-| `src/components/contractor/AddLeadDialog.tsx` | Grid layout responsive fix |
-| `src/components/contractor/crm/AddCustomerDialog.tsx` | Grid layout responsive fix |
-| `src/components/contractor/crm/EditCustomerDialog.tsx` | Grid layout responsive fix |
-| `src/components/contractor/crm/AddOpportunityDialog.tsx` | Grid layout responsive fix |
-| `src/components/contractor/EditLeadDialog.tsx` | Grid layout responsive fix |
-| `src/components/contractor/ProfileEditDialog.tsx` | Grid layout responsive fix |
-| `src/components/contractor/crm/ScheduleMeetingDialog.tsx` | Grid layout responsive fix |
+Add tagging for first photo:
 
-## Testing Checklist
+```tsx
+// In uploadPhoto function, add auto-tag logic
+const isFirstPhoto = photos.length === 0;
+const { data, error } = await supabase
+  .from('job_photos')
+  .insert([{
+    job_id: jobId,
+    user_id: user.id,
+    photo_url: filePath,
+    caption: isFirstPhoto ? 'Front of Property' : caption,
+    is_front_photo: isFirstPhoto, // Add this column if needed
+  }])
+```
 
-After implementation, verify on mobile (375px width):
-- [ ] Add Job dialog - all labels fully visible
-- [ ] Edit Job dialog - all labels fully visible
-- [ ] Add Lead dialog - City/State/Zip stack properly
-- [ ] Add Customer dialog - all fields contained
-- [ ] Edit Customer dialog - all fields contained
-- [ ] Schedule Meeting dialog - time/duration fields visible
-- [ ] No horizontal scrolling on any dialog
-- [ ] All content stays within screen boundaries
-- [ ] Works in both light and dark mode
-- [ ] Desktop layout unchanged (no regression)
+---
 
-## Design Principles Applied
+### 3. Send Estimate by SMS (Feature G6)
 
-1. **Mobile-first grid**: Use smaller column counts by default, expand on larger screens
-2. **Responsive padding**: Less padding on mobile, more on desktop
-3. **Overflow prevention**: Always add `overflow-x-hidden` and `min-w-0` to containers
-4. **Max-width constraints**: Ensure modals never exceed `calc(100vw - 2rem)` on mobile
+**Problem**: No option to send estimate link via text message.
+
+**Implementation**:
+
+**File: `supabase/functions/send-estimate-sms/index.ts`** (NEW)
+
+Create new edge function for SMS:
+
+```typescript
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+interface SendEstimateSMSRequest {
+  estimateId: string;
+  phoneNumber: string;
+  contractorName: string;
+}
+
+serve(async (req: Request) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
+    // Auth check
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: "Invalid token" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { estimateId, phoneNumber, contractorName }: SendEstimateSMSRequest = await req.json();
+
+    // Fetch estimate
+    const { data: estimate, error: fetchError } = await supabase
+      .from('estimates')
+      .select('*')
+      .eq('id', estimateId)
+      .eq('user_id', user.id)
+      .single();
+
+    if (fetchError || !estimate) {
+      return new Response(JSON.stringify({ error: "Estimate not found" }), {
+        status: 404,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Get contractor's Twilio number
+    const { data: phoneData } = await supabase
+      .from("phone_numbers")
+      .select("twilio_number")
+      .eq("contractor_id", user.id)
+      .eq("is_active", true)
+      .single();
+
+    if (!phoneData?.twilio_number) {
+      return new Response(JSON.stringify({ 
+        error: "No Twilio number configured. Set up Voice AI first." 
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Format message
+    const appUrl = Deno.env.get('APP_URL') || 'https://myct1.com';
+    const publicUrl = `${appUrl}/estimate/${estimate.public_token}`;
+    const total = estimate.total_amount || estimate.grand_total || 0;
+    
+    const message = `Hi ${estimate.client_name || 'there'},
+
+${contractorName} has sent you an estimate for ${estimate.title || 'your project'}.
+
+Total: $${total.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+
+View, sign & pay online:
+${publicUrl}
+
+Questions? Reply to this text.`;
+
+    // Send via Twilio
+    const accountSid = Deno.env.get("TWILIO_ACCOUNT_SID");
+    const authToken = Deno.env.get("TWILIO_AUTH_TOKEN");
+    
+    const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
+    const twilioAuth = btoa(`${accountSid}:${authToken}`);
+
+    const formattedPhone = formatPhoneNumber(phoneNumber);
+    
+    const response = await fetch(twilioUrl, {
+      method: "POST",
+      headers: {
+        "Authorization": `Basic ${twilioAuth}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        To: formattedPhone,
+        From: phoneData.twilio_number,
+        Body: message,
+      }),
+    });
+
+    const result = await response.json();
+
+    if (response.ok) {
+      // Update estimate sent_at
+      await supabase
+        .from('estimates')
+        .update({ sms_sent_at: new Date().toISOString() })
+        .eq('id', estimateId);
+
+      return new Response(JSON.stringify({ 
+        success: true, 
+        sid: result.sid 
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    } else {
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: result.message 
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+  } catch (error: any) {
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+});
+
+function formatPhoneNumber(phone: string): string {
+  const cleaned = phone.replace(/\D/g, '');
+  if (cleaned.length === 10) return `+1${cleaned}`;
+  if (cleaned.length === 11 && cleaned.startsWith('1')) return `+${cleaned}`;
+  if (cleaned.length > 10) return `+${cleaned}`;
+  return phone;
+}
+```
+
+**File: `src/components/contractor/crm/sections/EstimateDetailViewBlue.tsx`**
+
+Add SMS button and dialog:
+
+```tsx
+// Add state
+const [showSMSDialog, setShowSMSDialog] = useState(false);
+const [isSendingSMS, setIsSendingSMS] = useState(false);
+
+// Add SMS handler
+const handleSendSMS = async () => {
+  if (!estimate.client_phone) {
+    toast.error('Client phone number is required');
+    return;
+  }
+
+  setIsSendingSMS(true);
+  try {
+    const { data, error } = await supabase.functions.invoke('send-estimate-sms', {
+      body: {
+        estimateId: estimate.id,
+        phoneNumber: estimate.client_phone,
+        contractorName: user?.user_metadata?.full_name || 'Your Contractor',
+      },
+    });
+
+    if (error) throw error;
+    toast.success('Estimate sent via SMS!');
+    setShowSMSDialog(false);
+  } catch (error: any) {
+    toast.error('Failed to send SMS: ' + error.message);
+  } finally {
+    setIsSendingSMS(false);
+  }
+};
+
+// Add button in ActionButtonRow
+{estimate.client_phone && (
+  <ActionButton 
+    variant="secondary" 
+    onClick={() => setShowSMSDialog(true)}
+    className="flex items-center gap-2"
+  >
+    <MessageSquare className="w-4 h-4" />
+    SEND SMS
+  </ActionButton>
+)}
+```
+
+---
+
+## Summary of Changes
+
+| File | Action | Description |
+|------|--------|-------------|
+| `src/components/contractor/FloatingPocketbot.tsx` | Modify | Add minimize/collapse behavior, adjust positioning |
+| `src/components/GlobalPocketbot.tsx` | Modify | Move trigger button to avoid overlap |
+| `src/components/contractor/crm/JobDetailViewBlue.tsx` | Modify | Add first photo requirement dialog in PhotosTabContent |
+| `src/hooks/useJobPhotos.ts` | Modify | Auto-tag first photo as "Front of Property" |
+| `supabase/functions/send-estimate-sms/index.ts` | Create | New Twilio SMS function for estimates |
+| `src/components/contractor/crm/sections/EstimateDetailViewBlue.tsx` | Modify | Add "SEND SMS" button and handler |
+
+---
+
+## QA Checklist
+
+### D) Chatbot Widget
+- [ ] Minimize button collapses to icon
+- [ ] Expand restores full chat
+- [ ] Does not overlap bottom nav on mobile
+- [ ] Does not cover primary action buttons
+- [ ] Works in light and dark mode
+
+### F) First Job Photo
+- [ ] New job with no photos triggers prompt
+- [ ] Prompt explains "front of property with address"
+- [ ] Clicking "Take Photo" opens camera
+- [ ] First photo auto-captioned "Front of Property"
+- [ ] Subsequent photos don't trigger prompt
+
+### G6) SMS Estimates
+- [ ] "SEND SMS" button visible when client has phone
+- [ ] SMS contains estimate link, total, contractor name
+- [ ] Success toast on send
+- [ ] Error shown if no Twilio number configured
+- [ ] Estimate updated with sms_sent_at timestamp
