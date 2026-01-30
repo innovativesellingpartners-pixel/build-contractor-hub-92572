@@ -131,7 +131,10 @@ export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSecti
     return [lead.address, lead.city, lead.state, lead.zip_code].filter(Boolean).join(', ');
   };
 
-  const handleStartTravel = () => {
+  const handleStartTravel = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     const address = getFullAddress();
     if (!address) {
       toast.error('No address available for navigation');
@@ -140,12 +143,18 @@ export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSecti
     const encodedAddress = encodeURIComponent(address);
     const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
     
-    // Use window.open to keep the app running in the background
     const mapsUrl = isIOS 
       ? `https://maps.apple.com/?daddr=${encodedAddress}&dirflg=d`
       : `https://www.google.com/maps/dir/?api=1&destination=${encodedAddress}`;
     
-    window.open(mapsUrl, '_blank', 'noopener,noreferrer');
+    // Create a temporary anchor element to open in new tab without affecting current view
+    const link = document.createElement('a');
+    link.href = mapsUrl;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const isConverted = !!lead.converted_to_job_id;
