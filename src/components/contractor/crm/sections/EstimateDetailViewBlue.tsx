@@ -450,62 +450,32 @@ export function EstimateDetailViewBlue({
 
       {/* Action Buttons - Fixed */}
       <ActionButtonRow className="flex-wrap flex-shrink-0">
-        {/* Closed Won - Top priority action */}
-        <ActionButton 
-          variant={isPaid ? "success" : "muted"} 
-          onClick={handleClosedWon}
-          disabled={isClosingWon}
-          className="flex items-center gap-2"
-        >
-          {isClosingWon ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : isPaid ? (
-            <CheckCircle className="w-4 h-4" />
-          ) : (
-            <AlertCircle className="w-4 h-4" />
-          )}
-          {isClosingWon ? 'PROCESSING...' : 'CLOSED WON'}
-        </ActionButton>
+        {/* 1. View Estimate (Edit) */}
         {onEdit && (
           <ActionButton variant="secondary" onClick={onEdit} className="flex items-center gap-2">
             <Eye className="w-4 h-4" />
-            EDIT
+            VIEW ESTIMATE
           </ActionButton>
         )}
-        {/* PDF Actions - Always available when estimate has an ID */}
-        <ActionButton 
-          variant="muted" 
-          onClick={handlePreviewPDF}
-          disabled={isPdfLoading}
-          className="flex items-center gap-2"
-        >
-          <Eye className="w-4 h-4" />
-          {isPdfLoading ? 'LOADING...' : 'REVIEW PDF'}
-        </ActionButton>
-        <ActionButton 
-          variant="muted" 
-          onClick={handleDownloadPDF}
-          disabled={isPdfLoading}
-          className="flex items-center gap-2"
-        >
-          <Download className="w-4 h-4" />
-          DOWNLOAD PDF
-        </ActionButton>
-        {/* Template Actions */}
-        <ActionButton 
-          variant="muted" 
-          onClick={() => setSaveTemplateOpen(true)}
-          className="flex items-center gap-2"
-        >
-          <BookmarkPlus className="w-4 h-4" />
-          SAVE TEMPLATE
-        </ActionButton>
+        {/* 2. Send Estimate */}
         {onSend && estimate.client_email && (
           <ActionButton variant="success" onClick={onSend} className="flex items-center gap-2">
             <Send className="w-4 h-4" />
-            {estimate.sent_at ? 'RESEND' : 'SEND EMAIL'}
+            {estimate.sent_at ? 'RESEND ESTIMATE' : 'SEND ESTIMATE'}
           </ActionButton>
         )}
+        {/* 3. Send Invoice */}
+        {canSendToGC && (
+          <ActionButton 
+            variant="success" 
+            onClick={() => setShowSendToGCDialog(true)}
+            className="flex items-center gap-2"
+          >
+            <Receipt className="w-4 h-4" />
+            SEND INVOICE
+          </ActionButton>
+        )}
+        {/* 4. Send SMS */}
         {estimate.client_phone && (
           <ActionButton 
             variant="secondary" 
@@ -517,6 +487,42 @@ export function EstimateDetailViewBlue({
             {isSendingSMS ? 'SENDING...' : 'SEND SMS'}
           </ActionButton>
         )}
+        {/* 5. Review PDF */}
+        <ActionButton 
+          variant="muted" 
+          onClick={handlePreviewPDF}
+          disabled={isPdfLoading}
+          className="flex items-center gap-2"
+        >
+          <Eye className="w-4 h-4" />
+          {isPdfLoading ? 'LOADING...' : 'REVIEW PDF'}
+        </ActionButton>
+        {/* 6. Save Template */}
+        <ActionButton 
+          variant="muted" 
+          onClick={() => setSaveTemplateOpen(true)}
+          className="flex items-center gap-2"
+        >
+          <BookmarkPlus className="w-4 h-4" />
+          SAVE TEMPLATE
+        </ActionButton>
+        {/* 7. Duplicate */}
+        {onDuplicate && (
+          <ActionButton variant="muted" onClick={onDuplicate} className="flex items-center gap-2">
+            <Copy className="w-4 h-4" />
+            DUPLICATE
+          </ActionButton>
+        )}
+        {/* Secondary Actions */}
+        <ActionButton 
+          variant="muted" 
+          onClick={handleDownloadPDF}
+          disabled={isPdfLoading}
+          className="flex items-center gap-2"
+        >
+          <Download className="w-4 h-4" />
+          DOWNLOAD PDF
+        </ActionButton>
         {!estimate.customer_id && (estimate.status === 'sent' || estimate.status === 'accepted' || estimate.signed_at) && (
           <ActionButton 
             variant="primary" 
@@ -548,22 +554,6 @@ export function EstimateDetailViewBlue({
           >
             <Save className="w-4 h-4" />
             {isCreatingInvoice ? 'SAVING...' : 'SAVE AS INVOICE'}
-          </ActionButton>
-        )}
-        {canSendToGC && (
-          <ActionButton 
-            variant="success" 
-            onClick={() => setShowSendToGCDialog(true)}
-            className="flex items-center gap-2"
-          >
-            <Receipt className="w-4 h-4" />
-            SEND INVOICE
-          </ActionButton>
-        )}
-        {onDuplicate && (
-          <ActionButton variant="muted" onClick={onDuplicate} className="flex items-center gap-2">
-            <Copy className="w-4 h-4" />
-            DUPLICATE
           </ActionButton>
         )}
       </ActionButtonRow>
