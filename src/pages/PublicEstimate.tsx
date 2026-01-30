@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { CheckCircle, FileText, Loader2, CreditCard, Building2, Calendar, DollarSign, Wallet } from 'lucide-react';
+import { CheckCircle, FileText, Loader2, CreditCard, Building2, Calendar, DollarSign, Wallet, AlertCircle } from 'lucide-react';
 import SignatureCanvas from 'react-signature-canvas';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
@@ -23,6 +23,8 @@ export default function PublicEstimate() {
   const [signed, setSigned] = useState(false);
   const [agreementAccepted, setAgreementAccepted] = useState(false);
   const clientSigRef = useRef<SignatureCanvas>(null);
+  const paymentSectionRef = useRef<HTMLDivElement>(null);
+  const agreementRef = useRef<HTMLDivElement>(null);
 
   // Check for payment intent from URL (from email links)
   const paymentIntent = searchParams.get('pay') as 'deposit' | 'full' | null;
@@ -47,6 +49,26 @@ export default function PublicEstimate() {
       }
     }
   }, [token, searchParams]);
+
+  // Auto-scroll to payment section when arriving from email with payment intent
+  useEffect(() => {
+    if (paymentIntent && !loading && estimate && !isFullyPaid) {
+      setTimeout(() => {
+        paymentSectionRef.current?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start' 
+        });
+      }, 500);
+    }
+  }, [paymentIntent, loading, estimate]);
+
+  // Helper to scroll to agreement and show toast
+  const handleDisabledButtonClick = () => {
+    if (!agreementAccepted && !signed) {
+      agreementRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      toast.info('Please check the agreement and sign above to proceed with payment');
+    }
+  };
 
   const fetchEstimate = async () => {
     try {
@@ -466,7 +488,7 @@ export default function PublicEstimate() {
         {!isFullyPaid && (
           <>
             {!signed ? (
-              <Card className="border-2 shadow-2xl bg-gradient-to-br from-background to-muted/20">
+              <Card ref={paymentSectionRef} className="border-2 shadow-2xl bg-gradient-to-br from-background to-muted/20">
                 <CardHeader className="bg-gradient-to-r from-primary/10 to-primary/5 border-b-2 border-primary/20 pb-6">
                   <CardTitle className="text-2xl flex items-center gap-2">
                     <FileText className="h-6 w-6 text-primary" />
@@ -483,7 +505,7 @@ export default function PublicEstimate() {
                   </Alert>
 
                   {/* Payment Agreement */}
-                  <Card className="border-2 border-primary/30 bg-gradient-to-br from-background to-primary/5">
+                  <Card ref={agreementRef} className="border-2 border-primary/30 bg-gradient-to-br from-background to-primary/5">
                     <CardHeader className="pb-3">
                       <CardTitle className="text-lg flex items-center gap-2">
                         <FileText className="h-5 w-5 text-primary" />
@@ -548,50 +570,88 @@ export default function PublicEstimate() {
                   <div className="space-y-4">
                     <h3 className="text-lg font-bold text-foreground">Choose Payment Option:</h3>
                     
+                    {/* Visual guidance when buttons are disabled */}
+                    {!agreementAccepted && (
+                      <div className="text-center text-sm text-amber-600 dark:text-amber-400 flex items-center justify-center gap-2 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+                        <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                        <span>Please check the agreement and sign above to enable payment</span>
+                      </div>
+                    )}
+                    
                     <div className="grid gap-4 sm:grid-cols-2">
                       {/* Pay Deposit Now Button */}
                       {hasDeposit && depositRemaining > 0 && (
+                        <div 
+                          onClick={() => {
+                            if (!agreementAccepted && processingPayment === null) {
+                              handleDisabledButtonClick();
+                            }
+                          }}
+                          className="cursor-pointer"
+                        >
+                          <Button
+                            onClick={(e) => {
+                              if (agreementAccepted) {
+                                handlePayment('deposit');
+                              } else {
+                                e.preventDefault();
+                              }
+                            }}
+                            disabled={!agreementAccepted || processingPayment !== null}
+                            className="w-full h-auto py-6 flex-col gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-lg"
+                            size="lg"
+                          >
+                            {processingPayment === 'deposit' ? (
+                              <>
+                                <Loader2 className="h-6 w-6 animate-spin" />
+                                <span className="text-lg font-bold">Processing...</span>
+                              </>
+                            ) : (
+                              <>
+                                <Wallet className="h-6 w-6" />
+                                <span className="text-lg font-bold">Pay Deposit Now</span>
+                                <span className="text-2xl font-black">${depositRemaining.toFixed(2)}</span>
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      )}
+
+                      {/* Pay In Full Button */}
+                      <div 
+                        onClick={() => {
+                          if (!agreementAccepted && processingPayment === null) {
+                            handleDisabledButtonClick();
+                          }
+                        }}
+                        className="cursor-pointer"
+                      >
                         <Button
-                          onClick={() => handlePayment('deposit')}
+                          onClick={(e) => {
+                            if (agreementAccepted) {
+                              handlePayment('full');
+                            } else {
+                              e.preventDefault();
+                            }
+                          }}
                           disabled={!agreementAccepted || processingPayment !== null}
-                          className="h-auto py-6 flex-col gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-lg"
+                          className="w-full h-auto py-6 flex-col gap-2 bg-gradient-to-r from-primary to-primary-hover hover:shadow-xl text-white shadow-lg"
                           size="lg"
                         >
-                          {processingPayment === 'deposit' ? (
+                          {processingPayment === 'full' ? (
                             <>
                               <Loader2 className="h-6 w-6 animate-spin" />
                               <span className="text-lg font-bold">Processing...</span>
                             </>
                           ) : (
                             <>
-                              <Wallet className="h-6 w-6" />
-                              <span className="text-lg font-bold">Pay Deposit Now</span>
-                              <span className="text-2xl font-black">${depositRemaining.toFixed(2)}</span>
+                              <CreditCard className="h-6 w-6" />
+                              <span className="text-lg font-bold">Pay In Full Now</span>
+                              <span className="text-2xl font-black">${remaining.toFixed(2)}</span>
                             </>
                           )}
                         </Button>
-                      )}
-
-                      {/* Pay In Full Button */}
-                      <Button
-                        onClick={() => handlePayment('full')}
-                        disabled={!agreementAccepted || processingPayment !== null}
-                        className="h-auto py-6 flex-col gap-2 bg-gradient-to-r from-primary to-primary-hover hover:shadow-xl text-white shadow-lg"
-                        size="lg"
-                      >
-                        {processingPayment === 'full' ? (
-                          <>
-                            <Loader2 className="h-6 w-6 animate-spin" />
-                            <span className="text-lg font-bold">Processing...</span>
-                          </>
-                        ) : (
-                          <>
-                            <CreditCard className="h-6 w-6" />
-                            <span className="text-lg font-bold">Pay In Full Now</span>
-                            <span className="text-2xl font-black">${remaining.toFixed(2)}</span>
-                          </>
-                        )}
-                      </Button>
+                      </div>
                     </div>
                   </div>
                   
