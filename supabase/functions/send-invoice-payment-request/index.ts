@@ -111,7 +111,8 @@ serve(async (req: Request) => {
       .single();
 
     const businessName = profile?.business_name || "Your Contractor";
-    const appUrl = Deno.env.get("APP_URL") || "https://myct1.com";
+    // Use the Lovable published URL as fallback to avoid SSL issues with custom domains
+    const appUrl = Deno.env.get("APP_URL") || "https://build-contractor-hub-92572.lovable.app";
     const paymentUrl = `${appUrl}/invoice/${invoice.public_token}`;
 
     let emailSent = false;

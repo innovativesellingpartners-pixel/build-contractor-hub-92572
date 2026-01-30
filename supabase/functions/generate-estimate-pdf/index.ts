@@ -154,7 +154,8 @@ const handler = async (req: Request): Promise<Response> => {
     const addressParts = [profile?.business_address, profile?.city, profile?.state, profile?.zip_code].filter(Boolean);
     const businessAddress = addressParts.join(", ");
 
-    const appUrl = Deno.env.get("APP_URL") || "https://myct1.com";
+    // Use the Lovable published URL as fallback to avoid SSL issues with custom domains
+    const appUrl = Deno.env.get("APP_URL") || "https://build-contractor-hub-92572.lovable.app";
     const publicUrl = `${appUrl}/estimate/${estimate.public_token}`;
 
     // Build PDF with pdf-lib

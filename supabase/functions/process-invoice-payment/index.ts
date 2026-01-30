@@ -95,7 +95,8 @@ serve(async (req: Request) => {
       );
     }
 
-    const appUrl = Deno.env.get("APP_URL") || "https://myct1.com";
+    // Use the Lovable published URL as fallback to avoid SSL issues with custom domains
+    const appUrl = Deno.env.get("APP_URL") || "https://build-contractor-hub-92572.lovable.app";
     const callbackUrl = `${appUrl}/invoice/${public_token}`;
 
     // Determine environment with fallback
