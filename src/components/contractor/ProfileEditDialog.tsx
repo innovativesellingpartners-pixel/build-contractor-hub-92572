@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { Pencil, Upload, Loader2, Check, Building2, User, Globe, FileText, DollarSign, Shield, Percent, Palette, Save } from "lucide-react";
+import { WarrantyManagement } from "./WarrantyManagement";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -241,7 +242,7 @@ export function ProfileEditDialog() {
         </DialogHeader>
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 overflow-hidden flex flex-col">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="business" className="gap-2">
               <Building2 className="h-4 w-4" />
               <span className="hidden sm:inline">Business</span>
@@ -253,6 +254,10 @@ export function ProfileEditDialog() {
             <TabsTrigger value="defaults" className="gap-2">
               <DollarSign className="h-4 w-4" />
               <span className="hidden sm:inline">Defaults</span>
+            </TabsTrigger>
+            <TabsTrigger value="warranties" className="gap-2">
+              <Shield className="h-4 w-4" />
+              <span className="hidden sm:inline">Warranties</span>
             </TabsTrigger>
           </TabsList>
 
@@ -689,6 +694,11 @@ export function ProfileEditDialog() {
                   <SectionSaveButton section="defaults" />
                 </CardFooter>
               </Card>
+            </TabsContent>
+
+            {/* Warranties Tab */}
+            <TabsContent value="warranties" className="space-y-6 mt-0">
+              <WarrantyManagement />
             </TabsContent>
           </div>
         </Tabs>

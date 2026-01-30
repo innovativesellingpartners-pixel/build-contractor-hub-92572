@@ -70,6 +70,12 @@ export interface Estimate {
   terms_insurance?: string;
   terms_warranty_years?: number;
   
+  // Warranty
+  warranty_id?: string | null;
+  warranty_text?: string;
+  warranty_duration_years?: number;
+  warranty_duration_months?: number;
+  
   // Signatures
   contractor_signature?: string;
   contractor_printed_name?: string;
@@ -213,6 +219,12 @@ export function useEstimates() {
           terms_insurance: estimate.terms_insurance,
           terms_warranty_years: estimate.terms_warranty_years,
           
+          // Warranty
+          warranty_id: estimate.warranty_id,
+          warranty_text: estimate.warranty_text,
+          warranty_duration_years: estimate.warranty_duration_years,
+          warranty_duration_months: estimate.warranty_duration_months,
+          
           // Signatures
           contractor_signature: estimate.contractor_signature,
           contractor_printed_name: estimate.contractor_printed_name,
@@ -292,6 +304,12 @@ export function useEstimates() {
           terms_change_orders: estimate.terms_change_orders,
           terms_insurance: estimate.terms_insurance,
           terms_warranty_years: estimate.terms_warranty_years,
+          
+          // Warranty
+          warranty_id: estimate.warranty_id,
+          warranty_text: estimate.warranty_text,
+          warranty_duration_years: estimate.warranty_duration_years,
+          warranty_duration_months: estimate.warranty_duration_months,
           
           // Signatures
           contractor_signature: estimate.contractor_signature,
@@ -433,6 +451,10 @@ export function useEstimates() {
           terms_change_orders: original.terms_change_orders,
           terms_insurance: original.terms_insurance,
           terms_warranty_years: original.terms_warranty_years,
+          warranty_id: original.warranty_id,
+          warranty_text: original.warranty_text,
+          warranty_duration_years: original.warranty_duration_years,
+          warranty_duration_months: original.warranty_duration_months,
           trade_type: original.trade_type,
           project_description: original.project_description,
           assumptions_and_exclusions: original.assumptions_and_exclusions,

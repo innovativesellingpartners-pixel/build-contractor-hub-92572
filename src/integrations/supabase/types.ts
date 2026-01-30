@@ -741,6 +741,48 @@ export type Database = {
           },
         ]
       }
+      contractor_warranties: {
+        Row: {
+          created_at: string
+          description: string | null
+          duration_months: number | null
+          duration_years: number | null
+          id: string
+          is_active: boolean | null
+          is_default: boolean | null
+          name: string
+          updated_at: string
+          user_id: string
+          warranty_text: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          duration_months?: number | null
+          duration_years?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          name: string
+          updated_at?: string
+          user_id: string
+          warranty_text: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          duration_months?: number | null
+          duration_years?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          name?: string
+          updated_at?: string
+          user_id?: string
+          warranty_text?: string
+        }
+        Relationships: []
+      }
       course_lessons: {
         Row: {
           content: string | null
@@ -1747,6 +1789,10 @@ export type Database = {
           valid_until: string | null
           viewed_at: string | null
           voided_at: string | null
+          warranty_duration_months: number | null
+          warranty_duration_years: number | null
+          warranty_id: string | null
+          warranty_text: string | null
         }
         Insert: {
           archived_at?: string | null
@@ -1825,6 +1871,10 @@ export type Database = {
           valid_until?: string | null
           viewed_at?: string | null
           voided_at?: string | null
+          warranty_duration_months?: number | null
+          warranty_duration_years?: number | null
+          warranty_id?: string | null
+          warranty_text?: string | null
         }
         Update: {
           archived_at?: string | null
@@ -1903,6 +1953,10 @@ export type Database = {
           valid_until?: string | null
           viewed_at?: string | null
           voided_at?: string | null
+          warranty_duration_months?: number | null
+          warranty_duration_years?: number | null
+          warranty_id?: string | null
+          warranty_text?: string | null
         }
         Relationships: [
           {
@@ -1924,6 +1978,13 @@ export type Database = {
             columns: ["lead_id"]
             isOneToOne: false
             referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estimates_warranty_id_fkey"
+            columns: ["warranty_id"]
+            isOneToOne: false
+            referencedRelation: "contractor_warranties"
             referencedColumns: ["id"]
           },
         ]
