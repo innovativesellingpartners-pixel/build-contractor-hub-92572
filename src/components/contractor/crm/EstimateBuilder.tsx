@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { ArrowLeft, ArrowRight, Check, Save, Send } from 'lucide-react';
 import { Estimate, EstimateLineItem, useEstimates } from '@/hooks/useEstimates';
@@ -11,6 +10,10 @@ import ProjectInfoStep from './estimate/BuilderSteps/ProjectInfoStep';
 import LineItemsStep from './estimate/BuilderSteps/LineItemsStep';
 import ScopeTermsStep from './estimate/BuilderSteps/ScopeTermsStep';
 import ReviewStep from './estimate/BuilderSteps/ReviewStep';
+import { useEstimateAutoSave } from '@/hooks/useEstimateAutoSave';
+import { AutoSaveStatus } from './estimate/AutoSaveStatus';
+import { DraftRestorePrompt } from './estimate/DraftRestorePrompt';
+import { useBlocker } from 'react-router-dom';
 
 export interface EstimateBuilderData {
   // Project Info
@@ -70,6 +73,26 @@ export default function EstimateBuilder({ initialData, onSave, onCancel }: Estim
   const { profile, getEstimateDefaults } = useContractorProfile();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDiscarding, setIsDiscarding] = useState(false);
+  const [draftRestored, setDraftRestored] = useState(false);
+  const initialDataAppliedRef = useRef(false);
+  
+  // Auto-save hook
+  const {
+    status: autoSaveStatus,
+    lastSavedAt,
+    hasDraft,
+    draftInfo,
+    isRestorePromptVisible,
+    restoreDraft,
+    discardDraft,
+    triggerSave,
+    flushSave,
+    clearDraft,
+  } = useEstimateAutoSave({
+    estimateId: initialData?.id,
+    enabled: !!initialData?.id, // Only enable auto-save for existing estimates
+  });
   
   // Initialize form data
   const [formData, setFormData] = useState<EstimateBuilderData>(() => {
@@ -113,6 +136,26 @@ export default function EstimateBuilder({ initialData, onSave, onCancel }: Estim
     };
   });
 
+  // Handle draft restoration
+  const handleRestoreDraft = useCallback(() => {
+    if (draftInfo?.payload) {
+      setFormData(draftInfo.payload);
+      setDraftRestored(true);
+      toast.success('Draft restored');
+    }
+    restoreDraft();
+  }, [draftInfo, restoreDraft]);
+
+  const handleDiscardDraft = useCallback(async () => {
+    setIsDiscarding(true);
+    try {
+      await discardDraft();
+      toast.info('Draft discarded');
+    } finally {
+      setIsDiscarding(false);
+    }
+  }, [discardDraft]);
+
   // Recalculate financials whenever line items or rates change
   useEffect(() => {
     const subtotal = formData.line_items
@@ -137,6 +180,20 @@ export default function EstimateBuilder({ initialData, onSave, onCancel }: Estim
       balance_due: balanceDue,
     }));
   }, [formData.line_items, formData.tax_rate, formData.permit_fee, formData.required_deposit_percent]);
+
+  // Trigger auto-save on form data changes
+  useEffect(() => {
+    // Skip the initial render to avoid saving unchanged data
+    if (!initialDataAppliedRef.current) {
+      initialDataAppliedRef.current = true;
+      return;
+    }
+    
+    // Only trigger auto-save for existing estimates
+    if (initialData?.id && !isRestorePromptVisible) {
+      triggerSave(formData);
+    }
+  }, [formData, initialData?.id, triggerSave, isRestorePromptVisible]);
 
   const updateFormData = (updates: Partial<EstimateBuilderData>) => {
     setFormData(prev => ({ ...prev, ...updates }));
@@ -173,6 +230,10 @@ export default function EstimateBuilder({ initialData, onSave, onCancel }: Estim
     setIsSaving(true);
     try {
       await onSave(buildEstimatePayload(), true);
+      // Clear the auto-save draft after successful manual save
+      if (initialData?.id) {
+        await clearDraft();
+      }
     } catch (error) {
       console.error('Failed to save draft:', error);
     } finally {
@@ -189,11 +250,23 @@ export default function EstimateBuilder({ initialData, onSave, onCancel }: Estim
     setIsSaving(true);
     try {
       await onSave(buildEstimatePayload(), false);
+      // Clear the auto-save draft after successful save
+      if (initialData?.id) {
+        await clearDraft();
+      }
     } catch (error) {
       console.error('Failed to send estimate:', error);
     } finally {
       setIsSaving(false);
     }
+  };
+
+  // Handle cancel with flush save
+  const handleCancel = async () => {
+    if (initialData?.id) {
+      await flushSave();
+    }
+    onCancel();
   };
 
   const buildEstimatePayload = (): Estimate => {
@@ -247,7 +320,7 @@ export default function EstimateBuilder({ initialData, onSave, onCancel }: Estim
       <div className="flex-shrink-0 border-b bg-card px-6 py-4">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" onClick={onCancel}>
+            <Button variant="ghost" size="sm" onClick={handleCancel}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               Cancel
             </Button>
@@ -260,15 +333,21 @@ export default function EstimateBuilder({ initialData, onSave, onCancel }: Estim
               </p>
             </div>
           </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleSaveDraft}
-            disabled={isSaving}
-          >
-            <Save className="h-4 w-4 mr-2" />
-            Save Draft
-          </Button>
+          <div className="flex items-center gap-4">
+            {/* Auto-save status */}
+            {initialData?.id && (
+              <AutoSaveStatus status={autoSaveStatus} lastSavedAt={lastSavedAt} />
+            )}
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleSaveDraft}
+              disabled={isSaving}
+            >
+              <Save className="h-4 w-4 mr-2" />
+              Save Draft
+            </Button>
+          </div>
         </div>
         
         {/* Step Indicators */}
@@ -305,6 +384,18 @@ export default function EstimateBuilder({ initialData, onSave, onCancel }: Estim
         
         <Progress value={progress} className="mt-4 h-1" />
       </div>
+
+      {/* Draft Restore Prompt */}
+      {isRestorePromptVisible && draftInfo && (
+        <div className="px-6 pt-4">
+          <DraftRestorePrompt
+            draftUpdatedAt={draftInfo.updatedAt}
+            onRestore={handleRestoreDraft}
+            onDiscard={handleDiscardDraft}
+            isDiscarding={isDiscarding}
+          />
+        </div>
+      )}
 
       {/* Step Content */}
       <div className="flex-1 overflow-auto p-6">
