@@ -3,7 +3,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
 serve(async (req) => {
@@ -18,6 +18,8 @@ serve(async (req) => {
     if (!notes || typeof notes !== 'string') {
       throw new Error('Notes are required');
     }
+
+    console.log('Summarizing notes of length:', notes.length);
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
@@ -36,7 +38,7 @@ Guidelines:
 - Preserve all important details from the original notes
 - Format with clear headers and sub-bullets where appropriate`;
 
-    const response = await fetch('https://api.lovable.dev/v1/chat/completions', {
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${LOVABLE_API_KEY}`,
@@ -55,8 +57,16 @@ Guidelines:
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Lovable API error:', errorText);
-      throw new Error(`Lovable API error: ${response.status}`);
+      console.error('Lovable AI error:', response.status, errorText);
+      
+      if (response.status === 429) {
+        throw new Error('Rate limit exceeded. Please try again in a moment.');
+      }
+      if (response.status === 402) {
+        throw new Error('AI credits exhausted. Please add credits to continue.');
+      }
+      
+      throw new Error(`AI service error: ${response.status}`);
     }
 
     const data = await response.json();
@@ -65,6 +75,8 @@ Guidelines:
     if (!summary) {
       throw new Error('No summary generated');
     }
+
+    console.log('Summary generated successfully, length:', summary.length);
 
     return new Response(
       JSON.stringify({ summary }),
