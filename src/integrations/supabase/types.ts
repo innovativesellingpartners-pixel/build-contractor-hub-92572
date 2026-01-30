@@ -1234,6 +1234,47 @@ export type Database = {
           },
         ]
       }
+      estimate_drafts: {
+        Row: {
+          created_at: string
+          estimate_id: string
+          id: string
+          payload: Json
+          updated_at: string
+          updated_at_client: string | null
+          user_id: string
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          estimate_id: string
+          id?: string
+          payload: Json
+          updated_at?: string
+          updated_at_client?: string | null
+          user_id: string
+          version?: number
+        }
+        Update: {
+          created_at?: string
+          estimate_id?: string
+          id?: string
+          payload?: Json
+          updated_at?: string
+          updated_at_client?: string | null
+          user_id?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estimate_drafts_estimate_id_fkey"
+            columns: ["estimate_id"]
+            isOneToOne: false
+            referencedRelation: "estimates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       estimate_exclusions: {
         Row: {
           category: string | null
