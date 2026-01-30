@@ -20,10 +20,10 @@ interface EditLeadDialogProps {
   onUpdate: (id: string, updates: Partial<Lead>) => Promise<any>;
   onDelete: (id: string) => Promise<void>;
   sources: LeadSource[];
-  onConvertToCustomer?: () => void;
+  onConvertToJob?: (jobId: string) => void;
 }
 
-export function EditLeadDialog({ lead, open, onOpenChange, onUpdate, onDelete, sources, onConvertToCustomer }: EditLeadDialogProps) {
+export function EditLeadDialog({ lead, open, onOpenChange, onUpdate, onDelete, sources, onConvertToJob }: EditLeadDialogProps) {
   const { user } = useAuth();
   const [convertDialogOpen, setConvertDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -105,10 +105,14 @@ export function EditLeadDialog({ lead, open, onOpenChange, onUpdate, onDelete, s
 
       if (error) throw error;
 
+      const jobId = data?.jobId;
       toast.success('Lead converted to job successfully');
       setConvertDialogOpen(false);
       onOpenChange(false);
-      if (onConvertToCustomer) onConvertToCustomer();
+      
+      if (onConvertToJob && jobId) {
+        onConvertToJob(jobId);
+      }
     } catch (error: any) {
       toast.error('Failed to convert lead to job: ' + error.message);
     }

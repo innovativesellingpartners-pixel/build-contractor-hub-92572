@@ -434,9 +434,9 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
             onUpdate={updateLead}
             onDelete={deleteLead}
             sources={sources}
-            onConvertToCustomer={() => {
+            onConvertToJob={(jobId) => {
               refreshLeads();
-              if (onSectionChange) onSectionChange('customers');
+              if (onSectionChange) onSectionChange(`job:${jobId}`);
             }}
           />
         )}

@@ -80,7 +80,10 @@ export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSecti
         toast.success('Lead converted to job successfully!');
       }
       
-      if (onSectionChange) {
+      const jobId = data?.jobId;
+      if (onSectionChange && jobId) {
+        onSectionChange(`job:${jobId}`);
+      } else if (onSectionChange) {
         onSectionChange('jobs');
       }
     } catch (error: any) {
