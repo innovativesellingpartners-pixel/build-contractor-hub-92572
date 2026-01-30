@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
-import { Mic, MicOff, Loader2, Sparkles, FileText } from 'lucide-react';
+import { Mic, MicOff, Loader2, Sparkles, FileText, RotateCcw, CheckCircle2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { cn } from '@/lib/utils';
 
 interface AIScopeNotesProps {
   notes: string;
@@ -15,15 +16,18 @@ interface AIScopeNotesProps {
   label?: string;
 }
 
+type ProcessingState = 'idle' | 'recording' | 'uploading' | 'transcribing' | 'summarizing' | 'success' | 'error';
+
 export function AIScopeNotes({ 
   notes, 
   onNotesChange, 
   placeholder = "Any additional information about this project",
   label = "Additional Notes"
 }: AIScopeNotesProps) {
-  const [isRecording, setIsRecording] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingState, setProcessingState] = useState<ProcessingState>('idle');
   const [recordingDuration, setRecordingDuration] = useState(0);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [lastAudioBlob, setLastAudioBlob] = useState<Blob | null>(null);
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -31,21 +35,27 @@ export function AIScopeNotes({
   const streamRef = useRef<MediaStream | null>(null);
   const { toast } = useToast();
 
+  const isRecording = processingState === 'recording';
+  const isProcessing = ['uploading', 'transcribing', 'summarizing'].includes(processingState);
+
   const transcribeAndSummarize = useCallback(async (audioBlob: Blob) => {
-    setIsProcessing(true);
+    setLastAudioBlob(audioBlob);
+    setErrorMessage(null);
+    
     try {
-      // Convert blob to base64
+      // Step 1: Upload/Convert to base64
+      setProcessingState('uploading');
+      
       const arrayBuffer = await audioBlob.arrayBuffer();
       const base64Audio = btoa(
         new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), '')
       );
       
-      toast({
-        title: "Transcribing...",
-        description: "Converting your recording to text.",
-      });
-
-      // Step 1: Transcribe
+      console.log('Audio blob size:', audioBlob.size, 'type:', audioBlob.type);
+      
+      // Step 2: Transcribe
+      setProcessingState('transcribing');
+      
       const { data: transcribeData, error: transcribeError } = await supabase.functions.invoke('voice-to-text', {
         body: { 
           audio: base64Audio,
@@ -53,25 +63,37 @@ export function AIScopeNotes({
         }
       });
       
-      if (transcribeError) throw transcribeError;
+      if (transcribeError) {
+        console.error('Transcription error:', transcribeError);
+        throw new Error(transcribeError.message || 'Failed to transcribe audio');
+      }
+      
+      if (transcribeData?.error) {
+        throw new Error(transcribeData.error);
+      }
       
       if (!transcribeData?.text) {
         throw new Error('No transcription returned');
       }
 
       const transcribedText = transcribeData.text;
-      
-      toast({
-        title: "Summarizing...",
-        description: "Organizing your notes into bullet points.",
-      });
+      console.log('Transcribed text:', transcribedText.substring(0, 100) + '...');
 
-      // Step 2: Summarize the transcribed text
+      // Step 3: Summarize the transcribed text
+      setProcessingState('summarizing');
+      
       const { data: summarizeData, error: summarizeError } = await supabase.functions.invoke('summarize-scope-notes', {
         body: { notes: transcribedText }
       });
       
-      if (summarizeError) throw summarizeError;
+      if (summarizeError) {
+        console.error('Summarization error:', summarizeError);
+        throw new Error(summarizeError.message || 'Failed to summarize notes');
+      }
+      
+      if (summarizeData?.error) {
+        throw new Error(summarizeData.error);
+      }
       
       const finalText = summarizeData?.summary || transcribedText;
       
@@ -81,23 +103,38 @@ export function AIScopeNotes({
         : `--- AI Scope Recording ---\n${finalText}`;
       onNotesChange(newNotes);
       
+      setProcessingState('success');
       toast({
         title: "Recording processed!",
         description: "Your walk-around notes have been transcribed and summarized.",
       });
+      
+      // Reset to idle after success message
+      setTimeout(() => {
+        setProcessingState('idle');
+      }, 2000);
+      
     } catch (error: any) {
       console.error('Error processing recording:', error);
+      setErrorMessage(error.message || "Failed to process the recording.");
+      setProcessingState('error');
       toast({
         title: "Processing failed",
         description: error.message || "Failed to process the recording.",
         variant: "destructive",
       });
-    } finally {
-      setIsProcessing(false);
     }
   }, [notes, onNotesChange, toast]);
 
+  const retryProcessing = useCallback(() => {
+    if (lastAudioBlob) {
+      transcribeAndSummarize(lastAudioBlob);
+    }
+  }, [lastAudioBlob, transcribeAndSummarize]);
+
   const startRecording = useCallback(async () => {
+    setErrorMessage(null);
+    
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
@@ -118,6 +155,8 @@ export function AIScopeNotes({
           mimeType = 'audio/ogg';
         }
       }
+      
+      console.log('Using mimeType:', mimeType);
       
       const mediaRecorder = new MediaRecorder(stream, { mimeType });
       
@@ -143,11 +182,14 @@ export function AIScopeNotes({
         // Auto-transcribe and summarize
         if (audioBlob.size > 0) {
           await transcribeAndSummarize(audioBlob);
+        } else {
+          setErrorMessage('No audio recorded. Please try again.');
+          setProcessingState('error');
         }
       };
       
       mediaRecorder.start(1000); // Collect data every second
-      setIsRecording(true);
+      setProcessingState('recording');
       setRecordingDuration(0);
       
       timerRef.current = setInterval(() => {
@@ -160,6 +202,8 @@ export function AIScopeNotes({
       });
     } catch (error) {
       console.error('Error starting recording:', error);
+      setErrorMessage('Please allow microphone access to record scope notes.');
+      setProcessingState('error');
       toast({
         title: "Microphone access denied",
         description: "Please allow microphone access to record scope notes.",
@@ -171,24 +215,53 @@ export function AIScopeNotes({
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
-      setIsRecording(false);
       
       if (timerRef.current) {
         clearInterval(timerRef.current);
         timerRef.current = null;
       }
-      
-      toast({
-        title: "Recording stopped",
-        description: "Processing your recording...",
-      });
     }
-  }, [isRecording, toast]);
+  }, [isRecording]);
+
+  const cancelRecording = useCallback(() => {
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop();
+    }
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    setProcessingState('idle');
+    setErrorMessage(null);
+  }, []);
 
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const getStateMessage = () => {
+    switch (processingState) {
+      case 'recording':
+        return 'Recording...';
+      case 'uploading':
+        return 'Preparing audio...';
+      case 'transcribing':
+        return 'Transcribing speech...';
+      case 'summarizing':
+        return 'Organizing notes...';
+      case 'success':
+        return 'Notes added!';
+      case 'error':
+        return errorMessage || 'An error occurred';
+      default:
+        return null;
+    }
   };
 
   return (
@@ -205,39 +278,91 @@ export function AIScopeNotes({
       </div>
       
       {/* Voice Recording Controls */}
-      <Card className="border-dashed">
+      <Card className={cn(
+        "border-dashed transition-colors",
+        isRecording && "border-red-500 bg-red-50/50 dark:bg-red-950/20",
+        processingState === 'success' && "border-green-500 bg-green-50/50 dark:bg-green-950/20",
+        processingState === 'error' && "border-destructive bg-destructive/5"
+      )}>
         <CardContent className="p-3">
           <div className="flex flex-wrap items-center gap-2">
-            {/* Record Button */}
-            <Button
-              type="button"
-              variant={isRecording ? "destructive" : "outline"}
-              size="sm"
-              onClick={isRecording ? stopRecording : startRecording}
-              disabled={isProcessing}
-              className="gap-2"
-            >
-              {isProcessing ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Processing...
-                </>
-              ) : isRecording ? (
-                <>
-                  <MicOff className="h-4 w-4" />
-                  Stop ({formatDuration(recordingDuration)})
-                </>
-              ) : (
-                <>
-                  <Mic className="h-4 w-4" />
-                  Record Walk-Around
-                </>
-              )}
-            </Button>
+            {/* Main Action Button */}
+            {processingState === 'idle' && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={startRecording}
+                className="gap-2"
+              >
+                <Mic className="h-4 w-4" />
+                Record Walk-Around
+              </Button>
+            )}
+            
+            {isRecording && (
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                onClick={stopRecording}
+                className="gap-2"
+              >
+                <MicOff className="h-4 w-4" />
+                Stop ({formatDuration(recordingDuration)})
+              </Button>
+            )}
+            
+            {isProcessing && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled
+                className="gap-2"
+              >
+                <Loader2 className="h-4 w-4 animate-spin" />
+                {getStateMessage()}
+              </Button>
+            )}
+            
+            {processingState === 'success' && (
+              <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
+                <CheckCircle2 className="h-4 w-4" />
+                <span className="text-sm font-medium">{getStateMessage()}</span>
+              </div>
+            )}
+            
+            {processingState === 'error' && (
+              <div className="flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 text-destructive" />
+                <span className="text-sm text-destructive">{errorMessage}</span>
+                {lastAudioBlob && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={retryProcessing}
+                    className="gap-1 ml-2"
+                  >
+                    <RotateCcw className="h-3 w-3" />
+                    Retry
+                  </Button>
+                )}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setProcessingState('idle')}
+                >
+                  Dismiss
+                </Button>
+              </div>
+            )}
             
             {/* Recording indicator */}
             {isRecording && (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 ml-2">
                 <div className="h-2 w-2 bg-red-500 rounded-full animate-pulse" />
                 <span className="text-xs text-muted-foreground">Recording...</span>
               </div>
@@ -245,7 +370,10 @@ export function AIScopeNotes({
           </div>
           
           <p className="text-xs text-muted-foreground mt-2">
-            Record your walk-around conversation. It will automatically transcribe and summarize when you stop.
+            {isRecording 
+              ? "Speaking clearly? Describe site conditions, scope of work, and any special requirements."
+              : "Record your walk-around conversation. It will automatically transcribe and summarize when you stop."
+            }
           </p>
         </CardContent>
       </Card>

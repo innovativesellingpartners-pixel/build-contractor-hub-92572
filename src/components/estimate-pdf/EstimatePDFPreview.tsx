@@ -15,8 +15,9 @@ import {
 } from './sections';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Download, Printer, ArrowLeft, Loader2, ExternalLink } from 'lucide-react';
+import { Download, Printer, ArrowLeft, Loader2, ExternalLink, ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 interface EstimatePDFPreviewProps {
   estimate: Estimate;
@@ -29,24 +30,37 @@ export function EstimatePDFPreview({ estimate, onClose, onDownload }: EstimatePD
   const [isLoading, setIsLoading] = useState(true);
   const [isDownloading, setIsDownloading] = useState(false);
   const [scale, setScale] = useState(1);
+  const [userScale, setUserScale] = useState(1); // User-controlled zoom
+  const [fitMode, setFitMode] = useState<'width' | 'page' | 'custom'>('width');
   const printRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Calculate scale to fit PDF on screen
-  const calculateScale = useCallback(() => {
+  // Calculate base scale to fit PDF on screen
+  const calculateBaseScale = useCallback(() => {
     if (containerRef.current) {
-      const containerWidth = containerRef.current.clientWidth - 32; // Account for padding
-      const pdfWidth = 816; // Standard PDF width
-      const newScale = Math.min(1, containerWidth / pdfWidth);
-      setScale(newScale);
+      const containerWidth = containerRef.current.clientWidth - 32;
+      const containerHeight = containerRef.current.clientHeight - 32;
+      const pdfWidth = 816;
+      const pdfHeight = 1056; // Approximate letter size height
+
+      if (fitMode === 'width') {
+        return Math.min(1, containerWidth / pdfWidth);
+      } else if (fitMode === 'page') {
+        const widthScale = containerWidth / pdfWidth;
+        const heightScale = containerHeight / pdfHeight;
+        return Math.min(widthScale, heightScale, 1);
+      }
+      return 1;
     }
-  }, []);
+    return 1;
+  }, [fitMode]);
 
   useEffect(() => {
-    calculateScale();
-    window.addEventListener('resize', calculateScale);
-    return () => window.removeEventListener('resize', calculateScale);
-  }, [calculateScale]);
+    const newBaseScale = calculateBaseScale();
+    setScale(newBaseScale);
+    window.addEventListener('resize', () => setScale(calculateBaseScale()));
+    return () => window.removeEventListener('resize', () => setScale(calculateBaseScale()));
+  }, [calculateBaseScale]);
 
   // Fetch contractor profile
   useEffect(() => {
@@ -75,6 +89,27 @@ export function EstimatePDFPreview({ estimate, onClose, onDownload }: EstimatePD
 
     fetchContractor();
   }, [estimate.user_id]);
+
+  // Zoom controls
+  const zoomIn = useCallback(() => {
+    setUserScale(prev => Math.min(prev + 0.25, 3));
+    setFitMode('custom');
+  }, []);
+
+  const zoomOut = useCallback(() => {
+    setUserScale(prev => Math.max(prev - 0.25, 0.5));
+    setFitMode('custom');
+  }, []);
+
+  const fitToWidth = useCallback(() => {
+    setUserScale(1);
+    setFitMode('width');
+  }, []);
+
+  const fitToPage = useCallback(() => {
+    setUserScale(1);
+    setFitMode('page');
+  }, []);
 
   const handlePrint = () => {
     window.print();
@@ -150,69 +185,131 @@ export function EstimatePDFPreview({ estimate, onClose, onDownload }: EstimatePD
     }
   };
 
+  const effectiveScale = fitMode === 'custom' ? userScale : scale * userScale;
+
   return (
     <div className="h-full flex flex-col bg-muted">
       {/* Action Bar - Hidden when printing */}
       <div className="print:hidden flex-shrink-0 bg-white border-b shadow-sm z-50">
-        <div className="max-w-[900px] mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            {onClose && (
-              <Button variant="ghost" size="sm" onClick={onClose}>
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Estimate
-              </Button>
-            )}
-            <h1 className="text-lg font-semibold text-foreground">
-              Estimate Preview
-            </h1>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            {/* View & Sign Online Button - Prominent and clickable */}
+        <div className="max-w-[900px] mx-auto px-2 sm:px-4 py-2 sm:py-3">
+          {/* Top row - Back and title */}
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2 min-w-0">
+              {onClose && (
+                <Button variant="ghost" size="sm" onClick={onClose} className="px-2">
+                  <ArrowLeft className="h-4 w-4" />
+                  <span className="hidden sm:inline ml-1">Back</span>
+                </Button>
+              )}
+              <h1 className="text-sm sm:text-lg font-semibold text-foreground truncate">
+                Estimate Preview
+              </h1>
+            </div>
+            
+            {/* View & Sign Online Button */}
             {publicUrl && (
               <Button 
                 variant="default" 
                 size="sm" 
                 onClick={handleViewAndSign}
-                className="bg-success hover:bg-success/90"
+                className="bg-success hover:bg-success/90 text-xs sm:text-sm px-2 sm:px-3"
               >
-                <ExternalLink className="h-4 w-4 mr-2" />
-                View & Sign Online
+                <ExternalLink className="h-4 w-4 sm:mr-1" />
+                <span className="hidden sm:inline">View & Sign</span>
               </Button>
             )}
-            <Button variant="outline" size="sm" onClick={handlePrint}>
-              <Printer className="h-4 w-4 mr-2" />
-              Print
-            </Button>
-            <Button 
-              variant="default" 
-              size="sm" 
-              onClick={handleDownload}
-              disabled={isDownloading}
-            >
-              {isDownloading ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <Download className="h-4 w-4 mr-2" />
-              )}
-              Download PDF
-            </Button>
+          </div>
+          
+          {/* Bottom row - Zoom and action controls */}
+          <div className="flex items-center justify-between gap-2">
+            {/* Zoom controls */}
+            <div className="flex items-center gap-1">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={zoomOut}
+                className="h-8 w-8 p-0"
+                title="Zoom out"
+              >
+                <ZoomOut className="h-4 w-4" />
+              </Button>
+              <span className="text-xs text-muted-foreground min-w-[3rem] text-center">
+                {Math.round(effectiveScale * 100)}%
+              </span>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={zoomIn}
+                className="h-8 w-8 p-0"
+                title="Zoom in"
+              >
+                <ZoomIn className="h-4 w-4" />
+              </Button>
+              <Button 
+                variant={fitMode === 'width' ? 'secondary' : 'outline'}
+                size="sm" 
+                onClick={fitToWidth}
+                className="h-8 px-2 text-xs hidden sm:flex"
+                title="Fit to width"
+              >
+                Width
+              </Button>
+              <Button 
+                variant={fitMode === 'page' ? 'secondary' : 'outline'}
+                size="sm" 
+                onClick={fitToPage}
+                className="h-8 w-8 p-0"
+                title="Fit to page"
+              >
+                <Maximize2 className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            {/* Action buttons */}
+            <div className="flex items-center gap-1">
+              <Button variant="outline" size="sm" onClick={handlePrint} className="h-8 px-2">
+                <Printer className="h-4 w-4" />
+                <span className="hidden sm:inline ml-1">Print</span>
+              </Button>
+              <Button 
+                variant="default" 
+                size="sm" 
+                onClick={handleDownload}
+                disabled={isDownloading}
+                className="h-8 px-2"
+              >
+                {isDownloading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Download className="h-4 w-4" />
+                )}
+                <span className="hidden sm:inline ml-1">Download</span>
+              </Button>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* PDF Preview - Scrollable container */}
+      {/* PDF Preview - Scrollable container with touch zoom support */}
       <div 
         ref={containerRef}
-        className="flex-1 overflow-auto py-4 px-4 print:p-0 print:bg-white print:overflow-visible"
+        className={cn(
+          "flex-1 overflow-auto py-4 px-2 sm:px-4 print:p-0 print:bg-white print:overflow-visible",
+          "touch-pan-x touch-pan-y" // Allow scroll gestures
+        )}
+        style={{
+          // Enable pinch-to-zoom on mobile
+          touchAction: 'pan-x pan-y pinch-zoom',
+        }}
       >
         <div 
           style={{ 
-            transform: `scale(${scale})`,
+            transform: `scale(${effectiveScale})`,
             transformOrigin: 'top center',
-            width: scale < 1 ? `${100 / scale}%` : '100%',
+            width: effectiveScale < 1 ? `${100 / effectiveScale}%` : '100%',
+            minWidth: effectiveScale > 1 ? `${816 * effectiveScale}px` : undefined,
           }}
-          className="print:!transform-none print:!w-full"
+          className="print:!transform-none print:!w-full mx-auto"
         >
           <PDFPageWrapper className="mb-8" scaleMobile>
             <div ref={printRef}>

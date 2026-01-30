@@ -3,37 +3,36 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
 // Process base64 in chunks to prevent memory issues
-function processBase64Chunks(base64String: string, chunkSize = 32768) {
-  const chunks: Uint8Array[] = [];
-  let position = 0;
-  
-  while (position < base64String.length) {
-    const chunk = base64String.slice(position, position + chunkSize);
-    const binaryChunk = atob(chunk);
-    const bytes = new Uint8Array(binaryChunk.length);
-    
-    for (let i = 0; i < binaryChunk.length; i++) {
-      bytes[i] = binaryChunk.charCodeAt(i);
+function base64ToUint8Array(base64String: string): Uint8Array {
+  try {
+    const binaryString = atob(base64String);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
     }
-    
-    chunks.push(bytes);
-    position += chunkSize;
+    return bytes;
+  } catch (error) {
+    console.error('Error decoding base64:', error);
+    throw new Error('Invalid audio data format');
   }
+}
 
-  const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0);
-  const result = new Uint8Array(totalLength);
-  let offset = 0;
-
-  for (const chunk of chunks) {
-    result.set(chunk, offset);
-    offset += chunk.length;
-  }
-
-  return result;
+// Determine file extension from mime type
+function getFileExtension(mimeType: string): string {
+  const mimeMap: Record<string, string> = {
+    'audio/webm': 'webm',
+    'audio/mp4': 'm4a',
+    'audio/ogg': 'ogg',
+    'audio/mpeg': 'mp3',
+    'audio/wav': 'wav',
+    'audio/x-m4a': 'm4a',
+    'audio/aac': 'aac',
+  };
+  return mimeMap[mimeType] || 'webm';
 }
 
 serve(async (req) => {
@@ -42,25 +41,44 @@ serve(async (req) => {
   }
 
   try {
-    const { audio } = await req.json();
+    const body = await req.json();
+    const { audio, mimeType = 'audio/webm' } = body;
     
     if (!audio) {
+      console.error('No audio data provided');
       throw new Error('No audio data provided');
     }
 
+    console.log('Received audio data, mimeType:', mimeType, 'length:', audio.length);
+
     const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
     if (!OPENAI_API_KEY) {
+      console.error('OPENAI_API_KEY not configured');
       throw new Error('OPENAI_API_KEY not configured');
     }
 
-    // Process audio in chunks
-    const binaryAudio = processBase64Chunks(audio);
+    // Convert base64 to binary
+    const binaryAudio = base64ToUint8Array(audio);
+    console.log('Decoded audio bytes:', binaryAudio.length);
+
+    if (binaryAudio.length < 100) {
+      throw new Error('Audio recording too short. Please record for longer.');
+    }
+
+    // Get file extension based on mime type
+    const extension = getFileExtension(mimeType);
+    const filename = `recording.${extension}`;
     
+    console.log('Creating file with name:', filename);
+
     // Prepare form data
     const formData = new FormData();
-    const blob = new Blob([binaryAudio], { type: 'audio/webm' });
-    formData.append('file', blob, 'audio.webm');
+    const blob = new Blob([binaryAudio.buffer as ArrayBuffer], { type: mimeType });
+    formData.append('file', blob, filename);
     formData.append('model', 'whisper-1');
+    formData.append('language', 'en');
+
+    console.log('Sending to OpenAI Whisper API...');
 
     // Send to OpenAI
     const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
@@ -74,10 +92,29 @@ serve(async (req) => {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('OpenAI API error:', response.status, errorText);
-      throw new Error(`OpenAI API error: ${errorText}`);
+      
+      // Parse error for better user messaging
+      try {
+        const errorJson = JSON.parse(errorText);
+        if (errorJson.error?.message) {
+          if (errorJson.error.message.includes('Invalid file format')) {
+            throw new Error('Audio format not supported. Please try recording again.');
+          }
+          throw new Error(errorJson.error.message);
+        }
+      } catch (parseError) {
+        // If we can't parse the error, use the raw text
+      }
+      
+      throw new Error(`Transcription failed: ${response.status}`);
     }
 
     const result = await response.json();
+    console.log('Transcription successful, text length:', result.text?.length || 0);
+
+    if (!result.text || result.text.trim().length === 0) {
+      throw new Error('No speech detected. Please speak clearly and try again.');
+    }
 
     return new Response(
       JSON.stringify({ text: result.text }),
@@ -85,9 +122,11 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    console.error('Error in voice-to-text:', error);
+    
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error occurred' }),
+      JSON.stringify({ error: errorMessage }),
       {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
