@@ -794,9 +794,9 @@ export function EstimateDetailViewBlue({
         defaultTrade={estimate.trade_type || 'General Contracting'}
       />
 
-      {/* PDF Preview Dialog */}
+      {/* PDF Preview Dialog - Full screen on mobile */}
       <Dialog open={showPdfPreview} onOpenChange={setShowPdfPreview}>
-        <DialogContent className="max-w-[900px] max-h-[95vh] p-0 overflow-auto">
+        <DialogContent className="max-w-[900px] w-[100vw] h-[100dvh] max-h-[100dvh] md:h-[95vh] md:max-h-[95vh] p-0 overflow-hidden">
           <EstimatePDFPreview 
             estimate={estimate} 
             onClose={() => setShowPdfPreview(false)}

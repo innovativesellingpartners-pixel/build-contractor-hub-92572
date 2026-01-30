@@ -290,16 +290,17 @@ export function EstimatePDFPreview({ estimate, onClose, onDownload }: EstimatePD
         </div>
       </div>
 
-      {/* PDF Preview - Scrollable container with touch zoom support */}
+      {/* PDF Preview - Scrollable container with full touch zoom support */}
       <div 
         ref={containerRef}
         className={cn(
           "flex-1 overflow-auto py-4 px-2 sm:px-4 print:p-0 print:bg-white print:overflow-visible",
-          "touch-pan-x touch-pan-y" // Allow scroll gestures
+          "overscroll-contain" // Prevent pull-to-refresh interference
         )}
         style={{
-          // Enable pinch-to-zoom on mobile
-          touchAction: 'pan-x pan-y pinch-zoom',
+          // Enable full pinch-to-zoom and pan gestures on mobile
+          touchAction: 'manipulation',
+          WebkitOverflowScrolling: 'touch',
         }}
       >
         <div 
@@ -308,8 +309,9 @@ export function EstimatePDFPreview({ estimate, onClose, onDownload }: EstimatePD
             transformOrigin: 'top center',
             width: effectiveScale < 1 ? `${100 / effectiveScale}%` : '100%',
             minWidth: effectiveScale > 1 ? `${816 * effectiveScale}px` : undefined,
+            minHeight: 'max-content',
           }}
-          className="print:!transform-none print:!w-full mx-auto"
+          className="print:!transform-none print:!w-full mx-auto pb-8"
         >
           <PDFPageWrapper className="mb-8" scaleMobile>
             <div ref={printRef}>
