@@ -3,7 +3,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
 serve(async (req) => {
@@ -13,17 +13,29 @@ serve(async (req) => {
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      throw new Error('No authorization header');
+    }
 
-    // Get authenticated user
-    const authHeader = req.headers.get('Authorization')!;
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    // Client 1: User context client for RLS validation
+    const userClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } }
+    });
+
+    // Validate user via RLS
+    const { data: { user }, error: authError } = await userClient.auth.getUser();
 
     if (authError || !user) {
+      console.error('Auth error:', authError);
       throw new Error('Unauthorized');
     }
+
+    // Client 2: Service role client for admin operations
+    const adminClient = createClient(supabaseUrl, supabaseServiceKey);
 
     const { leadId, jobName } = await req.json();
 
@@ -33,16 +45,16 @@ serve(async (req) => {
 
     console.log('Converting lead to job', { leadId, contractorId: user.id });
 
-    // Get the lead with all fields including source
-    const { data: lead, error: leadError } = await supabase
+    // Get the lead with all fields including source (using userClient for RLS validation)
+    const { data: lead, error: leadError } = await userClient
       .from('leads')
       .select('*, lead_sources(id, name)')
       .eq('id', leadId)
-      .eq('user_id', user.id)
       .single();
 
     if (leadError || !lead) {
-      throw new Error('Lead not found');
+      console.error('Lead fetch error:', leadError);
+      throw new Error('Lead not found or access denied');
     }
 
     // Check if already converted
@@ -93,7 +105,7 @@ serve(async (req) => {
     let customer;
 
     if (!customerId) {
-      const { data: newCustomer, error: customerError } = await supabase
+      const { data: newCustomer, error: customerError } = await adminClient
         .from('customers')
         .insert({
           user_id: user.id,
@@ -124,7 +136,7 @@ serve(async (req) => {
       console.log('Customer created', { customerId });
     } else {
       // Get existing customer and update with any missing info
-      const { data: existingCustomer } = await supabase
+      const { data: existingCustomer } = await adminClient
         .from('customers')
         .select('*')
         .eq('id', customerId)
@@ -133,14 +145,13 @@ serve(async (req) => {
       
       // Update customer with referral info if not already set
       if (existingCustomer && !existingCustomer.referral_source && referralSource) {
-        await supabase
+        await adminClient
           .from('customers')
           .update({
             referral_source: referralSource,
             referral_source_other: referralSourceOther,
           })
-          .eq('id', customerId)
-          .eq('user_id', user.id);
+          .eq('id', customerId);
       }
     }
 
@@ -154,7 +165,7 @@ serve(async (req) => {
     }
 
     // Step 2: Create Job with ALL lead data
-    const { data: newJob, error: jobError } = await supabase
+    const { data: newJob, error: jobError } = await adminClient
       .from('jobs')
       .insert({
         user_id: user.id,
@@ -190,21 +201,20 @@ serve(async (req) => {
     console.log('Job created', { jobId: newJob.id, jobNumber: newJob.job_number });
 
     // Step 3: Update customer with job reference and lifetime value
-    const { error: updateCustomerError } = await supabase
+    const { error: updateCustomerError } = await adminClient
       .from('customers')
       .update({
         job_id: newJob.id,
         lifetime_value: (customer?.lifetime_value || 0) + (lead.value || 0),
       })
-      .eq('id', customerId)
-      .eq('user_id', user.id);
+      .eq('id', customerId);
 
     if (updateCustomerError) {
       console.error('Error updating customer', updateCustomerError);
     }
 
     // Step 4: Update lead - mark as converted with links to both customer and job
-    const { error: updateLeadError } = await supabase
+    const { error: updateLeadError } = await adminClient
       .from('leads')
       .update({
         customer_id: customerId,
@@ -213,8 +223,7 @@ serve(async (req) => {
         converted_at: new Date().toISOString(),
         status: 'won',
       })
-      .eq('id', leadId)
-      .eq('user_id', user.id);
+      .eq('id', leadId);
 
     if (updateLeadError) {
       console.error('Error updating lead', updateLeadError);
@@ -226,7 +235,7 @@ serve(async (req) => {
     const clientAddress = clientAddressParts.length > 0 ? clientAddressParts.join(', ') : null;
 
     // Step 5: Update any existing estimates for this lead to link to customer and job
-    const { data: updatedEstimates, error: updateEstimatesError } = await supabase
+    const { data: updatedEstimates, error: updateEstimatesError } = await adminClient
       .from('estimates')
       .update({ 
         customer_id: customerId,
@@ -242,7 +251,6 @@ serve(async (req) => {
         trade_type: lead.project_type,
       })
       .eq('lead_id', leadId)
-      .eq('user_id', user.id)
       .select();
 
     if (updateEstimatesError) {
@@ -252,7 +260,7 @@ serve(async (req) => {
     // Step 6: If there are estimates, update job with estimate data (use the first/most recent)
     if (updatedEstimates && updatedEstimates.length > 0) {
       const primaryEstimate = updatedEstimates[0];
-      const { error: updateJobError } = await supabase
+      const { error: updateJobError } = await adminClient
         .from('jobs')
         .update({
           original_estimate_id: primaryEstimate.id,
@@ -262,8 +270,7 @@ serve(async (req) => {
           trade_type: primaryEstimate.trade_type || newJob.trade_type,
           description: primaryEstimate.project_description || primaryEstimate.description || newJob.description,
         })
-        .eq('id', newJob.id)
-        .eq('user_id', user.id);
+        .eq('id', newJob.id);
 
       if (updateJobError) {
         console.error('Error updating job with estimate data', updateJobError);
