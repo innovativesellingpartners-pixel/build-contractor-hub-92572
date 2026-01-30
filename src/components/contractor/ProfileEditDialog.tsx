@@ -231,16 +231,16 @@ export function ProfileEditDialog() {
                   <CardDescription>These fields cannot be modified</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <Label className="text-xs text-muted-foreground">Email (Username)</Label>
-                      <div className="px-3 py-2 border rounded-md bg-muted/50 text-muted-foreground text-sm mt-1">
+                      <div className="px-3 py-2 border rounded-md bg-muted/50 text-muted-foreground text-sm mt-1 truncate">
                         {user?.email}
                       </div>
                     </div>
                     <div>
                       <Label className="text-xs text-muted-foreground">Account ID</Label>
-                      <div className="px-3 py-2 border rounded-md bg-muted/50 text-muted-foreground text-sm mt-1 font-mono">
+                      <div className="px-3 py-2 border rounded-md bg-muted/50 text-muted-foreground text-sm mt-1 font-mono truncate">
                         {user?.id?.substring(0, 8)}...
                       </div>
                     </div>
