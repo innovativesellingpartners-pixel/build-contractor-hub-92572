@@ -36,8 +36,9 @@
     --destructive: 0 62.8% 50%;           /* Destructive red */
     --destructive-foreground: 0 0% 100%;
     
-    --border: 0 0% 78%;                   /* Darker gray borders for better visibility */
+    --border: 0 0% 75%;                   /* Gray borders for visibility */
     --input: 0 0% 96%;                    /* Light input background */
+    --input-border: 0 0% 55%;             /* Darker input borders for better visibility */
     --ring: 353 91% 44%;                  /* CT1 brand red focus ring */
 
     /* CT1 specific brand colors - light palette */
@@ -128,8 +129,9 @@
     --destructive: 0 62.8% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 25%;                   /* Darker border for better visibility in dark mode */
+    --border: 0 0% 30%;                   /* Visible border in dark mode */
     --input: 0 0% 15%;                    /* Dark input bg */
+    --input-border: 0 0% 45%;             /* Darker input borders for better visibility in dark mode */
     --ring: 353 91% 44%;                  /* CT1 brand red focus ring */
 
     /* CT1 dark mode colors */
