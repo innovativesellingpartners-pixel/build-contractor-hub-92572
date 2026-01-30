@@ -155,7 +155,7 @@ export function BottomNav({ activeSection, onSectionChange }: BottomNavProps) {
               <span className="text-xs font-medium">Menu</span>
             </button>
           </SheetTrigger>
-          <SheetContent side="left" className="w-[280px] p-0 flex flex-col h-full max-h-screen">
+          <SheetContent side="left" className="w-[280px] p-0 flex flex-col h-full max-h-screen" hideDefaultClose>
             <SheetTitle className="sr-only">CT1 CRM Navigation</SheetTitle>
             <SheetDescription className="sr-only">Navigate to different sections of the CRM</SheetDescription>
             {/* Header - fixed at top */}
