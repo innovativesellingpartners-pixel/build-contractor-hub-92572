@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,6 +14,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { EstimateBuilderData } from '../../EstimateBuilder';
+import { WarrantySection } from '../WarrantySection';
 
 interface ScopeTermsStepProps {
   data: EstimateBuilderData;
@@ -25,6 +26,30 @@ export default function ScopeTermsStep({ data, onChange }: ScopeTermsStepProps) 
   const [exclusionDialogOpen, setExclusionDialogOpen] = useState(false);
   const [newDeliverable, setNewDeliverable] = useState('');
   const [newExclusion, setNewExclusion] = useState('');
+
+  // Auto-update payment schedule when deposit percentage changes
+  useEffect(() => {
+    const depositPercent = data.required_deposit_percent;
+    const remainingPercent = 100 - depositPercent;
+    
+    // Generate dynamic payment schedule based on deposit
+    let schedule = '';
+    if (depositPercent > 0 && depositPercent < 100) {
+      const midPoint = Math.round(remainingPercent / 2);
+      schedule = `${depositPercent}% deposit required to begin work, ${midPoint}% upon completion of rough work, ${remainingPercent - midPoint}% upon final completion.`;
+    } else if (depositPercent === 100) {
+      schedule = '100% payment due before work begins.';
+    } else {
+      schedule = '50% deposit required to begin work, 50% upon final completion.';
+    }
+    
+    // Only update if it looks like a generated schedule (not custom text)
+    if (!data.terms_payment_schedule || 
+        data.terms_payment_schedule.match(/^\d+% deposit required/) ||
+        data.terms_payment_schedule.match(/^\d+% payment due before/)) {
+      onChange({ terms_payment_schedule: schedule });
+    }
+  }, [data.required_deposit_percent]);
 
   const addDeliverable = () => {
     if (newDeliverable.trim()) {
@@ -344,12 +369,18 @@ export default function ScopeTermsStep({ data, onChange }: ScopeTermsStepProps) 
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="terms_payment_schedule">Payment Schedule</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="terms_payment_schedule">Payment Schedule</Label>
+              <span className="text-xs text-muted-foreground">
+                Auto-synced with {data.required_deposit_percent}% deposit
+              </span>
+            </div>
             <Textarea
               id="terms_payment_schedule"
               value={data.terms_payment_schedule}
               onChange={(e) => onChange({ terms_payment_schedule: e.target.value })}
               rows={2}
+              placeholder="Payment schedule will auto-generate based on deposit percentage"
             />
           </div>
 
@@ -372,22 +403,23 @@ export default function ScopeTermsStep({ data, onChange }: ScopeTermsStepProps) 
               rows={2}
             />
           </div>
-
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <Label>Warranty Period</Label>
-              <span className="text-sm font-medium">{data.terms_warranty_years} year{data.terms_warranty_years !== 1 ? 's' : ''}</span>
-            </div>
-            <Slider
-              value={[data.terms_warranty_years]}
-              onValueChange={(value) => onChange({ terms_warranty_years: value[0] })}
-              max={10}
-              min={0}
-              step={1}
-            />
-          </div>
         </CardContent>
       </Card>
+
+      {/* Warranty Section */}
+      <WarrantySection
+        selectedWarrantyId={data.warranty_id || null}
+        warrantyText={data.warranty_text || ''}
+        onWarrantyChange={(warranty) => {
+          onChange({
+            warranty_id: warranty.warranty_id,
+            warranty_text: warranty.warranty_text,
+            warranty_duration_years: warranty.warranty_duration_years,
+            warranty_duration_months: warranty.warranty_duration_months,
+            terms_warranty_years: warranty.warranty_duration_years,
+          });
+        }}
+      />
     </div>
   );
 }

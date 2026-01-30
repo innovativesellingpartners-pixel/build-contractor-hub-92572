@@ -53,6 +53,12 @@ export interface EstimateBuilderData {
   terms_change_orders: string;
   terms_insurance: string;
   terms_warranty_years: number;
+  
+  // Warranty
+  warranty_id: string | null;
+  warranty_text: string;
+  warranty_duration_years: number;
+  warranty_duration_months: number;
 }
 
 interface EstimateBuilderProps {
@@ -133,6 +139,12 @@ export default function EstimateBuilder({ initialData, onSave, onCancel }: Estim
       terms_change_orders: initialData?.terms_change_orders || 'Any changes to the scope of work must be documented in writing and may result in additional charges.',
       terms_insurance: initialData?.terms_insurance || 'Contractor carries general liability insurance. Certificate of insurance available upon request.',
       terms_warranty_years: initialData?.terms_warranty_years || defaults.warrantyYears,
+      
+      // Warranty fields
+      warranty_id: initialData?.warranty_id || null,
+      warranty_text: initialData?.warranty_text || '',
+      warranty_duration_years: initialData?.warranty_duration_years || defaults.warrantyYears,
+      warranty_duration_months: initialData?.warranty_duration_months || 0,
     };
   });
 
@@ -306,6 +318,12 @@ export default function EstimateBuilder({ initialData, onSave, onCancel }: Estim
       terms_change_orders: formData.terms_change_orders,
       terms_insurance: formData.terms_insurance,
       terms_warranty_years: formData.terms_warranty_years,
+      
+      // Warranty fields
+      warranty_id: formData.warranty_id,
+      warranty_text: formData.warranty_text,
+      warranty_duration_years: formData.warranty_duration_years,
+      warranty_duration_months: formData.warranty_duration_months,
       
       status: 'draft',
       date_issued: new Date().toISOString(),
