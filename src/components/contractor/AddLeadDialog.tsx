@@ -156,8 +156,7 @@ export function AddLeadDialog({ onAdd, sources }: AddLeadDialogProps) {
                   { value: 'contacted', label: 'Contacted' },
                   { value: 'qualified', label: 'Qualified' },
                   { value: 'quoted', label: 'Quoted' },
-                  { value: 'won', label: 'Won' },
-                  { value: 'lost', label: 'Lost' },
+                  { value: 'job', label: 'Job' },
                 ]}
               />
             </div>
