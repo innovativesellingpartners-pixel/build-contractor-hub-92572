@@ -486,7 +486,7 @@ export default function EstimatesSection({ onSectionChange, initialEstimateId, o
           setIsFormOpen(open);
         }
       }}>
-        <DialogContent className="w-full h-full max-w-full max-h-full rounded-none border-0 md:max-w-full md:h-screen md:max-h-screen sm:max-w-6xl sm:h-[calc(100vh-3rem)] sm:rounded-lg sm:border p-0 flex flex-col overflow-hidden">
+        <DialogContent className="w-full h-full max-w-full max-h-full rounded-none border-0 p-0 flex flex-col overflow-hidden fixed inset-0 translate-x-0 translate-y-0 top-0 left-0">
           <EstimateBuilder
             onSave={handleSubmit}
             onCancel={handleCloseEditForm}
@@ -497,7 +497,7 @@ export default function EstimatesSection({ onSectionChange, initialEstimateId, o
 
       {/* Estimate Detail View Dialog */}
       <Dialog open={detailViewOpen} onOpenChange={setDetailViewOpen}>
-        <DialogContent className="w-full h-full max-w-full max-h-full rounded-none border-0 md:max-w-full md:h-screen md:max-h-screen sm:max-w-2xl sm:h-[calc(100vh-5rem)] sm:rounded-lg sm:border p-0 flex flex-col overflow-hidden">
+        <DialogContent className="w-full h-full max-w-full max-h-full rounded-none border-0 p-0 flex flex-col overflow-hidden fixed inset-0 translate-x-0 translate-y-0 top-0 left-0">
           {selectedEstimateForDetail && (
             <EstimateDetailViewBlue
               estimate={selectedEstimateForDetail}
