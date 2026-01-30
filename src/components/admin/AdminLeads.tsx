@@ -238,7 +238,7 @@ export const AdminLeads = () => {
         onUpdate={handleUpdateLead}
         onDelete={handleDeleteLead}
         sources={sources}
-        onConvertToCustomer={() => {
+        onConvertToJob={() => {
           queryClient.invalidateQueries({ queryKey: ['adminLeads'] });
         }}
       />
