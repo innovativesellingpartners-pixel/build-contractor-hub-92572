@@ -182,7 +182,6 @@ export function EditLeadDialog({ lead, open, onOpenChange, onUpdate, onDelete, s
                   { value: 'contacted', label: 'Contacted' },
                   { value: 'qualified', label: 'Qualified' },
                   { value: 'quoted', label: 'Quoted' },
-                  { value: 'job', label: 'Job' },
                 ]}
               />
             </div>
