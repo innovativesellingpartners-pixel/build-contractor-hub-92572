@@ -13,7 +13,7 @@ export interface Lead {
   company?: string;
   project_type?: string;
   value?: number;
-  status: 'new' | 'contacted' | 'qualified' | 'quoted' | 'won' | 'lost';
+  status: 'new' | 'contacted' | 'qualified' | 'quoted' | 'job' | 'converted';
   source_id?: string;
   source_other?: string;
   address?: string;
@@ -54,6 +54,7 @@ export const useLeads = () => {
         .select('*')
         .eq('user_id', user.id)
         .is('archived_at', null)
+        .is('converted_to_job_id', null)
         .order('created_at', { ascending: false });
 
       if (error) throw error;

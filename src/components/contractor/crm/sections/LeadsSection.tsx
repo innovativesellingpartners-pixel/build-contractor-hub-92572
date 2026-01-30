@@ -168,8 +168,8 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
       contacted: 'bg-yellow-500',
       qualified: 'bg-purple-500',
       quoted: 'bg-orange-500',
-      won: 'bg-green-500',
-      lost: 'bg-red-500',
+      job: 'bg-green-500',
+      converted: 'bg-emerald-600',
     };
     return colors[status] || 'bg-gray-500';
   };
@@ -526,7 +526,7 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
 
         {/* Lead Detail View Dialog */}
         <Dialog open={detailViewOpen} onOpenChange={setDetailViewOpen}>
-          <DialogContent className="max-w-2xl h-[calc(100vh-5rem)] top-[45%] sm:top-[50%] p-0 flex flex-col overflow-hidden">
+          <DialogContent className="w-full h-full max-w-full max-h-full rounded-none border-0 md:max-w-full md:h-screen md:max-h-screen sm:max-w-2xl sm:h-[calc(100vh-5rem)] sm:rounded-lg sm:border p-0 flex flex-col overflow-hidden">
             {selectedLeadForDetail && (
               <LeadDetailViewBlue
                 lead={selectedLeadForDetail}

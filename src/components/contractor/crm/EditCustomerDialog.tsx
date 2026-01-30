@@ -77,7 +77,7 @@ export function EditCustomerDialog({ customer, open, onOpenChange }: EditCustome
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl h-[calc(100vh-5rem)] top-[45%] sm:top-[50%] overflow-hidden flex flex-col">
+      <DialogContent className="w-full h-full max-w-full max-h-full rounded-none border-0 md:max-w-full md:h-screen md:max-h-screen sm:max-w-2xl sm:h-[calc(100vh-5rem)] sm:rounded-lg sm:border overflow-hidden flex flex-col">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle>Edit Customer</DialogTitle>
           <DialogDescription>Update customer information</DialogDescription>
