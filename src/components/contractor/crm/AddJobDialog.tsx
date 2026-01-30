@@ -146,7 +146,7 @@ export function AddJobDialog({ onAdd, onJobCreated }: AddJobDialogProps) {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="name">Job Name *</Label>
+                  <Label htmlFor="name">Title *</Label>
                   <VoiceInputField
                     id="name"
                     required
@@ -155,6 +155,7 @@ export function AddJobDialog({ onAdd, onJobCreated }: AddJobDialogProps) {
                     onVoiceInput={(text) => setFormData({ ...formData, name: text })}
                     placeholder="e.g., Smith Kitchen Renovation"
                   />
+                  <p className="text-xs text-muted-foreground">Used as the subject line for meeting emails</p>
                 </div>
                 
                 <div className="space-y-2">

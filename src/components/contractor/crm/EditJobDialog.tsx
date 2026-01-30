@@ -136,7 +136,7 @@ export function EditJobDialog({ job, open, onOpenChange, onUpdate, onJobUpdated 
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="name">Job Name *</Label>
+              <Label htmlFor="name">Title *</Label>
               <Input
                 id="name"
                 required
@@ -144,6 +144,7 @@ export function EditJobDialog({ job, open, onOpenChange, onUpdate, onJobUpdated 
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="e.g., Smith Kitchen Renovation"
               />
+              <p className="text-xs text-muted-foreground">Used as the subject line for meeting emails</p>
             </div>
             
             <div className="space-y-2">
