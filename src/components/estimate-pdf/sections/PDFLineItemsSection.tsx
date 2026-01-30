@@ -1,5 +1,5 @@
 import { Estimate, EstimateLineItem } from '@/hooks/useEstimates';
-import { formatCurrency } from '../types';
+import { ContractorProfile, formatCurrency } from '../types';
 import { 
   PDFSectionHeader, 
   PDFContentSection,
@@ -12,17 +12,21 @@ import {
 
 interface PDFLineItemsSectionProps {
   estimate: Estimate;
+  contractor?: ContractorProfile;
   currency?: string;
   locale?: string;
 }
 
-export function PDFLineItemsSection({ estimate, currency = 'USD', locale = 'en-US' }: PDFLineItemsSectionProps) {
+export function PDFLineItemsSection({ estimate, contractor, currency = 'USD', locale = 'en-US' }: PDFLineItemsSectionProps) {
+  const accentColor = contractor?.brand_accent_color || '#d59f47';
+  const secondaryColor = contractor?.brand_secondary_color || '#161e2c';
+  
   const lineItems = (estimate.line_items || []).filter((item: any) => item?.included !== false);
 
   if (lineItems.length === 0) {
     return (
       <>
-        <PDFSectionHeader>Cost Details</PDFSectionHeader>
+        <PDFSectionHeader accentColor={accentColor} textColor={secondaryColor}>Cost Details</PDFSectionHeader>
         <PDFContentSection>
           <p className="text-sm text-[#8c8c8c] italic">(No line items)</p>
         </PDFContentSection>
@@ -69,13 +73,16 @@ export function PDFLineItemsSection({ estimate, currency = 'USD', locale = 'en-U
 
   return (
     <>
-      <PDFSectionHeader>Cost Details</PDFSectionHeader>
+      <PDFSectionHeader accentColor={accentColor} textColor={secondaryColor}>Cost Details</PDFSectionHeader>
       <PDFContentSection className="overflow-x-auto">
         {hasCategories ? (
           // Render grouped by category
           Object.entries(groupedItems).map(([category, items], groupIndex) => (
             <div key={category} className={groupIndex > 0 ? 'mt-6' : ''}>
-              <h4 className="text-xs font-bold text-[#161e2c] uppercase tracking-wider mb-2 bg-[#f5f3ef] px-2 py-1">
+              <h4 
+                className="text-xs font-bold uppercase tracking-wider mb-2 bg-[#f5f3ef] px-2 py-1"
+                style={{ color: secondaryColor }}
+              >
                 {category}
               </h4>
               <PDFTable>
@@ -121,7 +128,7 @@ export function PDFLineItemsSection({ estimate, currency = 'USD', locale = 'en-U
         )}
         
         {/* Bottom border line */}
-        <div className="border-t-2 border-[#161e2c] mt-2"></div>
+        <div className="border-t-2 mt-2" style={{ borderColor: secondaryColor }}></div>
       </PDFContentSection>
     </>
   );

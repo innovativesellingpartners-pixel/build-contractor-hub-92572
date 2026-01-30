@@ -96,10 +96,10 @@ const handler = async (req: Request): Promise<Response> => {
     const appUrl = Deno.env.get('APP_URL') || 'https://myct1.com';
     const publicUrl = `${appUrl}/estimate/${estimate.public_token}`;
 
-    // Fetch contractor profile for branding
+    // Fetch contractor profile for branding (including brand colors)
     const { data: profile } = await supabase
       .from('profiles')
-      .select('company_name, logo_url, phone, business_address, city, state, zip_code, business_email, website_url, contact_name')
+      .select('company_name, logo_url, phone, business_address, city, state, zip_code, business_email, website_url, contact_name, brand_primary_color, brand_secondary_color, brand_accent_color')
       .eq('id', estimate.user_id)
       .single();
     
@@ -115,9 +115,14 @@ const handler = async (req: Request): Promise<Response> => {
     const companyWebsite = profile?.website_url || '';
     const contactName = profile?.contact_name || '';
     
+    // Brand colors with fallbacks
+    const primaryColor = profile?.brand_primary_color || '#D50A22';
+    const secondaryColor = profile?.brand_secondary_color || '#1e3a5f';
+    const accentColor = profile?.brand_accent_color || '#c9a227';
+    
     // Use profile's business_email, or contractor's email from request, or authenticated user email
     const replyToEmail = profile?.business_email || contractorEmail || authenticatedUserEmail;
-    console.log('Using reply-to email:', replyToEmail, 'Authenticated user email:', authenticatedUserEmail);
+    console.log('Using reply-to email:', replyToEmail, 'Brand colors:', { primaryColor, secondaryColor, accentColor });
 
     // Send email to client
     const recipients = [estimate.client_email];
@@ -182,7 +187,7 @@ const handler = async (req: Request): Promise<Response> => {
           
           <!-- Header -->
           <tr>
-            <td style="background-color: #161e2c; padding: 0;">
+            <td style="background-color: ${secondaryColor}; padding: 0;">
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                 <tr>
                   <td style="padding: 32px 40px;">
@@ -193,7 +198,7 @@ const handler = async (req: Request): Promise<Response> => {
                           <span style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 22px; font-weight: 700; color: #ffffff; letter-spacing: -0.5px; vertical-align: middle;">${companyName.toUpperCase()}</span>
                         </td>
                         <td align="right" valign="middle">
-                          <span style="background-color: #d59f47; color: #161e2c; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 12px; font-weight: 700; padding: 10px 20px; border-radius: 4px; letter-spacing: 1px;">ESTIMATE</span>
+                          <span style="background-color: ${accentColor}; color: ${secondaryColor}; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 12px; font-weight: 700; padding: 10px 20px; border-radius: 4px; letter-spacing: 1px;">ESTIMATE</span>
                         </td>
                       </tr>
                     </table>
@@ -228,7 +233,7 @@ const handler = async (req: Request): Promise<Response> => {
           <!-- Main Content -->
           <tr>
             <td style="background-color: #ffffff; padding: 40px;">
-              <h2 style="margin: 0 0 20px 0; font-size: 26px; font-weight: 400; color: #161e2c; font-family: Georgia, 'Times New Roman', serif;">Dear ${estimate.client_name || 'Valued Customer'},</h2>
+              <h2 style="margin: 0 0 20px 0; font-size: 26px; font-weight: 400; color: ${secondaryColor}; font-family: Georgia, 'Times New Roman', serif;">Dear ${estimate.client_name || 'Valued Customer'},</h2>
               <p style="margin: 0 0 24px 0; font-size: 16px; line-height: 1.8; color: #444444; font-family: Georgia, 'Times New Roman', serif;">
                 Thank you for the opportunity to provide you with an estimate. Please find enclosed our detailed proposal for your project:
               </p>
@@ -237,8 +242,8 @@ const handler = async (req: Request): Promise<Response> => {
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f9f8f5; border: 1px solid #e8e4dc; border-radius: 8px; margin-bottom: 24px;">
                 <tr>
                   <td style="padding: 24px;">
-                    <span style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 11px; color: #d59f47; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Project Details</span>
-                    <h3 style="margin: 8px 0 12px 0; font-size: 20px; font-weight: 600; color: #161e2c; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;">${estimate.title}</h3>
+                    <span style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 11px; color: ${accentColor}; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Project Details</span>
+                    <h3 style="margin: 8px 0 12px 0; font-size: 20px; font-weight: 600; color: ${secondaryColor}; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;">${estimate.title}</h3>
                     ${estimate.site_address ? `<p style="margin: 0 0 8px 0; font-size: 14px; color: #666666; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;">📍 ${estimate.site_address}</p>` : ''}
                     ${estimate.trade_type ? `<p style="margin: 0; font-size: 14px; color: #666666; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;">🔧 ${estimate.trade_type}</p>` : ''}
                   </td>
@@ -246,15 +251,15 @@ const handler = async (req: Request): Promise<Response> => {
               </table>
               
               <!-- Total Investment -->
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #161e2c; border-radius: 8px; margin-bottom: 24px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: ${secondaryColor}; border-radius: 8px; margin-bottom: 24px;">
                 <tr>
                   <td style="padding: 28px; text-align: center;">
-                    <span style="display: block; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #d59f47; margin-bottom: 8px; font-weight: 600;">Total Investment</span>
+                    <span style="display: block; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: ${accentColor}; margin-bottom: 8px; font-weight: 600;">Total Investment</span>
                     <span style="display: block; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 36px; font-weight: 700; color: #ffffff;">${formatCurrency(estimate.total_amount || estimate.grand_total || 0)}</span>
                     ${estimate.required_deposit && estimate.required_deposit > 0 ? `
-                      <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(213, 159, 71, 0.3);">
-                        <span style="display: block; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 12px; color: #d59f47; margin-bottom: 4px;">Deposit Due Now</span>
-                        <span style="display: block; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 24px; font-weight: 700; color: #d59f47;">${formatCurrency(estimate.required_deposit)}</span>
+                      <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid ${accentColor}40;">
+                        <span style="display: block; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 12px; color: ${accentColor}; margin-bottom: 4px;">Deposit Due Now</span>
+                        <span style="display: block; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 24px; font-weight: 700; color: ${accentColor};">${formatCurrency(estimate.required_deposit)}</span>
                         <span style="display: block; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 8px;">Remaining Balance: ${formatCurrency((estimate.total_amount || estimate.grand_total || 0) - estimate.required_deposit)}</span>
                       </div>
                     ` : ''}
@@ -271,12 +276,12 @@ const handler = async (req: Request): Promise<Response> => {
                     <table role="presentation" cellspacing="0" cellpadding="0" border="0">
                       <tr>
                         <td style="padding-right: 8px;">
-                          <a href="${publicUrl}?pay=deposit" target="_blank" style="display: inline-block; background-color: #d59f47; color: #161e2c; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 13px; font-weight: 700; padding: 14px 24px; border-radius: 6px; text-decoration: none; letter-spacing: 0.5px;">
+                          <a href="${publicUrl}?pay=deposit" target="_blank" style="display: inline-block; background-color: ${accentColor}; color: ${secondaryColor}; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 13px; font-weight: 700; padding: 14px 24px; border-radius: 6px; text-decoration: none; letter-spacing: 0.5px;">
                             💳 PAY DEPOSIT NOW
                           </a>
                         </td>
                         <td style="padding-left: 8px;">
-                          <a href="${publicUrl}?pay=full" target="_blank" style="display: inline-block; background-color: #161e2c; color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 13px; font-weight: 700; padding: 14px 24px; border-radius: 6px; text-decoration: none; letter-spacing: 0.5px; border: 2px solid #d59f47;">
+                          <a href="${publicUrl}?pay=full" target="_blank" style="display: inline-block; background-color: ${secondaryColor}; color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 13px; font-weight: 700; padding: 14px 24px; border-radius: 6px; text-decoration: none; letter-spacing: 0.5px; border: 2px solid ${accentColor};">
                             💰 PAY IN FULL
                           </a>
                         </td>
@@ -290,7 +295,7 @@ const handler = async (req: Request): Promise<Response> => {
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                 <tr>
                   <td align="center" style="padding: 8px 0 24px 0;">
-                    <a href="${publicUrl}?pay=full" target="_blank" style="display: inline-block; background-color: #d59f47; color: #161e2c; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 14px; font-weight: 700; padding: 16px 40px; border-radius: 6px; text-decoration: none; letter-spacing: 0.5px;">
+                    <a href="${publicUrl}?pay=full" target="_blank" style="display: inline-block; background-color: ${accentColor}; color: ${secondaryColor}; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 14px; font-weight: 700; padding: 16px 40px; border-radius: 6px; text-decoration: none; letter-spacing: 0.5px;">
                       VIEW, SIGN &amp; PAY ONLINE →
                     </a>
                   </td>
@@ -313,7 +318,7 @@ const handler = async (req: Request): Promise<Response> => {
           <!-- PDF Notice -->
           <tr>
             <td style="background-color: #ffffff; padding: 0 40px 32px 40px;">
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #fef9e7; border-left: 4px solid #d59f47; border-radius: 0 6px 6px 0;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: ${accentColor}15; border-left: 4px solid ${accentColor}; border-radius: 0 6px 6px 0;">
                 <tr>
                   <td style="padding: 16px 20px;">
                     <p style="margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 14px; color: #8b7355;">
@@ -331,10 +336,10 @@ const handler = async (req: Request): Promise<Response> => {
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-top: 1px solid #e8e4dc; padding-top: 24px;">
                 <tr>
                   <td>
-                    <p style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: #161e2c; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;">Questions? We're here to help.</p>
+                    <p style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: ${secondaryColor}; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;">Questions? We're here to help.</p>
                     <p style="margin: 0; font-size: 14px; color: #666666; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;">
                       Reply to this email or contact us at 
-                      <a href="mailto:${replyToEmail}" style="color: #d59f47; text-decoration: none;">${replyToEmail}</a>
+                      <a href="mailto:${replyToEmail}" style="color: ${accentColor}; text-decoration: none;">${replyToEmail}</a>
                       ${companyPhone ? ` • ${companyPhone}` : ''}
                     </p>
                   </td>
@@ -345,7 +350,7 @@ const handler = async (req: Request): Promise<Response> => {
           
           <!-- Footer -->
           <tr>
-            <td style="background-color: #161e2c; padding: 28px 40px; text-align: center;">
+            <td style="background-color: ${secondaryColor}; padding: 28px 40px; text-align: center;">
               <p style="margin: 0 0 8px 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 14px; font-weight: 600; color: #ffffff;">
                 ${companyName}
               </p>

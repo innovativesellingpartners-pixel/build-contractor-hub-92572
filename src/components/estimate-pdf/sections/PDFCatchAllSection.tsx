@@ -1,5 +1,5 @@
 import { Estimate } from '@/hooks/useEstimates';
-import { getUnmappedFields } from '../types';
+import { ContractorProfile, getUnmappedFields } from '../types';
 import { 
   PDFSectionHeader, 
   PDFContentSection,
@@ -8,6 +8,7 @@ import {
 
 interface PDFCatchAllSectionProps {
   estimate: Estimate;
+  contractor?: ContractorProfile;
 }
 
 // Fields that are rendered in other sections
@@ -81,7 +82,10 @@ const RENDERED_FIELDS = new Set([
   'sales_tax_rate_percent',
 ]);
 
-export function PDFCatchAllSection({ estimate }: PDFCatchAllSectionProps) {
+export function PDFCatchAllSection({ estimate, contractor }: PDFCatchAllSectionProps) {
+  const accentColor = contractor?.brand_accent_color || '#d59f47';
+  const secondaryColor = contractor?.brand_secondary_color || '#161e2c';
+  
   const unmappedFields = getUnmappedFields(estimate as any, RENDERED_FIELDS);
   
   // Filter out empty, null, or system fields
@@ -123,7 +127,7 @@ export function PDFCatchAllSection({ estimate }: PDFCatchAllSectionProps) {
 
   return (
     <>
-      <PDFSectionHeader>Additional Estimate Details</PDFSectionHeader>
+      <PDFSectionHeader accentColor={accentColor} textColor={secondaryColor}>Additional Estimate Details</PDFSectionHeader>
       <PDFContentSection>
         <div className="grid grid-cols-2 gap-x-8 gap-y-1">
           {displayFields.map(([key, value]) => (

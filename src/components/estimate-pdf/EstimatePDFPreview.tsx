@@ -73,7 +73,7 @@ export function EstimatePDFPreview({ estimate, onClose, onDownload }: EstimatePD
       try {
         const { data } = await supabase
           .from('profiles')
-          .select('company_name, contact_name, logo_url, phone, business_address, city, state, zip_code, business_email, website_url, license_number')
+          .select('company_name, contact_name, logo_url, phone, business_address, city, state, zip_code, business_email, website_url, license_number, brand_primary_color, brand_secondary_color, brand_accent_color')
           .eq('id', estimate.user_id)
           .single();
 
@@ -320,22 +320,22 @@ export function EstimatePDFPreview({ estimate, onClose, onDownload }: EstimatePD
               <PDFPartiesSection estimate={estimate} contractor={contractor} />
               
               {/* Scope of Work */}
-              <PDFScopeSection estimate={estimate} />
+              <PDFScopeSection estimate={estimate} contractor={contractor} />
               
               {/* Line Items / Cost Details */}
-              <PDFLineItemsSection estimate={estimate} />
+              <PDFLineItemsSection estimate={estimate} contractor={contractor} />
               
               {/* Totals Summary */}
-              <PDFTotalsSection estimate={estimate} />
+              <PDFTotalsSection estimate={estimate} contractor={contractor} />
               
               {/* Terms & Conditions */}
-              <PDFTermsSection estimate={estimate} />
+              <PDFTermsSection estimate={estimate} contractor={contractor} />
               
               {/* Acceptance / Signatures */}
-              <PDFAcceptanceSection estimate={estimate} />
+              <PDFAcceptanceSection estimate={estimate} contractor={contractor} />
               
               {/* Catch-All for unmapped fields */}
-              <PDFCatchAllSection estimate={estimate} />
+              <PDFCatchAllSection estimate={estimate} contractor={contractor} />
               
               {/* Footer */}
               <PDFFooterSection 

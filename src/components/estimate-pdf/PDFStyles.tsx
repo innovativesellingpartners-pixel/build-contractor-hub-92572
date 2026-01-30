@@ -1,5 +1,23 @@
 // Shared styles for PDF preview and print
 import { cn } from '@/lib/utils';
+import { createContext, useContext } from 'react';
+
+// Brand colors context for PDF styling
+interface PDFBrandColors {
+  primaryColor: string;
+  secondaryColor: string;
+  accentColor: string;
+}
+
+const defaultBrandColors: PDFBrandColors = {
+  primaryColor: '#D50A22',
+  secondaryColor: '#1e3a5f',
+  accentColor: '#c9a227',
+};
+
+export const PDFBrandContext = createContext<PDFBrandColors>(defaultBrandColors);
+
+export const usePDFBrandColors = () => useContext(PDFBrandContext);
 
 // CSS-in-JS styles for the PDF that match exactly for preview and download
 export const pdfStyles = {
@@ -7,7 +25,7 @@ export const pdfStyles = {
   page: 'bg-white w-full max-w-[816px] mx-auto shadow-lg print:shadow-none print:max-w-none',
   pageBreak: 'break-before-page',
   
-  // Colors (matching edge function)
+  // Default Colors (matching edge function) - these are overridden by brand colors
   primaryNavy: '#161e2c',
   accentGold: '#d59f47',
   darkText: '#222222',
@@ -38,20 +56,25 @@ export const PDFPageWrapper = ({ children, className, scaleMobile = false }: { c
   </div>
 );
 
-export const PDFHeader = ({ children, className }: { children: React.ReactNode; className?: string }) => (
+export const PDFHeader = ({ children, className, brandColor }: { children: React.ReactNode; className?: string; brandColor?: string }) => (
   <div 
-    className={cn('bg-[#161e2c] text-white px-8 py-6', className)}
+    className={cn('text-white px-8 py-6', className)}
+    style={{ backgroundColor: brandColor || '#161e2c' }}
   >
     {children}
   </div>
 );
 
-export const PDFSectionHeader = ({ children, className }: { children: React.ReactNode; className?: string }) => (
+export const PDFSectionHeader = ({ children, className, accentColor, textColor }: { children: React.ReactNode; className?: string; accentColor?: string; textColor?: string }) => (
   <div 
     className={cn(
-      'bg-[#d59f47] text-[#161e2c] px-4 py-2 font-bold text-sm uppercase tracking-wide',
+      'px-4 py-2 font-bold text-sm uppercase tracking-wide',
       className
     )}
+    style={{ 
+      backgroundColor: accentColor || '#d59f47',
+      color: textColor || '#161e2c'
+    }}
   >
     {children}
   </div>
@@ -143,25 +166,34 @@ export const PDFSummaryRow = ({
   value, 
   isBold, 
   isTotal,
+  totalColor,
   className 
 }: { 
   label: string; 
   value: string; 
   isBold?: boolean; 
   isTotal?: boolean;
+  totalColor?: string;
   className?: string;
 }) => (
   <div 
     className={cn(
       'flex justify-between py-1',
-      isTotal && 'border-t border-[#161e2c] pt-2 mt-2',
+      isTotal && 'border-t pt-2 mt-2',
       className
     )}
+    style={isTotal ? { borderColor: totalColor || '#161e2c' } : undefined}
   >
-    <span className={cn('text-[#666666]', isBold && 'font-semibold text-[#161e2c]', isTotal && 'font-bold text-[#161e2c] text-base')}>
+    <span 
+      className={cn('text-[#666666]', isBold && 'font-semibold', isTotal && 'font-bold text-base')}
+      style={isTotal || isBold ? { color: totalColor || '#161e2c' } : undefined}
+    >
       {label}
     </span>
-    <span className={cn('text-[#222222]', isBold && 'font-semibold', isTotal && 'font-bold text-[#161e2c] text-lg')}>
+    <span 
+      className={cn('text-[#222222]', isBold && 'font-semibold', isTotal && 'font-bold text-lg')}
+      style={isTotal ? { color: totalColor || '#161e2c' } : undefined}
+    >
       {value}
     </span>
   </div>
@@ -184,8 +216,11 @@ export const PDFContentSection = ({ children, className }: { children: React.Rea
   </div>
 );
 
-export const PDFSubsectionTitle = ({ children, className }: { children: React.ReactNode; className?: string }) => (
-  <h3 className={cn('text-xs font-bold text-[#d59f47] uppercase tracking-wider mb-2', className)}>
+export const PDFSubsectionTitle = ({ children, className, style }: { children: React.ReactNode; className?: string; style?: React.CSSProperties }) => (
+  <h3 
+    className={cn('text-xs font-bold uppercase tracking-wider mb-2', className)}
+    style={{ color: style?.color || '#d59f47', ...style }}
+  >
     {children}
   </h3>
 );
