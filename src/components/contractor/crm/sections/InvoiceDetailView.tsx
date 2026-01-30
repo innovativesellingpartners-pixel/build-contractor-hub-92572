@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
-import { FileText, Send, Download, ArrowLeft, Mail, ExternalLink, Loader2, Eye, Paperclip, Plus, FileCheck, ScrollText, DollarSign, MessageSquare } from 'lucide-react';
+import { FileText, Send, Download, ArrowLeft, Mail, ExternalLink, Loader2, Eye, Paperclip, Plus, FileCheck, ScrollText, DollarSign, MessageSquare, ZoomIn, ZoomOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -82,6 +82,7 @@ export function InvoiceDetailView({ invoice, onClose, onSectionChange }: Invoice
   const [pdfLoading, setPdfLoading] = useState(false);
   const [showPdfPreview, setShowPdfPreview] = useState(false);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [pdfZoom, setPdfZoom] = useState(1);
   const [showWaiverDialog, setShowWaiverDialog] = useState(false);
   const [selectedWaivers, setSelectedWaivers] = useState<SelectedWaiver[]>([]);
   const [selectedGcId, setSelectedGcId] = useState<string>('');
@@ -657,42 +658,116 @@ export function InvoiceDetailView({ invoice, onClose, onSectionChange }: Invoice
         </DialogContent>
       </Dialog>
 
-      {/* PDF Preview Dialog */}
+      {/* PDF Preview Dialog - Full Screen with Zoom Controls */}
       <Dialog open={showPdfPreview} onOpenChange={(open) => {
         setShowPdfPreview(open);
-        if (!open && pdfUrl) {
-          URL.revokeObjectURL(pdfUrl);
-          setPdfUrl(null);
+        if (!open) {
+          if (pdfUrl) {
+            URL.revokeObjectURL(pdfUrl);
+            setPdfUrl(null);
+          }
+          setPdfZoom(1); // Reset zoom when closing
         }
       }}>
-        <DialogContent className="max-w-4xl h-[90vh] p-0 overflow-hidden">
-          <DialogHeader className="p-4 border-b">
-            <DialogTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              Invoice Preview - {invoice.invoice_number}
-            </DialogTitle>
-            <DialogDescription>
-              Preview your invoice before sending or downloading
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex-1 h-[calc(100%-80px)]">
-            {pdfUrl && (
-              <iframe
-                src={pdfUrl}
-                className="w-full h-full border-0"
-                title="Invoice PDF Preview"
-              />
-            )}
+        <DialogContent className="w-full h-full max-w-full max-h-full rounded-none border-0 p-0 overflow-hidden fixed inset-0 translate-x-0 translate-y-0 top-0 left-0">
+          <div className="h-full flex flex-col bg-muted">
+            {/* Header with controls */}
+            <div className="flex-shrink-0 bg-white border-b shadow-sm z-50">
+              <div className="px-4 py-3">
+                {/* Top row - Back and title */}
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Button variant="ghost" size="sm" onClick={() => setShowPdfPreview(false)} className="px-2">
+                      <ArrowLeft className="h-4 w-4" />
+                      <span className="hidden sm:inline ml-1">Back</span>
+                    </Button>
+                    <h1 className="text-sm sm:text-lg font-semibold text-foreground truncate flex items-center gap-2">
+                      <FileText className="h-5 w-5" />
+                      Invoice Preview - {invoice.invoice_number}
+                    </h1>
+                  </div>
+                </div>
+                
+                {/* Bottom row - Zoom and action controls */}
+                <div className="flex items-center justify-between gap-2">
+                  {/* Zoom controls */}
+                  <div className="flex items-center gap-1">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => setPdfZoom(prev => Math.max(prev - 0.25, 0.5))}
+                      className="h-8 w-8 p-0"
+                      title="Zoom out"
+                    >
+                      <ZoomOut className="h-4 w-4" />
+                    </Button>
+                    <span className="text-xs text-muted-foreground min-w-[3rem] text-center">
+                      {Math.round(pdfZoom * 100)}%
+                    </span>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => setPdfZoom(prev => Math.min(prev + 0.25, 3))}
+                      className="h-8 w-8 p-0"
+                      title="Zoom in"
+                    >
+                      <ZoomIn className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      size="sm" 
+                      onClick={() => setPdfZoom(1)}
+                      className="h-8 px-2 text-xs"
+                      title="Fit to width"
+                    >
+                      Fit
+                    </Button>
+                  </div>
+                  
+                  {/* Action buttons */}
+                  <div className="flex items-center gap-1">
+                    <Button 
+                      variant="default" 
+                      size="sm" 
+                      onClick={handleDownload}
+                      disabled={pdfLoading}
+                      className="h-8 px-2"
+                    >
+                      <Download className="h-4 w-4" />
+                      <span className="hidden sm:inline ml-1">Download</span>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* PDF Preview - Scrollable container with zoom */}
+            <div 
+              className="flex-1 overflow-auto py-4 px-2 sm:px-4"
+              style={{
+                touchAction: 'pan-x pan-y pinch-zoom',
+              }}
+            >
+              {pdfUrl && (
+                <div 
+                  style={{ 
+                    transform: `scale(${pdfZoom})`,
+                    transformOrigin: 'top center',
+                    width: pdfZoom < 1 ? `${100 / pdfZoom}%` : '100%',
+                    minWidth: pdfZoom > 1 ? `${816 * pdfZoom}px` : undefined,
+                  }}
+                  className="mx-auto"
+                >
+                  <iframe
+                    src={pdfUrl}
+                    className="w-full border-0 bg-white shadow-lg rounded-lg"
+                    style={{ height: `${1056 * Math.max(pdfZoom, 1)}px`, minHeight: '100vh' }}
+                    title="Invoice PDF Preview"
+                  />
+                </div>
+              )}
+            </div>
           </div>
-          <DialogFooter className="p-4 border-t">
-            <Button variant="outline" onClick={() => setShowPdfPreview(false)}>
-              Close
-            </Button>
-            <Button onClick={handleDownload} disabled={pdfLoading}>
-              <Download className="mr-2 h-4 w-4" />
-              Download PDF
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
 
