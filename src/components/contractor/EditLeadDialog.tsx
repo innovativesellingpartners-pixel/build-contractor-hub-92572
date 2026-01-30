@@ -10,7 +10,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Lead, LeadSource, OTHER_SOURCE_ID } from '@/hooks/useLeads';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Users } from 'lucide-react';
+import { Briefcase } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface EditLeadDialogProps {
@@ -95,46 +95,22 @@ export function EditLeadDialog({ lead, open, onOpenChange, onUpdate, onDelete, s
     }
   };
 
-  const handleConvertToCustomer = async () => {
+  const handleConvertToJob = async () => {
     if (!lead || !user) return;
 
     try {
-      const customerData = {
-        user_id: user.id,
-        name: lead.name,
-        email: lead.email || null,
-        phone: lead.phone || null,
-        company: lead.company || null,
-        address: lead.address || null,
-        city: lead.city || null,
-        state: lead.state || null,
-        zip_code: lead.zip_code || null,
-        notes: lead.notes || null,
-        customer_type: 'residential',
-      };
+      const { data, error } = await supabase.functions.invoke('convert-lead-to-job', {
+        body: { leadId: lead.id }
+      });
 
-      const { data: newCustomer, error: customerError } = await supabase
-        .from('customers')
-        .insert([customerData])
-        .select()
-        .single();
+      if (error) throw error;
 
-      if (customerError) throw customerError;
-
-      await supabase
-        .from('leads')
-        .update({
-          status: 'converted',
-          converted_at: new Date().toISOString(),
-        })
-        .eq('id', lead.id);
-
-      toast.success('Lead converted to customer successfully');
+      toast.success('Lead converted to job successfully');
       setConvertDialogOpen(false);
       onOpenChange(false);
       if (onConvertToCustomer) onConvertToCustomer();
     } catch (error: any) {
-      toast.error('Failed to convert lead to customer: ' + error.message);
+      toast.error('Failed to convert lead to job: ' + error.message);
     }
   };
 
@@ -142,7 +118,7 @@ export function EditLeadDialog({ lead, open, onOpenChange, onUpdate, onDelete, s
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl h-[calc(100vh-5rem)] top-[45%] sm:top-[50%] overflow-hidden flex flex-col">
+      <DialogContent className="w-full h-full max-w-full max-h-full rounded-none border-0 md:max-w-full md:h-screen md:max-h-screen sm:max-w-2xl sm:h-[calc(100vh-5rem)] sm:rounded-lg sm:border overflow-hidden flex flex-col">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle>Edit Lead</DialogTitle>
           <DialogDescription>Update the details of this lead</DialogDescription>
@@ -206,8 +182,7 @@ export function EditLeadDialog({ lead, open, onOpenChange, onUpdate, onDelete, s
                   { value: 'contacted', label: 'Contacted' },
                   { value: 'qualified', label: 'Qualified' },
                   { value: 'quoted', label: 'Quoted' },
-                  { value: 'won', label: 'Won' },
-                  { value: 'lost', label: 'Lost' },
+                  { value: 'job', label: 'Job' },
                 ]}
               />
             </div>
@@ -298,20 +273,20 @@ export function EditLeadDialog({ lead, open, onOpenChange, onUpdate, onDelete, s
               <AlertDialog open={convertDialogOpen} onOpenChange={setConvertDialogOpen}>
                 <AlertDialogTrigger asChild>
                   <Button type="button" variant="outline" className="gap-2">
-                    <Users className="h-4 w-4" />
-                    Convert to Customer
+                    <Briefcase className="h-4 w-4" />
+                    Convert to Job
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Convert Lead to Customer?</AlertDialogTitle>
+                    <AlertDialogTitle>Convert Lead to Job?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      This will create a new customer from this lead and mark the lead as converted. This action cannot be undone.
+                      This will create a new job and customer from this lead. The lead will be marked as converted.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleConvertToCustomer}>Convert</AlertDialogAction>
+                    <AlertDialogAction onClick={handleConvertToJob}>Convert</AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
