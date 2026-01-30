@@ -75,7 +75,7 @@ export function AddLeadDialog({ onAdd, sources }: AddLeadDialogProps) {
           Add Lead
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl h-[calc(100vh-5rem)] top-[45%] sm:top-[50%] overflow-hidden flex flex-col">
+      <DialogContent className="w-full h-full max-w-full max-h-full rounded-none border-0 overflow-hidden flex flex-col fixed inset-0 translate-x-0 translate-y-0 top-0 left-0">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle>Add New Lead</DialogTitle>
           <DialogDescription>Enter the details of your new lead</DialogDescription>
