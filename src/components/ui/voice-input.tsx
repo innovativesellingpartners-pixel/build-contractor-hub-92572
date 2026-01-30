@@ -18,7 +18,7 @@ export function VoiceInput({ onTranscript, disabled, className, appendMode = tru
   const [isProcessing, setIsProcessing] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
-
+  const hasCalledTranscriptRef = useRef(false);
   const startRecording = useCallback(async () => {
     // Prevent starting if already recording or processing
     if (isRecording || isProcessing) return;
@@ -32,6 +32,7 @@ export function VoiceInput({ onTranscript, disabled, className, appendMode = tru
       
       mediaRecorderRef.current = mediaRecorder;
       chunksRef.current = [];
+      hasCalledTranscriptRef.current = false; // Reset for new recording
 
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
@@ -40,6 +41,10 @@ export function VoiceInput({ onTranscript, disabled, className, appendMode = tru
       };
 
       mediaRecorder.onstop = async () => {
+        // Prevent duplicate processing
+        if (hasCalledTranscriptRef.current) return;
+        hasCalledTranscriptRef.current = true;
+        
         setIsProcessing(true);
         
         try {

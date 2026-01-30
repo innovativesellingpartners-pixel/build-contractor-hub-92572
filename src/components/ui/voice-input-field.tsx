@@ -12,13 +12,16 @@ interface VoiceInputFieldProps extends React.ComponentProps<"input"> {
 const VoiceInputField = React.forwardRef<HTMLInputElement, VoiceInputFieldProps>(
   ({ className, containerClassName, value, onChange, onVoiceInput, showVoice = true, disabled, ...props }, ref) => {
     const handleVoiceTranscript = (text: string) => {
-      const currentValue = typeof value === 'string' ? value : '';
-      const newValue = currentValue ? `${currentValue} ${text}` : text;
-      
+      // Use the raw transcript text - don't append here since parent may already handle it
       if (onVoiceInput) {
+        // onVoiceInput expects the full new value, so we append here
+        const currentValue = typeof value === 'string' ? value : '';
+        const newValue = currentValue ? `${currentValue} ${text}` : text;
         onVoiceInput(newValue);
       } else if (onChange) {
-        // Create a synthetic event
+        // For onChange, just set the appended value via synthetic event
+        const currentValue = typeof value === 'string' ? value : '';
+        const newValue = currentValue ? `${currentValue} ${text}` : text;
         const syntheticEvent = {
           target: { value: newValue },
           currentTarget: { value: newValue },
