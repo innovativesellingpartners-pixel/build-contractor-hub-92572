@@ -3,10 +3,12 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { 
   Navigation, Copy, Pencil, FileText, Camera, ClipboardList, Package, 
-  Receipt, DollarSign, Calendar, Clock, Info, Briefcase, Upload, X, StickyNote, Archive, FilePlus, Phone, Mail, User, RefreshCw, MessageSquare
+  Receipt, DollarSign, Calendar, Clock, Info, Briefcase, Upload, X, StickyNote, Archive, FilePlus, Phone, Mail, User, RefreshCw, MessageSquare, CheckSquare, Square, FileImage
 } from 'lucide-react';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { PullToRefreshIndicator } from '@/components/ui/pull-to-refresh';
+import { PhotoReportDialog } from './job/PhotoReportDialog';
+import { cn } from '@/lib/utils';
 import { useJobs, Job } from '@/hooks/useJobs';
 import { useCustomers } from '@/hooks/useCustomers';
 import { format } from 'date-fns';
@@ -46,8 +48,8 @@ interface JobDetailViewBlueProps {
   onSectionChange?: (section: string) => void;
 }
 
-// Photos Tab Component with camera support, image viewer, notes, refresh, and first photo requirement
-function PhotosTabContent({ jobId }: { jobId: string }) {
+// Photos Tab Component with camera support, image viewer, notes, refresh, first photo requirement, and photo report
+function PhotosTabContent({ jobId, jobName, customerName }: { jobId: string; jobName?: string; customerName?: string }) {
   const { photos, uploading, uploadPhoto, deletePhoto, updatePhotoCaption, refreshPhotos, uploadPhotoAsFirst } = useJobPhotos(jobId);
   const [photoCaption, setPhotoCaption] = useState('');
   const [viewerOpen, setViewerOpen] = useState(false);
@@ -65,6 +67,11 @@ function PhotosTabContent({ jobId }: { jobId: string }) {
   const [showFirstPhotoPrompt, setShowFirstPhotoPrompt] = useState(false);
   const [hasShownFirstPhotoPrompt, setHasShownFirstPhotoPrompt] = useState(false);
   const [pendingFirstPhoto, setPendingFirstPhoto] = useState<File | null>(null);
+
+  // Multi-select for photo report
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedPhotos, setSelectedPhotos] = useState<Set<string>>(new Set());
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
 
   const selectedPhoto = selectedPhotoIndex >= 0 && photos ? photos[selectedPhotoIndex] : null;
 
@@ -153,6 +160,49 @@ function PhotosTabContent({ jobId }: { jobId: string }) {
     toast.success('Photos refreshed');
   };
 
+  // Multi-select handlers
+  const toggleSelectMode = () => {
+    if (selectMode) {
+      setSelectedPhotos(new Set());
+    }
+    setSelectMode(!selectMode);
+  };
+
+  const togglePhotoSelection = (photoId: string) => {
+    const newSelected = new Set(selectedPhotos);
+    if (newSelected.has(photoId)) {
+      newSelected.delete(photoId);
+    } else {
+      newSelected.add(photoId);
+    }
+    setSelectedPhotos(newSelected);
+  };
+
+  const selectAll = () => {
+    if (photos) {
+      setSelectedPhotos(new Set(photos.map(p => p.id)));
+    }
+  };
+
+  const deselectAll = () => {
+    setSelectedPhotos(new Set());
+  };
+
+  const handleCreateReport = () => {
+    setReportDialogOpen(true);
+  };
+
+  const handlePhotoGridClick = (index: number, photo: JobPhoto) => {
+    if (selectMode) {
+      togglePhotoSelection(photo.id);
+    } else {
+      handlePhotoClick(index);
+    }
+  };
+
+  const reportPhotos = selectMode && selectedPhotos.size > 0 && photos
+    ? photos.filter(p => selectedPhotos.has(p.id))
+    : photos || [];
   return (
     <div className="p-4 space-y-4">
       {/* First Photo Requirement Dialog */}
@@ -198,6 +248,58 @@ function PhotosTabContent({ jobId }: { jobId: string }) {
         </DialogContent>
       </Dialog>
 
+      {/* Select/Report buttons */}
+      {photos && photos.length > 0 && (
+        <div className="flex gap-2">
+          <Button
+            type="button"
+            variant={selectMode ? "default" : "outline"}
+            size="sm"
+            onClick={toggleSelectMode}
+            className="flex-1"
+          >
+            {selectMode ? (
+              <>
+                <X className="h-4 w-4 mr-1" />
+                Cancel
+              </>
+            ) : (
+              <>
+                <CheckSquare className="h-4 w-4 mr-1" />
+                Select Photos
+              </>
+            )}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleCreateReport}
+            className="flex-1"
+          >
+            <FileImage className="h-4 w-4 mr-1" />
+            Photo Report
+          </Button>
+        </div>
+      )}
+
+      {/* Selection controls when in select mode */}
+      {selectMode && photos && photos.length > 0 && (
+        <div className="flex items-center justify-between bg-muted/50 p-2 rounded-lg">
+          <span className="text-sm text-muted-foreground">
+            {selectedPhotos.size} of {photos.length} selected
+          </span>
+          <div className="flex gap-2">
+            <Button variant="ghost" size="sm" onClick={selectAll}>
+              Select All
+            </Button>
+            <Button variant="ghost" size="sm" onClick={deselectAll}>
+              Clear
+            </Button>
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center justify-between gap-2">
         <input
           type="text"
@@ -222,7 +324,7 @@ function PhotosTabContent({ jobId }: { jobId: string }) {
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={uploading}
-          className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-sky-500 text-white rounded-lg font-semibold disabled:opacity-50"
+          className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-primary text-primary-foreground rounded-lg font-semibold disabled:opacity-50"
         >
           <Upload className="w-4 h-4" />
           {uploading ? 'Uploading...' : 'Upload'}
@@ -231,7 +333,7 @@ function PhotosTabContent({ jobId }: { jobId: string }) {
           type="button"
           onClick={() => cameraInputRef.current?.click()}
           disabled={uploading}
-          className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-emerald-500 text-white rounded-lg font-semibold disabled:opacity-50"
+          className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-emerald-600 text-white rounded-lg font-semibold disabled:opacity-50"
         >
           <Camera className="w-4 h-4" />
           Take Photo
@@ -263,8 +365,11 @@ function PhotosTabContent({ jobId }: { jobId: string }) {
           photos.map((photo, index) => (
             <div 
               key={photo.id} 
-              className="relative group cursor-pointer"
-              onClick={() => handlePhotoClick(index)}
+              className={cn(
+                "relative group cursor-pointer",
+                selectMode && selectedPhotos.has(photo.id) && "ring-2 ring-primary ring-offset-2 rounded-lg"
+              )}
+              onClick={() => handlePhotoGridClick(index, photo)}
             >
               <InfoCard className="overflow-hidden">
                 <img
@@ -276,39 +381,73 @@ function PhotosTabContent({ jobId }: { jobId: string }) {
                   }}
                 />
                 <div className="p-2">
-                  {photo.caption && <p className="text-xs text-slate-700 truncate">{photo.caption}</p>}
-                  <p className="text-xs text-slate-500">
+                  {photo.caption && <p className="text-xs text-muted-foreground truncate">{photo.caption}</p>}
+                  <p className="text-xs text-muted-foreground/70">
                     {format(new Date(photo.created_at!), 'MMM d, yyyy')}
                   </p>
                 </div>
               </InfoCard>
-              {/* Delete button */}
-              <button
-                onClick={(e) => handleDelete(photo, e)}
-                className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-80 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
-              >
-                <X className="w-3 h-3" />
-              </button>
-              {/* Notes button - always visible on mobile */}
-              <button
-                onClick={(e) => handleEditNotes(photo, e)}
-                className={`absolute top-2 left-2 p-1.5 rounded-full transition-opacity ${
-                  photo.caption 
-                    ? 'bg-primary text-primary-foreground opacity-100' 
-                    : 'bg-muted/90 text-muted-foreground opacity-80 sm:opacity-0 sm:group-hover:opacity-100'
-                }`}
-                title={photo.caption ? 'Edit notes' : 'Add notes'}
-              >
-                <StickyNote className="w-3 h-3" />
-              </button>
+              
+              {/* Selection checkbox overlay */}
+              {selectMode && (
+                <div 
+                  className="absolute top-2 left-2 z-10"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    togglePhotoSelection(photo.id);
+                  }}
+                >
+                  {selectedPhotos.has(photo.id) ? (
+                    <CheckSquare className="h-6 w-6 text-primary bg-white rounded" />
+                  ) : (
+                    <Square className="h-6 w-6 text-muted-foreground bg-white/80 rounded" />
+                  )}
+                </div>
+              )}
+
+              {/* Delete button - only show when not in select mode */}
+              {!selectMode && (
+                <button
+                  onClick={(e) => handleDelete(photo, e)}
+                  className="absolute top-2 right-2 p-1.5 bg-destructive text-destructive-foreground rounded-full opacity-80 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              )}
+
+              {/* Notes button - only show when not in select mode */}
+              {!selectMode && (
+                <button
+                  onClick={(e) => handleEditNotes(photo, e)}
+                  className={`absolute top-2 left-2 p-1.5 rounded-full transition-opacity ${
+                    photo.caption 
+                      ? 'bg-primary text-primary-foreground opacity-100' 
+                      : 'bg-muted/90 text-muted-foreground opacity-80 sm:opacity-0 sm:group-hover:opacity-100'
+                  }`}
+                  title={photo.caption ? 'Edit notes' : 'Add notes'}
+                >
+                  <StickyNote className="w-3 h-3" />
+                </button>
+              )}
             </div>
           ))
         ) : (
-          <div className="col-span-2 text-center py-8 text-slate-500 text-sm">
+          <div className="col-span-2 text-center py-8 text-muted-foreground text-sm">
             No photos yet. Upload or take photos to document progress.
           </div>
         )}
       </div>
+
+      {/* Create report button when photos are selected */}
+      {selectMode && selectedPhotos.size > 0 && (
+        <Button 
+          className="w-full" 
+          onClick={handleCreateReport}
+        >
+          <FileImage className="h-4 w-4 mr-2" />
+          Create Report with {selectedPhotos.size} Photo{selectedPhotos.size !== 1 ? 's' : ''}
+        </Button>
+      )}
 
       {/* Image Viewer with navigation */}
       {selectedPhoto && (
@@ -330,6 +469,15 @@ function PhotosTabContent({ jobId }: { jobId: string }) {
           onEditCaption={() => handleEditNotes(selectedPhoto)}
         />
       )}
+
+      {/* Photo Report Dialog */}
+      <PhotoReportDialog
+        open={reportDialogOpen}
+        onOpenChange={setReportDialogOpen}
+        photos={reportPhotos}
+        jobName={jobName}
+        customerName={customerName}
+      />
 
       {/* Notes Edit Dialog */}
       <Dialog open={notesDialogOpen} onOpenChange={setNotesDialogOpen}>
@@ -895,7 +1043,7 @@ export default function JobDetailViewBlue({ job, open, onOpenChange, onCreateEst
             )}
 
             {activeTab === 'photos' && (
-              <PhotosTabContent jobId={job.id!} />
+              <PhotosTabContent jobId={job.id!} jobName={job.name} customerName={customer?.name} />
             )}
 
             {activeTab === 'logs' && (
