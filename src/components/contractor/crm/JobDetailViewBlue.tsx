@@ -856,8 +856,16 @@ export default function JobDetailViewBlue({ job, open, onOpenChange, onCreateEst
                 CREATE ESTIMATE
               </ActionButton>
             )}
+            <ActionButton 
+              variant="secondary" 
+              onClick={() => setActiveTab('invoices')} 
+              className="flex-1 flex items-center justify-center gap-2"
+            >
+              <Receipt className="w-4 h-4" />
+              CREATE INVOICE
+            </ActionButton>
             {getFullAddress() && (
-              <ActionButton variant="secondary" onClick={handleNavigate} className="flex-1 flex items-center justify-center gap-2">
+              <ActionButton variant="muted" onClick={handleNavigate} className="flex-1 flex items-center justify-center gap-2">
                 <Navigation className="w-4 h-4" />
                 START TRAVEL
               </ActionButton>
