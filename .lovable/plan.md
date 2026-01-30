@@ -1,385 +1,272 @@
 
-# Feature Verification Matrix & Implementation Plan
 
-## Feature Verification Matrix
+# Drag-and-Drop Dashboard & Navigation Customization
 
-| # | Feature | Location | Status | Notes |
-|---|---------|----------|--------|-------|
-| **A** | **Start Travel → Client Message + Maps** | JobDetailViewBlue.tsx | ✅ Already Working | Lines 496-551: ETA dialog prompts for SMS before maps launch |
-| **B** | **Address Autocomplete Everywhere** | Various dialogs | ✅ Already Working | Used in 13+ components (AddJobDialog, AddLeadDialog, EditJobDialog, etc.) |
-| **C** | **Change Order Customer Signature** | PublicChangeOrder.tsx | ✅ Already Working | Full signature flow with SignatureCanvas, agreement checkbox, status update |
-| **D** | **Chatbot Floating Widget UI Fix** | FloatingPocketbot.tsx | ⚠️ Needs Fix | Draggable but can overlap controls, needs collapse behavior |
-| **E** | **Job Photos: Multi-Capture + Auto Upload + Refresh** | JobPhotosSection.tsx, JobDetailViewBlue.tsx | ✅ Already Working | Multiple file input, RefreshCw button, auto-upload loop |
-| **F** | **First Job Photo Requirement** | JobDetailViewBlue.tsx | ❌ Missing | No enforced prompt for "front of property" photo |
-| **G1** | **Estimate Deposit Consistency** | send-estimate/index.ts | ✅ Already Working | Email shows deposit (line 254), PDF attached |
-| **G2** | **Preview Estimate PDF Before Sending** | EstimateDetailViewBlue.tsx | ✅ Already Working | "REVIEW PDF" button (line 326-334), EstimatePDFPreview component |
-| **G3** | **"Labor & Materials" Option** | LineItemsStep.tsx | ✅ Already Working | In CATEGORIES array (line 16) |
-| **G4** | **Estimate Next/Back Button Spacing** | EstimateBuilder.tsx | ✅ Already Working | Has `mb-20 md:mb-0 relative z-50` (line 338) |
-| **G5** | **Insurance Section on Estimates** | EstimateBuilder.tsx, EnhancedEstimateForm.tsx | ✅ Already Working | `terms_insurance` field exists throughout |
-| **G6** | **Send Estimate by SMS (Twilio)** | EstimateDetailViewBlue.tsx | ❌ Missing | Only email sending exists, no SMS option |
-| **H** | **Invoices: Send to Customer** | (cut off in requirements) | Needs verification | |
+## Overview
+
+This plan enables CT1 users to customize the order of items on both the **CRM Dashboard tiles** and the **Bottom Navigation bar** by dragging and dropping them according to their personal priorities. The order will persist across sessions.
 
 ---
 
-## Items Requiring Implementation
+## Current State
 
-### 1. Chatbot Widget UI Fix (Feature D)
+### Dashboard (`CRMDashboard.tsx`)
+- 8 module tiles (Calendar, Jobs, Estimates, Emails, Invoices, Calls, Customers, Accounting)
+- Static order defined in `mainModules` array
+- Rendered in a 2-column grid on mobile, 3-column on desktop
 
-**Problem**: FloatingPocketbot can overlap primary UI controls and lacks minimize behavior.
+### Bottom Navigation (`BottomNav.tsx`)
+- 4 visible buttons (CRM, Calls, Emails, Leads) + Menu hamburger
+- Static order defined in `bottomNavItems` array
+- Slide-out menu contains all 16 navigation items
 
-**Implementation**:
-
-**File: `src/components/contractor/FloatingPocketbot.tsx`**
-
-- Add minimize/collapse state and button
-- Adjust default position to bottom-right corner (safer for mobile)
-- Add safe area padding for mobile bottom nav
-- Collapsed state shows only small icon that can expand
-
-```tsx
-// Add minimize state
-const [isMinimized, setIsMinimized] = useState(false);
-
-// Adjust initial position to bottom-right
-const defaultPosition = { 
-  x: isMobile ? 16 : Math.max(0, window.innerWidth - 400), 
-  y: isMobile ? window.innerHeight - 520 : window.innerHeight - 560
-};
-
-// Collapsed view
-{isMinimized ? (
-  <Card className="fixed w-14 h-14 rounded-full shadow-xl cursor-pointer">
-    <Button onClick={() => setIsMinimized(false)}>
-      <Bot className="h-6 w-6" />
-    </Button>
-  </Card>
-) : (
-  // Full chat card with minimize button in header
-)}
-```
-
-**File: `src/components/GlobalPocketbot.tsx`**
-
-- Move trigger button to avoid overlap with page content
-- Add `bottom-safe` padding for iOS
+### Storage
+- No drag-and-drop library currently installed
+- `profiles` table exists but has no layout preferences column
+- Similar drag pattern exists for chat button (in `Dashboard.tsx` lines 99-209)
 
 ---
 
-### 2. First Job Photo Requirement (Feature F)
+## Implementation Approach
 
-**Problem**: No enforced prompt when taking the first job photo.
+### Phase 1: Add Drag-and-Drop Library
 
-**Implementation**:
+Install `@dnd-kit` - a modern, lightweight, accessible drag-and-drop toolkit for React:
 
-**File: `src/components/contractor/crm/JobDetailViewBlue.tsx`**
-
-Add state and dialog for first photo prompt:
-
-```tsx
-// Add state
-const [showFirstPhotoPrompt, setShowFirstPhotoPrompt] = useState(false);
-const [hasShownFirstPhotoPrompt, setHasShownFirstPhotoPrompt] = useState(false);
-
-// In PhotosTabContent
-useEffect(() => {
-  if (photos.length === 0 && !hasShownFirstPhotoPrompt) {
-    setShowFirstPhotoPrompt(true);
-    setHasShownFirstPhotoPrompt(true);
-  }
-}, [photos.length, hasShownFirstPhotoPrompt]);
-
-// Add dialog
-<Dialog open={showFirstPhotoPrompt} onOpenChange={setShowFirstPhotoPrompt}>
-  <DialogContent>
-    <DialogHeader>
-      <DialogTitle>First Photo Required</DialogTitle>
-    </DialogHeader>
-    <Alert>
-      <AlertDescription>
-        The first photo for this job should be the **front of the property with the address visible**. 
-        This helps verify the job location for documentation purposes.
-      </AlertDescription>
-    </Alert>
-    <Button onClick={() => {
-      setShowFirstPhotoPrompt(false);
-      cameraInputRef.current?.click();
-    }}>
-      Take Front Photo
-    </Button>
-  </DialogContent>
-</Dialog>
+```text
+Dependencies to add:
+├── @dnd-kit/core       (base DnD functionality)
+├── @dnd-kit/sortable   (list reordering)
+└── @dnd-kit/utilities  (helper functions)
 ```
 
-**File: `src/hooks/useJobPhotos.ts`**
-
-Add tagging for first photo:
-
-```tsx
-// In uploadPhoto function, add auto-tag logic
-const isFirstPhoto = photos.length === 0;
-const { data, error } = await supabase
-  .from('job_photos')
-  .insert([{
-    job_id: jobId,
-    user_id: user.id,
-    photo_url: filePath,
-    caption: isFirstPhoto ? 'Front of Property' : caption,
-    is_front_photo: isFirstPhoto, // Add this column if needed
-  }])
-```
+**Why @dnd-kit?**
+- Touch-friendly (critical for mobile)
+- Lightweight (~20KB gzipped)
+- Accessible (keyboard navigation)
+- No legacy peer dependencies
 
 ---
 
-### 3. Send Estimate by SMS (Feature G6)
+### Phase 2: Create Reusable Sortable Components
 
-**Problem**: No option to send estimate link via text message.
+#### New File: `src/components/ui/sortable-grid.tsx`
 
-**Implementation**:
+A reusable wrapper component that enables drag-and-drop reordering:
 
-**File: `supabase/functions/send-estimate-sms/index.ts`** (NEW)
+```text
+SortableGrid
+├── DndContext (provides drag context)
+├── SortableContext (manages sortable items)
+└── SortableItem (individual draggable items)
+    ├── useSortable hook
+    ├── Drag handle indicator
+    └── Visual feedback during drag
+```
 
-Create new edge function for SMS:
+Key features:
+- Works on touch devices (mobile-first)
+- Visual "lift" effect when dragging
+- Drop indicator shows target position
+- Smooth animations on reorder
+
+---
+
+### Phase 3: Persist User Preferences
+
+#### Option A: LocalStorage (Immediate, no schema change) ✅ Recommended
 
 ```typescript
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+// Storage keys
+'ct1_dashboard_tile_order'    // Dashboard tiles order
+'ct1_bottomnav_order'         // Bottom nav order
+'ct1_menu_order'              // Slide-out menu order
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+// Format: array of section IDs
+["jobs", "estimates", "calendar", "emails", ...]
+```
 
-interface SendEstimateSMSRequest {
-  estimateId: string;
-  phoneNumber: string;
-  contractorName: string;
-}
+**Pros:** No database change, instant sync, works offline
+**Cons:** Device-specific (won't sync across devices)
 
-serve(async (req: Request) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+#### Option B: Database Column (Future enhancement)
 
-  try {
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-    );
+Add `layout_preferences JSONB` column to `profiles` table for cross-device sync.
 
-    // Auth check
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+---
 
-    const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: "Invalid token" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+### Phase 4: Update Dashboard Component
 
-    const { estimateId, phoneNumber, contractorName }: SendEstimateSMSRequest = await req.json();
+#### Modified: `src/components/contractor/crm/sections/CRMDashboard.tsx`
 
-    // Fetch estimate
-    const { data: estimate, error: fetchError } = await supabase
-      .from('estimates')
-      .select('*')
-      .eq('id', estimateId)
-      .eq('user_id', user.id)
-      .single();
+```text
+Changes:
+┌─────────────────────────────────────────────────────┐
+│ 1. Import DnD components                            │
+│ 2. Add state for tile order                         │
+│ 3. Load order from localStorage on mount            │
+│ 4. Wrap tile grid with SortableContext              │
+│ 5. Add drag handles to each tile                    │
+│ 6. Save new order on drag end                       │
+│ 7. Add "Reset to Default" button                    │
+└─────────────────────────────────────────────────────┘
+```
 
-    if (fetchError || !estimate) {
-      return new Response(JSON.stringify({ error: "Estimate not found" }), {
-        status: 404,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+Visual indicator for edit mode:
+- Long-press or dedicated "Customize" button activates edit mode
+- Tiles show drag handles (6-dot grip icon)
+- Cancel/Save buttons appear at top
 
-    // Get contractor's Twilio number
-    const { data: phoneData } = await supabase
-      .from("phone_numbers")
-      .select("twilio_number")
-      .eq("contractor_id", user.id)
-      .eq("is_active", true)
-      .single();
+---
 
-    if (!phoneData?.twilio_number) {
-      return new Response(JSON.stringify({ 
-        error: "No Twilio number configured. Set up Voice AI first." 
-      }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+### Phase 5: Update Bottom Navigation
 
-    // Format message
-    const appUrl = Deno.env.get('APP_URL') || 'https://myct1.com';
-    const publicUrl = `${appUrl}/estimate/${estimate.public_token}`;
-    const total = estimate.total_amount || estimate.grand_total || 0;
-    
-    const message = `Hi ${estimate.client_name || 'there'},
+#### Modified: `src/components/contractor/crm/BottomNav.tsx`
 
-${contractorName} has sent you an estimate for ${estimate.title || 'your project'}.
+```text
+Changes:
+┌─────────────────────────────────────────────────────┐
+│ 1. Add "Customize Nav" option in slide-out menu     │
+│ 2. Customization mode:                              │
+│    - All 4 bottom slots become sortable             │
+│    - User can swap which items appear               │
+│ 3. Slide-out menu items also reorderable            │
+│ 4. Save preferences to localStorage                 │
+└─────────────────────────────────────────────────────┘
+```
 
-Total: $${total.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+Customize flow:
+1. Open menu → tap "Customize Navigation"
+2. Bottom nav shows all available items as selectable/draggable
+3. Top 4 slots = what appears on bottom bar
+4. Save → returns to normal nav with new order
 
-View, sign & pay online:
-${publicUrl}
+---
 
-Questions? Reply to this text.`;
+## Technical Details
 
-    // Send via Twilio
-    const accountSid = Deno.env.get("TWILIO_ACCOUNT_SID");
-    const authToken = Deno.env.get("TWILIO_AUTH_TOKEN");
-    
-    const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
-    const twilioAuth = btoa(`${accountSid}:${authToken}`);
+### Drag-and-Drop Hook Usage
 
-    const formattedPhone = formatPhoneNumber(phoneNumber);
-    
-    const response = await fetch(twilioUrl, {
-      method: "POST",
-      headers: {
-        "Authorization": `Basic ${twilioAuth}`,
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: new URLSearchParams({
-        To: formattedPhone,
-        From: phoneData.twilio_number,
-        Body: message,
-      }),
-    });
+```typescript
+// In CRMDashboard.tsx
+import { DndContext, closestCenter, DragEndEvent } from '@dnd-kit/core';
+import { SortableContext, rectSortingStrategy, useSortable } from '@dnd-kit/sortable';
 
-    const result = await response.json();
-
-    if (response.ok) {
-      // Update estimate sent_at
-      await supabase
-        .from('estimates')
-        .update({ sms_sent_at: new Date().toISOString() })
-        .eq('id', estimateId);
-
-      return new Response(JSON.stringify({ 
-        success: true, 
-        sid: result.sid 
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    } else {
-      return new Response(JSON.stringify({ 
-        success: false, 
-        error: result.message 
-      }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-  } catch (error: any) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
+const [tileOrder, setTileOrder] = useState<string[]>(() => {
+  const saved = localStorage.getItem('ct1_dashboard_tile_order');
+  return saved ? JSON.parse(saved) : mainModules.map(m => m.id);
 });
 
-function formatPhoneNumber(phone: string): string {
-  const cleaned = phone.replace(/\D/g, '');
-  if (cleaned.length === 10) return `+1${cleaned}`;
-  if (cleaned.length === 11 && cleaned.startsWith('1')) return `+${cleaned}`;
-  if (cleaned.length > 10) return `+${cleaned}`;
-  return phone;
-}
-```
-
-**File: `src/components/contractor/crm/sections/EstimateDetailViewBlue.tsx`**
-
-Add SMS button and dialog:
-
-```tsx
-// Add state
-const [showSMSDialog, setShowSMSDialog] = useState(false);
-const [isSendingSMS, setIsSendingSMS] = useState(false);
-
-// Add SMS handler
-const handleSendSMS = async () => {
-  if (!estimate.client_phone) {
-    toast.error('Client phone number is required');
-    return;
-  }
-
-  setIsSendingSMS(true);
-  try {
-    const { data, error } = await supabase.functions.invoke('send-estimate-sms', {
-      body: {
-        estimateId: estimate.id,
-        phoneNumber: estimate.client_phone,
-        contractorName: user?.user_metadata?.full_name || 'Your Contractor',
-      },
-    });
-
-    if (error) throw error;
-    toast.success('Estimate sent via SMS!');
-    setShowSMSDialog(false);
-  } catch (error: any) {
-    toast.error('Failed to send SMS: ' + error.message);
-  } finally {
-    setIsSendingSMS(false);
+const handleDragEnd = (event: DragEndEvent) => {
+  const { active, over } = event;
+  if (over && active.id !== over.id) {
+    const oldIndex = tileOrder.indexOf(active.id as string);
+    const newIndex = tileOrder.indexOf(over.id as string);
+    const newOrder = arrayMove(tileOrder, oldIndex, newIndex);
+    setTileOrder(newOrder);
+    localStorage.setItem('ct1_dashboard_tile_order', JSON.stringify(newOrder));
   }
 };
+```
 
-// Add button in ActionButtonRow
-{estimate.client_phone && (
-  <ActionButton 
-    variant="secondary" 
-    onClick={() => setShowSMSDialog(true)}
-    className="flex items-center gap-2"
-  >
-    <MessageSquare className="w-4 h-4" />
-    SEND SMS
-  </ActionButton>
-)}
+### Touch-Friendly Configuration
+
+```typescript
+// Sensors for both mouse and touch
+const sensors = useSensors(
+  useSensor(PointerSensor, {
+    activationConstraint: { distance: 8 }, // 8px movement to start drag
+  }),
+  useSensor(TouchSensor, {
+    activationConstraint: { delay: 250, tolerance: 5 }, // Long-press to start
+  })
+);
 ```
 
 ---
 
-## Summary of Changes
+## Files to Create
 
-| File | Action | Description |
-|------|--------|-------------|
-| `src/components/contractor/FloatingPocketbot.tsx` | Modify | Add minimize/collapse behavior, adjust positioning |
-| `src/components/GlobalPocketbot.tsx` | Modify | Move trigger button to avoid overlap |
-| `src/components/contractor/crm/JobDetailViewBlue.tsx` | Modify | Add first photo requirement dialog in PhotosTabContent |
-| `src/hooks/useJobPhotos.ts` | Modify | Auto-tag first photo as "Front of Property" |
-| `supabase/functions/send-estimate-sms/index.ts` | Create | New Twilio SMS function for estimates |
-| `src/components/contractor/crm/sections/EstimateDetailViewBlue.tsx` | Modify | Add "SEND SMS" button and handler |
+| File | Purpose |
+|------|---------|
+| `src/components/ui/sortable-grid.tsx` | Reusable sortable grid wrapper |
+| `src/hooks/useLayoutPreferences.ts` | Hook to manage layout preferences |
+
+## Files to Modify
+
+| File | Changes |
+|------|---------|
+| `src/components/contractor/crm/sections/CRMDashboard.tsx` | Add sortable tiles + edit mode |
+| `src/components/contractor/crm/BottomNav.tsx` | Add sortable nav items + customize mode |
+| `package.json` | Add @dnd-kit dependencies |
 
 ---
 
-## QA Checklist
+## User Experience Flow
 
-### D) Chatbot Widget
-- [ ] Minimize button collapses to icon
-- [ ] Expand restores full chat
-- [ ] Does not overlap bottom nav on mobile
-- [ ] Does not cover primary action buttons
-- [ ] Works in light and dark mode
+### Dashboard Customization
 
-### F) First Job Photo
-- [ ] New job with no photos triggers prompt
-- [ ] Prompt explains "front of property with address"
-- [ ] Clicking "Take Photo" opens camera
-- [ ] First photo auto-captioned "Front of Property"
-- [ ] Subsequent photos don't trigger prompt
+```text
+┌─────────────────────────────────────────────────────────┐
+│  MyCT1 Dashboard           [Customize] [Reset Default]  │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐     │
+│  │ ⋮⋮ Calendar │  │ ⋮⋮  Jobs    │  │ ⋮⋮ Estimates│     │
+│  │    📅       │  │    💼       │  │    📄       │     │
+│  └─────────────┘  └─────────────┘  └─────────────┘     │
+│                                                         │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐     │
+│  │ ⋮⋮ Emails   │  │ ⋮⋮ Invoices │  │ ⋮⋮  Calls   │     │
+│  │    📧       │  │    🧾       │  │    📞       │     │
+│  └─────────────┘  └─────────────┘  └─────────────┘     │
+│                                                         │
+│  ⋮⋮ = Drag handle (appears in edit mode)               │
+└─────────────────────────────────────────────────────────┘
+```
 
-### G6) SMS Estimates
-- [ ] "SEND SMS" button visible when client has phone
-- [ ] SMS contains estimate link, total, contractor name
-- [ ] Success toast on send
-- [ ] Error shown if no Twilio number configured
-- [ ] Estimate updated with sms_sent_at timestamp
+### Bottom Nav Customization
+
+```text
+Normal Mode:                    Customize Mode:
+┌───────────────────────┐      ┌───────────────────────┐
+│ CRM │Calls│Emails│Leads│ ≡   │  [Save]  [Cancel]     │
+└───────────────────────┘      ├───────────────────────┤
+                               │ Drag items to reorder │
+                               │ ┌─────────────────────┤
+                               │ │ 1. CRM     ⋮⋮       │
+                               │ │ 2. Calls   ⋮⋮       │
+                               │ │ 3. Emails  ⋮⋮       │
+                               │ │ 4. Leads   ⋮⋮       │
+                               │ └─────────────────────┤
+                               └───────────────────────┘
+```
+
+---
+
+## Acceptance Criteria
+
+- [ ] Dashboard tiles are draggable on both mobile and desktop
+- [ ] Bottom nav items can be reordered
+- [ ] Order persists after page refresh
+- [ ] Order persists after browser close/reopen
+- [ ] "Reset to Default" restores original order
+- [ ] Touch gestures work on iOS Safari and Android Chrome
+- [ ] No horizontal overflow or layout breaking during drag
+- [ ] Visual feedback during drag (shadow, scale)
+- [ ] Accessible via keyboard (tab + arrow keys)
+
+---
+
+## Estimated Scope
+
+| Component | Effort |
+|-----------|--------|
+| Add @dnd-kit dependencies | ~5 min |
+| Create sortable-grid component | ~20 min |
+| Create useLayoutPreferences hook | ~10 min |
+| Update CRMDashboard with drag | ~25 min |
+| Update BottomNav with drag | ~25 min |
+| Mobile testing & polish | ~15 min |
+| **Total** | **~1.5 hours** |
+
