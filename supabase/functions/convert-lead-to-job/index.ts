@@ -21,21 +21,21 @@ serve(async (req) => {
       throw new Error('No authorization header');
     }
 
-    // Client 1: User context client for RLS validation
-    const userClient = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } }
-    });
-
-    // Validate user via RLS
-    const { data: { user }, error: authError } = await userClient.auth.getUser();
+    // Extract the JWT token from the Authorization header
+    const token = authHeader.replace('Bearer ', '');
+    
+    // Create admin client first to validate the token
+    const adminClient = createClient(supabaseUrl, supabaseServiceKey);
+    
+    // Validate user by getting user from JWT token
+    const { data: { user }, error: authError } = await adminClient.auth.getUser(token);
 
     if (authError || !user) {
       console.error('Auth error:', authError);
       throw new Error('Unauthorized');
     }
 
-    // Client 2: Service role client for admin operations
-    const adminClient = createClient(supabaseUrl, supabaseServiceKey);
+    console.log('Authenticated user:', user.id);
 
     const { leadId, jobName } = await req.json();
 
@@ -45,11 +45,12 @@ serve(async (req) => {
 
     console.log('Converting lead to job', { leadId, contractorId: user.id });
 
-    // Get the lead with all fields including source (using userClient for RLS validation)
-    const { data: lead, error: leadError } = await userClient
+    // Get the lead with all fields including source (verifying ownership via user_id)
+    const { data: lead, error: leadError } = await adminClient
       .from('leads')
       .select('*, lead_sources(id, name)')
       .eq('id', leadId)
+      .eq('user_id', user.id)
       .single();
 
     if (leadError || !lead) {
