@@ -17,10 +17,17 @@ import {
   Receipt,
   Building2,
   Contact,
-  HelpCircle
+  HelpCircle,
+  Settings2,
+  Check,
+  RotateCcw,
+  GripVertical
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/components/ui/sheet';
+import { Button } from '@/components/ui/button';
+import { SortableGrid, SortableListItem } from '@/components/ui/sortable-grid';
+import { useLayoutPreferences } from '@/hooks/useLayoutPreferences';
 import ct1Logo from '@/assets/ct1-round-logo-new.png';
 
 type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calendar' | 'emails' | 'estimates' | 'reporting' | 'financials' | 'more' | 'payments' | 'accounting' | 'invoices' | 'templates' | 'gc' | 'contacts' | 'help';
@@ -30,12 +37,7 @@ interface BottomNavProps {
   onSectionChange: (section: Section) => void;
 }
 
-const bottomNavItems = [
-  { id: 'dashboard' as Section, label: 'CRM', icon: LayoutDashboard },
-  { id: 'calls' as Section, label: 'Calls', icon: Phone },
-  { id: 'emails' as Section, label: 'Emails', icon: Mail },
-  { id: 'leads' as Section, label: 'Leads', icon: ClipboardList },
-];
+const defaultBottomNavItems: Section[] = ['dashboard', 'calls', 'emails', 'leads'];
 
 // All navigation items for the slide-out menu
 const allNavItems = [
@@ -59,11 +61,43 @@ const allNavItems = [
 
 export function BottomNav({ activeSection, onSectionChange }: BottomNavProps) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isCustomizing, setIsCustomizing] = useState(false);
+  
+  const { order: bottomNavOrder, setOrder: setBottomNavOrder, resetToDefault: resetBottomNav } = 
+    useLayoutPreferences('bottomNavOrder', defaultBottomNavItems);
+  
+  const { order: menuOrder, setOrder: setMenuOrder, resetToDefault: resetMenuOrder } = 
+    useLayoutPreferences('menuOrder', allNavItems.map(i => i.id));
+
+  // Get the 4 items to show in bottom nav
+  const visibleNavItems = bottomNavOrder.slice(0, 4).map(id => 
+    allNavItems.find(item => item.id === id)
+  ).filter(Boolean) as typeof allNavItems;
+
+  // Sort menu items by user preference
+  const sortedMenuItems = [...allNavItems].sort((a, b) => {
+    return menuOrder.indexOf(a.id) - menuOrder.indexOf(b.id);
+  });
 
   const handleNavClick = (e: React.MouseEvent, section: Section) => {
     e.stopPropagation();
     onSectionChange(section);
     setMenuOpen(false);
+  };
+
+  const handleCustomizeToggle = () => {
+    setIsCustomizing(!isCustomizing);
+  };
+
+  const handleResetAll = () => {
+    resetBottomNav();
+    resetMenuOrder();
+  };
+
+  const handleMenuReorder = (newOrder: string[]) => {
+    setMenuOrder(newOrder as Section[]);
+    // Update bottom nav to be first 4 items of menu order
+    setBottomNavOrder(newOrder.slice(0, 4) as Section[]);
   };
 
   return (
@@ -76,7 +110,7 @@ export function BottomNav({ activeSection, onSectionChange }: BottomNavProps) {
       "pointer-events-auto"
     )}>
       <div className="flex items-center justify-around h-16 max-w-screen-sm mx-auto px-2">
-        {bottomNavItems.map((item) => {
+        {visibleNavItems.map((item) => {
           const isActive = activeSection === item.id;
           return (
             <button
@@ -97,7 +131,7 @@ export function BottomNav({ activeSection, onSectionChange }: BottomNavProps) {
             >
               <item.icon className={cn('h-5 w-5', isActive && 'drop-shadow-sm')} />
               <span className={cn('text-xs font-medium')}>
-                {item.label}
+                {item.label === 'Dashboard' ? 'CRM' : item.label}
               </span>
             </button>
           );
@@ -135,30 +169,103 @@ export function BottomNav({ activeSection, onSectionChange }: BottomNavProps) {
               </button>
             </div>
             
+            {/* Customize Mode Header */}
+            <div className="flex items-center justify-between px-4 py-2 bg-muted/50 border-b flex-shrink-0">
+              {isCustomizing ? (
+                <>
+                  <span className="text-sm text-muted-foreground">Drag to reorder (top 4 = nav bar)</span>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleResetAll}
+                      className="h-8 px-2"
+                    >
+                      <RotateCcw className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={handleCustomizeToggle}
+                      className="h-8"
+                    >
+                      <Check className="h-4 w-4 mr-1" />
+                      Done
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <span className="text-sm text-muted-foreground">Quick access</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleCustomizeToggle}
+                    className="h-8 gap-1"
+                  >
+                    <Settings2 className="h-4 w-4" />
+                    Customize
+                  </Button>
+                </>
+              )}
+            </div>
+            
             {/* Navigation Items - scrollable */}
             <nav className="flex-1 overflow-y-auto overscroll-contain p-4 pb-8 bg-card">
-              <ul className="space-y-2">
-                {allNavItems.map((item) => {
-                  const isActive = activeSection === item.id;
-                  return (
-                    <li key={item.id}>
-                      <button
-                        onClick={(e) => handleNavClick(e, item.id)}
-                        className={cn(
-                          'w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors',
-                          'hover:bg-accent',
-                          isActive
-                            ? 'bg-primary text-primary-foreground'
-                            : 'text-muted-foreground'
-                        )}
-                      >
-                        <item.icon className="h-5 w-5 flex-shrink-0" />
-                        <span className="text-base">{item.label}</span>
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
+              {isCustomizing ? (
+                <SortableGrid
+                  items={menuOrder}
+                  onReorder={handleMenuReorder}
+                  strategy="vertical"
+                  className="space-y-2"
+                >
+                  {sortedMenuItems.map((item, index) => {
+                    const isInBottomNav = index < 4;
+                    return (
+                      <SortableListItem key={item.id} id={item.id}>
+                        <div
+                          className={cn(
+                            'flex items-center gap-3 px-3 py-3 rounded-lg transition-colors',
+                            'bg-muted/50 hover:bg-muted',
+                            isInBottomNav && 'ring-2 ring-primary/30 bg-primary/5'
+                          )}
+                        >
+                          <GripVertical className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                          <item.icon className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
+                          <span className="text-base flex-1">{item.label}</span>
+                          {isInBottomNav && (
+                            <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">
+                              Nav {index + 1}
+                            </span>
+                          )}
+                        </div>
+                      </SortableListItem>
+                    );
+                  })}
+                </SortableGrid>
+              ) : (
+                <ul className="space-y-2">
+                  {sortedMenuItems.map((item) => {
+                    const isActive = activeSection === item.id;
+                    return (
+                      <li key={item.id}>
+                        <button
+                          onClick={(e) => handleNavClick(e, item.id)}
+                          className={cn(
+                            'w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors',
+                            'hover:bg-accent',
+                            isActive
+                              ? 'bg-primary text-primary-foreground'
+                              : 'text-muted-foreground'
+                          )}
+                        >
+                          <item.icon className="h-5 w-5 flex-shrink-0" />
+                          <span className="text-base">{item.label}</span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
             </nav>
           </SheetContent>
         </Sheet>
