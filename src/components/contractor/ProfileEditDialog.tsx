@@ -8,18 +8,20 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
-import { Pencil, Upload, Loader2, Check, Building2, User, Globe, FileText, DollarSign, Shield, Percent, Palette } from "lucide-react";
+import { Pencil, Upload, Loader2, Check, Building2, User, Globe, FileText, DollarSign, Shield, Percent, Palette, Save } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+
+type SectionKey = 'logo' | 'business' | 'branding' | 'licensing' | 'colors' | 'defaults';
 
 export function ProfileEditDialog() {
   const { profile, user } = useAuth();
   const { toast } = useToast();
   const { isSuperAdmin } = useAdminAuth();
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [savingSection, setSavingSection] = useState<SectionKey | null>(null);
   const [uploading, setUploading] = useState(false);
   const [activeTab, setActiveTab] = useState("business");
   const [formData, setFormData] = useState({
@@ -127,36 +129,53 @@ export function ProfileEditDialog() {
     }
   };
 
-  const handleSaveAll = async () => {
+  // Save a specific section
+  const handleSaveSection = async (section: SectionKey) => {
     if (!user) return;
 
-    setLoading(true);
+    setSavingSection(section);
     try {
-      // Prepare update data - exclude contractor number and account ID for regular users
-      const updateData: any = {
-        company_name: formData.company_name,
-        contact_name: formData.contact_name,
-        phone: formData.phone,
-        business_address: formData.business_address,
-        city: formData.city,
-        state: formData.state,
-        zip_code: formData.zip_code,
-        tax_id: formData.tax_id,
-        business_email: formData.business_email,
-        website_url: formData.website_url,
-        license_number: formData.license_number,
-        trade: formData.trade,
-        brand_primary_color: formData.brand_primary_color,
-        brand_secondary_color: formData.brand_secondary_color,
-        brand_accent_color: formData.brand_accent_color,
-        default_sales_tax_rate: formData.default_sales_tax_rate ? parseFloat(formData.default_sales_tax_rate) : 6.0,
-        default_deposit_percent: formData.default_deposit_percent ? parseFloat(formData.default_deposit_percent) : 30.0,
-        default_warranty_years: formData.default_warranty_years ? parseInt(formData.default_warranty_years) : 2,
-      };
+      let updateData: Record<string, any> = {};
 
-      // Only super admins can update contractor number
-      if (isSuperAdmin) {
-        updateData.ct1_contractor_number = formData.ct1_contractor_number;
+      switch (section) {
+        case 'business':
+          updateData = {
+            company_name: formData.company_name,
+            contact_name: formData.contact_name,
+            phone: formData.phone,
+            trade: formData.trade,
+            business_address: formData.business_address,
+            city: formData.city,
+            state: formData.state,
+            zip_code: formData.zip_code,
+          };
+          break;
+        case 'branding':
+          updateData = {
+            business_email: formData.business_email,
+            website_url: formData.website_url,
+          };
+          break;
+        case 'licensing':
+          updateData = {
+            license_number: formData.license_number,
+            tax_id: formData.tax_id,
+          };
+          break;
+        case 'colors':
+          updateData = {
+            brand_primary_color: formData.brand_primary_color,
+            brand_secondary_color: formData.brand_secondary_color,
+            brand_accent_color: formData.brand_accent_color,
+          };
+          break;
+        case 'defaults':
+          updateData = {
+            default_sales_tax_rate: formData.default_sales_tax_rate ? parseFloat(formData.default_sales_tax_rate) : 6.0,
+            default_deposit_percent: formData.default_deposit_percent ? parseFloat(formData.default_deposit_percent) : 30.0,
+            default_warranty_years: formData.default_warranty_years ? parseInt(formData.default_warranty_years) : 2,
+          };
+          break;
       }
 
       const { error } = await supabase
@@ -167,23 +186,43 @@ export function ProfileEditDialog() {
       if (error) throw error;
 
       toast({
-        title: "Profile updated",
-        description: "Your profile has been updated successfully.",
+        title: "Saved",
+        description: "Section updated successfully.",
       });
-      
-      setOpen(false);
-      setTimeout(() => window.location.reload(), 500);
     } catch (error) {
-      console.error('Error updating profile:', error);
+      console.error('Error saving section:', error);
       toast({
-        title: "Update failed",
-        description: "Failed to update profile. Please try again.",
+        title: "Save failed",
+        description: "Failed to save changes. Please try again.",
         variant: "destructive",
       });
     } finally {
-      setLoading(false);
+      setSavingSection(null);
     }
   };
+
+  // Reusable Save Button component for sections
+  const SectionSaveButton = ({ section }: { section: SectionKey }) => (
+    <Button 
+      type="button" 
+      size="sm" 
+      onClick={() => handleSaveSection(section)}
+      disabled={savingSection === section}
+      className="gap-1.5"
+    >
+      {savingSection === section ? (
+        <>
+          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          Saving...
+        </>
+      ) : (
+        <>
+          <Save className="h-3.5 w-3.5" />
+          Save
+        </>
+      )}
+    </Button>
+  );
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -263,14 +302,14 @@ export function ProfileEditDialog() {
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center gap-4">
-                    <div className="h-24 w-24 rounded-lg border-2 border-dashed flex items-center justify-center bg-muted/30 overflow-hidden">
+                    <div className="h-24 w-24 rounded-lg border-2 border-dashed flex items-center justify-center bg-muted/30 overflow-hidden flex-shrink-0">
                       {formData.logo_url ? (
                         <img src={formData.logo_url} alt="Logo" className="h-full w-full object-contain" />
                       ) : (
                         <Building2 className="h-8 w-8 text-muted-foreground" />
                       )}
                     </div>
-                    <div className="flex-1">
+                    <div className="flex-1 min-w-0">
                       <Input
                         id="logo"
                         type="file"
@@ -301,7 +340,7 @@ export function ProfileEditDialog() {
                   <CardTitle className="text-sm">Business Details</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="company_name">Company Name</Label>
                       <Input
@@ -398,6 +437,9 @@ export function ProfileEditDialog() {
                     </div>
                   </div>
                 </CardContent>
+                <CardFooter className="border-t pt-4 flex justify-end">
+                  <SectionSaveButton section="business" />
+                </CardFooter>
               </Card>
             </TabsContent>
 
@@ -436,6 +478,9 @@ export function ProfileEditDialog() {
                     />
                   </div>
                 </CardContent>
+                <CardFooter className="border-t pt-4 flex justify-end">
+                  <SectionSaveButton section="branding" />
+                </CardFooter>
               </Card>
 
               <Card>
@@ -446,7 +491,7 @@ export function ProfileEditDialog() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="license_number">License Number</Label>
                       <Input
@@ -469,6 +514,9 @@ export function ProfileEditDialog() {
                     </div>
                   </div>
                 </CardContent>
+                <CardFooter className="border-t pt-4 flex justify-end">
+                  <SectionSaveButton section="licensing" />
+                </CardFooter>
               </Card>
 
               {/* Brand Colors */}
@@ -481,7 +529,7 @@ export function ProfileEditDialog() {
                   <CardDescription>These colors will be used on estimates, invoices, and proposals sent to customers</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="brand_primary_color">Primary Color</Label>
                       <div className="flex items-center gap-2">
@@ -551,7 +599,7 @@ export function ProfileEditDialog() {
                   <Separator />
                   <div className="space-y-2">
                     <Label className="text-xs text-muted-foreground">Preview</Label>
-                    <div className="flex items-center gap-4 p-4 border rounded-lg bg-muted/30">
+                    <div className="flex flex-wrap items-center gap-4 p-4 border rounded-lg bg-muted/30">
                       <div 
                         className="w-16 h-16 rounded-lg shadow-sm flex items-center justify-center text-white text-xs font-bold"
                         style={{ backgroundColor: formData.brand_primary_color }}
@@ -570,12 +618,15 @@ export function ProfileEditDialog() {
                       >
                         Accent
                       </div>
-                      <div className="flex-1 text-sm text-muted-foreground">
+                      <div className="flex-1 min-w-[150px] text-sm text-muted-foreground">
                         These colors will appear on your estimates, invoices, and customer-facing documents.
                       </div>
                     </div>
                   </div>
                 </CardContent>
+                <CardFooter className="border-t pt-4 flex justify-end">
+                  <SectionSaveButton section="colors" />
+                </CardFooter>
               </Card>
             </TabsContent>
 
@@ -590,7 +641,7 @@ export function ProfileEditDialog() {
                   <CardDescription>Default values applied to new estimates (can be changed per estimate)</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="default_sales_tax_rate">Sales Tax Rate (%)</Label>
                       <Input
@@ -634,6 +685,9 @@ export function ProfileEditDialog() {
                     </div>
                   </div>
                 </CardContent>
+                <CardFooter className="border-t pt-4 flex justify-end">
+                  <SectionSaveButton section="defaults" />
+                </CardFooter>
               </Card>
             </TabsContent>
           </div>
@@ -641,22 +695,9 @@ export function ProfileEditDialog() {
 
         <Separator className="my-4" />
 
-        <div className="flex justify-end gap-2">
+        <div className="flex justify-end">
           <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-            Cancel
-          </Button>
-          <Button type="button" onClick={handleSaveAll} disabled={loading}>
-            {loading ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              <>
-                <Check className="h-4 w-4 mr-2" />
-                Save Changes
-              </>
-            )}
+            Close
           </Button>
         </div>
       </DialogContent>
