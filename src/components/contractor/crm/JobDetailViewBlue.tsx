@@ -705,7 +705,7 @@ export default function JobDetailViewBlue({ job, open, onOpenChange, onCreateEst
                 className="flex-1 flex items-center justify-center gap-2"
               >
                 <FileText className="w-4 h-4" />
-                CONVERT TO ESTIMATE
+                CREATE ESTIMATE
               </ActionButton>
             )}
             {getFullAddress() && (
