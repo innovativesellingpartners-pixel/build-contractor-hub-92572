@@ -89,8 +89,8 @@ serve(async (req: Request) => {
       });
     }
 
-    // Format message
-    const appUrl = Deno.env.get('APP_URL') || 'https://myct1.com';
+    // Use the Lovable published URL as fallback to avoid SSL issues with custom domains
+    const appUrl = Deno.env.get('APP_URL') || 'https://build-contractor-hub-92572.lovable.app';
     const publicUrl = `${appUrl}/estimate/${estimate.public_token}`;
     const total = estimate.total_amount || estimate.grand_total || 0;
     const deposit = estimate.required_deposit || 0;

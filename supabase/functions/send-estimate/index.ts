@@ -93,7 +93,8 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Generate public view URL
-    const appUrl = Deno.env.get('APP_URL') || 'https://myct1.com';
+    // Use the Lovable published URL as fallback to avoid SSL issues with custom domains
+    const appUrl = Deno.env.get('APP_URL') || 'https://build-contractor-hub-92572.lovable.app';
     const publicUrl = `${appUrl}/estimate/${estimate.public_token}`;
 
     // Fetch contractor profile for branding (including brand colors)

@@ -22,7 +22,8 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const frontendUrl = Deno.env.get('APP_URL') || 'https://myct1.com';
+    // Use the Lovable published URL as fallback to avoid SSL issues with custom domains
+    const frontendUrl = Deno.env.get('APP_URL') || 'https://build-contractor-hub-92572.lovable.app';
 
     if (status === 'success' && sessionId) {
       // Find the payment session
@@ -148,7 +149,7 @@ serve(async (req) => {
     }
   } catch (error) {
     console.error('Callback error:', error);
-    const frontendUrl = Deno.env.get('APP_URL') || 'https://myct1.com';
+    const frontendUrl = Deno.env.get('APP_URL') || 'https://build-contractor-hub-92572.lovable.app';
     return Response.redirect(`${frontendUrl}?payment=error`, 302);
   }
 });
