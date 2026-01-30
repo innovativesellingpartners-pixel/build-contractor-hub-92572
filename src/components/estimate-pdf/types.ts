@@ -15,6 +15,9 @@ export interface ContractorProfile {
   license_number?: string;
   brand_color?: string;
   brand_font?: string;
+  brand_primary_color?: string;
+  brand_secondary_color?: string;
+  brand_accent_color?: string;
 }
 
 export interface EstimatePDFData {

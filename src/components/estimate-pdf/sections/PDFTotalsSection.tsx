@@ -1,5 +1,5 @@
 import { Estimate, EstimateLineItem } from '@/hooks/useEstimates';
-import { formatCurrency } from '../types';
+import { ContractorProfile, formatCurrency } from '../types';
 import { 
   PDFSectionHeader, 
   PDFContentSection,
@@ -9,11 +9,15 @@ import {
 
 interface PDFTotalsSectionProps {
   estimate: Estimate;
+  contractor?: ContractorProfile;
   currency?: string;
   locale?: string;
 }
 
-export function PDFTotalsSection({ estimate, currency = 'USD', locale = 'en-US' }: PDFTotalsSectionProps) {
+export function PDFTotalsSection({ estimate, contractor, currency = 'USD', locale = 'en-US' }: PDFTotalsSectionProps) {
+  const accentColor = contractor?.brand_accent_color || '#d59f47';
+  const secondaryColor = contractor?.brand_secondary_color || '#161e2c';
+  
   const format = (val: number | null | undefined) => formatCurrency(val, currency, locale);
   
   const lineItems = (estimate.line_items || []).filter((item: any) => item?.included !== false);
@@ -53,7 +57,7 @@ export function PDFTotalsSection({ estimate, currency = 'USD', locale = 'en-US' 
 
   return (
     <>
-      <PDFSectionHeader>Estimate Summary</PDFSectionHeader>
+      <PDFSectionHeader accentColor={accentColor} textColor={secondaryColor}>Estimate Summary</PDFSectionHeader>
       <PDFContentSection>
         <div className="flex justify-between gap-8">
           {/* Project Total Info (left side) */}
@@ -62,7 +66,7 @@ export function PDFTotalsSection({ estimate, currency = 'USD', locale = 'en-US' 
               <div className="text-xs font-bold text-[#666666] uppercase tracking-wider mb-1">
                 Project Total
               </div>
-              <div className="text-lg font-semibold text-[#161e2c]">
+              <div className="text-lg font-semibold" style={{ color: secondaryColor }}>
                 {format(grandTotal)}
               </div>
             </div>
@@ -113,6 +117,7 @@ export function PDFTotalsSection({ estimate, currency = 'USD', locale = 'en-US' 
                   label="AMOUNT DUE NOW" 
                   value={format(amountDueNow)} 
                   isTotal 
+                  totalColor={secondaryColor}
                 />
               </>
             ) : (
@@ -141,6 +146,7 @@ export function PDFTotalsSection({ estimate, currency = 'USD', locale = 'en-US' 
                   label="TOTAL DUE" 
                   value={format(grandTotal)} 
                   isTotal 
+                  totalColor={secondaryColor}
                 />
               </>
             )}

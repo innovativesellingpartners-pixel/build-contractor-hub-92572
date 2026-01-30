@@ -1,5 +1,5 @@
 import { Estimate } from '@/hooks/useEstimates';
-import { formatDate } from '../types';
+import { ContractorProfile, formatDate } from '../types';
 import { 
   PDFSectionHeader, 
   PDFContentSection,
@@ -8,15 +8,19 @@ import {
 
 interface PDFAcceptanceSectionProps {
   estimate: Estimate;
+  contractor?: ContractorProfile;
 }
 
-export function PDFAcceptanceSection({ estimate }: PDFAcceptanceSectionProps) {
+export function PDFAcceptanceSection({ estimate, contractor }: PDFAcceptanceSectionProps) {
+  const accentColor = contractor?.brand_accent_color || '#d59f47';
+  const secondaryColor = contractor?.brand_secondary_color || '#161e2c';
+  
   const hasContractorSignature = estimate.contractor_signature || estimate.contractor_printed_name;
   const hasClientSignature = estimate.client_signature || estimate.client_printed_name;
 
   return (
     <>
-      <PDFSectionHeader>Acceptance</PDFSectionHeader>
+      <PDFSectionHeader accentColor={accentColor} textColor={secondaryColor}>Acceptance</PDFSectionHeader>
       <PDFContentSection>
         <p className="text-sm text-[#666666] mb-6 leading-relaxed">
           By signing below, both parties agree to the scope of work, terms, and pricing outlined in this estimate.
@@ -26,7 +30,10 @@ export function PDFAcceptanceSection({ estimate }: PDFAcceptanceSectionProps) {
         <div className="grid grid-cols-2 gap-8">
           {/* Contractor Signature */}
           <div className="border border-[#d1d1d1] p-4 bg-[#fafafa]">
-            <h4 className="text-xs font-bold text-[#161e2c] uppercase tracking-wider mb-4">
+            <h4 
+              className="text-xs font-bold uppercase tracking-wider mb-4"
+              style={{ color: secondaryColor }}
+            >
               Contractor
             </h4>
             
@@ -67,7 +74,10 @@ export function PDFAcceptanceSection({ estimate }: PDFAcceptanceSectionProps) {
 
           {/* Client Signature */}
           <div className="border border-[#d1d1d1] p-4 bg-[#fafafa]">
-            <h4 className="text-xs font-bold text-[#161e2c] uppercase tracking-wider mb-4">
+            <h4 
+              className="text-xs font-bold uppercase tracking-wider mb-4"
+              style={{ color: secondaryColor }}
+            >
               Client
             </h4>
             

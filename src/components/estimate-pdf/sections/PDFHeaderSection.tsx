@@ -17,10 +17,14 @@ export function PDFHeaderSection({ estimate, contractor }: PDFHeaderSectionProps
   ].filter(Boolean);
   const businessAddress = addressParts.join(', ');
 
+  // Use contractor's brand colors with fallbacks
+  const secondaryColor = contractor.brand_secondary_color || '#161e2c';
+  const accentColor = contractor.brand_accent_color || '#d59f47';
+
   return (
     <>
       {/* Header Banner */}
-      <PDFHeader>
+      <PDFHeader brandColor={secondaryColor}>
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-4">
             {contractor.logo_url && (
@@ -52,8 +56,16 @@ export function PDFHeaderSection({ estimate, contractor }: PDFHeaderSectionProps
           </div>
           
           {/* Estimate Badge */}
-          <div className="bg-[#d59f47] px-6 py-2 flex-shrink-0">
-            <span className="text-[#161e2c] font-bold text-sm tracking-wide">ESTIMATE</span>
+          <div 
+            className="px-6 py-2 flex-shrink-0"
+            style={{ backgroundColor: accentColor }}
+          >
+            <span 
+              className="font-bold text-sm tracking-wide"
+              style={{ color: secondaryColor }}
+            >
+              ESTIMATE
+            </span>
           </div>
         </div>
       </PDFHeader>
