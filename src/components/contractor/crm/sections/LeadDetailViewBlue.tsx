@@ -7,7 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
-import { FileText, Briefcase, ArrowRight, Phone, Plus, Pencil, Navigation, CalendarPlus } from 'lucide-react';
+import { FileText, Briefcase, ArrowRight, Phone, Plus, Pencil, Navigation, CalendarPlus, Copy } from 'lucide-react';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { PullToRefreshIndicator } from '@/components/ui/pull-to-refresh';
 import { ScheduleMeetingDialog } from '../ScheduleMeetingDialog';
@@ -30,19 +30,21 @@ interface LeadDetailViewBlueProps {
   onClose: () => void;
   onSectionChange?: (section: string) => void;
   onEdit?: () => void;
+  onEditLead?: (lead: Lead) => void;
 }
 
-export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSectionChange, onEdit }: LeadDetailViewBlueProps) {
+export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSectionChange, onEdit, onEditLead }: LeadDetailViewBlueProps) {
   const queryClient = useQueryClient();
   const { estimates, createEstimateAsync } = useEstimates();
   const { customers } = useCustomers();
   const { jobs, refreshJobs } = useJobs();
-  const { refreshLeads, sources, updateLead } = useLeads();
+  const { refreshLeads, sources, updateLead, duplicateLead } = useLeads();
   const { user } = useAuth();
   const [isConverting, setIsConverting] = useState(false);
   const [isCreatingEstimate, setIsCreatingEstimate] = useState(false);
   const [showScheduleDialog, setShowScheduleDialog] = useState(false);
   const [leadNotes, setLeadNotes] = useState(lead.notes || '');
+  const [isDuplicating, setIsDuplicating] = useState(false);
 
   const { isRefreshing, pullDistance, handlers, containerRef } = usePullToRefresh({
     onRefresh: async () => {
@@ -146,6 +148,22 @@ export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSecti
     }
   };
 
+  // Duplicate lead and open edit dialog
+  const handleDuplicateLead = async () => {
+    setIsDuplicating(true);
+    try {
+      const duplicatedLead = await duplicateLead(lead);
+      if (duplicatedLead && onEditLead) {
+        // Open edit dialog with the duplicated lead
+        onEditLead(duplicatedLead);
+      }
+    } catch (error) {
+      // Error already handled in hook
+    } finally {
+      setIsDuplicating(false);
+    }
+  };
+
   const getFullAddress = () => {
     return [lead.address, lead.city, lead.state, lead.zip_code].filter(Boolean).join(', ');
   };
@@ -201,6 +219,15 @@ export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSecti
             EDIT
           </ActionButton>
         )}
+        <ActionButton 
+          variant="secondary" 
+          onClick={handleDuplicateLead}
+          disabled={isDuplicating}
+          className="flex items-center justify-center gap-2"
+        >
+          <Copy className="w-4 h-4" />
+          {isDuplicating ? 'DUPLICATING...' : 'DUPLICATE'}
+        </ActionButton>
         {!isConverted && (
           <ActionButton 
             variant="primary" 
