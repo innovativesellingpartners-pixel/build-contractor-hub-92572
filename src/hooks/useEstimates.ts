@@ -76,6 +76,12 @@ export interface Estimate {
   warranty_duration_years?: number;
   warranty_duration_months?: number;
   
+  // Waiver fields
+  selected_waiver_type?: 'conditional_progress' | 'unconditional_progress' | 'conditional_final' | 'unconditional_final' | null;
+  selected_waiver_amount?: number;
+  selected_waiver_billing_period_end?: string;
+  selected_waiver_retainage?: number;
+  
   // Signatures
   contractor_signature?: string;
   contractor_printed_name?: string;
@@ -225,6 +231,12 @@ export function useEstimates() {
           warranty_duration_years: estimate.warranty_duration_years,
           warranty_duration_months: estimate.warranty_duration_months,
           
+          // Waiver fields
+          selected_waiver_type: estimate.selected_waiver_type,
+          selected_waiver_amount: estimate.selected_waiver_amount,
+          selected_waiver_billing_period_end: estimate.selected_waiver_billing_period_end,
+          selected_waiver_retainage: estimate.selected_waiver_retainage,
+          
           // Signatures
           contractor_signature: estimate.contractor_signature,
           contractor_printed_name: estimate.contractor_printed_name,
@@ -310,6 +322,12 @@ export function useEstimates() {
           warranty_text: estimate.warranty_text,
           warranty_duration_years: estimate.warranty_duration_years,
           warranty_duration_months: estimate.warranty_duration_months,
+          
+          // Waiver fields
+          selected_waiver_type: estimate.selected_waiver_type,
+          selected_waiver_amount: estimate.selected_waiver_amount,
+          selected_waiver_billing_period_end: estimate.selected_waiver_billing_period_end,
+          selected_waiver_retainage: estimate.selected_waiver_retainage,
           
           // Signatures
           contractor_signature: estimate.contractor_signature,

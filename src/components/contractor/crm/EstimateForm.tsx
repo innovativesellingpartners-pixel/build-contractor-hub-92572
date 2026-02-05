@@ -26,6 +26,7 @@ import ScopeOfWorkSection from './estimate/ScopeOfWorkSection';
 import TermsConditionsSection from './estimate/TermsConditionsSection';
 import FinancialSummarySection from './estimate/FinancialSummarySection';
 import LineItemsSection from './estimate/LineItemsSection';
+import EstimateWaiverSection, { EstimateWaiverData } from './estimate/EstimateWaiverSection';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useOpportunities } from '@/hooks/useOpportunities';
@@ -146,6 +147,14 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
   const [contractorAcceptanceDate, setContractorAcceptanceDate] = useState('');
   const [clientAcceptanceDate, setClientAcceptanceDate] = useState('');
 
+  // Waiver section state
+  const [waiverSectionOpen, setWaiverSectionOpen] = useState(false);
+  const [waiverData, setWaiverData] = useState<EstimateWaiverData>({
+    type: null,
+    amount: 0,
+    billingPeriodEnd: undefined,
+    retainage: undefined,
+  });
   // Jobs
   const { jobs } = useJobs();
   const [selectedJobId, setSelectedJobId] = useState<string | undefined>(undefined);
@@ -322,6 +331,17 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
       setContractorAcceptanceDate(initialData.contractor_acceptance_date || '');
       setClientAcceptanceDate(initialData.client_acceptance_date || '');
 
+      // Load waiver data
+      if (initialData.selected_waiver_type) {
+        setWaiverData({
+          type: initialData.selected_waiver_type,
+          amount: initialData.selected_waiver_amount || 0,
+          billingPeriodEnd: initialData.selected_waiver_billing_period_end,
+          retainage: initialData.selected_waiver_retainage,
+        });
+        setWaiverSectionOpen(true);
+      }
+
       // Load signatures if they exist
       if (initialData.contractor_signature && contractorSigRef.current) {
         contractorSigRef.current.fromDataURL(initialData.contractor_signature);
@@ -363,6 +383,8 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
       setClientPrintedName('');
       setContractorAcceptanceDate('');
       setClientAcceptanceDate('');
+      setWaiverData({ type: null, amount: 0, billingPeriodEnd: undefined, retainage: undefined });
+      setWaiverSectionOpen(false);
       contractorSigRef.current?.clear();
       clientSigRef.current?.clear();
     }
@@ -591,6 +613,12 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
       
       // Referred by
       referred_by: referredBy === 'Other' ? referredByOther : referredBy,
+      
+      // Waiver data
+      selected_waiver_type: waiverData.type,
+      selected_waiver_amount: waiverData.type ? waiverData.amount : null,
+      selected_waiver_billing_period_end: waiverData.type ? waiverData.billingPeriodEnd : null,
+      selected_waiver_retainage: waiverData.type ? waiverData.retainage : null,
       
       // Signatures with printed names and dates
       contractor_signature: contractorSigRef.current?.toDataURL(),
@@ -1218,6 +1246,15 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
               </Card>
             </Collapsible>
           )}
+
+          {/* Lien Waiver Section */}
+          <EstimateWaiverSection
+            waiverData={waiverData}
+            onWaiverDataChange={setWaiverData}
+            defaultAmount={totals.grandTotal}
+            isOpen={waiverSectionOpen}
+            onOpenChange={setWaiverSectionOpen}
+          />
 
           {/* Signatures */}
           <Card>
