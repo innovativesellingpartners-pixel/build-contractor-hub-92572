@@ -229,30 +229,46 @@ export default function ProjectInfoStep({ data, onChange }: ProjectInfoStepProps
             />
           </div>
           
-          <div className="space-y-2">
-            <Label htmlFor="referred_by">Referred By</Label>
-            <Select
-              value={selectedSource}
-              onValueChange={handleReferralChange}
-            >
-              <SelectTrigger id="referred_by">
-                <SelectValue placeholder="How did they find you?" />
-              </SelectTrigger>
-              <SelectContent>
-                {REFERRAL_SOURCES.map((source) => (
-                  <SelectItem key={source} value={source}>{source}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {showOtherInput && (
-              <Input
-                className="mt-2"
-                value={otherValue}
-                onChange={(e) => handleOtherInputChange(e.target.value)}
-                placeholder="Please specify how they found you"
-              />
-            )}
-          </div>
+          {/* Only show Referred By if not already set from lead */}
+          {!data.referred_by && (
+            <div className="space-y-2">
+              <Label htmlFor="referred_by">Referred By</Label>
+              <Select
+                value={selectedSource}
+                onValueChange={handleReferralChange}
+              >
+                <SelectTrigger id="referred_by">
+                  <SelectValue placeholder="How did they find you?" />
+                </SelectTrigger>
+                <SelectContent>
+                  {REFERRAL_SOURCES.map((source) => (
+                    <SelectItem key={source} value={source}>{source}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {showOtherInput && (
+                <Input
+                  className="mt-2"
+                  value={otherValue}
+                  onChange={(e) => handleOtherInputChange(e.target.value)}
+                  placeholder="Please specify how they found you"
+                />
+              )}
+            </div>
+          )}
+          
+          {/* Show read-only display if referred_by is already set from lead */}
+          {data.referred_by && (
+            <div className="space-y-2">
+              <Label>Referred By</Label>
+              <div className="px-3 py-2 bg-muted rounded-md text-sm">
+                {data.referred_by}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Inherited from lead - cannot be modified
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

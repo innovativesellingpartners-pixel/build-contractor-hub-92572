@@ -36,7 +36,7 @@ export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSecti
   const { estimates, createEstimateAsync } = useEstimates();
   const { customers } = useCustomers();
   const { jobs, refreshJobs } = useJobs();
-  const { refreshLeads } = useLeads();
+  const { refreshLeads, sources } = useLeads();
   const { user } = useAuth();
   const [isConverting, setIsConverting] = useState(false);
   const [isCreatingEstimate, setIsCreatingEstimate] = useState(false);
@@ -101,6 +101,17 @@ export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSecti
     try {
       const fullAddress = [lead.address, lead.city, lead.state, lead.zip_code].filter(Boolean).join(', ');
       
+      // Get referred_by value from lead's source
+      let referredBy: string | undefined;
+      if (lead.source_id) {
+        const sourceRecord = sources.find(s => s.id === lead.source_id);
+        if (sourceRecord?.name === 'Other' && lead.source_other) {
+          referredBy = lead.source_other;
+        } else if (sourceRecord?.name) {
+          referredBy = sourceRecord.name;
+        }
+      }
+      
       const estimateData = {
         title: `Estimate for ${lead.name}`,
         lead_id: lead.id,
@@ -112,6 +123,7 @@ export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSecti
         project_name: lead.project_type || `Project for ${lead.name}`,
         status: 'draft' as const,
         total_amount: lead.value || 0,
+        referred_by: referredBy,
       };
 
       const newEstimate = await createEstimateAsync(estimateData);
