@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { Resend } from "npm:resend@2.0.0";
+import { PDFDocument, rgb, StandardFonts } from "https://esm.sh/pdf-lib@1.17.1";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -25,6 +26,20 @@ const WAIVER_TYPE_LABELS: Record<string, string> = {
   unconditional_final: 'Unconditional Waiver - Final Payment',
 };
 
+function formatCurrency(v: number | null | undefined) {
+  const n = Number(v || 0);
+  return n.toLocaleString("en-US", { style: "currency", currency: "USD" });
+}
+
+function formatDate(dateStr: string | null | undefined) {
+  if (!dateStr) return "";
+  return new Date(dateStr).toLocaleDateString("en-US", { 
+    month: "long", 
+    day: "numeric", 
+    year: "numeric" 
+  });
+}
+
 async function fetchWaiverHtmlContent(pdfUrl: string): Promise<string | null> {
   try {
     const response = await fetch(pdfUrl);
@@ -40,12 +55,341 @@ async function fetchWaiverHtmlContent(pdfUrl: string): Promise<string | null> {
 }
 
 function extractWaiverBodyContent(html: string): string {
-  // Extract just the body content for inline display
   const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
   if (bodyMatch) {
     return bodyMatch[1];
   }
   return html;
+}
+
+// Generate a simple invoice PDF inline
+async function generateInvoicePdfBytes(invoice: any, profile: any, customer: any, job: any): Promise<Uint8Array> {
+  const pdfDoc = await PDFDocument.create();
+  const page = pdfDoc.addPage([612, 792]);
+  const { height, width } = page.getSize();
+
+  const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+  const fontReg = await pdfDoc.embedFont(StandardFonts.Helvetica);
+
+  const primaryNavy = rgb(0.086, 0.118, 0.173);
+  const accentGold = rgb(0.835, 0.624, 0.278);
+  const darkText = rgb(0.133, 0.133, 0.133);
+  const mediumText = rgb(0.4, 0.4, 0.4);
+  const white = rgb(1, 1, 1);
+
+  const margin = 50;
+  let cursorY = height - margin;
+
+  const companyName = profile?.business_name || profile?.company_name || "Contractor";
+
+  // Header
+  const headerHeight = 80;
+  page.drawRectangle({
+    x: 0,
+    y: height - headerHeight,
+    width: width,
+    height: headerHeight,
+    color: primaryNavy,
+  });
+
+  page.drawText(companyName.toUpperCase(), {
+    x: margin,
+    y: height - 35,
+    size: 18,
+    font: fontBold,
+    color: white,
+  });
+
+  if (profile?.business_phone || profile?.business_email) {
+    const contactLine = [profile.business_phone, profile.business_email].filter(Boolean).join("  •  ");
+    page.drawText(contactLine, {
+      x: margin,
+      y: height - 55,
+      size: 9,
+      font: fontReg,
+      color: rgb(0.85, 0.85, 0.85),
+    });
+  }
+
+  // Invoice badge
+  page.drawRectangle({
+    x: width - margin - 100,
+    y: height - 50,
+    width: 100,
+    height: 28,
+    color: accentGold,
+  });
+  page.drawText("INVOICE", {
+    x: width - margin - 78,
+    y: height - 42,
+    size: 12,
+    font: fontBold,
+    color: primaryNavy,
+  });
+
+  cursorY = height - headerHeight - 30;
+
+  // Invoice info
+  page.drawText(`Invoice #: ${invoice.invoice_number || 'N/A'}`, {
+    x: margin,
+    y: cursorY,
+    size: 11,
+    font: fontBold,
+    color: darkText,
+  });
+  cursorY -= 18;
+
+  page.drawText(`Issue Date: ${formatDate(invoice.issue_date)}`, {
+    x: margin,
+    y: cursorY,
+    size: 10,
+    font: fontReg,
+    color: mediumText,
+  });
+  cursorY -= 16;
+
+  page.drawText(`Due Date: ${formatDate(invoice.due_date) || 'Due upon receipt'}`, {
+    x: margin,
+    y: cursorY,
+    size: 10,
+    font: fontReg,
+    color: mediumText,
+  });
+  cursorY -= 16;
+
+  page.drawText(`Status: ${(invoice.status || 'draft').toUpperCase()}`, {
+    x: margin,
+    y: cursorY,
+    size: 10,
+    font: fontReg,
+    color: mediumText,
+  });
+  cursorY -= 30;
+
+  // Bill To
+  if (customer) {
+    page.drawText("BILL TO:", { x: margin, y: cursorY, size: 9, font: fontBold, color: accentGold });
+    cursorY -= 16;
+    if (customer.name) {
+      page.drawText(customer.name, { x: margin, y: cursorY, size: 11, font: fontBold, color: darkText });
+      cursorY -= 14;
+    }
+    if (customer.company) {
+      page.drawText(customer.company, { x: margin, y: cursorY, size: 9, font: fontReg, color: mediumText });
+      cursorY -= 14;
+    }
+    if (customer.email) {
+      page.drawText(customer.email, { x: margin, y: cursorY, size: 9, font: fontReg, color: mediumText });
+      cursorY -= 14;
+    }
+    cursorY -= 10;
+  }
+
+  // Job details
+  if (job) {
+    page.drawText("JOB:", { x: margin, y: cursorY, size: 9, font: fontBold, color: accentGold });
+    cursorY -= 16;
+    if (job.name) {
+      page.drawText(job.name.substring(0, 50), { x: margin, y: cursorY, size: 10, font: fontBold, color: darkText });
+      cursorY -= 14;
+    }
+    if (job.job_number) {
+      page.drawText(`Job #${job.job_number}`, { x: margin, y: cursorY, size: 9, font: fontReg, color: mediumText });
+      cursorY -= 14;
+    }
+    cursorY -= 10;
+  }
+
+  // Line items
+  const lineItems = (invoice.line_items as any[]) || [];
+  if (lineItems.length > 0) {
+    page.drawText("LINE ITEMS", { x: margin, y: cursorY, size: 10, font: fontBold, color: primaryNavy });
+    cursorY -= 20;
+
+    // Header row
+    page.drawText("Description", { x: margin, y: cursorY, size: 8, font: fontBold, color: darkText });
+    page.drawText("Qty", { x: 350, y: cursorY, size: 8, font: fontBold, color: darkText });
+    page.drawText("Rate", { x: 400, y: cursorY, size: 8, font: fontBold, color: darkText });
+    page.drawText("Amount", { x: 480, y: cursorY, size: 8, font: fontBold, color: darkText });
+    cursorY -= 16;
+
+    for (const item of lineItems) {
+      const desc = String(item.description || item.name || "Item").substring(0, 40);
+      const qty = String(item.quantity || 1);
+      const rate = formatCurrency(item.unit_price || 0);
+      const lineTotal = (item.quantity || 1) * (item.unit_price || 0);
+
+      page.drawText(desc, { x: margin, y: cursorY, size: 9, font: fontReg, color: darkText });
+      page.drawText(qty, { x: 350, y: cursorY, size: 9, font: fontReg, color: darkText });
+      page.drawText(rate, { x: 400, y: cursorY, size: 9, font: fontReg, color: darkText });
+      page.drawText(formatCurrency(lineTotal), { x: 480, y: cursorY, size: 9, font: fontBold, color: darkText });
+      cursorY -= 18;
+
+      if (cursorY < 150) break;
+    }
+    cursorY -= 10;
+  }
+
+  // Totals
+  page.drawLine({
+    start: { x: margin, y: cursorY },
+    end: { x: width - margin, y: cursorY },
+    thickness: 1,
+    color: primaryNavy,
+  });
+  cursorY -= 25;
+
+  page.drawText("Amount Due:", { x: 380, y: cursorY, size: 10, font: fontReg, color: mediumText });
+  page.drawText(formatCurrency(invoice.amount_due), { x: 480, y: cursorY, size: 12, font: fontBold, color: primaryNavy });
+  cursorY -= 18;
+
+  if (invoice.amount_paid > 0) {
+    page.drawText("Amount Paid:", { x: 380, y: cursorY, size: 10, font: fontReg, color: mediumText });
+    page.drawText(formatCurrency(invoice.amount_paid), { x: 480, y: cursorY, size: 10, font: fontReg, color: darkText });
+    cursorY -= 18;
+
+    const balance = (invoice.amount_due || 0) - (invoice.amount_paid || 0);
+    page.drawText("Balance Due:", { x: 380, y: cursorY, size: 10, font: fontBold, color: primaryNavy });
+    page.drawText(formatCurrency(balance), { x: 480, y: cursorY, size: 12, font: fontBold, color: accentGold });
+  }
+
+  // Footer
+  page.drawText("Generated via CT1 Business Suite", {
+    x: margin,
+    y: 40,
+    size: 8,
+    font: fontReg,
+    color: rgb(0.6, 0.6, 0.6),
+  });
+
+  return await pdfDoc.save();
+}
+
+// Generate waiver PDF from HTML content
+async function generateWaiverPdfBytes(waiver: any, html: string, invoiceNumber: string): Promise<Uint8Array> {
+  const pdfDoc = await PDFDocument.create();
+  const page = pdfDoc.addPage([612, 792]);
+  const { height, width } = page.getSize();
+
+  const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+  const fontReg = await pdfDoc.embedFont(StandardFonts.Helvetica);
+
+  const primaryNavy = rgb(0.086, 0.118, 0.173);
+  const accentGold = rgb(0.835, 0.624, 0.278);
+  const darkText = rgb(0.133, 0.133, 0.133);
+  const mediumText = rgb(0.4, 0.4, 0.4);
+  const white = rgb(1, 1, 1);
+
+  const margin = 50;
+  let cursorY = height - margin;
+
+  const waiverTitle = WAIVER_TYPE_LABELS[waiver.waiver_type] || waiver.waiver_type;
+
+  // Header
+  const headerHeight = 60;
+  page.drawRectangle({
+    x: 0,
+    y: height - headerHeight,
+    width: width,
+    height: headerHeight,
+    color: primaryNavy,
+  });
+
+  page.drawText("LIEN WAIVER", {
+    x: margin,
+    y: height - 35,
+    size: 16,
+    font: fontBold,
+    color: white,
+  });
+
+  page.drawText(waiverTitle.toUpperCase(), {
+    x: margin,
+    y: height - 52,
+    size: 10,
+    font: fontReg,
+    color: accentGold,
+  });
+
+  cursorY = height - headerHeight - 30;
+
+  // Waiver details
+  page.drawText(`Invoice: ${invoiceNumber}`, { x: margin, y: cursorY, size: 10, font: fontBold, color: darkText });
+  cursorY -= 18;
+
+  page.drawText(`Amount: ${formatCurrency(waiver.amount)}`, { x: margin, y: cursorY, size: 10, font: fontReg, color: mediumText });
+  cursorY -= 16;
+
+  if (waiver.retainage > 0) {
+    page.drawText(`Retainage: ${formatCurrency(waiver.retainage)}`, { x: margin, y: cursorY, size: 10, font: fontReg, color: mediumText });
+    cursorY -= 16;
+  }
+
+  if (waiver.billing_period_end) {
+    page.drawText(`Through Date: ${formatDate(waiver.billing_period_end)}`, { x: margin, y: cursorY, size: 10, font: fontReg, color: mediumText });
+    cursorY -= 16;
+  }
+
+  cursorY -= 20;
+
+  // Extract and display text content from HTML (simplified extraction)
+  const textContent = html
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  // Word wrap the content
+  const words = textContent.split(' ');
+  let line = '';
+  const maxWidth = width - margin * 2;
+  const fontSize = 9;
+
+  for (const word of words) {
+    const testLine = line + word + ' ';
+    const testWidth = fontReg.widthOfTextAtSize(testLine, fontSize);
+    
+    if (testWidth > maxWidth && line !== '') {
+      page.drawText(line.trim(), { x: margin, y: cursorY, size: fontSize, font: fontReg, color: darkText });
+      cursorY -= 14;
+      line = word + ' ';
+
+      if (cursorY < 100) break;
+    } else {
+      line = testLine;
+    }
+  }
+  
+  if (line && cursorY >= 100) {
+    page.drawText(line.trim(), { x: margin, y: cursorY, size: fontSize, font: fontReg, color: darkText });
+    cursorY -= 20;
+  }
+
+  // Signature section
+  if (waiver.signer_name) {
+    cursorY -= 20;
+    page.drawText("SIGNED BY:", { x: margin, y: cursorY, size: 9, font: fontBold, color: primaryNavy });
+    cursorY -= 16;
+    page.drawText(waiver.signer_name + (waiver.signer_title ? ` (${waiver.signer_title})` : ''), { 
+      x: margin, y: cursorY, size: 10, font: fontReg, color: darkText 
+    });
+    cursorY -= 14;
+    if (waiver.signed_at) {
+      page.drawText(`Date: ${formatDate(waiver.signed_at)}`, { x: margin, y: cursorY, size: 9, font: fontReg, color: mediumText });
+    }
+  }
+
+  // Footer
+  page.drawText("Generated via CT1 Business Suite", {
+    x: margin,
+    y: 40,
+    size: 8,
+    font: fontReg,
+    color: rgb(0.6, 0.6, 0.6),
+  });
+
+  return await pdfDoc.save();
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -106,14 +450,25 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    // Fetch customer data
+    let customer = null;
+    if (invoice.customer_id) {
+      const { data } = await supabase
+        .from("customers")
+        .select("name, email, phone, address, city, state, zip_code, company")
+        .eq("id", invoice.customer_id)
+        .single();
+      customer = data;
+    }
+
     // Fetch contractor profile for branding
     const { data: profile } = await supabase
       .from("profiles")
-      .select("business_name, business_email, business_phone, business_address")
+      .select("business_name, company_name, business_email, business_phone, business_address, logo_url")
       .eq("id", invoice.user_id)
       .single();
 
-    const businessName = profile?.business_name || "CT1 Contractor";
+    const businessName = profile?.business_name || profile?.company_name || "CT1 Contractor";
 
     // Fetch waivers if requested
     let waivers: any[] = [];
@@ -135,7 +490,6 @@ const handler = async (req: Request): Promise<Response> => {
       waivers = waiverData || [];
       console.log(`Found ${waivers.length} waivers to include`);
 
-      // Fetch HTML content for each waiver
       for (const waiver of waivers) {
         if (waiver.pdf_url) {
           const htmlContent = await fetchWaiverHtmlContent(waiver.pdf_url);
@@ -145,6 +499,27 @@ const handler = async (req: Request): Promise<Response> => {
         }
       }
       console.log(`Fetched HTML content for ${waiverHtmlContents.length} waivers`);
+    }
+
+    // Generate Invoice PDF
+    console.log("Generating invoice PDF...");
+    const invoicePdfBytes = await generateInvoicePdfBytes(invoice, profile, customer, invoice.jobs);
+    const invoicePdfBase64 = btoa(String.fromCharCode(...invoicePdfBytes));
+    console.log(`Invoice PDF generated: ${invoicePdfBytes.length} bytes`);
+
+    // Generate Waiver PDFs
+    const waiverPdfs: { waiver: any; pdfBase64: string; filename: string }[] = [];
+    for (const { waiver, html } of waiverHtmlContents) {
+      console.log(`Generating PDF for waiver ${waiver.id}...`);
+      const waiverPdfBytes = await generateWaiverPdfBytes(waiver, html, invoice.invoice_number || 'INV');
+      const waiverPdfBase64 = btoa(String.fromCharCode(...waiverPdfBytes));
+      
+      const waiverTypeLabel = WAIVER_TYPE_LABELS[waiver.waiver_type] || waiver.waiver_type;
+      const safeLabel = waiverTypeLabel.replace(/[^a-zA-Z0-9]/g, '_');
+      const filename = `Lien_Waiver_${safeLabel}_${invoice.invoice_number || 'INV'}.pdf`;
+      
+      waiverPdfs.push({ waiver, pdfBase64: waiverPdfBase64, filename });
+      console.log(`Waiver PDF generated: ${waiverPdfBytes.length} bytes`);
     }
 
     // Format line items for email
@@ -157,7 +532,7 @@ const handler = async (req: Request): Promise<Response> => {
             <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">$${((item.quantity || 1) * (item.unit_price || 0)).toFixed(2)}</td>
           </tr>
         `).join("")
-      : "<tr><td colspan='3' style='padding: 8px;'>See attached for details</td></tr>";
+      : "<tr><td colspan='3' style='padding: 8px;'>See attached PDF for details</td></tr>";
 
     const dueDate = invoice.due_date 
       ? new Date(invoice.due_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
@@ -170,17 +545,20 @@ const handler = async (req: Request): Promise<Response> => {
     // Generate waiver summary for email body
     const waiverSummaryHtml = waivers.length > 0 ? `
       <div style="margin-top: 25px; padding: 15px; background: #f0fdf4; border-radius: 4px; border: 1px solid #86efac;">
-        <strong style="color: #166534;">📎 Attached Lien Waivers (${waivers.length}):</strong>
+        <strong style="color: #166534;">📎 Attached Documents:</strong>
         <ul style="margin: 10px 0 0; padding-left: 20px; color: #166534;">
+          <li style="margin: 5px 0;">Invoice PDF - ${invoice.invoice_number}</li>
           ${waivers.map(w => `<li style="margin: 5px 0;">${WAIVER_TYPE_LABELS[w.waiver_type] || w.waiver_type} - $${w.amount.toFixed(2)}</li>`).join('')}
         </ul>
         <p style="margin: 10px 0 0; font-size: 12px; color: #166534;">
-          ${waiverAttachmentMode === 'combined' 
-            ? 'Waivers are displayed below and attached as files.'
-            : 'Each waiver is attached as a separate file.'}
+          All documents are attached as PDFs and displayed in full below.
         </p>
       </div>
-    ` : '';
+    ` : `
+      <div style="margin-top: 25px; padding: 15px; background: #f0fdf4; border-radius: 4px; border: 1px solid #86efac;">
+        <strong style="color: #166534;">📎 Attached:</strong> Invoice PDF - ${invoice.invoice_number}
+      </div>
+    `;
 
     // Build inline waiver display for the email body - FULL waiver content embedded
     let inlineWaiversHtml = '';
@@ -191,10 +569,9 @@ const handler = async (req: Request): Promise<Response> => {
             📄 LIEN WAIVERS
           </h2>
           <p style="text-align: center; color: #666; margin-bottom: 30px; font-size: 14px;">
-            The following lien waiver document(s) are included with this invoice. Full documents are also attached as files.
+            The following lien waiver document(s) are included with this invoice. Full documents are also attached as PDFs.
           </p>
           ${waiverHtmlContents.map(({ waiver, html }, index) => {
-            // Extract the full body content from the waiver HTML
             const bodyContent = extractWaiverBodyContent(html);
             return `
               <div style="margin-bottom: 50px; border: 2px solid #1e3a5f; border-radius: 8px; overflow: hidden; background: #fff;">
@@ -220,7 +597,7 @@ const handler = async (req: Request): Promise<Response> => {
         <meta charset="utf-8">
         <title>Invoice ${invoice.invoice_number}</title>
       </head>
-      <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
+      <body style="font-family: Arial, sans-serif; max-width: 700px; margin: 0 auto; padding: 20px; color: #333;">
         <div style="background: linear-gradient(135deg, #1e3a5f 0%, #2d4a6f 100%); padding: 30px; border-radius: 8px 8px 0 0;">
           <h1 style="color: #d4af37; margin: 0; font-size: 28px;">${businessName}</h1>
           <p style="color: #fff; margin: 10px 0 0; font-size: 14px;">Invoice ${invoice.invoice_number}</p>
@@ -307,46 +684,33 @@ const handler = async (req: Request): Promise<Response> => {
 
     const fromEmail = Deno.env.get("EMAIL_FROM") || "CT1 <noreply@myct1.com>";
     
-    // Build PDF attachments for waivers
-    const attachments: { filename: string; content: string }[] = [];
-    
-    if (includeWaivers && waiverHtmlContents.length > 0) {
-      for (const { waiver, html } of waiverHtmlContents) {
-        const waiverTypeLabel = WAIVER_TYPE_LABELS[waiver.waiver_type] || waiver.waiver_type;
-        const safeLabel = waiverTypeLabel.replace(/[^a-zA-Z0-9]/g, '_');
-        const filename = `Lien_Waiver_${safeLabel}_${invoice.invoice_number || 'INV'}.html`;
-        
-        // Encode HTML as base64 for attachment
-        const base64Content = btoa(unescape(encodeURIComponent(html)));
-        
-        attachments.push({
-          filename,
-          content: base64Content,
-        });
-        
-        console.log(`Added attachment: ${filename}`);
+    // Build attachments array - Invoice PDF first, then waiver PDFs
+    const attachments: any[] = [
+      {
+        filename: `Invoice_${invoice.invoice_number || 'INV'}.pdf`,
+        content: invoicePdfBase64,
+        content_type: 'application/pdf',
       }
+    ];
+
+    // Add waiver PDFs
+    for (const { filename, pdfBase64 } of waiverPdfs) {
+      attachments.push({
+        filename,
+        content: pdfBase64,
+        content_type: 'application/pdf',
+      });
     }
-    
-    // Prepare email options
-    const emailOptions: any = {
+
+    console.log(`Sending email with ${attachments.length} PDF attachment(s)`);
+
+    const emailResponse = await resend.emails.send({
       from: fromEmail,
       to: emails,
       subject: `Invoice ${invoice.invoice_number} from ${businessName}${waivers.length > 0 ? ` (with ${waivers.length} Lien Waiver${waivers.length > 1 ? 's' : ''})` : ''}`,
       html: emailHtml,
-    };
-
-    // Add attachments if we have any
-    if (attachments.length > 0) {
-      emailOptions.attachments = attachments.map(att => ({
-        filename: att.filename,
-        content: att.content,
-        content_type: 'text/html',
-      }));
-      console.log(`Sending email with ${attachments.length} attachments`);
-    }
-
-    const emailResponse = await resend.emails.send(emailOptions);
+      attachments: attachments,
+    });
 
     console.log("Email sent successfully:", emailResponse);
 
