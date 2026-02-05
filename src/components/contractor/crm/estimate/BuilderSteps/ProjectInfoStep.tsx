@@ -309,15 +309,15 @@ export default function ProjectInfoStep({ data, onChange }: ProjectInfoStepProps
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="client_email"
-                  type="email"
+                  type="text"
                   value={data.client_email}
                   onChange={(e) => onChange({ client_email: e.target.value })}
-                  placeholder="john.smith@email.com"
+                  placeholder="john@email.com, jane@email.com"
                   className="pl-10"
                 />
               </div>
               <p className="text-xs text-muted-foreground">
-                Required to send the estimate to the client
+                Required to send the estimate. Separate multiple emails with commas.
               </p>
             </div>
             
