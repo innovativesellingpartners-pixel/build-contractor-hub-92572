@@ -66,16 +66,21 @@ export function useEstimateAutoSave({
 
     const checkForDraft = async () => {
       try {
-        // First check server for draft
-        const { data, error } = await supabase.functions.invoke('estimate-draft', {
-          method: 'GET',
-          body: null,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
+        // First, get the estimate's updated_at to compare against draft
+        const { data: estimate, error: estimateError } = await supabase
+          .from('estimates')
+          .select('updated_at')
+          .eq('id', estimateId)
+          .single();
 
-        // Use query params approach for GET
+        if (estimateError || !estimate) {
+          console.error('Could not fetch estimate for draft comparison:', estimateError);
+          return;
+        }
+
+        const estimateUpdatedAt = new Date(estimate.updated_at).getTime();
+
+        // Check server for draft
         const response = await fetch(
           `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/estimate-draft?estimateId=${estimateId}`,
           {
@@ -89,14 +94,31 @@ export function useEstimateAutoSave({
 
         if (response.ok) {
           const serverDraft = await response.json();
-          setDraftInfo({
-            draftId: serverDraft.draftId,
-            version: serverDraft.version,
-            updatedAt: serverDraft.updatedAt,
-            payload: serverDraft.payload,
-          });
-          currentVersionRef.current = serverDraft.version;
-          setIsRestorePromptVisible(true);
+          const draftUpdatedAt = new Date(serverDraft.updatedAt).getTime();
+          
+          // Only show restore prompt if draft is newer than the saved estimate
+          if (draftUpdatedAt > estimateUpdatedAt) {
+            setDraftInfo({
+              draftId: serverDraft.draftId,
+              version: serverDraft.version,
+              updatedAt: serverDraft.updatedAt,
+              payload: serverDraft.payload,
+            });
+            currentVersionRef.current = serverDraft.version;
+            setIsRestorePromptVisible(true);
+          } else {
+            // Draft is stale, delete it silently
+            await fetch(
+              `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/estimate-draft?estimateId=${estimateId}`,
+              {
+                method: 'DELETE',
+                headers: {
+                  'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+                  'Content-Type': 'application/json',
+                },
+              }
+            );
+          }
           return;
         }
 
@@ -106,13 +128,21 @@ export function useEstimateAutoSave({
         if (localData) {
           try {
             const parsed = JSON.parse(localData);
-            setDraftInfo({
-              draftId: 'local',
-              version: 0,
-              updatedAt: parsed.timestamp,
-              payload: parsed.payload,
-            });
-            setIsRestorePromptVisible(true);
+            const localDraftTime = new Date(parsed.timestamp).getTime();
+            
+            // Only show if local draft is newer than saved estimate
+            if (localDraftTime > estimateUpdatedAt) {
+              setDraftInfo({
+                draftId: 'local',
+                version: 0,
+                updatedAt: parsed.timestamp,
+                payload: parsed.payload,
+              });
+              setIsRestorePromptVisible(true);
+            } else {
+              // Stale local draft, remove it
+              localStorage.removeItem(localKey);
+            }
           } catch (e) {
             localStorage.removeItem(localKey);
           }
