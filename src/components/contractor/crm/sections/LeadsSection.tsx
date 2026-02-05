@@ -294,7 +294,14 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
               <Upload className="h-4 w-4" />
               <span className="hidden sm:inline">Import CSV</span>
             </Button>
-            <AddLeadDialog onAdd={addLead} sources={sources} />
+            <AddLeadDialog 
+              onAdd={addLead} 
+              sources={sources}
+              onLeadCreated={(lead) => {
+                setSelectedLeadForDetail(lead);
+                setDetailViewOpen(true);
+              }}
+            />
           </div>
         </div>
 

@@ -13,9 +13,10 @@ import { VoiceInputField } from '@/components/ui/voice-input-field';
 interface AddLeadDialogProps {
   onAdd: (leadData: Omit<Lead, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => Promise<any>;
   sources: LeadSource[];
+  onLeadCreated?: (lead: Lead) => void;
 }
 
-export function AddLeadDialog({ onAdd, sources }: AddLeadDialogProps) {
+export function AddLeadDialog({ onAdd, sources, onLeadCreated }: AddLeadDialogProps) {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -39,7 +40,7 @@ export function AddLeadDialog({ onAdd, sources }: AddLeadDialogProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await onAdd({
+      const newLead = await onAdd({
         ...formData,
         value: formData.value ? parseFloat(formData.value) : undefined,
         source_id: formData.source_id || undefined,
@@ -62,6 +63,11 @@ export function AddLeadDialog({ onAdd, sources }: AddLeadDialogProps) {
         zip_code: '',
         notes: '',
       });
+      
+      // Navigate to the newly created lead
+      if (newLead && onLeadCreated) {
+        onLeadCreated(newLead);
+      }
     } catch (error) {
       console.error('Error adding lead:', error);
     }
