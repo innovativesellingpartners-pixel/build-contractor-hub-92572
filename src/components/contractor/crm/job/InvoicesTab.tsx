@@ -125,7 +125,7 @@ export default function InvoicesTab({ jobId, customerId }: InvoicesTabProps) {
     return <Badge variant={variants[status]}>{status}</Badge>;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const amount_due = parseMoneyInput(amountDueInput);
     const amount_paid = amountPaidInput.trim() === '' ? 0 : parseMoneyInput(amountPaidInput);
 
@@ -144,13 +144,21 @@ export default function InvoicesTab({ jobId, customerId }: InvoicesTabProps) {
       amount_paid: Number.isFinite(amount_paid) ? amount_paid : 0,
     };
 
-    if (editingInvoice) {
-      updateInvoice({ ...payload, id: editingInvoice.id! });
-    } else {
-      createInvoice(payload);
+    try {
+      if (editingInvoice) {
+        await updateInvoice({ ...payload, id: editingInvoice.id! });
+      } else {
+        const newInvoice = await createInvoice(payload);
+        // Expand the newly created invoice to show it
+        if (newInvoice?.id) {
+          setExpandedWaivers(prev => ({ ...prev, [newInvoice.id!]: true }));
+        }
+      }
+      setIsDialogOpen(false);
+      resetForm();
+    } catch (error) {
+      console.error('Error saving invoice:', error);
     }
-    setIsDialogOpen(false);
-    resetForm();
   };
 
   const resetForm = () => {

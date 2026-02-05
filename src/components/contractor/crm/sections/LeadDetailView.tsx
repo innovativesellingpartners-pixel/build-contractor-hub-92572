@@ -59,10 +59,13 @@ export function LeadDetailView({ lead, onConvertToCustomer, onClose, onSectionCh
         total_amount: lead.value || 0,
       };
 
-      await createEstimateAsync(estimateData);
+      const newEstimate = await createEstimateAsync(estimateData);
       toast.success('Estimate created from lead!');
       
-      if (onSectionChange) {
+      // Navigate directly to the new estimate
+      if (newEstimate?.id && onSectionChange) {
+        window.location.href = `/contractor?section=estimates&estimateId=${newEstimate.id}`;
+      } else if (onSectionChange) {
         onSectionChange('estimates');
       }
     } catch (error: any) {

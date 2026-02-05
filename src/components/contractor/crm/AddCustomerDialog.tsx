@@ -20,7 +20,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { LocationAutocomplete, AddressData } from '@/components/ui/location-autocomplete';
-import { useCustomers } from '@/hooks/useCustomers';
+import { Customer, useCustomers } from '@/hooks/useCustomers';
 import { VoiceInputField } from '@/components/ui/voice-input-field';
 import { VoiceTextareaField } from '@/components/ui/voice-textarea-field';
 
@@ -43,9 +43,10 @@ type CustomerFormData = z.infer<typeof customerSchema>;
 interface AddCustomerDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onCustomerCreated?: (customer: Customer) => void;
 }
 
-export default function AddCustomerDialog({ open, onOpenChange }: AddCustomerDialogProps) {
+export default function AddCustomerDialog({ open, onOpenChange, onCustomerCreated }: AddCustomerDialogProps) {
   const { addCustomer } = useCustomers();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showOtherInput, setShowOtherInput] = useState(false);
@@ -84,10 +85,15 @@ export default function AddCustomerDialog({ open, onOpenChange }: AddCustomerDia
         referral_source_other: data.referral_source_other || undefined,
         notes: data.notes || undefined,
       };
-      await addCustomer(customerData);
+      const newCustomer = await addCustomer(customerData);
       form.reset();
       setShowOtherInput(false);
       onOpenChange(false);
+      
+      // Navigate to the newly created customer
+      if (newCustomer && onCustomerCreated) {
+        onCustomerCreated(newCustomer);
+      }
     } catch (error) {
       console.error('Error adding customer:', error);
     } finally {

@@ -116,8 +116,8 @@ export function useInvoices(jobId?: string) {
   return {
     invoices,
     isLoading,
-    createInvoice: createInvoice.mutate,
-    updateInvoice: updateInvoice.mutate,
+    createInvoice: createInvoice.mutateAsync,
+    updateInvoice: updateInvoice.mutateAsync,
     deleteInvoice: deleteInvoice.mutate,
   };
 }

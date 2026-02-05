@@ -109,9 +109,10 @@ export default function CustomersSection({ onSectionChange }: CustomersSectionPr
       toast.success('Job created successfully!', { id: 'convert-customer' });
       setConvertingCustomer(null);
 
-      // Navigate to jobs section if available
-      if (onSectionChange) {
-        setTimeout(() => onSectionChange('jobs'), 500);
+      // Navigate to the newly created job detail view
+      if (newJob && onSectionChange) {
+        // Use URL params to navigate to the specific job
+        window.location.href = `/contractor?section=jobs&jobId=${newJob.id}`;
       }
     } catch (error: any) {
       console.error('Error creating job:', error);
@@ -321,6 +322,10 @@ export default function CustomersSection({ onSectionChange }: CustomersSectionPr
       <AddCustomerDialog 
         open={isAddDialogOpen} 
         onOpenChange={setIsAddDialogOpen}
+        onCustomerCreated={(customer) => {
+          setSelectedCustomer(customer);
+          setDetailViewOpen(true);
+        }}
       />
 
       {/* Convert to Job Dialog */}
