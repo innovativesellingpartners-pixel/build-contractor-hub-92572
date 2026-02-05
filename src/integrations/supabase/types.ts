@@ -1762,6 +1762,10 @@ export type Database = {
           scope_key_deliverables: Json | null
           scope_objective: string | null
           scope_timeline: string | null
+          selected_waiver_amount: number | null
+          selected_waiver_billing_period_end: string | null
+          selected_waiver_retainage: number | null
+          selected_waiver_type: string | null
           sent_at: string | null
           signature_audit_trail_url: string | null
           signed_at: string | null
@@ -1844,6 +1848,10 @@ export type Database = {
           scope_key_deliverables?: Json | null
           scope_objective?: string | null
           scope_timeline?: string | null
+          selected_waiver_amount?: number | null
+          selected_waiver_billing_period_end?: string | null
+          selected_waiver_retainage?: number | null
+          selected_waiver_type?: string | null
           sent_at?: string | null
           signature_audit_trail_url?: string | null
           signed_at?: string | null
@@ -1926,6 +1934,10 @@ export type Database = {
           scope_key_deliverables?: Json | null
           scope_objective?: string | null
           scope_timeline?: string | null
+          selected_waiver_amount?: number | null
+          selected_waiver_billing_period_end?: string | null
+          selected_waiver_retainage?: number | null
+          selected_waiver_type?: string | null
           sent_at?: string | null
           signature_audit_trail_url?: string | null
           signed_at?: string | null

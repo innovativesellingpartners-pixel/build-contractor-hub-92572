@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Plus, FileText, Trash2, ChevronDown, ChevronUp, Download, Printer, FileCheck, Loader2, Send, Mail } from 'lucide-react';
+import { Plus, FileText, Trash2, ChevronDown, ChevronUp, Download, Printer, FileCheck, Loader2, Send, Mail, AlertCircle } from 'lucide-react';
 import { useInvoices, Invoice } from '@/hooks/useInvoices';
 import { useInvoiceWaivers, InvoiceWaiver, WaiverSignatureData } from '@/hooks/useInvoiceWaivers';
 import { useGCContacts } from '@/hooks/useGCContacts';
@@ -17,6 +17,8 @@ import { useContractorProfile } from '@/hooks/useContractorProfile';
 import { useJobs } from '@/hooks/useJobs';
 import { WaiverSelection, SelectedWaiver, WAIVER_TYPES } from '@/components/contractor/crm/WaiverSelection';
 import { WaiverPreview } from '@/components/contractor/crm/WaiverPreview';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 interface InvoicesTabProps {
@@ -64,6 +66,41 @@ export default function InvoicesTab({ jobId, customerId }: InvoicesTabProps) {
   });
   const [amountDueInput, setAmountDueInput] = useState<string>('');
   const [amountPaidInput, setAmountPaidInput] = useState<string>('');
+
+  // Estimate waiver data for auto-attaching to invoices
+  const [estimateWaiver, setEstimateWaiver] = useState<{
+    type: string;
+    amount: number;
+    billingPeriodEnd?: string;
+    retainage?: number;
+  } | null>(null);
+
+  // Load estimate waiver data for this job
+  useEffect(() => {
+    const fetchEstimateWaiver = async () => {
+      if (!jobId) return;
+      
+      const { data, error } = await supabase
+        .from('estimates')
+        .select('selected_waiver_type, selected_waiver_amount, selected_waiver_billing_period_end, selected_waiver_retainage')
+        .eq('job_id', jobId)
+        .not('selected_waiver_type', 'is', null)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+      
+      if (!error && data && data.selected_waiver_type) {
+        setEstimateWaiver({
+          type: data.selected_waiver_type,
+          amount: data.selected_waiver_amount || 0,
+          billingPeriodEnd: data.selected_waiver_billing_period_end,
+          retainage: data.selected_waiver_retainage,
+        });
+      }
+    };
+    
+    fetchEstimateWaiver();
+  }, [jobId]);
 
   // Load waivers for all invoices
   useEffect(() => {
@@ -142,9 +179,18 @@ export default function InvoicesTab({ jobId, customerId }: InvoicesTabProps) {
     setSelectedInvoice(invoice);
     setSelectedGcId(gcContacts[0]?.id || '');
     
-    // Auto-select appropriate waiver type based on invoice status
+    // Use estimate waiver if available, otherwise auto-select based on invoice status
     const defaultWaivers: SelectedWaiver[] = [];
-    if (invoice.status === 'paid') {
+    
+    if (estimateWaiver) {
+      // Pre-populate from estimate waiver configuration
+      defaultWaivers.push({
+        type: estimateWaiver.type as SelectedWaiver['type'],
+        amount: estimateWaiver.amount || invoice.amount_due,
+        billingPeriodEnd: estimateWaiver.billingPeriodEnd || new Date().toISOString().split('T')[0],
+        retainage: estimateWaiver.retainage || 0,
+      });
+    } else if (invoice.status === 'paid') {
       // For paid invoices, suggest unconditional waiver
       defaultWaivers.push({
         type: 'unconditional_progress',
@@ -521,6 +567,20 @@ export default function InvoicesTab({ jobId, customerId }: InvoicesTabProps) {
                 </span>
               </p>
             </div>
+
+            {/* Show estimate waiver notice */}
+            {estimateWaiver && !editingInvoice && (
+              <Alert className="border-emerald-200 bg-emerald-50">
+                <FileCheck className="h-4 w-4 text-emerald-600" />
+                <AlertDescription className="text-emerald-800">
+                  <span className="font-medium">Lien Waiver from Estimate</span>
+                  <p className="text-sm mt-1">
+                    A {estimateWaiver.type?.replace(/_/g, ' ')} waiver for ${estimateWaiver.amount?.toFixed(2) || '0.00'} was configured on the estimate. 
+                    After creating this invoice, use "Attach Waiver" to include it.
+                  </p>
+                </AlertDescription>
+              </Alert>
+            )}
 
             <div className="flex justify-end gap-2">
               <Button
