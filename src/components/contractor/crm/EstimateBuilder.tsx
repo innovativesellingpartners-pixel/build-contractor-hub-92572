@@ -83,6 +83,7 @@ export default function EstimateBuilder({ initialData, onSave, onCancel }: Estim
   const [isDiscarding, setIsDiscarding] = useState(false);
   const [draftRestored, setDraftRestored] = useState(false);
   const initialDataAppliedRef = useRef(false);
+  const hasUserEditedRef = useRef(false);
   
   // Auto-save hook
   const {
@@ -155,6 +156,7 @@ export default function EstimateBuilder({ initialData, onSave, onCancel }: Estim
     if (draftInfo?.payload) {
       setFormData(draftInfo.payload);
       setDraftRestored(true);
+      hasUserEditedRef.current = true;
       toast.success('Draft restored');
     }
     restoreDraft();
@@ -202,7 +204,10 @@ export default function EstimateBuilder({ initialData, onSave, onCancel }: Estim
       initialDataAppliedRef.current = true;
       return;
     }
-    
+
+    // Only auto-save after the user actually edits something
+    if (!hasUserEditedRef.current) return;
+
     // Only trigger auto-save for existing estimates
     if (initialData?.id && !isRestorePromptVisible) {
       triggerSave(formData);
@@ -210,6 +215,7 @@ export default function EstimateBuilder({ initialData, onSave, onCancel }: Estim
   }, [formData, initialData?.id, triggerSave, isRestorePromptVisible]);
 
   const updateFormData = (updates: Partial<EstimateBuilderData>) => {
+    hasUserEditedRef.current = true;
     setFormData(prev => ({ ...prev, ...updates }));
   };
 
