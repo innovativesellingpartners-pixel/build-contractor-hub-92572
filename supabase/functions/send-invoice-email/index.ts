@@ -11,7 +11,7 @@ const corsHeaders = {
 
 interface SendInvoiceRequest {
   invoiceId: string;
-  recipientEmail?: string; // Deprecated, use recipientEmails
+  recipientEmail?: string;
   recipientEmails?: string[];
   recipientName?: string;
   includeWaivers?: boolean;
@@ -19,16 +19,38 @@ interface SendInvoiceRequest {
 }
 
 const WAIVER_TYPE_LABELS: Record<string, string> = {
-  conditional_progress: 'Conditional Waiver - Progress',
-  unconditional_progress: 'Unconditional Waiver - Progress',
-  conditional_final: 'Conditional Waiver - Final',
-  unconditional_final: 'Unconditional Waiver - Final',
+  conditional_progress: 'Conditional Waiver - Progress Payment',
+  unconditional_progress: 'Unconditional Waiver - Progress Payment',
+  conditional_final: 'Conditional Waiver - Final Payment',
+  unconditional_final: 'Unconditional Waiver - Final Payment',
 };
+
+async function fetchWaiverHtmlContent(pdfUrl: string): Promise<string | null> {
+  try {
+    const response = await fetch(pdfUrl);
+    if (!response.ok) {
+      console.error(`Failed to fetch waiver from ${pdfUrl}: ${response.status}`);
+      return null;
+    }
+    return await response.text();
+  } catch (error) {
+    console.error(`Error fetching waiver HTML:`, error);
+    return null;
+  }
+}
+
+function extractWaiverBodyContent(html: string): string {
+  // Extract just the body content for inline display
+  const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+  if (bodyMatch) {
+    return bodyMatch[1];
+  }
+  return html;
+}
 
 const handler = async (req: Request): Promise<Response> => {
   console.log("send-invoice-email function called");
 
-  // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -47,7 +69,6 @@ const handler = async (req: Request): Promise<Response> => {
       waiverAttachmentMode = 'combined'
     }: SendInvoiceRequest = await req.json();
 
-    // Support both single email (legacy) and multiple emails
     const emails: string[] = recipientEmails || (recipientEmail ? [recipientEmail] : []);
 
     if (!invoiceId || emails.length === 0) {
@@ -93,10 +114,11 @@ const handler = async (req: Request): Promise<Response> => {
       .single();
 
     const businessName = profile?.business_name || "CT1 Contractor";
-    const businessEmail = profile?.business_email || "noreply@myct1.com";
 
     // Fetch waivers if requested
     let waivers: any[] = [];
+    let waiverHtmlContents: { waiver: any; html: string }[] = [];
+    
     if (includeWaivers) {
       const { data: waiverData } = await supabase
         .from("invoice_waivers")
@@ -112,6 +134,17 @@ const handler = async (req: Request): Promise<Response> => {
       
       waivers = waiverData || [];
       console.log(`Found ${waivers.length} waivers to include`);
+
+      // Fetch HTML content for each waiver
+      for (const waiver of waivers) {
+        if (waiver.pdf_url) {
+          const htmlContent = await fetchWaiverHtmlContent(waiver.pdf_url);
+          if (htmlContent) {
+            waiverHtmlContents.push({ waiver, html: htmlContent });
+          }
+        }
+      }
+      console.log(`Fetched HTML content for ${waiverHtmlContents.length} waivers`);
     }
 
     // Format line items for email
@@ -141,42 +174,65 @@ const handler = async (req: Request): Promise<Response> => {
         <ul style="margin: 10px 0 0; padding-left: 20px; color: #166534;">
           ${waivers.map(w => `<li style="margin: 5px 0;">${WAIVER_TYPE_LABELS[w.waiver_type] || w.waiver_type} - $${w.amount.toFixed(2)}</li>`).join('')}
         </ul>
-        ${waiverAttachmentMode === 'combined' 
-          ? '<p style="margin: 10px 0 0; font-size: 12px; color: #166534;">Waivers are included in the document below.</p>'
-          : '<p style="margin: 10px 0 0; font-size: 12px; color: #166534;">Each waiver is attached as a separate document.</p>'}
+        <p style="margin: 10px 0 0; font-size: 12px; color: #166534;">
+          ${waiverAttachmentMode === 'combined' 
+            ? 'Waivers are displayed below and attached as files.'
+            : 'Each waiver is attached as a separate file.'}
+        </p>
       </div>
     ` : '';
 
-    // Build combined document if mode is combined
-    let combinedHtml = '';
-    if (includeWaivers && waiverAttachmentMode === 'combined' && waivers.length > 0) {
-      combinedHtml = `
-        <div style="page-break-before: always; margin-top: 40px; padding-top: 20px; border-top: 3px solid #1e3a5f;">
-          <h2 style="color: #1e3a5f; text-align: center; margin-bottom: 30px;">ATTACHED LIEN WAIVERS</h2>
-          ${waivers.map((w, index) => `
-            <div style="margin-bottom: 40px; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px; background: #fafafa;">
-              <h3 style="color: #1e3a5f; margin: 0 0 15px 0; padding-bottom: 10px; border-bottom: 2px solid #d4af37;">
-                ${index + 1}. ${WAIVER_TYPE_LABELS[w.waiver_type] || w.waiver_type}
-              </h3>
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 14px;">
-                <div><strong>Amount:</strong> $${w.amount.toFixed(2)}</div>
-                <div><strong>Retainage:</strong> $${(w.retainage || 0).toFixed(2)}</div>
-                ${w.billing_period_end ? `<div><strong>Through Date:</strong> ${new Date(w.billing_period_end).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div>` : ''}
-                ${w.gc_contacts ? `<div><strong>Sent To:</strong> ${w.gc_contacts.company || ''} ${w.gc_contacts.name ? `(${w.gc_contacts.name})` : ''}</div>` : ''}
+    // Build inline waiver display for the email body (viewable in email)
+    let inlineWaiversHtml = '';
+    if (includeWaivers && waiverHtmlContents.length > 0) {
+      inlineWaiversHtml = `
+        <div style="margin-top: 40px; padding-top: 30px; border-top: 3px solid #1e3a5f;">
+          <h2 style="color: #1e3a5f; text-align: center; margin-bottom: 30px; font-size: 20px;">
+            📄 LIEN WAIVERS
+          </h2>
+          ${waiverHtmlContents.map(({ waiver, html }, index) => {
+            const bodyContent = extractWaiverBodyContent(html);
+            return `
+              <div style="margin-bottom: 40px; padding: 25px; border: 2px solid #1e3a5f; border-radius: 8px; background: #fafafa;">
+                <div style="background: #1e3a5f; color: white; padding: 12px 20px; margin: -25px -25px 20px -25px; border-radius: 6px 6px 0 0;">
+                  <strong style="font-size: 14px;">Waiver ${index + 1}: ${WAIVER_TYPE_LABELS[waiver.waiver_type] || waiver.waiver_type}</strong>
+                </div>
+                <div style="font-size: 12px; margin-bottom: 15px; padding: 10px; background: #fff; border-radius: 4px; border: 1px solid #e0e0e0;">
+                  <table style="width: 100%; font-size: 12px;">
+                    <tr>
+                      <td style="padding: 4px 8px;"><strong>Amount:</strong></td>
+                      <td style="padding: 4px 8px;">$${waiver.amount.toFixed(2)}</td>
+                      <td style="padding: 4px 8px;"><strong>Retainage:</strong></td>
+                      <td style="padding: 4px 8px;">$${(waiver.retainage || 0).toFixed(2)}</td>
+                    </tr>
+                    ${waiver.billing_period_end ? `
+                    <tr>
+                      <td style="padding: 4px 8px;"><strong>Through Date:</strong></td>
+                      <td colspan="3" style="padding: 4px 8px;">${new Date(waiver.billing_period_end).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</td>
+                    </tr>
+                    ` : ''}
+                    ${waiver.gc_contacts ? `
+                    <tr>
+                      <td style="padding: 4px 8px;"><strong>Sent To:</strong></td>
+                      <td colspan="3" style="padding: 4px 8px;">${waiver.gc_contacts.company || ''} ${waiver.gc_contacts.name ? `(${waiver.gc_contacts.name})` : ''}</td>
+                    </tr>
+                    ` : ''}
+                  </table>
+                </div>
+                ${waiver.signer_name ? `
+                  <div style="margin-top: 15px; padding: 10px; background: #e8f5e9; border-radius: 4px; border: 1px solid #a5d6a7;">
+                    <strong style="color: #2e7d32;">✓ Signed by:</strong> ${waiver.signer_name}${waiver.signer_title ? ` (${waiver.signer_title})` : ''}
+                    ${waiver.signed_at ? ` on ${new Date(waiver.signed_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}` : ''}
+                  </div>
+                ` : ''}
+                ${waiver.signature_data ? `
+                  <div style="margin-top: 10px; text-align: center;">
+                    <img src="${waiver.signature_data}" alt="Signature" style="max-height: 60px; border-bottom: 1px solid #000;" />
+                  </div>
+                ` : ''}
               </div>
-              ${w.signer_name ? `
-                <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0;">
-                  <strong>Signed by:</strong> ${w.signer_name}${w.signer_title ? ` (${w.signer_title})` : ''}
-                  ${w.signed_at ? ` on ${new Date(w.signed_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}` : ''}
-                </div>
-              ` : ''}
-              ${w.signature_data ? `
-                <div style="margin-top: 10px;">
-                  <img src="${w.signature_data}" alt="Signature" style="max-height: 60px; border-bottom: 1px solid #000;" />
-                </div>
-              ` : ''}
-            </div>
-          `).join('')}
+            `;
+          }).join('')}
         </div>
       `;
     }
@@ -262,7 +318,7 @@ const handler = async (req: Request): Promise<Response> => {
           </p>
         </div>
 
-        ${combinedHtml}
+        ${inlineWaiversHtml}
         
         <div style="text-align: center; padding: 20px; font-size: 12px; color: #999;">
           <p>This invoice was sent via CT1 Business Suite</p>
@@ -275,24 +331,46 @@ const handler = async (req: Request): Promise<Response> => {
 
     const fromEmail = Deno.env.get("EMAIL_FROM") || "CT1 <noreply@myct1.com>";
     
-    // Build attachments for separate mode
-    const attachments: any[] = [];
-    if (includeWaivers && waiverAttachmentMode === 'separate' && waivers.length > 0) {
-      for (const waiver of waivers) {
-        if (waiver.pdf_url) {
-          // For now, just note in email that waivers are available at URL
-          // Full attachment would require fetching the HTML content
-          console.log(`Waiver ${waiver.id} available at: ${waiver.pdf_url}`);
-        }
+    // Build PDF attachments for waivers
+    const attachments: { filename: string; content: string }[] = [];
+    
+    if (includeWaivers && waiverHtmlContents.length > 0) {
+      for (const { waiver, html } of waiverHtmlContents) {
+        const waiverTypeLabel = WAIVER_TYPE_LABELS[waiver.waiver_type] || waiver.waiver_type;
+        const safeLabel = waiverTypeLabel.replace(/[^a-zA-Z0-9]/g, '_');
+        const filename = `Lien_Waiver_${safeLabel}_${invoice.invoice_number || 'INV'}.html`;
+        
+        // Encode HTML as base64 for attachment
+        const base64Content = btoa(unescape(encodeURIComponent(html)));
+        
+        attachments.push({
+          filename,
+          content: base64Content,
+        });
+        
+        console.log(`Added attachment: ${filename}`);
       }
     }
     
-    const emailResponse = await resend.emails.send({
+    // Prepare email options
+    const emailOptions: any = {
       from: fromEmail,
       to: emails,
       subject: `Invoice ${invoice.invoice_number} from ${businessName}${waivers.length > 0 ? ` (with ${waivers.length} Lien Waiver${waivers.length > 1 ? 's' : ''})` : ''}`,
       html: emailHtml,
-    });
+    };
+
+    // Add attachments if we have any
+    if (attachments.length > 0) {
+      emailOptions.attachments = attachments.map(att => ({
+        filename: att.filename,
+        content: att.content,
+        content_type: 'text/html',
+      }));
+      console.log(`Sending email with ${attachments.length} attachments`);
+    }
+
+    const emailResponse = await resend.emails.send(emailOptions);
 
     console.log("Email sent successfully:", emailResponse);
 
@@ -307,6 +385,7 @@ const handler = async (req: Request): Promise<Response> => {
         success: true, 
         emailResponse,
         waiversIncluded: waivers.length,
+        attachmentsCount: attachments.length,
         attachmentMode: waiverAttachmentMode
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
