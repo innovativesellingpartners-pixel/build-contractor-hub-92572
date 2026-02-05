@@ -27,6 +27,7 @@ export interface Estimate {
   opportunity_id?: string;
   lead_id?: string;
   job_id?: string;
+  gc_contact_id?: string;
   title: string;
   description?: string;
   status: 'draft' | 'sent' | 'accepted' | 'rejected' | 'pending' | 'sold' | 'lost' | 'cancelled';
