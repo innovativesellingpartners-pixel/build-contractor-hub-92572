@@ -544,6 +544,12 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
                 onClose={() => setDetailViewOpen(false)}
                 onSectionChange={onSectionChange}
                 onEdit={() => handleEditFromDetail(selectedLeadForDetail)}
+                onEditLead={(duplicatedLead) => {
+                  // Close detail view and open edit dialog with the duplicated lead
+                  setDetailViewOpen(false);
+                  setSelectedLead(duplicatedLead);
+                  setEditDialogOpen(true);
+                }}
               />
             )}
           </DialogContent>

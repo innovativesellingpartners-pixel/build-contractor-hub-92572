@@ -224,6 +224,57 @@ export const useLeads = () => {
     }
   };
 
+  const duplicateLead = async (leadToDuplicate: Lead): Promise<Lead | undefined> => {
+    if (!user) return;
+
+    try {
+      // Generate new lead number
+      const { data: leadNumber } = await supabase.rpc('generate_lead_number');
+      
+      // Create duplicate with "(Copy)" suffix
+      const duplicateData = {
+        user_id: user.id,
+        lead_number: leadNumber,
+        name: `${leadToDuplicate.name} (Copy)`,
+        email: leadToDuplicate.email,
+        phone: leadToDuplicate.phone,
+        company: leadToDuplicate.company,
+        project_type: leadToDuplicate.project_type,
+        value: leadToDuplicate.value,
+        status: 'new' as const, // Reset status to new
+        source_id: leadToDuplicate.source_id,
+        source_other: leadToDuplicate.source_other,
+        address: leadToDuplicate.address,
+        city: leadToDuplicate.city,
+        state: leadToDuplicate.state,
+        zip_code: leadToDuplicate.zip_code,
+        notes: leadToDuplicate.notes,
+      };
+
+      const { data, error } = await supabase
+        .from('leads')
+        .insert([duplicateData])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setLeads([data as Lead, ...leads]);
+      toast({
+        title: 'Lead duplicated',
+        description: 'Lead has been duplicated successfully',
+      });
+      return data as Lead;
+    } catch (error: any) {
+      toast({
+        title: 'Error duplicating lead',
+        description: error.message,
+        variant: 'destructive',
+      });
+      throw error;
+    }
+  };
+
   return {
     leads,
     sources,
@@ -234,6 +285,7 @@ export const useLeads = () => {
     updateLeadStatus,
     convertToCustomer,
     archiveLead,
+    duplicateLead,
     refreshLeads: fetchLeads,
   };
 };
