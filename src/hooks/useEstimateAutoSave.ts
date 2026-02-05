@@ -164,6 +164,10 @@ export function useEstimateAutoSave({
 
     // Check if data has actually changed
     if (lastSavedDataRef.current && deepEqual(data, lastSavedDataRef.current)) {
+      // If we were showing offline but data hasn't changed and we're online, reset to saved
+      if (status === 'offline' && navigator.onLine) {
+        setStatus('saved');
+      }
       return true;
     }
 
@@ -211,7 +215,13 @@ export function useEstimateAutoSave({
       }
     } catch (error) {
       console.error('Draft save error:', error);
-      setStatus('offline');
+      
+      // Only show offline if actually offline, otherwise show error
+      if (!navigator.onLine) {
+        setStatus('offline');
+      } else {
+        setStatus('error');
+      }
 
       // Save to local storage as fallback
       const localKey = getLocalStorageKey(estimateId, user.id);
@@ -230,7 +240,29 @@ export function useEstimateAutoSave({
         saveDraft(currentDataRef.current);
       }
     }
-  }, [estimateId, user?.id]);
+  }, [estimateId, user?.id, status]);
+
+  // Listen for online/offline events to update status
+  useEffect(() => {
+    const handleOnline = () => {
+      // When coming back online, try to sync any pending data
+      if (status === 'offline' && currentDataRef.current) {
+        saveDraft(currentDataRef.current);
+      }
+    };
+
+    const handleOffline = () => {
+      setStatus('offline');
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [status, saveDraft]);
 
   // Debounced save trigger
   const triggerSave = useCallback((data: EstimateBuilderData) => {
