@@ -159,10 +159,11 @@ export default function LineItemsStep({ data, onChange }: LineItemsStepProps) {
           {/* Desktop Header */}
           <div className="hidden lg:grid lg:grid-cols-12 gap-2 text-xs font-medium text-muted-foreground border-b pb-2 mb-4">
             <div className="col-span-1">#</div>
-            <div className="col-span-4">Description</div>
+            <div className="col-span-2">Category</div>
+            <div className="col-span-3">Description</div>
             <div className="col-span-1">Qty</div>
             <div className="col-span-1">Unit</div>
-            <div className="col-span-2">Unit Price</div>
+            <div className="col-span-1">Unit Price</div>
             <div className="col-span-2">Total</div>
             <div className="col-span-1">Actions</div>
           </div>
@@ -289,7 +290,23 @@ export default function LineItemsStep({ data, onChange }: LineItemsStepProps) {
                     />
                   </div>
                   
-                  <div className="col-span-4">
+                  <div className="col-span-2">
+                    <Select
+                      value={item.category || 'Materials'}
+                      onValueChange={(value) => updateLineItem(index, 'category', value)}
+                    >
+                      <SelectTrigger className="h-9">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {CATEGORIES.map((cat) => (
+                          <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="col-span-3">
                     <Input
                       value={item.description || item.item_description || ''}
                       onChange={(e) => updateLineItem(index, 'description', e.target.value)}
@@ -325,7 +342,7 @@ export default function LineItemsStep({ data, onChange }: LineItemsStepProps) {
                     </Select>
                   </div>
                   
-                  <div className="col-span-2">
+                  <div className="col-span-1">
                     <Input
                       type="number"
                       step="0.01"
