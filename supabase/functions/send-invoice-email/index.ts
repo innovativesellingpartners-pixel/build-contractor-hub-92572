@@ -11,7 +11,8 @@ const corsHeaders = {
 
 interface SendInvoiceRequest {
   invoiceId: string;
-  recipientEmail: string;
+  recipientEmail?: string; // Deprecated, use recipientEmails
+  recipientEmails?: string[];
   recipientName?: string;
   includeWaivers?: boolean;
   waiverAttachmentMode?: 'combined' | 'separate';
@@ -39,21 +40,25 @@ const handler = async (req: Request): Promise<Response> => {
 
     const { 
       invoiceId, 
-      recipientEmail, 
+      recipientEmail,
+      recipientEmails,
       recipientName,
       includeWaivers = false,
       waiverAttachmentMode = 'combined'
     }: SendInvoiceRequest = await req.json();
 
-    if (!invoiceId || !recipientEmail) {
-      console.error("Missing required fields: invoiceId or recipientEmail");
+    // Support both single email (legacy) and multiple emails
+    const emails: string[] = recipientEmails || (recipientEmail ? [recipientEmail] : []);
+
+    if (!invoiceId || emails.length === 0) {
+      console.error("Missing required fields: invoiceId or recipientEmails");
       return new Response(
-        JSON.stringify({ error: "Missing required fields: invoiceId, recipientEmail" }),
+        JSON.stringify({ error: "Missing required fields: invoiceId, recipientEmails" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    console.log(`Fetching invoice ${invoiceId}`);
+    console.log(`Fetching invoice ${invoiceId}, will send to: ${emails.join(', ')}`);
 
     // Fetch invoice with job data
     const { data: invoice, error: invoiceError } = await supabase
@@ -266,7 +271,7 @@ const handler = async (req: Request): Promise<Response> => {
       </html>
     `;
 
-    console.log(`Sending invoice email to ${recipientEmail}`);
+    console.log(`Sending invoice email to ${emails.join(', ')}`);
 
     const fromEmail = Deno.env.get("EMAIL_FROM") || "CT1 <noreply@myct1.com>";
     
@@ -284,7 +289,7 @@ const handler = async (req: Request): Promise<Response> => {
     
     const emailResponse = await resend.emails.send({
       from: fromEmail,
-      to: [recipientEmail],
+      to: emails,
       subject: `Invoice ${invoice.invoice_number} from ${businessName}${waivers.length > 0 ? ` (with ${waivers.length} Lien Waiver${waivers.length > 1 ? 's' : ''})` : ''}`,
       html: emailHtml,
     });

@@ -158,17 +158,20 @@ export function useInvoiceWaivers() {
 
   const sendInvoiceWithWaivers = async (
     invoiceId: string,
-    recipientEmail: string,
+    recipientEmails: string | string[],
     recipientName?: string,
     includeWaivers: boolean = false,
     attachmentMode: 'combined' | 'separate' = 'combined'
   ) => {
     setIsSending(true);
     try {
+      // Normalize to array
+      const emailsArray = Array.isArray(recipientEmails) ? recipientEmails : [recipientEmails];
+      
       const { data, error } = await supabase.functions.invoke('send-invoice-email', {
         body: {
           invoiceId,
-          recipientEmail,
+          recipientEmails: emailsArray,
           recipientName,
           includeWaivers,
           waiverAttachmentMode: attachmentMode,
@@ -178,10 +181,11 @@ export function useInvoiceWaivers() {
       if (error) throw error;
 
       const waiverCount = data?.waiversIncluded || 0;
+      const emailDisplay = emailsArray.join(', ');
       if (includeWaivers && waiverCount > 0) {
-        toast.success(`Invoice sent with ${waiverCount} waiver${waiverCount > 1 ? 's' : ''} to ${recipientEmail}`);
+        toast.success(`Invoice sent with ${waiverCount} waiver${waiverCount > 1 ? 's' : ''} to ${emailDisplay}`);
       } else {
-        toast.success(`Invoice sent to ${recipientEmail}`);
+        toast.success(`Invoice sent to ${emailDisplay}`);
       }
 
       return data;

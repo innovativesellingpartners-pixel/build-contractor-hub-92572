@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
-import { FileText, Send, Download, ArrowLeft, Mail, ExternalLink, Loader2, Eye, Paperclip, Plus, FileCheck, ScrollText, DollarSign, MessageSquare, ZoomIn, ZoomOut } from 'lucide-react';
+import { FileText, Send, Download, ArrowLeft, Mail, ExternalLink, Loader2, Eye, Paperclip, Plus, FileCheck, ScrollText, DollarSign, MessageSquare, ZoomIn, ZoomOut, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -68,11 +68,12 @@ export function InvoiceDetailView({ invoice, onClose, onSectionChange }: Invoice
   const [sending, setSending] = useState(false);
   const [showSendDialog, setShowSendDialog] = useState(false);
   const [sendData, setSendData] = useState({
-    recipientEmail: '',
+    recipientEmails: [] as string[],
     recipientName: '',
     subject: '',
     body: '',
   });
+  const [emailInput, setEmailInput] = useState('');
   // Document selection state for send dialog
   const [documentsToSend, setDocumentsToSend] = useState({
     invoice: true,
@@ -142,8 +143,8 @@ export function InvoiceDetailView({ invoice, onClose, onSectionChange }: Invoice
   }, [invoice]);
 
   const handleSendInvoice = async () => {
-    if (!sendData.recipientEmail) {
-      toast.error('Recipient email is required');
+    if (sendData.recipientEmails.length === 0) {
+      toast.error('At least one recipient email is required');
       return;
     }
 
@@ -153,7 +154,7 @@ export function InvoiceDetailView({ invoice, onClose, onSectionChange }: Invoice
       if (documentsToSend.waivers && attachedWaivers.length > 0) {
         await sendInvoiceWithWaivers(
           invoice.id,
-          sendData.recipientEmail,
+          sendData.recipientEmails,
           sendData.recipientName || customer?.name,
           true, // includeWaivers
           'combined'
@@ -162,12 +163,12 @@ export function InvoiceDetailView({ invoice, onClose, onSectionChange }: Invoice
         const { error } = await supabase.functions.invoke('send-invoice-email', {
           body: {
             invoiceId: invoice.id,
-            recipientEmail: sendData.recipientEmail,
+            recipientEmails: sendData.recipientEmails,
             recipientName: sendData.recipientName || customer?.name,
           }
         });
         if (error) throw error;
-        toast.success(`Invoice sent to ${sendData.recipientEmail}`);
+        toast.success(`Invoice sent to ${sendData.recipientEmails.join(', ')}`);
       }
 
       setShowSendDialog(false);
@@ -254,12 +255,14 @@ export function InvoiceDetailView({ invoice, onClose, onSectionChange }: Invoice
   };
 
   const openSendDialog = () => {
+    const initialEmails = customer?.email ? [customer.email] : [];
     setSendData({
-      recipientEmail: customer?.email || '',
+      recipientEmails: initialEmails,
       recipientName: customer?.name || '',
       subject: `Invoice ${invoice.invoice_number} for ${job?.name || 'your project'}`,
       body: `Please find attached the invoice for your project. Contact us with any questions.`,
     });
+    setEmailInput('');
     // Reset document selection with intelligent defaults
     setDocumentsToSend({
       invoice: true,
@@ -614,16 +617,60 @@ export function InvoiceDetailView({ invoice, onClose, onSectionChange }: Invoice
               </div>
             </div>
 
-            {/* Recipient Info */}
+            {/* Recipient Info - Multiple Emails */}
             <div className="space-y-2">
-              <Label htmlFor="recipientEmail">Recipient Email *</Label>
-              <Input
-                id="recipientEmail"
-                type="email"
-                placeholder="gc@example.com"
-                value={sendData.recipientEmail}
-                onChange={(e) => setSendData(prev => ({ ...prev, recipientEmail: e.target.value }))}
-              />
+              <Label>Recipient Emails *</Label>
+              <div className="flex flex-wrap gap-2 p-2 border rounded-md min-h-[42px] bg-background">
+                {sendData.recipientEmails.map((email, idx) => (
+                  <span 
+                    key={idx} 
+                    className="inline-flex items-center gap-1 px-2 py-1 bg-primary/10 text-primary rounded-md text-sm"
+                  >
+                    {email}
+                    <button
+                      type="button"
+                      onClick={() => setSendData(prev => ({
+                        ...prev,
+                        recipientEmails: prev.recipientEmails.filter((_, i) => i !== idx)
+                      }))}
+                      className="hover:text-destructive"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                ))}
+                <Input
+                  type="email"
+                  placeholder={sendData.recipientEmails.length === 0 ? "Enter email and press Enter" : "Add another email..."}
+                  value={emailInput}
+                  onChange={(e) => setEmailInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ',') {
+                      e.preventDefault();
+                      const email = emailInput.trim().replace(/,/g, '');
+                      if (email && email.includes('@') && !sendData.recipientEmails.includes(email)) {
+                        setSendData(prev => ({
+                          ...prev,
+                          recipientEmails: [...prev.recipientEmails, email]
+                        }));
+                        setEmailInput('');
+                      }
+                    }
+                  }}
+                  onBlur={() => {
+                    const email = emailInput.trim().replace(/,/g, '');
+                    if (email && email.includes('@') && !sendData.recipientEmails.includes(email)) {
+                      setSendData(prev => ({
+                        ...prev,
+                        recipientEmails: [...prev.recipientEmails, email]
+                      }));
+                      setEmailInput('');
+                    }
+                  }}
+                  className="flex-1 min-w-[200px] border-0 shadow-none focus-visible:ring-0 p-0 h-auto"
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">Press Enter or comma to add multiple email addresses</p>
             </div>
 
             <div className="space-y-2">
@@ -641,7 +688,7 @@ export function InvoiceDetailView({ invoice, onClose, onSectionChange }: Invoice
             <Button variant="outline" onClick={() => setShowSendDialog(false)} disabled={sending || waiverSending}>
               Cancel
             </Button>
-            <Button onClick={handleSendInvoice} disabled={sending || waiverSending || !sendData.recipientEmail || !documentsToSend.invoice}>
+            <Button onClick={handleSendInvoice} disabled={sending || waiverSending || sendData.recipientEmails.length === 0 || !documentsToSend.invoice}>
               {sending || waiverSending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
