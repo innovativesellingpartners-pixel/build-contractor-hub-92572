@@ -182,7 +182,7 @@ const handler = async (req: Request): Promise<Response> => {
       </div>
     ` : '';
 
-    // Build inline waiver display for the email body (viewable in email)
+    // Build inline waiver display for the email body - FULL waiver content embedded
     let inlineWaiversHtml = '';
     if (includeWaivers && waiverHtmlContents.length > 0) {
       inlineWaiversHtml = `
@@ -190,46 +190,22 @@ const handler = async (req: Request): Promise<Response> => {
           <h2 style="color: #1e3a5f; text-align: center; margin-bottom: 30px; font-size: 20px;">
             📄 LIEN WAIVERS
           </h2>
+          <p style="text-align: center; color: #666; margin-bottom: 30px; font-size: 14px;">
+            The following lien waiver document(s) are included with this invoice. Full documents are also attached as files.
+          </p>
           ${waiverHtmlContents.map(({ waiver, html }, index) => {
+            // Extract the full body content from the waiver HTML
             const bodyContent = extractWaiverBodyContent(html);
             return `
-              <div style="margin-bottom: 40px; padding: 25px; border: 2px solid #1e3a5f; border-radius: 8px; background: #fafafa;">
-                <div style="background: #1e3a5f; color: white; padding: 12px 20px; margin: -25px -25px 20px -25px; border-radius: 6px 6px 0 0;">
-                  <strong style="font-size: 14px;">Waiver ${index + 1}: ${WAIVER_TYPE_LABELS[waiver.waiver_type] || waiver.waiver_type}</strong>
+              <div style="margin-bottom: 50px; border: 2px solid #1e3a5f; border-radius: 8px; overflow: hidden; background: #fff;">
+                <div style="background: linear-gradient(135deg, #1e3a5f 0%, #2d4a6f 100%); color: white; padding: 15px 25px;">
+                  <strong style="font-size: 16px;">Waiver ${index + 1} of ${waiverHtmlContents.length}: ${WAIVER_TYPE_LABELS[waiver.waiver_type] || waiver.waiver_type}</strong>
                 </div>
-                <div style="font-size: 12px; margin-bottom: 15px; padding: 10px; background: #fff; border-radius: 4px; border: 1px solid #e0e0e0;">
-                  <table style="width: 100%; font-size: 12px;">
-                    <tr>
-                      <td style="padding: 4px 8px;"><strong>Amount:</strong></td>
-                      <td style="padding: 4px 8px;">$${waiver.amount.toFixed(2)}</td>
-                      <td style="padding: 4px 8px;"><strong>Retainage:</strong></td>
-                      <td style="padding: 4px 8px;">$${(waiver.retainage || 0).toFixed(2)}</td>
-                    </tr>
-                    ${waiver.billing_period_end ? `
-                    <tr>
-                      <td style="padding: 4px 8px;"><strong>Through Date:</strong></td>
-                      <td colspan="3" style="padding: 4px 8px;">${new Date(waiver.billing_period_end).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</td>
-                    </tr>
-                    ` : ''}
-                    ${waiver.gc_contacts ? `
-                    <tr>
-                      <td style="padding: 4px 8px;"><strong>Sent To:</strong></td>
-                      <td colspan="3" style="padding: 4px 8px;">${waiver.gc_contacts.company || ''} ${waiver.gc_contacts.name ? `(${waiver.gc_contacts.name})` : ''}</td>
-                    </tr>
-                    ` : ''}
-                  </table>
+                
+                <!-- Full Waiver Document Content -->
+                <div style="padding: 30px; font-family: 'Times New Roman', Times, serif; font-size: 12pt; line-height: 1.6; color: #000;">
+                  ${bodyContent}
                 </div>
-                ${waiver.signer_name ? `
-                  <div style="margin-top: 15px; padding: 10px; background: #e8f5e9; border-radius: 4px; border: 1px solid #a5d6a7;">
-                    <strong style="color: #2e7d32;">✓ Signed by:</strong> ${waiver.signer_name}${waiver.signer_title ? ` (${waiver.signer_title})` : ''}
-                    ${waiver.signed_at ? ` on ${new Date(waiver.signed_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}` : ''}
-                  </div>
-                ` : ''}
-                ${waiver.signature_data ? `
-                  <div style="margin-top: 10px; text-align: center;">
-                    <img src="${waiver.signature_data}" alt="Signature" style="max-height: 60px; border-bottom: 1px solid #000;" />
-                  </div>
-                ` : ''}
               </div>
             `;
           }).join('')}
