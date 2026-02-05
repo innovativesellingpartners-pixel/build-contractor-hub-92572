@@ -12,6 +12,7 @@ import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { PullToRefreshIndicator } from '@/components/ui/pull-to-refresh';
 import { ScheduleMeetingDialog } from '../ScheduleMeetingDialog';
 import { useQueryClient } from '@tanstack/react-query';
+import { AIScopeNotes } from '../AIScopeNotes';
 import {
   BlueBackground,
   SectionHeader,
@@ -36,11 +37,12 @@ export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSecti
   const { estimates, createEstimateAsync } = useEstimates();
   const { customers } = useCustomers();
   const { jobs, refreshJobs } = useJobs();
-  const { refreshLeads, sources } = useLeads();
+  const { refreshLeads, sources, updateLead } = useLeads();
   const { user } = useAuth();
   const [isConverting, setIsConverting] = useState(false);
   const [isCreatingEstimate, setIsCreatingEstimate] = useState(false);
   const [showScheduleDialog, setShowScheduleDialog] = useState(false);
+  const [leadNotes, setLeadNotes] = useState(lead.notes || '');
 
   const { isRefreshing, pullDistance, handlers, containerRef } = usePullToRefresh({
     onRefresh: async () => {
@@ -124,6 +126,8 @@ export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSecti
         status: 'draft' as const,
         total_amount: lead.value || 0,
         referred_by: referredBy,
+        // Transfer walkthrough notes from lead
+        description: leadNotes || lead.notes || undefined,
       };
 
       const newEstimate = await createEstimateAsync(estimateData);
@@ -431,17 +435,26 @@ export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSecti
           )}
         </InfoCard>
 
-        {/* Notes */}
-        {lead.notes && (
-          <>
-            <SectionHeader>NOTES</SectionHeader>
-            <InfoCard className="rounded-none">
-              <div className="p-4">
-                <p className="text-sm text-slate-700 whitespace-pre-wrap">{lead.notes}</p>
-              </div>
-            </InfoCard>
-          </>
-        )}
+        {/* Walkthrough Notes / Recording */}
+        <SectionHeader>WALKTHROUGH NOTES</SectionHeader>
+        <InfoCard className="rounded-none">
+          <div className="p-4">
+            <AIScopeNotes
+              notes={leadNotes}
+              onNotesChange={async (newNotes) => {
+                setLeadNotes(newNotes);
+                // Auto-save notes to lead
+                try {
+                  await updateLead(lead.id, { notes: newNotes });
+                } catch (error) {
+                  console.error('Failed to save notes:', error);
+                }
+              }}
+              placeholder="Record a walk-around or type notes about this lead..."
+              label="Site Notes"
+            />
+          </div>
+        </InfoCard>
         </div>
       </div>
 
