@@ -27,6 +27,7 @@ export interface EstimateBuilderData {
   prepared_by: string;
   referred_by: string;
   trade_type: string;
+  gc_contact_id: string;
   
   // Line Items
   line_items: EstimateLineItem[];
@@ -115,6 +116,7 @@ export default function EstimateBuilder({ initialData, onSave, onCancel }: Estim
       prepared_by: initialData?.prepared_by || user?.user_metadata?.full_name || '',
       referred_by: initialData?.referred_by || '',
       trade_type: initialData?.trade_type || '',
+      gc_contact_id: initialData?.gc_contact_id || '',
       
       line_items: initialData?.line_items?.length > 0 
         ? normalizeLineItems(initialData.line_items) 

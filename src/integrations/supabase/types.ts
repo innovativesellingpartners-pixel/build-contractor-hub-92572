@@ -1736,6 +1736,7 @@ export type Database = {
           email_send_error: string | null
           estimate_number: string | null
           expires_at: string | null
+          gc_contact_id: string | null
           grand_total: number | null
           id: string
           job_id: string | null
@@ -1822,6 +1823,7 @@ export type Database = {
           email_send_error?: string | null
           estimate_number?: string | null
           expires_at?: string | null
+          gc_contact_id?: string | null
           grand_total?: number | null
           id?: string
           job_id?: string | null
@@ -1908,6 +1910,7 @@ export type Database = {
           email_send_error?: string | null
           estimate_number?: string | null
           expires_at?: string | null
+          gc_contact_id?: string | null
           grand_total?: number | null
           id?: string
           job_id?: string | null
@@ -1976,6 +1979,13 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estimates_gc_contact_id_fkey"
+            columns: ["gc_contact_id"]
+            isOneToOne: false
+            referencedRelation: "gc_contacts"
             referencedColumns: ["id"]
           },
           {
