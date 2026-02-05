@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { SearchableSelect } from '@/components/ui/searchable-select';
-import { AddressAutocomplete } from '@/components/ui/address-autocomplete';
+import { LocationAutocomplete, AddressData } from '@/components/ui/location-autocomplete';
 import { Plus } from 'lucide-react';
 import { Lead, LeadSource, OTHER_SOURCE_ID } from '@/hooks/useLeads';
 import { VoiceInputField } from '@/components/ui/voice-input-field';
@@ -193,16 +193,16 @@ export function AddLeadDialog({ onAdd, sources, onLeadCreated }: AddLeadDialogPr
           </div>
           <div className="space-y-2">
             <Label htmlFor="address">Address</Label>
-            <AddressAutocomplete
+            <LocationAutocomplete
               value={formData.address}
               onChange={(value) => setFormData({ ...formData, address: value })}
-              onAddressParsed={(parsed) => {
+              onAddressSelect={(data: AddressData) => {
                 setFormData(prev => ({
                   ...prev,
-                  address: parsed.street,
-                  city: parsed.city,
-                  state: parsed.state,
-                  zip_code: parsed.zipCode,
+                  address: data.address1,
+                  city: data.city,
+                  state: data.state,
+                  zip_code: data.postalCode,
                 }));
               }}
               placeholder="Start typing an address..."
