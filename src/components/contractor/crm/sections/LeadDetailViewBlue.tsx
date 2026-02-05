@@ -207,69 +207,6 @@ export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSecti
         rightContent={<StatusBadge status={lead.status} />}
       />
 
-      {/* Action Buttons - Fixed */}
-      <ActionButtonRow>
-        {onEdit && (
-          <ActionButton 
-            variant="secondary" 
-            onClick={onEdit}
-            className="flex items-center justify-center gap-2"
-          >
-            <Pencil className="w-4 h-4" />
-            EDIT
-          </ActionButton>
-        )}
-        <ActionButton 
-          variant="secondary" 
-          onClick={handleDuplicateLead}
-          disabled={isDuplicating}
-          className="flex items-center justify-center gap-2"
-        >
-          <Copy className="w-4 h-4" />
-          {isDuplicating ? 'DUPLICATING...' : 'DUPLICATE'}
-        </ActionButton>
-        {!isConverted && (
-          <ActionButton 
-            variant="primary" 
-            onClick={handleConvertToJob} 
-            disabled={isConverting}
-            className="flex-1 flex items-center justify-center gap-2"
-          >
-            <Briefcase className="w-4 h-4" />
-            {isConverting ? 'CONVERTING...' : 'CONVERT TO JOB'}
-          </ActionButton>
-        )}
-        {!isConverted && (
-          <ActionButton 
-            variant="secondary" 
-            onClick={handleCreateEstimate}
-            disabled={isCreatingEstimate}
-            className="flex-1 flex items-center justify-center gap-2"
-          >
-            <FileText className="w-4 h-4" />
-            {isCreatingEstimate ? 'CREATING...' : 'CREATE ESTIMATE'}
-          </ActionButton>
-        )}
-      </ActionButtonRow>
-
-      {/* Sales Flow Progress - Fixed */}
-      <div className="bg-white px-4 py-3 border-b border-sky-100 flex-shrink-0">
-        <div className="flex items-center justify-center gap-2 text-xs">
-          <span className="px-3 py-1 bg-sky-500 text-white rounded-full font-semibold">Lead</span>
-          <ArrowRight className="w-4 h-4 text-slate-400" />
-          <span className={`px-3 py-1 rounded-full font-semibold ${linkedJob ? 'bg-sky-500 text-white' : 'bg-slate-200 text-slate-500'}`}>
-            Job
-          </span>
-          <ArrowRight className="w-4 h-4 text-slate-400" />
-          <span className={`px-3 py-1 rounded-full font-semibold ${linkedCustomer ? 'bg-sky-500 text-white' : 'bg-slate-200 text-slate-500'}`}>
-            Customer
-          </span>
-        </div>
-        <p className="text-center text-xs text-slate-500 mt-1">
-          Converting creates both Job and Customer automatically
-        </p>
-      </div>
-
       {/* Scrollable Content - extra bottom padding to clear nav bar */}
       <div 
         ref={containerRef as React.RefObject<HTMLDivElement>}
@@ -284,6 +221,50 @@ export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSecti
             transition: isRefreshing ? 'none' : 'transform 0.2s ease-out'
           }}
         >
+          {/* Action Buttons - Now scrollable */}
+          <ActionButtonRow>
+            {onEdit && (
+              <ActionButton 
+                variant="secondary" 
+                onClick={onEdit}
+                className="flex items-center justify-center gap-2"
+              >
+                <Pencil className="w-4 h-4" />
+                EDIT
+              </ActionButton>
+            )}
+            <ActionButton 
+              variant="secondary" 
+              onClick={handleDuplicateLead}
+              disabled={isDuplicating}
+              className="flex items-center justify-center gap-2"
+            >
+              <Copy className="w-4 h-4" />
+              {isDuplicating ? 'DUPLICATING...' : 'DUPLICATE'}
+            </ActionButton>
+            {!isConverted && (
+              <ActionButton 
+                variant="primary" 
+                onClick={handleConvertToJob} 
+                disabled={isConverting}
+                className="flex-1 flex items-center justify-center gap-2"
+              >
+                <Briefcase className="w-4 h-4" />
+                {isConverting ? 'CONVERTING...' : 'CONVERT TO JOB'}
+              </ActionButton>
+            )}
+            {!isConverted && (
+              <ActionButton 
+                variant="secondary" 
+                onClick={handleCreateEstimate}
+                disabled={isCreatingEstimate}
+                className="flex-1 flex items-center justify-center gap-2"
+              >
+                <FileText className="w-4 h-4" />
+                {isCreatingEstimate ? 'CREATING...' : 'CREATE ESTIMATE'}
+              </ActionButton>
+            )}
+          </ActionButtonRow>
           {/* Converted Status */}
           {isConverted && linkedJob && (
           <>
