@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { Send, Users, Briefcase, Eye, Copy, FileText, Receipt, Save, Download, LayoutTemplate, BookmarkPlus, Camera, MessageSquare, Loader2, CheckCircle, CreditCard, AlertCircle } from 'lucide-react';
+import { Send, Users, Briefcase, Eye, Copy, FileText, Receipt, Save, Download, LayoutTemplate, BookmarkPlus, Camera, MessageSquare, Loader2, CheckCircle, CreditCard, AlertCircle, Pencil } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { EstimatePhotosSection } from '../estimate/EstimatePhotosSection';
@@ -450,11 +450,11 @@ export function EstimateDetailViewBlue({
 
       {/* Action Buttons - Fixed */}
       <ActionButtonRow className="flex-wrap flex-shrink-0">
-        {/* 1. View Estimate (Edit) */}
+        {/* 1. Edit Estimate */}
         {onEdit && (
-          <ActionButton variant="secondary" onClick={onEdit} className="flex items-center gap-2">
-            <Eye className="w-4 h-4" />
-            VIEW ESTIMATE
+          <ActionButton variant="primary" onClick={onEdit} className="flex items-center gap-2">
+            <Pencil className="w-4 h-4" />
+            EDIT ESTIMATE
           </ActionButton>
         )}
         {/* 2. Send Estimate */}
