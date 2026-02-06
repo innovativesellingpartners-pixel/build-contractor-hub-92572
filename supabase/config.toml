@@ -140,3 +140,9 @@ verify_jwt = false
 
 [functions.send-estimate-sms]
 verify_jwt = true
+
+[functions.quickbooks-oauth-init]
+verify_jwt = true
+
+[functions.quickbooks-api]
+verify_jwt = true
