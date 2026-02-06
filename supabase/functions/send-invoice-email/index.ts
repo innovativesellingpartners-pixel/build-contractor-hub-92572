@@ -40,6 +40,15 @@ function formatDate(dateStr: string | null | undefined) {
   });
 }
 
+// Convert hex color to RGB values (0-1 scale for pdf-lib)
+function hexToRgb(hex: string): { r: number; g: number; b: number } {
+  const cleanHex = hex.replace('#', '');
+  const r = parseInt(cleanHex.substring(0, 2), 16) / 255;
+  const g = parseInt(cleanHex.substring(2, 4), 16) / 255;
+  const b = parseInt(cleanHex.substring(4, 6), 16) / 255;
+  return { r, g, b };
+}
+
 async function fetchWaiverHtmlContent(pdfUrl: string): Promise<string | null> {
   try {
     const response = await fetch(pdfUrl);
@@ -62,7 +71,38 @@ function extractWaiverBodyContent(html: string): string {
   return html;
 }
 
-// Generate a simple invoice PDF inline
+// Fetch and embed logo into PDF
+async function embedLogo(pdfDoc: PDFDocument, logoUrl: string | null): Promise<{ image: any; width: number; height: number } | null> {
+  if (!logoUrl) return null;
+  
+  try {
+    const response = await fetch(logoUrl);
+    if (!response.ok) return null;
+    
+    const imageBytes = await response.arrayBuffer();
+    const uint8Array = new Uint8Array(imageBytes);
+    
+    let image;
+    if (logoUrl.toLowerCase().includes('.png')) {
+      image = await pdfDoc.embedPng(uint8Array);
+    } else {
+      image = await pdfDoc.embedJpg(uint8Array);
+    }
+    
+    // Scale logo to max height of 40px while maintaining aspect ratio
+    const maxHeight = 40;
+    const scale = maxHeight / image.height;
+    const width = image.width * scale;
+    const height = maxHeight;
+    
+    return { image, width, height };
+  } catch (error) {
+    console.error('Error embedding logo:', error);
+    return null;
+  }
+}
+
+// Generate a branded invoice PDF
 async function generateInvoicePdfBytes(invoice: any, profile: any, customer: any, job: any): Promise<Uint8Array> {
   const pdfDoc = await PDFDocument.create();
   const page = pdfDoc.addPage([612, 792]);
@@ -71,8 +111,20 @@ async function generateInvoicePdfBytes(invoice: any, profile: any, customer: any
   const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
   const fontReg = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
-  const primaryNavy = rgb(0.086, 0.118, 0.173);
-  const accentGold = rgb(0.835, 0.624, 0.278);
+  // Use contractor's brand colors or defaults
+  const primaryColor = profile?.brand_primary_color 
+    ? hexToRgb(profile.brand_primary_color) 
+    : { r: 0.086, g: 0.118, b: 0.173 }; // Default navy
+  const secondaryColor = profile?.brand_secondary_color 
+    ? hexToRgb(profile.brand_secondary_color) 
+    : { r: 0.835, g: 0.624, b: 0.278 }; // Default gold
+  const accentColor = profile?.brand_accent_color 
+    ? hexToRgb(profile.brand_accent_color) 
+    : { r: 1, g: 1, b: 1 }; // Default white
+
+  const primaryRgb = rgb(primaryColor.r, primaryColor.g, primaryColor.b);
+  const secondaryRgb = rgb(secondaryColor.r, secondaryColor.g, secondaryColor.b);
+  const accentRgb = rgb(accentColor.r, accentColor.g, accentColor.b);
   const darkText = rgb(0.133, 0.133, 0.133);
   const mediumText = rgb(0.4, 0.4, 0.4);
   const white = rgb(1, 1, 1);
@@ -82,18 +134,31 @@ async function generateInvoicePdfBytes(invoice: any, profile: any, customer: any
 
   const companyName = profile?.business_name || profile?.company_name || "Contractor";
 
-  // Header
+  // Header with brand color
   const headerHeight = 80;
   page.drawRectangle({
     x: 0,
     y: height - headerHeight,
     width: width,
     height: headerHeight,
-    color: primaryNavy,
+    color: primaryRgb,
   });
 
+  // Embed logo if available
+  let logoXOffset = margin;
+  const logoData = await embedLogo(pdfDoc, profile?.logo_url);
+  if (logoData) {
+    page.drawImage(logoData.image, {
+      x: margin,
+      y: height - 15 - logoData.height,
+      width: logoData.width,
+      height: logoData.height,
+    });
+    logoXOffset = margin + logoData.width + 15;
+  }
+
   page.drawText(companyName.toUpperCase(), {
-    x: margin,
+    x: logoXOffset,
     y: height - 35,
     size: 18,
     font: fontBold,
@@ -103,7 +168,7 @@ async function generateInvoicePdfBytes(invoice: any, profile: any, customer: any
   if (profile?.business_phone || profile?.business_email) {
     const contactLine = [profile.business_phone, profile.business_email].filter(Boolean).join("  •  ");
     page.drawText(contactLine, {
-      x: margin,
+      x: logoXOffset,
       y: height - 55,
       size: 9,
       font: fontReg,
@@ -111,20 +176,20 @@ async function generateInvoicePdfBytes(invoice: any, profile: any, customer: any
     });
   }
 
-  // Invoice badge
+  // Invoice badge with secondary color
   page.drawRectangle({
     x: width - margin - 100,
     y: height - 50,
     width: 100,
     height: 28,
-    color: accentGold,
+    color: secondaryRgb,
   });
   page.drawText("INVOICE", {
     x: width - margin - 78,
     y: height - 42,
     size: 12,
     font: fontBold,
-    color: primaryNavy,
+    color: primaryRgb,
   });
 
   cursorY = height - headerHeight - 30;
@@ -166,9 +231,9 @@ async function generateInvoicePdfBytes(invoice: any, profile: any, customer: any
   });
   cursorY -= 30;
 
-  // Bill To
+  // Bill To with secondary color label
   if (customer) {
-    page.drawText("BILL TO:", { x: margin, y: cursorY, size: 9, font: fontBold, color: accentGold });
+    page.drawText("BILL TO:", { x: margin, y: cursorY, size: 9, font: fontBold, color: secondaryRgb });
     cursorY -= 16;
     if (customer.name) {
       page.drawText(customer.name, { x: margin, y: cursorY, size: 11, font: fontBold, color: darkText });
@@ -185,9 +250,9 @@ async function generateInvoicePdfBytes(invoice: any, profile: any, customer: any
     cursorY -= 10;
   }
 
-  // Job details
+  // Job details with secondary color label
   if (job) {
-    page.drawText("JOB:", { x: margin, y: cursorY, size: 9, font: fontBold, color: accentGold });
+    page.drawText("JOB:", { x: margin, y: cursorY, size: 9, font: fontBold, color: secondaryRgb });
     cursorY -= 16;
     if (job.name) {
       page.drawText(job.name.substring(0, 50), { x: margin, y: cursorY, size: 10, font: fontBold, color: darkText });
@@ -203,7 +268,7 @@ async function generateInvoicePdfBytes(invoice: any, profile: any, customer: any
   // Line items
   const lineItems = (invoice.line_items as any[]) || [];
   if (lineItems.length > 0) {
-    page.drawText("LINE ITEMS", { x: margin, y: cursorY, size: 10, font: fontBold, color: primaryNavy });
+    page.drawText("LINE ITEMS", { x: margin, y: cursorY, size: 10, font: fontBold, color: primaryRgb });
     cursorY -= 20;
 
     // Header row
@@ -230,17 +295,17 @@ async function generateInvoicePdfBytes(invoice: any, profile: any, customer: any
     cursorY -= 10;
   }
 
-  // Totals
+  // Totals with brand colors
   page.drawLine({
     start: { x: margin, y: cursorY },
     end: { x: width - margin, y: cursorY },
     thickness: 1,
-    color: primaryNavy,
+    color: primaryRgb,
   });
   cursorY -= 25;
 
   page.drawText("Amount Due:", { x: 380, y: cursorY, size: 10, font: fontReg, color: mediumText });
-  page.drawText(formatCurrency(invoice.amount_due), { x: 480, y: cursorY, size: 12, font: fontBold, color: primaryNavy });
+  page.drawText(formatCurrency(invoice.amount_due), { x: 480, y: cursorY, size: 12, font: fontBold, color: primaryRgb });
   cursorY -= 18;
 
   if (invoice.amount_paid > 0) {
@@ -249,8 +314,8 @@ async function generateInvoicePdfBytes(invoice: any, profile: any, customer: any
     cursorY -= 18;
 
     const balance = (invoice.amount_due || 0) - (invoice.amount_paid || 0);
-    page.drawText("Balance Due:", { x: 380, y: cursorY, size: 10, font: fontBold, color: primaryNavy });
-    page.drawText(formatCurrency(balance), { x: 480, y: cursorY, size: 12, font: fontBold, color: accentGold });
+    page.drawText("Balance Due:", { x: 380, y: cursorY, size: 10, font: fontBold, color: primaryRgb });
+    page.drawText(formatCurrency(balance), { x: 480, y: cursorY, size: 12, font: fontBold, color: secondaryRgb });
   }
 
   // Footer
@@ -265,8 +330,8 @@ async function generateInvoicePdfBytes(invoice: any, profile: any, customer: any
   return await pdfDoc.save();
 }
 
-// Generate waiver PDF from HTML content
-async function generateWaiverPdfBytes(waiver: any, html: string, invoiceNumber: string): Promise<Uint8Array> {
+// Generate waiver PDF with signature from database
+async function generateWaiverPdfBytes(waiver: any, html: string, invoiceNumber: string, profile: any): Promise<Uint8Array> {
   const pdfDoc = await PDFDocument.create();
   const page = pdfDoc.addPage([612, 792]);
   const { height, width } = page.getSize();
@@ -274,8 +339,16 @@ async function generateWaiverPdfBytes(waiver: any, html: string, invoiceNumber: 
   const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
   const fontReg = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
-  const primaryNavy = rgb(0.086, 0.118, 0.173);
-  const accentGold = rgb(0.835, 0.624, 0.278);
+  // Use contractor's brand colors or defaults
+  const primaryColor = profile?.brand_primary_color 
+    ? hexToRgb(profile.brand_primary_color) 
+    : { r: 0.086, g: 0.118, b: 0.173 };
+  const secondaryColor = profile?.brand_secondary_color 
+    ? hexToRgb(profile.brand_secondary_color) 
+    : { r: 0.835, g: 0.624, b: 0.278 };
+
+  const primaryRgb = rgb(primaryColor.r, primaryColor.g, primaryColor.b);
+  const secondaryRgb = rgb(secondaryColor.r, secondaryColor.g, secondaryColor.b);
   const darkText = rgb(0.133, 0.133, 0.133);
   const mediumText = rgb(0.4, 0.4, 0.4);
   const white = rgb(1, 1, 1);
@@ -285,18 +358,31 @@ async function generateWaiverPdfBytes(waiver: any, html: string, invoiceNumber: 
 
   const waiverTitle = WAIVER_TYPE_LABELS[waiver.waiver_type] || waiver.waiver_type;
 
-  // Header
+  // Header with brand color
   const headerHeight = 60;
   page.drawRectangle({
     x: 0,
     y: height - headerHeight,
     width: width,
     height: headerHeight,
-    color: primaryNavy,
+    color: primaryRgb,
   });
 
+  // Embed logo if available
+  let logoXOffset = margin;
+  const logoData = await embedLogo(pdfDoc, profile?.logo_url);
+  if (logoData) {
+    page.drawImage(logoData.image, {
+      x: margin,
+      y: height - 10 - logoData.height,
+      width: logoData.width,
+      height: logoData.height,
+    });
+    logoXOffset = margin + logoData.width + 15;
+  }
+
   page.drawText("LIEN WAIVER", {
-    x: margin,
+    x: logoXOffset,
     y: height - 35,
     size: 16,
     font: fontBold,
@@ -304,11 +390,11 @@ async function generateWaiverPdfBytes(waiver: any, html: string, invoiceNumber: 
   });
 
   page.drawText(waiverTitle.toUpperCase(), {
-    x: margin,
+    x: logoXOffset,
     y: height - 52,
     size: 10,
     font: fontReg,
-    color: accentGold,
+    color: secondaryRgb,
   });
 
   cursorY = height - headerHeight - 30;
@@ -355,29 +441,84 @@ async function generateWaiverPdfBytes(waiver: any, html: string, invoiceNumber: 
       cursorY -= 14;
       line = word + ' ';
 
-      if (cursorY < 100) break;
+      if (cursorY < 150) break;
     } else {
       line = testLine;
     }
   }
   
-  if (line && cursorY >= 100) {
+  if (line && cursorY >= 150) {
     page.drawText(line.trim(), { x: margin, y: cursorY, size: fontSize, font: fontReg, color: darkText });
     cursorY -= 20;
   }
 
-  // Signature section
-  if (waiver.signer_name) {
-    cursorY -= 20;
-    page.drawText("SIGNED BY:", { x: margin, y: cursorY, size: 9, font: fontBold, color: primaryNavy });
+  // Signature section - embed actual signature from database
+  cursorY = Math.min(cursorY, 180); // Reserve space for signature
+  
+  if (waiver.signature_data) {
+    // Embed the signature image
+    try {
+      const signatureDataUrl = waiver.signature_data;
+      if (signatureDataUrl.startsWith('data:image')) {
+        const base64Data = signatureDataUrl.split(',')[1];
+        const signatureBytes = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+        
+        let signatureImage;
+        if (signatureDataUrl.includes('image/png')) {
+          signatureImage = await pdfDoc.embedPng(signatureBytes);
+        } else {
+          signatureImage = await pdfDoc.embedJpg(signatureBytes);
+        }
+        
+        // Scale signature to fit
+        const maxSigHeight = 50;
+        const maxSigWidth = 200;
+        const scale = Math.min(maxSigHeight / signatureImage.height, maxSigWidth / signatureImage.width);
+        const sigWidth = signatureImage.width * scale;
+        const sigHeight = signatureImage.height * scale;
+        
+        page.drawText("SIGNED BY:", { x: margin, y: cursorY, size: 9, font: fontBold, color: primaryRgb });
+        cursorY -= 10;
+        
+        // Draw signature image
+        page.drawImage(signatureImage, {
+          x: margin,
+          y: cursorY - sigHeight,
+          width: sigWidth,
+          height: sigHeight,
+        });
+        cursorY -= sigHeight + 10;
+        
+        // Draw line under signature
+        page.drawLine({
+          start: { x: margin, y: cursorY },
+          end: { x: margin + 200, y: cursorY },
+          thickness: 0.5,
+          color: darkText,
+        });
+        cursorY -= 12;
+      }
+    } catch (error) {
+      console.error('Error embedding signature:', error);
+      // Fall back to text-based signature section
+      page.drawText("SIGNED BY:", { x: margin, y: cursorY, size: 9, font: fontBold, color: primaryRgb });
+      cursorY -= 16;
+    }
+  } else {
+    page.drawText("SIGNED BY:", { x: margin, y: cursorY, size: 9, font: fontBold, color: primaryRgb });
     cursorY -= 16;
+  }
+
+  // Signer name and info
+  if (waiver.signer_name) {
     page.drawText(waiver.signer_name + (waiver.signer_title ? ` (${waiver.signer_title})` : ''), { 
       x: margin, y: cursorY, size: 10, font: fontReg, color: darkText 
     });
     cursorY -= 14;
-    if (waiver.signed_at) {
-      page.drawText(`Date: ${formatDate(waiver.signed_at)}`, { x: margin, y: cursorY, size: 9, font: fontReg, color: mediumText });
-    }
+  }
+  
+  if (waiver.signed_at) {
+    page.drawText(`Date Signed: ${formatDate(waiver.signed_at)}`, { x: margin, y: cursorY, size: 9, font: fontReg, color: mediumText });
   }
 
   // Footer
@@ -461,16 +602,20 @@ const handler = async (req: Request): Promise<Response> => {
       customer = data;
     }
 
-    // Fetch contractor profile for branding
+    // Fetch contractor profile for branding - INCLUDING brand colors and logo
     const { data: profile } = await supabase
       .from("profiles")
-      .select("business_name, company_name, business_email, business_phone, business_address, logo_url")
+      .select("business_name, company_name, business_email, business_phone, business_address, logo_url, brand_primary_color, brand_secondary_color, brand_accent_color")
       .eq("id", invoice.user_id)
       .single();
 
     const businessName = profile?.business_name || profile?.company_name || "CT1 Contractor";
 
-    // Fetch waivers if requested
+    // Get brand colors for email template
+    const emailPrimaryColor = profile?.brand_primary_color || '#1e3a5f';
+    const emailSecondaryColor = profile?.brand_secondary_color || '#d4af37';
+
+    // Fetch waivers with signature data if requested
     let waivers: any[] = [];
     let waiverHtmlContents: { waiver: any; html: string }[] = [];
     
@@ -501,17 +646,17 @@ const handler = async (req: Request): Promise<Response> => {
       console.log(`Fetched HTML content for ${waiverHtmlContents.length} waivers`);
     }
 
-    // Generate Invoice PDF
-    console.log("Generating invoice PDF...");
+    // Generate Invoice PDF with branding
+    console.log("Generating branded invoice PDF...");
     const invoicePdfBytes = await generateInvoicePdfBytes(invoice, profile, customer, invoice.jobs);
     const invoicePdfBase64 = btoa(String.fromCharCode(...invoicePdfBytes));
     console.log(`Invoice PDF generated: ${invoicePdfBytes.length} bytes`);
 
-    // Generate Waiver PDFs
+    // Generate Waiver PDFs with branding and signatures
     const waiverPdfs: { waiver: any; pdfBase64: string; filename: string }[] = [];
     for (const { waiver, html } of waiverHtmlContents) {
-      console.log(`Generating PDF for waiver ${waiver.id}...`);
-      const waiverPdfBytes = await generateWaiverPdfBytes(waiver, html, invoice.invoice_number || 'INV');
+      console.log(`Generating branded PDF for waiver ${waiver.id}, has signature: ${!!waiver.signature_data}`);
+      const waiverPdfBytes = await generateWaiverPdfBytes(waiver, html, invoice.invoice_number || 'INV', profile);
       const waiverPdfBase64 = btoa(String.fromCharCode(...waiverPdfBytes));
       
       const waiverTypeLabel = WAIVER_TYPE_LABELS[waiver.waiver_type] || waiver.waiver_type;
@@ -564,8 +709,8 @@ const handler = async (req: Request): Promise<Response> => {
     let inlineWaiversHtml = '';
     if (includeWaivers && waiverHtmlContents.length > 0) {
       inlineWaiversHtml = `
-        <div style="margin-top: 40px; padding-top: 30px; border-top: 3px solid #1e3a5f;">
-          <h2 style="color: #1e3a5f; text-align: center; margin-bottom: 30px; font-size: 20px;">
+        <div style="margin-top: 40px; padding-top: 30px; border-top: 3px solid ${emailPrimaryColor};">
+          <h2 style="color: ${emailPrimaryColor}; text-align: center; margin-bottom: 30px; font-size: 20px;">
             📄 LIEN WAIVERS
           </h2>
           <p style="text-align: center; color: #666; margin-bottom: 30px; font-size: 14px;">
@@ -574,8 +719,8 @@ const handler = async (req: Request): Promise<Response> => {
           ${waiverHtmlContents.map(({ waiver, html }, index) => {
             const bodyContent = extractWaiverBodyContent(html);
             return `
-              <div style="margin-bottom: 50px; border: 2px solid #1e3a5f; border-radius: 8px; overflow: hidden; background: #fff;">
-                <div style="background: linear-gradient(135deg, #1e3a5f 0%, #2d4a6f 100%); color: white; padding: 15px 25px;">
+              <div style="margin-bottom: 50px; border: 2px solid ${emailPrimaryColor}; border-radius: 8px; overflow: hidden; background: #fff;">
+                <div style="background: ${emailPrimaryColor}; color: white; padding: 15px 25px;">
                   <strong style="font-size: 16px;">Waiver ${index + 1} of ${waiverHtmlContents.length}: ${WAIVER_TYPE_LABELS[waiver.waiver_type] || waiver.waiver_type}</strong>
                 </div>
                 
@@ -583,6 +728,14 @@ const handler = async (req: Request): Promise<Response> => {
                 <div style="padding: 30px; font-family: 'Times New Roman', Times, serif; font-size: 12pt; line-height: 1.6; color: #000;">
                   ${bodyContent}
                 </div>
+                
+                ${waiver.signature_data ? `
+                  <div style="padding: 20px 30px; border-top: 1px solid #eee; background: #fafafa;">
+                    <strong style="color: ${emailPrimaryColor};">Signed by:</strong> ${waiver.signer_name || 'N/A'}
+                    ${waiver.signer_title ? ` (${waiver.signer_title})` : ''}
+                    ${waiver.signed_at ? ` on ${formatDate(waiver.signed_at)}` : ''}
+                  </div>
+                ` : ''}
               </div>
             `;
           }).join('')}
@@ -590,17 +743,29 @@ const handler = async (req: Request): Promise<Response> => {
       `;
     }
 
+    // Build logo HTML for email header
+    const logoHtml = profile?.logo_url 
+      ? `<img src="${profile.logo_url}" alt="${businessName}" style="max-height: 50px; margin-right: 15px; vertical-align: middle;" />`
+      : '';
+
     const emailHtml = `
       <!DOCTYPE html>
       <html>
       <head>
         <meta charset="utf-8">
-        <title>Invoice ${invoice.invoice_number}</title>
+        <title>Invoice # ${invoice.invoice_number}</title>
       </head>
       <body style="font-family: Arial, sans-serif; max-width: 700px; margin: 0 auto; padding: 20px; color: #333;">
-        <div style="background: linear-gradient(135deg, #1e3a5f 0%, #2d4a6f 100%); padding: 30px; border-radius: 8px 8px 0 0;">
-          <h1 style="color: #d4af37; margin: 0; font-size: 28px;">${businessName}</h1>
-          <p style="color: #fff; margin: 10px 0 0; font-size: 14px;">Invoice ${invoice.invoice_number}</p>
+        <div style="background: ${emailPrimaryColor}; padding: 30px; border-radius: 8px 8px 0 0;">
+          <table cellpadding="0" cellspacing="0" border="0" width="100%">
+            <tr>
+              <td style="vertical-align: middle;">
+                ${logoHtml}
+                <span style="color: white; font-size: 28px; font-weight: bold; vertical-align: middle;">${businessName}</span>
+              </td>
+            </tr>
+          </table>
+          <p style="color: #fff; margin: 10px 0 0; font-size: 14px;">Invoice # ${invoice.invoice_number}</p>
         </div>
         
         <div style="background: #f9f9f9; padding: 30px; border: 1px solid #e0e0e0; border-top: none;">
@@ -613,7 +778,7 @@ const handler = async (req: Request): Promise<Response> => {
           </p>
 
           ${invoice.jobs ? `
-            <div style="background: #fff; padding: 15px; border-radius: 4px; margin-bottom: 20px; border-left: 4px solid #d4af37;">
+            <div style="background: #fff; padding: 15px; border-radius: 4px; margin-bottom: 20px; border-left: 4px solid ${emailSecondaryColor};">
               <strong>Job:</strong> ${invoice.jobs.name || 'N/A'}<br/>
               ${invoice.jobs.job_number ? `<strong>Job #:</strong> ${invoice.jobs.job_number}<br/>` : ''}
               ${jobAddress ? `<strong>Location:</strong> ${jobAddress}` : ''}
@@ -622,7 +787,7 @@ const handler = async (req: Request): Promise<Response> => {
           
           <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; background: #fff;">
             <thead>
-              <tr style="background: #1e3a5f; color: #fff;">
+              <tr style="background: ${emailPrimaryColor}; color: #fff;">
                 <th style="padding: 12px; text-align: left;">Description</th>
                 <th style="padding: 12px; text-align: center;">Qty</th>
                 <th style="padding: 12px; text-align: right;">Amount</th>
@@ -633,9 +798,9 @@ const handler = async (req: Request): Promise<Response> => {
             </tbody>
           </table>
           
-          <div style="background: #1e3a5f; color: #fff; padding: 20px; border-radius: 4px; text-align: right;">
+          <div style="background: ${emailPrimaryColor}; color: #fff; padding: 20px; border-radius: 4px; text-align: right;">
             <div style="font-size: 14px; margin-bottom: 5px;">Amount Due</div>
-            <div style="font-size: 28px; font-weight: bold; color: #d4af37;">
+            <div style="font-size: 28px; font-weight: bold; color: ${emailSecondaryColor};">
               $${(invoice.amount_due || 0).toFixed(2)}
             </div>
             ${invoice.amount_paid > 0 ? `
@@ -648,7 +813,7 @@ const handler = async (req: Request): Promise<Response> => {
           ${invoice.stripe_payment_link ? `
             <div style="text-align: center; margin-top: 25px;">
               <a href="${invoice.stripe_payment_link}" 
-                 style="display: inline-block; background: #d4af37; color: #1e3a5f; padding: 15px 40px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 16px;">
+                 style="display: inline-block; background: ${emailSecondaryColor}; color: ${emailPrimaryColor}; padding: 15px 40px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 16px;">
                 Pay Now
               </a>
             </div>
@@ -707,7 +872,7 @@ const handler = async (req: Request): Promise<Response> => {
     const emailResponse = await resend.emails.send({
       from: fromEmail,
       to: emails,
-      subject: `Invoice ${invoice.invoice_number} from ${businessName}${waivers.length > 0 ? ` (with ${waivers.length} Lien Waiver${waivers.length > 1 ? 's' : ''})` : ''}`,
+      subject: `Invoice # ${invoice.invoice_number} from ${businessName}${waivers.length > 0 ? ` (with ${waivers.length} Lien Waiver${waivers.length > 1 ? 's' : ''})` : ''}`,
       html: emailHtml,
       attachments: attachments,
     });
