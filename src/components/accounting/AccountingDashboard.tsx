@@ -16,7 +16,6 @@ export function AccountingDashboard() {
       const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
       const now = new Date().toISOString();
 
-      // Fetch income this month
       const { data: payments } = await supabase
         .from('payments')
         .select('amount')
@@ -26,7 +25,6 @@ export function AccountingDashboard() {
 
       const incomeThisMonth = payments?.reduce((sum, p) => sum + Number(p.amount), 0) || 0;
 
-      // Fetch expenses this month
       const { data: expenses } = await supabase
         .from('plaid_transactions')
         .select('amount')
@@ -37,7 +35,6 @@ export function AccountingDashboard() {
 
       const expensesThisMonth = expenses?.reduce((sum, e) => sum + Math.abs(Number(e.amount)), 0) || 0;
 
-      // Fetch outstanding invoices
       const { data: invoices } = await supabase
         .from('invoices')
         .select('balance_due')
@@ -46,7 +43,6 @@ export function AccountingDashboard() {
 
       const outstandingInvoices = invoices?.reduce((sum, i) => sum + Number(i.balance_due || 0), 0) || 0;
 
-      // Fetch cash balance from bank accounts
       const { data: bankAccounts } = await supabase
         .from('bank_account_links')
         .select('*')
@@ -54,7 +50,7 @@ export function AccountingDashboard() {
         .eq('status', 'active');
 
       return {
-        cashBalance: 0, // We'll update this with real Plaid balance sync
+        cashBalance: 0,
         incomeThisMonth,
         expensesThisMonth,
         profitThisMonth: incomeThisMonth - expensesThisMonth,
@@ -65,45 +61,50 @@ export function AccountingDashboard() {
     enabled: !!user?.id
   });
 
-  // Fetch recent transactions
   const { data: recentTransactions } = useQuery({
     queryKey: ['recent-transactions', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
-
       const { data } = await supabase
         .from('plaid_transactions')
         .select('*')
         .eq('contractor_id', user.id)
         .order('transaction_date', { ascending: false })
         .limit(5);
-
       return data || [];
     },
     enabled: !!user?.id
   });
 
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+    }).format(value);
+  };
+
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <Skeleton className="h-32 w-full" />
-        <Skeleton className="h-32 w-full" />
-        <Skeleton className="h-32 w-full" />
+      <div className="space-y-4">
+        <Skeleton className="h-24 w-full" />
+        <Skeleton className="h-24 w-full" />
+        <Skeleton className="h-24 w-full" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Top Stats */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="space-y-4 md:space-y-6">
+      {/* Metric Cards - single column on mobile, grid on desktop */}
+      <div className="grid gap-3 md:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Cash Balance</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${stats?.cashBalance.toFixed(2) || '0.00'}</div>
+            <div className="text-2xl font-bold tabular-nums">{formatCurrency(stats?.cashBalance || 0)}</div>
             <p className="text-xs text-muted-foreground">
               {stats?.bankAccountsLinked || 0} bank {stats?.bankAccountsLinked === 1 ? 'account' : 'accounts'} linked
             </p>
@@ -116,8 +117,8 @@ export function AccountingDashboard() {
             <TrendingUp className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              ${stats?.incomeThisMonth.toFixed(2) || '0.00'}
+            <div className="text-2xl font-bold tabular-nums text-green-600">
+              {formatCurrency(stats?.incomeThisMonth || 0)}
             </div>
             <p className="text-xs text-muted-foreground">From payments received</p>
           </CardContent>
@@ -129,8 +130,8 @@ export function AccountingDashboard() {
             <TrendingDown className="h-4 w-4 text-red-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">
-              ${stats?.expensesThisMonth.toFixed(2) || '0.00'}
+            <div className="text-2xl font-bold tabular-nums text-red-600">
+              {formatCurrency(stats?.expensesThisMonth || 0)}
             </div>
             <p className="text-xs text-muted-foreground">From transactions</p>
           </CardContent>
@@ -142,26 +143,26 @@ export function AccountingDashboard() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${(stats?.profitThisMonth || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              ${stats?.profitThisMonth.toFixed(2) || '0.00'}
+            <div className={`text-2xl font-bold tabular-nums ${(stats?.profitThisMonth || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              {formatCurrency(stats?.profitThisMonth || 0)}
             </div>
             <p className="text-xs text-muted-foreground">Income minus expenses</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Outstanding Invoices & Recent Transactions */}
-      <div className="grid gap-4 md:grid-cols-2">
+      {/* Outstanding Invoices & Recent Transactions - single column on mobile */}
+      <div className="grid gap-3 md:gap-4 grid-cols-1 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-base md:text-lg">
               <FileText className="h-5 w-5" />
               Outstanding Invoices
             </CardTitle>
             <CardDescription>Unpaid and overdue invoices</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">${stats?.outstandingInvoices.toFixed(2) || '0.00'}</div>
+            <div className="text-2xl md:text-3xl font-bold tabular-nums">{formatCurrency(stats?.outstandingInvoices || 0)}</div>
             <p className="text-sm text-muted-foreground mt-2">
               Total amount waiting to be paid
             </p>
@@ -170,7 +171,7 @@ export function AccountingDashboard() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-base md:text-lg">
               <CreditCard className="h-5 w-5" />
               Recent Transactions
             </CardTitle>
@@ -178,16 +179,16 @@ export function AccountingDashboard() {
           </CardHeader>
           <CardContent>
             {recentTransactions && recentTransactions.length > 0 ? (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {recentTransactions.slice(0, 3).map((txn) => (
-                  <div key={txn.id} className="flex justify-between items-center text-sm">
-                    <div>
-                      <p className="font-medium">{txn.vendor || txn.description || 'Transaction'}</p>
+                  <div key={txn.id} className="flex justify-between items-center text-sm min-h-[44px]">
+                    <div className="min-w-0 flex-1 mr-3">
+                      <p className="font-medium truncate">{txn.vendor || txn.description || 'Transaction'}</p>
                       <p className="text-xs text-muted-foreground">
                         {new Date(txn.transaction_date).toLocaleDateString()}
                       </p>
                     </div>
-                    <p className={`font-semibold ${Number(txn.amount) < 0 ? 'text-red-600' : 'text-green-600'}`}>
+                    <p className={`font-semibold tabular-nums flex-shrink-0 ${Number(txn.amount) < 0 ? 'text-red-600' : 'text-green-600'}`}>
                       {Number(txn.amount) < 0 ? '-' : ''}${Math.abs(Number(txn.amount)).toFixed(2)}
                     </p>
                   </div>
