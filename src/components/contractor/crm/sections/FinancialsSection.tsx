@@ -128,31 +128,20 @@ export default function FinancialsSection({ onSectionChange }: FinancialsSection
   }
 
   return (
-    <div className="p-6 space-y-6 bg-background">
+    <div className="p-4 md:p-6 space-y-4 md:space-y-6 bg-background pb-24 md:pb-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold">Financials</h1>
+          <h1 className="text-2xl md:text-3xl font-bold">Financials</h1>
           <p className="text-sm text-muted-foreground">QuickBooks invoice overview</p>
         </div>
-      </div>
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <DollarSign className="h-8 w-8 text-primary" />
-          <div>
-            <h2 className="text-2xl font-bold">Financials</h2>
-            <p className="text-sm text-muted-foreground">
-              View and manage your QuickBooks invoices
-            </p>
-          </div>
-        </div>
-        <Button onClick={checkConnectionAndLoadInvoices} variant="outline">
+        <Button onClick={checkConnectionAndLoadInvoices} variant="outline" size="sm">
           Refresh
         </Button>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>QuickBooks Invoices</CardTitle>
+          <CardTitle className="text-base md:text-lg">QuickBooks Invoices</CardTitle>
           <CardDescription>
             {invoices.length > 0 
               ? `Showing ${invoices.length} invoice${invoices.length !== 1 ? 's' : ''}`
@@ -162,41 +151,71 @@ export default function FinancialsSection({ onSectionChange }: FinancialsSection
         </CardHeader>
         <CardContent>
           {invoices.length > 0 ? (
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Invoice #</TableHead>
-                    <TableHead>Customer</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Due Date</TableHead>
-                    <TableHead className="text-right">Total</TableHead>
-                    <TableHead className="text-right">Balance</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {invoices.map((invoice) => (
-                    <TableRow key={invoice.invoiceId}>
-                      <TableCell className="font-medium">{invoice.docNumber}</TableCell>
-                      <TableCell>{invoice.customerName}</TableCell>
-                      <TableCell>{formatDate(invoice.invoiceDate)}</TableCell>
-                      <TableCell>{formatDate(invoice.dueDate)}</TableCell>
-                      <TableCell className="text-right">{formatCurrency(invoice.totalAmount)}</TableCell>
-                      <TableCell className="text-right">{formatCurrency(invoice.balance)}</TableCell>
-                      <TableCell>
-                        <Badge variant={invoice.status === 'Paid' ? 'default' : 'secondary'}>
+            <>
+              {/* Desktop table */}
+              <div className="hidden md:block rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Invoice #</TableHead>
+                      <TableHead>Customer</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Due Date</TableHead>
+                      <TableHead className="text-right">Total</TableHead>
+                      <TableHead className="text-right">Balance</TableHead>
+                      <TableHead>Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {invoices.map((invoice) => (
+                      <TableRow key={invoice.invoiceId}>
+                        <TableCell className="font-medium">{invoice.docNumber}</TableCell>
+                        <TableCell>{invoice.customerName}</TableCell>
+                        <TableCell>{formatDate(invoice.invoiceDate)}</TableCell>
+                        <TableCell>{formatDate(invoice.dueDate)}</TableCell>
+                        <TableCell className="text-right tabular-nums">{formatCurrency(invoice.totalAmount)}</TableCell>
+                        <TableCell className="text-right tabular-nums">{formatCurrency(invoice.balance)}</TableCell>
+                        <TableCell>
+                          <Badge variant={invoice.status === 'Paid' ? 'default' : 'secondary'}>
+                            {invoice.status}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Mobile list rows */}
+              <div className="md:hidden divide-y">
+                {invoices.map((invoice) => (
+                  <div key={invoice.invoiceId} className="py-3 first:pt-0 last:pb-0 min-h-[56px]">
+                    <div className="flex justify-between items-start gap-2">
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-sm truncate">{invoice.customerName}</p>
+                        <p className="text-xs text-muted-foreground">
+                          #{invoice.docNumber} · {formatDate(invoice.invoiceDate)}
+                        </p>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <p className="font-semibold text-sm tabular-nums">{formatCurrency(invoice.totalAmount)}</p>
+                        <Badge variant={invoice.status === 'Paid' ? 'default' : 'secondary'} className="text-xs mt-1">
                           {invoice.status}
                         </Badge>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                      </div>
+                    </div>
+                    {invoice.balance > 0 && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Balance: <span className="tabular-nums">{formatCurrency(invoice.balance)}</span>
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </>
           ) : (
-            <div className="text-center py-12 text-muted-foreground">
-              <DollarSign className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <div className="text-center py-10 md:py-12 text-muted-foreground">
+              <DollarSign className="h-10 w-10 md:h-12 md:w-12 mx-auto mb-3 md:mb-4 opacity-50" />
               <p>No invoices found in QuickBooks</p>
             </div>
           )}

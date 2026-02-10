@@ -27,14 +27,10 @@ export function BankingView() {
   const { open: openPlaid } = usePlaidLink({
     onSuccess: async (publicToken: string, metadata: any) => {
       try {
-        // Exchange public token for access token
         const { error } = await supabase.functions.invoke('plaid-exchange-token', {
           body: { public_token: publicToken, metadata }
         });
-
         if (error) throw error;
-
-        // Refresh bank accounts
         window.location.reload();
       } catch (error) {
         console.error('Failed to link bank account:', error);
@@ -42,7 +38,6 @@ export function BankingView() {
     }
   });
 
-  // Check QuickBooks connection status
   useEffect(() => {
     const checkQBConnection = async () => {
       if (!user?.id) return;
@@ -55,7 +50,6 @@ export function BankingView() {
     };
     checkQBConnection();
 
-    // Handle OAuth callback
     if (searchParams.get('qb_connected') === 'true') {
       toast({
         title: "QuickBooks Connected!",
@@ -76,25 +70,15 @@ export function BankingView() {
     try {
       setQbLoading(true);
       const { data, error } = await supabase.functions.invoke('quickbooks-connect');
-      
       if (error) {
-        toast({
-          variant: "destructive",
-          title: "Connection Failed",
-          description: error.message || "Failed to initiate QuickBooks connection",
-        });
+        toast({ variant: "destructive", title: "Connection Failed", description: error.message || "Failed to initiate QuickBooks connection" });
         return;
       }
-      
       if (data?.authUrl) {
         window.location.href = data.authUrl;
       }
     } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Connection Failed",
-        description: error.message || "Failed to connect to QuickBooks",
-      });
+      toast({ variant: "destructive", title: "Connection Failed", description: error.message || "Failed to connect to QuickBooks" });
     } finally {
       setQbLoading(false);
     }
@@ -104,13 +88,11 @@ export function BankingView() {
     queryKey: ['bank-accounts', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
-
       const { data } = await supabase
         .from('bank_account_links')
         .select('*')
         .eq('user_id', user.id)
         .eq('status', 'active');
-
       return data || [];
     },
     enabled: !!user?.id
@@ -120,52 +102,50 @@ export function BankingView() {
     queryKey: ['plaid-transactions', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
-
       const { data } = await supabase
         .from('plaid_transactions')
         .select('*, job:jobs(name)')
         .eq('contractor_id', user.id)
         .order('transaction_date', { ascending: false })
         .limit(50);
-
       return data || [];
     },
     enabled: !!user?.id
   });
 
   const handleSyncTransactions = async () => {
-    // Call Plaid sync endpoint
     console.log('Syncing transactions...');
   };
 
   if (loadingAccounts) {
     return (
       <div className="space-y-4">
-        <Skeleton className="h-32 w-full" />
-        <Skeleton className="h-32 w-full" />
+        <Skeleton className="h-24 w-full" />
+        <Skeleton className="h-24 w-full" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-4 md:space-y-6">
+      {/* Header - stacks vertically on mobile */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Banking</h2>
-          <p className="text-muted-foreground">
+          <h2 className="text-xl md:text-2xl font-bold tracking-tight">Banking</h2>
+          <p className="text-sm text-muted-foreground">
             Manage bank accounts and transactions
           </p>
         </div>
         <div className="flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                <LinkIcon className="h-4 w-4 mr-2" />
-                Financial Connections
-                <ChevronDown className="h-4 w-4 ml-2" />
+              <Button variant="outline" size="sm" className="text-xs sm:text-sm">
+                <LinkIcon className="h-4 w-4 mr-1 sm:mr-2" />
+                <span className="hidden xs:inline">Financial </span>Connections
+                <ChevronDown className="h-4 w-4 ml-1 sm:ml-2" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 bg-popover">
+            <DropdownMenuContent align="end" className="w-56 bg-popover z-50">
               <DropdownMenuItem onClick={openPlaid}>
                 <Building2 className="h-4 w-4 mr-2" />
                 Link Bank Account
@@ -186,39 +166,39 @@ export function BankingView() {
             </DropdownMenuContent>
           </DropdownMenu>
           <Button variant="outline" size="sm" onClick={handleSyncTransactions}>
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Sync
+            <RefreshCw className="h-4 w-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Sync</span>
           </Button>
         </div>
       </div>
 
       {/* Bank Accounts */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Linked Accounts</h3>
+      <div className="space-y-3">
+        <h3 className="text-base md:text-lg font-semibold">Linked Accounts</h3>
         {bankAccounts && bankAccounts.length > 0 ? (
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-3 md:gap-4 grid-cols-1 md:grid-cols-2">
             {bankAccounts.map((account: any) => (
               <Card key={account.id}>
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-primary/10 rounded-lg">
+                <CardHeader className="p-4 md:p-6">
+                  <div className="flex justify-between items-start gap-2">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="p-2 bg-primary/10 rounded-lg flex-shrink-0">
                         <Building2 className="h-5 w-5 text-primary" />
                       </div>
-                      <div>
-                        <CardTitle className="text-base">
+                      <div className="min-w-0">
+                        <CardTitle className="text-sm md:text-base truncate">
                           {account.plaid_institution_name || 'Bank Account'}
                         </CardTitle>
-                        <CardDescription>
+                        <CardDescription className="text-xs">
                           Connected {new Date(account.created_at).toLocaleDateString()}
                         </CardDescription>
                       </div>
                     </div>
-                    <Badge variant="default">Active</Badge>
+                    <Badge variant="default" className="flex-shrink-0">Active</Badge>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <div className="text-sm text-muted-foreground">
+                <CardContent className="px-4 pb-4 md:px-6 md:pb-6 pt-0">
+                  <div className="text-xs text-muted-foreground">
                     Last synced: {new Date(account.updated_at).toLocaleString()}
                   </div>
                 </CardContent>
@@ -227,13 +207,13 @@ export function BankingView() {
           </div>
         ) : (
           <Card>
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <Building2 className="h-12 w-12 text-muted-foreground mb-4" />
-              <p className="text-lg font-semibold mb-2">No bank accounts linked</p>
-              <p className="text-sm text-muted-foreground mb-4">
+            <CardContent className="flex flex-col items-center justify-center py-10 md:py-12">
+              <Building2 className="h-10 w-10 md:h-12 md:w-12 text-muted-foreground mb-3 md:mb-4" />
+              <p className="text-base md:text-lg font-semibold mb-2">No bank accounts linked</p>
+              <p className="text-sm text-muted-foreground mb-4 text-center px-4">
                 Link your bank account to automatically sync transactions
               </p>
-              <Button onClick={openPlaid}>
+              <Button onClick={openPlaid} className="min-h-[44px]">
                 <Plus className="h-4 w-4 mr-2" />
                 Link Bank Account
               </Button>
@@ -242,41 +222,43 @@ export function BankingView() {
         )}
       </div>
 
-      {/* Transactions */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Recent Transactions</h3>
+      {/* Transactions - mobile-friendly list rows */}
+      <div className="space-y-3">
+        <h3 className="text-base md:text-lg font-semibold">Recent Transactions</h3>
         {loadingTransactions ? (
-          <Skeleton className="h-64 w-full" />
+          <Skeleton className="h-48 w-full" />
         ) : transactions && transactions.length > 0 ? (
           <Card>
             <CardContent className="p-0">
               <div className="divide-y">
                 {transactions.map((txn: any) => (
-                  <div key={txn.id} className="p-4 hover:bg-muted/50 transition-colors">
-                    <div className="flex justify-between items-start">
-                      <div className="flex items-start gap-3">
-                        <div className={`p-2 rounded-lg ${Number(txn.amount) < 0 ? 'bg-red-100' : 'bg-green-100'}`}>
+                  <div key={txn.id} className="p-3 md:p-4 hover:bg-muted/50 transition-colors min-h-[56px]">
+                    <div className="flex justify-between items-start gap-3">
+                      <div className="flex items-start gap-3 min-w-0 flex-1">
+                        <div className={`p-1.5 md:p-2 rounded-lg flex-shrink-0 ${Number(txn.amount) < 0 ? 'bg-red-100 dark:bg-red-900/30' : 'bg-green-100 dark:bg-green-900/30'}`}>
                           {Number(txn.amount) < 0 ? (
                             <TrendingDown className="h-4 w-4 text-red-600" />
                           ) : (
                             <TrendingUp className="h-4 w-4 text-green-600" />
                           )}
                         </div>
-                        <div className="space-y-1">
-                          <p className="font-medium">{txn.vendor || txn.description || 'Transaction'}</p>
-                          <p className="text-sm text-muted-foreground">
+                        <div className="min-w-0 space-y-1">
+                          <p className="font-medium text-sm truncate">{txn.vendor || txn.description || 'Transaction'}</p>
+                          <p className="text-xs text-muted-foreground">
                             {new Date(txn.transaction_date).toLocaleDateString()}
                           </p>
-                          {txn.category && (
-                            <Badge variant="outline" className="text-xs">{txn.category}</Badge>
-                          )}
-                          {txn.job && (
-                            <Badge variant="secondary" className="text-xs ml-2">{txn.job.name}</Badge>
-                          )}
+                          <div className="flex flex-wrap gap-1">
+                            {txn.category && (
+                              <Badge variant="outline" className="text-xs">{txn.category}</Badge>
+                            )}
+                            {txn.job && (
+                              <Badge variant="secondary" className="text-xs">{txn.job.name}</Badge>
+                            )}
+                          </div>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className={`text-lg font-semibold ${Number(txn.amount) < 0 ? 'text-red-600' : 'text-green-600'}`}>
+                      <div className="text-right flex-shrink-0">
+                        <p className={`text-sm md:text-base font-semibold tabular-nums ${Number(txn.amount) < 0 ? 'text-red-600' : 'text-green-600'}`}>
                           {Number(txn.amount) < 0 ? '-' : ''}${Math.abs(Number(txn.amount)).toFixed(2)}
                         </p>
                         {txn.is_reimbursable && (
@@ -285,7 +267,7 @@ export function BankingView() {
                       </div>
                     </div>
                     {txn.notes && (
-                      <p className="text-sm text-muted-foreground mt-2 ml-11">{txn.notes}</p>
+                      <p className="text-xs text-muted-foreground mt-2 ml-9 md:ml-11">{txn.notes}</p>
                     )}
                   </div>
                 ))}
@@ -294,10 +276,10 @@ export function BankingView() {
           </Card>
         ) : (
           <Card>
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <DollarSign className="h-12 w-12 text-muted-foreground mb-4" />
-              <p className="text-lg font-semibold mb-2">No transactions yet</p>
-              <p className="text-sm text-muted-foreground">
+            <CardContent className="flex flex-col items-center justify-center py-10 md:py-12">
+              <DollarSign className="h-10 w-10 md:h-12 md:w-12 text-muted-foreground mb-3 md:mb-4" />
+              <p className="text-base md:text-lg font-semibold mb-2">No transactions yet</p>
+              <p className="text-sm text-muted-foreground text-center px-4">
                 Link a bank account to see your transactions
               </p>
             </CardContent>
