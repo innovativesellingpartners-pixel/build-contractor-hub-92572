@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Building2, Plus, RefreshCw, DollarSign, TrendingDown, TrendingUp, Link as LinkIcon, CheckCircle, Loader2, ChevronDown, CreditCard, FileText } from "lucide-react";
+import { Building2, Plus, RefreshCw, DollarSign, TrendingDown, TrendingUp, Link as LinkIcon, CheckCircle, Loader2, ChevronDown, CreditCard, FileText, Unlink } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -103,6 +103,23 @@ export function BankingView() {
       toast({ variant: "destructive", title: "Connection Failed", description: error.message || "Failed to connect to Stripe" });
     } finally {
       setStripeLoading(false);
+    }
+  };
+
+  const handleDisconnectQuickBooks = async () => {
+    try {
+      setQbLoading(true);
+      const { error } = await supabase.functions.invoke('quickbooks-disconnect');
+      if (error) {
+        toast({ variant: "destructive", title: "Disconnect Failed", description: error.message || "Failed to disconnect QuickBooks" });
+        return;
+      }
+      setQbConnected(false);
+      toast({ title: "Disconnected", description: "QuickBooks has been disconnected." });
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Disconnect Failed", description: error.message || "Failed to disconnect QuickBooks" });
+    } finally {
+      setQbLoading(false);
     }
   };
 
@@ -214,7 +231,21 @@ export function BankingView() {
                 )}
                 {qbConnected ? "QuickBooks Connected" : "Connect QuickBooks"}
               </DropdownMenuItem>
-              <DropdownMenuItem 
+              {qbConnected && (
+                <DropdownMenuItem 
+                  onClick={handleDisconnectQuickBooks}
+                  disabled={qbLoading}
+                  className="text-destructive focus:text-destructive"
+                >
+                  {qbLoading ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Unlink className="h-4 w-4 mr-2" />
+                  )}
+                  Disconnect QuickBooks
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem
                 onClick={stripeConnected ? undefined : handleConnectStripe}
                 disabled={stripeConnected || stripeLoading}
               >
