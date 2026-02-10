@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Building2, Plus, RefreshCw, DollarSign, TrendingDown, TrendingUp, Link as LinkIcon, CheckCircle, Loader2 } from "lucide-react";
+import { Building2, Plus, RefreshCw, DollarSign, TrendingDown, TrendingUp, Link as LinkIcon, CheckCircle, Loader2, ChevronDown } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -10,6 +10,12 @@ import { Badge } from "@/components/ui/badge";
 import { usePlaidLink } from "@/hooks/usePlaidLink";
 import { useToast } from "@/hooks/use-toast";
 import { useSearchParams } from "react-router-dom";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export function BankingView() {
   const { user } = useAuth();
@@ -143,56 +149,6 @@ export function BankingView() {
 
   return (
     <div className="space-y-6">
-      {/* Primary Actions - Link Bank & Connect QuickBooks */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Card className="border-2 border-dashed hover:border-primary/50 transition-colors">
-          <CardContent className="flex flex-col items-center justify-center p-6 text-center">
-            <div className="p-3 bg-primary/10 rounded-full mb-3">
-              <Building2 className="h-6 w-6 text-primary" />
-            </div>
-            <h3 className="font-semibold mb-1">Link Bank Account</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Connect your bank to sync transactions
-            </p>
-            <Button onClick={openPlaid} className="w-full">
-              <Plus className="h-4 w-4 mr-2" />
-              Link Bank Account
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card className="border-2 border-dashed hover:border-primary/50 transition-colors">
-          <CardContent className="flex flex-col items-center justify-center p-6 text-center">
-            <div className="p-3 bg-green-100 rounded-full mb-3">
-              <LinkIcon className="h-6 w-6 text-green-600" />
-            </div>
-            <h3 className="font-semibold mb-1">Connect QuickBooks</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Sync invoices and financial data
-            </p>
-            {qbConnected ? (
-              <Button variant="outline" className="w-full" disabled>
-                <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
-                Connected
-              </Button>
-            ) : (
-              <Button 
-                onClick={handleConnectQuickBooks} 
-                className="w-full bg-green-600 hover:bg-green-700"
-                disabled={qbLoading}
-              >
-                {qbLoading ? (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                ) : (
-                  <LinkIcon className="h-4 w-4 mr-2" />
-                )}
-                Connect QuickBooks
-              </Button>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Banking</h2>
@@ -200,10 +156,40 @@ export function BankingView() {
             Manage bank accounts and transactions
           </p>
         </div>
-        <Button variant="outline" onClick={handleSyncTransactions}>
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Sync
-        </Button>
+        <div className="flex items-center gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm">
+                <LinkIcon className="h-4 w-4 mr-2" />
+                Financial Connections
+                <ChevronDown className="h-4 w-4 ml-2" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 bg-popover">
+              <DropdownMenuItem onClick={openPlaid}>
+                <Building2 className="h-4 w-4 mr-2" />
+                Link Bank Account
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={qbConnected ? undefined : handleConnectQuickBooks}
+                disabled={qbConnected || qbLoading}
+              >
+                {qbLoading ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : qbConnected ? (
+                  <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
+                ) : (
+                  <LinkIcon className="h-4 w-4 mr-2" />
+                )}
+                {qbConnected ? "QuickBooks Connected" : "Connect QuickBooks"}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Button variant="outline" size="sm" onClick={handleSyncTransactions}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Sync
+          </Button>
+        </div>
       </div>
 
       {/* Bank Accounts */}
