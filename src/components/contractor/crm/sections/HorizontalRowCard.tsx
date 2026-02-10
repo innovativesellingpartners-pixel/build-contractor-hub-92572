@@ -102,7 +102,7 @@ interface RowAmountProps {
 export function RowAmount({ amount, label, badge, className }: RowAmountProps) {
   return (
     <div className={cn('text-right flex-shrink-0', className)}>
-      <p className="text-sm font-bold text-primary whitespace-nowrap">
+      <p className="text-sm font-bold text-primary whitespace-nowrap tabular-nums">
         ${amount?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
       </p>
       {label && <p className="text-xs text-muted-foreground whitespace-nowrap">{label}</p>}
