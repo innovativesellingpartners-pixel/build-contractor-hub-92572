@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -148,6 +149,15 @@ export const AdminSettings = () => {
                   </div>
                   <Switch defaultChecked />
                 </div>
+              </div>
+
+
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Platform Theme</Label>
+                <p className="text-xs text-muted-foreground mb-2">
+                  Set the default display mode for the platform
+                </p>
+                <ThemeToggle />
               </div>
 
               <Button onClick={() => handleSave('General')}>Save General Settings</Button>

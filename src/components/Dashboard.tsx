@@ -48,7 +48,7 @@ import { ProfileEditDialog } from "@/components/contractor/ProfileEditDialog";
 import { StarRating } from "@/components/contractor/StarRating";
 import { FloatingPocketbot } from "@/components/contractor/FloatingPocketbot";
 import { ContactSupport } from "@/components/ContactSupport";
-import { ThemeToggle } from "@/components/ThemeToggle";
+
 import { BottomNav } from "@/components/contractor/crm/BottomNav";
 import { BackNavigation } from "@/components/contractor/crm/BackNavigation";
 import ct1Logo from "@/assets/ct1-round-logo-new.png";
@@ -651,18 +651,6 @@ export function Dashboard() {
                   </div>
                 </div>
 
-                {/* Display Settings Card */}
-                <div className="bg-gradient-to-br from-card to-muted/20 border border-border/50 rounded-xl shadow-md overflow-hidden">
-                  <div className="bg-primary/5 px-6 py-4 border-b border-border/50">
-                    <h3 className="text-lg font-semibold flex items-center gap-2">
-                      <User className="h-5 w-5 text-primary" />
-                      Display Settings
-                    </h3>
-                  </div>
-                  <div className="p-6">
-                    <ThemeToggle />
-                  </div>
-                </div>
 
                 {/* Subscription Card */}
                 <div className="bg-gradient-to-br from-card to-muted/20 border border-border/50 rounded-xl shadow-md overflow-hidden">
