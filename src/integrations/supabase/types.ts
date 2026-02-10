@@ -1450,7 +1450,10 @@ export type Database = {
           id: string
           paid_at: string | null
           payment_intent: string | null
+          payment_provider: string
           status: string | null
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
         }
         Insert: {
           amount: number
@@ -1462,7 +1465,10 @@ export type Database = {
           id?: string
           paid_at?: string | null
           payment_intent?: string | null
+          payment_provider?: string
           status?: string | null
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
         }
         Update: {
           amount?: number
@@ -1474,7 +1480,10 @@ export type Database = {
           id?: string
           paid_at?: string | null
           payment_intent?: string | null
+          payment_provider?: string
           status?: string | null
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
         }
         Relationships: [
           {
@@ -2638,7 +2647,10 @@ export type Database = {
           invoice_id: string
           paid_at: string | null
           payment_intent: string | null
+          payment_provider: string
           status: string | null
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
         }
         Insert: {
           amount: number
@@ -2650,7 +2662,10 @@ export type Database = {
           invoice_id: string
           paid_at?: string | null
           payment_intent?: string | null
+          payment_provider?: string
           status?: string | null
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
         }
         Update: {
           amount?: number
@@ -2662,7 +2677,10 @@ export type Database = {
           invoice_id?: string
           paid_at?: string | null
           payment_intent?: string | null
+          payment_provider?: string
           status?: string | null
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
         }
         Relationships: [
           {
@@ -4053,6 +4071,7 @@ export type Database = {
           id: string
           license_number: string | null
           logo_url: string | null
+          online_payments_enabled: boolean | null
           phone: string | null
           pocketbot_full_access: boolean
           qb_access_token: string | null
@@ -4091,6 +4110,7 @@ export type Database = {
           id: string
           license_number?: string | null
           logo_url?: string | null
+          online_payments_enabled?: boolean | null
           phone?: string | null
           pocketbot_full_access?: boolean
           qb_access_token?: string | null
@@ -4129,6 +4149,7 @@ export type Database = {
           id?: string
           license_number?: string | null
           logo_url?: string | null
+          online_payments_enabled?: boolean | null
           phone?: string | null
           pocketbot_full_access?: boolean
           qb_access_token?: string | null
@@ -4153,37 +4174,37 @@ export type Database = {
       }
       quickbooks_connections: {
         Row: {
-          access_token: string
+          access_token: string | null
           access_token_encrypted: string | null
           created_at: string
           expires_at: string
           id: string
           realm_id: string
-          refresh_token: string
+          refresh_token: string | null
           refresh_token_encrypted: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
-          access_token: string
+          access_token?: string | null
           access_token_encrypted?: string | null
           created_at?: string
           expires_at: string
           id?: string
           realm_id: string
-          refresh_token: string
+          refresh_token?: string | null
           refresh_token_encrypted?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
-          access_token?: string
+          access_token?: string | null
           access_token_encrypted?: string | null
           created_at?: string
           expires_at?: string
           id?: string
           realm_id?: string
-          refresh_token?: string
+          refresh_token?: string | null
           refresh_token_encrypted?: string | null
           updated_at?: string
           user_id?: string
@@ -4326,6 +4347,7 @@ export type Database = {
           onboarding_complete: boolean | null
           payouts_enabled: boolean | null
           stripe_account_id: string
+          stripe_onboarding_completed_at: string | null
           updated_at: string
         }
         Insert: {
@@ -4336,6 +4358,7 @@ export type Database = {
           onboarding_complete?: boolean | null
           payouts_enabled?: boolean | null
           stripe_account_id: string
+          stripe_onboarding_completed_at?: string | null
           updated_at?: string
         }
         Update: {
@@ -4346,6 +4369,7 @@ export type Database = {
           onboarding_complete?: boolean | null
           payouts_enabled?: boolean | null
           stripe_account_id?: string
+          stripe_onboarding_completed_at?: string | null
           updated_at?: string
         }
         Relationships: [
