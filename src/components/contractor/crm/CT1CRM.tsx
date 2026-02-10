@@ -67,7 +67,6 @@ const navItems = [
   { id: 'invoices' as Section, label: 'Invoices', icon: Receipt },
   { id: 'accounting' as Section, label: 'Accounting', icon: DollarSign },
   { id: 'templates' as Section, label: 'Templates', icon: LayoutTemplate },
-  { id: 'payments' as Section, label: 'Payments', icon: CreditCard },
   { id: 'reporting' as Section, label: 'Reporting', icon: BarChart2 },
   { id: 'customers' as Section, label: 'Customers', icon: Users },
   { id: 'gc' as Section, label: 'General Contractors', icon: Building2 },
