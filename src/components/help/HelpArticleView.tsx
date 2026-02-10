@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useHelpArticle, useSubmitFeedback } from '@/hooks/useHelpCenter';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { markdownToHtml } from '@/lib/markdownToHtml';
 
 interface HelpArticleViewProps {
   slug: string;
@@ -220,7 +221,7 @@ export function HelpArticleView({ slug, onBack, onNavigateToArticle, onOpenChat,
                   prose-li:marker:text-primary
                   prose-code:bg-muted prose-code:px-1 prose-code:py-0.5 prose-code:rounded
                   prose-pre:bg-muted prose-pre:border"
-                dangerouslySetInnerHTML={{ __html: article.content }}
+                dangerouslySetInnerHTML={{ __html: markdownToHtml(article.content) }}
               />
             </CardContent>
           </Card>
@@ -250,7 +251,7 @@ export function HelpArticleView({ slug, onBack, onNavigateToArticle, onOpenChat,
               <CardContent>
                 <div 
                   className="prose prose-sm max-w-none dark:prose-invert"
-                  dangerouslySetInnerHTML={{ __html: article.common_errors }}
+                  dangerouslySetInnerHTML={{ __html: markdownToHtml(article.common_errors) }}
                 />
               </CardContent>
             </Card>
