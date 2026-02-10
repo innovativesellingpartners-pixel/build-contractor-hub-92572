@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Building2, Plus, RefreshCw, DollarSign, TrendingDown, TrendingUp, Link as LinkIcon, CheckCircle, Loader2, ChevronDown } from "lucide-react";
+import { Building2, Plus, RefreshCw, DollarSign, TrendingDown, TrendingUp, Link as LinkIcon, CheckCircle, Loader2, ChevronDown, CreditCard } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -23,6 +23,8 @@ export function BankingView() {
   const [searchParams] = useSearchParams();
   const [qbLoading, setQbLoading] = useState(false);
   const [qbConnected, setQbConnected] = useState(false);
+  const [stripeLoading, setStripeLoading] = useState(false);
+  const [stripeConnected, setStripeConnected] = useState(false);
   
   const { open: openPlaid } = usePlaidLink({
     onSuccess: async (publicToken: string, metadata: any) => {
@@ -39,16 +41,17 @@ export function BankingView() {
   });
 
   useEffect(() => {
-    const checkQBConnection = async () => {
+    const checkConnections = async () => {
       if (!user?.id) return;
       const { data: profile } = await supabase
         .from('profiles')
-        .select('qb_realm_id')
+        .select('qb_realm_id, stripe_connect_account_id')
         .eq('id', user.id)
         .single();
       setQbConnected(!!profile?.qb_realm_id);
+      setStripeConnected(!!profile?.stripe_connect_account_id);
     };
-    checkQBConnection();
+    checkConnections();
 
     if (searchParams.get('qb_connected') === 'true') {
       toast({
@@ -81,6 +84,24 @@ export function BankingView() {
       toast({ variant: "destructive", title: "Connection Failed", description: error.message || "Failed to connect to QuickBooks" });
     } finally {
       setQbLoading(false);
+    }
+  };
+
+  const handleConnectStripe = async () => {
+    try {
+      setStripeLoading(true);
+      const { data, error } = await supabase.functions.invoke('stripe-connect-onboard');
+      if (error) {
+        toast({ variant: "destructive", title: "Connection Failed", description: error.message || "Failed to initiate Stripe connection" });
+        return;
+      }
+      if (data?.url) {
+        window.location.href = data.url;
+      }
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Connection Failed", description: error.message || "Failed to connect to Stripe" });
+    } finally {
+      setStripeLoading(false);
     }
   };
 
@@ -162,6 +183,19 @@ export function BankingView() {
                   <LinkIcon className="h-4 w-4 mr-2" />
                 )}
                 {qbConnected ? "QuickBooks Connected" : "Connect QuickBooks"}
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={stripeConnected ? undefined : handleConnectStripe}
+                disabled={stripeConnected || stripeLoading}
+              >
+                {stripeLoading ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : stripeConnected ? (
+                  <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
+                ) : (
+                  <CreditCard className="h-4 w-4 mr-2" />
+                )}
+                {stripeConnected ? "Stripe Connected" : "Connect Stripe"}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
