@@ -29,7 +29,7 @@ function AgingTable({ type }: { type: "AgedReceivableDetail" | "AgedPayableDetai
   const { data, isLoading, error } = useQBAgingReport(type);
 
   if (isLoading) return <Skeleton className="h-48 w-full" />;
-  if (error) return <Card><CardContent className="py-8 text-center text-muted-foreground">Failed to load aging data.</CardContent></Card>;
+  if (error) return <Card><CardContent className="py-8 text-center text-muted-foreground">We're having trouble syncing your aging data. Please try reconnecting or click Sync to retry.</CardContent></Card>;
 
   const columns = data?.raw?.Columns?.Column?.map((c: any) => c.ColTitle) || ["Name", "Current", "1-30", "31-60", "61-90", "91+", "Total"];
   const rows = flattenAgingRows(data?.rows || []);

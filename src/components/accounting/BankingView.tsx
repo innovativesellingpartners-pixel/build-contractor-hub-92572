@@ -1,7 +1,29 @@
+/**
+ * BankingView — Finance connections & data display.
+ *
+ * Connection status is checked via:
+ *   - Bank: `bank_account_links` table (user_id, status = 'active')
+ *   - QuickBooks: `profiles.qb_realm_id` (non-null = connected)
+ *   - Stripe: `profiles.stripe_connect_account_id` (non-null = connected)
+ *
+ * Conditional rendering rules:
+ *   - Both bank + QB connected → show bank data AND QB invoices
+ *   - Bank only → show bank data, hide QB sections entirely
+ *   - QB only → show QB invoices, hide bank sections entirely
+ *   - Neither → clean empty state with connect buttons
+ *
+ * QuickBooks data is mapped from the quickbooks-invoices edge function
+ * which queries the QBO Invoice entity and transforms fields.
+ */
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Building2, Plus, RefreshCw, DollarSign, TrendingDown, TrendingUp, Link as LinkIcon, CheckCircle, Loader2, ChevronDown, CreditCard, FileText, Unlink } from "lucide-react";
+import {
+  Building2, Plus, RefreshCw, DollarSign, TrendingDown, TrendingUp,
+  Link as LinkIcon, CheckCircle, Loader2, ChevronDown, CreditCard,
+  FileText, Unlink, AlertTriangle, Wifi, WifiOff
+} from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -15,6 +37,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
@@ -26,7 +49,7 @@ export function BankingView() {
   const [qbConnected, setQbConnected] = useState(false);
   const [stripeLoading, setStripeLoading] = useState(false);
   const [stripeConnected, setStripeConnected] = useState(false);
-  
+
   const { open: openPlaid } = usePlaidLink({
     onSuccess: async (publicToken: string, metadata: any) => {
       try {
@@ -41,6 +64,7 @@ export function BankingView() {
     }
   });
 
+  // Check connection statuses on mount
   useEffect(() => {
     const checkConnections = async () => {
       if (!user?.id) return;
@@ -55,18 +79,11 @@ export function BankingView() {
     checkConnections();
 
     if (searchParams.get('qb_connected') === 'true') {
-      toast({
-        title: "QuickBooks Connected!",
-        description: "Your QuickBooks account has been successfully connected.",
-      });
+      toast({ title: "QuickBooks Connected!", description: "Your QuickBooks account has been successfully connected." });
       setQbConnected(true);
     }
     if (searchParams.get('qb_error')) {
-      toast({
-        variant: "destructive",
-        title: "Connection Failed",
-        description: searchParams.get('qb_error') || "Failed to connect to QuickBooks",
-      });
+      toast({ variant: "destructive", title: "Connection Failed", description: searchParams.get('qb_error') || "Failed to connect to QuickBooks" });
     }
   }, [user?.id, searchParams, toast]);
 
@@ -78,9 +95,7 @@ export function BankingView() {
         toast({ variant: "destructive", title: "Connection Failed", description: error.message || "Failed to initiate QuickBooks connection" });
         return;
       }
-      if (data?.authUrl) {
-        window.location.href = data.authUrl;
-      }
+      if (data?.authUrl) window.location.href = data.authUrl;
     } catch (error: any) {
       toast({ variant: "destructive", title: "Connection Failed", description: error.message || "Failed to connect to QuickBooks" });
     } finally {
@@ -96,9 +111,7 @@ export function BankingView() {
         toast({ variant: "destructive", title: "Connection Failed", description: error.message || "Failed to initiate Stripe connection" });
         return;
       }
-      if (data?.url) {
-        window.location.href = data.url;
-      }
+      if (data?.url) window.location.href = data.url;
     } catch (error: any) {
       toast({ variant: "destructive", title: "Connection Failed", description: error.message || "Failed to connect to Stripe" });
     } finally {
@@ -123,6 +136,7 @@ export function BankingView() {
     }
   };
 
+  // Bank accounts query
   const { data: bankAccounts, isLoading: loadingAccounts } = useQuery({
     queryKey: ['bank-accounts', user?.id],
     queryFn: async () => {
@@ -137,6 +151,9 @@ export function BankingView() {
     enabled: !!user?.id
   });
 
+  const bankConnected = (bankAccounts?.length || 0) > 0;
+
+  // Bank transactions query (only if bank connected)
   const { data: transactions, isLoading: loadingTransactions } = useQuery({
     queryKey: ['plaid-transactions', user?.id],
     queryFn: async () => {
@@ -149,62 +166,67 @@ export function BankingView() {
         .limit(50);
       return data || [];
     },
-    enabled: !!user?.id
+    enabled: !!user?.id && bankConnected
   });
 
-  // QuickBooks invoices query
-  const { data: qbInvoices, isLoading: loadingQbInvoices, refetch: refetchQbInvoices } = useQuery({
+  // QuickBooks invoices (only if QB connected)
+  const { data: qbInvoices, isLoading: loadingQbInvoices, error: qbError, refetch: refetchQbInvoices } = useQuery({
     queryKey: ['qb-invoices', user?.id],
     queryFn: async () => {
       const { data, error } = await supabase.functions.invoke('quickbooks-invoices');
-      if (error) throw error;
+      if (error) {
+        console.error('QuickBooks invoice fetch failed:', error);
+        throw error;
+      }
+      if (data?.error) {
+        console.error('QuickBooks API error:', data.error);
+        throw new Error(data.error);
+      }
       return data?.invoices || [];
     },
-    enabled: !!user?.id && qbConnected
+    enabled: !!user?.id && qbConnected,
+    retry: 1,
   });
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-    }).format(value);
-  };
+  const formatCurrency = (value: number) =>
+    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(value);
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
+    return new Date(dateString).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
   };
 
   const handleSyncTransactions = async () => {
-    console.log('Syncing transactions...');
     if (qbConnected) refetchQbInvoices();
+    toast({ title: "Syncing...", description: "Refreshing your financial data." });
   };
 
   if (loadingAccounts) {
     return (
       <div className="space-y-4">
-        <Skeleton className="h-24 w-full" />
-        <Skeleton className="h-24 w-full" />
+        <Skeleton className="h-12 w-full" />
+        <Skeleton className="h-64 w-full" />
       </div>
     );
   }
 
+  // Determine what to show based on connection status
+  const nothingConnected = !bankConnected && !qbConnected && !stripeConnected;
+
   return (
     <div className="space-y-4 md:space-y-6">
-      {/* Header - stacks vertically on mobile */}
+      {/* Compact header with Financial Connections dropdown */}
       <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
         <div>
-          <h2 className="text-xl md:text-2xl font-bold tracking-tight">Banking</h2>
+          <h2 className="text-xl md:text-2xl font-bold tracking-tight">Banking & Connections</h2>
           <p className="text-sm text-muted-foreground">
-            Manage bank accounts and transactions
+            {nothingConnected
+              ? "Connect your accounts to see financial data"
+              : `${[bankConnected && "Bank", qbConnected && "QuickBooks", stripeConnected && "Stripe"].filter(Boolean).join(", ")} connected`}
           </p>
         </div>
         <div className="flex items-center gap-2">
+          {/* Financial Connections dropdown — compact connection manager */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="text-xs sm:text-sm">
@@ -213,123 +235,235 @@ export function BankingView() {
                 <ChevronDown className="h-4 w-4 ml-1 sm:ml-2" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 bg-popover z-50">
-              <DropdownMenuItem onClick={openPlaid}>
-                <Building2 className="h-4 w-4 mr-2" />
-                Link Bank Account
-              </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={qbConnected ? undefined : handleConnectQuickBooks}
-                disabled={qbConnected || qbLoading}
-              >
-                {qbLoading ? (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                ) : qbConnected ? (
-                  <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
-                ) : (
-                  <LinkIcon className="h-4 w-4 mr-2" />
-                )}
-                {qbConnected ? "QuickBooks Connected" : "Connect QuickBooks"}
-              </DropdownMenuItem>
-              {qbConnected && (
-                <DropdownMenuItem 
-                  onClick={handleDisconnectQuickBooks}
-                  disabled={qbLoading}
-                  className="text-destructive focus:text-destructive"
-                >
-                  {qbLoading ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <Unlink className="h-4 w-4 mr-2" />
-                  )}
-                  Disconnect QuickBooks
+            <DropdownMenuContent align="end" className="w-64 bg-popover z-50">
+              {/* Connection status summary */}
+              <div className="px-3 py-2 space-y-1.5">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Bank</span>
+                  <span className="flex items-center gap-1.5">
+                    {bankConnected ? (
+                      <><Wifi className="h-3 w-3 text-green-600" /> <span className="text-xs text-green-600">Connected</span></>
+                    ) : (
+                      <><WifiOff className="h-3 w-3 text-muted-foreground" /> <span className="text-xs text-muted-foreground">Not connected</span></>
+                    )}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">QuickBooks</span>
+                  <span className="flex items-center gap-1.5">
+                    {qbConnected ? (
+                      <><Wifi className="h-3 w-3 text-green-600" /> <span className="text-xs text-green-600">Connected</span></>
+                    ) : (
+                      <><WifiOff className="h-3 w-3 text-muted-foreground" /> <span className="text-xs text-muted-foreground">Not connected</span></>
+                    )}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Stripe</span>
+                  <span className="flex items-center gap-1.5">
+                    {stripeConnected ? (
+                      <><Wifi className="h-3 w-3 text-green-600" /> <span className="text-xs text-green-600">Connected</span></>
+                    ) : (
+                      <><WifiOff className="h-3 w-3 text-muted-foreground" /> <span className="text-xs text-muted-foreground">Not connected</span></>
+                    )}
+                  </span>
+                </div>
+              </div>
+              <DropdownMenuSeparator />
+
+              {/* Connect actions */}
+              {!bankConnected && (
+                <DropdownMenuItem onClick={openPlaid}>
+                  <Building2 className="h-4 w-4 mr-2" />
+                  Connect Bank Account
                 </DropdownMenuItem>
               )}
-              <DropdownMenuItem
-                onClick={stripeConnected ? undefined : handleConnectStripe}
-                disabled={stripeConnected || stripeLoading}
-              >
-                {stripeLoading ? (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                ) : stripeConnected ? (
-                  <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
-                ) : (
-                  <CreditCard className="h-4 w-4 mr-2" />
-                )}
-                {stripeConnected ? "Stripe Connected" : "Connect Stripe"}
-              </DropdownMenuItem>
+              {!qbConnected && (
+                <DropdownMenuItem onClick={handleConnectQuickBooks} disabled={qbLoading}>
+                  {qbLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <LinkIcon className="h-4 w-4 mr-2" />}
+                  Connect QuickBooks
+                </DropdownMenuItem>
+              )}
+              {!stripeConnected && (
+                <DropdownMenuItem onClick={handleConnectStripe} disabled={stripeLoading}>
+                  {stripeLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CreditCard className="h-4 w-4 mr-2" />}
+                  Connect Stripe
+                </DropdownMenuItem>
+              )}
+
+              {/* Disconnect actions */}
+              {qbConnected && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={handleDisconnectQuickBooks}
+                    disabled={qbLoading}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    {qbLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Unlink className="h-4 w-4 mr-2" />}
+                    Disconnect QuickBooks
+                  </DropdownMenuItem>
+                </>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button variant="outline" size="sm" onClick={handleSyncTransactions}>
-            <RefreshCw className="h-4 w-4 mr-1 sm:mr-2" />
-            <span className="hidden sm:inline">Sync</span>
-          </Button>
+
+          {!nothingConnected && (
+            <Button variant="outline" size="sm" onClick={handleSyncTransactions}>
+              <RefreshCw className="h-4 w-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Sync</span>
+            </Button>
+          )}
         </div>
       </div>
 
-      {/* Bank Accounts */}
-      <div className="space-y-3">
-        <h3 className="text-base md:text-lg font-semibold">Linked Accounts</h3>
-        {bankAccounts && bankAccounts.length > 0 ? (
-          <div className="grid gap-3 md:gap-4 grid-cols-1 md:grid-cols-2">
-            {bankAccounts.map((account: any) => (
-              <Card key={account.id}>
-                <CardHeader className="p-4 md:p-6">
-                  <div className="flex justify-between items-start gap-2">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="p-2 bg-primary/10 rounded-lg flex-shrink-0">
-                        <Building2 className="h-5 w-5 text-primary" />
+      {/* EMPTY STATE — nothing connected */}
+      {nothingConnected && (
+        <Card className="border-dashed">
+          <CardContent className="flex flex-col items-center justify-center py-12 md:py-16">
+            <DollarSign className="h-12 w-12 text-muted-foreground mb-4" />
+            <p className="text-lg font-semibold mb-2">Connect your financial accounts</p>
+            <p className="text-sm text-muted-foreground mb-6 text-center max-w-md px-4">
+              Connect your bank or QuickBooks to see your financial data here. All data stays secure and private to your account.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button onClick={openPlaid} variant="outline" className="min-h-[44px]">
+                <Building2 className="h-4 w-4 mr-2" />
+                Link Bank Account
+              </Button>
+              <Button onClick={handleConnectQuickBooks} disabled={qbLoading} className="min-h-[44px]">
+                {qbLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <LinkIcon className="h-4 w-4 mr-2" />}
+                Connect QuickBooks
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* BANK DATA — only rendered when bank is connected */}
+      {bankConnected && (
+        <>
+          <div className="space-y-3">
+            <h3 className="text-base md:text-lg font-semibold">Linked Bank Accounts</h3>
+            <div className="grid gap-3 md:gap-4 grid-cols-1 md:grid-cols-2">
+              {bankAccounts!.map((account: any) => (
+                <Card key={account.id}>
+                  <CardHeader className="p-4 md:p-6">
+                    <div className="flex justify-between items-start gap-2">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="p-2 bg-primary/10 rounded-lg flex-shrink-0">
+                          <Building2 className="h-5 w-5 text-primary" />
+                        </div>
+                        <div className="min-w-0">
+                          <CardTitle className="text-sm md:text-base truncate">
+                            {account.plaid_institution_name || 'Bank Account'}
+                          </CardTitle>
+                          <CardDescription className="text-xs">
+                            Connected {new Date(account.created_at).toLocaleDateString()}
+                          </CardDescription>
+                        </div>
                       </div>
-                      <div className="min-w-0">
-                        <CardTitle className="text-sm md:text-base truncate">
-                          {account.plaid_institution_name || 'Bank Account'}
-                        </CardTitle>
-                        <CardDescription className="text-xs">
-                          Connected {new Date(account.created_at).toLocaleDateString()}
-                        </CardDescription>
-                      </div>
+                      <Badge variant="default" className="flex-shrink-0">Active</Badge>
                     </div>
-                    <Badge variant="default" className="flex-shrink-0">Active</Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="px-4 pb-4 md:px-6 md:pb-6 pt-0">
-                  <div className="text-xs text-muted-foreground">
-                    Last synced: {new Date(account.updated_at).toLocaleString()}
+                  </CardHeader>
+                  <CardContent className="px-4 pb-4 md:px-6 md:pb-6 pt-0">
+                    <div className="text-xs text-muted-foreground">
+                      Last synced: {new Date(account.updated_at).toLocaleString()}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+
+          {/* Bank Transactions */}
+          <div className="space-y-3">
+            <h3 className="text-base md:text-lg font-semibold">Recent Transactions</h3>
+            {loadingTransactions ? (
+              <Skeleton className="h-48 w-full" />
+            ) : transactions && transactions.length > 0 ? (
+              <Card>
+                <CardContent className="p-0">
+                  <div className="divide-y">
+                    {transactions.map((txn: any) => (
+                      <div key={txn.id} className="p-3 md:p-4 hover:bg-muted/50 transition-colors min-h-[56px]">
+                        <div className="flex justify-between items-start gap-3">
+                          <div className="flex items-start gap-3 min-w-0 flex-1">
+                            <div className={`p-1.5 md:p-2 rounded-lg flex-shrink-0 ${Number(txn.amount) < 0 ? 'bg-red-100 dark:bg-red-900/30' : 'bg-green-100 dark:bg-green-900/30'}`}>
+                              {Number(txn.amount) < 0 ? (
+                                <TrendingDown className="h-4 w-4 text-red-600" />
+                              ) : (
+                                <TrendingUp className="h-4 w-4 text-green-600" />
+                              )}
+                            </div>
+                            <div className="min-w-0 space-y-1">
+                              <p className="font-medium text-sm truncate">{txn.vendor || txn.description || 'Transaction'}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {new Date(txn.transaction_date).toLocaleDateString()}
+                              </p>
+                              <div className="flex flex-wrap gap-1">
+                                {txn.category && <Badge variant="outline" className="text-xs">{txn.category}</Badge>}
+                                {txn.job && <Badge variant="secondary" className="text-xs">{txn.job.name}</Badge>}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="text-right flex-shrink-0">
+                            <p className={`text-sm md:text-base font-semibold tabular-nums ${Number(txn.amount) < 0 ? 'text-red-600' : 'text-green-600'}`}>
+                              {Number(txn.amount) < 0 ? '-' : ''}${Math.abs(Number(txn.amount)).toFixed(2)}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
-            ))}
+            ) : (
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center py-10 md:py-12">
+                  <DollarSign className="h-10 w-10 text-muted-foreground mb-3" />
+                  <p className="text-base font-semibold mb-2">No transactions yet</p>
+                  <p className="text-sm text-muted-foreground text-center px-4">
+                    Transactions will appear here after your bank syncs
+                  </p>
+                </CardContent>
+              </Card>
+            )}
           </div>
-        ) : (
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-10 md:py-12">
-              <Building2 className="h-10 w-10 md:h-12 md:w-12 text-muted-foreground mb-3 md:mb-4" />
-              <p className="text-base md:text-lg font-semibold mb-2">No bank accounts linked</p>
-              <p className="text-sm text-muted-foreground mb-4 text-center px-4">
-                Link your bank account to automatically sync transactions
-              </p>
-              <Button onClick={openPlaid} className="min-h-[44px]">
-                <Plus className="h-4 w-4 mr-2" />
-                Link Bank Account
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+        </>
+      )}
 
-      {/* QuickBooks Invoices - shown when connected */}
+      {/* QUICKBOOKS DATA — only rendered when QB is connected */}
       {qbConnected && (
         <div className="space-y-3">
           <h3 className="text-base md:text-lg font-semibold flex items-center gap-2">
             <FileText className="h-4 w-4" />
             QuickBooks Invoices
           </h3>
+
+          {/* QB Sync error banner */}
+          {qbError && (
+            <Card className="border-destructive/50 bg-destructive/5">
+              <CardContent className="flex items-start gap-3 py-4">
+                <AlertTriangle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-destructive">
+                    We're having trouble syncing your QuickBooks data
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Please try reconnecting your QuickBooks account or click Sync to retry.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {loadingQbInvoices ? (
             <Skeleton className="h-48 w-full" />
-          ) : qbInvoices && qbInvoices.length > 0 ? (
+          ) : !qbError && qbInvoices && qbInvoices.length > 0 ? (
             <Card>
               <CardContent className="p-0">
-                {/* Desktop table */}
+                {/* Desktop table — maps QBO Invoice fields */}
                 <div className="hidden md:block">
                   <Table>
                     <TableHeader>
@@ -362,8 +496,7 @@ export function BankingView() {
                     </TableBody>
                   </Table>
                 </div>
-
-                {/* Mobile list rows */}
+                {/* Mobile list */}
                 <div className="md:hidden divide-y">
                   {qbInvoices.map((inv: any) => (
                     <div key={inv.invoiceId} className="p-3 min-h-[56px]">
@@ -391,84 +524,19 @@ export function BankingView() {
                 </div>
               </CardContent>
             </Card>
-          ) : (
+          ) : !qbError ? (
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-10">
                 <FileText className="h-10 w-10 text-muted-foreground mb-3" />
                 <p className="text-base font-semibold mb-1">No invoices found</p>
                 <p className="text-sm text-muted-foreground text-center px-4">
-                  Your QuickBooks invoices will appear here
+                  Your QuickBooks invoices will appear here once data syncs
                 </p>
               </CardContent>
             </Card>
-          )}
+          ) : null}
         </div>
       )}
-
-      {/* Transactions - mobile-friendly list rows */}
-      <div className="space-y-3">
-        <h3 className="text-base md:text-lg font-semibold">Recent Transactions</h3>
-        {loadingTransactions ? (
-          <Skeleton className="h-48 w-full" />
-        ) : transactions && transactions.length > 0 ? (
-          <Card>
-            <CardContent className="p-0">
-              <div className="divide-y">
-                {transactions.map((txn: any) => (
-                  <div key={txn.id} className="p-3 md:p-4 hover:bg-muted/50 transition-colors min-h-[56px]">
-                    <div className="flex justify-between items-start gap-3">
-                      <div className="flex items-start gap-3 min-w-0 flex-1">
-                        <div className={`p-1.5 md:p-2 rounded-lg flex-shrink-0 ${Number(txn.amount) < 0 ? 'bg-red-100 dark:bg-red-900/30' : 'bg-green-100 dark:bg-green-900/30'}`}>
-                          {Number(txn.amount) < 0 ? (
-                            <TrendingDown className="h-4 w-4 text-red-600" />
-                          ) : (
-                            <TrendingUp className="h-4 w-4 text-green-600" />
-                          )}
-                        </div>
-                        <div className="min-w-0 space-y-1">
-                          <p className="font-medium text-sm truncate">{txn.vendor || txn.description || 'Transaction'}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {new Date(txn.transaction_date).toLocaleDateString()}
-                          </p>
-                          <div className="flex flex-wrap gap-1">
-                            {txn.category && (
-                              <Badge variant="outline" className="text-xs">{txn.category}</Badge>
-                            )}
-                            {txn.job && (
-                              <Badge variant="secondary" className="text-xs">{txn.job.name}</Badge>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-right flex-shrink-0">
-                        <p className={`text-sm md:text-base font-semibold tabular-nums ${Number(txn.amount) < 0 ? 'text-red-600' : 'text-green-600'}`}>
-                          {Number(txn.amount) < 0 ? '-' : ''}${Math.abs(Number(txn.amount)).toFixed(2)}
-                        </p>
-                        {txn.is_reimbursable && (
-                          <Badge variant="default" className="text-xs mt-1">Reimbursable</Badge>
-                        )}
-                      </div>
-                    </div>
-                    {txn.notes && (
-                      <p className="text-xs text-muted-foreground mt-2 ml-9 md:ml-11">{txn.notes}</p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        ) : (
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-10 md:py-12">
-              <DollarSign className="h-10 w-10 md:h-12 md:w-12 text-muted-foreground mb-3 md:mb-4" />
-              <p className="text-base md:text-lg font-semibold mb-2">No transactions yet</p>
-              <p className="text-sm text-muted-foreground text-center px-4">
-                Link a bank account to see your transactions
-              </p>
-            </CardContent>
-          </Card>
-        )}
-      </div>
     </div>
   );
 }
