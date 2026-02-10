@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Building2, Plus, RefreshCw, DollarSign, TrendingDown, TrendingUp, Link as LinkIcon, CheckCircle, Loader2, ChevronDown, CreditCard } from "lucide-react";
+import { Building2, Plus, RefreshCw, DollarSign, TrendingDown, TrendingUp, Link as LinkIcon, CheckCircle, Loader2, ChevronDown, CreditCard, FileText } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { usePlaidLink } from "@/hooks/usePlaidLink";
 import { useToast } from "@/hooks/use-toast";
 import { useSearchParams } from "react-router-dom";
@@ -134,8 +135,37 @@ export function BankingView() {
     enabled: !!user?.id
   });
 
+  // QuickBooks invoices query
+  const { data: qbInvoices, isLoading: loadingQbInvoices, refetch: refetchQbInvoices } = useQuery({
+    queryKey: ['qb-invoices', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke('quickbooks-invoices');
+      if (error) throw error;
+      return data?.invoices || [];
+    },
+    enabled: !!user?.id && qbConnected
+  });
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+    }).format(value);
+  };
+
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  };
+
   const handleSyncTransactions = async () => {
     console.log('Syncing transactions...');
+    if (qbConnected) refetchQbInvoices();
   };
 
   if (loadingAccounts) {
@@ -255,6 +285,94 @@ export function BankingView() {
           </Card>
         )}
       </div>
+
+      {/* QuickBooks Invoices - shown when connected */}
+      {qbConnected && (
+        <div className="space-y-3">
+          <h3 className="text-base md:text-lg font-semibold flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            QuickBooks Invoices
+          </h3>
+          {loadingQbInvoices ? (
+            <Skeleton className="h-48 w-full" />
+          ) : qbInvoices && qbInvoices.length > 0 ? (
+            <Card>
+              <CardContent className="p-0">
+                {/* Desktop table */}
+                <div className="hidden md:block">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Invoice #</TableHead>
+                        <TableHead>Customer</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Due Date</TableHead>
+                        <TableHead className="text-right">Total</TableHead>
+                        <TableHead className="text-right">Balance</TableHead>
+                        <TableHead>Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {qbInvoices.map((inv: any) => (
+                        <TableRow key={inv.invoiceId}>
+                          <TableCell className="font-medium">{inv.docNumber}</TableCell>
+                          <TableCell>{inv.customerName}</TableCell>
+                          <TableCell>{formatDate(inv.invoiceDate)}</TableCell>
+                          <TableCell>{formatDate(inv.dueDate)}</TableCell>
+                          <TableCell className="text-right tabular-nums">{formatCurrency(inv.totalAmount)}</TableCell>
+                          <TableCell className="text-right tabular-nums">{formatCurrency(inv.balance)}</TableCell>
+                          <TableCell>
+                            <Badge variant={inv.status === 'Paid' ? 'default' : 'secondary'}>
+                              {inv.status}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                {/* Mobile list rows */}
+                <div className="md:hidden divide-y">
+                  {qbInvoices.map((inv: any) => (
+                    <div key={inv.invoiceId} className="p-3 min-h-[56px]">
+                      <div className="flex justify-between items-start gap-2">
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium text-sm truncate">{inv.customerName}</p>
+                          <p className="text-xs text-muted-foreground">
+                            #{inv.docNumber} · {formatDate(inv.invoiceDate)}
+                          </p>
+                        </div>
+                        <div className="text-right flex-shrink-0">
+                          <p className="font-semibold text-sm tabular-nums">{formatCurrency(inv.totalAmount)}</p>
+                          <Badge variant={inv.status === 'Paid' ? 'default' : 'secondary'} className="text-xs mt-1">
+                            {inv.status}
+                          </Badge>
+                        </div>
+                      </div>
+                      {inv.balance > 0 && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Balance: <span className="tabular-nums">{formatCurrency(inv.balance)}</span>
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-10">
+                <FileText className="h-10 w-10 text-muted-foreground mb-3" />
+                <p className="text-base font-semibold mb-1">No invoices found</p>
+                <p className="text-sm text-muted-foreground text-center px-4">
+                  Your QuickBooks invoices will appear here
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      )}
 
       {/* Transactions - mobile-friendly list rows */}
       <div className="space-y-3">
