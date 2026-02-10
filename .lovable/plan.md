@@ -1,75 +1,20 @@
 
-# Fix QuickBooks Connection Error
 
-## Problem Identified
+## Update Live Stripe API Keys
 
-The "Failed to send a request to the Edge Function" error occurs because the `quickbooks-oauth-init` function **is not deployed**. It's missing from the configuration file that controls which edge functions get deployed.
+### Overview
+Update all three Stripe secrets to use live mode keys instead of test keys.
 
-## What Needs to Be Fixed
+### Steps
 
-### 1. Register Missing Edge Functions
+1. **Update STRIPE_SECRET_KEY** - Request the new live secret key (`sk_live_...`) from the user and save it
+2. **Update STRIPE_PUBLISHABLE_KEY** - Request the new live publishable key (`pk_live_...`) and save it
+3. **Update STRIPE_WEBHOOK_SECRET** - Request the new live webhook signing secret (`whsec_...`) and save it
+4. **Update frontend code** - Ensure the publishable key used in frontend Stripe components references the updated secret (check if it's hardcoded or pulled from the backend)
+5. **Verify** - Test the Stripe connection from the app to confirm the new keys work
 
-Add the following functions to the configuration:
+### Technical Details
+- Secrets are stored securely as backend secrets and accessed by backend functions
+- The publishable key may also need to be updated in the frontend code if it's embedded there
+- After updating, the webhook endpoint will need to be configured in the Stripe dashboard to point to the live webhook URL
 
-| Function | Purpose | Auth Required |
-|----------|---------|---------------|
-| `quickbooks-oauth-init` | Starts the QuickBooks connection flow | Yes (user must be logged in) |
-| `quickbooks-api` | Makes API calls to QuickBooks | Yes (user must be logged in) |
-
-### 2. Update CORS Headers
-
-The current CORS headers are incomplete. They need to include additional headers that the browser sends:
-
-**Current (incomplete):**
-```
-authorization, x-client-info, apikey, content-type
-```
-
-**Required (complete):**
-```
-authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version
-```
-
-### 3. Deploy the Functions
-
-After making these changes, the functions will be automatically deployed.
-
-## Files to Modify
-
-1. **supabase/config.toml** - Add function registrations
-2. **supabase/functions/quickbooks-oauth-init/index.ts** - Update CORS headers
-3. **supabase/functions/quickbooks-api/index.ts** - Update CORS headers
-
-## Expected Result
-
-After these changes:
-- Clicking "Connect QuickBooks Account" will successfully initiate the OAuth flow
-- You'll be redirected to the QuickBooks authorization page
-- After authorizing, you'll be redirected back to your dashboard with the connection established
-
----
-
-## Technical Details
-
-### Config.toml Additions
-```toml
-[functions.quickbooks-oauth-init]
-verify_jwt = true
-
-[functions.quickbooks-api]
-verify_jwt = true
-```
-
-### CORS Header Update (both functions)
-```typescript
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
-};
-```
-
-### Verification Steps
-1. Deploy the updated functions
-2. Test the QuickBooks connection flow
-3. Verify the OAuth redirect works correctly
-4. Confirm the connection is stored in the database
