@@ -3,7 +3,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AccountingDashboard } from "@/components/accounting/AccountingDashboard";
 import { PaymentsCenter } from "@/components/accounting/PaymentsCenter";
 import { BankingView } from "@/components/accounting/BankingView";
-import { LayoutDashboard, CreditCard, Building2, Receipt, Briefcase, FileBarChart } from "lucide-react";
+import { QuickBooksReportsHub } from "@/components/accounting/quickbooks/QuickBooksReportsHub";
+import { LayoutDashboard, CreditCard, Building2, BarChart3 } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -16,9 +17,7 @@ const tabs = [
   { value: "dashboard", label: "Dashboard", icon: LayoutDashboard, disabled: false },
   { value: "payments", label: "Payments", icon: CreditCard, disabled: false },
   { value: "banking", label: "Banking", icon: Building2, disabled: false },
-  { value: "expenses", label: "Expenses", icon: Receipt, disabled: true },
-  { value: "job-costing", label: "Job Costing", icon: Briefcase, disabled: true },
-  { value: "reports", label: "Reports", icon: FileBarChart, disabled: true },
+  { value: "qb-reports", label: "QuickBooks Reports", icon: BarChart3, disabled: false },
 ];
 
 export default function Accounting() {
@@ -56,7 +55,7 @@ export default function Accounting() {
 
       {/* Desktop: Tab bar */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="hidden md:grid w-full grid-cols-3 lg:grid-cols-6">
+        <TabsList className="hidden md:grid w-full grid-cols-4">
           {tabs.map((tab) => (
             <TabsTrigger key={tab.value} value={tab.value} disabled={tab.disabled}>
               <tab.icon className="h-4 w-4 mr-2" />
@@ -77,22 +76,8 @@ export default function Accounting() {
           <BankingView />
         </TabsContent>
 
-        <TabsContent value="expenses" className="space-y-4">
-          <div className="text-center text-muted-foreground py-12">
-            Expenses view coming soon
-          </div>
-        </TabsContent>
-
-        <TabsContent value="job-costing" className="space-y-4">
-          <div className="text-center text-muted-foreground py-12">
-            Job costing view coming soon
-          </div>
-        </TabsContent>
-
-        <TabsContent value="reports" className="space-y-4">
-          <div className="text-center text-muted-foreground py-12">
-            Reports view coming soon
-          </div>
+        <TabsContent value="qb-reports" className="space-y-4">
+          <QuickBooksReportsHub />
         </TabsContent>
       </Tabs>
     </div>
