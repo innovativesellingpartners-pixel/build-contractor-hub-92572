@@ -258,7 +258,7 @@ export function MoneyDisplay({ amount, label, size = 'md', className }: MoneyDis
 
   return (
     <div className={cn('text-center', className)}>
-      <p className={cn('font-bold text-primary', sizeClasses[size])}>
+      <p className={cn('font-bold text-primary tabular-nums', sizeClasses[size])}>
         ${(amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
       </p>
       {label && <p className="text-xs text-muted-foreground mt-0.5">{label}</p>}

@@ -514,7 +514,7 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
                       <td className="p-2 truncate max-w-[150px]">{lead.email || '-'}</td>
                       <td className="p-2">{lead.phone || '-'}</td>
                       <td className="p-2 truncate max-w-[100px]">{lead.project_type || '-'}</td>
-                      <td className="p-2 text-right">{lead.value ? `$${lead.value.toLocaleString()}` : '-'}</td>
+                      <td className="p-2 text-right tabular-nums">{lead.value ? `$${lead.value.toLocaleString()}` : '-'}</td>
                     </tr>
                   ))}
                 </tbody>
