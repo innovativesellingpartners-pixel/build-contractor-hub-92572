@@ -191,6 +191,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     // Check for PWA updates after logout
     await checkForUpdates();
+    
+    // Redirect to primary domain login page
+    window.location.href = 'https://myct1.com/auth';
   };
 
   const resetPassword = async (email: string) => {
