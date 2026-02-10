@@ -146,3 +146,6 @@ verify_jwt = true
 
 [functions.quickbooks-api]
 verify_jwt = true
+
+[functions.stripe-connect-onboard]
+verify_jwt = false
