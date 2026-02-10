@@ -66,12 +66,12 @@ Deno.serve(async (req) => {
     }
 
     // Redirect back to app with success
-    const appUrl = Deno.env.get('SUPABASE_URL')?.replace('.supabase.co', '.lovableproject.com') || '';
+    const appUrl = Deno.env.get('APP_URL') || 'https://build-contractor-hub-92572.lovable.app';
     return Response.redirect(`${appUrl}/dashboard?qb_connected=true`, 302);
   } catch (error) {
     console.error('Error in quickbooks-oauth-callback:', error);
     const message = error instanceof Error ? error.message : 'An error occurred';
-    const appUrl = Deno.env.get('SUPABASE_URL')?.replace('.supabase.co', '.lovableproject.com') || '';
+    const appUrl = Deno.env.get('APP_URL') || 'https://build-contractor-hub-92572.lovable.app';
     return Response.redirect(`${appUrl}/dashboard?qb_error=${encodeURIComponent(message)}`, 302);
   }
 });
