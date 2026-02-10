@@ -19,7 +19,7 @@ export function QBVendors() {
       {isLoading ? (
         <Skeleton className="h-64 w-full" />
       ) : error ? (
-        <Card><CardContent className="py-8 text-center text-muted-foreground">Failed to load vendors.</CardContent></Card>
+        <Card><CardContent className="py-8 text-center text-muted-foreground">We're having trouble syncing your vendor data. Please try reconnecting or click Sync to retry.</CardContent></Card>
       ) : (
         <Card>
           <CardContent className="p-0">
