@@ -1,15 +1,71 @@
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { DollarSign, TrendingUp, TrendingDown, Users, Store } from "lucide-react";
+import { DollarSign, TrendingUp, TrendingDown, Users, Store, Calendar } from "lucide-react";
 import { useQBProfitAndLoss, useQBCustomers, useQBVendors } from "@/hooks/useQuickBooksQuery";
 import { InteractiveMetricCard } from "@/components/reporting/drilldown/InteractiveMetricCard";
 import { useDrillDown } from "@/components/reporting/drilldown/DrillDownProvider";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { Button } from "@/components/ui/button";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
-function getDateRange() {
+type DatePreset = "this-month" | "last-month" | "this-quarter" | "last-quarter" | "ytd" | "last-year" | "all-time" | "custom";
+
+const presetLabels: Record<DatePreset, string> = {
+  "this-month": "This Month",
+  "last-month": "Last Month",
+  "this-quarter": "This Quarter",
+  "last-quarter": "Last Quarter",
+  "ytd": "Year to Date",
+  "last-year": "Last Year",
+  "all-time": "All Time",
+  "custom": "Custom",
+};
+
+function getPresetRange(preset: DatePreset): { start: string; end: string; label: string } {
   const now = new Date();
-  const start = `${now.getFullYear()}-01-01`;
-  const end = now.toISOString().split("T")[0];
-  return { start, end };
+  const y = now.getFullYear();
+  const m = now.getMonth();
+  const today = now.toISOString().split("T")[0];
+
+  switch (preset) {
+    case "this-month":
+      return { start: `${y}-${String(m + 1).padStart(2, "0")}-01`, end: today, label: "This Month" };
+    case "last-month": {
+      const lm = m === 0 ? 11 : m - 1;
+      const ly = m === 0 ? y - 1 : y;
+      const lastDay = new Date(ly, lm + 1, 0).getDate();
+      return { start: `${ly}-${String(lm + 1).padStart(2, "0")}-01`, end: `${ly}-${String(lm + 1).padStart(2, "0")}-${lastDay}`, label: "Last Month" };
+    }
+    case "this-quarter": {
+      const qStart = Math.floor(m / 3) * 3;
+      return { start: `${y}-${String(qStart + 1).padStart(2, "0")}-01`, end: today, label: "This Quarter" };
+    }
+    case "last-quarter": {
+      let qStart = Math.floor(m / 3) * 3 - 3;
+      let qy = y;
+      if (qStart < 0) { qStart += 12; qy -= 1; }
+      const qEnd = new Date(qy, qStart + 3, 0);
+      return { start: `${qy}-${String(qStart + 1).padStart(2, "0")}-01`, end: qEnd.toISOString().split("T")[0], label: "Last Quarter" };
+    }
+    case "ytd":
+      return { start: `${y}-01-01`, end: today, label: "Year to Date" };
+    case "last-year":
+      return { start: `${y - 1}-01-01`, end: `${y - 1}-12-31`, label: "Last Year" };
+    case "all-time":
+      return { start: "2000-01-01", end: today, label: "All Time" };
+    default:
+      return { start: `${y}-01-01`, end: today, label: "Year to Date" };
+  }
 }
 
 function extractTotal(rows: any[], groupName: string): number {
@@ -22,7 +78,21 @@ const fmt = (v: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2 }).format(v);
 
 export function QBOverview() {
-  const dateRange = getDateRange();
+  const [datePreset, setDatePreset] = useState<DatePreset>("ytd");
+  const [customStart, setCustomStart] = useState<Date | undefined>();
+  const [customEnd, setCustomEnd] = useState<Date | undefined>();
+
+  const dateRange = useMemo(() => {
+    if (datePreset === "custom" && customStart && customEnd) {
+      return {
+        start: format(customStart, "yyyy-MM-dd"),
+        end: format(customEnd, "yyyy-MM-dd"),
+        label: `${format(customStart, "MMM d, yyyy")} – ${format(customEnd, "MMM d, yyyy")}`,
+      };
+    }
+    return getPresetRange(datePreset);
+  }, [datePreset, customStart, customEnd]);
+
   const { data: pnl, isLoading: pnlLoading } = useQBProfitAndLoss(dateRange);
   const { data: customers, isLoading: custLoading } = useQBCustomers();
   const { data: vendors, isLoading: vendLoading } = useQBVendors();
@@ -47,30 +117,77 @@ export function QBOverview() {
     );
   }
 
+  const periodLabel = dateRange.label;
+
   return (
     <div className="space-y-4 md:space-y-6">
+      {/* Date range selector */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <Select value={datePreset} onValueChange={(v) => setDatePreset(v as DatePreset)}>
+          <SelectTrigger className="w-full sm:w-[220px]">
+            <div className="flex items-center gap-2">
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <SelectValue />
+            </div>
+          </SelectTrigger>
+          <SelectContent className="bg-popover z-50">
+            {(Object.keys(presetLabels) as DatePreset[]).map((key) => (
+              <SelectItem key={key} value={key}>
+                {presetLabels[key]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {datePreset === "custom" && (
+          <div className="flex items-center gap-2">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className={cn("min-w-[120px] justify-start text-left font-normal", !customStart && "text-muted-foreground")}>
+                  {customStart ? format(customStart, "MMM d, yyyy") : "Start date"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0 bg-popover z-50" align="start">
+                <CalendarComponent mode="single" selected={customStart} onSelect={setCustomStart} className={cn("p-3 pointer-events-auto")} />
+              </PopoverContent>
+            </Popover>
+            <span className="text-muted-foreground text-sm">–</span>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className={cn("min-w-[120px] justify-start text-left font-normal", !customEnd && "text-muted-foreground")}>
+                  {customEnd ? format(customEnd, "MMM d, yyyy") : "End date"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0 bg-popover z-50" align="start">
+                <CalendarComponent mode="single" selected={customEnd} onSelect={setCustomEnd} className={cn("p-3 pointer-events-auto")} />
+              </PopoverContent>
+            </Popover>
+          </div>
+        )}
+      </div>
+
       {/* Metric cards */}
       <div className="grid gap-3 md:gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 min-w-0">
         <InteractiveMetricCard
-          title="Revenue YTD"
+          title="Revenue"
           value={fmt(income)}
-          subtitle="Total income this year"
+          subtitle={periodLabel}
           icon={<TrendingUp className="h-4 w-4 text-green-600" />}
           variant="success"
           onClick={() => navigateToReport("pnl")}
         />
         <InteractiveMetricCard
-          title="Expenses YTD"
+          title="Expenses"
           value={fmt(expenses)}
-          subtitle="Total expenses this year"
+          subtitle={periodLabel}
           icon={<TrendingDown className="h-4 w-4 text-destructive" />}
           variant="danger"
           onClick={() => navigateToReport("expenses")}
         />
         <InteractiveMetricCard
-          title="Net Income YTD"
+          title="Net Income"
           value={fmt(netIncome)}
-          subtitle="Income minus expenses"
+          subtitle={periodLabel}
           icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
           variant={netIncome >= 0 ? "success" : "danger"}
           onClick={() => navigateToReport("pnl")}
