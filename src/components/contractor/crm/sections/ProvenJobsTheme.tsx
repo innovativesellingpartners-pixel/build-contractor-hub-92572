@@ -220,24 +220,45 @@ interface TabNavProps {
 }
 
 export function TabNav({ tabs, activeTab, onTabChange }: TabNavProps) {
+  const activeLabel = tabs.find((t) => t.id === activeTab)?.label ?? 'Select';
+
   return (
-    <div className="flex overflow-x-auto bg-card border-b border-border px-1 gap-0.5 scrollbar-hide">
-      {tabs.map((tab) => (
-        <button
-          key={tab.id}
-          onClick={() => onTabChange(tab.id)}
-          className={cn(
-            'flex items-center gap-1 px-2.5 py-2.5 text-xs font-medium whitespace-nowrap transition-colors border-b-2 flex-shrink-0',
-            activeTab === tab.id
-              ? 'text-primary border-primary'
-              : 'text-muted-foreground border-transparent hover:text-foreground'
-          )}
+    <>
+      {/* Mobile: labeled dropdown */}
+      <div className="sm:hidden bg-card border-b border-border px-3 py-2 flex items-center gap-3">
+        <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">Section</span>
+        <select
+          value={activeTab}
+          onChange={(e) => onTabChange(e.target.value)}
+          className="flex-1 h-9 rounded-md border border-input bg-background px-3 text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
         >
-          {tab.icon}
-          <span className="hidden sm:inline">{tab.label}</span>
-        </button>
-      ))}
-    </div>
+          {tabs.map((tab) => (
+            <option key={tab.id} value={tab.id}>
+              {tab.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Desktop: icon + label tabs */}
+      <div className="hidden sm:flex overflow-x-auto bg-card border-b border-border px-1 gap-0.5 scrollbar-hide">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => onTabChange(tab.id)}
+            className={cn(
+              'flex items-center gap-1 px-2.5 py-2.5 text-xs font-medium whitespace-nowrap transition-colors border-b-2 flex-shrink-0',
+              activeTab === tab.id
+                ? 'text-primary border-primary'
+                : 'text-muted-foreground border-transparent hover:text-foreground'
+            )}
+          >
+            {tab.icon}
+            <span>{tab.label}</span>
+          </button>
+        ))}
+      </div>
+    </>
   );
 }
 
