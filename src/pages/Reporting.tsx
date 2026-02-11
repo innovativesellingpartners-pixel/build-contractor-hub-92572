@@ -2,6 +2,7 @@
  * Reporting — Unified Reporting Portal with 9 sections.
  * Combines myCT1 native data + QuickBooks synced data into a single analytics hub.
  * Navigation via collapsible sidebar on desktop, dropdown on mobile.
+ * Wrapped with DrillDownProvider for interactive drill-down navigation.
  */
 
 import { useState } from "react";
@@ -25,6 +26,10 @@ import {
   LayoutDashboard, TrendingUp, Briefcase, DollarSign, Receipt,
   Users, FileText, Store, Wrench,
 } from "lucide-react";
+
+import { DrillDownProvider } from "@/components/reporting/drilldown/DrillDownProvider";
+import { DrillDownBreadcrumbs } from "@/components/reporting/drilldown/DrillDownBreadcrumbs";
+import { DrillDownPanel } from "@/components/reporting/drilldown/DrillDownPanel";
 
 import { UnifiedDashboard } from "@/components/reporting/unified/UnifiedDashboard";
 import { SalesPipelineReport } from "@/components/reporting/unified/SalesPipelineReport";
@@ -52,55 +57,63 @@ export default function Reporting() {
   const [activeSection, setActiveSection] = useState("dashboard");
 
   return (
-    <div className="flex-1 space-y-4 md:space-y-6 p-4 md:p-8 pt-4 md:pt-6 pb-24 md:pb-8 overflow-y-auto">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Reporting & Analytics</h1>
-        <p className="text-sm md:text-base text-muted-foreground">
-          Unified business intelligence across all data sources
-        </p>
-      </div>
+    <DrillDownProvider onNavigateToReport={setActiveSection}>
+      <div className="flex-1 space-y-4 md:space-y-6 p-4 md:p-8 pt-4 md:pt-6 pb-24 md:pb-8 overflow-y-auto">
+        {/* Header */}
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Reporting & Analytics</h1>
+          <p className="text-sm md:text-base text-muted-foreground">
+            Unified business intelligence across all data sources
+          </p>
+        </div>
 
-      {/* Mobile: dropdown nav */}
-      <div className="block md:hidden">
-        <Select value={activeSection} onValueChange={setActiveSection}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select report" />
-          </SelectTrigger>
-          <SelectContent className="bg-popover z-50">
+        {/* Breadcrumbs */}
+        <DrillDownBreadcrumbs />
+
+        {/* Mobile: dropdown nav */}
+        <div className="block md:hidden">
+          <Select value={activeSection} onValueChange={setActiveSection}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select report" />
+            </SelectTrigger>
+            <SelectContent className="bg-popover z-50">
+              {sections.map((s) => (
+                <SelectItem key={s.value} value={s.value}>
+                  <div className="flex items-center gap-2">
+                    <s.icon className="h-4 w-4" />
+                    {s.label}
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Desktop: horizontal tabs */}
+        <Tabs value={activeSection} onValueChange={setActiveSection} className="space-y-4">
+          <TabsList className="hidden md:flex w-full overflow-x-auto">
             {sections.map((s) => (
-              <SelectItem key={s.value} value={s.value}>
-                <div className="flex items-center gap-2">
-                  <s.icon className="h-4 w-4" />
-                  {s.label}
-                </div>
-              </SelectItem>
+              <TabsTrigger key={s.value} value={s.value} className="flex-shrink-0">
+                <s.icon className="h-4 w-4 mr-1.5" />
+                <span className="text-xs lg:text-sm">{s.label}</span>
+              </TabsTrigger>
             ))}
-          </SelectContent>
-        </Select>
+          </TabsList>
+
+          <TabsContent value="dashboard"><UnifiedDashboard /></TabsContent>
+          <TabsContent value="sales"><SalesPipelineReport /></TabsContent>
+          <TabsContent value="jobs"><JobsProjectsReport /></TabsContent>
+          <TabsContent value="revenue"><RevenueFinancialReport /></TabsContent>
+          <TabsContent value="expenses"><ExpensesProfitabilityReport /></TabsContent>
+          <TabsContent value="customers"><CustomersReport /></TabsContent>
+          <TabsContent value="ar"><AccountsReceivableReport /></TabsContent>
+          <TabsContent value="ap"><AccountsPayableReport /></TabsContent>
+          <TabsContent value="custom"><CustomReportBuilder /></TabsContent>
+        </Tabs>
+
+        {/* Global drill-down slide-out panel */}
+        <DrillDownPanel />
       </div>
-
-      {/* Desktop: horizontal tabs */}
-      <Tabs value={activeSection} onValueChange={setActiveSection} className="space-y-4">
-        <TabsList className="hidden md:flex w-full overflow-x-auto">
-          {sections.map((s) => (
-            <TabsTrigger key={s.value} value={s.value} className="flex-shrink-0">
-              <s.icon className="h-4 w-4 mr-1.5" />
-              <span className="text-xs lg:text-sm">{s.label}</span>
-            </TabsTrigger>
-          ))}
-        </TabsList>
-
-        <TabsContent value="dashboard"><UnifiedDashboard /></TabsContent>
-        <TabsContent value="sales"><SalesPipelineReport /></TabsContent>
-        <TabsContent value="jobs"><JobsProjectsReport /></TabsContent>
-        <TabsContent value="revenue"><RevenueFinancialReport /></TabsContent>
-        <TabsContent value="expenses"><ExpensesProfitabilityReport /></TabsContent>
-        <TabsContent value="customers"><CustomersReport /></TabsContent>
-        <TabsContent value="ar"><AccountsReceivableReport /></TabsContent>
-        <TabsContent value="ap"><AccountsPayableReport /></TabsContent>
-        <TabsContent value="custom"><CustomReportBuilder /></TabsContent>
-      </Tabs>
-    </div>
+    </DrillDownProvider>
   );
 }
