@@ -24,6 +24,18 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Separator } from '@/components/ui/separator';
+import { 
+  BookOpen, 
+  Bot, 
+  Store, 
+  Shield, 
+  Award, 
+  Mic, 
+  User, 
+  HelpCircle,
+  ClipboardList as ClipboardListHub
+} from 'lucide-react';
 import { BottomNav } from './BottomNav';
 import { BackNavigation } from './BackNavigation';
 import CRMDashboard from './sections/CRMDashboard';
@@ -52,9 +64,24 @@ type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calenda
 interface CT1CRMProps {
   onOpenPocketbot?: () => void;
   onSectionChange?: (section: string) => void;
+  onHubSectionChange?: (section: string) => void;
+  tierFeatures?: {
+    trainingHub: boolean;
+    crm: boolean;
+    monthlyCall: boolean;
+    insurance: boolean;
+    podcast: boolean;
+    standards: boolean;
+    myAccount: boolean;
+    home: boolean;
+    leads: boolean;
+    aiAssistant: boolean;
+    marketplace: boolean;
+  };
+  activeHubSection?: string;
 }
 
-export default function CT1CRM({ onOpenPocketbot, onSectionChange }: CT1CRMProps = {}) {
+export default function CT1CRM({ onOpenPocketbot, onSectionChange, onHubSectionChange, tierFeatures, activeHubSection }: CT1CRMProps = {}) {
 
 const navItems = [
   { id: 'dashboard' as Section, label: 'Dashboard', icon: LayoutDashboard },
@@ -259,9 +286,19 @@ const navItems = [
     }
   };
 
+  const hubNavItems = [
+    { id: 'training', label: '5-Star Training', icon: BookOpen, feature: 'trainingHub' as const },
+    { id: 'voiceai', label: 'Voice AI', icon: Bot, feature: 'aiAssistant' as const },
+    { id: 'marketplace', label: 'Marketplace', icon: Store, feature: 'marketplace' as const },
+    { id: 'tasks', label: 'My Tasks', icon: ClipboardListHub, feature: null },
+    { id: 'insurance', label: 'Insurance', icon: Shield, feature: 'insurance' as const },
+    { id: 'account', label: 'My Account', icon: User, feature: 'myAccount' as const },
+    { id: 'help', label: 'Help Center', icon: HelpCircle, feature: null },
+  ];
+
   const NavigationContent = () => (
     <nav className="flex-1 overflow-y-auto p-4">
-      <ul className="space-y-2">
+      <ul className="space-y-1">
         {navItems.map((item) => (
           <li key={item.id}>
             <button
@@ -280,6 +317,37 @@ const navItems = [
           </li>
         ))}
       </ul>
+
+      {/* Hub Navigation - Desktop only */}
+      {!isMobile && onHubSectionChange && (
+        <>
+          <Separator className="my-3" />
+          <p className="px-3 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            {sidebarOpen ? 'CT1 Hub' : ''}
+          </p>
+          <ul className="space-y-1 mt-1">
+            {hubNavItems
+              .filter(item => !item.feature || !tierFeatures || tierFeatures[item.feature])
+              .map((item) => (
+                <li key={item.id}>
+                  <button
+                    onClick={() => onHubSectionChange(item.id)}
+                    className={cn(
+                      'w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors',
+                      'hover:bg-accent',
+                      activeHubSection === item.id
+                        ? 'bg-primary text-primary-foreground'
+                        : 'text-muted-foreground'
+                    )}
+                  >
+                    <item.icon className="h-5 w-5 flex-shrink-0" />
+                    {sidebarOpen && <span>{item.label}</span>}
+                  </button>
+                </li>
+              ))}
+          </ul>
+        </>
+      )}
     </nav>
   );
 
