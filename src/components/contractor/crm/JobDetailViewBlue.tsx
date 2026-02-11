@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { 
+import {
   Navigation, Copy, Pencil, FileText, Camera, ClipboardList, Package, 
-  Receipt, DollarSign, Calendar, Clock, Info, Briefcase, Upload, X, StickyNote, Archive, FilePlus, Phone, Mail, User, RefreshCw, MessageSquare, CheckSquare, Square, FileImage
+  Receipt, DollarSign, Calendar, Clock, Info, Briefcase, Upload, X, StickyNote, Archive, FilePlus, Phone, Mail, User, RefreshCw, MessageSquare, CheckSquare, Square, FileImage, BarChart3
 } from 'lucide-react';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { PullToRefreshIndicator } from '@/components/ui/pull-to-refresh';
@@ -20,6 +20,7 @@ import MaterialsTab from './job/MaterialsTab';
 import ChangeOrdersTab from './job/ChangeOrdersTab';
 import InvoicesTab from './job/InvoicesTab';
 import PSFUTab from './job/PSFUTab';
+import JobProfitabilityTab from './job/JobProfitabilityTab';
 import { useJobPhotos, JobPhoto } from '@/hooks/useJobPhotos';
 import { useDailyLogs } from '@/hooks/useDailyLogs';
 import { ImageViewer } from '@/components/ui/image-viewer';
@@ -795,6 +796,7 @@ export default function JobDetailViewBlue({ job, open, onOpenChange, onCreateEst
 
   const tabs = [
     { id: 'info', label: 'INFO', icon: <Info className="w-4 h-4" /> },
+    { id: 'profitability', label: 'P&L', icon: <BarChart3 className="w-4 h-4" /> },
     { id: 'tasks', label: 'TASKS', icon: <ClipboardList className="w-4 h-4" /> },
     { id: 'materials', label: 'MATERIALS', icon: <Package className="w-4 h-4" /> },
     { id: 'changes', label: 'CHANGES', icon: <FileText className="w-4 h-4" /> },
@@ -1023,6 +1025,12 @@ export default function JobDetailViewBlue({ job, open, onOpenChange, onCreateEst
                     </InfoCard>
                   </>
                 )}
+              </div>
+            )}
+
+            {activeTab === 'profitability' && (
+              <div className="p-4">
+                <JobProfitabilityTab job={job} />
               </div>
             )}
 
