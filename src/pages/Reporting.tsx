@@ -1,26 +1,12 @@
-import { useState, useMemo } from "react";
-import { Card } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ReportingFilters } from "@/components/reporting/ReportingFilters";
-import { KPICards } from "@/components/reporting/KPICards";
-import { SalesOverTimeChart } from "@/components/reporting/SalesOverTimeChart";
-import { EstimateFunnelChart } from "@/components/reporting/EstimateFunnelChart";
-import { RevenueProfitChart } from "@/components/reporting/RevenueProfitChart";
-import { PerformanceByRepChart } from "@/components/reporting/PerformanceByRepChart";
-import { ProfitLossStatement } from "@/components/reporting/ProfitLossStatement";
-import { ExpenseBreakdown } from "@/components/reporting/ExpenseBreakdown";
-import { JobProfitability } from "@/components/reporting/JobProfitability";
-import { CashFlowChart } from "@/components/reporting/CashFlowChart";
-import { EstimatesTable } from "@/components/reporting/EstimatesTable";
-import { JobsTable } from "@/components/reporting/JobsTable";
-import { PaymentsTable } from "@/components/reporting/PaymentsTable";
-import { UnclosedStalledTable } from "@/components/reporting/UnclosedStalledTable";
-import { ReportExportActions } from "@/components/reporting/ReportExportActions";
-import { ConversionAnalytics } from "@/components/reporting/ConversionAnalytics";
-import { WinLossAnalysis } from "@/components/reporting/WinLossAnalysis";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+/**
+ * Reporting — Unified Reporting Portal with 9 sections.
+ * Combines myCT1 native data + QuickBooks synced data into a single analytics hub.
+ * Navigation via collapsible sidebar on desktop, dropdown on mobile.
+ */
 
+import { useState } from "react";
+
+/** Re-exported for backward compatibility — many reporting components import this type from here. */
 export interface ReportingFilters {
   dateRange: string;
   dateFrom?: string;
@@ -31,158 +17,90 @@ export interface ReportingFilters {
   leadSource?: string;
   customerType?: string;
 }
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import {
+  LayoutDashboard, TrendingUp, Briefcase, DollarSign, Receipt,
+  Users, FileText, Store, Wrench,
+} from "lucide-react";
+
+import { UnifiedDashboard } from "@/components/reporting/unified/UnifiedDashboard";
+import { SalesPipelineReport } from "@/components/reporting/unified/SalesPipelineReport";
+import { JobsProjectsReport } from "@/components/reporting/unified/JobsProjectsReport";
+import { RevenueFinancialReport } from "@/components/reporting/unified/RevenueFinancialReport";
+import { ExpensesProfitabilityReport } from "@/components/reporting/unified/ExpensesProfitabilityReport";
+import { CustomersReport } from "@/components/reporting/unified/CustomersReport";
+import { AccountsReceivableReport } from "@/components/reporting/unified/AccountsReceivableReport";
+import { AccountsPayableReport } from "@/components/reporting/unified/AccountsPayableReport";
+import { CustomReportBuilder } from "@/components/reporting/unified/CustomReportBuilder";
+
+const sections = [
+  { value: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { value: "sales", label: "Sales & Pipeline", icon: TrendingUp },
+  { value: "jobs", label: "Jobs & Projects", icon: Briefcase },
+  { value: "revenue", label: "Revenue", icon: DollarSign },
+  { value: "expenses", label: "Expenses", icon: Receipt },
+  { value: "customers", label: "Customers", icon: Users },
+  { value: "ar", label: "Receivables", icon: FileText },
+  { value: "ap", label: "Payables", icon: Store },
+  { value: "custom", label: "Custom Reports", icon: Wrench },
+];
 
 export default function Reporting() {
-  // Default to "all_time" so users see all their data initially
-  const [filters, setFilters] = useState<ReportingFilters>({
-    dateRange: "all_time",
-  });
-
-  // Fetch all report data for export
-  const { data: exportData } = useQuery({
-    queryKey: ["report-export-data", filters],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return null;
-
-      // Fetch estimates, jobs, and other data for export
-      const [estimates, jobs] = await Promise.all([
-        supabase.from("estimates").select("*").eq("user_id", user.id),
-        supabase.from("jobs").select("*").eq("user_id", user.id),
-      ]);
-
-      return { estimates: estimates.data || [], jobs: jobs.data || [] };
-    },
-  });
-
-  // Prepare report data for export
-  const reportData = useMemo(() => {
-    const dateRangeLabels: Record<string, string> = {
-      all_time: "All Time",
-      this_week: "This Week",
-      this_month: "This Month",
-      this_quarter: "This Quarter",
-      this_year: "This Year",
-      last_month: "Last Month",
-      last_quarter: "Last Quarter",
-      custom: filters.dateFrom && filters.dateTo 
-        ? `${filters.dateFrom} to ${filters.dateTo}` 
-        : "Custom Range",
-    };
-
-    return {
-      title: "Financial Report",
-      dateRange: dateRangeLabels[filters.dateRange] || "All Time",
-      sections: [
-        {
-          title: "Estimates",
-          data: exportData?.estimates || [],
-        },
-        {
-          title: "Jobs",
-          data: exportData?.jobs || [],
-        },
-      ],
-      summary: [],
-    };
-  }, [exportData, filters]);
+  const [activeSection, setActiveSection] = useState("dashboard");
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-6 lg:p-8">
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex justify-between items-start">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Reporting & Analytics</h1>
-            <p className="text-muted-foreground mt-2">
-              Track sales performance, revenue, and job metrics
-            </p>
-          </div>
-          <ReportExportActions reportData={reportData} filters={filters} />
-        </div>
-
-        {/* Filters */}
-        <ReportingFilters filters={filters} onFiltersChange={setFilters} />
-
-        {/* KPI Cards */}
-        <KPICards filters={filters} />
-
-        {/* Conversion Analytics */}
-        <ConversionAnalytics filters={filters} />
-
-        {/* Win/Loss Analysis */}
-        <WinLossAnalysis filters={filters} />
-
-        {/* Financial Statements */}
-        <div className="grid gap-6">
-          <ProfitLossStatement filters={filters} />
-        </div>
-
-        {/* Charts */}
-        <div className="grid gap-6 md:grid-cols-2">
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Cash Flow Analysis</h3>
-            <CashFlowChart filters={filters} />
-          </Card>
-
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Expense Breakdown</h3>
-            <ExpenseBreakdown filters={filters} />
-          </Card>
-
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Sales Over Time</h3>
-            <SalesOverTimeChart filters={filters} />
-          </Card>
-
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Estimate to Sale Funnel</h3>
-            <EstimateFunnelChart filters={filters} />
-          </Card>
-
-          <Card className="p-6 md:col-span-2">
-            <h3 className="text-lg font-semibold mb-4">Revenue & Profit Trend</h3>
-            <RevenueProfitChart filters={filters} />
-          </Card>
-
-          <Card className="p-6 md:col-span-2">
-            <h3 className="text-lg font-semibold mb-4">Performance by Sales Rep</h3>
-            <PerformanceByRepChart filters={filters} />
-          </Card>
-        </div>
-
-        {/* Job Profitability Analysis */}
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold mb-4">Job Profitability Analysis</h3>
-          <JobProfitability filters={filters} />
-        </Card>
-
-        {/* Data Tables */}
-        <Tabs defaultValue="estimates" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="estimates">Estimates</TabsTrigger>
-            <TabsTrigger value="jobs">Jobs</TabsTrigger>
-            <TabsTrigger value="payments">Payments</TabsTrigger>
-            <TabsTrigger value="unclosed">Unclosed & Stalled</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="estimates">
-            <EstimatesTable filters={filters} />
-          </TabsContent>
-
-          <TabsContent value="jobs">
-            <JobsTable filters={filters} />
-          </TabsContent>
-
-          <TabsContent value="payments">
-            <PaymentsTable filters={filters} />
-          </TabsContent>
-
-          <TabsContent value="unclosed">
-            <UnclosedStalledTable filters={filters} />
-          </TabsContent>
-        </Tabs>
+    <div className="flex-1 space-y-4 md:space-y-6 p-4 md:p-8 pt-4 md:pt-6 pb-24 md:pb-8 overflow-y-auto">
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Reporting & Analytics</h1>
+        <p className="text-sm md:text-base text-muted-foreground">
+          Unified business intelligence across all data sources
+        </p>
       </div>
+
+      {/* Mobile: dropdown nav */}
+      <div className="block md:hidden">
+        <Select value={activeSection} onValueChange={setActiveSection}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select report" />
+          </SelectTrigger>
+          <SelectContent className="bg-popover z-50">
+            {sections.map((s) => (
+              <SelectItem key={s.value} value={s.value}>
+                <div className="flex items-center gap-2">
+                  <s.icon className="h-4 w-4" />
+                  {s.label}
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Desktop: horizontal tabs */}
+      <Tabs value={activeSection} onValueChange={setActiveSection} className="space-y-4">
+        <TabsList className="hidden md:flex w-full overflow-x-auto">
+          {sections.map((s) => (
+            <TabsTrigger key={s.value} value={s.value} className="flex-shrink-0">
+              <s.icon className="h-4 w-4 mr-1.5" />
+              <span className="text-xs lg:text-sm">{s.label}</span>
+            </TabsTrigger>
+          ))}
+        </TabsList>
+
+        <TabsContent value="dashboard"><UnifiedDashboard /></TabsContent>
+        <TabsContent value="sales"><SalesPipelineReport /></TabsContent>
+        <TabsContent value="jobs"><JobsProjectsReport /></TabsContent>
+        <TabsContent value="revenue"><RevenueFinancialReport /></TabsContent>
+        <TabsContent value="expenses"><ExpensesProfitabilityReport /></TabsContent>
+        <TabsContent value="customers"><CustomersReport /></TabsContent>
+        <TabsContent value="ar"><AccountsReceivableReport /></TabsContent>
+        <TabsContent value="ap"><AccountsPayableReport /></TabsContent>
+        <TabsContent value="custom"><CustomReportBuilder /></TabsContent>
+      </Tabs>
     </div>
   );
 }
