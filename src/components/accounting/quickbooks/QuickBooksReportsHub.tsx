@@ -4,7 +4,6 @@
  */
 
 import { useState, useEffect } from "react";
-// Tabs import removed — using Select dropdown instead
 import {
   Select,
   SelectContent,
@@ -18,6 +17,7 @@ import {
   LayoutDashboard, FileText, BarChart3, Receipt, Users, Store, Clock,
   LinkIcon, Loader2, CreditCard, RefreshCw
 } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 import { QBOverview } from "./QBOverview";
 import { QBProfitLoss } from "./QBProfitLoss";
 import { QBBalanceSheet } from "./QBBalanceSheet";
@@ -57,20 +57,23 @@ export function QuickBooksReportsHub() {
   const [bankConnected, setBankConnected] = useState(false);
   const [stripeConnected, setStripeConnected] = useState(false);
 
-  const { data: qbConnected, isLoading: checkingConnection } = useQuery({
+  const { data: profileData, isLoading: checkingConnection } = useQuery({
     queryKey: ["qb-connection-check", user?.id],
     queryFn: async () => {
-      if (!user?.id) return false;
+      if (!user?.id) return null;
       const { data: profile } = await supabase
         .from("profiles")
-        .select("qb_realm_id, stripe_connect_account_id")
+        .select("qb_realm_id, stripe_connect_account_id, qb_last_sync_at")
         .eq("id", user.id)
         .single();
       setStripeConnected(!!profile?.stripe_connect_account_id);
-      return !!profile?.qb_realm_id;
+      return profile;
     },
     enabled: !!user?.id,
   });
+
+  const qbConnected = !!profileData?.qb_realm_id;
+  const lastSyncAt = profileData?.qb_last_sync_at;
 
   useEffect(() => {
     const checkBank = async () => {
@@ -174,10 +177,17 @@ export function QuickBooksReportsHub() {
               onConnectBank={openPlaid}
               onConnectionChange={() => window.location.reload()}
             />
-            <Button variant="outline" size="sm" onClick={handleSync}>
-              <RefreshCw className="h-4 w-4 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Sync</span>
-            </Button>
+            <div className="flex items-center gap-2">
+              {lastSyncAt && (
+                <span className="text-xs text-muted-foreground hidden sm:inline">
+                  Synced {formatDistanceToNow(new Date(lastSyncAt), { addSuffix: true })}
+                </span>
+              )}
+              <Button variant="outline" size="sm" onClick={handleSync}>
+                <RefreshCw className="h-4 w-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Sync</span>
+              </Button>
+            </div>
           </div>
         </div>
 

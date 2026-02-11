@@ -118,13 +118,13 @@ Deno.serve(async (req) => {
 
     console.log('QuickBooks connection saved successfully for contractor:', contractorId);
 
-    // Redirect to portal integrations page with success message
-    return Response.redirect('https://myct1.com/crm?qb_connected=true', 302);
+    // Redirect to dashboard accounting/banking tab with success message
+    return Response.redirect('https://myct1.com/dashboard?tab=banking&qb_connected=true', 302);
   } catch (error) {
     console.error('Error in quickbooks-callback:', error);
     const message = error instanceof Error ? error.message : 'An error occurred';
     
-    // Redirect to portal with error message
-    return Response.redirect(`https://myct1.com/crm?qb_error=${encodeURIComponent(message)}`, 302);
+    // Redirect to dashboard with error message
+    return Response.redirect(`https://myct1.com/dashboard?tab=banking&qb_error=${encodeURIComponent(message)}`, 302);
   }
 });

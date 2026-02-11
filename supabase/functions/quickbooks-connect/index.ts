@@ -54,7 +54,8 @@ Deno.serve(async (req) => {
     );
 
     console.log('Attempting to get user from session...');
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
     
     if (userError) {
       console.error('User authentication error:', userError);
