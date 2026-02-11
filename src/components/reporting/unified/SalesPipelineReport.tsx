@@ -40,7 +40,7 @@ export function SalesPipelineReport() {
     queryFn: async () => {
       if (!user?.id) return null;
       let estQ = supabase.from("estimates").select("id, title, status, total_amount, created_at, client_name, customer_id, job_id").eq("user_id", user.id);
-      let leadQ = supabase.from("leads").select("id, created_at, status, name, email, source").eq("user_id", user.id);
+      let leadQ = supabase.from("leads").select("id, created_at, status, name, email").eq("user_id", user.id);
       if (dateRange.start) { estQ = estQ.gte("created_at", dateRange.start); leadQ = leadQ.gte("created_at", dateRange.start); }
       if (dateRange.end) { estQ = estQ.lte("created_at", dateRange.end); leadQ = leadQ.lte("created_at", dateRange.end); }
       const [estimates, leads] = await Promise.all([estQ, leadQ]);
@@ -75,10 +75,28 @@ export function SalesPipelineReport() {
       onDateRangeChange={setDateRange}
     >
       <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
-        <InteractiveMetricCard title="Leads" value={String(salesData?.leads?.length || 0)} subtitle="Total leads" icon={<Target className="h-4 w-4 text-blue-600" />} variant="info" />
-        <InteractiveMetricCard title="Estimates" value={String(salesData?.estimates?.length || 0)} subtitle={`${salesData?.acceptedCount || 0} accepted`} icon={<FileText className="h-4 w-4 text-primary" />} variant="default" />
-        <InteractiveMetricCard title="Pipeline Value" value={fmt(salesData?.totalValue || 0)} subtitle="Total estimate value" icon={<DollarSign className="h-4 w-4 text-green-600" />} variant="success" />
-        <InteractiveMetricCard title="Conversion Rate" value={`${(salesData?.conversionRate || 0).toFixed(1)}%`} subtitle="Estimates → jobs" icon={<TrendingUp className="h-4 w-4 text-primary" />} variant="default" />
+        <InteractiveMetricCard title="Leads" value={String(salesData?.leads?.length || 0)} subtitle="Total leads" icon={<Target className="h-4 w-4 text-blue-600" />} variant="info"
+          onClick={() => {
+            const firstLead = salesData?.leads?.[0];
+            if (firstLead) openPanel({ type: "customer", title: firstLead.name || "Lead", data: { name: firstLead.name, email: firstLead.email } });
+          }}
+          breakdown={salesData?.leads?.slice(0, 3).map((l: any) => ({ label: l.name || "Lead", value: l.status || "new" }))}
+        />
+        <InteractiveMetricCard title="Estimates" value={String(salesData?.estimates?.length || 0)} subtitle={`${salesData?.acceptedCount || 0} accepted`} icon={<FileText className="h-4 w-4 text-primary" />} variant="default"
+          onClick={() => {
+            const firstEst = salesData?.estimates?.[0];
+            if (firstEst) openPanel({ type: "estimate", title: firstEst.title || "Estimate", data: firstEst });
+          }}
+          breakdown={[{ label: "Accepted", value: String(salesData?.acceptedCount || 0) }, { label: "Total", value: String(salesData?.estimates?.length || 0) }]}
+        />
+        <InteractiveMetricCard title="Pipeline Value" value={fmt(salesData?.totalValue || 0)} subtitle="Total estimate value" icon={<DollarSign className="h-4 w-4 text-green-600" />} variant="success"
+          onClick={() => openPanel({ type: "category-breakdown", title: "Pipeline Value Breakdown", data: { category: "Pipeline", type: "revenue", totalAmount: salesData?.totalValue || 0 } })}
+          breakdown={[{ label: "Avg Estimate", value: fmt(salesData?.estimates?.length ? (salesData.totalValue || 0) / salesData.estimates.length : 0) }]}
+        />
+        <InteractiveMetricCard title="Conversion Rate" value={`${(salesData?.conversionRate || 0).toFixed(1)}%`} subtitle="Estimates → jobs" icon={<TrendingUp className="h-4 w-4 text-primary" />} variant="default"
+          onClick={() => openPanel({ type: "category-breakdown", title: "Conversion Funnel", data: { category: "Conversion", type: "revenue", totalAmount: salesData?.totalValue || 0 } })}
+          breakdown={[{ label: "Won", value: String(salesData?.acceptedCount || 0) }, { label: "Total", value: String(salesData?.estimates?.length || 0) }]}
+        />
       </div>
 
       {/* Conversion funnel + metrics */}

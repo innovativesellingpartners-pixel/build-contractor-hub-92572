@@ -103,13 +103,17 @@ export function AccountsPayableReport() {
       <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
         {qbConnected && (
           <>
-            <InteractiveMetricCard title="Outstanding Bills" value={fmt(totalBillsAmount)} subtitle={`${qbBills?.length || 0} bills`} icon={<FileText className="h-4 w-4 text-red-600" />} variant="danger" />
+            <InteractiveMetricCard title="Outstanding Bills" value={fmt(totalBillsAmount)} subtitle={`${qbBills?.length || 0} bills`} icon={<FileText className="h-4 w-4 text-red-600" />} variant="danger"
+              onClick={() => { const first = qbBills?.[0]; if (first) openPanel({ type: "expense", title: `Bill - ${first.VendorRef?.name || "Vendor"}`, data: { amount: parseFloat(first.TotalAmt || "0"), date: first.DueDate, description: first.VendorRef?.name, category: "Bill" } }); }}
+              breakdown={[{ label: "Bills", value: String(qbBills?.length || 0) }, { label: "Total", value: fmt(totalBillsAmount) }]}
+            />
             <InteractiveMetricCard
               title="Vendors"
               value={String(qbVendors?.length || 0)}
               subtitle="From connected accounting"
               icon={<Store className="h-4 w-4 text-blue-600" />}
               variant="info"
+              onClick={() => { const first = qbVendors?.[0]; if (first) openPanel({ type: "vendor", title: first.DisplayName, data: first }); }}
             />
           </>
         )}

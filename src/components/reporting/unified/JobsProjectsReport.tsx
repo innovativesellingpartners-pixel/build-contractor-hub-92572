@@ -97,10 +97,24 @@ export function JobsProjectsReport() {
       onDateRangeChange={setDateRange}
     >
       <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
-        <InteractiveMetricCard title="Total Jobs" value={String(metrics?.total || 0)} subtitle={`${metrics?.active || 0} active`} icon={<Briefcase className="h-4 w-4 text-blue-600" />} variant="info" />
-        <InteractiveMetricCard title="Completed" value={String(metrics?.completed || 0)} subtitle="Jobs finished" icon={<CheckCircle className="h-4 w-4 text-green-600" />} variant="success" />
-        <InteractiveMetricCard title="Total Revenue" value={fmt(metrics?.totalRev || 0)} subtitle={`Avg: ${fmt(metrics?.avgValue || 0)}`} icon={<TrendingUp className="h-4 w-4 text-green-600" />} variant="success" />
-        <InteractiveMetricCard title="Gross Margin" value={`${(metrics?.margin || 0).toFixed(1)}%`} subtitle={`Cost: ${fmt(metrics?.totalCost || 0)}`} icon={<Clock className="h-4 w-4 text-primary" />} variant="default" />
+        <InteractiveMetricCard title="Total Jobs" value={String(metrics?.total || 0)} subtitle={`${metrics?.active || 0} active`} icon={<Briefcase className="h-4 w-4 text-blue-600" />} variant="info"
+          onClick={() => openPanel({ type: "category-breakdown", title: `All Jobs · ${metrics?.total || 0} total`, data: { category: "Jobs", type: "revenue", totalAmount: metrics?.totalRev || 0 } })}
+          breakdown={[{ label: "Active", value: String(metrics?.active || 0) }, { label: "Completed", value: String(metrics?.completed || 0) }]}
+        />
+        <InteractiveMetricCard title="Completed" value={String(metrics?.completed || 0)} subtitle="Jobs finished" icon={<CheckCircle className="h-4 w-4 text-green-600" />} variant="success"
+          onClick={() => {
+            const completed = metrics?.jobsList?.filter((j: any) => j.job_status === "completed") || [];
+            if (completed.length > 0) openPanel({ type: "job", title: completed[0].name || "Completed Job", data: completed[0] });
+          }}
+        />
+        <InteractiveMetricCard title="Total Revenue" value={fmt(metrics?.totalRev || 0)} subtitle={`Avg: ${fmt(metrics?.avgValue || 0)}`} icon={<TrendingUp className="h-4 w-4 text-green-600" />} variant="success"
+          onClick={() => openPanel({ type: "category-breakdown", title: "Job Revenue Breakdown", data: { category: "Job Revenue", type: "revenue", totalAmount: metrics?.totalRev || 0 } })}
+          breakdown={[{ label: "Total Jobs", value: String(metrics?.total || 0) }, { label: "Avg Value", value: fmt(metrics?.avgValue || 0) }]}
+        />
+        <InteractiveMetricCard title="Gross Margin" value={`${(metrics?.margin || 0).toFixed(1)}%`} subtitle={`Cost: ${fmt(metrics?.totalCost || 0)}`} icon={<Clock className="h-4 w-4 text-primary" />} variant="default"
+          onClick={() => openPanel({ type: "category-breakdown", title: "Cost Breakdown", data: { category: "All", type: "cost", totalAmount: metrics?.totalCost || 0 } })}
+          breakdown={[{ label: "Revenue", value: fmt(metrics?.totalRev || 0) }, { label: "Total Cost", value: fmt(metrics?.totalCost || 0) }, { label: "Profit", value: fmt((metrics?.totalRev || 0) - (metrics?.totalCost || 0)) }]}
+        />
       </div>
 
       {/* By job type chart — clickable bars */}
@@ -118,7 +132,14 @@ export function JobsProjectsReport() {
                 formatter={(value: number) => fmt(value)}
                 cursor={{ fill: "hsl(var(--muted))", fillOpacity: 0.5 }}
               />
-              <Bar dataKey="revenue" fill="hsl(var(--primary))" name="Revenue" radius={[4, 4, 0, 0]} className="cursor-pointer" />
+              <Bar dataKey="revenue" fill="hsl(var(--primary))" name="Revenue" radius={[4, 4, 0, 0]} className="cursor-pointer"
+                onClick={(data: any) => {
+                  if (data?.name) {
+                    const filtered = metrics?.jobsList?.filter((j: any) => (j.trade_type || "Other").toLowerCase() === data.name.toLowerCase()) || [];
+                    if (filtered.length > 0) openPanel({ type: "category-breakdown", title: `${data.name} Jobs · ${filtered.length} total`, data: { category: data.name, type: "revenue", totalAmount: data.revenue } });
+                  }
+                }}
+              />
             </BarChart>
           </ResponsiveContainer>
         </Card>

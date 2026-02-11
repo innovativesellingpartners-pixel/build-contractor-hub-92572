@@ -111,6 +111,8 @@ export function ExpensesProfitabilityReport() {
           subtitle={`${nativeExpenses?.count || 0} expenses`}
           icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
           variant="default"
+          onClick={() => openPanel({ type: "category-breakdown", title: "All Expenses", data: { category: "All", type: "expense", totalAmount: nativeExpenses?.total || 0, dateStart: dateRange.start, dateEnd: dateRange.end } })}
+          breakdown={[{ label: "Total", value: fmt(nativeExpenses?.total || 0) }, { label: "Count", value: String(nativeExpenses?.count || 0) }]}
         />
         <InteractiveMetricCard
           title="Top Category"

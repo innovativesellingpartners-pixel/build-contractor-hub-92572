@@ -82,10 +82,21 @@ export function CustomersReport() {
       onDateRangeChange={setDateRange}
     >
       <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
-        <InteractiveMetricCard title="Total Customers" value={String(customers?.length || 0)} subtitle="myCT1 records" icon={<Users className="h-4 w-4 text-blue-600" />} variant="info" />
-        <InteractiveMetricCard title="Total Lifetime Value" value={fmt(totalLTV)} subtitle="All customers" icon={<DollarSign className="h-4 w-4 text-green-600" />} variant="success" />
-        <InteractiveMetricCard title="Avg Customer Value" value={fmt(avgLTV)} subtitle="Per customer" icon={<TrendingUp className="h-4 w-4 text-primary" />} variant="default" />
-        {qbConnected && <InteractiveMetricCard title="QB Customers" value={String(qbCustomers?.length || 0)} subtitle="From connected accounting" icon={<UserPlus className="h-4 w-4 text-green-600" />} variant="success" />}
+        <InteractiveMetricCard title="Total Customers" value={String(customers?.length || 0)} subtitle="myCT1 records" icon={<Users className="h-4 w-4 text-blue-600" />} variant="info"
+          onClick={() => { const first = customers?.[0]; if (first) openPanel({ type: "customer", title: first.name, data: first }); }}
+          breakdown={[{ label: "Total", value: String(customers?.length || 0) }]}
+        />
+        <InteractiveMetricCard title="Total Lifetime Value" value={fmt(totalLTV)} subtitle="All customers" icon={<DollarSign className="h-4 w-4 text-green-600" />} variant="success"
+          onClick={() => openPanel({ type: "category-breakdown", title: "Customer Revenue", data: { category: "Customer Revenue", type: "revenue", totalAmount: totalLTV } })}
+          breakdown={customers?.slice(0, 3).map((c: any) => ({ label: c.name, value: fmt(Number(c.lifetime_value || 0)) }))}
+        />
+        <InteractiveMetricCard title="Avg Customer Value" value={fmt(avgLTV)} subtitle="Per customer" icon={<TrendingUp className="h-4 w-4 text-primary" />} variant="default"
+          onClick={() => openPanel({ type: "category-breakdown", title: "Average Customer Value", data: { category: "Customer Value", type: "revenue", totalAmount: totalLTV } })}
+          breakdown={[{ label: "Total LTV", value: fmt(totalLTV) }, { label: "Customers", value: String(customers?.length || 0) }]}
+        />
+        {qbConnected && <InteractiveMetricCard title="QB Customers" value={String(qbCustomers?.length || 0)} subtitle="From connected accounting" icon={<UserPlus className="h-4 w-4 text-green-600" />} variant="success"
+          onClick={() => { const first = qbCustomers?.[0]; if (first) openPanel({ type: "customer", title: first.DisplayName, data: { name: first.DisplayName, email: first.PrimaryEmailAddr?.Address } }); }}
+        />}
       </div>
 
       {/* Customer directory — clickable rows */}
