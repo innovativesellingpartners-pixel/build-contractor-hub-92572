@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { AddressAutocomplete } from '@/components/ui/address-autocomplete';
+import { LocationAutocomplete } from '@/components/ui/location-autocomplete';
 import { User, Building, MapPin, Phone, Mail, Briefcase, Check, ChevronsUpDown, Plus } from 'lucide-react';
 import { EstimateBuilderData } from '../../EstimateBuilder';
 import { useGCContacts, GCContact } from '@/hooks/useGCContacts';
@@ -323,7 +323,7 @@ export default function ProjectInfoStep({ data, onChange }: ProjectInfoStepProps
             
             <div className="sm:col-span-2 space-y-2">
               <Label htmlFor="client_address">Client Address</Label>
-              <AddressAutocomplete
+              <LocationAutocomplete
                 value={data.client_address || ''}
                 onChange={(value) => onChange({ client_address: value })}
                 placeholder="Start typing an address..."
@@ -348,7 +348,7 @@ export default function ProjectInfoStep({ data, onChange }: ProjectInfoStepProps
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="site_address">Site Address</Label>
-            <AddressAutocomplete
+            <LocationAutocomplete
               value={data.site_address || ''}
               onChange={(value) => onChange({ site_address: value })}
               placeholder="Leave empty if same as client address"

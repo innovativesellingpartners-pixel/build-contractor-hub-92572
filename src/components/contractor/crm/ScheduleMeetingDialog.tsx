@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { PredictiveInput } from '@/components/ui/predictive-input';
-import { AddressAutocomplete } from '@/components/ui/address-autocomplete';
+import { LocationAutocomplete } from '@/components/ui/location-autocomplete';
 import { useFormMemory } from '@/hooks/useFormMemory';
 import { 
   CalendarIcon, 
@@ -951,7 +951,7 @@ export function ScheduleMeetingDialog({
                   <MapPin className="h-4 w-4" />
                   Location
                 </Label>
-                <AddressAutocomplete
+                <LocationAutocomplete
                   value={location}
                   onChange={setLocation}
                   placeholder="Meeting address or location"

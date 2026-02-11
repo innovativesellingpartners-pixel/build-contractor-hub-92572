@@ -9,7 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { AddressAutocomplete } from '@/components/ui/address-autocomplete';
+import { LocationAutocomplete } from '@/components/ui/location-autocomplete';
 import { CalendarIcon, Clock, MapPin, Loader2, FileText, Users, Mail, X, Plus } from 'lucide-react';
 import { format, parseISO, differenceInMinutes } from 'date-fns';
 import { toast } from 'sonner';
@@ -541,7 +541,7 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess }: EditEv
                 <MapPin className="h-4 w-4" />
                 Location
               </Label>
-              <AddressAutocomplete
+              <LocationAutocomplete
                 value={location}
                 onChange={setLocation}
                 placeholder="Event location or address"

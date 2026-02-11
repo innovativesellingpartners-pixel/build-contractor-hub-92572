@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { AddressAutocomplete } from "@/components/ui/address-autocomplete";
+import { LocationAutocomplete } from "@/components/ui/location-autocomplete";
 import { Plus, Trash2, Copy, X, Eye } from "lucide-react";
 import { Estimate, EstimateLineItem } from "@/hooks/useEstimates";
 import { toast } from "sonner";
@@ -305,7 +305,7 @@ export function EnhancedEstimateForm({ onSubmit, onCancel, initialData }: Enhanc
                   </div>
                   <div className="space-y-2">
                     <Label>Project Address</Label>
-                    <AddressAutocomplete
+                    <LocationAutocomplete
                       value={form.watch("project_address") || ""}
                       onChange={(value) => form.setValue("project_address", value)}
                       placeholder="Start typing an address..."

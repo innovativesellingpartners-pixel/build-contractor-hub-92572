@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { PredictiveInput } from '@/components/ui/predictive-input';
-import { AddressAutocomplete } from '@/components/ui/address-autocomplete';
+import { LocationAutocomplete } from '@/components/ui/location-autocomplete';
 import { useFormMemory } from '@/hooks/useFormMemory';
 import { Calendar, Clock, Plus, Trash2, MapPin, Pencil } from 'lucide-react';
 import { format } from 'date-fns';
@@ -294,7 +294,7 @@ export function JobMeetingsSection({ meetings, onAddMeeting, onRemoveMeeting, on
                 </label>
               </div>
             )}
-            <AddressAutocomplete
+            <LocationAutocomplete
               value={formData.location}
               onChange={(value) => {
                 setFormData({ ...formData, location: value });
