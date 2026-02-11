@@ -82,7 +82,7 @@ export function ActionButton({ children, variant = 'primary', onClick, disabled,
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'px-3 py-2.5 rounded-md font-semibold text-xs uppercase tracking-wide transition-colors shadow-sm whitespace-nowrap flex-shrink-0',
+        'px-3 py-2.5 rounded-md font-semibold text-xs uppercase tracking-wide transition-colors shadow-sm text-center',
         variantClasses[variant],
         fullWidth && 'w-full',
         disabled && 'opacity-50 cursor-not-allowed',
@@ -197,10 +197,10 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
   );
 }
 
-// Action buttons row - contained with proper overflow handling
+// Action buttons row - grid on mobile, flex on desktop
 export function ActionButtonRow({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <div className={cn('flex gap-2 px-3 py-2 bg-card border-b border-border overflow-x-auto scrollbar-hide', className)}>
+    <div className={cn('grid grid-cols-2 sm:flex sm:flex-wrap gap-2 px-3 py-2 bg-card border-b border-border', className)}>
       {children}
     </div>
   );
