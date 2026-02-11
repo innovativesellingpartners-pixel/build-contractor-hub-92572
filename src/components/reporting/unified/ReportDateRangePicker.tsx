@@ -27,33 +27,39 @@ interface Props {
   onChange: (range: DateRange) => void;
 }
 
+function formatLocal(d: Date): string {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 function computeDates(preset: DateRangePreset): { start?: string; end?: string } {
   const now = new Date();
   const y = now.getFullYear();
   const m = now.getMonth();
-  const fmt = (d: Date) => d.toISOString().split("T")[0];
 
   switch (preset) {
     case "this_month":
-      return { start: fmt(new Date(y, m, 1)), end: fmt(now) };
+      return { start: formatLocal(new Date(y, m, 1)), end: formatLocal(now) };
     case "last_month":
-      return { start: fmt(new Date(y, m - 1, 1)), end: fmt(new Date(y, m, 0)) };
+      return { start: formatLocal(new Date(y, m - 1, 1)), end: formatLocal(new Date(y, m, 0)) };
     case "this_quarter": {
       const q = Math.floor(m / 3);
-      return { start: fmt(new Date(y, q * 3, 1)), end: fmt(now) };
+      return { start: formatLocal(new Date(y, q * 3, 1)), end: formatLocal(now) };
     }
     case "last_quarter": {
       const lq = Math.floor(m / 3) - 1;
       const ly = lq < 0 ? y - 1 : y;
       const aq = lq < 0 ? 3 : lq;
-      return { start: fmt(new Date(ly, aq * 3, 1)), end: fmt(new Date(ly, aq * 3 + 3, 0)) };
+      return { start: formatLocal(new Date(ly, aq * 3, 1)), end: formatLocal(new Date(ly, aq * 3 + 3, 0)) };
     }
     case "ytd":
-      return { start: `${y}-01-01`, end: fmt(now) };
+      return { start: `${y}-01-01`, end: formatLocal(now) };
     case "last_year":
       return { start: `${y - 1}-01-01`, end: `${y - 1}-12-31` };
     case "all_time":
-      return {};
+      return { start: "2000-01-01", end: formatLocal(now) };
     default:
       return {};
   }
