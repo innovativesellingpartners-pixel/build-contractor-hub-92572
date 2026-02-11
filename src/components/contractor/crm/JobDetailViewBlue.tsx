@@ -845,56 +845,6 @@ export default function JobDetailViewBlue({ job, open, onOpenChange, onCreateEst
             }
           />
 
-          {/* Action Buttons */}
-          <ActionButtonRow className="flex-wrap">
-            {/* Convert to Estimate - Top priority action */}
-            {onCreateEstimate && (
-              <ActionButton 
-                variant="primary" 
-                onClick={onCreateEstimate}
-                className="flex-1 flex items-center justify-center gap-2"
-              >
-                <FileText className="w-4 h-4" />
-                CREATE ESTIMATE
-              </ActionButton>
-            )}
-            <ActionButton 
-              variant="secondary" 
-              onClick={() => setActiveTab('invoices')} 
-              className="flex-1 flex items-center justify-center gap-2"
-            >
-              <Receipt className="w-4 h-4" />
-              CREATE INVOICE
-            </ActionButton>
-            {getFullAddress() && (
-              <ActionButton variant="muted" onClick={handleNavigate} className="flex-1 flex items-center justify-center gap-2">
-                <Navigation className="w-4 h-4" />
-                START TRAVEL
-              </ActionButton>
-            )}
-            <ActionButton 
-              variant="muted" 
-              onClick={() => setActiveTab('changes')} 
-              className="flex-1 flex items-center justify-center gap-2"
-            >
-              <FilePlus className="w-4 h-4" />
-              CHANGE ORDER
-            </ActionButton>
-            {job.status === 'scheduled' && (
-              <ActionButton variant="success" onClick={() => handleStatusChange('in_progress')} className="flex-1">
-                START JOB
-              </ActionButton>
-            )}
-            {job.status === 'in_progress' && (
-              <ActionButton variant="success" onClick={() => handleStatusChange('completed')} className="flex-1">
-                COMPLETE
-              </ActionButton>
-            )}
-          </ActionButtonRow>
-
-          {/* Tab Navigation */}
-          <TabNav tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
-
           {/* Content - extra bottom padding to clear nav bar with pull-to-refresh */}
           <div 
             ref={containerRef}
@@ -912,6 +862,57 @@ export default function JobDetailViewBlue({ job, open, onOpenChange, onCreateEst
               isRefreshing={isRefreshing} 
               threshold={80}
             />
+
+            {/* Action Buttons - scrolls with content */}
+            <ActionButtonRow className="flex-wrap">
+              {/* Convert to Estimate - Top priority action */}
+              {onCreateEstimate && (
+                <ActionButton 
+                  variant="primary" 
+                  onClick={onCreateEstimate}
+                  className="flex-1 flex items-center justify-center gap-2"
+                >
+                  <FileText className="w-4 h-4" />
+                  CREATE ESTIMATE
+                </ActionButton>
+              )}
+              <ActionButton 
+                variant="secondary" 
+                onClick={() => setActiveTab('invoices')} 
+                className="flex-1 flex items-center justify-center gap-2"
+              >
+                <Receipt className="w-4 h-4" />
+                CREATE INVOICE
+              </ActionButton>
+              {getFullAddress() && (
+                <ActionButton variant="muted" onClick={handleNavigate} className="flex-1 flex items-center justify-center gap-2">
+                  <Navigation className="w-4 h-4" />
+                  START TRAVEL
+                </ActionButton>
+              )}
+              <ActionButton 
+                variant="muted" 
+                onClick={() => setActiveTab('changes')} 
+                className="flex-1 flex items-center justify-center gap-2"
+              >
+                <FilePlus className="w-4 h-4" />
+                CHANGE ORDER
+              </ActionButton>
+              {job.status === 'scheduled' && (
+                <ActionButton variant="success" onClick={() => handleStatusChange('in_progress')} className="flex-1">
+                  START JOB
+                </ActionButton>
+              )}
+              {job.status === 'in_progress' && (
+                <ActionButton variant="success" onClick={() => handleStatusChange('completed')} className="flex-1">
+                  COMPLETE
+                </ActionButton>
+              )}
+            </ActionButtonRow>
+
+            {/* Tab Navigation */}
+            <TabNav tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
+
             {activeTab === 'info' && (
               <div className="space-y-0">
                 {/* Job Information */}
