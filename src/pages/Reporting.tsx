@@ -18,7 +18,7 @@ export interface ReportingFilters {
   leadSource?: string;
   customerType?: string;
 }
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+// Tabs import removed — using Select dropdown instead
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -70,46 +70,33 @@ export default function Reporting() {
         {/* Breadcrumbs */}
         <DrillDownBreadcrumbs />
 
-        {/* Mobile: dropdown nav */}
-        <div className="block md:hidden">
-          <Select value={activeSection} onValueChange={setActiveSection}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select report" />
-            </SelectTrigger>
-            <SelectContent className="bg-popover z-50">
-              {sections.map((s) => (
-                <SelectItem key={s.value} value={s.value}>
-                  <div className="flex items-center gap-2">
-                    <s.icon className="h-4 w-4" />
-                    {s.label}
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Desktop: horizontal tabs */}
-        <Tabs value={activeSection} onValueChange={setActiveSection} className="space-y-4">
-          <TabsList className="hidden md:flex w-full overflow-x-auto">
+        {/* Section selector dropdown */}
+        <Select value={activeSection} onValueChange={setActiveSection}>
+          <SelectTrigger className="w-full sm:w-[280px]">
+            <SelectValue placeholder="Select report" />
+          </SelectTrigger>
+          <SelectContent className="bg-popover z-50">
             {sections.map((s) => (
-              <TabsTrigger key={s.value} value={s.value} className="flex-shrink-0">
-                <s.icon className="h-4 w-4 mr-1.5" />
-                <span className="text-xs lg:text-sm">{s.label}</span>
-              </TabsTrigger>
+              <SelectItem key={s.value} value={s.value}>
+                <div className="flex items-center gap-2">
+                  <s.icon className="h-4 w-4" />
+                  {s.label}
+                </div>
+              </SelectItem>
             ))}
-          </TabsList>
+          </SelectContent>
+        </Select>
 
-          <TabsContent value="dashboard"><UnifiedDashboard /></TabsContent>
-          <TabsContent value="sales"><SalesPipelineReport /></TabsContent>
-          <TabsContent value="jobs"><JobsProjectsReport /></TabsContent>
-          <TabsContent value="revenue"><RevenueFinancialReport /></TabsContent>
-          <TabsContent value="expenses"><ExpensesProfitabilityReport /></TabsContent>
-          <TabsContent value="customers"><CustomersReport /></TabsContent>
-          <TabsContent value="ar"><AccountsReceivableReport /></TabsContent>
-          <TabsContent value="ap"><AccountsPayableReport /></TabsContent>
-          <TabsContent value="custom"><CustomReportBuilder /></TabsContent>
-        </Tabs>
+        {/* Content */}
+        {activeSection === "dashboard" && <UnifiedDashboard />}
+        {activeSection === "sales" && <SalesPipelineReport />}
+        {activeSection === "jobs" && <JobsProjectsReport />}
+        {activeSection === "revenue" && <RevenueFinancialReport />}
+        {activeSection === "expenses" && <ExpensesProfitabilityReport />}
+        {activeSection === "customers" && <CustomersReport />}
+        {activeSection === "ar" && <AccountsReceivableReport />}
+        {activeSection === "ap" && <AccountsPayableReport />}
+        {activeSection === "custom" && <CustomReportBuilder />}
 
         {/* Global drill-down slide-out panel */}
         <DrillDownPanel />
