@@ -3,20 +3,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
-  ({ className, type, onInput, ...props }, ref) => {
-    // Auto-capitalize first letter for text inputs
-    const handleInput = (e: React.FormEvent<HTMLInputElement>) => {
-      const input = e.currentTarget;
-      if (type === 'text' || type === undefined || type === 'search') {
-        const value = input.value;
-        // Capitalize first letter if it's the first character and lowercase
-        if (value.length === 1 && /[a-z]/.test(value)) {
-          input.value = value.toUpperCase();
-        }
-      }
-      onInput?.(e);
-    };
-
+  ({ className, type, ...props }, ref) => {
     return (
       <input
         type={type}
@@ -27,7 +14,6 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
           className,
         )}
         ref={ref}
-        onInput={handleInput}
         {...props}
       />
     );
