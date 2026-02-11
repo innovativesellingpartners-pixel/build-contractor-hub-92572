@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -347,21 +348,22 @@ export default function EstimatesSection({ onSectionChange, initialEstimateId, o
         Create, manage, and track project estimates
       </CardDescription>
 
-      {/* Filter Chips */}
-      <div className="px-4 sm:px-0 mb-4 flex gap-2 flex-wrap">
-        {['all', 'draft', 'sent', 'viewed', 'signed', 'paid'].map((filter) => (
-          <button
-            key={filter}
-            onClick={() => setStatusFilter(filter)}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors capitalize ${
-              statusFilter === filter
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-muted text-muted-foreground hover:bg-muted/80'
-            }`}
-          >
-            {filter}
-          </button>
-        ))}
+      {/* Status Filter Dropdown */}
+      <div className="px-4 sm:px-0 mb-4 flex items-center gap-3">
+        <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">Filter by Status</span>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-[160px] h-9 bg-background">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent className="bg-popover z-50">
+            <SelectItem value="all">All</SelectItem>
+            <SelectItem value="draft">Draft</SelectItem>
+            <SelectItem value="sent">Sent</SelectItem>
+            <SelectItem value="viewed">Viewed</SelectItem>
+            <SelectItem value="signed">Signed</SelectItem>
+            <SelectItem value="paid">Paid</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Predictive Search */}
