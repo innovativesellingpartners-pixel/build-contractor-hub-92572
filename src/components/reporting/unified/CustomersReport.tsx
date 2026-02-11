@@ -1,6 +1,6 @@
 /**
- * CustomersReport — Unified customer intelligence merging myCT1 + QB customer data.
- * Shows directory, lifetime value, acquisition, top customers.
+ * CustomersReport — Customer intelligence with full drill-down interactivity.
+ * All metric cards and customer rows are clickable → detail panel.
  */
 
 import { useState } from "react";
@@ -8,25 +8,25 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQBCustomers } from "@/hooks/useQuickBooksQuery";
-import { ReportDateRangePicker, DateRange } from "./ReportDateRangePicker";
-import { ReportMetricCard } from "./ReportMetricCard";
+import { InteractiveReportShell } from "../drilldown/InteractiveReportShell";
+import { InteractiveMetricCard } from "../drilldown/InteractiveMetricCard";
+import { InteractiveTable, TableColumn } from "../drilldown/InteractiveTable";
+import { useDrillDown } from "../drilldown/DrillDownProvider";
+import { DateRange } from "./ReportDateRangePicker";
 import { ReportEmptyState } from "./ReportEmptyState";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Users, DollarSign, UserPlus, TrendingUp } from "lucide-react";
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
 
 const fmt = (v: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 0 }).format(v);
 
 export function CustomersReport() {
   const { user } = useAuth();
+  const { openPanel } = useDrillDown();
   const [dateRange, setDateRange] = useState<DateRange>({ preset: "all_time" });
-  const [search, setSearch] = useState("");
 
   const { data: qbConnected } = useQuery({
     queryKey: ["qb-connected-cust", user?.id],
@@ -58,103 +58,69 @@ export function CustomersReport() {
   const totalLTV = customers?.reduce((s, c) => s + Number(c.lifetime_value || 0), 0) || 0;
   const avgLTV = customers?.length ? totalLTV / customers.length : 0;
 
-  const filtered = customers?.filter(c =>
-    !search || c.name?.toLowerCase().includes(search.toLowerCase()) ||
-    c.email?.toLowerCase().includes(search.toLowerCase()) ||
-    c.company?.toLowerCase().includes(search.toLowerCase())
-  ) || [];
+  const customerColumns: TableColumn<any>[] = [
+    { key: "name", label: "Name", render: (row) => <span className="font-medium">{row.name}</span> },
+    { key: "email", label: "Email", render: (row) => <span className="text-muted-foreground">{row.email || "—"}</span> },
+    { key: "company", label: "Company" },
+    { key: "lifetime_value", label: "Lifetime Value", align: "right", render: (row) => <span className="font-medium tabular-nums">{fmt(Number(row.lifetime_value || 0))}</span> },
+    { key: "referral_source", label: "Source", render: (row) => row.referral_source ? <Badge variant="outline" className="text-xs">{row.referral_source}</Badge> : "—" },
+    { key: "created_at", label: "Added", render: (row) => <span className="text-muted-foreground text-xs">{new Date(row.created_at).toLocaleDateString()}</span> },
+  ];
+
+  const qbColumns: TableColumn<any>[] = [
+    { key: "DisplayName", label: "Name", render: (row) => <span className="font-medium">{row.DisplayName}</span> },
+    { key: "Email", label: "Email", render: (row) => <span className="text-muted-foreground">{row.PrimaryEmailAddr?.Address || "—"}</span> },
+    { key: "Balance", label: "Balance", align: "right", render: (row) => <span className="font-medium tabular-nums">{fmt(parseFloat(row.Balance || "0"))}</span> },
+    { key: "Active", label: "Status", render: (row) => <Badge variant={row.Active ? "default" : "secondary"} className="text-xs">{row.Active ? "Active" : "Inactive"}</Badge> },
+  ];
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
-        <div>
-          <h2 className="text-xl md:text-2xl font-bold tracking-tight">Customers</h2>
-          <p className="text-sm text-muted-foreground">Customer intelligence from all sources</p>
-        </div>
-        <ReportDateRangePicker value={dateRange} onChange={setDateRange} />
-      </div>
-
+    <InteractiveReportShell
+      title="Customers"
+      subtitle="Customer intelligence from all sources"
+      dateRange={dateRange}
+      onDateRangeChange={setDateRange}
+    >
       <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
-        <ReportMetricCard title="Total Customers" value={String(customers?.length || 0)} subtitle="myCT1 records" icon={<Users className="h-4 w-4 text-blue-600" />} variant="info" />
-        <ReportMetricCard title="Total Lifetime Value" value={fmt(totalLTV)} subtitle="All customers" icon={<DollarSign className="h-4 w-4 text-green-600" />} variant="success" />
-        <ReportMetricCard title="Avg Customer Value" value={fmt(avgLTV)} subtitle="Per customer" icon={<TrendingUp className="h-4 w-4 text-primary" />} variant="default" />
-        {qbConnected && <ReportMetricCard title="QB Customers" value={String(qbCustomers?.length || 0)} subtitle="From connected accounting" icon={<UserPlus className="h-4 w-4 text-green-600" />} variant="success" />}
+        <InteractiveMetricCard title="Total Customers" value={String(customers?.length || 0)} subtitle="myCT1 records" icon={<Users className="h-4 w-4 text-blue-600" />} variant="info" />
+        <InteractiveMetricCard title="Total Lifetime Value" value={fmt(totalLTV)} subtitle="All customers" icon={<DollarSign className="h-4 w-4 text-green-600" />} variant="success" />
+        <InteractiveMetricCard title="Avg Customer Value" value={fmt(avgLTV)} subtitle="Per customer" icon={<TrendingUp className="h-4 w-4 text-primary" />} variant="default" />
+        {qbConnected && <InteractiveMetricCard title="QB Customers" value={String(qbCustomers?.length || 0)} subtitle="From connected accounting" icon={<UserPlus className="h-4 w-4 text-green-600" />} variant="success" />}
       </div>
 
-      {/* Search */}
-      <Input
-        placeholder="Search customers..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="max-w-sm"
-      />
-
-      {/* Customer directory table */}
-      {filtered.length > 0 ? (
-        <Card>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Company</TableHead>
-                    <TableHead className="text-right">Lifetime Value</TableHead>
-                    <TableHead>Source</TableHead>
-                    <TableHead>Added</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filtered.slice(0, 50).map((c) => (
-                    <TableRow key={c.id}>
-                      <TableCell className="font-medium">{c.name}</TableCell>
-                      <TableCell className="text-muted-foreground">{c.email || "—"}</TableCell>
-                      <TableCell>{c.company || "—"}</TableCell>
-                      <TableCell className="text-right tabular-nums font-medium">{fmt(Number(c.lifetime_value || 0))}</TableCell>
-                      <TableCell>{c.referral_source ? <Badge variant="outline" className="text-xs">{c.referral_source}</Badge> : "—"}</TableCell>
-                      <TableCell className="text-muted-foreground text-xs">{new Date(c.created_at).toLocaleDateString()}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Customer directory — clickable rows */}
+      {customers && customers.length > 0 ? (
+        <InteractiveTable
+          title="Customer Directory"
+          data={customers}
+          columns={customerColumns}
+          onRowClick={(row) => openPanel({
+            type: "customer",
+            title: row.name,
+            data: row,
+          })}
+          searchKeys={["name", "email", "company"]}
+          searchPlaceholder="Search customers..."
+        />
       ) : (
-        <ReportEmptyState title="No customers found" description="Try adjusting your search or date range." />
+        <ReportEmptyState title="No customers found" description="Try adjusting your date range." />
       )}
 
-      {/* QB Customers */}
+      {/* QB Customers — clickable rows */}
       {qbConnected && qbCustomers && qbCustomers.length > 0 && (
-        <Card>
-          <CardHeader><CardTitle className="text-base">QB Customer Balances</CardTitle></CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead className="text-right">Balance</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {qbCustomers.slice(0, 25).map((c: any) => (
-                    <TableRow key={c.Id}>
-                      <TableCell className="font-medium">{c.DisplayName}</TableCell>
-                      <TableCell className="text-muted-foreground">{c.PrimaryEmailAddr?.Address || "—"}</TableCell>
-                      <TableCell className="text-right tabular-nums font-medium">{fmt(parseFloat(c.Balance || "0"))}</TableCell>
-                      <TableCell><Badge variant={c.Active ? "default" : "secondary"} className="text-xs">{c.Active ? "Active" : "Inactive"}</Badge></TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
+        <InteractiveTable
+          title="QB Customer Balances"
+          data={qbCustomers.slice(0, 25)}
+          columns={qbColumns}
+          onRowClick={(row) => openPanel({
+            type: "customer",
+            title: row.DisplayName,
+            data: { name: row.DisplayName, email: row.PrimaryEmailAddr?.Address },
+          })}
+          searchKeys={["DisplayName"]}
+          searchPlaceholder="Search QB customers..."
+        />
       )}
-    </div>
+    </InteractiveReportShell>
   );
 }

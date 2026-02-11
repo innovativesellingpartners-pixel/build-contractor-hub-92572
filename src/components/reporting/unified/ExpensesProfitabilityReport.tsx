@@ -1,6 +1,6 @@
 /**
- * ExpensesProfitabilityReport — Expense analysis combining myCT1 job costs + QB expenses.
- * Shows total spend, by category, by vendor, gross/net margins.
+ * ExpensesProfitabilityReport — Expense analysis with full drill-down interactivity.
+ * All metrics, vendor lists, and expense items support click → detail panel.
  */
 
 import { useState } from "react";
@@ -8,9 +8,12 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQBProfitAndLoss, useQBExpenses, useQBVendors } from "@/hooks/useQuickBooksQuery";
-import { ReportDateRangePicker, DateRange } from "./ReportDateRangePicker";
-import { ReportMetricCard } from "./ReportMetricCard";
+import { InteractiveReportShell } from "../drilldown/InteractiveReportShell";
+import { InteractiveMetricCard } from "../drilldown/InteractiveMetricCard";
+import { useDrillDown } from "../drilldown/DrillDownProvider";
+import { DateRange } from "./ReportDateRangePicker";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TrendingDown, DollarSign, Store, BarChart3 } from "lucide-react";
 import { ExpenseBreakdown } from "@/components/reporting/ExpenseBreakdown";
@@ -27,6 +30,7 @@ function extractTotal(rows: any[], groupName: string): number {
 
 export function ExpensesProfitabilityReport() {
   const { user } = useAuth();
+  const { openPanel } = useDrillDown();
   const [dateRange, setDateRange] = useState<DateRange>({ preset: "ytd", start: `${new Date().getFullYear()}-01-01`, end: new Date().toISOString().split("T")[0] });
 
   const { data: qbConnected } = useQuery({
@@ -48,10 +52,10 @@ export function ExpensesProfitabilityReport() {
     queryKey: ["expense-report", user?.id, dateRange],
     queryFn: async () => {
       if (!user?.id) return null;
-      let q = supabase.from("expenses").select("id, amount, category, date, description").eq("contractor_id", user.id);
+      let q = supabase.from("expenses").select("id, amount, category, date, description, job_id, notes").eq("contractor_id", user.id);
       if (dateRange.start) q = q.gte("date", dateRange.start);
       if (dateRange.end) q = q.lte("date", dateRange.end);
-      const { data } = await q;
+      const { data } = await q.order("date", { ascending: false });
       const exp = data || [];
       const total = exp.reduce((s, e) => s + Number(e.amount || 0), 0);
       const avg = exp.length > 0 ? total / exp.length : 0;
@@ -64,7 +68,7 @@ export function ExpensesProfitabilityReport() {
 
       const topCategory = Object.entries(byCategory).sort(([,a], [,b]) => b - a)[0];
 
-      return { total, avg, count: exp.length, topCategory: topCategory?.[0] || "N/A", topCategoryAmt: topCategory?.[1] || 0 };
+      return { total, avg, count: exp.length, topCategory: topCategory?.[0] || "N/A", topCategoryAmt: topCategory?.[1] || 0, expenses: exp, byCategory };
     },
     enabled: !!user?.id,
   });
@@ -86,21 +90,48 @@ export function ExpensesProfitabilityReport() {
   const totalExpenses = (nativeExpenses?.total || 0) + qbExpTotal;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
-        <div>
-          <h2 className="text-xl md:text-2xl font-bold tracking-tight">Expenses & Profitability</h2>
-          <p className="text-sm text-muted-foreground">Spend analysis and margin tracking</p>
-        </div>
-        <ReportDateRangePicker value={dateRange} onChange={setDateRange} />
-      </div>
-
+    <InteractiveReportShell
+      title="Expenses & Profitability"
+      subtitle="Spend analysis and margin tracking"
+      dateRange={dateRange}
+      onDateRangeChange={setDateRange}
+    >
       <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
-        <ReportMetricCard title="Total Expenses" value={fmt(totalExpenses)} subtitle={qbConnected ? `myCT1: ${fmt(nativeExpenses?.total || 0)} · QB: ${fmt(qbExpTotal)}` : `${nativeExpenses?.count || 0} transactions`} icon={<TrendingDown className="h-4 w-4 text-red-600" />} variant="danger" />
-        <ReportMetricCard title="Avg Transaction" value={fmt(nativeExpenses?.avg || 0)} subtitle={`${nativeExpenses?.count || 0} expenses`} icon={<DollarSign className="h-4 w-4 text-muted-foreground" />} variant="default" />
-        <ReportMetricCard title="Top Category" value={nativeExpenses?.topCategory || "N/A"} subtitle={fmt(nativeExpenses?.topCategoryAmt || 0)} icon={<BarChart3 className="h-4 w-4 text-orange-500" />} variant="warning" />
+        <InteractiveMetricCard
+          title="Total Expenses"
+          value={fmt(totalExpenses)}
+          subtitle={qbConnected ? `myCT1: ${fmt(nativeExpenses?.total || 0)} · QB: ${fmt(qbExpTotal)}` : `${nativeExpenses?.count || 0} transactions`}
+          icon={<TrendingDown className="h-4 w-4 text-red-600" />}
+          variant="danger"
+          onClick={() => openPanel({ type: "category-breakdown", title: "All Expenses", data: { category: "All", type: "expense", totalAmount: totalExpenses, dateStart: dateRange.start, dateEnd: dateRange.end } })}
+        />
+        <InteractiveMetricCard
+          title="Avg Transaction"
+          value={fmt(nativeExpenses?.avg || 0)}
+          subtitle={`${nativeExpenses?.count || 0} expenses`}
+          icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
+          variant="default"
+        />
+        <InteractiveMetricCard
+          title="Top Category"
+          value={nativeExpenses?.topCategory || "N/A"}
+          subtitle={fmt(nativeExpenses?.topCategoryAmt || 0)}
+          icon={<BarChart3 className="h-4 w-4 text-orange-500" />}
+          variant="warning"
+          onClick={() => {
+            if (nativeExpenses?.topCategory && nativeExpenses.topCategory !== "N/A") {
+              openPanel({ type: "category-breakdown", title: `${nativeExpenses.topCategory} Expenses`, data: { category: nativeExpenses.topCategory, type: "expense", totalAmount: nativeExpenses.topCategoryAmt, dateStart: dateRange.start, dateEnd: dateRange.end } });
+            }
+          }}
+        />
         {qbConnected && (
-          <ReportMetricCard title="Net Profit" value={fmt(qbNet)} subtitle={`${grossMargin.toFixed(1)}% margin`} icon={<DollarSign className="h-4 w-4 text-green-600" />} variant={qbNet >= 0 ? "success" : "danger"} />
+          <InteractiveMetricCard
+            title="Net Profit"
+            value={fmt(qbNet)}
+            subtitle={`${grossMargin.toFixed(1)}% margin`}
+            icon={<DollarSign className="h-4 w-4 text-green-600" />}
+            variant={qbNet >= 0 ? "success" : "danger"}
+          />
         )}
       </div>
 
@@ -113,42 +144,77 @@ export function ExpensesProfitabilityReport() {
       {/* P&L Statement */}
       <ProfitLossStatement filters={filters} />
 
-      {/* QB Top Vendors */}
+      {/* QB Top Vendors — clickable */}
       {qbConnected && qbVendors && qbVendors.length > 0 && (
         <Card>
           <CardHeader><CardTitle className="text-base flex items-center gap-2"><Store className="h-4 w-4" /> Top Vendors (QB)</CardTitle></CardHeader>
           <CardContent>
-            <div className="space-y-3">
+            <div className="space-y-1">
               {qbVendors.slice(0, 10).map((v: any) => (
-                <div key={v.Id} className="flex justify-between items-center text-sm">
+                <Button
+                  key={v.Id}
+                  variant="ghost"
+                  className="w-full justify-between text-sm h-auto py-2 px-3 hover:bg-muted"
+                  onClick={() => openPanel({ type: "vendor", title: v.DisplayName, data: v })}
+                >
                   <span className="truncate mr-3">{v.DisplayName}</span>
                   <span className="tabular-nums font-medium">{fmt(parseFloat(v.Balance || "0"))}</span>
-                </div>
+                </Button>
               ))}
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* QB Recent Purchases */}
+      {/* QB Recent Purchases — clickable */}
       {qbConnected && qbExpenses && qbExpenses.length > 0 && (
         <Card>
           <CardHeader><CardTitle className="text-base">Recent Purchases (QB)</CardTitle></CardHeader>
           <CardContent>
-            <div className="space-y-3">
+            <div className="space-y-1">
               {qbExpenses.slice(0, 10).map((e: any) => (
-                <div key={e.Id} className="flex justify-between items-center text-sm">
-                  <div className="min-w-0 flex-1 mr-3">
+                <Button
+                  key={e.Id}
+                  variant="ghost"
+                  className="w-full justify-between text-sm h-auto py-2 px-3 hover:bg-muted"
+                  onClick={() => openPanel({ type: "expense", title: "Expense Details", data: { amount: parseFloat(e.TotalAmt || "0"), date: e.TxnDate, category: e.AccountRef?.name, description: e.EntityRef?.name || e.AccountRef?.name } })}
+                >
+                  <div className="min-w-0 flex-1 mr-3 text-left">
                     <p className="font-medium truncate">{e.EntityRef?.name || e.AccountRef?.name || "Expense"}</p>
                     <p className="text-xs text-muted-foreground">{e.TxnDate ? new Date(e.TxnDate).toLocaleDateString() : "N/A"}{e.PaymentType && ` · ${e.PaymentType}`}</p>
                   </div>
                   <p className="font-semibold tabular-nums text-red-600">{fmt(parseFloat(e.TotalAmt || "0"))}</p>
-                </div>
+                </Button>
               ))}
             </div>
           </CardContent>
         </Card>
       )}
-    </div>
+
+      {/* myCT1 Recent Expenses — clickable */}
+      {nativeExpenses?.expenses && nativeExpenses.expenses.length > 0 && (
+        <Card>
+          <CardHeader><CardTitle className="text-base">Recent Expenses (myCT1)</CardTitle></CardHeader>
+          <CardContent>
+            <div className="space-y-1">
+              {nativeExpenses.expenses.slice(0, 15).map((exp: any) => (
+                <Button
+                  key={exp.id}
+                  variant="ghost"
+                  className="w-full justify-between text-sm h-auto py-2 px-3 hover:bg-muted"
+                  onClick={() => openPanel({ type: "expense", title: "Expense Details", data: exp })}
+                >
+                  <div className="min-w-0 flex-1 mr-3 text-left">
+                    <p className="font-medium truncate">{exp.description || exp.category}</p>
+                    <p className="text-xs text-muted-foreground">{exp.date ? new Date(exp.date).toLocaleDateString() : "—"} · {exp.category}</p>
+                  </div>
+                  <p className="font-semibold tabular-nums text-red-600">{fmt(Number(exp.amount || 0))}</p>
+                </Button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </InteractiveReportShell>
   );
 }

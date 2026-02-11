@@ -11,6 +11,9 @@ import { JobDetailPanel } from "./panels/JobDetailPanel";
 import { ExpenseDetailPanel } from "./panels/ExpenseDetailPanel";
 import { CategoryBreakdownPanel } from "./panels/CategoryBreakdownPanel";
 import { VendorDetailPanel } from "./panels/VendorDetailPanel";
+import { WorkerDetailPanel } from "./panels/WorkerDetailPanel";
+import { ARAgingPanel } from "./panels/ARAgingPanel";
+import { EstimateDetailPanel } from "./panels/EstimateDetailPanel";
 
 export function DrillDownPanel() {
   const { activePanel, closePanel } = useDrillDown();
@@ -32,6 +35,12 @@ export function DrillDownPanel() {
         return <CategoryBreakdownPanel data={activePanel.data} />;
       case "vendor":
         return <VendorDetailPanel data={activePanel.data} />;
+      case "worker":
+        return <WorkerDetailPanel data={activePanel.data} />;
+      case "ar-aging":
+        return <ARAgingPanel data={activePanel.data} />;
+      case "estimate":
+        return <EstimateDetailPanel data={activePanel.data} />;
       default:
         return null;
     }
