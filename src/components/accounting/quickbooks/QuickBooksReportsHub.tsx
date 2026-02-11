@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+// Tabs import removed — using Select dropdown instead
 import {
   Select,
   SelectContent,
@@ -181,46 +181,33 @@ export function QuickBooksReportsHub() {
           </div>
         </div>
 
-        {/* Mobile dropdown nav */}
-        <div className="block md:hidden">
-          <Select value={activeTab} onValueChange={setActiveTab}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select report" />
-            </SelectTrigger>
-            <SelectContent className="bg-popover z-50">
-              {qbTabs.map((tab) => (
-                <SelectItem key={tab.value} value={tab.value}>
-                  <div className="flex items-center gap-2">
-                    <tab.icon className="h-4 w-4" />
-                    {tab.label}
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Desktop tab bar */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="hidden md:flex w-full overflow-x-auto">
+        {/* Section selector dropdown */}
+        <Select value={activeTab} onValueChange={setActiveTab}>
+          <SelectTrigger className="w-full sm:w-[280px]">
+            <SelectValue placeholder="Select report" />
+          </SelectTrigger>
+          <SelectContent className="bg-popover z-50">
             {qbTabs.map((tab) => (
-              <TabsTrigger key={tab.value} value={tab.value} className="flex-shrink-0">
-                <tab.icon className="h-4 w-4 mr-1.5" />
-                <span className="text-xs lg:text-sm">{tab.label}</span>
-              </TabsTrigger>
+              <SelectItem key={tab.value} value={tab.value}>
+                <div className="flex items-center gap-2">
+                  <tab.icon className="h-4 w-4" />
+                  {tab.label}
+                </div>
+              </SelectItem>
             ))}
-          </TabsList>
+          </SelectContent>
+        </Select>
 
-          <TabsContent value="overview"><QBOverview /></TabsContent>
-          <TabsContent value="pnl"><QBProfitLoss /></TabsContent>
-          <TabsContent value="balance-sheet"><QBBalanceSheet /></TabsContent>
-          <TabsContent value="sales"><QBSalesInvoices /></TabsContent>
-          <TabsContent value="payments"><QBPayments /></TabsContent>
-          <TabsContent value="expenses"><QBExpenses /></TabsContent>
-          <TabsContent value="customers"><QBCustomers /></TabsContent>
-          <TabsContent value="vendors"><QBVendors /></TabsContent>
-          <TabsContent value="aging"><QBAging /></TabsContent>
-        </Tabs>
+        {/* Content */}
+        {activeTab === "overview" && <QBOverview />}
+        {activeTab === "pnl" && <QBProfitLoss />}
+        {activeTab === "balance-sheet" && <QBBalanceSheet />}
+        {activeTab === "sales" && <QBSalesInvoices />}
+        {activeTab === "payments" && <QBPayments />}
+        {activeTab === "expenses" && <QBExpenses />}
+        {activeTab === "customers" && <QBCustomers />}
+        {activeTab === "vendors" && <QBVendors />}
+        {activeTab === "aging" && <QBAging />}
 
         <DrillDownPanel />
       </div>
