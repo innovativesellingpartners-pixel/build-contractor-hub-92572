@@ -173,53 +173,53 @@ export function CustomerDetailViewBlue({ customer, onClose, onSectionChange, onC
         onDashboard={onSectionChange ? () => { onSectionChange('dashboard'); onClose(); } : undefined}
       />
 
-      {/* Action Buttons - Fixed */}
-      <ActionButtonRow>
-        {onEdit && (
-          <ActionButton 
-            variant="secondary" 
-            onClick={onEdit}
-            className="flex items-center justify-center gap-2"
-          >
-            <Pencil className="w-4 h-4" />
-            EDIT
-          </ActionButton>
-        )}
-        <ActionButton 
-          variant="primary" 
-          onClick={handleCreateJob}
-          disabled={isCreatingJob}
-          className="flex-1 flex items-center justify-center gap-2"
-        >
-          <Briefcase className="w-4 h-4" />
-          {isCreatingJob ? 'CREATING...' : customerJobs.length === 0 ? 'CREATE JOB' : 'ADD JOB'}
-        </ActionButton>
-        <ActionButton 
-          variant="secondary" 
-          onClick={handleCreateEstimate}
-          disabled={isCreatingEstimate}
-          className="flex-1 flex items-center justify-center gap-2"
-        >
-          <FileText className="w-4 h-4" />
-          {isCreatingEstimate ? 'CREATING...' : 'CREATE ESTIMATE'}
-        </ActionButton>
-      </ActionButtonRow>
-
-      {/* Merge Button - Fixed */}
-      <div className="px-4 py-2 bg-white border-b border-sky-100 flex-shrink-0">
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={() => setShowMergeDialog(true)}
-          className="w-full flex items-center justify-center gap-2"
-        >
-          <Merge className="w-4 h-4" />
-          Merge with Another Customer
-        </Button>
-      </div>
-
       {/* Scrollable Content - extra bottom padding to clear nav bar */}
       <div className="flex-1 min-h-0 overflow-y-auto pb-32">
+        {/* Action Buttons - scrolls with content */}
+        <ActionButtonRow>
+          {onEdit && (
+            <ActionButton 
+              variant="secondary" 
+              onClick={onEdit}
+              className="flex items-center justify-center gap-2"
+            >
+              <Pencil className="w-4 h-4" />
+              EDIT
+            </ActionButton>
+          )}
+          <ActionButton 
+            variant="primary" 
+            onClick={handleCreateJob}
+            disabled={isCreatingJob}
+            className="flex-1 flex items-center justify-center gap-2"
+          >
+            <Briefcase className="w-4 h-4" />
+            {isCreatingJob ? 'CREATING...' : customerJobs.length === 0 ? 'CREATE JOB' : 'ADD JOB'}
+          </ActionButton>
+          <ActionButton 
+            variant="secondary" 
+            onClick={handleCreateEstimate}
+            disabled={isCreatingEstimate}
+            className="flex-1 flex items-center justify-center gap-2"
+          >
+            <FileText className="w-4 h-4" />
+            {isCreatingEstimate ? 'CREATING...' : 'CREATE ESTIMATE'}
+          </ActionButton>
+        </ActionButtonRow>
+
+        {/* Merge Button */}
+        <div className="px-4 py-2 bg-white border-b border-sky-100">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setShowMergeDialog(true)}
+            className="w-full flex items-center justify-center gap-2"
+          >
+            <Merge className="w-4 h-4" />
+            Merge with Another Customer
+          </Button>
+        </div>
+
         <div className="space-y-0">
           {/* Customer Information */}
           <SectionHeader>CUSTOMER INFORMATION</SectionHeader>

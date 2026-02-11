@@ -448,140 +448,140 @@ export function EstimateDetailViewBlue({
         rightContent={<StatusBadge status={estimate.status} />}
       />
 
-      {/* Action Buttons - Fixed */}
-      <ActionButtonRow className="flex-wrap flex-shrink-0">
-        {/* 1. Edit Estimate */}
-        {onEdit && (
-          <ActionButton variant="primary" onClick={onEdit} className="flex items-center gap-2">
-            <Pencil className="w-4 h-4" />
-            EDIT ESTIMATE
-          </ActionButton>
-        )}
-        {/* View & Sign Online */}
-        {estimate.public_token && (
-          <ActionButton variant="success" onClick={handleViewAndSign} className="flex items-center gap-2">
-            <Eye className="w-4 h-4" />
-            VIEW & SIGN ONLINE
-          </ActionButton>
-        )}
-        {/* Copy Public Link */}
-        {estimate.public_token && (
-          <ActionButton 
-            variant="muted" 
-            onClick={() => {
-              const link = `${window.location.origin}/estimate/${estimate.public_token}`;
-              navigator.clipboard.writeText(link);
-              toast.success('Public link copied to clipboard!');
-            }}
-            className="flex items-center gap-2"
-          >
-            <Copy className="w-4 h-4" />
-            COPY LINK
-          </ActionButton>
-        )}
-        {/* 2. Send Estimate */}
-        {onSend && estimate.client_email && (
-          <ActionButton variant="success" onClick={onSend} className="flex items-center gap-2">
-            <Send className="w-4 h-4" />
-            {estimate.sent_at ? 'RESEND ESTIMATE' : 'SEND ESTIMATE'}
-          </ActionButton>
-        )}
-        {/* 3. Send Invoice */}
-        {canSendToGC && (
-          <ActionButton 
-            variant="success" 
-            onClick={() => setShowSendToGCDialog(true)}
-            className="flex items-center gap-2"
-          >
-            <Receipt className="w-4 h-4" />
-            SEND INVOICE
-          </ActionButton>
-        )}
-        {/* 4. Send SMS */}
-        {estimate.client_phone && (
-          <ActionButton 
-            variant="secondary" 
-            onClick={() => setShowSMSConfirmDialog(true)}
-            disabled={isSendingSMS}
-            className="flex items-center gap-2"
-          >
-            {isSendingSMS ? <Loader2 className="w-4 h-4 animate-spin" /> : <MessageSquare className="w-4 h-4" />}
-            {isSendingSMS ? 'SENDING...' : 'SEND SMS'}
-          </ActionButton>
-        )}
-        {/* 5. Review PDF */}
-        <ActionButton 
-          variant="muted" 
-          onClick={handlePreviewPDF}
-          disabled={isPdfLoading}
-          className="flex items-center gap-2"
-        >
-          <Eye className="w-4 h-4" />
-          {isPdfLoading ? 'LOADING...' : 'REVIEW PDF'}
-        </ActionButton>
-        {/* 6. Save Template */}
-        <ActionButton 
-          variant="muted" 
-          onClick={() => setSaveTemplateOpen(true)}
-          className="flex items-center gap-2"
-        >
-          <BookmarkPlus className="w-4 h-4" />
-          SAVE TEMPLATE
-        </ActionButton>
-        {/* 7. Duplicate */}
-        {onDuplicate && (
-          <ActionButton variant="muted" onClick={onDuplicate} className="flex items-center gap-2">
-            <Copy className="w-4 h-4" />
-            DUPLICATE
-          </ActionButton>
-        )}
-        {/* Secondary Actions */}
-        <ActionButton 
-          variant="muted" 
-          onClick={handleDownloadPDF}
-          disabled={isPdfLoading}
-          className="flex items-center gap-2"
-        >
-          <Download className="w-4 h-4" />
-          DOWNLOAD PDF
-        </ActionButton>
-        {!estimate.customer_id && (estimate.status === 'sent' || estimate.status === 'accepted' || estimate.signed_at) && (
-          <ActionButton 
-            variant="primary" 
-            onClick={handleConvertToCustomer}
-            disabled={isConverting}
-            className="flex items-center gap-2"
-          >
-            <Users className="w-4 h-4" />
-            TO CUSTOMER
-          </ActionButton>
-        )}
-        {!estimate.job_id && (
-          <ActionButton 
-            variant="primary" 
-            onClick={handleConvertToJob}
-            disabled={isConverting}
-            className="flex items-center gap-2"
-          >
-            <Briefcase className="w-4 h-4" />
-            {isConverting ? 'CONVERTING...' : 'CONVERT TO JOB'}
-          </ActionButton>
-        )}
-        {canSaveAsInvoice && (
-          <ActionButton 
-            variant="secondary" 
-            onClick={handleSaveAsInvoice}
-            disabled={isCreatingInvoice}
-            className="flex items-center gap-2"
-          >
-            <Save className="w-4 h-4" />
-            {isCreatingInvoice ? 'SAVING...' : 'SAVE AS INVOICE'}
-          </ActionButton>
-        )}
-      </ActionButtonRow>
-
       {/* Scrollable Content - extra bottom padding to clear nav bar */}
       <div className="flex-1 min-h-0 overflow-y-auto pb-32">
+        {/* Action Buttons - scrolls with content */}
+        <ActionButtonRow className="flex-wrap">
+          {/* 1. Edit Estimate */}
+          {onEdit && (
+            <ActionButton variant="primary" onClick={onEdit} className="flex items-center gap-2">
+              <Pencil className="w-4 h-4" />
+              EDIT ESTIMATE
+            </ActionButton>
+          )}
+          {/* View & Sign Online */}
+          {estimate.public_token && (
+            <ActionButton variant="success" onClick={handleViewAndSign} className="flex items-center gap-2">
+              <Eye className="w-4 h-4" />
+              VIEW & SIGN ONLINE
+            </ActionButton>
+          )}
+          {/* Copy Public Link */}
+          {estimate.public_token && (
+            <ActionButton 
+              variant="muted" 
+              onClick={() => {
+                const link = `${window.location.origin}/estimate/${estimate.public_token}`;
+                navigator.clipboard.writeText(link);
+                toast.success('Public link copied to clipboard!');
+              }}
+              className="flex items-center gap-2"
+            >
+              <Copy className="w-4 h-4" />
+              COPY LINK
+            </ActionButton>
+          )}
+          {/* 2. Send Estimate */}
+          {onSend && estimate.client_email && (
+            <ActionButton variant="success" onClick={onSend} className="flex items-center gap-2">
+              <Send className="w-4 h-4" />
+              {estimate.sent_at ? 'RESEND ESTIMATE' : 'SEND ESTIMATE'}
+            </ActionButton>
+          )}
+          {/* 3. Send Invoice */}
+          {canSendToGC && (
+            <ActionButton 
+              variant="success" 
+              onClick={() => setShowSendToGCDialog(true)}
+              className="flex items-center gap-2"
+            >
+              <Receipt className="w-4 h-4" />
+              SEND INVOICE
+            </ActionButton>
+          )}
+          {/* 4. Send SMS */}
+          {estimate.client_phone && (
+            <ActionButton 
+              variant="secondary" 
+              onClick={() => setShowSMSConfirmDialog(true)}
+              disabled={isSendingSMS}
+              className="flex items-center gap-2"
+            >
+              {isSendingSMS ? <Loader2 className="w-4 h-4 animate-spin" /> : <MessageSquare className="w-4 h-4" />}
+              {isSendingSMS ? 'SENDING...' : 'SEND SMS'}
+            </ActionButton>
+          )}
+          {/* 5. Review PDF */}
+          <ActionButton 
+            variant="muted" 
+            onClick={handlePreviewPDF}
+            disabled={isPdfLoading}
+            className="flex items-center gap-2"
+          >
+            <Eye className="w-4 h-4" />
+            {isPdfLoading ? 'LOADING...' : 'REVIEW PDF'}
+          </ActionButton>
+          {/* 6. Save Template */}
+          <ActionButton 
+            variant="muted" 
+            onClick={() => setSaveTemplateOpen(true)}
+            className="flex items-center gap-2"
+          >
+            <BookmarkPlus className="w-4 h-4" />
+            SAVE TEMPLATE
+          </ActionButton>
+          {/* 7. Duplicate */}
+          {onDuplicate && (
+            <ActionButton variant="muted" onClick={onDuplicate} className="flex items-center gap-2">
+              <Copy className="w-4 h-4" />
+              DUPLICATE
+            </ActionButton>
+          )}
+          {/* Secondary Actions */}
+          <ActionButton 
+            variant="muted" 
+            onClick={handleDownloadPDF}
+            disabled={isPdfLoading}
+            className="flex items-center gap-2"
+          >
+            <Download className="w-4 h-4" />
+            DOWNLOAD PDF
+          </ActionButton>
+          {!estimate.customer_id && (estimate.status === 'sent' || estimate.status === 'accepted' || estimate.signed_at) && (
+            <ActionButton 
+              variant="primary" 
+              onClick={handleConvertToCustomer}
+              disabled={isConverting}
+              className="flex items-center gap-2"
+            >
+              <Users className="w-4 h-4" />
+              TO CUSTOMER
+            </ActionButton>
+          )}
+          {!estimate.job_id && (
+            <ActionButton 
+              variant="primary" 
+              onClick={handleConvertToJob}
+              disabled={isConverting}
+              className="flex items-center gap-2"
+            >
+              <Briefcase className="w-4 h-4" />
+              {isConverting ? 'CONVERTING...' : 'CONVERT TO JOB'}
+            </ActionButton>
+          )}
+          {canSaveAsInvoice && (
+            <ActionButton 
+              variant="secondary" 
+              onClick={handleSaveAsInvoice}
+              disabled={isCreatingInvoice}
+              className="flex items-center gap-2"
+            >
+              <Save className="w-4 h-4" />
+              {isCreatingInvoice ? 'SAVING...' : 'SAVE AS INVOICE'}
+            </ActionButton>
+          )}
+        </ActionButtonRow>
+
         <div className="space-y-0">
           {/* Estimate Information */}
           <SectionHeader>ESTIMATE DETAILS</SectionHeader>
