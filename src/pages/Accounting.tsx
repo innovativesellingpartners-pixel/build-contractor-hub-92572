@@ -17,7 +17,7 @@ const tabs = [
   { value: "dashboard", label: "Dashboard", icon: LayoutDashboard, disabled: false },
   { value: "payments", label: "Payments", icon: CreditCard, disabled: false },
   { value: "banking", label: "Banking", icon: Building2, disabled: false },
-  { value: "qb-reports", label: "QuickBooks Reports", icon: BarChart3, disabled: false },
+  { value: "reports", label: "Financial Reports", icon: BarChart3, disabled: false },
 ];
 
 export default function Accounting() {
@@ -33,7 +33,7 @@ export default function Accounting() {
         </p>
       </div>
 
-      {/* Mobile: Select dropdown for section navigation */}
+      {/* Mobile: Select dropdown */}
       <div className="block md:hidden">
         <Select value={activeTab} onValueChange={setActiveTab}>
           <SelectTrigger className="w-full">
@@ -45,7 +45,6 @@ export default function Accounting() {
                 <div className="flex items-center gap-2">
                   <tab.icon className="h-4 w-4" />
                   {tab.label}
-                  {tab.disabled && <span className="text-xs text-muted-foreground ml-1">(Soon)</span>}
                 </div>
               </SelectItem>
             ))}
@@ -76,7 +75,7 @@ export default function Accounting() {
           <BankingView />
         </TabsContent>
 
-        <TabsContent value="qb-reports" className="space-y-4">
+        <TabsContent value="reports" className="space-y-4">
           <QuickBooksReportsHub />
         </TabsContent>
       </Tabs>
