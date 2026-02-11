@@ -1045,10 +1045,7 @@ export function ScheduleMeetingDialog({
                 <Textarea
                   placeholder="Additional meeting details or agenda..."
                   value={notes}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setNotes(val.charAt(0).toUpperCase() + val.slice(1));
-                  }}
+                  onChange={(e) => setNotes(e.target.value)}
                   rows={3}
                 />
               </div>

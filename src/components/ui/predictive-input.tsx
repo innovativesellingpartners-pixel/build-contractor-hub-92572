@@ -49,12 +49,8 @@ export function PredictiveInput({
 
   // Handle input change with optional auto-capitalize
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    let newValue = e.target.value;
-    if (autoCapitalize && newValue.length > 0) {
-      newValue = newValue.charAt(0).toUpperCase() + newValue.slice(1);
-    }
-    onChange(newValue);
-  }, [onChange, autoCapitalize]);
+    onChange(e.target.value);
+  }, [onChange]);
 
   // Handle suggestion selection
   const handleSelectSuggestion = useCallback((suggestion: string) => {

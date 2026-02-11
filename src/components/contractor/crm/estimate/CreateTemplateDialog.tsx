@@ -134,7 +134,7 @@ export function CreateTemplateDialog({ open, onOpenChange, onSuccess, defaultTra
                 <Input
                   id="name"
                   value={name}
-                  onChange={(e) => setName(e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1))}
+                  onChange={(e) => setName(e.target.value)}
                   placeholder="e.g., Standard Roof Replacement"
                 />
               </div>
@@ -159,7 +159,7 @@ export function CreateTemplateDialog({ open, onOpenChange, onSuccess, defaultTra
               <Textarea
                 id="description"
                 value={description}
-                onChange={(e) => setDescription(e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1))}
+                onChange={(e) => setDescription(e.target.value)}
                 placeholder="Brief description of what this template includes..."
                 rows={2}
               />
@@ -249,7 +249,7 @@ export function CreateTemplateDialog({ open, onOpenChange, onSuccess, defaultTra
                             <div className="sm:col-span-5">
                               <Input
                                 value={item.description || ''}
-                                onChange={(e) => handleUpdateLineItem(index, 'description', e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1))}
+                                onChange={(e) => handleUpdateLineItem(index, 'description', e.target.value)}
                                 placeholder="Item description"
                               />
                             </div>
