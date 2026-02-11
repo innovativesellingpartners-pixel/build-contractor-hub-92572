@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useQBAgingReport } from "@/hooks/useQuickBooksQuery";
+import { useDrillDown } from "@/components/reporting/drilldown/DrillDownProvider";
 
 const fmt = (v: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2 }).format(v);
@@ -27,12 +28,31 @@ function flattenAgingRows(rows: any[]): { name: string; values: string[] }[] {
 
 function AgingTable({ type }: { type: "AgedReceivableDetail" | "AgedPayableDetail" }) {
   const { data, isLoading, error } = useQBAgingReport(type);
+  const { openPanel } = useDrillDown();
 
   if (isLoading) return <Skeleton className="h-48 w-full" />;
   if (error) return <Card><CardContent className="py-8 text-center text-muted-foreground">We're having trouble syncing your aging data. Please try reconnecting or click Sync to retry.</CardContent></Card>;
 
   const columns = data?.raw?.Columns?.Column?.map((c: any) => c.ColTitle) || ["Name", "Current", "1-30", "31-60", "61-90", "91+", "Total"];
   const rows = flattenAgingRows(data?.rows || []);
+
+  const handleRowClick = (row: { name: string; values: string[] }) => {
+    if (row.name.startsWith("Total")) return;
+    const total = parseFloat(row.values[row.values.length - 1] || "0");
+    openPanel({
+      type: "ar-aging",
+      title: `${row.name} · Aging Detail`,
+      data: {
+        name: row.name,
+        total,
+        buckets: columns.slice(1).map((col: string, i: number) => ({
+          label: col,
+          amount: parseFloat(row.values[i] || "0"),
+        })),
+        type: type === "AgedReceivableDetail" ? "AR" : "AP",
+      },
+    });
+  };
 
   return (
     <Card>
@@ -46,14 +66,21 @@ function AgingTable({ type }: { type: "AgedReceivableDetail" | "AgedPayableDetai
             </TableRow>
           </TableHeader>
           <TableBody>
-            {rows.length > 0 ? rows.map((row, i) => (
-              <TableRow key={i} className={row.name.startsWith("Total") ? "font-semibold bg-muted/30" : ""}>
-                <TableCell className="truncate max-w-[200px]">{row.name}</TableCell>
-                {row.values.map((v, vi) => (
-                  <TableCell key={vi} className="text-right tabular-nums">{fmt(parseFloat(v) || 0)}</TableCell>
-                ))}
-              </TableRow>
-            )) : (
+            {rows.length > 0 ? rows.map((row, i) => {
+              const isSummary = row.name.startsWith("Total");
+              return (
+                <TableRow
+                  key={i}
+                  className={`${isSummary ? "font-semibold bg-muted/30" : "cursor-pointer hover:bg-muted/50 transition-colors"}`}
+                  onClick={() => !isSummary && handleRowClick(row)}
+                >
+                  <TableCell className="truncate max-w-[200px]">{row.name}</TableCell>
+                  {row.values.map((v, vi) => (
+                    <TableCell key={vi} className="text-right tabular-nums">{fmt(parseFloat(v) || 0)}</TableCell>
+                  ))}
+                </TableRow>
+              );
+            }) : (
               <TableRow><TableCell colSpan={columns.length} className="text-center text-muted-foreground py-8">No aging data</TableCell></TableRow>
             )}
           </TableBody>

@@ -13,7 +13,7 @@ export type DrillDownLevel = {
 };
 
 export type DetailPanelConfig = {
-  type: "invoice" | "customer" | "job" | "expense" | "payment" | "vendor" | "worker" | "category-breakdown" | "ar-aging" | "estimate" | null;
+  type: "invoice" | "customer" | "job" | "expense" | "payment" | "vendor" | "worker" | "category-breakdown" | "ar-aging" | "estimate" | "qb-record" | null;
   data: any;
   title?: string;
 };

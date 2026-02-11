@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useQBProfitAndLoss } from "@/hooks/useQuickBooksQuery";
 import { TrendingUp, TrendingDown, DollarSign } from "lucide-react";
+import { InteractiveMetricCard } from "@/components/reporting/drilldown/InteractiveMetricCard";
+import { useDrillDown } from "@/components/reporting/drilldown/DrillDownProvider";
 
 const fmt = (v: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2 }).format(v);
@@ -57,11 +59,24 @@ export function QBProfitLoss() {
   const [preset, setPreset] = useState("ytd");
   const range = presets[preset]();
   const { data, isLoading, error } = useQBProfitAndLoss({ start: range.start, end: range.end });
+  const { openPanel } = useDrillDown();
 
   const income = data ? extractTotal(data.rows, "Income") : 0;
   const expenses = data ? extractTotal(data.rows, "Expenses") : 0;
   const net = income - expenses;
   const flatRows = data ? flattenRows(data.rows) : [];
+
+  const handleRowClick = (row: { name: string; amount: number }) => {
+    if (row.name.startsWith("Total")) return;
+    openPanel({
+      type: "qb-record",
+      title: row.name,
+      data: {
+        record: { name: row.name, amount: row.amount, period: range.label },
+        recordType: row.amount >= 0 ? "qb-payment" : "qb-expense",
+      },
+    });
+  };
 
   return (
     <div className="space-y-4">
@@ -91,30 +106,37 @@ export function QBProfitLoss() {
         <>
           {/* Summary cards */}
           <div className="grid gap-3 md:gap-4 grid-cols-1 sm:grid-cols-3 min-w-0">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Income</CardTitle>
-                <TrendingUp className="h-4 w-4 text-green-600" />
-              </CardHeader>
-              <CardContent><div className="text-xl font-bold tabular-nums text-green-600">{fmt(income)}</div></CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Expenses</CardTitle>
-                <TrendingDown className="h-4 w-4 text-red-600" />
-              </CardHeader>
-              <CardContent><div className="text-xl font-bold tabular-nums text-red-600">{fmt(expenses)}</div></CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Net Income</CardTitle>
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent><div className={`text-xl font-bold tabular-nums ${net >= 0 ? "text-green-600" : "text-red-600"}`}>{fmt(net)}</div></CardContent>
-            </Card>
+            <InteractiveMetricCard
+              title="Total Income"
+              value={fmt(income)}
+              icon={<TrendingUp className="h-4 w-4 text-green-600" />}
+              variant="success"
+              onClick={() => openPanel({
+                type: "category-breakdown",
+                title: `Income Breakdown · ${range.label}`,
+                data: { category: "Income", total: income, period: range.label },
+              })}
+            />
+            <InteractiveMetricCard
+              title="Total Expenses"
+              value={fmt(expenses)}
+              icon={<TrendingDown className="h-4 w-4 text-destructive" />}
+              variant="danger"
+              onClick={() => openPanel({
+                type: "category-breakdown",
+                title: `Expense Breakdown · ${range.label}`,
+                data: { category: "Expenses", total: expenses, period: range.label },
+              })}
+            />
+            <InteractiveMetricCard
+              title="Net Income"
+              value={fmt(net)}
+              icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
+              variant={net >= 0 ? "success" : "danger"}
+            />
           </div>
 
-          {/* Detail table */}
+          {/* Detail table — clickable rows */}
           <Card>
             <CardContent className="p-0">
               <Table>
@@ -125,12 +147,19 @@ export function QBProfitLoss() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {flatRows.length > 0 ? flatRows.map((row, i) => (
-                    <TableRow key={i} className={row.name.startsWith("Total") ? "font-semibold bg-muted/30" : ""}>
-                      <TableCell style={{ paddingLeft: `${16 + row.depth * 16}px` }}>{row.name}</TableCell>
-                      <TableCell className="text-right tabular-nums">{fmt(row.amount)}</TableCell>
-                    </TableRow>
-                  )) : (
+                  {flatRows.length > 0 ? flatRows.map((row, i) => {
+                    const isSummary = row.name.startsWith("Total");
+                    return (
+                      <TableRow
+                        key={i}
+                        className={`${isSummary ? "font-semibold bg-muted/30" : "cursor-pointer hover:bg-muted/50 transition-colors"}`}
+                        onClick={() => !isSummary && handleRowClick(row)}
+                      >
+                        <TableCell style={{ paddingLeft: `${16 + row.depth * 16}px` }}>{row.name}</TableCell>
+                        <TableCell className="text-right tabular-nums">{fmt(row.amount)}</TableCell>
+                      </TableRow>
+                    );
+                  }) : (
                     <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground py-8">No data for this period</TableCell></TableRow>
                   )}
                 </TableBody>

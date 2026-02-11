@@ -4,8 +4,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
 import { useQBProfitAndLoss, useQBCustomers, useQBVendors, useQBPayments as useQBPaymentsData, useQBExpenses as useQBExpensesData } from "@/hooks/useQuickBooksQuery";
+import { InteractiveMetricCard } from "@/components/reporting/drilldown/InteractiveMetricCard";
+import { DrillDownProvider } from "@/components/reporting/drilldown/DrillDownProvider";
+import { DrillDownPanel } from "@/components/reporting/drilldown/DrillDownPanel";
+import { useDrillDown } from "@/components/reporting/drilldown/DrillDownProvider";
 
 function getYTDRange() {
   const now = new Date();
@@ -21,70 +24,34 @@ function extractTotal(rows: any[], groupName: string): number {
 const fmt = (v: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2 }).format(v);
 
-export function AccountingDashboard() {
+function DashboardContent() {
   const { user } = useAuth();
+  const { openPanel } = useDrillDown();
 
-  // Check if QB is connected
   const { data: qbConnected } = useQuery({
     queryKey: ['qb-connected', user?.id],
     queryFn: async () => {
       if (!user?.id) return false;
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('qb_realm_id')
-        .eq('id', user.id)
-        .single();
+      const { data: profile } = await supabase.from('profiles').select('qb_realm_id').eq('id', user.id).single();
       return !!profile?.qb_realm_id;
     },
     enabled: !!user?.id,
   });
 
-  // Local DB stats
   const { data: stats, isLoading } = useQuery({
     queryKey: ['accounting-stats', user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
       const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
       const now = new Date().toISOString();
-
-      const { data: payments } = await supabase
-        .from('payments')
-        .select('amount')
-        .eq('contractor_id', user.id)
-        .gte('payment_date', startOfMonth)
-        .lte('payment_date', now);
+      const { data: payments } = await supabase.from('payments').select('amount').eq('contractor_id', user.id).gte('payment_date', startOfMonth).lte('payment_date', now);
       const incomeThisMonth = payments?.reduce((sum, p) => sum + Number(p.amount), 0) || 0;
-
-      const { data: expenses } = await supabase
-        .from('plaid_transactions')
-        .select('amount')
-        .eq('contractor_id', user.id)
-        .eq('is_expense', true)
-        .gte('transaction_date', startOfMonth.split('T')[0])
-        .lte('transaction_date', now.split('T')[0]);
+      const { data: expenses } = await supabase.from('plaid_transactions').select('amount').eq('contractor_id', user.id).eq('is_expense', true).gte('transaction_date', startOfMonth.split('T')[0]).lte('transaction_date', now.split('T')[0]);
       const expensesThisMonth = expenses?.reduce((sum, e) => sum + Math.abs(Number(e.amount)), 0) || 0;
-
-      const { data: invoices } = await supabase
-        .from('invoices')
-        .select('balance_due')
-        .eq('user_id', user.id)
-        .neq('status', 'paid');
+      const { data: invoices } = await supabase.from('invoices').select('balance_due').eq('user_id', user.id).neq('status', 'paid');
       const outstandingInvoices = invoices?.reduce((sum, i) => sum + Number(i.balance_due || 0), 0) || 0;
-
-      const { data: bankAccounts } = await supabase
-        .from('bank_account_links')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('status', 'active');
-
-      return {
-        cashBalance: 0,
-        incomeThisMonth,
-        expensesThisMonth,
-        profitThisMonth: incomeThisMonth - expensesThisMonth,
-        outstandingInvoices,
-        bankAccountsLinked: bankAccounts?.length || 0,
-      };
+      const { data: bankAccounts } = await supabase.from('bank_account_links').select('*').eq('user_id', user.id).eq('status', 'active');
+      return { cashBalance: 0, incomeThisMonth, expensesThisMonth, profitThisMonth: incomeThisMonth - expensesThisMonth, outstandingInvoices, bankAccountsLinked: bankAccounts?.length || 0 };
     },
     enabled: !!user?.id,
   });
@@ -93,18 +60,12 @@ export function AccountingDashboard() {
     queryKey: ['recent-transactions', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
-      const { data } = await supabase
-        .from('plaid_transactions')
-        .select('*')
-        .eq('contractor_id', user.id)
-        .order('transaction_date', { ascending: false })
-        .limit(5);
+      const { data } = await supabase.from('plaid_transactions').select('*').eq('contractor_id', user.id).order('transaction_date', { ascending: false }).limit(5);
       return data || [];
     },
     enabled: !!user?.id,
   });
 
-  // QuickBooks data (only if connected)
   const dateRange = getYTDRange();
   const { data: pnl, isLoading: pnlLoading } = useQBProfitAndLoss(dateRange, !!qbConnected);
   const { data: qbCustomers, isLoading: custLoading } = useQBCustomers(!!qbConnected);
@@ -122,16 +83,13 @@ export function AccountingDashboard() {
     return (
       <div className="space-y-4">
         <div className="grid gap-3 md:gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-28 w-full" />
-          ))}
+          {Array.from({ length: 4 }).map((_, i) => (<Skeleton key={i} className="h-28 w-full" />))}
         </div>
         <Skeleton className="h-64 w-full" />
       </div>
     );
   }
 
-  // Use QB data if connected, otherwise fall back to local DB data
   const displayIncome = qbConnected ? qbIncome : (stats?.incomeThisMonth || 0);
   const displayExpenses = qbConnected ? qbExpensesTotal : (stats?.expensesThisMonth || 0);
   const displayNet = qbConnected ? qbNetIncome : (stats?.profitThisMonth || 0);
@@ -139,7 +97,6 @@ export function AccountingDashboard() {
 
   return (
     <div className="space-y-4 md:space-y-6">
-      {/* Connection status */}
       {qbConnected && (
         <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/30 px-4 py-2 rounded-lg">
           <BarChart3 className="h-4 w-4 text-primary" />
@@ -147,176 +104,125 @@ export function AccountingDashboard() {
         </div>
       )}
 
-      {/* Metric Cards */}
       <div className="grid gap-3 md:gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 min-w-0">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Revenue {periodLabel}</CardTitle>
-            <TrendingUp className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold tabular-nums text-green-600">{fmt(displayIncome)}</div>
-            <p className="text-xs text-muted-foreground">
-              {qbConnected ? "From connected accounting" : "From payments received"}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Expenses {periodLabel}</CardTitle>
-            <TrendingDown className="h-4 w-4 text-red-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold tabular-nums text-red-600">{fmt(displayExpenses)}</div>
-            <p className="text-xs text-muted-foreground">
-              {qbConnected ? "From connected accounting" : "From transactions"}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Net Income {periodLabel}</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className={`text-2xl font-bold tabular-nums ${displayNet >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {fmt(displayNet)}
-            </div>
-            <p className="text-xs text-muted-foreground">Income minus expenses</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Outstanding Invoices</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold tabular-nums">{fmt(stats?.outstandingInvoices || 0)}</div>
-            <p className="text-xs text-muted-foreground">
-              {stats?.bankAccountsLinked || 0} bank {stats?.bankAccountsLinked === 1 ? 'account' : 'accounts'} linked
-            </p>
-          </CardContent>
-        </Card>
+        <InteractiveMetricCard
+          title={`Revenue ${periodLabel}`}
+          value={fmt(displayIncome)}
+          subtitle={qbConnected ? "From connected accounting" : "From payments received"}
+          icon={<TrendingUp className="h-4 w-4 text-green-600" />}
+          variant="success"
+          onClick={() => openPanel({ type: "category-breakdown", title: `Revenue ${periodLabel}`, data: { category: "Income", total: displayIncome, period: periodLabel } })}
+        />
+        <InteractiveMetricCard
+          title={`Expenses ${periodLabel}`}
+          value={fmt(displayExpenses)}
+          subtitle={qbConnected ? "From connected accounting" : "From transactions"}
+          icon={<TrendingDown className="h-4 w-4 text-destructive" />}
+          variant="danger"
+          onClick={() => openPanel({ type: "category-breakdown", title: `Expenses ${periodLabel}`, data: { category: "Expenses", total: displayExpenses, period: periodLabel } })}
+        />
+        <InteractiveMetricCard
+          title={`Net Income ${periodLabel}`}
+          value={fmt(displayNet)}
+          subtitle="Income minus expenses"
+          icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
+          variant={displayNet >= 0 ? "success" : "danger"}
+        />
+        <InteractiveMetricCard
+          title="Outstanding Invoices"
+          value={fmt(stats?.outstandingInvoices || 0)}
+          subtitle={`${stats?.bankAccountsLinked || 0} bank ${stats?.bankAccountsLinked === 1 ? 'account' : 'accounts'} linked`}
+          icon={<FileText className="h-4 w-4 text-muted-foreground" />}
+          variant="warning"
+        />
       </div>
 
-      {/* QB Customers & Vendors (when connected) */}
+      {/* QB Customers & Vendors — clickable rows */}
       {qbConnected && (
         <div className="grid gap-3 md:gap-4 grid-cols-1 md:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base md:text-lg">
-                <Users className="h-5 w-5" />
-                Top Customers
-              </CardTitle>
+              <CardTitle className="flex items-center gap-2 text-base md:text-lg"><Users className="h-5 w-5" /> Top Customers</CardTitle>
               <CardDescription>From connected accounting</CardDescription>
             </CardHeader>
             <CardContent>
               {qbCustomers && qbCustomers.length > 0 ? (
-                <div className="space-y-2">
+                <div className="space-y-1">
                   {qbCustomers.slice(0, 5).map((c: any) => (
-                    <div key={c.Id} className="flex justify-between items-center text-sm min-h-[40px]">
+                    <button key={c.Id} className="flex justify-between items-center text-sm min-h-[40px] w-full px-2 py-1.5 rounded hover:bg-muted/50 transition-colors cursor-pointer text-left"
+                      onClick={() => openPanel({ type: "qb-record", title: c.DisplayName, data: { record: c, recordType: "qb-customer" } })}>
                       <span className="truncate mr-3">{c.DisplayName}</span>
-                      <span className="tabular-nums font-medium flex-shrink-0">
-                        {fmt(parseFloat(c.Balance || "0"))}
-                      </span>
-                    </div>
+                      <span className="tabular-nums font-medium flex-shrink-0">{fmt(parseFloat(c.Balance || "0"))}</span>
+                    </button>
                   ))}
                 </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">No customer data available</p>
-              )}
+              ) : (<p className="text-sm text-muted-foreground">No customer data available</p>)}
             </CardContent>
           </Card>
-
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base md:text-lg">
-                <Store className="h-5 w-5" />
-                Top Vendors
-              </CardTitle>
+              <CardTitle className="flex items-center gap-2 text-base md:text-lg"><Store className="h-5 w-5" /> Top Vendors</CardTitle>
               <CardDescription>From connected accounting</CardDescription>
             </CardHeader>
             <CardContent>
               {qbVendors && qbVendors.length > 0 ? (
-                <div className="space-y-2">
+                <div className="space-y-1">
                   {qbVendors.slice(0, 5).map((v: any) => (
-                    <div key={v.Id} className="flex justify-between items-center text-sm min-h-[40px]">
+                    <button key={v.Id} className="flex justify-between items-center text-sm min-h-[40px] w-full px-2 py-1.5 rounded hover:bg-muted/50 transition-colors cursor-pointer text-left"
+                      onClick={() => openPanel({ type: "qb-record", title: v.DisplayName, data: { record: v, recordType: "qb-vendor" } })}>
                       <span className="truncate mr-3">{v.DisplayName}</span>
-                      <span className="tabular-nums font-medium flex-shrink-0">
-                        {fmt(parseFloat(v.Balance || "0"))}
-                      </span>
-                    </div>
+                      <span className="tabular-nums font-medium flex-shrink-0">{fmt(parseFloat(v.Balance || "0"))}</span>
+                    </button>
                   ))}
                 </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">No vendor data available</p>
-              )}
+              ) : (<p className="text-sm text-muted-foreground">No vendor data available</p>)}
             </CardContent>
           </Card>
         </div>
       )}
 
-      {/* QB Recent Payments (when connected) */}
+      {/* QB Recent Payments — clickable */}
       {qbConnected && !qbPayLoading && qbPayments && qbPayments.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base md:text-lg">
-              <CreditCard className="h-5 w-5" />
-              Recent Payments
-            </CardTitle>
+            <CardTitle className="flex items-center gap-2 text-base md:text-lg"><CreditCard className="h-5 w-5" /> Recent Payments</CardTitle>
             <CardDescription>Payments from connected accounting</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
+            <div className="space-y-1">
               {qbPayments.slice(0, 5).map((p: any) => (
-                <div key={p.Id} className="flex justify-between items-center text-sm min-h-[44px]">
+                <button key={p.Id} className="flex justify-between items-center text-sm min-h-[44px] w-full px-2 py-1.5 rounded hover:bg-muted/50 transition-colors cursor-pointer text-left"
+                  onClick={() => openPanel({ type: "qb-record", title: `Payment · ${p.CustomerRef?.name || "Unknown"}`, data: { record: p, recordType: "qb-payment" } })}>
                   <div className="min-w-0 flex-1 mr-3">
                     <p className="font-medium truncate">{p.CustomerRef?.name || 'Payment'}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {p.TxnDate ? new Date(p.TxnDate).toLocaleDateString() : 'N/A'}
-                      {p.PaymentMethodRef?.name && ` · ${p.PaymentMethodRef.name}`}
-                    </p>
+                    <p className="text-xs text-muted-foreground">{p.TxnDate ? new Date(p.TxnDate).toLocaleDateString() : 'N/A'}{p.PaymentMethodRef?.name && ` · ${p.PaymentMethodRef.name}`}</p>
                   </div>
-                  <p className="font-semibold tabular-nums flex-shrink-0 text-green-600">
-                    {fmt(parseFloat(p.TotalAmt || "0"))}
-                  </p>
-                </div>
+                  <p className="font-semibold tabular-nums flex-shrink-0 text-green-600">{fmt(parseFloat(p.TotalAmt || "0"))}</p>
+                </button>
               ))}
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* QB Recent Expenses (when connected) */}
+      {/* QB Recent Expenses — clickable */}
       {qbConnected && !qbExpLoading && qbExpenses && qbExpenses.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base md:text-lg">
-              <TrendingDown className="h-5 w-5" />
-              Recent Expenses
-            </CardTitle>
+            <CardTitle className="flex items-center gap-2 text-base md:text-lg"><TrendingDown className="h-5 w-5" /> Recent Expenses</CardTitle>
             <CardDescription>Purchases from connected accounting</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
+            <div className="space-y-1">
               {qbExpenses.slice(0, 5).map((e: any) => (
-                <div key={e.Id} className="flex justify-between items-center text-sm min-h-[44px]">
+                <button key={e.Id} className="flex justify-between items-center text-sm min-h-[44px] w-full px-2 py-1.5 rounded hover:bg-muted/50 transition-colors cursor-pointer text-left"
+                  onClick={() => openPanel({ type: "qb-record", title: `Expense · ${e.EntityRef?.name || "Unknown"}`, data: { record: e, recordType: "qb-expense" } })}>
                   <div className="min-w-0 flex-1 mr-3">
-                    <p className="font-medium truncate">
-                      {e.EntityRef?.name || e.AccountRef?.name || 'Expense'}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {e.TxnDate ? new Date(e.TxnDate).toLocaleDateString() : 'N/A'}
-                      {e.PaymentType && ` · ${e.PaymentType}`}
-                    </p>
+                    <p className="font-medium truncate">{e.EntityRef?.name || e.AccountRef?.name || 'Expense'}</p>
+                    <p className="text-xs text-muted-foreground">{e.TxnDate ? new Date(e.TxnDate).toLocaleDateString() : 'N/A'}{e.PaymentType && ` · ${e.PaymentType}`}</p>
                   </div>
-                  <p className="font-semibold tabular-nums flex-shrink-0 text-red-600">
-                    {fmt(parseFloat(e.TotalAmt || "0"))}
-                  </p>
-                </div>
+                  <p className="font-semibold tabular-nums flex-shrink-0 text-destructive">{fmt(parseFloat(e.TotalAmt || "0"))}</p>
+                </button>
               ))}
             </div>
           </CardContent>
@@ -328,10 +234,7 @@ export function AccountingDashboard() {
         <div className="grid gap-3 md:gap-4 grid-cols-1 md:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base md:text-lg">
-                <FileText className="h-5 w-5" />
-                Outstanding Invoices
-              </CardTitle>
+              <CardTitle className="flex items-center gap-2 text-base md:text-lg"><FileText className="h-5 w-5" /> Outstanding Invoices</CardTitle>
               <CardDescription>Unpaid and overdue invoices</CardDescription>
             </CardHeader>
             <CardContent>
@@ -339,13 +242,9 @@ export function AccountingDashboard() {
               <p className="text-sm text-muted-foreground mt-2">Total amount waiting to be paid</p>
             </CardContent>
           </Card>
-
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base md:text-lg">
-                <CreditCard className="h-5 w-5" />
-                Recent Transactions
-              </CardTitle>
+              <CardTitle className="flex items-center gap-2 text-base md:text-lg"><CreditCard className="h-5 w-5" /> Recent Transactions</CardTitle>
               <CardDescription>Latest banking activity</CardDescription>
             </CardHeader>
             <CardContent>
@@ -355,11 +254,9 @@ export function AccountingDashboard() {
                     <div key={txn.id} className="flex justify-between items-center text-sm min-h-[44px]">
                       <div className="min-w-0 flex-1 mr-3">
                         <p className="font-medium truncate">{txn.vendor || txn.description || 'Transaction'}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(txn.transaction_date).toLocaleDateString()}
-                        </p>
+                        <p className="text-xs text-muted-foreground">{new Date(txn.transaction_date).toLocaleDateString()}</p>
                       </div>
-                      <p className={`font-semibold tabular-nums flex-shrink-0 ${Number(txn.amount) < 0 ? 'text-red-600' : 'text-green-600'}`}>
+                      <p className={`font-semibold tabular-nums flex-shrink-0 ${Number(txn.amount) < 0 ? 'text-destructive' : 'text-green-600'}`}>
                         {Number(txn.amount) < 0 ? '-' : ''}${Math.abs(Number(txn.amount)).toFixed(2)}
                       </p>
                     </div>
@@ -367,8 +264,7 @@ export function AccountingDashboard() {
                 </div>
               ) : (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <AlertCircle className="h-4 w-4" />
-                  <span>No recent transactions</span>
+                  <AlertCircle className="h-4 w-4" /><span>No recent transactions</span>
                 </div>
               )}
             </CardContent>
@@ -376,7 +272,6 @@ export function AccountingDashboard() {
         </div>
       )}
 
-      {/* Prompt to connect when nothing is connected */}
       {!qbConnected && !stats?.bankAccountsLinked && (
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center justify-center py-10">
@@ -389,5 +284,14 @@ export function AccountingDashboard() {
         </Card>
       )}
     </div>
+  );
+}
+
+export function AccountingDashboard() {
+  return (
+    <DrillDownProvider>
+      <DashboardContent />
+      <DrillDownPanel />
+    </DrillDownProvider>
   );
 }
