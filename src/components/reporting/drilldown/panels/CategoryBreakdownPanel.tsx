@@ -23,7 +23,10 @@ interface Props {
     dateStart?: string;
     dateEnd?: string;
     totalAmount?: number;
+    total?: number;
     transactionCount?: number;
+    period?: string;
+    items?: { name: string; amount: number; depth?: number }[];
   };
 }
 
@@ -63,7 +66,10 @@ export function CategoryBreakdownPanel({ data }: Props) {
     .sort(([, a], [, b]) => b.total - a.total)
     .slice(0, 10);
 
-  const grandTotal = expenses?.reduce((s, e: any) => s + Number(e.amount || 0), 0) || data.totalAmount || 0;
+  const grandTotal = data.totalAmount || data.total || expenses?.reduce((s, e: any) => s + Number(e.amount || 0), 0) || 0;
+
+  // If pre-computed items are passed (e.g. from QuickBooks P&L), use those instead of querying expenses
+  const hasPrecomputedItems = data.items && data.items.length > 0;
 
   return (
     <div className="space-y-5">
@@ -75,13 +81,32 @@ export function CategoryBreakdownPanel({ data }: Props) {
       <div className="text-center p-6 bg-muted/50 rounded-lg">
         <p className="text-sm text-muted-foreground">Total {data.category}</p>
         <p className="text-3xl font-bold tabular-nums">{fmt(grandTotal)}</p>
-        {expenses && <p className="text-xs text-muted-foreground mt-1">{expenses.length} transactions</p>}
+        {data.period && <p className="text-xs text-muted-foreground mt-1">{data.period}</p>}
+        {!hasPrecomputedItems && expenses && <p className="text-xs text-muted-foreground mt-1">{expenses.length} transactions</p>}
       </div>
 
       <Separator />
 
-      {/* Top breakdown items */}
-      {topDescriptions.length > 0 && (
+      {/* Pre-computed items from QuickBooks or other sources */}
+      {hasPrecomputedItems && (
+        <div className="space-y-2">
+          <h4 className="text-sm font-semibold">Breakdown</h4>
+          <div className="space-y-2">
+            {data.items!.map((item, i) => (
+              <div key={i} className="space-y-1">
+                <div className="flex justify-between text-sm">
+                  <span className="truncate max-w-[200px]" style={{ paddingLeft: `${(item.depth || 0) * 12}px` }}>{item.name}</span>
+                  <span className="font-medium tabular-nums">{fmt(item.amount)}</span>
+                </div>
+                <Progress value={grandTotal > 0 ? (Math.abs(item.amount) / Math.abs(grandTotal)) * 100 : 0} className="h-1.5" />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Local expense breakdown (when no pre-computed items) */}
+      {!hasPrecomputedItems && topDescriptions.length > 0 && (
         <div className="space-y-2">
           <h4 className="text-sm font-semibold">By Vendor / Description</h4>
           <div className="space-y-2">
@@ -100,34 +125,36 @@ export function CategoryBreakdownPanel({ data }: Props) {
         </div>
       )}
 
-      <Separator />
-
-      {/* Recent transactions */}
-      <div className="space-y-2">
-        <h4 className="text-sm font-semibold">Recent Transactions</h4>
-        <div className="space-y-1.5 max-h-[300px] overflow-y-auto">
-          {expenses?.slice(0, 20).map((exp: any) => (
-            <Button
-              key={exp.id}
-              variant="ghost"
-              className="w-full justify-between text-sm h-auto py-2 px-3 hover:bg-muted text-left"
-              onClick={() => openPanel({
-                type: "expense",
-                title: "Expense Details",
-                data: exp,
-              })}
-            >
-              <div className="min-w-0 flex-1">
-                <p className="font-medium truncate">{exp.description || data.category}</p>
-                <p className="text-xs text-muted-foreground">
-                  {exp.date ? new Date(exp.date).toLocaleDateString() : "—"}
-                </p>
-              </div>
-              <span className="font-semibold tabular-nums text-red-600 ml-2">{fmt(Number(exp.amount || 0))}</span>
-            </Button>
-          ))}
-        </div>
-      </div>
+      {!hasPrecomputedItems && (
+        <>
+          <Separator />
+          <div className="space-y-2">
+            <h4 className="text-sm font-semibold">Recent Transactions</h4>
+            <div className="space-y-1.5 max-h-[300px] overflow-y-auto">
+              {expenses?.slice(0, 20).map((exp: any) => (
+                <Button
+                  key={exp.id}
+                  variant="ghost"
+                  className="w-full justify-between text-sm h-auto py-2 px-3 hover:bg-muted text-left"
+                  onClick={() => openPanel({
+                    type: "expense",
+                    title: "Expense Details",
+                    data: exp,
+                  })}
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium truncate">{exp.description || data.category}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {exp.date ? new Date(exp.date).toLocaleDateString() : "—"}
+                    </p>
+                  </div>
+                  <span className="font-semibold tabular-nums text-destructive ml-2">{fmt(Number(exp.amount || 0))}</span>
+                </Button>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

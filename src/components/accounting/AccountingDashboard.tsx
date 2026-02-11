@@ -111,7 +111,7 @@ function DashboardContent() {
           subtitle={qbConnected ? "From connected accounting" : "From payments received"}
           icon={<TrendingUp className="h-4 w-4 text-green-600" />}
           variant="success"
-          onClick={() => openPanel({ type: "category-breakdown", title: `Revenue ${periodLabel}`, data: { category: "Income", total: displayIncome, period: periodLabel } })}
+          onClick={() => openPanel({ type: "category-breakdown", title: `Revenue ${periodLabel}`, data: { category: "Income", totalAmount: displayIncome, period: periodLabel } })}
         />
         <InteractiveMetricCard
           title={`Expenses ${periodLabel}`}
@@ -119,7 +119,7 @@ function DashboardContent() {
           subtitle={qbConnected ? "From connected accounting" : "From transactions"}
           icon={<TrendingDown className="h-4 w-4 text-destructive" />}
           variant="danger"
-          onClick={() => openPanel({ type: "category-breakdown", title: `Expenses ${periodLabel}`, data: { category: "Expenses", total: displayExpenses, period: periodLabel } })}
+          onClick={() => openPanel({ type: "category-breakdown", title: `Expenses ${periodLabel}`, data: { category: "Expenses", totalAmount: displayExpenses, period: periodLabel } })}
         />
         <InteractiveMetricCard
           title={`Net Income ${periodLabel}`}

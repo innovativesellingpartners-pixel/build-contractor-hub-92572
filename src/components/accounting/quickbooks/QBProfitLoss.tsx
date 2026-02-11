@@ -111,22 +111,28 @@ export function QBProfitLoss() {
               value={fmt(income)}
               icon={<TrendingUp className="h-4 w-4 text-green-600" />}
               variant="success"
-              onClick={() => openPanel({
-                type: "category-breakdown",
-                title: `Income Breakdown · ${range.label}`,
-                data: { category: "Income", total: income, period: range.label },
-              })}
+              onClick={() => {
+                const incomeRows = flatRows.filter(r => !r.name.startsWith("Total") && r.amount > 0);
+                openPanel({
+                  type: "category-breakdown",
+                  title: `Income Breakdown · ${range.label}`,
+                  data: { category: "Income", totalAmount: income, period: range.label, items: incomeRows },
+                });
+              }}
             />
             <InteractiveMetricCard
               title="Total Expenses"
               value={fmt(expenses)}
               icon={<TrendingDown className="h-4 w-4 text-destructive" />}
               variant="danger"
-              onClick={() => openPanel({
-                type: "category-breakdown",
-                title: `Expense Breakdown · ${range.label}`,
-                data: { category: "Expenses", total: expenses, period: range.label },
-              })}
+              onClick={() => {
+                const expenseRows = flatRows.filter(r => !r.name.startsWith("Total") && r.name !== "Income" && r.name !== "Expenses");
+                openPanel({
+                  type: "category-breakdown",
+                  title: `Expense Breakdown · ${range.label}`,
+                  data: { category: "Expenses", totalAmount: expenses, period: range.label, items: expenseRows },
+                });
+              }}
             />
             <InteractiveMetricCard
               title="Net Income"
