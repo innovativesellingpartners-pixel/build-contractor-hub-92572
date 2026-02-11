@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { SearchableSelect } from '@/components/ui/searchable-select';
-import { AddressAutocomplete } from '@/components/ui/address-autocomplete';
+import { LocationAutocomplete, AddressData } from '@/components/ui/location-autocomplete';
 import { FileText, MapPin, DollarSign, Camera } from 'lucide-react';
 import { Job } from '@/hooks/useJobs';
 import { JobMeetingsSection, MeetingFormData } from './JobMeetingsSection';
@@ -197,16 +197,16 @@ export function EditJobDialog({ job, open, onOpenChange, onUpdate, onJobUpdated 
             
             <div className="space-y-2">
               <Label htmlFor="address">Street Address</Label>
-              <AddressAutocomplete
+              <LocationAutocomplete
                 value={formData.address}
                 onChange={(value) => setFormData({ ...formData, address: value })}
-                onAddressParsed={(parsed) => {
+                onAddressSelect={(data) => {
                   setFormData(prev => ({
                     ...prev,
-                    address: parsed.street,
-                    city: parsed.city,
-                    state: parsed.state,
-                    zip_code: parsed.zipCode,
+                    address: data.address1,
+                    city: data.city,
+                    state: data.state,
+                    zip_code: data.postalCode,
                   }));
                 }}
                 placeholder="Start typing an address..."

@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { AddressAutocomplete } from "@/components/ui/address-autocomplete";
+import { LocationAutocomplete, AddressData } from "@/components/ui/location-autocomplete";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -394,16 +394,16 @@ export function ProfileEditDialog() {
                   <div className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="business_address">Business Address</Label>
-                      <AddressAutocomplete
+                      <LocationAutocomplete
                         value={formData.business_address}
                         onChange={(value) => setFormData({ ...formData, business_address: value })}
-                        onAddressParsed={(parsed) => {
+                        onAddressSelect={(data) => {
                           setFormData(prev => ({
                             ...prev,
-                            business_address: parsed.street,
-                            city: parsed.city,
-                            state: parsed.state,
-                            zip_code: parsed.zipCode,
+                            business_address: data.address1,
+                            city: data.city,
+                            state: data.state,
+                            zip_code: data.postalCode,
                           }));
                         }}
                         placeholder="Start typing an address..."

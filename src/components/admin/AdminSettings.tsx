@@ -8,7 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AddressAutocomplete } from '@/components/ui/address-autocomplete';
+import { LocationAutocomplete } from '@/components/ui/location-autocomplete';
 import { 
   Settings, 
   Building2, 
@@ -199,7 +199,7 @@ export const AdminSettings = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="company-address">Business Address</Label>
-                <AddressAutocomplete
+                <LocationAutocomplete
                   value={companyAddress}
                   onChange={setCompanyAddress}
                   placeholder="Start typing an address..."
