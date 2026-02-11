@@ -457,6 +457,28 @@ export function EstimateDetailViewBlue({
             EDIT ESTIMATE
           </ActionButton>
         )}
+        {/* View & Sign Online */}
+        {estimate.public_token && (
+          <ActionButton variant="success" onClick={handleViewAndSign} className="flex items-center gap-2">
+            <Eye className="w-4 h-4" />
+            VIEW & SIGN ONLINE
+          </ActionButton>
+        )}
+        {/* Copy Public Link */}
+        {estimate.public_token && (
+          <ActionButton 
+            variant="muted" 
+            onClick={() => {
+              const link = `${window.location.origin}/estimate/${estimate.public_token}`;
+              navigator.clipboard.writeText(link);
+              toast.success('Public link copied to clipboard!');
+            }}
+            className="flex items-center gap-2"
+          >
+            <Copy className="w-4 h-4" />
+            COPY LINK
+          </ActionButton>
+        )}
         {/* 2. Send Estimate */}
         {onSend && estimate.client_email && (
           <ActionButton variant="success" onClick={onSend} className="flex items-center gap-2">

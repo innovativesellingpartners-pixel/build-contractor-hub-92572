@@ -35,6 +35,7 @@ export default function EstimatesSection({ onSectionChange, initialEstimateId, o
   const [selectedEstimateForDetail, setSelectedEstimateForDetail] = useState<any>(null);
   const [isConverting, setIsConverting] = useState<string | null>(null);
   const [showTemplates, setShowTemplates] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<string>('all');
 
   // Handle initial estimate ID to auto-open the detail view
   React.useEffect(() => {
@@ -346,6 +347,23 @@ export default function EstimatesSection({ onSectionChange, initialEstimateId, o
         Create, manage, and track project estimates
       </CardDescription>
 
+      {/* Filter Chips */}
+      <div className="px-4 sm:px-0 mb-4 flex gap-2 flex-wrap">
+        {['all', 'draft', 'sent', 'viewed', 'signed', 'paid'].map((filter) => (
+          <button
+            key={filter}
+            onClick={() => setStatusFilter(filter)}
+            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors capitalize ${
+              statusFilter === filter
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-muted text-muted-foreground hover:bg-muted/80'
+            }`}
+          >
+            {filter}
+          </button>
+        ))}
+      </div>
+
       {/* Predictive Search */}
       <div className="px-4 sm:px-0 mb-4">
         <PredictiveSearch
@@ -373,7 +391,14 @@ export default function EstimatesSection({ onSectionChange, initialEstimateId, o
         </div>
       ) : estimates && estimates.length > 0 ? (
         <MobileStack className="space-y-2">
-          {estimates.map((estimate: any) => (
+          {estimates.filter((estimate: any) => {
+            if (statusFilter === 'all') return true;
+            if (statusFilter === 'viewed') return estimate.viewed_at && !estimate.signed_at;
+            if (statusFilter === 'signed') return estimate.signed_at && !estimate.paid_at;
+            if (statusFilter === 'paid') return estimate.paid_at;
+            if (statusFilter === 'sent') return estimate.sent_at && !estimate.viewed_at;
+            return estimate.status === statusFilter;
+          }).map((estimate: any) => (
             <SwipeToArchive 
               key={estimate.id} 
               onArchive={() => archiveEstimate(estimate.id)}
@@ -399,6 +424,25 @@ export default function EstimatesSection({ onSectionChange, initialEstimateId, o
                       {estimate.title || estimate.project_name || 'Untitled'}
                     </span>
                   </RowMetaLine>
+
+                  {/* Lifecycle Progress */}
+                  <div className="flex items-center gap-1 mt-1">
+                    {[
+                      { label: 'Draft', active: true },
+                      { label: 'Sent', active: !!estimate.sent_at },
+                      { label: 'Viewed', active: !!estimate.viewed_at },
+                      { label: 'Signed', active: !!estimate.signed_at },
+                      { label: 'Paid', active: !!estimate.paid_at },
+                    ].map((step, i) => (
+                      <div key={step.label} className="flex items-center gap-1">
+                        <div className={`h-1.5 w-1.5 rounded-full ${step.active ? 'bg-primary' : 'bg-muted-foreground/30'}`} />
+                        <span className={`text-[10px] ${step.active ? 'text-primary font-medium' : 'text-muted-foreground/50'}`}>
+                          {step.label}
+                        </span>
+                        {i < 4 && <div className={`w-2 h-px ${step.active ? 'bg-primary' : 'bg-muted-foreground/20'}`} />}
+                      </div>
+                    ))}
+                  </div>
                 </RowContent>
 
                 {/* Amount & Chevron */}

@@ -234,8 +234,32 @@ export default function EstimateBuilder({ initialData, onSave, onCancel }: Estim
     }
   };
 
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+
+  const getValidationErrors = (): string[] => {
+    switch (currentStep) {
+      case 1:
+        const errors: string[] = [];
+        if (!formData.title && !formData.project_name) errors.push('Project title is required');
+        if (!formData.client_name) errors.push('Client name is required');
+        return errors;
+      case 2:
+        const hasValidItem = formData.line_items.some(item => item.description?.trim());
+        if (!hasValidItem) return ['At least one line item with a description is required'];
+        return [];
+      default:
+        return [];
+    }
+  };
+
   const handleNext = () => {
-    if (currentStep < STEPS.length && canProceed()) {
+    if (currentStep < STEPS.length) {
+      const errors = getValidationErrors();
+      if (errors.length > 0) {
+        setValidationErrors(errors);
+        return;
+      }
+      setValidationErrors([]);
       setCurrentStep(prev => prev + 1);
     }
   };
@@ -420,6 +444,20 @@ export default function EstimateBuilder({ initialData, onSave, onCancel }: Estim
             onDiscard={handleDiscardDraft}
             isDiscarding={isDiscarding}
           />
+        </div>
+      )}
+
+      {/* Validation Errors */}
+      {validationErrors.length > 0 && (
+        <div className="px-6 pt-3">
+          <div className="bg-destructive/10 border border-destructive/30 rounded-lg px-4 py-3">
+            {validationErrors.map((err, i) => (
+              <p key={i} className="text-sm text-destructive flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-destructive flex-shrink-0" />
+                {err}
+              </p>
+            ))}
+          </div>
         </div>
       )}
 
