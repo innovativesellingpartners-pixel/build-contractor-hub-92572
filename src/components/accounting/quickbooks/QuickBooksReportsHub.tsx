@@ -1,13 +1,6 @@
 /**
  * QuickBooksReportsHub — Comprehensive 8-section financial reporting hub.
- *
- * Connection check: queries profiles.qb_realm_id to determine if QB is connected.
- * If not connected, shows a clean empty state with connect action.
- * If connected, renders report sections via sub-navigation.
- *
- * Sections: Overview | Profit & Loss | Balance Sheet | Sales/Invoices | Payments | Expenses | Customers | Vendors | Aging
- *
- * All QB branding removed — myCT1 branded only.
+ * Wrapped with DrillDownProvider for interactive drill-down across all tabs.
  */
 
 import { useState, useEffect } from "react";
@@ -40,6 +33,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { FinancialConnectionsDropdown } from "../FinancialConnectionsDropdown";
 import { usePlaidLink } from "@/hooks/usePlaidLink";
+import { DrillDownProvider } from "@/components/reporting/drilldown/DrillDownProvider";
+import { DrillDownPanel } from "@/components/reporting/drilldown/DrillDownPanel";
 
 const qbTabs = [
   { value: "overview", label: "Overview", icon: LayoutDashboard },
@@ -62,7 +57,6 @@ export function QuickBooksReportsHub() {
   const [bankConnected, setBankConnected] = useState(false);
   const [stripeConnected, setStripeConnected] = useState(false);
 
-  // Check if QB is connected
   const { data: qbConnected, isLoading: checkingConnection } = useQuery({
     queryKey: ["qb-connection-check", user?.id],
     queryFn: async () => {
@@ -78,7 +72,6 @@ export function QuickBooksReportsHub() {
     enabled: !!user?.id,
   });
 
-  // Check bank
   useEffect(() => {
     const checkBank = async () => {
       if (!user?.id) return;
@@ -137,7 +130,6 @@ export function QuickBooksReportsHub() {
     );
   }
 
-  // Not connected
   if (!qbConnected) {
     return (
       <div className="space-y-4">
@@ -169,66 +161,69 @@ export function QuickBooksReportsHub() {
   }
 
   return (
-    <div className="space-y-4">
-      {/* Header with connections dropdown and sync */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
-        <div>
-          <h2 className="text-xl md:text-2xl font-bold tracking-tight">Financial Reports</h2>
-          <p className="text-sm text-muted-foreground">Live data from your connected accounting</p>
+    <DrillDownProvider onNavigateToReport={(reportId) => setActiveTab(reportId)}>
+      <div className="space-y-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
+          <div>
+            <h2 className="text-xl md:text-2xl font-bold tracking-tight">Financial Reports</h2>
+            <p className="text-sm text-muted-foreground">Live data from your connected accounting</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <FinancialConnectionsDropdown
+              connections={{ bankConnected, qbConnected: true, stripeConnected }}
+              onConnectBank={openPlaid}
+              onConnectionChange={() => window.location.reload()}
+            />
+            <Button variant="outline" size="sm" onClick={handleSync}>
+              <RefreshCw className="h-4 w-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Sync</span>
+            </Button>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <FinancialConnectionsDropdown
-            connections={{ bankConnected, qbConnected: true, stripeConnected }}
-            onConnectBank={openPlaid}
-            onConnectionChange={() => window.location.reload()}
-          />
-          <Button variant="outline" size="sm" onClick={handleSync}>
-            <RefreshCw className="h-4 w-4 mr-1 sm:mr-2" />
-            <span className="hidden sm:inline">Sync</span>
-          </Button>
-        </div>
-      </div>
 
-      {/* Mobile dropdown nav */}
-      <div className="block md:hidden">
-        <Select value={activeTab} onValueChange={setActiveTab}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select report" />
-          </SelectTrigger>
-          <SelectContent className="bg-popover z-50">
+        {/* Mobile dropdown nav */}
+        <div className="block md:hidden">
+          <Select value={activeTab} onValueChange={setActiveTab}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select report" />
+            </SelectTrigger>
+            <SelectContent className="bg-popover z-50">
+              {qbTabs.map((tab) => (
+                <SelectItem key={tab.value} value={tab.value}>
+                  <div className="flex items-center gap-2">
+                    <tab.icon className="h-4 w-4" />
+                    {tab.label}
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Desktop tab bar */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+          <TabsList className="hidden md:flex w-full overflow-x-auto">
             {qbTabs.map((tab) => (
-              <SelectItem key={tab.value} value={tab.value}>
-                <div className="flex items-center gap-2">
-                  <tab.icon className="h-4 w-4" />
-                  {tab.label}
-                </div>
-              </SelectItem>
+              <TabsTrigger key={tab.value} value={tab.value} className="flex-shrink-0">
+                <tab.icon className="h-4 w-4 mr-1.5" />
+                <span className="text-xs lg:text-sm">{tab.label}</span>
+              </TabsTrigger>
             ))}
-          </SelectContent>
-        </Select>
+          </TabsList>
+
+          <TabsContent value="overview"><QBOverview /></TabsContent>
+          <TabsContent value="pnl"><QBProfitLoss /></TabsContent>
+          <TabsContent value="balance-sheet"><QBBalanceSheet /></TabsContent>
+          <TabsContent value="sales"><QBSalesInvoices /></TabsContent>
+          <TabsContent value="payments"><QBPayments /></TabsContent>
+          <TabsContent value="expenses"><QBExpenses /></TabsContent>
+          <TabsContent value="customers"><QBCustomers /></TabsContent>
+          <TabsContent value="vendors"><QBVendors /></TabsContent>
+          <TabsContent value="aging"><QBAging /></TabsContent>
+        </Tabs>
+
+        <DrillDownPanel />
       </div>
-
-      {/* Desktop tab bar */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="hidden md:flex w-full overflow-x-auto">
-          {qbTabs.map((tab) => (
-            <TabsTrigger key={tab.value} value={tab.value} className="flex-shrink-0">
-              <tab.icon className="h-4 w-4 mr-1.5" />
-              <span className="text-xs lg:text-sm">{tab.label}</span>
-            </TabsTrigger>
-          ))}
-        </TabsList>
-
-        <TabsContent value="overview"><QBOverview /></TabsContent>
-        <TabsContent value="pnl"><QBProfitLoss /></TabsContent>
-        <TabsContent value="balance-sheet"><QBBalanceSheet /></TabsContent>
-        <TabsContent value="sales"><QBSalesInvoices /></TabsContent>
-        <TabsContent value="payments"><QBPayments /></TabsContent>
-        <TabsContent value="expenses"><QBExpenses /></TabsContent>
-        <TabsContent value="customers"><QBCustomers /></TabsContent>
-        <TabsContent value="vendors"><QBVendors /></TabsContent>
-        <TabsContent value="aging"><QBAging /></TabsContent>
-      </Tabs>
-    </div>
+    </DrillDownProvider>
   );
 }

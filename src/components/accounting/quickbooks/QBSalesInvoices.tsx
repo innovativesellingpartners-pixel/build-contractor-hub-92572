@@ -1,17 +1,18 @@
 /**
- * QBSalesInvoices — Sales / Invoices report view.
- * Shows invoice data from QuickBooks with date range filters and metric cards.
+ * QBSalesInvoices — Sales / Invoices report with interactive drill-down.
  */
 
 import { useState, useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { DollarSign, FileText, AlertCircle, TrendingUp, Clock } from "lucide-react";
+import { DollarSign, FileText, TrendingUp, Clock, ChevronRight } from "lucide-react";
 import { useQuickBooksQuery } from "@/hooks/useQuickBooksQuery";
+import { InteractiveMetricCard } from "@/components/reporting/drilldown/InteractiveMetricCard";
+import { useDrillDown } from "@/components/reporting/drilldown/DrillDownProvider";
 
 const fmt = (v: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2 }).format(v);
@@ -33,6 +34,7 @@ export function QBSalesInvoices() {
   const { data: invoices, isLoading, error } = useQBInvoices();
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const { openPanel } = useDrillDown();
 
   const filtered = useMemo(() => {
     if (!invoices) return [];
@@ -43,7 +45,6 @@ export function QBSalesInvoices() {
         const balance = parseFloat(inv.Balance || "0");
         const dueDate = inv.DueDate ? new Date(inv.DueDate) : null;
         const isOverdue = dueDate && dueDate < new Date() && balance > 0;
-
         if (statusFilter === "paid") return balance === 0;
         if (statusFilter === "unpaid") return balance > 0 && !isOverdue;
         if (statusFilter === "overdue") return isOverdue;
@@ -62,7 +63,6 @@ export function QBSalesInvoices() {
     return result;
   }, [invoices, statusFilter, searchTerm]);
 
-  // Compute metrics
   const metrics = useMemo(() => {
     if (!invoices) return { totalInvoiced: 0, totalPaid: 0, outstanding: 0, overdue: 0 };
     const all = invoices as any[];
@@ -84,6 +84,14 @@ export function QBSalesInvoices() {
     return { label: "Open", variant: "secondary" };
   }
 
+  const handleInvoiceClick = (inv: any) => {
+    openPanel({
+      type: "qb-record",
+      title: `Invoice #${inv.DocNumber || "—"}`,
+      data: { record: inv, recordType: "qb-invoice" },
+    });
+  };
+
   return (
     <div className="space-y-4">
       <div>
@@ -100,39 +108,36 @@ export function QBSalesInvoices() {
         <Card><CardContent className="py-8 text-center text-muted-foreground">We're having trouble syncing your invoice data. Please try reconnecting or click Sync to retry.</CardContent></Card>
       ) : (
         <>
-          {/* Metric Cards */}
           <div className="grid gap-3 md:gap-4 grid-cols-2 xl:grid-cols-4 min-w-0">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Invoiced</CardTitle>
-                <FileText className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent><div className="text-xl font-bold tabular-nums">{fmt(metrics.totalInvoiced)}</div></CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Paid</CardTitle>
-                <TrendingUp className="h-4 w-4 text-green-600" />
-              </CardHeader>
-              <CardContent><div className="text-xl font-bold tabular-nums text-green-600">{fmt(metrics.totalPaid)}</div></CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Outstanding</CardTitle>
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent><div className="text-xl font-bold tabular-nums">{fmt(metrics.outstanding)}</div></CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Overdue</CardTitle>
-                <Clock className="h-4 w-4 text-destructive" />
-              </CardHeader>
-              <CardContent><div className="text-xl font-bold tabular-nums text-destructive">{fmt(metrics.overdue)}</div></CardContent>
-            </Card>
+            <InteractiveMetricCard
+              title="Total Invoiced"
+              value={fmt(metrics.totalInvoiced)}
+              icon={<FileText className="h-4 w-4 text-muted-foreground" />}
+              onClick={() => setStatusFilter("all")}
+            />
+            <InteractiveMetricCard
+              title="Total Paid"
+              value={fmt(metrics.totalPaid)}
+              icon={<TrendingUp className="h-4 w-4 text-green-600" />}
+              variant="success"
+              onClick={() => setStatusFilter("paid")}
+            />
+            <InteractiveMetricCard
+              title="Outstanding"
+              value={fmt(metrics.outstanding)}
+              icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
+              variant="warning"
+              onClick={() => setStatusFilter("unpaid")}
+            />
+            <InteractiveMetricCard
+              title="Overdue"
+              value={fmt(metrics.overdue)}
+              icon={<Clock className="h-4 w-4 text-destructive" />}
+              variant="danger"
+              onClick={() => setStatusFilter("overdue")}
+            />
           </div>
 
-          {/* Filters */}
           <div className="flex flex-col sm:flex-row gap-2">
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-full sm:w-[140px]"><SelectValue /></SelectTrigger>
@@ -146,7 +151,6 @@ export function QBSalesInvoices() {
             <Input placeholder="Search customer or invoice #..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="sm:max-w-xs" />
           </div>
 
-          {/* Table */}
           <Card>
             <CardContent className="p-0">
               <div className="hidden md:block">
@@ -160,13 +164,14 @@ export function QBSalesInvoices() {
                       <TableHead className="text-right">Amount</TableHead>
                       <TableHead className="text-right">Balance</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead className="w-8" />
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filtered.length > 0 ? filtered.map((inv: any) => {
                       const status = getInvoiceStatus(inv);
                       return (
-                        <TableRow key={inv.Id}>
+                        <TableRow key={inv.Id} className="cursor-pointer hover:bg-muted/50 transition-colors group" onClick={() => handleInvoiceClick(inv)}>
                           <TableCell className="font-medium">{inv.DocNumber || "—"}</TableCell>
                           <TableCell className="truncate max-w-[180px]">{inv.CustomerRef?.name || "Unknown"}</TableCell>
                           <TableCell>{fmtDate(inv.TxnDate)}</TableCell>
@@ -174,20 +179,20 @@ export function QBSalesInvoices() {
                           <TableCell className="text-right tabular-nums">{fmt(parseFloat(inv.TotalAmt || "0"))}</TableCell>
                           <TableCell className="text-right tabular-nums">{fmt(parseFloat(inv.Balance || "0"))}</TableCell>
                           <TableCell><Badge variant={status.variant}>{status.label}</Badge></TableCell>
+                          <TableCell><ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" /></TableCell>
                         </TableRow>
                       );
                     }) : (
-                      <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-8">No invoices found</TableCell></TableRow>
+                      <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-8">No invoices found</TableCell></TableRow>
                     )}
                   </TableBody>
                 </Table>
               </div>
-              {/* Mobile */}
               <div className="md:hidden divide-y">
                 {filtered.length > 0 ? filtered.map((inv: any) => {
                   const status = getInvoiceStatus(inv);
                   return (
-                    <div key={inv.Id} className="p-3 min-h-[56px]">
+                    <button key={inv.Id} className="p-3 min-h-[56px] w-full text-left hover:bg-muted/50 transition-colors" onClick={() => handleInvoiceClick(inv)}>
                       <div className="flex justify-between items-start gap-2">
                         <div className="min-w-0 flex-1">
                           <p className="font-medium text-sm truncate">{inv.CustomerRef?.name || "Unknown"}</p>
@@ -198,7 +203,7 @@ export function QBSalesInvoices() {
                           <Badge variant={status.variant} className="text-xs mt-1">{status.label}</Badge>
                         </div>
                       </div>
-                    </div>
+                    </button>
                   );
                 }) : (
                   <div className="p-8 text-center text-muted-foreground text-sm">No invoices found</div>

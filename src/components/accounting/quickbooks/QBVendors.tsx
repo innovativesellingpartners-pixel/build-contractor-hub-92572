@@ -1,16 +1,18 @@
 /**
- * QBVendors — Vendor spend tracking with metric cards and search.
+ * QBVendors — Vendor spend tracking with interactive drill-down.
  */
 
 import { useState, useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useQBVendors } from "@/hooks/useQuickBooksQuery";
-import { Store, DollarSign, TrendingDown, UserCheck } from "lucide-react";
+import { Store, DollarSign, TrendingDown, UserCheck, ChevronRight } from "lucide-react";
+import { InteractiveMetricCard } from "@/components/reporting/drilldown/InteractiveMetricCard";
+import { useDrillDown } from "@/components/reporting/drilldown/DrillDownProvider";
 
 const fmt = (v: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2 }).format(v);
@@ -19,6 +21,7 @@ export function QBVendors() {
   const { data: vendors, isLoading, error } = useQBVendors();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const { openPanel } = useDrillDown();
 
   const filtered = useMemo(() => {
     if (!vendors) return [];
@@ -44,6 +47,14 @@ export function QBVendors() {
     return { total: all.length, active, totalBalance, avgBalance };
   }, [vendors]);
 
+  const handleVendorClick = (v: any) => {
+    openPanel({
+      type: "qb-record",
+      title: v.DisplayName,
+      data: { record: v, recordType: "qb-vendor" },
+    });
+  };
+
   return (
     <div className="space-y-4">
       <div>
@@ -61,34 +72,29 @@ export function QBVendors() {
       ) : (
         <>
           <div className="grid gap-3 md:gap-4 grid-cols-2 xl:grid-cols-4 min-w-0">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Vendors</CardTitle>
-                <Store className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent><div className="text-xl font-bold tabular-nums">{metrics.total}</div></CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Active</CardTitle>
-                <UserCheck className="h-4 w-4 text-green-600" />
-              </CardHeader>
-              <CardContent><div className="text-xl font-bold tabular-nums text-green-600">{metrics.active}</div></CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Payable</CardTitle>
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent><div className="text-xl font-bold tabular-nums">{fmt(metrics.totalBalance)}</div></CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Avg Balance</CardTitle>
-                <TrendingDown className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent><div className="text-xl font-bold tabular-nums">{fmt(metrics.avgBalance)}</div></CardContent>
-            </Card>
+            <InteractiveMetricCard
+              title="Total Vendors"
+              value={String(metrics.total)}
+              icon={<Store className="h-4 w-4 text-muted-foreground" />}
+            />
+            <InteractiveMetricCard
+              title="Active"
+              value={String(metrics.active)}
+              icon={<UserCheck className="h-4 w-4 text-green-600" />}
+              variant="success"
+              onClick={() => setStatusFilter("active")}
+            />
+            <InteractiveMetricCard
+              title="Total Payable"
+              value={fmt(metrics.totalBalance)}
+              icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
+              variant="warning"
+            />
+            <InteractiveMetricCard
+              title="Avg Balance"
+              value={fmt(metrics.avgBalance)}
+              icon={<TrendingDown className="h-4 w-4 text-muted-foreground" />}
+            />
           </div>
 
           <div className="flex flex-col sm:flex-row gap-2">
@@ -114,26 +120,28 @@ export function QBVendors() {
                       <TableHead>Phone</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead className="text-right">Balance</TableHead>
+                      <TableHead className="w-8" />
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filtered.length > 0 ? filtered.map((v: any) => (
-                      <TableRow key={v.Id}>
+                      <TableRow key={v.Id} className="cursor-pointer hover:bg-muted/50 transition-colors group" onClick={() => handleVendorClick(v)}>
                         <TableCell className="font-medium">{v.DisplayName}</TableCell>
                         <TableCell className="truncate max-w-[180px]">{v.PrimaryEmailAddr?.Address || "—"}</TableCell>
                         <TableCell>{v.PrimaryPhone?.FreeFormNumber || "—"}</TableCell>
                         <TableCell><Badge variant={v.Active !== false ? "default" : "secondary"}>{v.Active !== false ? "Active" : "Inactive"}</Badge></TableCell>
                         <TableCell className="text-right tabular-nums font-medium">{fmt(parseFloat(v.Balance || "0"))}</TableCell>
+                        <TableCell><ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" /></TableCell>
                       </TableRow>
                     )) : (
-                      <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">No vendors found</TableCell></TableRow>
+                      <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">No vendors found</TableCell></TableRow>
                     )}
                   </TableBody>
                 </Table>
               </div>
               <div className="md:hidden divide-y">
                 {filtered.length > 0 ? filtered.map((v: any) => (
-                  <div key={v.Id} className="p-3 min-h-[56px]">
+                  <button key={v.Id} className="p-3 min-h-[56px] w-full text-left hover:bg-muted/50 transition-colors" onClick={() => handleVendorClick(v)}>
                     <div className="flex justify-between items-start gap-2">
                       <div className="min-w-0 flex-1">
                         <p className="font-medium text-sm truncate">{v.DisplayName}</p>
@@ -141,7 +149,7 @@ export function QBVendors() {
                       </div>
                       <p className="font-semibold text-sm tabular-nums flex-shrink-0">{fmt(parseFloat(v.Balance || "0"))}</p>
                     </div>
-                  </div>
+                  </button>
                 )) : (
                   <div className="p-8 text-center text-muted-foreground text-sm">No vendors found</div>
                 )}

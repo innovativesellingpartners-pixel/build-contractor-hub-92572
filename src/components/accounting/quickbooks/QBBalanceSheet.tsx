@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useQBBalanceSheet } from "@/hooks/useQuickBooksQuery";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useDrillDown } from "@/components/reporting/drilldown/DrillDownProvider";
 
 const fmt = (v: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2 }).format(v);
@@ -29,8 +30,17 @@ function flattenSection(rows: any[]): { name: string; amount: number; depth: num
 export function QBBalanceSheet() {
   const [asOfDate, setAsOfDate] = useState(new Date().toISOString().split("T")[0]);
   const { data, isLoading, error } = useQBBalanceSheet(asOfDate);
+  const { openPanel } = useDrillDown();
 
   const sections = data?.rows || [];
+
+  const handleAccountClick = (name: string, amount: number, sectionName: string) => {
+    openPanel({
+      type: "category-breakdown",
+      title: `${name} · as of ${asOfDate}`,
+      data: { category: name, total: amount, period: `As of ${asOfDate}`, section: sectionName },
+    });
+  };
 
   return (
     <div className="space-y-4">
@@ -69,7 +79,11 @@ export function QBBalanceSheet() {
                       <TableCell colSpan={2} className="font-bold text-base">{sectionName}</TableCell>
                     </TableRow>,
                     ...rows.map((row, ri) => (
-                      <TableRow key={`r-${si}-${ri}`} className={row.isSummary ? "font-semibold bg-muted/20" : ""}>
+                      <TableRow
+                        key={`r-${si}-${ri}`}
+                        className={`${row.isSummary ? "font-semibold bg-muted/20" : "cursor-pointer hover:bg-muted/50 transition-colors"}`}
+                        onClick={() => !row.isSummary && handleAccountClick(row.name, row.amount, sectionName)}
+                      >
                         <TableCell style={{ paddingLeft: `${16 + row.depth * 16}px` }}>{row.name}</TableCell>
                         <TableCell className="text-right tabular-nums">{fmt(row.amount)}</TableCell>
                       </TableRow>

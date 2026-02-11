@@ -1,16 +1,17 @@
 /**
- * QBPayments — Payment analysis with metric cards and search.
- * Fetches Payment entities from QuickBooks API.
+ * QBPayments — Payment analysis with interactive drill-down.
  */
 
 import { useState, useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useQBPayments } from "@/hooks/useQuickBooksQuery";
-import { TrendingUp, DollarSign, CreditCard, Users } from "lucide-react";
+import { TrendingUp, DollarSign, CreditCard, Users, ChevronRight } from "lucide-react";
+import { InteractiveMetricCard } from "@/components/reporting/drilldown/InteractiveMetricCard";
+import { useDrillDown } from "@/components/reporting/drilldown/DrillDownProvider";
 
 const fmt = (v: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2 }).format(v);
@@ -23,6 +24,7 @@ const fmtDate = (d: string | null) => {
 export function QBPayments() {
   const { data: payments, isLoading, error } = useQBPayments();
   const [searchTerm, setSearchTerm] = useState("");
+  const { openPanel } = useDrillDown();
 
   const filtered = useMemo(() => {
     if (!payments) return [];
@@ -50,6 +52,14 @@ export function QBPayments() {
     return { totalReceived, count: all.length, avgPayment, topCustomer };
   }, [payments]);
 
+  const handlePaymentClick = (p: any) => {
+    openPanel({
+      type: "qb-record",
+      title: `Payment · ${p.CustomerRef?.name || "Unknown"}`,
+      data: { record: p, recordType: "qb-payment" },
+    });
+  };
+
   return (
     <div className="space-y-4">
       <div>
@@ -66,39 +76,30 @@ export function QBPayments() {
         <Card><CardContent className="py-8 text-center text-muted-foreground">We're having trouble syncing your payment data. Please try reconnecting or click Sync to retry.</CardContent></Card>
       ) : (
         <>
-          {/* Metric Cards */}
           <div className="grid gap-3 md:gap-4 grid-cols-2 xl:grid-cols-4 min-w-0">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Received</CardTitle>
-                <TrendingUp className="h-4 w-4 text-green-600" />
-              </CardHeader>
-              <CardContent><div className="text-xl font-bold tabular-nums text-green-600">{fmt(metrics.totalReceived)}</div></CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Payment Count</CardTitle>
-                <CreditCard className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent><div className="text-xl font-bold tabular-nums">{metrics.count}</div></CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Avg Payment</CardTitle>
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent><div className="text-xl font-bold tabular-nums">{fmt(metrics.avgPayment)}</div></CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Top Customer</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent><div className="text-base font-semibold truncate">{metrics.topCustomer}</div></CardContent>
-            </Card>
+            <InteractiveMetricCard
+              title="Total Received"
+              value={fmt(metrics.totalReceived)}
+              icon={<TrendingUp className="h-4 w-4 text-green-600" />}
+              variant="success"
+            />
+            <InteractiveMetricCard
+              title="Payment Count"
+              value={String(metrics.count)}
+              icon={<CreditCard className="h-4 w-4 text-muted-foreground" />}
+            />
+            <InteractiveMetricCard
+              title="Avg Payment"
+              value={fmt(metrics.avgPayment)}
+              icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
+            />
+            <InteractiveMetricCard
+              title="Top Customer"
+              value={metrics.topCustomer}
+              icon={<Users className="h-4 w-4 text-muted-foreground" />}
+            />
           </div>
 
-          {/* Search */}
           <Input placeholder="Search customer or method..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="sm:max-w-xs" />
 
           <Card>
@@ -111,25 +112,27 @@ export function QBPayments() {
                       <TableHead>Customer</TableHead>
                       <TableHead>Method</TableHead>
                       <TableHead className="text-right">Amount</TableHead>
+                      <TableHead className="w-8" />
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filtered.length > 0 ? filtered.map((p: any) => (
-                      <TableRow key={p.Id}>
+                      <TableRow key={p.Id} className="cursor-pointer hover:bg-muted/50 transition-colors group" onClick={() => handlePaymentClick(p)}>
                         <TableCell>{fmtDate(p.TxnDate)}</TableCell>
                         <TableCell>{p.CustomerRef?.name || "Unknown"}</TableCell>
                         <TableCell><Badge variant="outline">{p.PaymentMethodRef?.name || "Other"}</Badge></TableCell>
                         <TableCell className="text-right tabular-nums font-medium text-green-600">{fmt(parseFloat(p.TotalAmt || "0"))}</TableCell>
+                        <TableCell><ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" /></TableCell>
                       </TableRow>
                     )) : (
-                      <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground py-8">No payments found</TableCell></TableRow>
+                      <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">No payments found</TableCell></TableRow>
                     )}
                   </TableBody>
                 </Table>
               </div>
               <div className="md:hidden divide-y">
                 {filtered.length > 0 ? filtered.map((p: any) => (
-                  <div key={p.Id} className="p-3 min-h-[56px]">
+                  <button key={p.Id} className="p-3 min-h-[56px] w-full text-left hover:bg-muted/50 transition-colors" onClick={() => handlePaymentClick(p)}>
                     <div className="flex justify-between items-start gap-2">
                       <div className="min-w-0 flex-1">
                         <p className="font-medium text-sm truncate">{p.CustomerRef?.name || "Unknown"}</p>
@@ -137,7 +140,7 @@ export function QBPayments() {
                       </div>
                       <p className="font-semibold text-sm tabular-nums flex-shrink-0 text-green-600">{fmt(parseFloat(p.TotalAmt || "0"))}</p>
                     </div>
-                  </div>
+                  </button>
                 )) : (
                   <div className="p-8 text-center text-muted-foreground text-sm">No payments found</div>
                 )}

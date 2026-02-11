@@ -1,16 +1,18 @@
 /**
- * QBCustomers — Customer analytics with metric cards and search.
+ * QBCustomers — Customer analytics with interactive drill-down.
  */
 
 import { useState, useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useQBCustomers } from "@/hooks/useQuickBooksQuery";
-import { Users, DollarSign, TrendingUp, UserCheck } from "lucide-react";
+import { Users, DollarSign, TrendingUp, UserCheck, ChevronRight } from "lucide-react";
+import { InteractiveMetricCard } from "@/components/reporting/drilldown/InteractiveMetricCard";
+import { useDrillDown } from "@/components/reporting/drilldown/DrillDownProvider";
 
 const fmt = (v: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2 }).format(v);
@@ -19,14 +21,13 @@ export function QBCustomers() {
   const { data: customers, isLoading, error } = useQBCustomers();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const { openPanel } = useDrillDown();
 
   const filtered = useMemo(() => {
     if (!customers) return [];
     let result = customers as any[];
-
     if (statusFilter === "active") result = result.filter((c: any) => c.Active);
     if (statusFilter === "inactive") result = result.filter((c: any) => !c.Active);
-
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       result = result.filter((c: any) =>
@@ -46,6 +47,14 @@ export function QBCustomers() {
     return { total: all.length, active, totalBalance, avgBalance };
   }, [customers]);
 
+  const handleCustomerClick = (c: any) => {
+    openPanel({
+      type: "qb-record",
+      title: c.DisplayName,
+      data: { record: c, recordType: "qb-customer" },
+    });
+  };
+
   return (
     <div className="space-y-4">
       <div>
@@ -63,34 +72,29 @@ export function QBCustomers() {
       ) : (
         <>
           <div className="grid gap-3 md:gap-4 grid-cols-2 xl:grid-cols-4 min-w-0">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Customers</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent><div className="text-xl font-bold tabular-nums">{metrics.total}</div></CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Active</CardTitle>
-                <UserCheck className="h-4 w-4 text-green-600" />
-              </CardHeader>
-              <CardContent><div className="text-xl font-bold tabular-nums text-green-600">{metrics.active}</div></CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Outstanding</CardTitle>
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent><div className="text-xl font-bold tabular-nums">{fmt(metrics.totalBalance)}</div></CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Avg Balance</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent><div className="text-xl font-bold tabular-nums">{fmt(metrics.avgBalance)}</div></CardContent>
-            </Card>
+            <InteractiveMetricCard
+              title="Total Customers"
+              value={String(metrics.total)}
+              icon={<Users className="h-4 w-4 text-muted-foreground" />}
+            />
+            <InteractiveMetricCard
+              title="Active"
+              value={String(metrics.active)}
+              icon={<UserCheck className="h-4 w-4 text-green-600" />}
+              variant="success"
+              onClick={() => setStatusFilter("active")}
+            />
+            <InteractiveMetricCard
+              title="Total Outstanding"
+              value={fmt(metrics.totalBalance)}
+              icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
+              variant="warning"
+            />
+            <InteractiveMetricCard
+              title="Avg Balance"
+              value={fmt(metrics.avgBalance)}
+              icon={<TrendingUp className="h-4 w-4 text-muted-foreground" />}
+            />
           </div>
 
           <div className="flex flex-col sm:flex-row gap-2">
@@ -116,26 +120,28 @@ export function QBCustomers() {
                       <TableHead>Phone</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead className="text-right">Balance</TableHead>
+                      <TableHead className="w-8" />
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filtered.length > 0 ? filtered.map((c: any) => (
-                      <TableRow key={c.Id}>
+                      <TableRow key={c.Id} className="cursor-pointer hover:bg-muted/50 transition-colors group" onClick={() => handleCustomerClick(c)}>
                         <TableCell className="font-medium">{c.DisplayName}</TableCell>
                         <TableCell className="truncate max-w-[180px]">{c.PrimaryEmailAddr?.Address || "—"}</TableCell>
                         <TableCell>{c.PrimaryPhone?.FreeFormNumber || "—"}</TableCell>
                         <TableCell><Badge variant={c.Active !== false ? "default" : "secondary"}>{c.Active !== false ? "Active" : "Inactive"}</Badge></TableCell>
                         <TableCell className="text-right tabular-nums font-medium">{fmt(parseFloat(c.Balance || "0"))}</TableCell>
+                        <TableCell><ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" /></TableCell>
                       </TableRow>
                     )) : (
-                      <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">No customers found</TableCell></TableRow>
+                      <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">No customers found</TableCell></TableRow>
                     )}
                   </TableBody>
                 </Table>
               </div>
               <div className="md:hidden divide-y">
                 {filtered.length > 0 ? filtered.map((c: any) => (
-                  <div key={c.Id} className="p-3 min-h-[56px]">
+                  <button key={c.Id} className="p-3 min-h-[56px] w-full text-left hover:bg-muted/50 transition-colors" onClick={() => handleCustomerClick(c)}>
                     <div className="flex justify-between items-start gap-2">
                       <div className="min-w-0 flex-1">
                         <p className="font-medium text-sm truncate">{c.DisplayName}</p>
@@ -143,7 +149,7 @@ export function QBCustomers() {
                       </div>
                       <p className="font-semibold text-sm tabular-nums flex-shrink-0">{fmt(parseFloat(c.Balance || "0"))}</p>
                     </div>
-                  </div>
+                  </button>
                 )) : (
                   <div className="p-8 text-center text-muted-foreground text-sm">No customers found</div>
                 )}

@@ -1,16 +1,16 @@
 /**
- * QBExpenses — Expense/Purchase analysis with metric cards and filters.
- * Fetches Purchase entities from QuickBooks API.
+ * QBExpenses — Expense/Purchase analysis with interactive drill-down.
  */
 
 import { useState, useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useQBExpenses } from "@/hooks/useQuickBooksQuery";
-import { TrendingDown, Receipt, Store, CreditCard } from "lucide-react";
+import { TrendingDown, Receipt, Store, CreditCard, ChevronRight } from "lucide-react";
+import { InteractiveMetricCard } from "@/components/reporting/drilldown/InteractiveMetricCard";
+import { useDrillDown } from "@/components/reporting/drilldown/DrillDownProvider";
 
 const fmt = (v: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2 }).format(v);
@@ -23,6 +23,7 @@ const fmtDate = (d: string | null) => {
 export function QBExpenses() {
   const { data: expenses, isLoading, error } = useQBExpenses();
   const [searchTerm, setSearchTerm] = useState("");
+  const { openPanel } = useDrillDown();
 
   const filtered = useMemo(() => {
     if (!expenses) return [];
@@ -40,7 +41,6 @@ export function QBExpenses() {
     const totalSpend = all.reduce((s: number, e: any) => s + parseFloat(e.TotalAmt || "0"), 0);
     const avgTransaction = all.length > 0 ? totalSpend / all.length : 0;
 
-    // Top vendor
     const vendorMap: Record<string, number> = {};
     all.forEach((e: any) => {
       const name = e.EntityRef?.name || "Unknown";
@@ -48,7 +48,6 @@ export function QBExpenses() {
     });
     const topVendor = Object.entries(vendorMap).sort((a, b) => b[1] - a[1])[0]?.[0] || "—";
 
-    // Top category
     const catMap: Record<string, number> = {};
     all.forEach((e: any) => {
       const cat = e.Line?.[0]?.AccountBasedExpenseLineDetail?.AccountRef?.name || "Uncategorized";
@@ -58,6 +57,14 @@ export function QBExpenses() {
 
     return { totalSpend, avgTransaction, topVendor, topCategory };
   }, [expenses]);
+
+  const handleExpenseClick = (e: any) => {
+    openPanel({
+      type: "qb-record",
+      title: `Expense · ${e.EntityRef?.name || "Unknown"}`,
+      data: { record: e, recordType: "qb-expense" },
+    });
+  };
 
   return (
     <div className="space-y-4">
@@ -75,39 +82,30 @@ export function QBExpenses() {
         <Card><CardContent className="py-8 text-center text-muted-foreground">We're having trouble syncing your expense data. Please try reconnecting or click Sync to retry.</CardContent></Card>
       ) : (
         <>
-          {/* Metric Cards */}
           <div className="grid gap-3 md:gap-4 grid-cols-2 xl:grid-cols-4 min-w-0">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Spend</CardTitle>
-                <TrendingDown className="h-4 w-4 text-destructive" />
-              </CardHeader>
-              <CardContent><div className="text-xl font-bold tabular-nums text-destructive">{fmt(metrics.totalSpend)}</div></CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Avg Transaction</CardTitle>
-                <Receipt className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent><div className="text-xl font-bold tabular-nums">{fmt(metrics.avgTransaction)}</div></CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Top Vendor</CardTitle>
-                <Store className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent><div className="text-base font-semibold truncate">{metrics.topVendor}</div></CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Top Category</CardTitle>
-                <CreditCard className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent><div className="text-base font-semibold truncate">{metrics.topCategory}</div></CardContent>
-            </Card>
+            <InteractiveMetricCard
+              title="Total Spend"
+              value={fmt(metrics.totalSpend)}
+              icon={<TrendingDown className="h-4 w-4 text-destructive" />}
+              variant="danger"
+            />
+            <InteractiveMetricCard
+              title="Avg Transaction"
+              value={fmt(metrics.avgTransaction)}
+              icon={<Receipt className="h-4 w-4 text-muted-foreground" />}
+            />
+            <InteractiveMetricCard
+              title="Top Vendor"
+              value={metrics.topVendor}
+              icon={<Store className="h-4 w-4 text-muted-foreground" />}
+            />
+            <InteractiveMetricCard
+              title="Top Category"
+              value={metrics.topCategory}
+              icon={<CreditCard className="h-4 w-4 text-muted-foreground" />}
+            />
           </div>
 
-          {/* Search filter */}
           <Input placeholder="Search vendor or category..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="sm:max-w-xs" />
 
           <Card>
@@ -121,26 +119,28 @@ export function QBExpenses() {
                       <TableHead>Account</TableHead>
                       <TableHead>Memo</TableHead>
                       <TableHead className="text-right">Amount</TableHead>
+                      <TableHead className="w-8" />
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filtered.length > 0 ? filtered.map((e: any) => (
-                      <TableRow key={e.Id}>
+                      <TableRow key={e.Id} className="cursor-pointer hover:bg-muted/50 transition-colors group" onClick={() => handleExpenseClick(e)}>
                         <TableCell>{fmtDate(e.TxnDate)}</TableCell>
                         <TableCell className="truncate max-w-[150px]">{e.EntityRef?.name || "Unknown"}</TableCell>
                         <TableCell className="truncate max-w-[120px]">{e.Line?.[0]?.AccountBasedExpenseLineDetail?.AccountRef?.name || "—"}</TableCell>
                         <TableCell className="truncate max-w-[150px]">{e.PrivateNote || "—"}</TableCell>
                         <TableCell className="text-right tabular-nums font-medium text-destructive">{fmt(parseFloat(e.TotalAmt || "0"))}</TableCell>
+                        <TableCell><ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" /></TableCell>
                       </TableRow>
                     )) : (
-                      <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">No expenses found</TableCell></TableRow>
+                      <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">No expenses found</TableCell></TableRow>
                     )}
                   </TableBody>
                 </Table>
               </div>
               <div className="md:hidden divide-y">
                 {filtered.length > 0 ? filtered.map((e: any) => (
-                  <div key={e.Id} className="p-3 min-h-[56px]">
+                  <button key={e.Id} className="p-3 min-h-[56px] w-full text-left hover:bg-muted/50 transition-colors" onClick={() => handleExpenseClick(e)}>
                     <div className="flex justify-between items-start gap-2">
                       <div className="min-w-0 flex-1">
                         <p className="font-medium text-sm truncate">{e.EntityRef?.name || "Unknown"}</p>
@@ -148,7 +148,7 @@ export function QBExpenses() {
                       </div>
                       <p className="font-semibold text-sm tabular-nums flex-shrink-0 text-destructive">{fmt(parseFloat(e.TotalAmt || "0"))}</p>
                     </div>
-                  </div>
+                  </button>
                 )) : (
                   <div className="p-8 text-center text-muted-foreground text-sm">No expenses found</div>
                 )}
