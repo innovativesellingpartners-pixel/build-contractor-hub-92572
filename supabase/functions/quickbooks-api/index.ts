@@ -5,7 +5,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-async function refreshToken(connection: any, supabaseClient: any, decryptedRefreshToken: string) {
+async function refreshToken(connection: any, adminClient: any, decryptedRefreshToken: string) {
   const clientId = Deno.env.get('QUICKBOOKS_CLIENT_ID');
   const clientSecret = Deno.env.get('QUICKBOOKS_CLIENT_SECRET');
   const encryptionKey = Deno.env.get('QUICKBOOKS_ENCRYPTION_KEY');
@@ -29,8 +29,7 @@ async function refreshToken(connection: any, supabaseClient: any, decryptedRefre
   const tokenData = await response.json();
   const expiresAt = new Date(Date.now() + tokenData.expires_in * 1000);
 
-  // Re-encrypt and store new tokens using secure function
-  await supabaseClient.rpc('store_quickbooks_tokens', {
+  await adminClient.rpc('store_quickbooks_tokens', {
     p_user_id: connection.user_id,
     p_realm_id: connection.realm_id,
     p_access_token: tokenData.access_token,
@@ -53,30 +52,42 @@ Deno.serve(async (req) => {
       throw new Error('No authorization header');
     }
 
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: authHeader } } }
-    );
-
     const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
+
+    // User client for auth validation
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+
+    const userClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    const { data: { user }, error: userError } = await userClient.auth.getUser(token);
     if (userError || !user) {
+      console.error('Auth error:', userError?.message || 'No user returned');
       throw new Error('Unauthorized');
     }
 
-    // Get connection for this user with decrypted tokens
+    // Admin client for DB operations (bypasses RLS)
+    const adminClient = createClient(supabaseUrl, serviceRoleKey);
+
     const encryptionKey = Deno.env.get('QUICKBOOKS_ENCRYPTION_KEY');
     if (!encryptionKey) {
       throw new Error('Encryption key not configured');
     }
 
-    const { data: connectionData, error: connError } = await supabaseClient.rpc('get_quickbooks_tokens', {
+    const { data: connectionData, error: connError } = await adminClient.rpc('get_quickbooks_tokens', {
       p_user_id: user.id,
       p_encryption_key: encryptionKey,
     });
 
-    if (connError || !connectionData || connectionData.length === 0) {
+    if (connError) {
+      console.error('QB connection error:', connError.message);
+      throw new Error('QuickBooks not connected');
+    }
+    
+    if (!connectionData || connectionData.length === 0) {
       throw new Error('QuickBooks not connected');
     }
 
@@ -88,12 +99,11 @@ Deno.serve(async (req) => {
     
     if (expiresAt <= new Date()) {
       console.log('Token expired, refreshing...');
-      accessToken = await refreshToken(connection, supabaseClient, connection.refresh_token);
+      accessToken = await refreshToken(connection, adminClient, connection.refresh_token);
     }
 
     const { endpoint } = await req.json();
 
-    // Make QuickBooks API request
     const qbResponse = await fetch(
       `https://quickbooks.api.intuit.com/v3/company/${connection.realm_id}/${endpoint}`,
       {
