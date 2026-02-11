@@ -27,7 +27,7 @@ const fmt = (v: number) =>
 export function SalesPipelineReport() {
   const { user } = useAuth();
   const { openPanel } = useDrillDown();
-  const [dateRange, setDateRange] = useState<DateRange>({ preset: "all_time" });
+  const [dateRange, setDateRange] = useState<DateRange>({ preset: "all_time", start: "2000-01-01", end: new Date().toISOString().split("T")[0] });
 
   const filters = {
     dateRange: dateRange.preset === "ytd" ? "this_year" : dateRange.preset === "all_time" ? "all_time" : dateRange.preset,

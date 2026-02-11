@@ -45,6 +45,9 @@ export function InteractiveReportShell({
 }: InteractiveReportShellProps) {
   return (
     <div className="space-y-6">
+      {/* Breadcrumbs */}
+      <DrillDownBreadcrumbs />
+
       {/* Header row */}
       <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
         <div>
