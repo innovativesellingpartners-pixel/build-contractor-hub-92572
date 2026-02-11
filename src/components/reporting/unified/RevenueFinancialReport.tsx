@@ -1,6 +1,6 @@
 /**
- * RevenueFinancialReport — Unified revenue view combining myCT1 payments + QB invoices.
- * Shows total revenue by source, by customer, invoice status, payment trends.
+ * RevenueFinancialReport — Unified revenue view with full drill-down interactivity.
+ * All metrics, charts, and lists support click → detail panel.
  */
 
 import { useState } from "react";
@@ -8,15 +8,17 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQBProfitAndLoss, useQBPayments } from "@/hooks/useQuickBooksQuery";
-import { ReportDateRangePicker, DateRange } from "./ReportDateRangePicker";
-import { ReportMetricCard } from "./ReportMetricCard";
-import { ReportEmptyState } from "./ReportEmptyState";
+import { InteractiveReportShell } from "../drilldown/InteractiveReportShell";
+import { InteractiveMetricCard } from "../drilldown/InteractiveMetricCard";
+import { InteractiveTable, TableColumn } from "../drilldown/InteractiveTable";
+import { useDrillDown } from "../drilldown/DrillDownProvider";
+import { DateRange } from "./ReportDateRangePicker";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DollarSign, TrendingUp, FileText, CreditCard } from "lucide-react";
 import { RevenueProfitChart } from "@/components/reporting/RevenueProfitChart";
-import { PaymentsTable } from "@/components/reporting/PaymentsTable";
 
 const fmt = (v: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 0 }).format(v);
@@ -29,6 +31,7 @@ function extractTotal(rows: any[], groupName: string): number {
 
 export function RevenueFinancialReport() {
   const { user } = useAuth();
+  const { openPanel, pushLevel } = useDrillDown();
   const [dateRange, setDateRange] = useState<DateRange>({ preset: "ytd", start: `${new Date().getFullYear()}-01-01`, end: new Date().toISOString().split("T")[0] });
 
   const { data: qbConnected } = useQuery({
@@ -49,8 +52,8 @@ export function RevenueFinancialReport() {
     queryKey: ["revenue-report", user?.id, dateRange],
     queryFn: async () => {
       if (!user?.id) return null;
-      let payQ = supabase.from("payments").select("id, amount, payment_date, payment_method").eq("contractor_id", user.id);
-      let invQ = supabase.from("invoices").select("id, amount_due, amount_paid, status, customer_id, created_at").eq("user_id", user.id);
+      let payQ = supabase.from("payments").select("id, amount, payment_date, payment_method, invoice_id, job_id").eq("contractor_id", user.id);
+      let invQ = supabase.from("invoices").select("id, invoice_number, amount_due, amount_paid, status, customer_id, created_at, due_date, customers(name)").eq("user_id", user.id);
       if (dateRange.start) { payQ = payQ.gte("payment_date", dateRange.start); invQ = invQ.gte("created_at", dateRange.start); }
       if (dateRange.end) { payQ = payQ.lte("payment_date", dateRange.end); invQ = invQ.lte("created_at", dateRange.end); }
       const [payments, invoices] = await Promise.all([payQ, invQ]);
@@ -58,8 +61,9 @@ export function RevenueFinancialReport() {
       const inv = invoices.data || [];
       const totalPaid = pay.reduce((s, p) => s + Number(p.amount || 0), 0);
       const outstanding = inv.reduce((s, i) => s + Math.max(0, Number(i.amount_due || 0) - Number(i.amount_paid || 0)), 0);
-      const overdue = inv.filter(i => i.status === "overdue").reduce((s, i) => s + Math.max(0, Number(i.amount_due || 0) - Number(i.amount_paid || 0)), 0);
-      return { totalPaid, outstanding, overdue, invoiceCount: inv.length, paymentCount: pay.length };
+      const overdue = inv.filter(i => i.status === "overdue" || (i.due_date && new Date(i.due_date) < new Date() && i.status !== "paid"))
+        .reduce((s, i) => s + Math.max(0, Number(i.amount_due || 0) - Number(i.amount_paid || 0)), 0);
+      return { totalPaid, outstanding, overdue, invoiceCount: inv.length, paymentCount: pay.length, invoices: inv, payments: pay };
     },
     enabled: !!user?.id,
   });
@@ -77,21 +81,74 @@ export function RevenueFinancialReport() {
 
   const totalRevenue = (nativeRevenue?.totalPaid || 0) + qbIncome;
 
-  return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
-        <div>
-          <h2 className="text-xl md:text-2xl font-bold tracking-tight">Revenue & Financial</h2>
-          <p className="text-sm text-muted-foreground">Unified revenue view across all sources</p>
-        </div>
-        <ReportDateRangePicker value={dateRange} onChange={setDateRange} />
-      </div>
+  const invoiceColumns: TableColumn<any>[] = [
+    { key: "invoice_number", label: "Invoice #", render: (row) => <span className="font-medium">{row.invoice_number || "—"}</span> },
+    { key: "customer_name", label: "Customer", render: (row) => (
+      <Button
+        variant="link"
+        className="p-0 h-auto text-sm text-primary"
+        onClick={(e) => {
+          e.stopPropagation();
+          if (row.customer_id) openPanel({ type: "customer", title: (row.customers as any)?.name || "Customer", data: { id: row.customer_id, name: (row.customers as any)?.name } });
+        }}
+      >
+        {(row.customers as any)?.name || "—"}
+      </Button>
+    )},
+    { key: "amount_due", label: "Amount", align: "right", render: (row) => fmt(Number(row.amount_due || 0)) },
+    { key: "balance", label: "Balance", align: "right", render: (row) => {
+      const bal = Math.max(0, Number(row.amount_due || 0) - Number(row.amount_paid || 0));
+      return <span className={bal > 0 ? "text-red-600 font-medium" : "text-green-600"}>{fmt(bal)}</span>;
+    }},
+    { key: "status", label: "Status", render: (row) => {
+      const isOverdue = row.due_date && new Date(row.due_date) < new Date() && row.status !== "paid";
+      return <Badge variant={isOverdue ? "destructive" : row.status === "paid" ? "default" : "outline"} className="text-xs">{isOverdue ? "Overdue" : row.status || "Open"}</Badge>;
+    }},
+  ];
 
+  return (
+    <InteractiveReportShell
+      title="Revenue & Financial"
+      subtitle="Unified revenue view across all sources"
+      dateRange={dateRange}
+      onDateRangeChange={setDateRange}
+    >
       <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
-        <ReportMetricCard title="Total Revenue" value={fmt(totalRevenue)} subtitle={qbConnected ? `myCT1: ${fmt(nativeRevenue?.totalPaid || 0)} · QB: ${fmt(qbIncome)}` : "From payments"} icon={<DollarSign className="h-4 w-4 text-green-600" />} variant="success" />
-        <ReportMetricCard title="Outstanding" value={fmt(nativeRevenue?.outstanding || 0)} subtitle={`${nativeRevenue?.invoiceCount || 0} invoices`} icon={<FileText className="h-4 w-4 text-orange-500" />} variant="warning" />
-        <ReportMetricCard title="Overdue" value={fmt(nativeRevenue?.overdue || 0)} subtitle="Past due invoices" icon={<FileText className="h-4 w-4 text-red-500" />} variant="danger" />
-        <ReportMetricCard title="Payments" value={String(nativeRevenue?.paymentCount || 0)} subtitle="Transactions received" icon={<CreditCard className="h-4 w-4 text-blue-600" />} variant="info" />
+        <InteractiveMetricCard
+          title="Total Revenue"
+          value={fmt(totalRevenue)}
+          subtitle={qbConnected ? `myCT1: ${fmt(nativeRevenue?.totalPaid || 0)} · QB: ${fmt(qbIncome)}` : "From payments"}
+          icon={<DollarSign className="h-4 w-4 text-green-600" />}
+          variant="success"
+          onClick={() => openPanel({ type: "category-breakdown", title: "Revenue Breakdown", data: { category: "Revenue", type: "revenue", totalAmount: totalRevenue } })}
+          breakdown={[
+            { label: "myCT1 Payments", value: fmt(nativeRevenue?.totalPaid || 0) },
+            ...(qbConnected ? [{ label: "QB Income", value: fmt(qbIncome) }] : []),
+          ]}
+        />
+        <InteractiveMetricCard
+          title="Outstanding"
+          value={fmt(nativeRevenue?.outstanding || 0)}
+          subtitle={`${nativeRevenue?.invoiceCount || 0} invoices`}
+          icon={<FileText className="h-4 w-4 text-orange-500" />}
+          variant="warning"
+          onClick={() => openPanel({ type: "ar-aging", title: "Outstanding Invoices", data: { bucket: "All Outstanding", minDays: 0 } })}
+        />
+        <InteractiveMetricCard
+          title="Overdue"
+          value={fmt(nativeRevenue?.overdue || 0)}
+          subtitle="Past due invoices"
+          icon={<FileText className="h-4 w-4 text-red-500" />}
+          variant="danger"
+          onClick={() => openPanel({ type: "ar-aging", title: "Overdue Invoices", data: { bucket: "Overdue", minDays: 1 } })}
+        />
+        <InteractiveMetricCard
+          title="Payments"
+          value={String(nativeRevenue?.paymentCount || 0)}
+          subtitle="Transactions received"
+          icon={<CreditCard className="h-4 w-4 text-blue-600" />}
+          variant="info"
+        />
       </div>
 
       {/* Revenue trend chart */}
@@ -100,28 +157,46 @@ export function RevenueFinancialReport() {
         <RevenueProfitChart filters={filters} />
       </Card>
 
-      {/* QB Payments */}
+      {/* QB Payments — clickable */}
       {qbConnected && qbPayments && qbPayments.length > 0 && (
         <Card>
           <CardHeader><CardTitle className="text-base">Recent QB Payments</CardTitle></CardHeader>
           <CardContent>
-            <div className="space-y-3">
+            <div className="space-y-1">
               {qbPayments.slice(0, 10).map((p: any) => (
-                <div key={p.Id} className="flex justify-between items-center text-sm">
-                  <div className="min-w-0 flex-1 mr-3">
+                <Button
+                  key={p.Id}
+                  variant="ghost"
+                  className="w-full justify-between text-sm h-auto py-2 px-3 hover:bg-muted"
+                  onClick={() => openPanel({ type: "payment", title: "Payment Details", data: { amount: parseFloat(p.TotalAmt || "0"), payment_date: p.TxnDate, payment_method: "QB Payment" } })}
+                >
+                  <div className="min-w-0 flex-1 mr-3 text-left">
                     <p className="font-medium truncate">{p.CustomerRef?.name || "Payment"}</p>
                     <p className="text-xs text-muted-foreground">{p.TxnDate ? new Date(p.TxnDate).toLocaleDateString() : "N/A"}</p>
                   </div>
                   <p className="font-semibold tabular-nums text-green-600">{fmt(parseFloat(p.TotalAmt || "0"))}</p>
-                </div>
+                </Button>
               ))}
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Payments table */}
-      <PaymentsTable filters={filters} />
-    </div>
+      {/* Invoice table — clickable rows */}
+      {nativeRevenue?.invoices && nativeRevenue.invoices.length > 0 && (
+        <InteractiveTable
+          title="Invoices"
+          data={nativeRevenue.invoices}
+          columns={invoiceColumns}
+          onRowClick={(row) => openPanel({
+            type: "invoice",
+            title: `Invoice ${row.invoice_number || "#—"}`,
+            data: { ...row, customer_name: (row.customers as any)?.name },
+          })}
+          searchKeys={["invoice_number"]}
+          searchPlaceholder="Search invoices..."
+        />
+      )}
+    </InteractiveReportShell>
   );
 }
