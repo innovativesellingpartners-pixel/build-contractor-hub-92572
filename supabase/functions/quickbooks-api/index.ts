@@ -5,6 +5,23 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
+function getQBErrorMessage(status: number, body: any): string {
+  switch (status) {
+    case 401:
+      return 'Your QuickBooks session has expired. Please reconnect your account.';
+    case 403:
+      return 'Access denied. Your QuickBooks subscription may have expired or permissions are insufficient.';
+    case 429:
+      return 'Rate limit reached. Please wait a moment and try again.';
+    case 503:
+      return 'QuickBooks is temporarily unavailable. Please try again in a few minutes.';
+    default:
+      if (status >= 500) return 'QuickBooks is experiencing issues. Please try again later.';
+      if (body?.Fault?.Error?.[0]?.Detail) return body.Fault.Error[0].Detail;
+      return `QuickBooks returned an error (${status}).`;
+  }
+}
+
 async function refreshToken(connection: any, adminClient: any, decryptedRefreshToken: string) {
   const clientId = Deno.env.get('QUICKBOOKS_CLIENT_ID');
   const clientSecret = Deno.env.get('QUICKBOOKS_CLIENT_SECRET');
@@ -54,7 +71,6 @@ Deno.serve(async (req) => {
 
     const token = authHeader.replace('Bearer ', '');
 
-    // User client for auth validation
     const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
     const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
@@ -69,7 +85,6 @@ Deno.serve(async (req) => {
       throw new Error('Unauthorized');
     }
 
-    // Admin client for DB operations (bypasses RLS)
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
     const encryptionKey = Deno.env.get('QUICKBOOKS_ENCRYPTION_KEY');
@@ -115,6 +130,22 @@ Deno.serve(async (req) => {
     );
 
     const data = await qbResponse.json();
+
+    if (!qbResponse.ok) {
+      const friendlyMessage = getQBErrorMessage(qbResponse.status, data);
+      console.error('QuickBooks API error:', qbResponse.status, JSON.stringify(data));
+      return new Response(
+        JSON.stringify({ error: friendlyMessage, qbStatus: qbResponse.status }),
+        { status: qbResponse.status >= 500 ? 502 : 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Update last sync timestamp (best-effort)
+    adminClient
+      .from('profiles')
+      .update({ qb_last_sync_at: new Date().toISOString() })
+      .eq('id', user.id)
+      .then(() => {});
 
     return new Response(
       JSON.stringify(data),

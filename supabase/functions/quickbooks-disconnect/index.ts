@@ -12,6 +12,8 @@ Deno.serve(async (req) => {
       throw new Error('No authorization header');
     }
 
+    const token = authHeader.replace('Bearer ', '');
+
     // Get authenticated user - NEVER trust contractor ID from browser
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -19,7 +21,7 @@ Deno.serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } }
     );
 
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
     if (userError || !user) {
       console.error('Authentication failed:', userError);
       throw new Error('Unauthorized');
@@ -28,13 +30,66 @@ Deno.serve(async (req) => {
     const contractorId = user.id;
     console.log('Disconnecting QuickBooks for contractor:', contractorId);
 
-    // Use service role to update profile
+    // Use service role for DB operations
     const serviceClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Clear QuickBooks connection data
+    // Step 1: Retrieve encrypted tokens so we can revoke with Intuit
+    const encryptionKey = Deno.env.get('QUICKBOOKS_ENCRYPTION_KEY');
+    let accessTokenToRevoke: string | null = null;
+
+    if (encryptionKey) {
+      try {
+        const { data: tokenData } = await serviceClient.rpc('get_quickbooks_tokens', {
+          p_user_id: contractorId,
+          p_encryption_key: encryptionKey,
+        });
+        if (tokenData && tokenData.length > 0) {
+          accessTokenToRevoke = tokenData[0].access_token;
+        }
+      } catch (e) {
+        console.warn('Could not retrieve tokens for revocation:', e);
+      }
+    }
+
+    // Step 2: Revoke token with Intuit (best-effort)
+    if (accessTokenToRevoke) {
+      const clientId = Deno.env.get('QUICKBOOKS_CLIENT_ID');
+      const clientSecret = Deno.env.get('QUICKBOOKS_CLIENT_SECRET');
+
+      if (clientId && clientSecret) {
+        try {
+          const revokeResponse = await fetch('https://developer.api.intuit.com/v2/oauth2/tokens/revoke', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              'Authorization': 'Basic ' + btoa(`${clientId}:${clientSecret}`),
+              'Accept': 'application/json',
+            },
+            body: new URLSearchParams({
+              token: accessTokenToRevoke,
+            }).toString(),
+          });
+          console.log('Intuit token revocation status:', revokeResponse.status);
+        } catch (e) {
+          console.warn('Intuit token revocation failed (best-effort):', e);
+        }
+      }
+    }
+
+    // Step 3: Delete from quickbooks_connections table
+    const { error: deleteError } = await serviceClient
+      .from('quickbooks_connections')
+      .delete()
+      .eq('user_id', contractorId);
+
+    if (deleteError) {
+      console.warn('Failed to delete quickbooks_connections row:', deleteError);
+    }
+
+    // Step 4: Clear QuickBooks fields on profiles
     const { error: updateError } = await serviceClient
       .from('profiles')
       .update({
@@ -48,7 +103,7 @@ Deno.serve(async (req) => {
       .eq('id', contractorId);
 
     if (updateError) {
-      console.error('Failed to disconnect QuickBooks:', updateError);
+      console.error('Failed to clear profile QB fields:', updateError);
       throw new Error('Failed to disconnect QuickBooks');
     }
 
