@@ -148,6 +148,11 @@ export function RevenueFinancialReport() {
           subtitle="Transactions received"
           icon={<CreditCard className="h-4 w-4 text-blue-600" />}
           variant="info"
+          onClick={() => {
+            const firstPayment = nativeRevenue?.payments?.[0];
+            if (firstPayment) openPanel({ type: "payment", title: "Payment Details", data: firstPayment });
+          }}
+          breakdown={[{ label: "Total Received", value: fmt(nativeRevenue?.totalPaid || 0) }, { label: "Count", value: String(nativeRevenue?.paymentCount || 0) }]}
         />
       </div>
 
