@@ -5,6 +5,7 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { exportJobsWithQBData } from "@/utils/reportExportUtils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQBProfitAndLoss, useQBCustomers, useQBVendors } from "@/hooks/useQuickBooksQuery";
@@ -195,6 +196,11 @@ export function UnifiedDashboard() {
       dateRange={dateRange}
       onDateRangeChange={setDateRange}
       badge={qbConnected ? <Badge variant="outline" className="text-xs font-normal">QB Connected</Badge> : undefined}
+      onExportCSV={() => {
+        if (d?.jobRankings) {
+          exportJobsWithQBData(d.jobRankings);
+        }
+      }}
     >
       {/* Revenue metrics — all clickable */}
       <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">

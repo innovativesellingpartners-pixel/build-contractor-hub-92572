@@ -4,6 +4,7 @@
  */
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { exportJobsWithQBData } from '@/utils/reportExportUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card } from '@/components/ui/card';
@@ -113,7 +114,17 @@ export function ContractorVisibilityDashboard() {
   const COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
 
   return (
-    <InteractiveReportShell title="Contractor Visibility" subtitle="Quick job health overview" dateRange={dateRange} onDateRangeChange={setDateRange}>
+    <InteractiveReportShell
+      title="Contractor Visibility"
+      subtitle="Quick job health overview"
+      dateRange={dateRange}
+      onDateRangeChange={setDateRange}
+      onExportCSV={() => {
+        if (data?.jobs) {
+          exportJobsWithQBData(data.jobs);
+        }
+      }}
+    >
       {/* Quick health cards */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
         <Card className="p-4 space-y-1">

@@ -28,6 +28,8 @@ import { QBVendors } from "./QBVendors";
 import { QBAging } from "./QBAging";
 import { QBPayments } from "./QBPayments";
 import { QBSyncConfigPanel } from "./QBSyncConfigPanel";
+import { QBUnmatchedTransactions } from "./QBUnmatchedTransactions";
+import { QBSyncLog } from "./QBSyncLog";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -47,6 +49,8 @@ const qbTabs = [
   { value: "customers", label: "Customers", icon: Users },
   { value: "vendors", label: "Vendors", icon: Store },
   { value: "aging", label: "Aging", icon: Clock },
+  { value: "unmatched", label: "Unmatched Queue", icon: LinkIcon },
+  { value: "sync-log", label: "Sync Log", icon: Clock },
   { value: "sync", label: "Sync Settings", icon: Settings },
 ];
 
@@ -237,6 +241,8 @@ export function QuickBooksReportsHub() {
         {activeTab === "customers" && <QBCustomers />}
         {activeTab === "vendors" && <QBVendors />}
         {activeTab === "aging" && <QBAging />}
+        {activeTab === "unmatched" && <QBUnmatchedTransactions />}
+        {activeTab === "sync-log" && <QBSyncLog />}
         {activeTab === "sync" && <QBSyncConfigPanel />}
 
         <DrillDownPanel />
