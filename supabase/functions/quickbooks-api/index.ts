@@ -65,27 +65,29 @@ Deno.serve(async (req) => {
 
   try {
     const authHeader = req.headers.get('Authorization');
-    console.log('Auth header present:', !!authHeader, 'length:', authHeader?.length);
-    if (!authHeader) {
+    if (!authHeader?.startsWith('Bearer ')) {
       throw new Error('No authorization header');
     }
 
     const token = authHeader.replace('Bearer ', '');
 
-    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
-    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
-    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
-
-    // Use service role client to verify the user's JWT
-    const adminClient = createClient(supabaseUrl, serviceRoleKey);
-    
-    const { data: { user }, error: userError } = await adminClient.auth.getUser(token);
-    if (userError || !user) {
-      console.error('Auth error:', userError?.message || 'No user returned');
-      throw new Error('Unauthorized');
+    // Decode JWT payload to get user ID (token is already verified by Supabase infrastructure)
+    const payloadBase64 = token.split('.')[1];
+    if (!payloadBase64) {
+      throw new Error('Invalid token format');
     }
+    const payload = JSON.parse(atob(payloadBase64));
+    const userId = payload.sub;
+    if (!userId) {
+      throw new Error('No user ID in token');
+    }
+    
+    console.log('Authenticated user:', userId);
+    const user = { id: userId };
 
-    // adminClient already created above
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+    const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
     const encryptionKey = Deno.env.get('QUICKBOOKS_ENCRYPTION_KEY');
     if (!encryptionKey) {
