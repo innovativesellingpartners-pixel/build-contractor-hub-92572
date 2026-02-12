@@ -148,7 +148,7 @@ function getTierFeatures(tierId: string | null, hasFullAccess: boolean) {
     };
   }
 
-  if (tierId === 'growth') {
+  if (tierId === 'growth' || tierId === 'accel') {
     return {
       trainingHub: true,
       crm: true,
@@ -160,7 +160,7 @@ function getTierFeatures(tierId: string | null, hasFullAccess: boolean) {
       home: true,
       leads: true,
       aiAssistant: true,
-      marketplace: false,
+      marketplace: true,
     };
   }
 
