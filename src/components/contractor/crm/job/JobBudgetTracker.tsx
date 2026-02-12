@@ -1,0 +1,254 @@
+import { useState, useMemo } from 'react';
+import { useJobBudget, BudgetLineItem } from '@/hooks/useJobBudget';
+import { useJobCosts } from '@/hooks/useJobCosts';
+import { Job } from '@/hooks/useJobs';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Progress } from '@/components/ui/progress';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from '@/components/ui/table';
+import {
+  AlertTriangle, ArrowDownRight, ArrowUpRight, CheckCircle, DollarSign,
+  Gauge, Plus, Target, TrendingDown, TrendingUp, Trash2, BarChart3,
+} from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+
+const fmt = (v: number) =>
+  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(v);
+
+const fmtPct = (v: number) => `${v.toFixed(1)}%`;
+
+interface JobBudgetTrackerProps {
+  job: Job;
+}
+
+function BudgetStatusBadge({ consumedPct }: { consumedPct: number }) {
+  if (consumedPct > 100) return <Badge className="bg-red-500/10 text-red-600 border-red-600/20" variant="outline">Over Budget</Badge>;
+  if (consumedPct >= 85) return <Badge className="bg-amber-500/10 text-amber-600 border-amber-600/20" variant="outline">At Risk</Badge>;
+  if (consumedPct >= 50) return <Badge className="bg-blue-500/10 text-blue-600 border-blue-600/20" variant="outline">On Track</Badge>;
+  return <Badge className="bg-green-500/10 text-green-600 border-green-600/20" variant="outline">Under Budget</Badge>;
+}
+
+function ProfitabilityIndicator({ margin }: { margin: number }) {
+  if (margin > 15) return <div className="flex items-center gap-1.5 text-green-600"><CheckCircle className="h-4 w-4" /><span className="text-sm font-semibold">Profitable</span></div>;
+  if (margin >= 0) return <div className="flex items-center gap-1.5 text-amber-600"><AlertTriangle className="h-4 w-4" /><span className="text-sm font-semibold">Break-even</span></div>;
+  return <div className="flex items-center gap-1.5 text-red-600"><TrendingDown className="h-4 w-4" /><span className="text-sm font-semibold">Losing Money</span></div>;
+}
+
+export default function JobBudgetTracker({ job }: JobBudgetTrackerProps) {
+  const { budgetLines, isLoading, totalBudgeted, totalActual, totalVariance, variancePercent, initFromEstimate, addBudgetLine, deleteBudgetLine } = useJobBudget(job.id);
+  const { totalCosts } = useJobCosts(job.id);
+  const [showAdd, setShowAdd] = useState(false);
+  const [newLine, setNewLine] = useState({ description: '', budgeted_amount: '' });
+
+  const budgetAmount = Number(job.budget_amount) || Number(job.contract_value) || totalBudgeted || 0;
+  const actualSpend = totalCosts || totalActual || Number(job.actual_cost) || 0;
+  const consumedPct = budgetAmount > 0 ? (actualSpend / budgetAmount) * 100 : 0;
+  const remaining = budgetAmount - actualSpend;
+  const revenue = Number(job.total_contract_value) || Number(job.contract_value) || budgetAmount;
+  const profit = revenue - actualSpend;
+  const margin = revenue > 0 ? (profit / revenue) * 100 : 0;
+
+  // Forecast: if job is in_progress, estimate final cost based on current spend rate
+  const jobProgress = job.job_status === 'completed' ? 100 : (consumedPct > 0 ? Math.min(consumedPct, 95) : 25);
+  const forecastedFinalCost = jobProgress > 0 ? (actualSpend / (jobProgress / 100)) : actualSpend;
+  const forecastVariance = budgetAmount - forecastedFinalCost;
+
+  // Chart data for budget vs actual by category
+  const chartData = useMemo(() => {
+    if (budgetLines.length === 0) return [];
+    const byCategory: Record<string, { budgeted: number; actual: number }> = {};
+    budgetLines.forEach(line => {
+      const cat = line.category || 'General';
+      if (!byCategory[cat]) byCategory[cat] = { budgeted: 0, actual: 0 };
+      byCategory[cat].budgeted += Number(line.budgeted_amount || 0);
+      byCategory[cat].actual += Number(line.actual_amount || 0);
+    });
+    return Object.entries(byCategory).map(([name, d]) => ({ name, ...d }));
+  }, [budgetLines]);
+
+  if (isLoading) return <Skeleton className="h-[400px] w-full" />;
+
+  return (
+    <div className="space-y-4">
+      {/* Top metrics */}
+      <div className="grid grid-cols-2 gap-3">
+        <Card className="p-3 space-y-1">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground"><Target className="h-3.5 w-3.5" /> Budget</div>
+          <p className="text-lg font-bold tabular-nums">{fmt(budgetAmount)}</p>
+          <BudgetStatusBadge consumedPct={consumedPct} />
+        </Card>
+        <Card className="p-3 space-y-1">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground"><DollarSign className="h-3.5 w-3.5" /> Spent</div>
+          <p className="text-lg font-bold tabular-nums">{fmt(actualSpend)}</p>
+          <p className="text-xs text-muted-foreground">{fmtPct(consumedPct)} of budget used</p>
+        </Card>
+        <Card className="p-3 space-y-1">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            {remaining >= 0 ? <ArrowUpRight className="h-3.5 w-3.5 text-green-600" /> : <ArrowDownRight className="h-3.5 w-3.5 text-red-600" />}
+            Remaining
+          </div>
+          <p className={`text-lg font-bold tabular-nums ${remaining >= 0 ? 'text-green-600' : 'text-red-600'}`}>{fmt(remaining)}</p>
+          <ProfitabilityIndicator margin={margin} />
+        </Card>
+        <Card className="p-3 space-y-1">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground"><Gauge className="h-3.5 w-3.5" /> Forecast</div>
+          <p className="text-lg font-bold tabular-nums">{fmt(forecastedFinalCost)}</p>
+          <p className={`text-xs ${forecastVariance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            {forecastVariance >= 0 ? 'Under' : 'Over'} by {fmt(Math.abs(forecastVariance))}
+          </p>
+        </Card>
+      </div>
+
+      {/* Budget consumption bar */}
+      <Card className="p-4">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm font-medium">Budget Consumption</span>
+          <span className={`text-sm font-bold ${consumedPct > 100 ? 'text-red-600' : consumedPct > 85 ? 'text-amber-600' : 'text-green-600'}`}>
+            {fmtPct(consumedPct)}
+          </span>
+        </div>
+        <Progress
+          value={Math.min(consumedPct, 100)}
+          className="h-3"
+        />
+        <div className="flex justify-between mt-1.5 text-xs text-muted-foreground">
+          <span>{fmt(actualSpend)} spent</span>
+          <span>{fmt(budgetAmount)} budget</span>
+        </div>
+        {consumedPct >= 85 && consumedPct <= 100 && (
+          <div className="mt-2 flex items-center gap-2 p-2 rounded-md bg-amber-500/10 text-amber-700 text-xs">
+            <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+            <span>Budget is {fmtPct(consumedPct)} consumed. Consider reviewing remaining scope.</span>
+          </div>
+        )}
+        {consumedPct > 100 && (
+          <div className="mt-2 flex items-center gap-2 p-2 rounded-md bg-red-500/10 text-red-700 text-xs">
+            <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+            <span>Budget exceeded by {fmt(Math.abs(remaining))} ({fmtPct(consumedPct - 100)} over).</span>
+          </div>
+        )}
+      </Card>
+
+      {/* Budget vs Actual chart */}
+      {chartData.length > 0 && (
+        <Card className="p-4">
+          <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+            <BarChart3 className="h-4 w-4 text-primary" />
+            Budget vs Actual by Category
+          </h3>
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+              <XAxis dataKey="name" className="text-xs" />
+              <YAxis className="text-xs" tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
+              <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }} formatter={(v: number) => fmt(v)} />
+              <Bar dataKey="budgeted" fill="hsl(var(--primary))" name="Budget" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="actual" fill="hsl(var(--destructive))" name="Actual" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </Card>
+      )}
+
+      {/* Line items */}
+      <Card className="p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-semibold">Budget Line Items</h3>
+          <div className="flex gap-2">
+            {budgetLines.length === 0 && job.original_estimate_id && (
+              <Button size="sm" variant="outline" onClick={() => initFromEstimate(job.original_estimate_id!, job.id!)}>
+                Import from Estimate
+              </Button>
+            )}
+            <Button size="sm" variant="outline" onClick={() => setShowAdd(!showAdd)}>
+              <Plus className="h-3 w-3 mr-1" /> Add Line
+            </Button>
+          </div>
+        </div>
+
+        {showAdd && (
+          <div className="flex gap-2 mb-3">
+            <Input placeholder="Description" value={newLine.description} onChange={(e) => setNewLine(p => ({ ...p, description: e.target.value }))} className="flex-1" />
+            <Input placeholder="Amount" type="number" value={newLine.budgeted_amount} onChange={(e) => setNewLine(p => ({ ...p, budgeted_amount: e.target.value }))} className="w-28" />
+            <Button size="sm" onClick={async () => {
+              if (!newLine.description || !newLine.budgeted_amount) return;
+              await addBudgetLine({
+                job_id: job.id!,
+                estimate_line_item_index: null,
+                description: newLine.description,
+                item_code: null,
+                category: 'General',
+                budgeted_quantity: 1,
+                budgeted_unit_price: Number(newLine.budgeted_amount),
+                budgeted_amount: Number(newLine.budgeted_amount),
+                actual_amount: 0,
+                notes: null,
+              });
+              setNewLine({ description: '', budgeted_amount: '' });
+              setShowAdd(false);
+            }}>Add</Button>
+          </div>
+        )}
+
+        {budgetLines.length > 0 ? (
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-xs">Description</TableHead>
+                  <TableHead className="text-xs text-right">Budget</TableHead>
+                  <TableHead className="text-xs text-right">Actual</TableHead>
+                  <TableHead className="text-xs text-right">Variance</TableHead>
+                  <TableHead className="text-xs text-right">%</TableHead>
+                  <TableHead className="w-8" />
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {budgetLines.map(line => (
+                  <TableRow key={line.id}>
+                    <TableCell className="text-xs font-medium">{line.description}</TableCell>
+                    <TableCell className="text-xs text-right tabular-nums">{fmt(line.budgeted_amount)}</TableCell>
+                    <TableCell className="text-xs text-right tabular-nums">{fmt(line.actual_amount)}</TableCell>
+                    <TableCell className={`text-xs text-right tabular-nums font-medium ${line.variance_amount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {fmt(line.variance_amount)}
+                    </TableCell>
+                    <TableCell className={`text-xs text-right tabular-nums ${line.variance_percent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {fmtPct(line.variance_percent)}
+                    </TableCell>
+                    <TableCell>
+                      <button onClick={() => deleteBudgetLine(line.id)} className="p-1 hover:bg-destructive/10 rounded text-destructive/60 hover:text-destructive">
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                <TableRow className="border-t-2 font-semibold">
+                  <TableCell className="text-xs">Total</TableCell>
+                  <TableCell className="text-xs text-right tabular-nums">{fmt(totalBudgeted)}</TableCell>
+                  <TableCell className="text-xs text-right tabular-nums">{fmt(totalActual)}</TableCell>
+                  <TableCell className={`text-xs text-right tabular-nums ${totalVariance >= 0 ? 'text-green-600' : 'text-red-600'}`}>{fmt(totalVariance)}</TableCell>
+                  <TableCell className={`text-xs text-right tabular-nums ${variancePercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>{fmtPct(variancePercent)}</TableCell>
+                  <TableCell />
+                </TableRow>
+              </TableBody>
+            </Table>
+          </div>
+        ) : (
+          <div className="text-center py-6 text-sm text-muted-foreground">
+            <Target className="h-8 w-8 mx-auto mb-2 opacity-40" />
+            <p>No budget line items yet.</p>
+            {job.original_estimate_id ? (
+              <p className="text-xs mt-1">Click "Import from Estimate" to auto-populate budget from the original estimate.</p>
+            ) : (
+              <p className="text-xs mt-1">Add budget lines manually to track costs against plan.</p>
+            )}
+          </div>
+        )}
+      </Card>
+    </div>
+  );
+}

@@ -13,6 +13,7 @@ export interface Job {
   name: string;
   description?: string;
   status: 'scheduled' | 'in_progress' | 'completed' | 'on_hold' | 'cancelled';
+  job_status?: 'scheduled' | 'in_progress' | 'on_hold' | 'inspection_pending' | 'completed' | 'closed';
   start_date?: string;
   end_date?: string;
   address?: string;
@@ -32,6 +33,17 @@ export interface Job {
   profit?: number;
   archived?: boolean;
   archived_at?: string;
+  budget_amount?: number;
+  actual_cost?: number;
+  adjusted_budget_amount?: number;
+  budget_locked?: boolean;
+  budget_source?: string;
+  budget_override_amount?: number;
+  budget_alert_threshold?: number;
+  forecasted_final_cost?: number;
+  trade_type?: string;
+  lead_id?: string;
+  sub_trade?: string;
 }
 
 export const useJobs = () => {

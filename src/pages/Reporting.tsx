@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/select";
 import {
   LayoutDashboard, TrendingUp, Briefcase, DollarSign, Receipt,
-  Users, FileText, Store, Wrench,
+  Users, FileText, Store, Wrench, Gauge,
 } from "lucide-react";
 
 import { DrillDownProvider } from "@/components/reporting/drilldown/DrillDownProvider";
@@ -40,6 +40,7 @@ import { CustomersReport } from "@/components/reporting/unified/CustomersReport"
 import { AccountsReceivableReport } from "@/components/reporting/unified/AccountsReceivableReport";
 import { AccountsPayableReport } from "@/components/reporting/unified/AccountsPayableReport";
 import { CustomReportBuilder } from "@/components/reporting/unified/CustomReportBuilder";
+import { ContractorVisibilityDashboard } from "@/components/reporting/unified/ContractorVisibilityDashboard";
 
 const sections = [
   { value: "dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -51,6 +52,7 @@ const sections = [
   { value: "ar", label: "Receivables", icon: FileText },
   { value: "ap", label: "Payables", icon: Store },
   { value: "custom", label: "Custom Reports", icon: Wrench },
+  { value: "visibility", label: "Contractor Visibility", icon: Gauge },
 ];
 
 export default function Reporting() {
@@ -97,6 +99,7 @@ export default function Reporting() {
         {activeSection === "ar" && <AccountsReceivableReport />}
         {activeSection === "ap" && <AccountsPayableReport />}
         {activeSection === "custom" && <CustomReportBuilder />}
+        {activeSection === "visibility" && <ContractorVisibilityDashboard />}
 
         {/* Global drill-down slide-out panel */}
         <DrillDownPanel />
