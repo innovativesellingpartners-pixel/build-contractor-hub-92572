@@ -11,8 +11,8 @@ export function GlobalPocketbot() {
 
   return (
     <>
-      {/* Mobile: Pocketbot button - top right, across from Try CT1 Free */}
-      <div className="fixed top-3 right-4 z-50 md:hidden" style={{ paddingTop: "env(safe-area-inset-top)" }}>
+      {/* Mobile: Pocketbot button - top right, below header */}
+      <div className="fixed top-28 right-4 z-50 md:hidden" style={{ paddingTop: "env(safe-area-inset-top)" }}>
         <Button
           ref={buttonRef}
           onClick={() => setShowPocketbot(true)}

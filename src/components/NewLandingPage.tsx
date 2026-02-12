@@ -35,7 +35,7 @@ import {
   PaintBucket,
   Wind,
   MessageCircle,
-  Rocket
+  Rocket,
 } from "lucide-react";
 
 export function NewLandingPage() {
@@ -96,10 +96,10 @@ export function NewLandingPage() {
       />
       <MainSiteHeader onContactClick={() => setActiveContactForm("contact-sales")} />
 
-      {/* Floating Try for Free Button - Top Left */}
-      <Link to="/trial-signup" className="fixed top-28 left-4 z-50">
-        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-2xl hover:shadow-primary/50 px-6 py-3 rounded-full font-semibold transition-all hover:scale-105">
-          <Rocket className="mr-2 h-4 w-4" />
+      {/* Floating Buttons - Below header */}
+      <Link to="/trial-signup" className="fixed top-28 left-4 z-50" style={{ paddingTop: "env(safe-area-inset-top)" }}>
+        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-[0_6px_24px_rgba(220,38,38,0.5)] px-5 py-2.5 h-11 rounded-full font-semibold transition-all hover:scale-105">
+          <img src={ct1RoundLogo} alt="CT1" className="h-5 w-5 mr-2" />
           Try CT1 Free
         </Button>
       </Link>
