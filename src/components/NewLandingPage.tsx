@@ -137,6 +137,10 @@ export function NewLandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-20 w-full">
           <div className="flex flex-col items-center text-center">
             {/* MASSIVE Logo with Multiple Glow Layers */}
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-black mb-8 leading-none text-white tracking-tight" style={{ textShadow: '2px 2px 8px rgba(0, 0, 0, 0.5)' }}>
+              <span>One-Up </span><span className="text-primary" style={{ textShadow: '2px 2px 8px rgba(0, 0, 0, 0.5), 0 0 40px rgba(220, 38, 38, 0.5)' }}>The Competition</span>
+            </h1>
+
             <div className="relative mb-12 group cursor-pointer" onClick={() => setShowContactDialog(true)}>
               {/* Outer glow ring */}
               <div className="absolute -inset-8 sm:-inset-12 lg:-inset-16 bg-gradient-to-r from-primary/30 via-primary/50 to-primary/30 rounded-full blur-3xl opacity-70 animate-pulse"></div>
@@ -158,11 +162,6 @@ export function NewLandingPage() {
                 </span>
               </div>
             </div>
-            
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-black mb-6 leading-none text-white tracking-tight" style={{ textShadow: '2px 2px 8px rgba(0, 0, 0, 0.5)' }}>
-              <span className="block">One-Up</span>
-              <span className="block text-primary" style={{ textShadow: '2px 2px 8px rgba(0, 0, 0, 0.5), 0 0 40px rgba(220, 38, 38, 0.5)' }}>The Competition</span>
-            </h1>
             
             <p className="text-xl sm:text-2xl lg:text-3xl mb-1 text-white/90 leading-relaxed max-w-4xl font-light">
               A nationwide network of contractors.
