@@ -199,7 +199,7 @@ export function ChatWithUsPanel({ onClose }: { onClose: () => void }) {
 
         {/* Book a Meeting Banner */}
         <a
-          href="https://calendly.com/myct1"
+          href="https://calendly.com/innovativesellingpartners/contractor-1-1-with-ct1-trainer"
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-2 px-4 py-2.5 bg-muted hover:bg-accent text-foreground text-sm font-medium border-b border-border transition-colors"
