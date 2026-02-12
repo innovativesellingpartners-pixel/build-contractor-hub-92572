@@ -3,6 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useJobCosts, JobCost } from '@/hooks/useJobCosts';
 import { Job } from '@/hooks/useJobs';
+import { useAuth } from '@/contexts/AuthContext';
+import { QBEnhancedJobData } from './QBEnhancedJobData';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -73,6 +75,18 @@ export default function JobProfitabilityTab({ job }: JobProfitabilityTabProps) {
   const { costs, loading: costsLoading, addCost, deleteCost, totalCosts, refreshCosts } = useJobCosts(job.id);
   const [showAddCost, setShowAddCost] = useState(false);
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+  const { user } = useAuth();
+
+  // Check QB connection
+  const { data: qbConnected } = useQuery({
+    queryKey: ['qb-connected-job', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return false;
+      const { data } = await supabase.from('profiles').select('qb_realm_id').eq('id', user.id).maybeSingle();
+      return !!data?.qb_realm_id;
+    },
+    enabled: !!user?.id,
+  });
 
   // Fetch invoices for this job
   const { data: invoices, isLoading: invoicesLoading } = useQuery({
@@ -449,6 +463,17 @@ export default function JobProfitabilityTab({ job }: JobProfitabilityTabProps) {
           )}
         </div>
       </Card>
+
+      {/* QB Enhanced Data */}
+      {qbConnected && (
+        <QBEnhancedJobData
+          jobName={job.name}
+          jobBudget={Number(job.budget_amount) || Number(job.contract_value) || 0}
+          nativeCosts={totalCosts}
+          nativeRevenue={financials.totalRevenue}
+          qbConnected={true}
+        />
+      )}
     </div>
   );
 }

@@ -18,7 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   DollarSign, TrendingUp, TrendingDown, FileText, Briefcase, Users, BarChart3,
-  Target, ArrowRight, ExternalLink
+  Target, ArrowRight, ExternalLink, Trophy, AlertOctagon, Gauge
 } from "lucide-react";
 
 const fmt = (v: number) =>
@@ -99,6 +99,7 @@ export function UnifiedDashboard() {
       const activeJobs = jb.filter(j => j.job_status === "in_progress");
       const completedJobs = jb.filter(j => j.job_status === "completed");
       const totalJobRevenue = jb.reduce((s, j) => s + Number(j.budget_amount || 0), 0);
+      const totalJobCost = jb.reduce((s, j) => s + Number(j.actual_cost || 0), 0);
       const avgJobValue = jb.length > 0 ? totalJobRevenue / jb.length : 0;
 
       const myCT1Revenue = pay.reduce((s, p) => s + Number(p.amount || 0), 0);
@@ -107,6 +108,23 @@ export function UnifiedDashboard() {
       const topCustomers = [...cust]
         .sort((a, b) => Number(b.lifetime_value || 0) - Number(a.lifetime_value || 0))
         .slice(0, 5);
+
+      // Job rankings
+      const jobRankings = jb.map(j => {
+        const budget = Number(j.budget_amount || 0);
+        const cost = Number(j.actual_cost || 0);
+        const profit = budget - cost;
+        const margin = budget > 0 ? (profit / budget) * 100 : 0;
+        return { id: j.id, name: j.name || 'Unnamed', profit, margin, budget, cost, status: j.job_status };
+      }).sort((a, b) => b.profit - a.profit);
+
+      // Gross margin
+      const grossMargin = totalJobRevenue > 0 ? ((totalJobRevenue - totalJobCost) / totalJobRevenue) * 100 : 0;
+
+      // Cash flow forecast (simple: current burn rate projected)
+      const activeJobBudgets = activeJobs.reduce((s, j) => s + Number(j.budget_amount || 0), 0);
+      const activeJobCosts = activeJobs.reduce((s, j) => s + Number(j.actual_cost || 0), 0);
+      const burnRate = activeJobs.length > 0 ? activeJobCosts / Math.max(activeJobs.length, 1) : 0;
 
       return {
         leads: ld.length,
@@ -119,6 +137,7 @@ export function UnifiedDashboard() {
         totalJobs: jb.length,
         jobsList: jb,
         totalJobRevenue,
+        totalJobCost,
         avgJobValue,
         myCT1Revenue,
         outstandingAR,
@@ -127,6 +146,11 @@ export function UnifiedDashboard() {
         customersList: cust,
         topCustomers,
         newCustomers: cust.length,
+        jobRankings,
+        grossMargin,
+        activeJobBudgets,
+        activeJobCosts,
+        burnRate,
       };
     },
     enabled: !!user?.id,
@@ -358,6 +382,87 @@ export function UnifiedDashboard() {
             </CardContent>
           </Card>
         </div>
+      )}
+
+      {/* Job Rankings + Forecasting */}
+      {d?.jobRankings && d.jobRankings.length > 0 && (
+        <div className="grid gap-4 grid-cols-1 lg:grid-cols-3">
+          {/* Gross Margin */}
+          <Card>
+            <CardHeader><CardTitle className="text-base flex items-center gap-2"><Gauge className="h-4 w-4" /> Gross Margin</CardTitle></CardHeader>
+            <CardContent className="text-center py-4">
+              <p className={`text-3xl font-bold ${(d.grossMargin || 0) >= 20 ? 'text-green-600' : (d.grossMargin || 0) >= 10 ? 'text-amber-600' : 'text-red-600'}`}>
+                {pct(d.grossMargin || 0)}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">Revenue: {fmt(d.totalJobRevenue || 0)} · Cost: {fmt(d.totalJobCost || 0)}</p>
+            </CardContent>
+          </Card>
+
+          {/* Top Profitable */}
+          <Card>
+            <CardHeader><CardTitle className="text-base flex items-center gap-2"><Trophy className="h-4 w-4 text-green-600" /> Top 5 Profitable</CardTitle></CardHeader>
+            <CardContent>
+              <div className="space-y-1.5">
+                {d.jobRankings.slice(0, 5).map((j: any, i: number) => (
+                  <Button key={j.id} variant="ghost" className="w-full justify-between text-sm h-auto py-1.5 px-2 hover:bg-muted"
+                    onClick={() => openPanel({ type: "job", title: j.name, data: j })}>
+                    <span className="flex items-center gap-2 truncate">
+                      <span className="text-xs font-bold text-muted-foreground w-4">{i + 1}</span>
+                      <span className="truncate">{j.name}</span>
+                    </span>
+                    <span className="text-green-600 font-medium tabular-nums">{fmt(j.profit)}</span>
+                  </Button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Least Profitable */}
+          <Card>
+            <CardHeader><CardTitle className="text-base flex items-center gap-2"><AlertOctagon className="h-4 w-4 text-red-600" /> Bottom 5 Jobs</CardTitle></CardHeader>
+            <CardContent>
+              <div className="space-y-1.5">
+                {[...d.jobRankings].reverse().slice(0, 5).map((j: any, i: number) => (
+                  <Button key={j.id} variant="ghost" className="w-full justify-between text-sm h-auto py-1.5 px-2 hover:bg-muted"
+                    onClick={() => openPanel({ type: "job", title: j.name, data: j })}>
+                    <span className="flex items-center gap-2 truncate">
+                      <span className="text-xs font-bold text-muted-foreground w-4">{i + 1}</span>
+                      <span className="truncate">{j.name}</span>
+                    </span>
+                    <span className={`font-medium tabular-nums ${j.profit >= 0 ? 'text-amber-600' : 'text-red-600'}`}>{fmt(j.profit)}</span>
+                  </Button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Cash flow forecast card */}
+      {d && d.activeJobs > 0 && (
+        <Card>
+          <CardHeader><CardTitle className="text-base flex items-center gap-2"><TrendingUp className="h-4 w-4" /> Active Jobs Forecast</CardTitle></CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+              <div>
+                <p className="text-xs text-muted-foreground">Active Budget</p>
+                <p className="text-lg font-bold tabular-nums">{fmt(d.activeJobBudgets || 0)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Spent So Far</p>
+                <p className="text-lg font-bold tabular-nums text-red-600">{fmt(d.activeJobCosts || 0)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Remaining Budget</p>
+                <p className="text-lg font-bold tabular-nums text-green-600">{fmt((d.activeJobBudgets || 0) - (d.activeJobCosts || 0))}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Avg Cost/Job</p>
+                <p className="text-lg font-bold tabular-nums">{fmt(d.burnRate || 0)}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       )}
     </InteractiveReportShell>
   );

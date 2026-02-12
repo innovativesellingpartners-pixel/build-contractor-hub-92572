@@ -15,7 +15,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard, FileText, BarChart3, Receipt, Users, Store, Clock,
-  LinkIcon, Loader2, CreditCard, RefreshCw
+  LinkIcon, Loader2, CreditCard, RefreshCw, Settings
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { QBOverview } from "./QBOverview";
@@ -27,6 +27,7 @@ import { QBCustomers } from "./QBCustomers";
 import { QBVendors } from "./QBVendors";
 import { QBAging } from "./QBAging";
 import { QBPayments } from "./QBPayments";
+import { QBSyncConfigPanel } from "./QBSyncConfigPanel";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -46,6 +47,7 @@ const qbTabs = [
   { value: "customers", label: "Customers", icon: Users },
   { value: "vendors", label: "Vendors", icon: Store },
   { value: "aging", label: "Aging", icon: Clock },
+  { value: "sync", label: "Sync Settings", icon: Settings },
 ];
 
 export function QuickBooksReportsHub() {
@@ -235,6 +237,7 @@ export function QuickBooksReportsHub() {
         {activeTab === "customers" && <QBCustomers />}
         {activeTab === "vendors" && <QBVendors />}
         {activeTab === "aging" && <QBAging />}
+        {activeTab === "sync" && <QBSyncConfigPanel />}
 
         <DrillDownPanel />
       </div>
