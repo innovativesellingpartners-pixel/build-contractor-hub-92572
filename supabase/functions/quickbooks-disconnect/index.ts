@@ -13,19 +13,15 @@ Deno.serve(async (req) => {
     }
 
     const token = authHeader.replace('Bearer ', '');
+    
+    // Decode JWT payload to get user ID
+    const payloadBase64 = token.split('.')[1];
+    if (!payloadBase64) throw new Error('Invalid token format');
+    const payload = JSON.parse(atob(payloadBase64));
+    const userId = payload.sub;
+    if (!userId) throw new Error('No user ID in token');
 
-    // Get authenticated user - NEVER trust contractor ID from browser
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: authHeader } } }
-    );
-
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError || !user) {
-      console.error('Authentication failed:', userError);
-      throw new Error('Unauthorized');
-    }
+    const user = { id: userId };
 
     const contractorId = user.id;
     console.log('Disconnecting QuickBooks for contractor:', contractorId);
