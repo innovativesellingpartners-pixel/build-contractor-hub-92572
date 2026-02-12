@@ -98,7 +98,7 @@ export function NewLandingPage() {
 
       {/* Floating Buttons - Below header */}
       <Link to="/trial-signup" className="fixed top-28 left-4 z-50" style={{ paddingTop: "env(safe-area-inset-top)" }}>
-        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-[0_6px_24px_rgba(220,38,38,0.5)] px-5 py-2.5 h-11 rounded-full font-semibold transition-all hover:scale-105">
+        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-[0_8px_30px_rgba(220,38,38,0.6),0_2px_8px_rgba(0,0,0,0.3)] px-5 py-2.5 h-11 rounded-full font-semibold transition-all hover:scale-105">
           <img src={ct1RoundLogo} alt="CT1" className="h-5 w-5 mr-2" />
           Try CT1 Free
         </Button>

@@ -9,7 +9,7 @@ export function FloatingTrialButton() {
       <div className="fixed left-4 top-28 z-50 hidden md:block">
         <Link to="/trial-signup">
           <Button 
-            className="bg-primary hover:bg-primary/90 text-primary-foreground h-12 min-w-[160px] px-6 rounded-full font-semibold shadow-[0_6px_24px_rgba(220,38,38,0.5)] transition-all duration-300 hover:scale-105"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground h-12 min-w-[160px] px-6 rounded-full font-semibold shadow-[0_8px_30px_rgba(220,38,38,0.6),0_2px_8px_rgba(0,0,0,0.3)] transition-all duration-300 hover:scale-105"
           >
             <img src={ct1Logo} alt="CT1" className="h-5 w-5 mr-2" />
             Try CT1 Free
@@ -21,7 +21,7 @@ export function FloatingTrialButton() {
       <div className="fixed top-28 left-4 z-50 md:hidden" style={{ paddingTop: "env(safe-area-inset-top)" }}>
         <Link to="/trial-signup">
           <Button 
-            className="bg-primary hover:bg-primary/90 text-primary-foreground h-11 px-5 rounded-full font-semibold shadow-[0_6px_24px_rgba(220,38,38,0.5)] transition-all duration-300 hover:scale-105"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground h-11 px-5 rounded-full font-semibold shadow-[0_8px_30px_rgba(220,38,38,0.6),0_2px_8px_rgba(0,0,0,0.3)] transition-all duration-300 hover:scale-105"
           >
             <img src={ct1Logo} alt="CT1" className="h-5 w-5 mr-2" />
             Try CT1 Free

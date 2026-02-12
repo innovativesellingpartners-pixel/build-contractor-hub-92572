@@ -16,7 +16,7 @@ export function GlobalPocketbot() {
         <Button
           ref={buttonRef}
           onClick={() => setShowPocketbot(true)}
-          className="bg-foreground/95 backdrop-blur-md text-background hover:bg-foreground hover:text-background h-11 px-5 rounded-full font-semibold shadow-[0_6px_24px_rgba(0,0,0,0.5)] transition-all duration-300 hover:scale-105"
+          className="bg-foreground/95 backdrop-blur-md text-background hover:bg-foreground hover:text-background h-11 px-5 rounded-full font-semibold shadow-[0_8px_30px_rgba(0,0,0,0.6),0_2px_8px_rgba(0,0,0,0.3)] transition-all duration-300 hover:scale-105"
         >
           <img src={ct1Logo} alt="CT1" className="h-5 w-5 mr-2" />
           Pocketbot
@@ -29,7 +29,7 @@ export function GlobalPocketbot() {
           {/* Pocketbot Button */}
           <Button
             onClick={() => setShowPocketbot(true)}
-            className="bg-foreground/95 backdrop-blur-md text-background hover:bg-foreground hover:text-background h-12 min-w-[160px] px-5 rounded-full font-semibold shadow-[0_6px_24px_rgba(0,0,0,0.4)] transition-all duration-300 hover:scale-105"
+            className="bg-foreground/95 backdrop-blur-md text-background hover:bg-foreground hover:text-background h-12 min-w-[160px] px-5 rounded-full font-semibold shadow-[0_8px_30px_rgba(0,0,0,0.6),0_2px_8px_rgba(0,0,0,0.3)] transition-all duration-300 hover:scale-105"
           >
             <img src={ct1Logo} alt="CT1" className="h-5 w-5 mr-2" />
             Pocketbot

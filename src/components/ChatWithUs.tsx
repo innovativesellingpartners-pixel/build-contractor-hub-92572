@@ -21,13 +21,13 @@ export function ChatWithUsBubble({ onClick }: { onClick: () => void }) {
       aria-label="Chat with us"
     >
       {/* Speech bubble with tail pointing left */}
-      <div className="relative bg-primary text-primary-foreground px-4 py-2.5 rounded-2xl rounded-bl-sm shadow-xl font-semibold text-sm whitespace-nowrap transition-all duration-300 group-hover:shadow-primary/40">
+      <div className="relative bg-primary text-primary-foreground px-4 py-2.5 rounded-2xl rounded-bl-sm shadow-[0_8px_30px_rgba(220,38,38,0.5),0_2px_8px_rgba(0,0,0,0.3)] font-semibold text-sm whitespace-nowrap transition-all duration-300 group-hover:shadow-primary/40">
         Chat with us
         {/* Tail pointing left */}
         <div className="absolute bottom-1 -left-2 w-0 h-0 border-t-[6px] border-t-transparent border-r-[10px] border-r-primary border-b-[6px] border-b-transparent" />
       </div>
       {/* Logo circle */}
-      <div className="h-12 w-12 rounded-full bg-background shadow-xl border-2 border-primary/20 flex items-center justify-center overflow-hidden flex-shrink-0 transition-all duration-300 group-hover:border-primary/50">
+      <div className="h-12 w-12 rounded-full bg-background shadow-[0_8px_30px_rgba(220,38,38,0.4),0_2px_8px_rgba(0,0,0,0.3)] border-2 border-primary/20 flex items-center justify-center overflow-hidden flex-shrink-0 transition-all duration-300 group-hover:border-primary/50">
         <img src={ct1Logo} alt="CT1" className="h-10 w-10 object-contain" />
       </div>
     </button>
