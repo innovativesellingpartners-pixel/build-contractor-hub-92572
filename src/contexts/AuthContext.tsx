@@ -185,10 +185,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signOut = async () => {
     console.log('Signing out...');
     try {
-      await supabase.auth.signOut();
+      await supabase.auth.signOut({ scope: 'local' });
     } catch (err) {
       console.warn('Sign out API call failed (session may already be expired):', err);
     }
+    // Force-clear the Supabase session from localStorage in case signOut didn't
+    localStorage.removeItem('ct1-auth-token');
     // Always clear local state regardless of server response
     setProfile(null);
     localStorage.removeItem('rememberMe');
