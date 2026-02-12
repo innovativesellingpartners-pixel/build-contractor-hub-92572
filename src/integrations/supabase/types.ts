@@ -2857,6 +2857,118 @@ export type Database = {
           },
         ]
       }
+      job_budget_alerts: {
+        Row: {
+          acknowledged_at: string | null
+          alert_type: string
+          created_at: string
+          id: string
+          is_active: boolean | null
+          job_id: string
+          message: string | null
+          threshold_percent: number | null
+          triggered_at: string | null
+          user_id: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          alert_type?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          job_id: string
+          message?: string | null
+          threshold_percent?: number | null
+          triggered_at?: string | null
+          user_id: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          alert_type?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          job_id?: string
+          message?: string | null
+          threshold_percent?: number | null
+          triggered_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_budget_alerts_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_budget_line_items: {
+        Row: {
+          actual_amount: number | null
+          budgeted_amount: number
+          budgeted_quantity: number | null
+          budgeted_unit_price: number | null
+          category: string | null
+          created_at: string
+          description: string
+          estimate_line_item_index: number | null
+          id: string
+          item_code: string | null
+          job_id: string
+          notes: string | null
+          updated_at: string
+          user_id: string
+          variance_amount: number | null
+          variance_percent: number | null
+        }
+        Insert: {
+          actual_amount?: number | null
+          budgeted_amount?: number
+          budgeted_quantity?: number | null
+          budgeted_unit_price?: number | null
+          category?: string | null
+          created_at?: string
+          description: string
+          estimate_line_item_index?: number | null
+          id?: string
+          item_code?: string | null
+          job_id: string
+          notes?: string | null
+          updated_at?: string
+          user_id: string
+          variance_amount?: number | null
+          variance_percent?: number | null
+        }
+        Update: {
+          actual_amount?: number | null
+          budgeted_amount?: number
+          budgeted_quantity?: number | null
+          budgeted_unit_price?: number | null
+          category?: string | null
+          created_at?: string
+          description?: string
+          estimate_line_item_index?: number | null
+          id?: string
+          item_code?: string | null
+          job_id?: string
+          notes?: string | null
+          updated_at?: string
+          user_id?: string
+          variance_amount?: number | null
+          variance_percent?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_budget_line_items_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       job_costs: {
         Row: {
           amount: number
@@ -3039,7 +3151,11 @@ export type Database = {
           adjusted_budget_amount: number | null
           archived: boolean | null
           archived_at: string | null
+          budget_alert_threshold: number | null
           budget_amount: number | null
+          budget_locked: boolean | null
+          budget_override_amount: number | null
+          budget_source: string | null
           change_orders_total: number | null
           city: string | null
           contract_value: number | null
@@ -3051,6 +3167,7 @@ export type Database = {
           description: string | null
           end_date: string | null
           expenses_total: number | null
+          forecasted_final_cost: number | null
           id: string
           job_number: string | null
           job_status: Database["public"]["Enums"]["job_status"] | null
@@ -3082,7 +3199,11 @@ export type Database = {
           adjusted_budget_amount?: number | null
           archived?: boolean | null
           archived_at?: string | null
+          budget_alert_threshold?: number | null
           budget_amount?: number | null
+          budget_locked?: boolean | null
+          budget_override_amount?: number | null
+          budget_source?: string | null
           change_orders_total?: number | null
           city?: string | null
           contract_value?: number | null
@@ -3094,6 +3215,7 @@ export type Database = {
           description?: string | null
           end_date?: string | null
           expenses_total?: number | null
+          forecasted_final_cost?: number | null
           id?: string
           job_number?: string | null
           job_status?: Database["public"]["Enums"]["job_status"] | null
@@ -3125,7 +3247,11 @@ export type Database = {
           adjusted_budget_amount?: number | null
           archived?: boolean | null
           archived_at?: string | null
+          budget_alert_threshold?: number | null
           budget_amount?: number | null
+          budget_locked?: boolean | null
+          budget_override_amount?: number | null
+          budget_source?: string | null
           change_orders_total?: number | null
           city?: string | null
           contract_value?: number | null
@@ -3137,6 +3263,7 @@ export type Database = {
           description?: string | null
           end_date?: string | null
           expenses_total?: number | null
+          forecasted_final_cost?: number | null
           id?: string
           job_number?: string | null
           job_status?: Database["public"]["Enums"]["job_status"] | null
