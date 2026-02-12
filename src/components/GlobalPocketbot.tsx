@@ -1,8 +1,9 @@
 import { useState, useRef } from "react";
-import { Bot } from "lucide-react";
+import { Link } from "react-router-dom";
 import { FloatingPocketbot } from "@/components/contractor/FloatingPocketbot";
 import { Button } from "@/components/ui/button";
 import { ChatWithUsBubble, ChatWithUsPanel } from "@/components/ChatWithUs";
+import ct1Logo from "@/assets/ct1-round-logo-new.png";
 
 export function GlobalPocketbot() {
   const [showPocketbot, setShowPocketbot] = useState(false);
@@ -11,16 +12,35 @@ export function GlobalPocketbot() {
 
   return (
     <>
-      {/* Chat With Us Bubble - bottom right */}
-      <div className="fixed bottom-6 right-6 z-40 pb-safe">
+      {/* Mobile: Top bar with Try CT1 Free + Pocketbot side by side */}
+      <div className="fixed top-4 left-0 right-0 z-50 flex md:hidden justify-between px-4" style={{ paddingTop: "env(safe-area-inset-top)" }}>
+        <Link to="/trial-signup">
+          <Button 
+            className="bg-primary hover:bg-primary/90 text-primary-foreground h-11 px-5 rounded-full font-semibold shadow-[0_4px_20px_rgba(220,38,38,0.5)] transition-all duration-300 hover:scale-105"
+          >
+            <img src={ct1Logo} alt="CT1" className="h-5 w-5" />
+            Try CT1 Free
+          </Button>
+        </Link>
+        <Button
+          ref={buttonRef}
+          onClick={() => setShowPocketbot(true)}
+          className="bg-foreground/95 backdrop-blur-md text-background hover:bg-foreground hover:text-background h-11 px-5 rounded-full font-semibold shadow-[0_4px_20px_rgba(0,0,0,0.4)] transition-all duration-300 hover:scale-105"
+        >
+          <img src={ct1Logo} alt="CT1" className="h-5 w-5" />
+          Pocketbot
+        </Button>
+      </div>
+
+      {/* Desktop: Bottom right stack */}
+      <div className="fixed bottom-6 right-6 z-40 pb-safe hidden md:block">
         <div className="flex flex-col items-end gap-3">
           {/* Pocketbot Button */}
           <Button
-            ref={buttonRef}
             onClick={() => setShowPocketbot(true)}
             className="bg-foreground/95 backdrop-blur-md text-background hover:bg-foreground hover:text-background h-12 min-w-[160px] px-5 rounded-full font-semibold shadow-xl hover:shadow-primary/50 transition-all duration-300 hover:scale-105"
           >
-            <Bot className="h-5 w-5 text-primary" />
+            <img src={ct1Logo} alt="CT1" className="h-5 w-5" />
             Pocketbot
           </Button>
 
@@ -29,6 +49,13 @@ export function GlobalPocketbot() {
             <ChatWithUsBubble onClick={() => setShowChatWithUs(true)} />
           )}
         </div>
+      </div>
+
+      {/* Chat With Us Bubble - mobile bottom right */}
+      <div className="fixed bottom-6 right-6 z-40 pb-safe md:hidden">
+        {!showChatWithUs && (
+          <ChatWithUsBubble onClick={() => setShowChatWithUs(true)} />
+        )}
       </div>
 
       {/* Pocketbot Modal */}
