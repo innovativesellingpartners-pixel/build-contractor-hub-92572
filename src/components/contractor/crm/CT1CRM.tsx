@@ -242,6 +242,8 @@ const navItems = [
           onNavigateToCalls={() => handleSectionChange('calls')}
           onNavigateToCalendar={() => handleSectionChange('calendar')}
           onNavigateToInvoices={() => handleSectionChange('invoices')}
+          onNavigateToLeads={() => handleSectionChange('leads')}
+          onNavigateToReporting={() => handleSectionChange('reporting')}
         />
       );
     }
