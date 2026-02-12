@@ -46,26 +46,15 @@ Deno.serve(async (req) => {
       throw new Error('No authorization header');
     }
 
-    // Get authenticated user - NEVER trust contractor ID from browser
-    const supabaseClient = createClient(
-      supabaseUrl ?? '',
-      supabaseAnonKey ?? '',
-      { global: { headers: { Authorization: authHeader } } }
-    );
-
-    console.log('Attempting to get user from session...');
+    // Decode JWT payload to get user ID
     const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
-    
-    if (userError) {
-      console.error('User authentication error:', userError);
-      throw new Error('Unauthorized');
-    }
-    
-    if (!user) {
-      console.error('No user found in session');
-      throw new Error('Unauthorized');
-    }
+    const payloadBase64 = token.split('.')[1];
+    if (!payloadBase64) throw new Error('Invalid token format');
+    const payload = JSON.parse(atob(payloadBase64));
+    const userId = payload.sub;
+    if (!userId) throw new Error('No user ID in token');
+
+    const user = { id: userId };
 
     const contractorId = user.id;
     console.log('Initiating QuickBooks OAuth for contractor:', contractorId);
