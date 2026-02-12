@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { X, Send, Loader2, Minimize2 } from "lucide-react";
+import { X, Send, Loader2, Minimize2, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -196,6 +196,18 @@ export function ChatWithUsPanel({ onClose }: { onClose: () => void }) {
             </Button>
           </div>
         </div>
+
+        {/* Book a Meeting Banner */}
+        <a
+          href="https://calendly.com/myct1"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 px-4 py-2.5 bg-muted hover:bg-accent text-foreground text-sm font-medium border-b border-border transition-colors"
+        >
+          <Calendar className="h-4 w-4 text-primary flex-shrink-0" />
+          <span>Book a Meeting</span>
+          <span className="ml-auto text-xs text-muted-foreground">Calendly →</span>
+        </a>
 
         {/* Messages */}
         <ScrollArea className="flex-1 min-h-0 max-h-[50vh]">
