@@ -1,5 +1,4 @@
 import { useState, useRef } from "react";
-import { Link } from "react-router-dom";
 import { FloatingPocketbot } from "@/components/contractor/FloatingPocketbot";
 import { Button } from "@/components/ui/button";
 import { ChatWithUsBubble, ChatWithUsPanel } from "@/components/ChatWithUs";
@@ -12,22 +11,14 @@ export function GlobalPocketbot() {
 
   return (
     <>
-      {/* Mobile: Top bar with Try CT1 Free + Pocketbot side by side */}
-      <div className="fixed top-4 left-0 right-0 z-50 flex md:hidden justify-between px-4" style={{ paddingTop: "env(safe-area-inset-top)" }}>
-        <Link to="/trial-signup">
-          <Button 
-            className="bg-primary hover:bg-primary/90 text-primary-foreground h-11 px-5 rounded-full font-semibold shadow-[0_4px_20px_rgba(220,38,38,0.5)] transition-all duration-300 hover:scale-105"
-          >
-            <img src={ct1Logo} alt="CT1" className="h-5 w-5" />
-            Try CT1 Free
-          </Button>
-        </Link>
+      {/* Mobile: Pocketbot button - top right, across from Try CT1 Free */}
+      <div className="fixed top-3 right-4 z-50 md:hidden" style={{ paddingTop: "env(safe-area-inset-top)" }}>
         <Button
           ref={buttonRef}
           onClick={() => setShowPocketbot(true)}
-          className="bg-foreground/95 backdrop-blur-md text-background hover:bg-foreground hover:text-background h-11 px-5 rounded-full font-semibold shadow-[0_4px_20px_rgba(0,0,0,0.4)] transition-all duration-300 hover:scale-105"
+          className="bg-foreground/95 backdrop-blur-md text-background hover:bg-foreground hover:text-background h-11 px-5 rounded-full font-semibold shadow-[0_6px_24px_rgba(0,0,0,0.5)] transition-all duration-300 hover:scale-105"
         >
-          <img src={ct1Logo} alt="CT1" className="h-5 w-5" />
+          <img src={ct1Logo} alt="CT1" className="h-5 w-5 mr-2" />
           Pocketbot
         </Button>
       </div>
@@ -38,9 +29,9 @@ export function GlobalPocketbot() {
           {/* Pocketbot Button */}
           <Button
             onClick={() => setShowPocketbot(true)}
-            className="bg-foreground/95 backdrop-blur-md text-background hover:bg-foreground hover:text-background h-12 min-w-[160px] px-5 rounded-full font-semibold shadow-xl hover:shadow-primary/50 transition-all duration-300 hover:scale-105"
+            className="bg-foreground/95 backdrop-blur-md text-background hover:bg-foreground hover:text-background h-12 min-w-[160px] px-5 rounded-full font-semibold shadow-[0_6px_24px_rgba(0,0,0,0.4)] transition-all duration-300 hover:scale-105"
           >
-            <img src={ct1Logo} alt="CT1" className="h-5 w-5" />
+            <img src={ct1Logo} alt="CT1" className="h-5 w-5 mr-2" />
             Pocketbot
           </Button>
 
