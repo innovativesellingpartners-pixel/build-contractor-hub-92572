@@ -61,13 +61,30 @@ export function QuickBooksReportsHub() {
     queryKey: ["qb-connection-check", user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
+      // Check profiles table first
       const { data: profile } = await supabase
         .from("profiles")
         .select("qb_realm_id, stripe_connect_account_id, qb_last_sync_at")
         .eq("id", user.id)
-        .single();
+        .maybeSingle();
+      
+      // Fallback: check quickbooks_connections table directly
+      let realmId = profile?.qb_realm_id;
+      let lastSync = profile?.qb_last_sync_at;
+      if (!realmId) {
+        const { data: qbConn } = await supabase
+          .from("quickbooks_connections")
+          .select("realm_id, updated_at")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        if (qbConn?.realm_id) {
+          realmId = qbConn.realm_id;
+          lastSync = qbConn.updated_at;
+        }
+      }
+      
       setStripeConnected(!!profile?.stripe_connect_account_id);
-      return profile;
+      return { qb_realm_id: realmId, qb_last_sync_at: lastSync, stripe_connect_account_id: profile?.stripe_connect_account_id };
     },
     enabled: !!user?.id,
   });

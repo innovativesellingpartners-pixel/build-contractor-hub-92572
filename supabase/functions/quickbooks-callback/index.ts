@@ -100,31 +100,34 @@ Deno.serve(async (req) => {
       throw new Error('Failed to save QuickBooks connection');
     }
 
-    // Also update profiles table for backward compatibility
+    // Upsert profiles table to ensure QB connection is tracked even if profile didn't exist
     const { error: updateError } = await supabaseClient
       .from('profiles')
-      .update({
+      .upsert({
+        id: contractorId,
+        user_id: contractorId,
         qb_realm_id: realmId,
         qb_token_expires_at: expiresAt.toISOString(),
         qb_refresh_token_expires_at: refreshExpiresAt.toISOString(),
         qb_last_sync_at: new Date().toISOString(),
-      })
-      .eq('id', contractorId);
+      }, { onConflict: 'id' });
 
     if (updateError) {
-      console.error('Failed to update contractor profile:', updateError);
+      console.error('Failed to upsert contractor profile:', updateError);
       // Don't throw - encryption is more important than profile update
     }
 
     console.log('QuickBooks connection saved successfully for contractor:', contractorId);
 
     // Redirect to dashboard accounting/banking tab with success message
-    return Response.redirect('https://myct1.com/dashboard?tab=banking&qb_connected=true', 302);
+    const appUrl = Deno.env.get('APP_URL') || 'https://build-contractor-hub-92572.lovable.app';
+    return Response.redirect(`${appUrl}/dashboard?tab=banking&qb_connected=true`, 302);
   } catch (error) {
     console.error('Error in quickbooks-callback:', error);
     const message = error instanceof Error ? error.message : 'An error occurred';
     
     // Redirect to dashboard with error message
-    return Response.redirect(`https://myct1.com/dashboard?tab=banking&qb_error=${encodeURIComponent(message)}`, 302);
+    const appUrl = Deno.env.get('APP_URL') || 'https://build-contractor-hub-92572.lovable.app';
+    return Response.redirect(`${appUrl}/dashboard?tab=banking&qb_error=${encodeURIComponent(message)}`, 302);
   }
 });
