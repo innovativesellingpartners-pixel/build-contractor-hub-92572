@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 
 const STORAGE_KEYS = {
   dashboardOrder: 'ct1_dashboard_tile_order',
+  dashboardHidden: 'ct1_dashboard_hidden_tiles',
   bottomNavOrder: 'ct1_bottomnav_order',
   menuOrder: 'ct1_menu_order',
 } as const;

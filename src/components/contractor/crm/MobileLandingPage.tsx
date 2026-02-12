@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Briefcase, FileText, Users, DollarSign, Phone, Mail, Headset, Calendar, Receipt, Settings2, RotateCcw } from 'lucide-react';
+import { useState, useCallback } from 'react';
+import { Briefcase, FileText, Users, DollarSign, Phone, Mail, Headset, Calendar, Receipt, Settings2, RotateCcw, UserPlus, BarChart3, Eye, EyeOff, Plus } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ContactSupport } from '@/components/ContactSupport';
@@ -16,6 +16,8 @@ interface MobileLandingPageProps {
   onNavigateToCalls: () => void;
   onNavigateToCalendar: () => void;
   onNavigateToInvoices: () => void;
+  onNavigateToLeads?: () => void;
+  onNavigateToReporting?: () => void;
 }
 
 const mobileModules = [
@@ -75,9 +77,50 @@ const mobileModules = [
     icon: DollarSign,
     gradient: 'from-emerald-500 via-emerald-600 to-emerald-700',
   },
+  {
+    id: 'leads',
+    title: 'Leads',
+    description: 'Track & manage leads',
+    icon: UserPlus,
+    gradient: 'from-teal-500 via-cyan-500 to-cyan-600',
+  },
+  {
+    id: 'reporting',
+    title: 'Reports',
+    description: 'Analytics & insights',
+    icon: BarChart3,
+    gradient: 'from-amber-500 via-yellow-500 to-yellow-600',
+  },
 ];
 
 const defaultOrder = mobileModules.map(m => m.id);
+
+const HIDDEN_STORAGE_KEY = 'ct1_dashboard_hidden_tiles';
+
+function useHiddenTiles() {
+  const [hidden, setHiddenState] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem(HIDDEN_STORAGE_KEY);
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
+
+  const setHidden = useCallback((ids: string[]) => {
+    setHiddenState(ids);
+    localStorage.setItem(HIDDEN_STORAGE_KEY, JSON.stringify(ids));
+  }, []);
+
+  const toggle = useCallback((id: string) => {
+    setHidden(hidden.includes(id) ? hidden.filter(h => h !== id) : [...hidden, id]);
+  }, [hidden, setHidden]);
+
+  const resetHidden = useCallback(() => {
+    setHiddenState([]);
+    localStorage.removeItem(HIDDEN_STORAGE_KEY);
+  }, []);
+
+  return { hidden, toggle, resetHidden };
+}
 
 export function MobileLandingPage({ 
   onNavigateToJobs, 
@@ -88,50 +131,46 @@ export function MobileLandingPage({
   onNavigateToCalls,
   onNavigateToCalendar,
   onNavigateToInvoices,
+  onNavigateToLeads,
+  onNavigateToReporting,
 }: MobileLandingPageProps) {
   const [contactSupportOpen, setContactSupportOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   
   const { order, setOrder, resetToDefault } = useLayoutPreferences('dashboardOrder', defaultOrder);
+  const { hidden, toggle: toggleHidden, resetHidden } = useHiddenTiles();
 
-  // Sort modules by user preference
   const sortedModules = [...mobileModules].sort((a, b) => {
     return order.indexOf(a.id) - order.indexOf(b.id);
   });
+
+  const visibleModules = isEditMode ? sortedModules : sortedModules.filter(m => !hidden.includes(m.id));
+  const hiddenModules = mobileModules.filter(m => hidden.includes(m.id));
   
   const handleModuleClick = (id: string) => {
-    if (isEditMode) return; // Don't navigate in edit mode
+    if (isEditMode) return;
     
     switch (id) {
-      case 'jobs':
-        onNavigateToJobs();
-        break;
-      case 'estimates':
-        onNavigateToEstimates();
-        break;
-      case 'customers':
-        onNavigateToCustomers();
-        break;
-      case 'accounting':
-        onNavigateToAccounting();
-        break;
-      case 'calls':
-        onNavigateToCalls();
-        break;
-      case 'emails':
-        onNavigateToEmails();
-        break;
-      case 'calendar':
-        onNavigateToCalendar();
-        break;
-      case 'invoices':
-        onNavigateToInvoices();
-        break;
+      case 'jobs': onNavigateToJobs(); break;
+      case 'estimates': onNavigateToEstimates(); break;
+      case 'customers': onNavigateToCustomers(); break;
+      case 'accounting': onNavigateToAccounting(); break;
+      case 'calls': onNavigateToCalls(); break;
+      case 'emails': onNavigateToEmails(); break;
+      case 'calendar': onNavigateToCalendar(); break;
+      case 'invoices': onNavigateToInvoices(); break;
+      case 'leads': onNavigateToLeads?.(); break;
+      case 'reporting': onNavigateToReporting?.(); break;
     }
   };
 
   const handleReorder = (newOrder: string[]) => {
     setOrder(newOrder);
+  };
+
+  const handleReset = () => {
+    resetToDefault();
+    resetHidden();
   };
 
   return (
@@ -142,7 +181,7 @@ export function MobileLandingPage({
           <div>
             <h1 className="text-2xl font-bold">MyCT1 Dashboard</h1>
             <p className="text-sm text-muted-foreground">
-              {isEditMode ? 'Drag tiles to reorder' : 'Navigate to your workspace'}
+              {isEditMode ? 'Drag to reorder · Tap eye to show/hide' : 'Navigate to your workspace'}
             </p>
           </div>
           <div className="flex gap-2">
@@ -151,7 +190,7 @@ export function MobileLandingPage({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={resetToDefault}
+                  onClick={handleReset}
                   className="h-9 w-9 p-0"
                 >
                   <RotateCcw className="h-4 w-4" />
@@ -184,7 +223,7 @@ export function MobileLandingPage({
           strategy="grid"
           className="grid grid-cols-2 gap-3 sm:gap-4 w-full"
         >
-          {sortedModules.map((module) => (
+          {visibleModules.map((module) => (
             <SortableItem
               key={module.id}
               id={module.id}
@@ -201,7 +240,8 @@ export function MobileLandingPage({
                   `bg-gradient-to-br ${module.gradient}`,
                   'text-white border-0 shadow-xl hover:shadow-2xl',
                   'relative overflow-hidden',
-                  isEditMode && 'ring-2 ring-white/30 ring-offset-2 ring-offset-background'
+                  isEditMode && 'ring-2 ring-white/30 ring-offset-2 ring-offset-background',
+                  isEditMode && hidden.includes(module.id) && 'opacity-40'
                 )}
               >
                 {/* Decorative Background Pattern */}
@@ -209,6 +249,20 @@ export function MobileLandingPage({
                   <div className="absolute top-0 right-0 w-16 sm:w-20 h-16 sm:h-20 bg-white rounded-full -translate-y-8 sm:-translate-y-10 translate-x-8 sm:translate-x-10" />
                   <div className="absolute bottom-0 left-0 w-12 sm:w-16 h-12 sm:h-16 bg-white rounded-full translate-y-6 sm:translate-y-8 -translate-x-6 sm:-translate-x-8" />
                 </div>
+
+                {/* Visibility toggle in edit mode */}
+                {isEditMode && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); toggleHidden(module.id); }}
+                    className="absolute top-2 right-2 z-10 w-7 h-7 rounded-full bg-black/30 backdrop-blur flex items-center justify-center hover:bg-black/50 transition-colors"
+                  >
+                    {hidden.includes(module.id) ? (
+                      <EyeOff className="h-3.5 w-3.5 text-white" />
+                    ) : (
+                      <Eye className="h-3.5 w-3.5 text-white" />
+                    )}
+                  </button>
+                )}
                 
                 {/* Content */}
                 <div className="relative z-10 flex flex-col items-center gap-2 sm:gap-3">
@@ -226,6 +280,28 @@ export function MobileLandingPage({
             </SortableItem>
           ))}
         </SortableGrid>
+
+        {/* Hidden modules panel */}
+        {isEditMode && hiddenModules.length > 0 && (
+          <div className="mt-4 space-y-2">
+            <h3 className="text-sm font-medium text-muted-foreground">Hidden Modules</h3>
+            <div className="flex flex-wrap gap-2">
+              {hiddenModules.map((module) => (
+                <Button
+                  key={module.id}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => toggleHidden(module.id)}
+                  className="gap-1.5"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  <module.icon className="h-3.5 w-3.5" />
+                  {module.title}
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Contact Support Button */}
         <div className="mt-4 flex justify-center">
