@@ -65,6 +65,7 @@ Deno.serve(async (req) => {
 
   try {
     const authHeader = req.headers.get('Authorization');
+    console.log('Auth header present:', !!authHeader, 'length:', authHeader?.length);
     if (!authHeader) {
       throw new Error('No authorization header');
     }
@@ -75,17 +76,16 @@ Deno.serve(async (req) => {
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
     const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 
-    const userClient = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
-
-    const { data: { user }, error: userError } = await userClient.auth.getUser(token);
+    // Use service role client to verify the user's JWT
+    const adminClient = createClient(supabaseUrl, serviceRoleKey);
+    
+    const { data: { user }, error: userError } = await adminClient.auth.getUser(token);
     if (userError || !user) {
       console.error('Auth error:', userError?.message || 'No user returned');
       throw new Error('Unauthorized');
     }
 
-    const adminClient = createClient(supabaseUrl, serviceRoleKey);
+    // adminClient already created above
 
     const encryptionKey = Deno.env.get('QUICKBOOKS_ENCRYPTION_KEY');
     if (!encryptionKey) {
