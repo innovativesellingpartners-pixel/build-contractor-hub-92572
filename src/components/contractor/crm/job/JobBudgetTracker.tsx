@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useJobBudget, BudgetLineItem } from '@/hooks/useJobBudget';
+import { exportBudgetReport } from '@/utils/reportExportUtils';
 import { useJobCosts } from '@/hooks/useJobCosts';
 import { Job } from '@/hooks/useJobs';
 import { Card } from '@/components/ui/card';
@@ -159,6 +160,11 @@ export default function JobBudgetTracker({ job }: JobBudgetTrackerProps) {
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm font-semibold">Budget Line Items</h3>
           <div className="flex gap-2">
+            {budgetLines.length > 0 && (
+              <Button size="sm" variant="outline" onClick={() => exportBudgetReport(budgetLines)}>
+                Export
+              </Button>
+            )}
             {budgetLines.length === 0 && job.original_estimate_id && (
               <Button size="sm" variant="outline" onClick={() => initFromEstimate(job.original_estimate_id!, job.id!)}>
                 Import from Estimate
