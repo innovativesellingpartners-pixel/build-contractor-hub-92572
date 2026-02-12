@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Smartphone, Monitor, Apple, Chrome } from "lucide-react";
+import ct1Logo from '@/assets/ct1-round-logo-new.png';
 import { Link } from "react-router-dom";
 
 interface BeforeInstallPromptEvent extends Event {
@@ -67,8 +68,8 @@ export default function AppInstall() {
 
         <Card>
           <CardHeader className="text-center">
-            <div className="mx-auto mb-4 w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-              <Smartphone className="h-8 w-8 text-primary" />
+            <div className="mx-auto mb-4">
+              <img src={ct1Logo} alt="CT1 Logo" className="h-16 w-16" />
             </div>
             <CardTitle className="text-3xl">Get the CT1 App</CardTitle>
             <CardDescription>
