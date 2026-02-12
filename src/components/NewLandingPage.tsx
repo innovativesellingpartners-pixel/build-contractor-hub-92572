@@ -117,26 +117,6 @@ export function NewLandingPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Sticky Floating CTA Button - Bottom Right */}
-      <div className="fixed bottom-6 right-4 z-50">
-        <Dialog open={activeContactForm === "floating-cta"} onOpenChange={(open) => setActiveContactForm(open ? "floating-cta" : null)}>
-          <DialogTrigger asChild>
-            <Button className="bg-foreground hover:bg-foreground/90 text-background shadow-2xl hover:shadow-primary/50 px-6 py-3 rounded-full font-semibold transition-all hover:scale-105">
-              <Phone className="mr-2 h-4 w-4" />
-              Talk With CT1
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <ContactForm
-              title="Talk With CT1"
-              description="Connect with our team to learn how CT1 can help grow your contracting business"
-              ctaText="Get In Touch"
-              formType="contact-sales"
-              onClose={() => setActiveContactForm(null)}
-            />
-          </DialogContent>
-        </Dialog>
-      </div>
 
       {/* SECTION 1: Hero */}
       <section 
