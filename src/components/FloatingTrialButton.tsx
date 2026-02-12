@@ -17,8 +17,8 @@ export function FloatingTrialButton() {
         </Link>
       </div>
 
-      {/* Mobile - top left */}
-      <div className="fixed top-3 left-4 z-50 md:hidden" style={{ paddingTop: "env(safe-area-inset-top)" }}>
+      {/* Mobile - below header, left side */}
+      <div className="fixed top-28 left-4 z-50 md:hidden" style={{ paddingTop: "env(safe-area-inset-top)" }}>
         <Link to="/trial-signup">
           <Button 
             className="bg-primary hover:bg-primary/90 text-primary-foreground h-11 px-5 rounded-full font-semibold shadow-[0_6px_24px_rgba(220,38,38,0.5)] transition-all duration-300 hover:scale-105"
