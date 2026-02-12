@@ -294,6 +294,33 @@ serve(async (req) => {
         .eq('user_id', user.id);
     }
 
+    // Auto-populate budget line items from estimate line items
+    if (estimate.line_items && Array.isArray(estimate.line_items) && estimate.line_items.length > 0) {
+      const budgetLines = (estimate.line_items as any[]).map((item: any, idx: number) => ({
+        job_id: job.id,
+        user_id: user.id,
+        estimate_line_item_index: idx,
+        description: item.description || item.name || `Line item ${idx + 1}`,
+        item_code: item.item_code || item.itemCode || null,
+        category: item.category || item.type || 'General',
+        budgeted_quantity: Number(item.quantity) || 1,
+        budgeted_unit_price: Number(item.unit_price || item.unitPrice) || 0,
+        budgeted_amount: Number(item.amount || item.total) || (Number(item.quantity || 1) * Number(item.unit_price || item.unitPrice || 0)),
+        actual_amount: 0,
+        notes: item.unit ? `Unit: ${item.unit}` : null,
+      }));
+
+      const { error: budgetError } = await supabase
+        .from('job_budget_line_items')
+        .insert(budgetLines);
+
+      if (budgetError) {
+        console.error('Error creating budget line items (non-fatal)', budgetError);
+      } else {
+        console.log(`Created ${budgetLines.length} budget line items from estimate`);
+      }
+    }
+
     console.log('Estimate converted to job successfully', { 
       estimateId, 
       jobId: job.id,
