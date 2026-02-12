@@ -184,13 +184,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = async () => {
     console.log('Signing out...');
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.warn('Sign out API call failed (session may already be expired):', err);
+    }
+    // Always clear local state regardless of server response
     setProfile(null);
     localStorage.removeItem('rememberMe');
     console.log('Sign out complete');
     
     // Check for PWA updates after logout
-    await checkForUpdates();
+    try {
+      await checkForUpdates();
+    } catch {}
     
     // Redirect to primary domain login page
     window.location.href = 'https://myct1.com/auth';
