@@ -164,10 +164,13 @@ export function NewLandingPage() {
               <span className="block text-primary" style={{ textShadow: '2px 2px 8px rgba(0, 0, 0, 0.5), 0 0 40px rgba(220, 38, 38, 0.5)' }}>The Competition</span>
             </h1>
             
-            <p className="text-xl sm:text-2xl lg:text-3xl mb-4 text-white/90 leading-relaxed max-w-4xl font-light">
-              A nationwide network of contractors building, scaling, and sustaining their businesses
+            <p className="text-xl sm:text-2xl lg:text-3xl mb-1 text-white/90 leading-relaxed max-w-4xl font-light">
+              A nationwide network of contractors.
             </p>
-            <p className="text-3xl sm:text-4xl lg:text-5xl mb-12 font-bold text-white drop-shadow-md">
+            <p className="text-lg sm:text-xl lg:text-2xl mb-4 text-white/80 leading-relaxed max-w-4xl font-light">
+              Building, Scaling, and Sustaining their businesses!
+            </p>
+            <p className="text-4xl sm:text-5xl lg:text-6xl mb-12 font-bold text-white drop-shadow-md">
               Powered by <span className="text-primary" style={{ textShadow: '0 0 30px rgba(220, 38, 38, 0.5)' }}>CT1</span>
             </p>
             
