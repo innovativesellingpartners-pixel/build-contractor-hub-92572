@@ -49,7 +49,7 @@ Deno.serve(async (req) => {
     // Exchange authorization code for tokens
     const clientId = Deno.env.get('QUICKBOOKS_CLIENT_ID');
     const clientSecret = Deno.env.get('QUICKBOOKS_CLIENT_SECRET');
-    const redirectUri = 'https://myct1.com/api/quickbooks/callback';
+    const redirectUri = `${Deno.env.get('SUPABASE_URL')}/functions/v1/quickbooks-callback`;
 
     console.log('Exchanging authorization code for tokens...');
 

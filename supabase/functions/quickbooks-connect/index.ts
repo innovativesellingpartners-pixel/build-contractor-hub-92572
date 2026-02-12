@@ -97,7 +97,7 @@ Deno.serve(async (req) => {
     console.log('OAuth state stored successfully');
 
     // Build QuickBooks OAuth 2.0 authorization URL
-    const redirectUri = 'https://myct1.com/api/quickbooks/callback';
+    const redirectUri = `${supabaseUrl}/functions/v1/quickbooks-callback`;
     
     const authUrl = new URL('https://appcenter.intuit.com/connect/oauth2');
     authUrl.searchParams.set('client_id', clientId);
