@@ -27,6 +27,7 @@ interface InteractiveReportShellProps {
   onExportCSV?: () => void;
   onExportPDF?: () => void;
   badge?: ReactNode;
+  headerActions?: ReactNode;
   children: ReactNode;
 }
 
@@ -41,6 +42,7 @@ export function InteractiveReportShell({
   onExportCSV,
   onExportPDF,
   badge,
+  headerActions,
   children,
 }: InteractiveReportShellProps) {
   return (
@@ -60,6 +62,7 @@ export function InteractiveReportShell({
           )}
         </div>
         <div className="flex items-center gap-2 flex-wrap">
+          {headerActions}
           {dateRange && onDateRangeChange && (
             <ReportDateRangePicker value={dateRange} onChange={onDateRangeChange} />
           )}

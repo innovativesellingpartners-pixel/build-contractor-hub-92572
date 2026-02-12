@@ -15,7 +15,8 @@ import { DateRange } from "./ReportDateRangePicker";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { TrendingDown, DollarSign, Store, BarChart3 } from "lucide-react";
+import { TrendingDown, DollarSign, Store, BarChart3, ArrowLeftRight } from "lucide-react";
+import { ExpenseAssignmentDialog } from "@/components/accounting/expense-assignment";
 import { ExpenseBreakdown } from "@/components/reporting/ExpenseBreakdown";
 import { ProfitLossStatement } from "@/components/reporting/ProfitLossStatement";
 
@@ -32,6 +33,7 @@ export function ExpensesProfitabilityReport() {
   const { user } = useAuth();
   const { openPanel } = useDrillDown();
   const [dateRange, setDateRange] = useState<DateRange>({ preset: "ytd", start: `${new Date().getFullYear()}-01-01`, end: new Date().toISOString().split("T")[0] });
+  const [assignOpen, setAssignOpen] = useState(false);
 
   const { data: qbConnected } = useQuery({
     queryKey: ["qb-connected-exp", user?.id],
@@ -95,7 +97,14 @@ export function ExpensesProfitabilityReport() {
       subtitle="Spend analysis and margin tracking"
       dateRange={dateRange}
       onDateRangeChange={setDateRange}
+      headerActions={
+        <Button variant="outline" size="sm" onClick={() => setAssignOpen(true)} className="gap-2">
+          <ArrowLeftRight className="h-4 w-4" />
+          Assign Expenses
+        </Button>
+      }
     >
+      <ExpenseAssignmentDialog open={assignOpen} onOpenChange={setAssignOpen} />
       <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
         <InteractiveMetricCard
           title="Total Expenses"

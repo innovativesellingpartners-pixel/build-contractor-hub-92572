@@ -6,11 +6,13 @@ import { useState, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useQBExpenses } from "@/hooks/useQuickBooksQuery";
-import { TrendingDown, Receipt, Store, CreditCard, ChevronRight } from "lucide-react";
+import { TrendingDown, Receipt, Store, CreditCard, ChevronRight, ArrowLeftRight } from "lucide-react";
 import { InteractiveMetricCard } from "@/components/reporting/drilldown/InteractiveMetricCard";
 import { useDrillDown } from "@/components/reporting/drilldown/DrillDownProvider";
+import { ExpenseAssignmentDialog } from "../expense-assignment";
 
 const fmt = (v: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2 }).format(v);
@@ -23,6 +25,7 @@ const fmtDate = (d: string | null) => {
 export function QBExpenses() {
   const { data: expenses, isLoading, error } = useQBExpenses();
   const [searchTerm, setSearchTerm] = useState("");
+  const [assignOpen, setAssignOpen] = useState(false);
   const { openPanel } = useDrillDown();
 
   const filtered = useMemo(() => {
@@ -68,9 +71,16 @@ export function QBExpenses() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h3 className="text-lg font-semibold">Expenses & Purchases</h3>
-        <p className="text-sm text-muted-foreground">Spend analysis from your connected accounting</p>
+      <ExpenseAssignmentDialog open={assignOpen} onOpenChange={setAssignOpen} />
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-semibold">Expenses & Purchases</h3>
+          <p className="text-sm text-muted-foreground">Spend analysis from your connected accounting</p>
+        </div>
+        <Button variant="outline" size="sm" onClick={() => setAssignOpen(true)} className="gap-2">
+          <ArrowLeftRight className="h-4 w-4" />
+          Assign to Jobs
+        </Button>
       </div>
 
       {isLoading ? (

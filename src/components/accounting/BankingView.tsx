@@ -12,8 +12,9 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
-  Building2, RefreshCw, DollarSign, TrendingDown, TrendingUp, Loader2
+  Building2, RefreshCw, DollarSign, TrendingDown, TrendingUp, Loader2, ArrowLeftRight
 } from "lucide-react";
+import { ExpenseAssignmentDialog } from "./expense-assignment";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -30,6 +31,7 @@ export function BankingView() {
   const [searchParams] = useSearchParams();
   const [qbConnected, setQbConnected] = useState(false);
   const [stripeConnected, setStripeConnected] = useState(false);
+  const [assignOpen, setAssignOpen] = useState(false);
 
   const { open: openPlaid } = usePlaidLink({
     onSuccess: async (publicToken: string, metadata: any) => {
@@ -115,6 +117,7 @@ export function BankingView() {
 
   return (
     <div className="space-y-4 md:space-y-6">
+      <ExpenseAssignmentDialog open={assignOpen} onOpenChange={setAssignOpen} />
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
         <div>
@@ -126,6 +129,10 @@ export function BankingView() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => setAssignOpen(true)} className="gap-1.5">
+            <ArrowLeftRight className="h-4 w-4" />
+            <span className="hidden sm:inline">Assign Expenses</span>
+          </Button>
           <FinancialConnectionsDropdown
             connections={{ bankConnected, qbConnected, stripeConnected }}
             onConnectBank={openPlaid}

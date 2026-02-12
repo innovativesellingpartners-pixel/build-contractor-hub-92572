@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { DollarSign, TrendingUp, TrendingDown, FileText, AlertCircle, CreditCard, Users, Store, BarChart3, Calendar } from "lucide-react";
+import { DollarSign, TrendingUp, TrendingDown, FileText, AlertCircle, CreditCard, Users, Store, BarChart3, Calendar, ArrowLeftRight } from "lucide-react";
+import { ExpenseAssignmentDialog } from "./expense-assignment";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -88,6 +89,7 @@ function DashboardContent() {
   const [datePreset, setDatePreset] = useState<DatePreset>("ytd");
   const [customStart, setCustomStart] = useState<Date | undefined>();
   const [customEnd, setCustomEnd] = useState<Date | undefined>();
+  const [assignOpen, setAssignOpen] = useState(false);
 
   const dateRange = useMemo(() => {
     if (datePreset === "custom" && customStart && customEnd) {
@@ -155,49 +157,59 @@ function DashboardContent() {
 
   return (
     <div className="space-y-4 md:space-y-6">
-      {/* Date range selector */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <Select value={datePreset} onValueChange={(v) => setDatePreset(v as DatePreset)}>
-          <SelectTrigger className="w-full sm:w-[220px]">
-            <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-              <SelectValue />
-            </div>
-          </SelectTrigger>
-          <SelectContent className="bg-popover z-50">
-            {(Object.keys(presetLabels) as DatePreset[]).map((key) => (
-              <SelectItem key={key} value={key}>
-                {presetLabels[key]}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      {/* Assign Expenses Dialog */}
+      <ExpenseAssignmentDialog open={assignOpen} onOpenChange={setAssignOpen} />
 
-        {datePreset === "custom" && (
-          <div className="flex items-center gap-2">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className={cn("min-w-[120px] justify-start text-left font-normal", !customStart && "text-muted-foreground")}>
-                  {customStart ? format(customStart, "MMM d, yyyy") : "Start date"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 bg-popover z-50" align="start">
-                <CalendarComponent mode="single" selected={customStart} onSelect={setCustomStart} className={cn("p-3 pointer-events-auto")} />
-              </PopoverContent>
-            </Popover>
-            <span className="text-muted-foreground text-sm">–</span>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className={cn("min-w-[120px] justify-start text-left font-normal", !customEnd && "text-muted-foreground")}>
-                  {customEnd ? format(customEnd, "MMM d, yyyy") : "End date"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 bg-popover z-50" align="start">
-                <CalendarComponent mode="single" selected={customEnd} onSelect={setCustomEnd} className={cn("p-3 pointer-events-auto")} />
-              </PopoverContent>
-            </Popover>
-          </div>
-        )}
+      {/* Date range selector */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <Select value={datePreset} onValueChange={(v) => setDatePreset(v as DatePreset)}>
+            <SelectTrigger className="w-full sm:w-[220px]">
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <SelectValue />
+              </div>
+            </SelectTrigger>
+            <SelectContent className="bg-popover z-50">
+              {(Object.keys(presetLabels) as DatePreset[]).map((key) => (
+                <SelectItem key={key} value={key}>
+                  {presetLabels[key]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {datePreset === "custom" && (
+            <div className="flex items-center gap-2">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className={cn("min-w-[120px] justify-start text-left font-normal", !customStart && "text-muted-foreground")}>
+                    {customStart ? format(customStart, "MMM d, yyyy") : "Start date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 bg-popover z-50" align="start">
+                  <CalendarComponent mode="single" selected={customStart} onSelect={setCustomStart} className={cn("p-3 pointer-events-auto")} />
+                </PopoverContent>
+              </Popover>
+              <span className="text-muted-foreground text-sm">–</span>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className={cn("min-w-[120px] justify-start text-left font-normal", !customEnd && "text-muted-foreground")}>
+                    {customEnd ? format(customEnd, "MMM d, yyyy") : "End date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 bg-popover z-50" align="start">
+                  <CalendarComponent mode="single" selected={customEnd} onSelect={setCustomEnd} className={cn("p-3 pointer-events-auto")} />
+                </PopoverContent>
+              </Popover>
+            </div>
+          )}
+        </div>
+
+        <Button variant="outline" size="sm" onClick={() => setAssignOpen(true)} className="gap-2">
+          <ArrowLeftRight className="h-4 w-4" />
+          Assign Expenses
+        </Button>
       </div>
 
       {qbConnected && (
