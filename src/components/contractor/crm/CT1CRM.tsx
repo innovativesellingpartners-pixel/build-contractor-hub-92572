@@ -51,6 +51,7 @@ import MoreSection from './sections/MoreSection';
 import InvoicesSection from './sections/InvoicesSection';
 import GCSection from './sections/GCSection';
 import ContactsSection from './sections/ContactsSection';
+import PortalSection from './sections/PortalSection';
 
 import ct1Logo from '@/assets/ct1-round-logo-new.png';
 import Reporting from '@/pages/Reporting';
@@ -59,7 +60,7 @@ import { MobileLandingPage } from './MobileLandingPage';
 import { PaymentsBankingSection } from './sections/PaymentsBankingSection';
 import { TemplatesSection } from './estimate/TemplatesSection';
 
-type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calendar' | 'emails' | 'estimates' | 'reporting' | 'financials' | 'more' | 'payments' | 'accounting' | 'invoices' | 'templates' | 'gc' | 'contacts' | 'help';
+type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calendar' | 'emails' | 'estimates' | 'reporting' | 'financials' | 'more' | 'payments' | 'accounting' | 'invoices' | 'templates' | 'gc' | 'contacts' | 'help' | 'portal';
 
 interface CT1CRMProps {
   onOpenPocketbot?: () => void;
@@ -98,6 +99,7 @@ const navItems = [
   { id: 'customers' as Section, label: 'Customers', icon: Users },
   { id: 'gc' as Section, label: 'General Contractors', icon: Building2 },
   { id: 'contacts' as Section, label: 'Contacts', icon: Contact },
+  { id: 'portal' as Section, label: 'Customer Portal', icon: LinkIcon },
 ];
 
 // Component moved to accept props - see above
@@ -107,7 +109,7 @@ const navItems = [
     // Check for URL param from OAuth callback
     const params = new URLSearchParams(window.location.search);
     const crmSection = params.get('crm_section') as Section | null;
-    if (crmSection && ['dashboard', 'leads', 'jobs', 'customers', 'calls', 'calendar', 'emails', 'estimates', 'reporting', 'financials', 'more', 'payments', 'accounting', 'invoices', 'templates', 'gc', 'contacts', 'help'].includes(crmSection)) {
+    if (crmSection && ['dashboard', 'leads', 'jobs', 'customers', 'calls', 'calendar', 'emails', 'estimates', 'reporting', 'financials', 'more', 'payments', 'accounting', 'invoices', 'templates', 'gc', 'contacts', 'help', 'portal'].includes(crmSection)) {
       sessionStorage.setItem('ct1CrmActiveSection', crmSection);
       // Clean URL param
       params.delete('crm_section');
@@ -283,6 +285,8 @@ const navItems = [
         return <GCSection onSectionChange={handleSectionChange} />;
       case 'contacts':
         return <ContactsSection onSectionChange={handleSectionChange} />;
+      case 'portal':
+        return <PortalSection />;
       default:
         return <CRMDashboard onSectionChange={handleSectionChange} />;
     }

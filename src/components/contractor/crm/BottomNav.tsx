@@ -21,7 +21,8 @@ import {
   Settings2,
   Check,
   RotateCcw,
-  GripVertical
+  GripVertical,
+  Link as LinkIcon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/components/ui/sheet';
@@ -30,7 +31,7 @@ import { SortableGrid, SortableListItem } from '@/components/ui/sortable-grid';
 import { useLayoutPreferences } from '@/hooks/useLayoutPreferences';
 import ct1Logo from '@/assets/ct1-round-logo-new.png';
 
-type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calendar' | 'emails' | 'estimates' | 'reporting' | 'financials' | 'more' | 'payments' | 'accounting' | 'invoices' | 'templates' | 'gc' | 'contacts' | 'help';
+type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calendar' | 'emails' | 'estimates' | 'reporting' | 'financials' | 'more' | 'payments' | 'accounting' | 'invoices' | 'templates' | 'gc' | 'contacts' | 'help' | 'portal';
 
 interface BottomNavProps {
   activeSection: Section;
@@ -55,6 +56,7 @@ const allNavItems = [
   { id: 'customers' as Section, label: 'Customers', icon: Users },
   { id: 'gc' as Section, label: 'General Contractors', icon: Building2 },
   { id: 'contacts' as Section, label: 'Contacts', icon: Contact },
+  { id: 'portal' as Section, label: 'Customer Portal', icon: LinkIcon },
   { id: 'help' as Section, label: 'Help Center', icon: HelpCircle },
 ];
 
