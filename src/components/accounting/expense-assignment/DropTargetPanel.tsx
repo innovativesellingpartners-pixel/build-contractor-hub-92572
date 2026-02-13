@@ -40,48 +40,60 @@ export function DropTargetPanel() {
   const [tab, setTab] = useState("jobs");
   const [search, setSearch] = useState("");
 
-  const { data: jobs } = useQuery({
+  const { data: jobs, error: jobsError, isLoading: jobsLoading } = useQuery({
     queryKey: ["drop-target-jobs", user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("jobs")
         .select("id, name, job_number, job_status, contract_value, client_name")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
         .limit(100);
+      if (error) {
+        console.error("Failed to fetch jobs for expense assignment:", error);
+        throw error;
+      }
       return data || [];
     },
     enabled: !!user?.id,
   });
 
-  const { data: customers } = useQuery({
+  const { data: customers, error: customersError, isLoading: customersLoading } = useQuery({
     queryKey: ["drop-target-customers", user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("customers")
         .select("id, name, customer_number, email, phone")
         .eq("user_id", user.id)
         .is("archived_at", null)
         .order("created_at", { ascending: false })
         .limit(100);
+      if (error) {
+        console.error("Failed to fetch customers for expense assignment:", error);
+        throw error;
+      }
       return data || [];
     },
     enabled: !!user?.id,
   });
 
-  const { data: estimates } = useQuery({
+  const { data: estimates, error: estimatesError, isLoading: estimatesLoading } = useQuery({
     queryKey: ["drop-target-estimates", user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("estimates")
         .select("id, title, estimate_number, client_name, total_amount, status")
         .eq("user_id", user.id)
         .is("archived_at", null)
         .order("created_at", { ascending: false })
         .limit(100);
+      if (error) {
+        console.error("Failed to fetch estimates for expense assignment:", error);
+        throw error;
+      }
       return data || [];
     },
     enabled: !!user?.id,
@@ -145,6 +157,15 @@ export function DropTargetPanel() {
 
       <ScrollArea className="flex-1">
         <div className="p-4 space-y-2">
+          {tab === "jobs" && jobsLoading && (
+            <p className="text-xs text-muted-foreground text-center py-4">Loading jobs...</p>
+          )}
+          {tab === "jobs" && jobsError && (
+            <p className="text-xs text-destructive text-center py-4">Failed to load jobs. Please try again.</p>
+          )}
+          {tab === "jobs" && !jobsLoading && !jobsError && filteredJobs.length === 0 && (
+            <p className="text-xs text-muted-foreground text-center py-4">No jobs found. Create a job first.</p>
+          )}
           {tab === "jobs" &&
             filteredJobs.map((job: any) => (
               <DroppableTarget key={job.id} id={`job-${job.id}`}>
@@ -169,6 +190,15 @@ export function DropTargetPanel() {
               </DroppableTarget>
             ))}
 
+          {tab === "customers" && customersLoading && (
+            <p className="text-xs text-muted-foreground text-center py-4">Loading customers...</p>
+          )}
+          {tab === "customers" && customersError && (
+            <p className="text-xs text-destructive text-center py-4">Failed to load customers. Please try again.</p>
+          )}
+          {tab === "customers" && !customersLoading && !customersError && filteredCustomers.length === 0 && (
+            <p className="text-xs text-muted-foreground text-center py-4">No customers found.</p>
+          )}
           {tab === "customers" &&
             filteredCustomers.map((cust: any) => (
               <DroppableTarget key={cust.id} id={`customer-${cust.id}`}>
@@ -183,6 +213,15 @@ export function DropTargetPanel() {
               </DroppableTarget>
             ))}
 
+          {tab === "estimates" && estimatesLoading && (
+            <p className="text-xs text-muted-foreground text-center py-4">Loading estimates...</p>
+          )}
+          {tab === "estimates" && estimatesError && (
+            <p className="text-xs text-destructive text-center py-4">Failed to load estimates. Please try again.</p>
+          )}
+          {tab === "estimates" && !estimatesLoading && !estimatesError && filteredEstimates.length === 0 && (
+            <p className="text-xs text-muted-foreground text-center py-4">No estimates found.</p>
+          )}
           {tab === "estimates" &&
             filteredEstimates.map((est: any) => (
               <DroppableTarget key={est.id} id={`estimate-${est.id}`}>
