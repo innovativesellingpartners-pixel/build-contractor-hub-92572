@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { Copy, ExternalLink, Loader2, Link2, Send, Trash2, MessageCircle, CheckCircle2, Eye } from 'lucide-react';
+import { Copy, ExternalLink, Loader2, Link2, Send, Trash2, MessageCircle, CheckCircle2, Eye, Mail } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
@@ -98,7 +98,7 @@ export default function GeneratePortalLinkDialog({
 
   const sendViaSms = async (token: string) => {
     if (!customerPhone) {
-      toast.error('No customer phone number available');
+      toast.error('No customer phone number available. Add a phone number to the customer record first.');
       return;
     }
     try {
@@ -112,6 +112,25 @@ export default function GeneratePortalLinkDialog({
       toast.success('Portal link sent via SMS!');
     } catch {
       toast.error('Failed to send SMS');
+    }
+  };
+
+  const sendViaEmail = async (token: string) => {
+    if (!customerEmail) {
+      toast.error('No customer email available. Add an email to the customer record first.');
+      return;
+    }
+    try {
+      const { error } = await supabase.functions.invoke('send-portal-email', {
+        body: {
+          to: customerEmail,
+          portalUrl: getPortalUrl(token),
+        },
+      });
+      if (error) throw error;
+      toast.success('Portal link sent via email!');
+    } catch {
+      toast.error('Failed to send email');
     }
   };
 
@@ -191,21 +210,42 @@ export default function GeneratePortalLinkDialog({
                     </div>
 
                     {/* Action buttons */}
-                    <div className="flex items-center gap-2 pl-11">
-                      <Button
-                        size="sm"
-                        variant={copiedId === t.id ? "default" : "outline"}
-                        className="h-8 text-xs gap-1.5 flex-1"
-                        onClick={() => copyLink(t.token, t.id)}
-                      >
-                        {copiedId === t.id ? (
-                          <CheckCircle2 className="h-3.5 w-3.5" />
-                        ) : (
-                          <Copy className="h-3.5 w-3.5" />
-                        )}
-                        {copiedId === t.id ? 'Copied!' : 'Copy Link'}
-                      </Button>
-                      {customerPhone && (
+                    <div className="flex flex-col gap-2 pl-11">
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant={copiedId === t.id ? "default" : "outline"}
+                          className="h-8 text-xs gap-1.5 flex-1"
+                          onClick={() => copyLink(t.token, t.id)}
+                        >
+                          {copiedId === t.id ? (
+                            <CheckCircle2 className="h-3.5 w-3.5" />
+                          ) : (
+                            <Copy className="h-3.5 w-3.5" />
+                          )}
+                          {copiedId === t.id ? 'Copied!' : 'Copy Link'}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-8 text-xs gap-1.5"
+                          asChild
+                        >
+                          <a href={getPortalUrl(t.token)} target="_blank" rel="noopener noreferrer">
+                            <ExternalLink className="h-3.5 w-3.5" />
+                            Preview
+                          </a>
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-8 w-8 text-destructive hover:text-destructive shrink-0"
+                          onClick={() => deactivateMutation.mutate(t.id)}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                      <div className="flex items-center gap-2">
                         <Button
                           size="sm"
                           variant="outline"
@@ -213,28 +253,18 @@ export default function GeneratePortalLinkDialog({
                           onClick={() => sendViaSms(t.token)}
                         >
                           <Send className="h-3.5 w-3.5" />
-                          Send SMS
+                          Send via SMS
                         </Button>
-                      )}
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-8 text-xs gap-1.5"
-                        asChild
-                      >
-                        <a href={getPortalUrl(t.token)} target="_blank" rel="noopener noreferrer">
-                          <ExternalLink className="h-3.5 w-3.5" />
-                          Preview
-                        </a>
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-8 w-8 text-destructive hover:text-destructive shrink-0"
-                        onClick={() => deactivateMutation.mutate(t.id)}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-8 text-xs gap-1.5 flex-1"
+                          onClick={() => sendViaEmail(t.token)}
+                        >
+                          <Mail className="h-3.5 w-3.5" />
+                          Send via Email
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 ))}
