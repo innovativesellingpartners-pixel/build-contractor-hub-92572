@@ -56,7 +56,7 @@ import GCSection from './sections/GCSection';
 import ContactsSection from './sections/ContactsSection';
 import PortalSection from './sections/PortalSection';
 import CRMSearchBar from './CRMSearchBar';
-
+import AIReportView from './sections/AIReportView';
 import ct1Logo from '@/assets/ct1-round-logo-new.png';
 import Reporting from '@/pages/Reporting';
 import Accounting from '@/pages/Accounting';
@@ -64,7 +64,7 @@ import { MobileLandingPage } from './MobileLandingPage';
 import { PaymentsBankingSection } from './sections/PaymentsBankingSection';
 import { TemplatesSection } from './estimate/TemplatesSection';
 
-type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calendar' | 'emails' | 'estimates' | 'reporting' | 'financials' | 'more' | 'payments' | 'accounting' | 'invoices' | 'templates' | 'gc' | 'contacts' | 'help' | 'portal';
+type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calendar' | 'emails' | 'estimates' | 'reporting' | 'financials' | 'more' | 'payments' | 'accounting' | 'invoices' | 'templates' | 'gc' | 'contacts' | 'help' | 'portal' | 'ai-report';
 
 interface CT1CRMProps {
   onOpenPocketbot?: () => void;
@@ -113,7 +113,7 @@ const navItems = [
     // Check for URL param from OAuth callback
     const params = new URLSearchParams(window.location.search);
     const crmSection = params.get('crm_section') as Section | null;
-    if (crmSection && ['dashboard', 'leads', 'jobs', 'customers', 'calls', 'calendar', 'emails', 'estimates', 'reporting', 'financials', 'more', 'payments', 'accounting', 'invoices', 'templates', 'gc', 'contacts', 'help', 'portal'].includes(crmSection)) {
+    if (crmSection && ['dashboard', 'leads', 'jobs', 'customers', 'calls', 'calendar', 'emails', 'estimates', 'reporting', 'financials', 'more', 'payments', 'accounting', 'invoices', 'templates', 'gc', 'contacts', 'help', 'portal', 'ai-report'].includes(crmSection)) {
       sessionStorage.setItem('ct1CrmActiveSection', crmSection);
       // Clean URL param
       params.delete('crm_section');
@@ -291,6 +291,8 @@ const navItems = [
         return <ContactsSection onSectionChange={handleSectionChange} />;
       case 'portal':
         return <PortalSection />;
+      case 'ai-report':
+        return <AIReportView onBack={handleBack} />;
       default:
         return <CRMDashboard onSectionChange={handleSectionChange} />;
     }

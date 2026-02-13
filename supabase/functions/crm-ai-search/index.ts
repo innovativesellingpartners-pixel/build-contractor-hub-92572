@@ -56,7 +56,23 @@ serve(async (req: Request) => {
 
     const systemPrompt = `You are a CRM query parser. Parse the user's natural language request into a structured JSON intent for querying a contractor CRM database.
 
-Available report types: jobs, estimates, invoices, customers, leads, payments, expenses
+Available report types: jobs, estimates, invoices, customers, leads, payments, expenses, materials, change_orders, job_costs, plaid_transactions, budget_items, daily_logs, crew
+
+Report type descriptions:
+- jobs: Active/completed construction jobs
+- estimates: Price quotes sent to clients
+- invoices: Bills sent to clients for payment
+- customers: Client contact records
+- leads: Potential clients/prospects
+- payments: Payments received from clients
+- expenses: Business expenses (manual entries)
+- materials: Construction materials ordered/used for jobs
+- change_orders: Scope/cost changes on jobs
+- job_costs: Cost tracking entries per job (labor, materials, etc.)
+- plaid_transactions: Bank transactions imported from linked bank accounts
+- budget_items: Budget line items for jobs (budgeted vs actual amounts)
+- daily_logs: Daily field reports/logs for jobs
+- crew: Crew members and their roles
 
 Available filters:
 - amount: { operator: "lt" | "gt" | "eq" | "gte" | "lte", value: number, field?: string }
@@ -76,23 +92,27 @@ IMPORTANT: Return ONLY valid JSON. No markdown, no explanation. Use this exact s
   "reportType": "jobs",
   "filters": { ... },
   "summary": "Brief human-readable description of what was requested",
-  "needsAnalysis": true/false
+  "needsAnalysis": true/false,
+  "openAsReport": true/false
 }
 
 Set "needsAnalysis" to true when the user is asking a question that requires reasoning, judgment, or insight beyond simple filtering. Examples:
-- "What estimate needs the most attention?" → needsAnalysis: true (requires reasoning about age, status, value, expiration)
-- "Which jobs are at risk of going over budget?" → needsAnalysis: true (requires comparing expenses vs contract value)
-- "Which customer should I follow up with?" → needsAnalysis: true (requires analysis)
-- "Show all estimates under 10000" → needsAnalysis: false (simple filter)
-- "List unpaid invoices" → needsAnalysis: false (simple filter)
+- "What estimate needs the most attention?" → needsAnalysis: true
+- "Which jobs are at risk of going over budget?" → needsAnalysis: true
+- "Show all estimates under 10000" → needsAnalysis: false
 
-When needsAnalysis is true, fetch broadly relevant data (use wider filters, higher limit) so the AI has enough context to reason.
+Set "openAsReport" to true when the user explicitly asks to "run a report", "generate a report", "show a report", "show in a new page", "pull a report", "create a report", or similar phrasing that implies they want a full-page formatted report view. When openAsReport is true, set limit to 200.
 
 Examples:
-- "Pull a report of all jobs that have materials" → {"reportType":"jobs","filters":{"hasMaterials":true},"summary":"All jobs with materials","needsAnalysis":false}
-- "Show all estimates under 10000 from this year" → {"reportType":"estimates","filters":{"amount":{"operator":"lt","value":10000,"field":"total_amount"},"dateRange":{"preset":"this_year"}},"summary":"Estimates under $10,000 from this year","needsAnalysis":false}
-- "What estimate needs the most attention?" → {"reportType":"estimates","filters":{"limit":100},"summary":"Estimates needing attention","needsAnalysis":true}
-- "Which jobs are at risk of going over budget?" → {"reportType":"jobs","filters":{"status":"in_progress","limit":100},"summary":"Jobs at budget risk","needsAnalysis":true}`;
+- "Pull a report of all jobs that have materials" → {"reportType":"jobs","filters":{"hasMaterials":true,"limit":200},"summary":"All jobs with materials","needsAnalysis":false,"openAsReport":true}
+- "Show all estimates under 10000 from this year" → {"reportType":"estimates","filters":{"amount":{"operator":"lt","value":10000,"field":"total_amount"},"dateRange":{"preset":"this_year"}},"summary":"Estimates under $10,000 from this year","needsAnalysis":false,"openAsReport":false}
+- "Run a report showing all my expenses" → {"reportType":"expenses","filters":{"limit":200},"summary":"All expenses report","needsAnalysis":false,"openAsReport":true}
+- "Show all my materials" → {"reportType":"materials","filters":{},"summary":"All materials","needsAnalysis":false,"openAsReport":false}
+- "Run a report of bank transactions this month" → {"reportType":"plaid_transactions","filters":{"dateRange":{"preset":"this_month"},"limit":200},"summary":"Bank transactions this month","needsAnalysis":false,"openAsReport":true}
+- "Show my crew members" → {"reportType":"crew","filters":{},"summary":"All crew members","needsAnalysis":false,"openAsReport":false}
+- "Daily logs for this week" → {"reportType":"daily_logs","filters":{"dateRange":{"preset":"this_week"}},"summary":"Daily logs this week","needsAnalysis":false,"openAsReport":false}
+- "Change orders that are pending" → {"reportType":"change_orders","filters":{"status":"pending"},"summary":"Pending change orders","needsAnalysis":false,"openAsReport":false}
+- "Budget items over budget" → {"reportType":"budget_items","filters":{},"summary":"Budget items over budget","needsAnalysis":true,"openAsReport":false}`;
 
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -154,7 +174,8 @@ Examples:
     // Step 2: Execute the query against the database
     const reportType = intent.reportType || "jobs";
     const filters = intent.filters || {};
-    const limit = Math.min(filters.limit || 50, 200);
+    const openAsReport = intent.openAsReport || false;
+    const limit = Math.min(filters.limit || (openAsReport ? 200 : 50), 200);
 
     // Resolve date ranges
     let dateStart: string | null = null;
@@ -238,7 +259,6 @@ Examples:
           q = q.eq("job_status", filters.status);
         }
         if (filters.customerName) {
-          // Join via customer relationship
           q = q.ilike("customers!jobs_customer_id_fkey.name", `%${filters.customerName}%`);
         }
         if (filters.search) {
@@ -256,7 +276,6 @@ Examples:
         }
 
         if (filters.hasMaterials) {
-          // Get job IDs that have materials
           const { data: materialJobs } = await supabase
             .from("materials")
             .select("job_id")
@@ -266,7 +285,6 @@ Examples:
             const jobIds = [...new Set(materialJobs.map((m: any) => m.job_id))];
             q = q.in("id", jobIds);
           } else {
-            // No jobs have materials
             results = [];
             break;
           }
@@ -490,6 +508,196 @@ Examples:
         break;
       }
 
+      case "materials": {
+        let q = supabase
+          .from("materials")
+          .select("id, description, quantity_ordered, quantity_used, unit_type, cost_per_unit, total_cost, supplier_name, date_ordered, date_used, notes, jobs(name, job_number), created_at", { count: "exact" })
+          .eq("user_id", userId);
+
+        if (dateStart && dateEnd) {
+          q = q.gte("date_ordered", dateStart).lte("date_ordered", dateEnd);
+        }
+        if (filters.search) {
+          q = q.or(`description.ilike.%${filters.search}%,supplier_name.ilike.%${filters.search}%`);
+        }
+        if (filters.amount) {
+          const op = filters.amount.operator;
+          const val = filters.amount.value;
+          if (op === "lt") q = q.lt("total_cost", val);
+          else if (op === "gt") q = q.gt("total_cost", val);
+          else if (op === "gte") q = q.gte("total_cost", val);
+          else if (op === "lte") q = q.lte("total_cost", val);
+        }
+
+        q = q.order(filters.sortBy || "created_at", { ascending: filters.sortDir === "asc" })
+          .limit(limit);
+
+        const { data, count, error } = await q;
+        if (error) throw error;
+        results = data || [];
+        totalCount = count || 0;
+        break;
+      }
+
+      case "change_orders": {
+        let q = supabase
+          .from("change_orders")
+          .select("id, change_order_number, description, status, additional_cost, total_amount, reason, date_requested, date_approved, client_name, jobs(name, job_number), created_at", { count: "exact" })
+          .eq("user_id", userId);
+
+        if (dateStart && dateEnd) {
+          q = q.gte("created_at", dateStart).lte("created_at", dateEnd + "T23:59:59");
+        }
+        if (filters.status) {
+          q = q.eq("status", filters.status);
+        }
+        if (filters.search) {
+          q = q.or(`description.ilike.%${filters.search}%,change_order_number.ilike.%${filters.search}%`);
+        }
+        if (filters.amount) {
+          const op = filters.amount.operator;
+          const val = filters.amount.value;
+          if (op === "lt") q = q.lt("additional_cost", val);
+          else if (op === "gt") q = q.gt("additional_cost", val);
+        }
+
+        q = q.order(filters.sortBy || "created_at", { ascending: filters.sortDir === "asc" })
+          .limit(limit);
+
+        const { data, count, error } = await q;
+        if (error) throw error;
+        results = data || [];
+        totalCount = count || 0;
+        break;
+      }
+
+      case "job_costs": {
+        let q = supabase
+          .from("job_costs")
+          .select("id, category, description, amount, cost_date, jobs(name, job_number), created_at", { count: "exact" })
+          .eq("user_id", userId);
+
+        if (dateStart && dateEnd) {
+          q = q.gte("cost_date", dateStart).lte("cost_date", dateEnd);
+        }
+        if (filters.search) {
+          q = q.or(`description.ilike.%${filters.search}%,category.ilike.%${filters.search}%`);
+        }
+        if (filters.amount) {
+          const op = filters.amount.operator;
+          const val = filters.amount.value;
+          if (op === "lt") q = q.lt("amount", val);
+          else if (op === "gt") q = q.gt("amount", val);
+        }
+
+        q = q.order(filters.sortBy || "cost_date", { ascending: filters.sortDir === "asc" })
+          .limit(limit);
+
+        const { data, count, error } = await q;
+        if (error) throw error;
+        results = data || [];
+        totalCount = count || 0;
+        break;
+      }
+
+      case "plaid_transactions": {
+        let q = supabase
+          .from("plaid_transactions")
+          .select("id, amount, transaction_date, category, vendor, description, notes, is_expense, is_reimbursable, jobs(name, job_number), created_at", { count: "exact" })
+          .eq("contractor_id", userId);
+
+        if (dateStart && dateEnd) {
+          q = q.gte("transaction_date", dateStart).lte("transaction_date", dateEnd);
+        }
+        if (filters.search) {
+          q = q.or(`vendor.ilike.%${filters.search}%,description.ilike.%${filters.search}%,category.ilike.%${filters.search}%`);
+        }
+        if (filters.amount) {
+          const op = filters.amount.operator;
+          const val = filters.amount.value;
+          if (op === "lt") q = q.lt("amount", val);
+          else if (op === "gt") q = q.gt("amount", val);
+        }
+
+        q = q.order(filters.sortBy || "transaction_date", { ascending: filters.sortDir === "asc" })
+          .limit(limit);
+
+        const { data, count, error } = await q;
+        if (error) throw error;
+        results = data || [];
+        totalCount = count || 0;
+        break;
+      }
+
+      case "budget_items": {
+        let q = supabase
+          .from("job_budget_line_items")
+          .select("id, description, item_code, category, budgeted_quantity, budgeted_unit_price, budgeted_amount, actual_amount, variance_amount, variance_percent, notes, jobs(name, job_number), created_at", { count: "exact" })
+          .eq("user_id", userId);
+
+        if (filters.search) {
+          q = q.or(`description.ilike.%${filters.search}%,category.ilike.%${filters.search}%,item_code.ilike.%${filters.search}%`);
+        }
+        if (filters.amount) {
+          const op = filters.amount.operator;
+          const val = filters.amount.value;
+          if (op === "lt") q = q.lt("budgeted_amount", val);
+          else if (op === "gt") q = q.gt("budgeted_amount", val);
+        }
+
+        q = q.order(filters.sortBy || "created_at", { ascending: filters.sortDir === "asc" })
+          .limit(limit);
+
+        const { data, count, error } = await q;
+        if (error) throw error;
+        results = data || [];
+        totalCount = count || 0;
+        break;
+      }
+
+      case "daily_logs": {
+        let q = supabase
+          .from("daily_logs")
+          .select("id, log_date, work_completed, notes, weather, crew_count, hours_worked, materials_used, equipment_used, jobs(name, job_number), created_at", { count: "exact" })
+          .eq("user_id", userId);
+
+        if (dateStart && dateEnd) {
+          q = q.gte("log_date", dateStart).lte("log_date", dateEnd);
+        }
+        if (filters.search) {
+          q = q.or(`work_completed.ilike.%${filters.search}%,notes.ilike.%${filters.search}%`);
+        }
+
+        q = q.order(filters.sortBy || "log_date", { ascending: filters.sortDir === "asc" })
+          .limit(limit);
+
+        const { data, count, error } = await q;
+        if (error) throw error;
+        results = data || [];
+        totalCount = count || 0;
+        break;
+      }
+
+      case "crew": {
+        let q = supabase
+          .from("crew_members")
+          .select("id, name, role, skills_trades, contact_info, created_at", { count: "exact" })
+          .eq("user_id", userId);
+
+        if (filters.search) {
+          q = q.or(`name.ilike.%${filters.search}%,role.ilike.%${filters.search}%`);
+        }
+
+        q = q.order(filters.sortBy || "name", { ascending: filters.sortDir !== "desc" })
+          .limit(limit);
+
+        const { data, count, error } = await q;
+        if (error) throw error;
+        results = data || [];
+        totalCount = count || 0;
+        break;
+      }
+
       default:
         return new Response(JSON.stringify({ error: `Unknown report type: ${reportType}` }), {
           status: 400,
@@ -545,6 +753,7 @@ Analyze this data and provide a clear, actionable answer to their question. Be s
       totalCount,
       limit,
       aiInsight,
+      openAsReport,
     }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
