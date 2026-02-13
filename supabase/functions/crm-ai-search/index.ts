@@ -218,7 +218,7 @@ Examples:
       case "jobs": {
         let q = supabase
           .from("jobs")
-          .select("id, name, job_number, job_status, address, city, state, contract_value, total_contract_value, payments_collected, expenses_total, start_date, end_date, created_at, customers(name)", { count: "exact" })
+          .select("id, name, job_number, job_status, address, city, state, contract_value, total_contract_value, payments_collected, expenses_total, start_date, end_date, created_at, customers!jobs_customer_id_fkey(name)", { count: "exact" })
           .eq("user_id", userId);
 
         if (dateStart && dateEnd) {
@@ -229,7 +229,7 @@ Examples:
         }
         if (filters.customerName) {
           // Join via customer relationship
-          q = q.ilike("customers.name", `%${filters.customerName}%`);
+          q = q.ilike("customers!jobs_customer_id_fkey.name", `%${filters.customerName}%`);
         }
         if (filters.search) {
           q = q.or(`name.ilike.%${filters.search}%,job_number.ilike.%${filters.search}%`);
