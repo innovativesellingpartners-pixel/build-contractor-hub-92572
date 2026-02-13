@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useJobs, Job } from '@/hooks/useJobs';
 import { useEstimates } from '@/hooks/useEstimates';
 import { useCustomers } from '@/hooks/useCustomers';
-import { MapPin, Home, Copy, Eye, Briefcase, ChevronRight } from 'lucide-react';
+import { MapPin, Home, Copy, Eye, Briefcase, ChevronRight, ArrowLeftRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
@@ -13,6 +13,7 @@ import { HorizontalRowCard, RowAvatar, RowContent, RowTitleLine, RowMetaLine, Ro
 import { PredictiveSearch } from '../PredictiveSearch';
 import { SwipeToArchive } from '@/components/ui/swipe-to-archive';
 import { CrmNavHeader } from '../CrmNavHeader';
+import { ExpenseAssignmentDialog } from '@/components/accounting/expense-assignment';
 
 interface JobsSectionProps {
   onSectionChange?: (section: string) => void;
@@ -28,6 +29,7 @@ export default function JobsSection({ onSectionChange, initialJobId, onClearInit
   const [detailOpen, setDetailOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [editingJob, setEditingJob] = useState<Job | null>(null);
+  const [assignOpen, setAssignOpen] = useState(false);
 
   // Handle initial job ID to auto-open the detail view
   useEffect(() => {
@@ -159,6 +161,14 @@ export default function JobsSection({ onSectionChange, initialJobId, onClearInit
             <p className="text-sm sm:text-base text-muted-foreground">Manage your active and completed jobs</p>
           </div>
           <div className="flex gap-2 flex-shrink-0">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setAssignOpen(true)}
+            >
+              <ArrowLeftRight className="h-4 w-4 mr-1" />
+              Assign Expenses
+            </Button>
             <AddJobDialog 
               onAdd={addJob} 
               onJobCreated={(job) => {
@@ -305,6 +315,8 @@ export default function JobsSection({ onSectionChange, initialJobId, onClearInit
             setDetailOpen(true);
           }}
         />
+
+        <ExpenseAssignmentDialog open={assignOpen} onOpenChange={setAssignOpen} />
       </div>
     </div>
   );
