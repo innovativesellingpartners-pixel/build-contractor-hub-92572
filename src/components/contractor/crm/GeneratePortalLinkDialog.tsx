@@ -1,16 +1,16 @@
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { Copy, ExternalLink, Loader2, Link2, Send } from 'lucide-react';
+import { Copy, ExternalLink, Loader2, Link2, Send, Trash2, MessageCircle, CheckCircle2, Eye } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import ct1Logo from '@/assets/ct1-round-logo-new.png';
+import { HelpChatbot } from '@/components/help/HelpChatbot';
 
 interface GeneratePortalLinkDialogProps {
   open: boolean;
@@ -29,9 +29,10 @@ export default function GeneratePortalLinkDialog({
   customerPhone,
   customerEmail,
 }: GeneratePortalLinkDialogProps) {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const queryClient = useQueryClient();
-  const [sendMethod, setSendMethod] = useState<'copy' | 'sms' | 'email' | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [chatbotOpen, setChatbotOpen] = useState(false);
 
   // Fetch existing tokens for this job
   const { data: existingTokens, isLoading } = useQuery({
@@ -80,17 +81,19 @@ export default function GeneratePortalLinkDialog({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['portal-tokens', jobId] });
-      toast.success('Link deactivated');
+      toast.success('Link revoked');
     },
   });
 
   const getPortalUrl = (token: string) => {
-    return `${window.location.origin}/portal/${token}`;
+    return `https://myct1.com/portal/${token}`;
   };
 
-  const copyLink = (token: string) => {
+  const copyLink = (token: string, id: string) => {
     navigator.clipboard.writeText(getPortalUrl(token));
-    toast.success('Portal link copied to clipboard!');
+    setCopiedId(id);
+    toast.success('Portal link copied!');
+    setTimeout(() => setCopiedId(null), 2000);
   };
 
   const sendViaSms = async (token: string) => {
@@ -112,74 +115,184 @@ export default function GeneratePortalLinkDialog({
     }
   };
 
+  const contractorLogo = (profile as any)?.logo_url;
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md bg-background">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Link2 className="h-5 w-5" />
-            Customer Portal Link
-          </DialogTitle>
-          <DialogDescription>
-            Generate a secure link for your customer to access their project portal.
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-4">
-          {/* Existing links */}
-          {existingTokens && existingTokens.length > 0 && (
-            <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground">Active Links</Label>
-              {existingTokens.map((t) => (
-                <div key={t.id} className="flex items-center gap-2 p-2 rounded-lg border bg-muted/30 text-sm">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-muted-foreground truncate">{getPortalUrl(t.token)}</p>
-                    <p className="text-[10px] text-muted-foreground">
-                      Created {format(new Date(t.created_at), 'MMM d, yyyy')}
-                      {t.last_accessed_at && ` • Last viewed ${format(new Date(t.last_accessed_at), 'MMM d')}`}
-                    </p>
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-lg bg-background p-0 overflow-hidden">
+          {/* Branded Header */}
+          <div className="px-6 pt-6 pb-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                {contractorLogo ? (
+                  <img src={contractorLogo} alt="Business logo" className="h-10 w-10 rounded-lg object-contain border" />
+                ) : (
+                  <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
+                    <Link2 className="h-5 w-5 text-muted-foreground" />
                   </div>
-                  <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0" onClick={() => copyLink(t.token)}>
-                    <Copy className="h-3.5 w-3.5" />
-                  </Button>
-                  <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0" asChild>
-                    <a href={getPortalUrl(t.token)} target="_blank" rel="noopener noreferrer">
-                      <ExternalLink className="h-3.5 w-3.5" />
-                    </a>
-                  </Button>
-                  {customerPhone && (
-                    <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0" onClick={() => sendViaSms(t.token)}>
-                      <Send className="h-3.5 w-3.5" />
-                    </Button>
-                  )}
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="text-destructive text-xs h-7 px-2 shrink-0"
-                    onClick={() => deactivateMutation.mutate(t.id)}
-                  >
-                    Revoke
-                  </Button>
+                )}
+                <div>
+                  <DialogHeader className="p-0 space-y-0">
+                    <DialogTitle className="text-lg font-semibold">Customer Portal</DialogTitle>
+                    <DialogDescription className="text-xs">
+                      Share a secure link for your customer to view their project
+                    </DialogDescription>
+                  </DialogHeader>
                 </div>
-              ))}
+              </div>
+              <img src={ct1Logo} alt="CT1" className="h-8 w-8 opacity-60" />
             </div>
-          )}
+          </div>
 
-          {/* Generate new */}
-          <Button
-            className="w-full"
-            onClick={() => createTokenMutation.mutate()}
-            disabled={createTokenMutation.isPending}
-          >
-            {createTokenMutation.isPending ? (
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+          <Separator />
+
+          {/* Content */}
+          <div className="px-6 py-4 space-y-4">
+            {/* Active Links */}
+            {isLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              </div>
+            ) : existingTokens && existingTokens.length > 0 ? (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium text-foreground">Active Links</p>
+                  <Badge variant="secondary" className="text-xs">
+                    {existingTokens.length} active
+                  </Badge>
+                </div>
+                {existingTokens.map((t) => (
+                  <div key={t.id} className="rounded-xl border bg-card p-4 space-y-3">
+                    {/* Link URL - clickable */}
+                    <div className="flex items-start gap-3">
+                      <div className="mt-0.5 h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                        <Link2 className="h-4 w-4 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate">
+                          myct1.com/portal/{t.token.slice(0, 8)}...
+                        </p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <p className="text-xs text-muted-foreground">
+                            Created {format(new Date(t.created_at), 'MMM d, yyyy')}
+                          </p>
+                          {t.last_accessed_at && (
+                            <>
+                              <span className="text-muted-foreground">•</span>
+                              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                <Eye className="h-3 w-3" />
+                                Viewed {format(new Date(t.last_accessed_at), 'MMM d')}
+                              </p>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Action buttons */}
+                    <div className="flex items-center gap-2 pl-11">
+                      <Button
+                        size="sm"
+                        variant={copiedId === t.id ? "default" : "outline"}
+                        className="h-8 text-xs gap-1.5 flex-1"
+                        onClick={() => copyLink(t.token, t.id)}
+                      >
+                        {copiedId === t.id ? (
+                          <CheckCircle2 className="h-3.5 w-3.5" />
+                        ) : (
+                          <Copy className="h-3.5 w-3.5" />
+                        )}
+                        {copiedId === t.id ? 'Copied!' : 'Copy Link'}
+                      </Button>
+                      {customerPhone && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-8 text-xs gap-1.5 flex-1"
+                          onClick={() => sendViaSms(t.token)}
+                        >
+                          <Send className="h-3.5 w-3.5" />
+                          Send SMS
+                        </Button>
+                      )}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 text-xs gap-1.5"
+                        asChild
+                      >
+                        <a href={getPortalUrl(t.token)} target="_blank" rel="noopener noreferrer">
+                          <ExternalLink className="h-3.5 w-3.5" />
+                          Preview
+                        </a>
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-8 w-8 text-destructive hover:text-destructive shrink-0"
+                        onClick={() => deactivateMutation.mutate(t.id)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             ) : (
-              <Link2 className="h-4 w-4 mr-2" />
+              <div className="text-center py-6 space-y-2">
+                <div className="mx-auto h-12 w-12 rounded-full bg-muted flex items-center justify-center">
+                  <Link2 className="h-6 w-6 text-muted-foreground" />
+                </div>
+                <p className="text-sm font-medium text-foreground">No active portal links</p>
+                <p className="text-xs text-muted-foreground">
+                  Generate a link to give your customer access to their project portal
+                </p>
+              </div>
             )}
-            Generate New Portal Link
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
+
+            {/* Generate Button */}
+            <Button
+              className="w-full h-11 gap-2 font-medium"
+              onClick={() => createTokenMutation.mutate()}
+              disabled={createTokenMutation.isPending}
+            >
+              {createTokenMutation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Link2 className="h-4 w-4" />
+              )}
+              Generate New Portal Link
+            </Button>
+          </div>
+
+          <Separator />
+
+          {/* Footer with support */}
+          <div className="px-6 py-3 flex items-center justify-between bg-muted/30">
+            <p className="text-[11px] text-muted-foreground">
+              Powered by myct1.com
+            </p>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 text-xs gap-1.5 text-muted-foreground hover:text-foreground"
+              onClick={() => setChatbotOpen(true)}
+            >
+              <MessageCircle className="h-3.5 w-3.5" />
+              Contact Support
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Support Chatbot */}
+      <HelpChatbot
+        isOpen={chatbotOpen}
+        onClose={() => setChatbotOpen(false)}
+        onNavigateToArticle={() => {}}
+        onNavigateToSupport={() => {}}
+      />
+    </>
   );
 }
