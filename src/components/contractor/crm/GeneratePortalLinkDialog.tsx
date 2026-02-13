@@ -102,16 +102,25 @@ export default function GeneratePortalLinkDialog({
       return;
     }
     try {
-      const { error } = await supabase.functions.invoke('send-portal-sms', {
+      const { data, error } = await supabase.functions.invoke('send-portal-sms', {
         body: {
           to: customerPhone,
           message: `View your project portal here: ${getPortalUrl(token)}`,
         },
       });
-      if (error) throw error;
+      if (error) {
+        console.error('send-portal-sms error:', error);
+        throw error;
+      }
+      if (data?.error) {
+        console.error('send-portal-sms response error:', data.error);
+        toast.error(data.error);
+        return;
+      }
       toast.success('Portal link sent via SMS!');
-    } catch {
-      toast.error('Failed to send SMS');
+    } catch (err: any) {
+      console.error('send-portal-sms catch:', err);
+      toast.error(err?.message || 'Failed to send SMS');
     }
   };
 
