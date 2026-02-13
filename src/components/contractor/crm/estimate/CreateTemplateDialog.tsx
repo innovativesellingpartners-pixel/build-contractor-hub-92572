@@ -49,9 +49,9 @@ export function CreateTemplateDialog({ open, onOpenChange, onSuccess, defaultTra
       {
         itemNumber: `${lineItems.length + 1}`,
         description: '',
-        quantity: 1,
+        quantity: '' as any,
         unit: 'EA',
-        unitPrice: 0,
+        unitPrice: '' as any,
         totalPrice: 0,
         included: true,
       },
@@ -64,7 +64,7 @@ export function CreateTemplateDialog({ open, onOpenChange, onSuccess, defaultTra
     
     // Auto-calculate total
     if (field === 'quantity' || field === 'unitPrice') {
-      updated[index].totalPrice = (updated[index].quantity || 0) * (updated[index].unitPrice || 0);
+      updated[index].totalPrice = (Number(updated[index].quantity) || 0) * (Number(updated[index].unitPrice) || 0);
     }
     
     setLineItems(updated);

@@ -40,11 +40,11 @@ export default function LineItemsSection({ lineItems, onChange, macroGroups = []
         category: category,
         item_description: '',
         description: '',
-        quantity: 1,
+        quantity: '' as any,
         unit_type: '',
         unit: '',
-        unit_cost: 0,
-        unitPrice: 0,
+        unit_cost: '' as any,
+        unitPrice: '' as any,
         line_total: 0,
         totalPrice: 0,
         included: true,
@@ -58,8 +58,8 @@ export default function LineItemsSection({ lineItems, onChange, macroGroups = []
 
     // Auto-calculate totals
     if (field === 'quantity' || field === 'unit_cost' || field === 'unitPrice') {
-      const qty = updated[index].quantity || 0;
-      const price = updated[index].unit_cost || updated[index].unitPrice || 0;
+      const qty = Number(updated[index].quantity) || 0;
+      const price = Number(updated[index].unit_cost) || Number(updated[index].unitPrice) || 0;
       updated[index].line_total = qty * price;
       updated[index].totalPrice = qty * price;
     }
@@ -193,7 +193,7 @@ export default function LineItemsSection({ lineItems, onChange, macroGroups = []
                       step="0.01"
                       min="0"
                       value={item.quantity || ''}
-                      onChange={(e) => updateLineItem(index, 'quantity', parseFloat(e.target.value) || 0)}
+                      onChange={(e) => updateLineItem(index, 'quantity', e.target.value === '' ? '' : (parseFloat(e.target.value) || 0))}
                       className="h-9 text-sm"
                     />
                   </div>
@@ -217,7 +217,7 @@ export default function LineItemsSection({ lineItems, onChange, macroGroups = []
                       step="0.01"
                       min="0"
                       value={item.unit_cost || item.unitPrice || ''}
-                      onChange={(e) => updateLineItem(index, 'unit_cost', parseFloat(e.target.value) || 0)}
+                      onChange={(e) => updateLineItem(index, 'unit_cost', e.target.value === '' ? '' : (parseFloat(e.target.value) || 0))}
                       placeholder="0.00"
                       className="h-9 text-sm"
                     />

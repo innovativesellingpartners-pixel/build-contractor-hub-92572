@@ -32,9 +32,9 @@ export function EditJobDialog({ job, open, onOpenChange, onUpdate, onJobUpdated 
     city: '',
     state: '',
     zip_code: '',
-    total_cost: '0',
+    total_cost: '',
     notes: '',
-    contract_value: '0',
+    contract_value: '',
   });
   const [newMeetings, setNewMeetings] = useState<MeetingFormData[]>([]);
   const { meetings: existingMeetings, addMeeting, deleteMeeting, loading: meetingsLoading } = useJobMeetings(job?.id);
@@ -51,9 +51,9 @@ export function EditJobDialog({ job, open, onOpenChange, onUpdate, onJobUpdated 
         city: job.city || '',
         state: job.state || '',
         zip_code: job.zip_code || '',
-        total_cost: String(job.total_cost || 0),
+        total_cost: job.total_cost ? String(job.total_cost) : '',
         notes: job.notes || '',
-        contract_value: String(job.contract_value || 0),
+        contract_value: job.contract_value ? String(job.contract_value) : '',
       });
       setNewMeetings([]);
     }
