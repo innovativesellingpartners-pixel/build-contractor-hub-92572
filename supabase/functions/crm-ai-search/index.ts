@@ -65,7 +65,7 @@ Report type descriptions:
 - customers: Client contact records
 - leads: Potential clients/prospects
 - payments: Payments received from clients
-- all_expenses: UNIFIED view of ALL expenses from every source — manual expenses, bank transactions, job costs, and materials. USE THIS when the user says "expenses", "all expenses", "my expenses", "spending", "money spent", or any general expense/accounting query. This is the DEFAULT for any expense-related request.
+- all_expenses: UNIFIED view of ALL expenses from every source — manual expenses, bank transactions, job costs, materials, AND QuickBooks purchases. USE THIS when the user says "expenses", "all expenses", "my expenses", "spending", "money spent", "accounting expenses", or any general expense/accounting query. This is the DEFAULT for any expense-related request. This includes QuickBooks data automatically.
 - expenses: Only manual expense entries (rarely used alone — prefer all_expenses)
 - materials: Construction materials ordered/used for jobs
 - change_orders: Scope/cost changes on jobs
@@ -612,6 +612,84 @@ Examples:
               source: "material",
             });
           }
+        }
+
+        // 5. QuickBooks expenses (Purchase records from QB API)
+        try {
+          const encryptionKey = Deno.env.get("QUICKBOOKS_ENCRYPTION_KEY");
+          if (encryptionKey) {
+            const { data: qbConn } = await supabase.rpc("get_quickbooks_tokens", {
+              p_user_id: userId,
+              p_encryption_key: encryptionKey,
+            });
+            if (qbConn && qbConn.length > 0) {
+              const conn = qbConn[0];
+              let qbAccessToken = conn.access_token;
+              const expiresAt = new Date(conn.expires_at);
+              if (expiresAt <= new Date()) {
+                // Refresh token
+                const clientId = Deno.env.get("QUICKBOOKS_CLIENT_ID");
+                const clientSecret = Deno.env.get("QUICKBOOKS_CLIENT_SECRET");
+                if (clientId && clientSecret) {
+                  const refreshResp = await fetch("https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer", {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/x-www-form-urlencoded",
+                      "Authorization": "Basic " + btoa(`${clientId}:${clientSecret}`),
+                    },
+                    body: new URLSearchParams({ grant_type: "refresh_token", refresh_token: conn.refresh_token }).toString(),
+                  });
+                  if (refreshResp.ok) {
+                    const tokenData = await refreshResp.json();
+                    qbAccessToken = tokenData.access_token;
+                    const newExpiry = new Date(Date.now() + tokenData.expires_in * 1000);
+                    await supabase.rpc("store_quickbooks_tokens", {
+                      p_user_id: userId,
+                      p_realm_id: conn.realm_id,
+                      p_access_token: tokenData.access_token,
+                      p_refresh_token: tokenData.refresh_token,
+                      p_expires_at: newExpiry.toISOString(),
+                      p_encryption_key: encryptionKey,
+                    });
+                  }
+                }
+              }
+              // Fetch QB Purchase records
+              const qbEndpoint = `query?query=${encodeURIComponent("SELECT * FROM Purchase ORDERBY TxnDate DESC MAXRESULTS 200")}&minorversion=73`;
+              const qbResp = await fetch(
+                `https://quickbooks.api.intuit.com/v3/company/${conn.realm_id}/${qbEndpoint}`,
+                { headers: { "Authorization": `Bearer ${qbAccessToken}`, "Accept": "application/json" } }
+              );
+              if (qbResp.ok) {
+                const qbData = await qbResp.json();
+                const purchases = qbData?.QueryResponse?.Purchase || [];
+                for (const p of purchases) {
+                  const txnDate = p.TxnDate || null;
+                  if (dateStart && txnDate && txnDate < dateStart) continue;
+                  if (dateEnd && txnDate && txnDate > dateEnd) continue;
+                  const vendor = p.EntityRef?.name || "Unknown";
+                  const account = p.Line?.[0]?.AccountBasedExpenseLineDetail?.AccountRef?.name || "Uncategorized";
+                  const memo = p.PrivateNote || "";
+                  const amt = parseFloat(p.TotalAmt || "0");
+                  if (filters.search && !`${vendor} ${account} ${memo}`.toLowerCase().includes(filters.search.toLowerCase())) continue;
+                  allItems.push({
+                    id: `qb-${p.Id}`,
+                    amount: amt,
+                    category: account,
+                    description: `${vendor} - ${memo || account}`,
+                    date: txnDate,
+                    notes: memo,
+                    jobs: null,
+                    created_at: txnDate,
+                    source: "quickbooks",
+                  });
+                }
+              }
+            }
+          }
+        } catch (qbErr) {
+          console.error("QuickBooks fetch failed (non-fatal):", qbErr);
+          // Continue without QB data — other sources still returned
         }
 
         // Sort by date descending
