@@ -239,8 +239,8 @@ This waiver covers the final payment only and becomes effective upon actual clea
       </div>
 
       {/* Footer */}
-      <div className="border-t p-3 text-center text-xs text-gray-500 bg-gray-50">
-        This lien waiver was generated via CT1 Business Suite
+      <div className="border-t p-3 text-center text-xs text-gray-500 bg-gray-50 flex items-center justify-center gap-2">
+        <span>Powered by CT1</span>
       </div>
     </div>
   );

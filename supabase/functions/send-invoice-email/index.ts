@@ -319,7 +319,7 @@ async function generateInvoicePdfBytes(invoice: any, profile: any, customer: any
   }
 
   // Footer
-  page.drawText("Generated via CT1 Business Suite", {
+  page.drawText("Powered by CT1", {
     x: margin,
     y: 40,
     size: 8,
@@ -522,7 +522,7 @@ async function generateWaiverPdfBytes(waiver: any, html: string, invoiceNumber: 
   }
 
   // Footer
-  page.drawText("Generated via CT1 Business Suite", {
+  page.drawText("Powered by CT1", {
     x: margin,
     y: 40,
     size: 8,
@@ -839,7 +839,7 @@ const handler = async (req: Request): Promise<Response> => {
         ${inlineWaiversHtml}
         
         <div style="text-align: center; padding: 20px; font-size: 12px; color: #999;">
-          <p>This invoice was sent via CT1 Business Suite</p>
+          <p>Powered by CT1</p>
         </div>
       </body>
       </html>

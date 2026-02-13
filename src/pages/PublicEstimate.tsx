@@ -10,7 +10,7 @@ import { CheckCircle, FileText, Loader2, CreditCard, Building2, Calendar, Dollar
 import SignatureCanvas from 'react-signature-canvas';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import ct1Logo from '@/assets/ct1-round-logo-new.png';
+import ct1PoweredLogo from '@/assets/ct1-powered-by-logo.png';
 
 export default function PublicEstimate() {
   const { token } = useParams();
@@ -214,7 +214,7 @@ export default function PublicEstimate() {
   };
 
   // Use contractor logo if available, otherwise fallback to CT1 logo
-  const displayLogo = contractor?.logo_url || ct1Logo;
+  const displayLogo = contractor?.logo_url || ct1PoweredLogo;
   const companyName = contractor?.company_name || 'Professional Estimate';
 
   return (
@@ -814,25 +814,20 @@ export default function PublicEstimate() {
         )}
 
         {/* Footer Branding */}
-        <Card className="bg-gradient-to-br from-primary/5 to-background border-2 border-primary/20 shadow-lg">
-          <CardContent className="p-8 text-center">
-            <div className="flex items-center justify-center gap-4 mb-4">
-              <div className="bg-white rounded-full p-2 shadow-md">
-                <img 
-                  src={ct1Logo}
-                  alt="CT1" 
-                  className="w-12 h-12"
-                />
-              </div>
-              <span className="text-3xl font-black text-foreground">CT1</span>
-            </div>
-            <p className="text-base text-muted-foreground font-medium mb-3">
-              Professional Contractor Management Platform
-            </p>
-            <Separator className="my-4 bg-primary/20" />
+        <Card className="bg-gradient-to-br from-muted/50 to-background border border-border/50 shadow-sm">
+          <CardContent className="p-6 text-center space-y-3">
             <p className="text-sm text-muted-foreground">
               This estimate is confidential and prepared exclusively for <span className="font-bold text-foreground">{estimate.client_name}</span>
             </p>
+            <Separator className="bg-border/50" />
+            <div className="flex items-center justify-center gap-2 pt-1">
+              <img 
+                src={ct1PoweredLogo}
+                alt="CT1" 
+                className="w-8 h-8"
+              />
+              <span className="text-xs font-semibold text-muted-foreground tracking-wide uppercase">Powered by CT1</span>
+            </div>
           </CardContent>
         </Card>
       </div>
