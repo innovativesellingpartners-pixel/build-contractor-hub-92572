@@ -29,6 +29,7 @@ const REPORT_TYPE_LABELS: Record<string, string> = {
   leads: 'Leads',
   payments: 'Payments',
   expenses: 'Expenses',
+  all_expenses: 'All Expenses',
   materials: 'Materials',
   change_orders: 'Change Orders',
   job_costs: 'Job Costs',
@@ -42,6 +43,15 @@ const REPORT_TYPE_LABELS: Record<string, string> = {
 const COLUMN_CONFIGS: Record<string, { key: string; label: string; type?: 'currency' | 'date' | 'nested' | 'badge'; nestedKey?: string }[]> = {
   expenses: [
     { key: 'date', label: 'Date', type: 'date' },
+    { key: 'category', label: 'Category', type: 'badge' },
+    { key: 'description', label: 'Description' },
+    { key: 'amount', label: 'Amount', type: 'currency' },
+    { key: 'jobs', label: 'Job', type: 'nested', nestedKey: 'name' },
+    { key: 'notes', label: 'Notes' },
+  ],
+  all_expenses: [
+    { key: 'date', label: 'Date', type: 'date' },
+    { key: 'source', label: 'Source', type: 'badge' },
     { key: 'category', label: 'Category', type: 'badge' },
     { key: 'description', label: 'Description' },
     { key: 'amount', label: 'Amount', type: 'currency' },
