@@ -3,7 +3,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import {
   Navigation, Copy, Pencil, FileText, Camera, ClipboardList, Package, 
-  Receipt, DollarSign, Calendar, Clock, Info, Briefcase, Upload, X, StickyNote, Archive, FilePlus, Phone, Mail, User, RefreshCw, MessageSquare, CheckSquare, Square, FileImage, BarChart3, Target
+  Receipt, DollarSign, Calendar, Clock, Info, Briefcase, Upload, X, StickyNote, Archive, FilePlus, Phone, Mail, User, RefreshCw, MessageSquare, CheckSquare, Square, FileImage, BarChart3, Target, Star
 } from 'lucide-react';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { PullToRefreshIndicator } from '@/components/ui/pull-to-refresh';
@@ -22,6 +22,7 @@ import InvoicesTab from './job/InvoicesTab';
 import PSFUTab from './job/PSFUTab';
 import JobProfitabilityTab from './job/JobProfitabilityTab';
 import JobBudgetTracker from './job/JobBudgetTracker';
+import SendReviewRequestDialog from './SendReviewRequestDialog';
 import { useJobPhotos, JobPhoto } from '@/hooks/useJobPhotos';
 import { useDailyLogs } from '@/hooks/useDailyLogs';
 import { ImageViewer } from '@/components/ui/image-viewer';
@@ -651,6 +652,7 @@ export default function JobDetailViewBlue({ job, open, onOpenChange, onCreateEst
   const { user } = useAuth();
   const [isDuplicating, setIsDuplicating] = useState(false);
   const [showTravelDialog, setShowTravelDialog] = useState(false);
+  const [showReviewDialog, setShowReviewDialog] = useState(false);
   const [etaMinutes, setEtaMinutes] = useState('15');
   const [isSendingETA, setIsSendingETA] = useState(false);
   
@@ -910,6 +912,12 @@ export default function JobDetailViewBlue({ job, open, onOpenChange, onCreateEst
                   COMPLETE
                 </ActionButton>
               )}
+              {(job.status === 'completed' || job.job_status === 'completed') && (
+                <ActionButton variant="muted" onClick={() => setShowReviewDialog(true)} className="flex-1 flex items-center justify-center gap-2">
+                  <Star className="w-4 h-4" />
+                  REQUEST REVIEW
+                </ActionButton>
+              )}
             </ActionButtonRow>
 
             {/* Tab Navigation */}
@@ -1147,6 +1155,16 @@ export default function JobDetailViewBlue({ job, open, onOpenChange, onCreateEst
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Review Request Dialog */}
+      <SendReviewRequestDialog
+        open={showReviewDialog}
+        onOpenChange={setShowReviewDialog}
+        jobId={job.id!}
+        jobName={job.name}
+        customerName={customer?.name}
+        customerPhone={customer?.phone}
+      />
     </Dialog>
   );
 }
