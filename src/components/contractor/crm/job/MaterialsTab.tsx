@@ -18,21 +18,30 @@ export default function MaterialsTab({ jobId }: MaterialsTabProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingMaterial, setEditingMaterial] = useState<Material | null>(null);
 
-  const [formData, setFormData] = useState<Material>({
+  const [formData, setFormData] = useState({
     job_id: jobId,
     description: '',
-    quantity_ordered: 0,
-    quantity_used: 0,
-    cost_per_unit: 0,
+    quantity_ordered: '' as string | number,
+    quantity_used: '' as string | number,
+    cost_per_unit: '' as string | number,
     unit_type: '',
     supplier_name: '',
+    date_ordered: '',
+    date_used: '',
+    notes: '',
   });
 
   const handleSubmit = () => {
+    const payload: Material = {
+      ...formData,
+      quantity_ordered: Number(formData.quantity_ordered) || 0,
+      quantity_used: Number(formData.quantity_used) || 0,
+      cost_per_unit: Number(formData.cost_per_unit) || 0,
+    };
     if (editingMaterial) {
-      updateMaterial({ ...formData, id: editingMaterial.id! });
+      updateMaterial({ ...payload, id: editingMaterial.id! });
     } else {
-      createMaterial(formData);
+      createMaterial(payload);
     }
     setIsDialogOpen(false);
     resetForm();
@@ -42,18 +51,32 @@ export default function MaterialsTab({ jobId }: MaterialsTabProps) {
     setFormData({
       job_id: jobId,
       description: '',
-      quantity_ordered: 0,
-      quantity_used: 0,
-      cost_per_unit: 0,
+      quantity_ordered: '',
+      quantity_used: '',
+      cost_per_unit: '',
       unit_type: '',
       supplier_name: '',
+      date_ordered: '',
+      date_used: '',
+      notes: '',
     });
     setEditingMaterial(null);
   };
 
   const handleEdit = (material: Material) => {
     setEditingMaterial(material);
-    setFormData(material);
+    setFormData({
+      job_id: material.job_id,
+      description: material.description,
+      quantity_ordered: material.quantity_ordered,
+      quantity_used: material.quantity_used,
+      cost_per_unit: material.cost_per_unit,
+      unit_type: material.unit_type || '',
+      supplier_name: material.supplier_name || '',
+      date_ordered: material.date_ordered || '',
+      date_used: material.date_used || '',
+      notes: material.notes || '',
+    });
     setIsDialogOpen(true);
   };
 
@@ -166,7 +189,7 @@ export default function MaterialsTab({ jobId }: MaterialsTabProps) {
                   type="number"
                   step="0.01"
                   value={formData.quantity_ordered}
-                  onChange={(e) => setFormData({ ...formData, quantity_ordered: parseFloat(e.target.value) || 0 })}
+                  onChange={(e) => setFormData({ ...formData, quantity_ordered: e.target.value })}
                 />
               </div>
               <div className="space-y-2">
@@ -176,7 +199,7 @@ export default function MaterialsTab({ jobId }: MaterialsTabProps) {
                   type="number"
                   step="0.01"
                   value={formData.quantity_used}
-                  onChange={(e) => setFormData({ ...formData, quantity_used: parseFloat(e.target.value) || 0 })}
+                  onChange={(e) => setFormData({ ...formData, quantity_used: e.target.value })}
                 />
               </div>
               <div className="space-y-2">
@@ -197,7 +220,7 @@ export default function MaterialsTab({ jobId }: MaterialsTabProps) {
                 type="number"
                 step="0.01"
                 value={formData.cost_per_unit}
-                onChange={(e) => setFormData({ ...formData, cost_per_unit: parseFloat(e.target.value) || 0 })}
+                onChange={(e) => setFormData({ ...formData, cost_per_unit: e.target.value })}
               />
             </div>
 
@@ -243,7 +266,7 @@ export default function MaterialsTab({ jobId }: MaterialsTabProps) {
 
             <div className="p-3 bg-muted rounded-md">
               <p className="text-sm font-medium">
-                Total Cost: ${((formData.quantity_used || 0) * (formData.cost_per_unit || 0)).toFixed(2)}
+                Total Cost: ${((Number(formData.quantity_used) || 0) * (Number(formData.cost_per_unit) || 0)).toFixed(2)}
               </p>
             </div>
 

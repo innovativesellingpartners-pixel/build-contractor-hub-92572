@@ -53,7 +53,7 @@ const generateInvoiceNumber = () => {
 export default function PlumbingInvoiceCreator() {
   // Isolated local state - no global state interference
   const [lineItems, setLineItems] = useState<LineItem[]>([
-    { id: generateId(), description: '', quantity: 1, unitPrice: 0 },
+    { id: generateId(), description: '', quantity: 1, unitPrice: '' as any },
   ]);
   const [taxRate, setTaxRate] = useState<number>(8.25);
   const [invoiceNumber] = useState<string>(generateInvoiceNumber());
@@ -68,7 +68,7 @@ export default function PlumbingInvoiceCreator() {
 
   // Auto-calculating totals
   const calculations = useMemo(() => {
-    const subtotal = lineItems.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0);
+    const subtotal = lineItems.reduce((sum, item) => sum + (Number(item.quantity) || 0) * (Number(item.unitPrice) || 0), 0);
     const taxAmount = subtotal * (taxRate / 100);
     const grandTotal = subtotal + taxAmount;
     return { subtotal, taxAmount, grandTotal };
@@ -77,7 +77,7 @@ export default function PlumbingInvoiceCreator() {
   const addLineItem = () => {
     setLineItems(prev => [
       ...prev,
-      { id: generateId(), description: '', quantity: 1, unitPrice: 0 },
+      { id: generateId(), description: '', quantity: 1, unitPrice: '' as any },
     ]);
   };
 

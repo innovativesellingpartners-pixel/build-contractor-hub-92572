@@ -131,9 +131,9 @@ export function EnhancedEstimateForm({ onSubmit, onCancel, initialData }: Enhanc
       {
         itemNumber: `${lineItems.length + 1}`,
         description: "",
-        quantity: 1,
+        quantity: '' as any,
         unit: "EA",
-        unitPrice: 0,
+        unitPrice: '' as any,
         totalPrice: 0,
         included: true,
       },
@@ -146,8 +146,8 @@ export function EnhancedEstimateForm({ onSubmit, onCancel, initialData }: Enhanc
     
     // Recalculate total price
     if (field === "quantity" || field === "unitPrice") {
-      const qty = field === "quantity" ? value : updated[index].quantity;
-      const price = field === "unitPrice" ? value : updated[index].unitPrice || 0;
+      const qty = field === "quantity" ? (Number(value) || 0) : (Number(updated[index].quantity) || 0);
+      const price = field === "unitPrice" ? (Number(value) || 0) : (Number(updated[index].unitPrice) || 0);
       updated[index].totalPrice = qty * price;
     }
     

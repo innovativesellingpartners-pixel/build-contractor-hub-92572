@@ -38,14 +38,14 @@ export default function LineItemsStep({ data, onChange }: LineItemsStepProps) {
 
     // Auto-calculate totals
     if (field === 'quantity' || field === 'unit_cost' || field === 'unitPrice') {
-      const qty = updated[index].quantity || 0;
+      const qty = Number(updated[index].quantity) || 0;
       const price = field === 'unit_cost' || field === 'unitPrice' 
-        ? value 
-        : (updated[index].unit_cost || updated[index].unitPrice || 0);
+        ? (Number(value) || 0)
+        : (Number(updated[index].unit_cost) || Number(updated[index].unitPrice) || 0);
       updated[index].line_total = qty * price;
       updated[index].totalPrice = qty * price;
-      updated[index].unit_cost = price;
-      updated[index].unitPrice = price;
+      updated[index].unit_cost = field === 'unit_cost' || field === 'unitPrice' ? value : updated[index].unit_cost;
+      updated[index].unitPrice = field === 'unit_cost' || field === 'unitPrice' ? value : updated[index].unitPrice;
     }
 
     // Sync description fields
@@ -70,11 +70,11 @@ export default function LineItemsStep({ data, onChange }: LineItemsStepProps) {
       category: 'Materials',
       description: '',
       item_description: '',
-      quantity: 1,
+      quantity: '' as any,
       unit: 'EA',
       unit_type: 'EA',
-      unitPrice: 0,
-      unit_cost: 0,
+      unitPrice: '' as any,
+      unit_cost: '' as any,
       totalPrice: 0,
       line_total: 0,
       included: true,
@@ -228,7 +228,7 @@ export default function LineItemsStep({ data, onChange }: LineItemsStepProps) {
                         step="0.01"
                         min="0"
                         value={item.quantity || ''}
-                        onChange={(e) => updateLineItem(index, 'quantity', parseFloat(e.target.value) || 0)}
+                        onChange={(e) => updateLineItem(index, 'quantity', e.target.value === '' ? '' : (parseFloat(e.target.value) || 0))}
                       />
                     </div>
                     <div>
@@ -254,7 +254,7 @@ export default function LineItemsStep({ data, onChange }: LineItemsStepProps) {
                         step="0.01"
                         min="0"
                         value={item.unit_cost || item.unitPrice || ''}
-                        onChange={(e) => updateLineItem(index, 'unit_cost', parseFloat(e.target.value) || 0)}
+                        onChange={(e) => updateLineItem(index, 'unit_cost', e.target.value === '' ? '' : (parseFloat(e.target.value) || 0))}
                       />
                     </div>
                   </div>
@@ -321,7 +321,7 @@ export default function LineItemsStep({ data, onChange }: LineItemsStepProps) {
                       step="0.01"
                       min="0"
                       value={item.quantity || ''}
-                      onChange={(e) => updateLineItem(index, 'quantity', parseFloat(e.target.value) || 0)}
+                      onChange={(e) => updateLineItem(index, 'quantity', e.target.value === '' ? '' : (parseFloat(e.target.value) || 0))}
                       className="h-9 text-center"
                     />
                   </div>
@@ -348,7 +348,7 @@ export default function LineItemsStep({ data, onChange }: LineItemsStepProps) {
                       step="0.01"
                       min="0"
                       value={item.unit_cost || item.unitPrice || ''}
-                      onChange={(e) => updateLineItem(index, 'unit_cost', parseFloat(e.target.value) || 0)}
+                      onChange={(e) => updateLineItem(index, 'unit_cost', e.target.value === '' ? '' : (parseFloat(e.target.value) || 0))}
                       placeholder="0.00"
                       className="h-9"
                     />

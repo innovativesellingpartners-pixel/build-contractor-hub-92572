@@ -91,9 +91,9 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
     {
       category: 'Materials',
       item_description: '',
-      quantity: 0,
+      quantity: '' as any,
       unit_type: '',
-      unit_cost: 0,
+      unit_cost: '' as any,
       line_total: 0,
       included: true,
     },
@@ -282,9 +282,9 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
         setLineItems([{
           category: 'Materials',
           item_description: '',
-          quantity: 0,
+          quantity: '' as any,
           unit_type: '',
-          unit_cost: 0,
+          unit_cost: '' as any,
           line_total: 0,
           included: true,
         }]);
@@ -367,9 +367,9 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
       setLineItems([{
         category: 'Materials',
         item_description: '',
-        quantity: 0,
+        quantity: '' as any,
         unit_type: '',
-        unit_cost: 0,
+        unit_cost: '' as any,
         line_total: 0,
         included: true,
       }]);
@@ -443,9 +443,9 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
       {
         category: 'Materials',
         item_description: '',
-        quantity: 0,
+        quantity: '' as any,
         unit_type: '',
-        unit_cost: 0,
+        unit_cost: '' as any,
         line_total: 0,
         included: true,
       },
@@ -457,7 +457,7 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
     updated[index] = { ...updated[index], [field]: value };
     
     if (field === 'quantity' || field === 'unit_cost') {
-      updated[index].line_total = updated[index].quantity * updated[index].unit_cost;
+      updated[index].line_total = (Number(updated[index].quantity) || 0) * (Number(updated[index].unit_cost) || 0);
     }
     
     setLineItems(updated);
@@ -949,8 +949,8 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
                           <Input
                             type="number"
                             step="0.01"
-                            value={item.quantity}
-                            onChange={(e) => updateLineItem(index, 'quantity', parseFloat(e.target.value) || 0)}
+                            value={item.quantity ?? ''}
+                            onChange={(e) => updateLineItem(index, 'quantity', e.target.value === '' ? '' : (parseFloat(e.target.value) || 0))}
                           />
                         </div>
 
@@ -968,14 +968,14 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
                           <Input
                             type="number"
                             step="0.01"
-                            value={item.unit_cost}
-                            onChange={(e) => updateLineItem(index, 'unit_cost', parseFloat(e.target.value) || 0)}
+                            value={item.unit_cost ?? ''}
+                            onChange={(e) => updateLineItem(index, 'unit_cost', e.target.value === '' ? '' : (parseFloat(e.target.value) || 0))}
                           />
                         </div>
 
                         <div className="space-y-2">
                           <Label>Line Total</Label>
-                          <Input value={`$${item.line_total.toFixed(2)}`} disabled />
+                          <Input value={`$${(item.line_total || 0).toFixed(2)}`} disabled />
                         </div>
 
                         <div className="flex items-center space-x-2">
