@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { Search, Mic, MicOff, X, Loader2, Sparkles, FileText, Briefcase, Receipt, Users, ClipboardList, DollarSign, ChevronDown, ChevronUp, Info } from 'lucide-react';
+import { Search, Mic, MicOff, X, Loader2, Sparkles, FileText, Briefcase, Receipt, Users, ClipboardList, DollarSign, ChevronDown, ChevronUp, Info, Maximize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -20,6 +20,7 @@ interface SearchResult {
   totalCount: number;
   limit: number;
   aiInsight?: string | null;
+  openAsReport?: boolean;
 }
 
 interface CRMSearchBarProps {
@@ -34,6 +35,13 @@ const REPORT_TYPE_ICONS: Record<string, typeof Briefcase> = {
   leads: ClipboardList,
   payments: DollarSign,
   expenses: DollarSign,
+  materials: ClipboardList,
+  change_orders: FileText,
+  job_costs: DollarSign,
+  plaid_transactions: DollarSign,
+  budget_items: DollarSign,
+  daily_logs: ClipboardList,
+  crew: Users,
 };
 
 const REPORT_TYPE_LABELS: Record<string, string> = {
@@ -44,6 +52,13 @@ const REPORT_TYPE_LABELS: Record<string, string> = {
   leads: 'Leads',
   payments: 'Payments',
   expenses: 'Expenses',
+  materials: 'Materials',
+  change_orders: 'Change Orders',
+  job_costs: 'Job Costs',
+  plaid_transactions: 'Bank Transactions',
+  budget_items: 'Budget Items',
+  daily_logs: 'Daily Logs',
+  crew: 'Crew Members',
 };
 
 export default function CRMSearchBar({ onNavigate }: CRMSearchBarProps) {
@@ -85,6 +100,15 @@ export default function CRMSearchBar({ onNavigate }: CRMSearchBarProps) {
       if (error) throw error;
       if (data.error) {
         toast.error(data.error);
+        return;
+      }
+
+      // If the AI flagged this as a full report, store data and navigate
+      if (data.openAsReport && onNavigate) {
+        sessionStorage.setItem('ai-report-data', JSON.stringify(data));
+        onNavigate('ai-report');
+        setShowResults(false);
+        setQuery('');
         return;
       }
 
@@ -461,9 +485,26 @@ export default function CRMSearchBar({ onNavigate }: CRMSearchBarProps) {
                     </p>
                   </div>
                 </div>
-                <Badge variant="secondary" className="text-xs">
-                  {REPORT_TYPE_LABELS[searchResult.reportType] || searchResult.reportType}
-                </Badge>
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary" className="text-xs">
+                    {REPORT_TYPE_LABELS[searchResult.reportType] || searchResult.reportType}
+                  </Badge>
+                  {searchResult.results.length > 0 && onNavigate && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 text-xs gap-1 px-2"
+                      onClick={() => {
+                        sessionStorage.setItem('ai-report-data', JSON.stringify(searchResult));
+                        onNavigate('ai-report');
+                        setShowResults(false);
+                      }}
+                    >
+                      <Maximize2 className="h-3 w-3" />
+                      Full Report
+                    </Button>
+                  )}
+                </div>
               </div>
 
               {/* AI Insight */}
