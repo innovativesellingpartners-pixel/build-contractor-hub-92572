@@ -23,6 +23,7 @@ import PSFUTab from './job/PSFUTab';
 import JobProfitabilityTab from './job/JobProfitabilityTab';
 import JobBudgetTracker from './job/JobBudgetTracker';
 import SendReviewRequestDialog from './SendReviewRequestDialog';
+import GeneratePortalLinkDialog from './GeneratePortalLinkDialog';
 import { useJobPhotos, JobPhoto } from '@/hooks/useJobPhotos';
 import { useDailyLogs } from '@/hooks/useDailyLogs';
 import { ImageViewer } from '@/components/ui/image-viewer';
@@ -653,6 +654,7 @@ export default function JobDetailViewBlue({ job, open, onOpenChange, onCreateEst
   const [isDuplicating, setIsDuplicating] = useState(false);
   const [showTravelDialog, setShowTravelDialog] = useState(false);
   const [showReviewDialog, setShowReviewDialog] = useState(false);
+  const [showPortalLinkDialog, setShowPortalLinkDialog] = useState(false);
   const [etaMinutes, setEtaMinutes] = useState('15');
   const [isSendingETA, setIsSendingETA] = useState(false);
   
@@ -918,6 +920,10 @@ export default function JobDetailViewBlue({ job, open, onOpenChange, onCreateEst
                   REQUEST REVIEW
                 </ActionButton>
               )}
+              <ActionButton variant="muted" onClick={() => setShowPortalLinkDialog(true)} className="flex-1 flex items-center justify-center gap-2">
+                <User className="w-4 h-4" />
+                PORTAL LINK
+              </ActionButton>
             </ActionButtonRow>
 
             {/* Tab Navigation */}
@@ -1164,6 +1170,16 @@ export default function JobDetailViewBlue({ job, open, onOpenChange, onCreateEst
         jobName={job.name}
         customerName={customer?.name}
         customerPhone={customer?.phone}
+      />
+
+      {/* Portal Link Dialog */}
+      <GeneratePortalLinkDialog
+        open={showPortalLinkDialog}
+        onOpenChange={setShowPortalLinkDialog}
+        jobId={job.id!}
+        customerId={job.customer_id}
+        customerPhone={customer?.phone}
+        customerEmail={customer?.email}
       />
     </Dialog>
   );

@@ -949,6 +949,70 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_portal_tokens: {
+        Row: {
+          contractor_id: string
+          created_at: string
+          customer_id: string | null
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          job_id: string
+          label: string | null
+          last_accessed_at: string | null
+          token: string
+          updated_at: string
+        }
+        Insert: {
+          contractor_id: string
+          created_at?: string
+          customer_id?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          job_id: string
+          label?: string | null
+          last_accessed_at?: string | null
+          token?: string
+          updated_at?: string
+        }
+        Update: {
+          contractor_id?: string
+          created_at?: string
+          customer_id?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          job_id?: string
+          label?: string | null
+          last_accessed_at?: string | null
+          token?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_portal_tokens_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_portal_tokens_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_portal_tokens_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customers: {
         Row: {
           address: string | null
@@ -4115,6 +4179,102 @@ export type Database = {
             columns: ["job_id"]
             isOneToOne: false
             referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      portal_messages: {
+        Row: {
+          attachments: Json | null
+          created_at: string
+          id: string
+          is_read: boolean
+          job_id: string
+          message: string
+          portal_token_id: string
+          sender_name: string | null
+          sender_type: string
+        }
+        Insert: {
+          attachments?: Json | null
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          job_id: string
+          message: string
+          portal_token_id: string
+          sender_name?: string | null
+          sender_type: string
+        }
+        Update: {
+          attachments?: Json | null
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          job_id?: string
+          message?: string
+          portal_token_id?: string
+          sender_name?: string | null
+          sender_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portal_messages_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_messages_portal_token_id_fkey"
+            columns: ["portal_token_id"]
+            isOneToOne: false
+            referencedRelation: "customer_portal_tokens"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      portal_photo_uploads: {
+        Row: {
+          caption: string | null
+          created_at: string
+          id: string
+          job_id: string
+          photo_url: string
+          portal_token_id: string
+          uploaded_by_name: string | null
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          job_id: string
+          photo_url: string
+          portal_token_id: string
+          uploaded_by_name?: string | null
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          job_id?: string
+          photo_url?: string
+          portal_token_id?: string
+          uploaded_by_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portal_photo_uploads_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_photo_uploads_portal_token_id_fkey"
+            columns: ["portal_token_id"]
+            isOneToOne: false
+            referencedRelation: "customer_portal_tokens"
             referencedColumns: ["id"]
           },
         ]
