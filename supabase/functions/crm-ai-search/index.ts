@@ -61,7 +61,7 @@ Available report types: jobs, estimates, invoices, customers, leads, payments, e
 Available filters:
 - amount: { operator: "lt" | "gt" | "eq" | "gte" | "lte", value: number, field?: string }
 - dateRange: { preset: "today" | "this_week" | "this_month" | "last_month" | "this_year" | "last_year" | "next_week" | "next_month" } OR { start: "YYYY-MM-DD", end: "YYYY-MM-DD" }
-- status: string (e.g. "unpaid", "paid", "open", "closed", "sent", "signed", "scheduled", "in_progress", "completed", "pending", "active")
+- status: string (e.g. "unpaid", "paid", "open", "closed", "sent", "signed", "scheduled", "in_progress", "completed", "pending", "active", "draft")
 - customerName: string (partial match)
 - search: string (general text search across name/description fields)
 - hasMaterials: boolean (for jobs with materials)
@@ -75,14 +75,24 @@ IMPORTANT: Return ONLY valid JSON. No markdown, no explanation. Use this exact s
 {
   "reportType": "jobs",
   "filters": { ... },
-  "summary": "Brief human-readable description of what was requested"
+  "summary": "Brief human-readable description of what was requested",
+  "needsAnalysis": true/false
 }
 
+Set "needsAnalysis" to true when the user is asking a question that requires reasoning, judgment, or insight beyond simple filtering. Examples:
+- "What estimate needs the most attention?" → needsAnalysis: true (requires reasoning about age, status, value, expiration)
+- "Which jobs are at risk of going over budget?" → needsAnalysis: true (requires comparing expenses vs contract value)
+- "Which customer should I follow up with?" → needsAnalysis: true (requires analysis)
+- "Show all estimates under 10000" → needsAnalysis: false (simple filter)
+- "List unpaid invoices" → needsAnalysis: false (simple filter)
+
+When needsAnalysis is true, fetch broadly relevant data (use wider filters, higher limit) so the AI has enough context to reason.
+
 Examples:
-- "Pull a report of all jobs that have materials" → {"reportType":"jobs","filters":{"hasMaterials":true},"summary":"All jobs with materials"}
-- "Show all estimates under 10000 from this year" → {"reportType":"estimates","filters":{"amount":{"operator":"lt","value":10000,"field":"total_amount"},"dateRange":{"preset":"this_year"}},"summary":"Estimates under $10,000 from this year"}
-- "List unpaid invoices for Acme" → {"reportType":"invoices","filters":{"status":"unpaid","customerName":"Acme"},"summary":"Unpaid invoices for Acme"}
-- "Show jobs scheduled next week" → {"reportType":"jobs","filters":{"dateRange":{"preset":"next_week"}},"summary":"Jobs scheduled next week"}`;
+- "Pull a report of all jobs that have materials" → {"reportType":"jobs","filters":{"hasMaterials":true},"summary":"All jobs with materials","needsAnalysis":false}
+- "Show all estimates under 10000 from this year" → {"reportType":"estimates","filters":{"amount":{"operator":"lt","value":10000,"field":"total_amount"},"dateRange":{"preset":"this_year"}},"summary":"Estimates under $10,000 from this year","needsAnalysis":false}
+- "What estimate needs the most attention?" → {"reportType":"estimates","filters":{"limit":100},"summary":"Estimates needing attention","needsAnalysis":true}
+- "Which jobs are at risk of going over budget?" → {"reportType":"jobs","filters":{"status":"in_progress","limit":100},"summary":"Jobs at budget risk","needsAnalysis":true}`;
 
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -487,6 +497,46 @@ Examples:
         });
     }
 
+    // Step 3: If the query needs analysis, send results back to AI for reasoning
+    let aiInsight: string | null = null;
+    if (intent.needsAnalysis && results.length > 0) {
+      const analysisPrompt = `You are a business advisor for a contractor. The user asked: "${query}"
+
+Here is the relevant data from their CRM (${reportType}, ${results.length} records):
+
+${JSON.stringify(results.slice(0, 50), null, 2)}
+
+Today's date is ${today}.
+
+Analyze this data and provide a clear, actionable answer to their question. Be specific — reference record names, numbers, amounts, and dates. Keep your answer concise (2-4 paragraphs max). Use bullet points for clarity when listing multiple items. Focus on what matters most and why.`;
+
+      try {
+        const analysisResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${LOVABLE_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "google/gemini-3-flash-preview",
+            messages: [
+              { role: "user", content: analysisPrompt },
+            ],
+            temperature: 0.3,
+          }),
+        });
+
+        if (analysisResponse.ok) {
+          const analysisData = await analysisResponse.json();
+          aiInsight = analysisData.choices?.[0]?.message?.content || null;
+        } else {
+          console.error("Analysis AI error:", analysisResponse.status);
+        }
+      } catch (analysisErr) {
+        console.error("Analysis error:", analysisErr);
+      }
+    }
+
     return new Response(JSON.stringify({
       reportType,
       summary: intent.summary || `${reportType} report`,
@@ -494,6 +544,7 @@ Examples:
       results,
       totalCount,
       limit,
+      aiInsight,
     }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
