@@ -52,6 +52,7 @@ import InvoicesSection from './sections/InvoicesSection';
 import GCSection from './sections/GCSection';
 import ContactsSection from './sections/ContactsSection';
 import PortalSection from './sections/PortalSection';
+import CRMSearchBar from './CRMSearchBar';
 
 import ct1Logo from '@/assets/ct1-round-logo-new.png';
 import Reporting from '@/pages/Reporting';
@@ -365,7 +366,7 @@ const navItems = [
 
           {/* Back Navigation for Mobile - Condensed with logo */}
           {isMobile && !showMobileLanding && (
-            <div className="border-b bg-card px-3 py-2 overflow-hidden max-w-full">
+            <div className="border-b bg-card px-3 py-2 overflow-hidden max-w-full flex items-center justify-between gap-2">
               <BackNavigation 
                 onBack={handleBack}
                 onBackToDashboard={() => {
@@ -377,6 +378,7 @@ const navItems = [
                 }}
                 showBackButton={true}
               />
+              <CRMSearchBar onNavigate={handleSectionChange} />
             </div>
           )}
 
@@ -426,8 +428,12 @@ const navItems = [
           </aside>
 
           {/* Main Content */}
-          <main className="flex-1 overflow-hidden">
-            <div className="h-full overflow-y-auto">
+          <main className="flex-1 overflow-hidden flex flex-col">
+            {/* Desktop Search Bar */}
+            <div className="border-b bg-card/50 px-6 py-2.5 flex items-center justify-end">
+              <CRMSearchBar onNavigate={handleSectionChange} />
+            </div>
+            <div className="flex-1 overflow-y-auto">
               {renderSection()}
             </div>
           </main>
