@@ -6,9 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { CheckCircle, FileText, Loader2, Building2, Calendar, DollarSign, CreditCard } from 'lucide-react';
+import { CheckCircle, FileText, Loader2, Building2, Calendar, DollarSign, CreditCard, Phone, Mail, MapPin, Globe } from 'lucide-react';
 import { toast } from 'sonner';
-import ct1Logo from '@/assets/ct1-round-logo-new.png';
 
 export default function PublicInvoice() {
   const { token } = useParams();
@@ -22,14 +21,12 @@ export default function PublicInvoice() {
     if (token) {
       fetchInvoice();
 
-      // Check for payment status in URL
       const paymentStatus = searchParams.get('payment');
       const paymentAmount = searchParams.get('amount');
 
       if (paymentStatus === 'success') {
         const amountText = paymentAmount ? ` of $${parseFloat(paymentAmount).toFixed(2)}` : '';
         toast.success(`Payment${amountText} successful! Thank you.`);
-        // Refresh to show updated balance
         setTimeout(() => fetchInvoice(), 1000);
       } else if (paymentStatus === 'cancelled') {
         toast.error('Payment cancelled. You can try again below.');
@@ -46,10 +43,7 @@ export default function PublicInvoice() {
       });
 
       if (error) throw error;
-
-      if (data.error) {
-        throw new Error(data.error);
-      }
+      if (data.error) throw new Error(data.error);
 
       setInvoice(data.invoice);
       setContractor(data.contractor || null);
@@ -63,7 +57,6 @@ export default function PublicInvoice() {
 
   const handlePayment = async () => {
     setProcessingPayment(true);
-
     try {
       const { data: paymentData, error: paymentError } = await supabase.functions.invoke(
         'process-invoice-payment',
@@ -78,7 +71,6 @@ export default function PublicInvoice() {
       );
 
       if (paymentError) throw paymentError;
-
       if (paymentData?.success && paymentData?.checkout_url) {
         window.location.href = paymentData.checkout_url;
       } else {
@@ -94,7 +86,7 @@ export default function PublicInvoice() {
   if (loading) {
     return (
       <div className="min-h-screen bg-muted flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -122,14 +114,17 @@ export default function PublicInvoice() {
   const isFullyPaid = remainingBalance <= 0;
   const isPartiallyPaid = amountPaid > 0 && remainingBalance > 0;
 
-  const brandColors = {
-    primary: '#D50A22',
-    secondary: '#1e3a5f',
-    accent: '#c9a227',
-  };
+  // Use contractor brand colors with neutral fallbacks
+  const primaryColor = contractor?.brand_primary_color || '#334155';
+  const secondaryColor = contractor?.brand_secondary_color || '#1e293b';
+  const accentColor = contractor?.brand_accent_color || '#475569';
 
-  const displayLogo = contractor?.company_logo_url || ct1Logo;
-  const companyName = contractor?.business_name || 'Invoice';
+  const companyName = contractor?.company_name || 'Invoice';
+  const displayLogo = contractor?.logo_url;
+
+  // Build contractor address string
+  const addressParts = [contractor?.business_address, contractor?.city, contractor?.state, contractor?.zip_code].filter(Boolean);
+  const fullAddress = addressParts.length > 0 ? addressParts.join(', ') : null;
 
   return (
     <div className="min-h-screen bg-muted py-8 px-4 sm:px-6 lg:px-8">
@@ -138,19 +133,25 @@ export default function PublicInvoice() {
         <Card className="overflow-hidden border-2 shadow-xl">
           <div
             className="p-8 sm:p-12 relative"
-            style={{ background: `linear-gradient(135deg, ${brandColors.secondary} 0%, ${brandColors.primary} 100%)` }}
+            style={{ background: `linear-gradient(135deg, ${secondaryColor} 0%, ${primaryColor} 100%)` }}
           >
             <div className="absolute inset-0 bg-black/10"></div>
             <div className="relative z-10">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
                 <div className="flex items-center gap-6">
-                  <div className="bg-white rounded-full p-3 shadow-2xl">
-                    <img
-                      src={displayLogo}
-                      alt="Company Logo"
-                      className="w-14 h-14 sm:w-16 sm:h-16 object-contain"
-                    />
-                  </div>
+                  {displayLogo ? (
+                    <div className="bg-white rounded-full p-3 shadow-2xl">
+                      <img
+                        src={displayLogo}
+                        alt={companyName}
+                        className="w-14 h-14 sm:w-16 sm:h-16 object-contain"
+                      />
+                    </div>
+                  ) : (
+                    <div className="bg-white/20 backdrop-blur-sm rounded-full p-3 shadow-2xl">
+                      <Building2 className="w-14 h-14 sm:w-16 sm:h-16 text-white" />
+                    </div>
+                  )}
                   <div>
                     <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
                       {companyName}
@@ -186,7 +187,7 @@ export default function PublicInvoice() {
           <Card className="shadow-lg border-2">
             <CardHeader className="bg-gradient-to-r from-muted/50 to-background pb-6">
               <CardTitle className="text-2xl flex items-center gap-2">
-                <Building2 className="h-6 w-6 text-primary" />
+                <Building2 className="h-6 w-6" style={{ color: primaryColor }} />
                 Job Information
               </CardTitle>
             </CardHeader>
@@ -223,7 +224,7 @@ export default function PublicInvoice() {
           <Card className="shadow-lg border-2">
             <CardHeader className="bg-gradient-to-r from-muted/50 to-background pb-6">
               <CardTitle className="text-2xl flex items-center gap-2">
-                <FileText className="h-6 w-6 text-primary" />
+                <FileText className="h-6 w-6" style={{ color: primaryColor }} />
                 Invoice Details
               </CardTitle>
             </CardHeader>
@@ -243,7 +244,7 @@ export default function PublicInvoice() {
                         {item.quantity || 1} × ${(item.unit_price || 0).toFixed(2)}
                       </p>
                     </div>
-                    <p className="font-bold text-xl text-primary ml-4">
+                    <p className="font-bold text-xl ml-4" style={{ color: primaryColor }}>
                       ${((item.quantity || 1) * (item.unit_price || 0)).toFixed(2)}
                     </p>
                   </div>
@@ -255,9 +256,9 @@ export default function PublicInvoice() {
 
         {/* Payment Summary */}
         <Card className="border-2 shadow-2xl bg-gradient-to-br from-background to-muted/20">
-          <CardHeader className="bg-gradient-to-r from-primary/10 to-primary/5 border-b-2 border-primary/20 pb-6">
+          <CardHeader className="border-b-2 pb-6" style={{ borderColor: `${primaryColor}20` }}>
             <CardTitle className="text-2xl flex items-center gap-2">
-              <DollarSign className="h-6 w-6 text-primary" />
+              <DollarSign className="h-6 w-6" style={{ color: primaryColor }} />
               Payment Summary
             </CardTitle>
           </CardHeader>
@@ -265,7 +266,7 @@ export default function PublicInvoice() {
             {/* Total Amount */}
             <div
               className="p-6 rounded-xl shadow-lg"
-              style={{ background: `linear-gradient(90deg, ${brandColors.primary} 0%, ${brandColors.secondary} 100%)` }}
+              style={{ background: `linear-gradient(90deg, ${primaryColor} 0%, ${secondaryColor} 100%)` }}
             >
               <div className="flex justify-between items-center">
                 <span className="text-2xl font-black text-white">Invoice Total</span>
@@ -312,8 +313,8 @@ export default function PublicInvoice() {
               <div className="space-y-4">
                 <Button
                   size="lg"
-                  className="w-full py-8 text-xl font-bold shadow-xl"
-                  style={{ background: `linear-gradient(90deg, ${brandColors.primary} 0%, ${brandColors.secondary} 100%)` }}
+                  className="w-full py-8 text-xl font-bold shadow-xl text-white"
+                  style={{ background: `linear-gradient(90deg, ${primaryColor} 0%, ${secondaryColor} 100%)` }}
                   onClick={handlePayment}
                   disabled={processingPayment}
                 >
@@ -331,7 +332,7 @@ export default function PublicInvoice() {
                 </Button>
 
                 <p className="text-center text-sm text-muted-foreground">
-                  Secure payment powered by Clover
+                  Secure online payment
                 </p>
               </div>
             ) : (
@@ -362,10 +363,40 @@ export default function PublicInvoice() {
           </Card>
         )}
 
-        {/* Footer */}
-        <div className="text-center text-sm text-muted-foreground py-4">
-          <p>This invoice was sent via CT1 Business Suite</p>
-          {contractor?.business_phone && <p>Questions? Call {contractor.business_phone}</p>}
+        {/* Footer - Contractor Contact Info */}
+        <div className="text-center text-sm text-muted-foreground py-6 space-y-2">
+          {companyName !== 'Invoice' && (
+            <p className="font-medium text-foreground">{companyName}</p>
+          )}
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+            {contractor?.phone && (
+              <span className="flex items-center gap-1">
+                <Phone className="h-3.5 w-3.5" />
+                {contractor.phone}
+              </span>
+            )}
+            {contractor?.business_email && (
+              <span className="flex items-center gap-1">
+                <Mail className="h-3.5 w-3.5" />
+                {contractor.business_email}
+              </span>
+            )}
+            {contractor?.website_url && (
+              <span className="flex items-center gap-1">
+                <Globe className="h-3.5 w-3.5" />
+                {contractor.website_url}
+              </span>
+            )}
+          </div>
+          {fullAddress && (
+            <p className="flex items-center justify-center gap-1">
+              <MapPin className="h-3.5 w-3.5" />
+              {fullAddress}
+            </p>
+          )}
+          {contractor?.license_number && (
+            <p className="text-xs text-muted-foreground">License #{contractor.license_number}</p>
+          )}
         </div>
       </div>
     </div>

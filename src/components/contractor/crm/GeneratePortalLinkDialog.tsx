@@ -102,7 +102,7 @@ export default function GeneratePortalLinkDialog({
       return;
     }
     try {
-      const { error } = await supabase.functions.invoke('send-meeting-sms', {
+      const { error } = await supabase.functions.invoke('send-portal-sms', {
         body: {
           to: customerPhone,
           message: `View your project portal here: ${getPortalUrl(token)}`,

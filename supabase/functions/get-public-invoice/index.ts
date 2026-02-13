@@ -63,7 +63,7 @@ serve(async (req: Request) => {
     // Fetch contractor profile for branding
     const { data: contractor } = await supabase
       .from("profiles")
-      .select("business_name, business_email, business_phone, business_address, company_logo_url")
+      .select("company_name, logo_url, phone, business_email, business_address, city, state, zip_code, website_url, license_number, contact_name, brand_primary_color, brand_secondary_color, brand_accent_color")
       .eq("id", invoice.user_id)
       .single();
 
