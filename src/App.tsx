@@ -67,6 +67,7 @@ import { CRMDashboard } from "@/pages/CRMDashboard";
 import PublicEstimate from "./pages/PublicEstimate";
 import PublicChangeOrder from "./pages/PublicChangeOrder";
 import PublicReview from "./pages/PublicReview";
+import CustomerPortal from "./pages/CustomerPortal";
 import PublicInvoice from "./pages/PublicInvoice";
 import Reporting from "./pages/Reporting";
 import AppInstall from "./pages/AppInstall";
@@ -160,6 +161,7 @@ const App = () => (
           <Route path="/invoice/:token" element={<PublicInvoice />} />
           <Route path="/change-order/:token" element={<PublicChangeOrder />} />
           <Route path="/review/:jobId" element={<PublicReview />} />
+          <Route path="/portal/:token" element={<CustomerPortal />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/trial-signup" element={<TrialSignup />} />
             <Route path="/bot-signup" element={<BotSignup />} />
