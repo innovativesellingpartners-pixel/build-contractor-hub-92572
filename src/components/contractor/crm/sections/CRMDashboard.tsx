@@ -7,6 +7,7 @@ import { useState, useCallback } from 'react';
 import { ContactSupport } from '@/components/ContactSupport';
 import { SortableGrid, SortableItem } from '@/components/ui/sortable-grid';
 import { useLayoutPreferences } from '@/hooks/useLayoutPreferences';
+import JobsFinancialOverview from './JobsFinancialOverview';
 
 type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'emails' | 'estimates' | 'reporting' | 'accounting' | 'more' | 'calendar' | 'invoices';
 
@@ -193,6 +194,9 @@ export default function CRMDashboard({ onSectionChange }: CRMDashboardProps) {
             )}
           </div>
         </div>
+
+        {/* Financial Overview */}
+        <JobsFinancialOverview onNavigateToJobs={onSectionChange ? () => onSectionChange('jobs') : undefined} />
 
         {/* Main Navigation Tiles */}
         {onSectionChange && (
