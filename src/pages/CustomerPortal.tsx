@@ -15,6 +15,7 @@ import {
   Building2, MapPin, Phone, Mail, Calendar, ChevronRight
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import ct1Logo from '@/assets/ct1-powered-by-logo.png';
 
 interface PortalData {
   id: string;
@@ -177,19 +178,25 @@ export default function CustomerPortal() {
       </main>
 
       <footer className="border-t bg-background mt-12">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
-          <span>Customer Portal • {contractor.company_name}</span>
-          <div className="flex gap-4">
-            {contractor.phone && (
-              <a href={`tel:${contractor.phone}`} className="flex items-center gap-1 hover:text-foreground">
-                <Phone className="h-3 w-3" /> {contractor.phone}
-              </a>
-            )}
-            {contractor.business_email && (
-              <a href={`mailto:${contractor.business_email}`} className="flex items-center gap-1 hover:text-foreground">
-                <Mail className="h-3 w-3" /> Email
-              </a>
-            )}
+        <div className="max-w-5xl mx-auto px-4 py-4 flex flex-col items-center gap-3 text-xs text-muted-foreground">
+          <div className="flex flex-col sm:flex-row items-center justify-between w-full gap-2">
+            <span>Customer Portal • {contractor.company_name}</span>
+            <div className="flex gap-4">
+              {contractor.phone && (
+                <a href={`tel:${contractor.phone}`} className="flex items-center gap-1 hover:text-foreground">
+                  <Phone className="h-3 w-3" /> {contractor.phone}
+                </a>
+              )}
+              {contractor.business_email && (
+                <a href={`mailto:${contractor.business_email}`} className="flex items-center gap-1 hover:text-foreground">
+                  <Mail className="h-3 w-3" /> Email
+                </a>
+              )}
+            </div>
+          </div>
+          <div className="flex items-center gap-2 pt-2">
+            <img src={ct1Logo} alt="CT1" className="h-6 w-auto" />
+            <span className="text-xs font-semibold tracking-wide text-muted-foreground">POWERED BY CT1</span>
           </div>
         </div>
       </footer>
