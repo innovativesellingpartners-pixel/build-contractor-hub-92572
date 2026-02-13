@@ -19,6 +19,7 @@ interface SearchResult {
   results: any[];
   totalCount: number;
   limit: number;
+  aiInsight?: string | null;
 }
 
 interface CRMSearchBarProps {
@@ -407,10 +408,10 @@ export default function CRMSearchBar({ onNavigate }: CRMSearchBarProps) {
               <TooltipContent side="bottom" className="max-w-xs">
                 <p className="font-medium mb-1">AI Search Examples:</p>
                 <ul className="text-xs space-y-0.5 text-muted-foreground">
-                  <li>• "Jobs with materials this month"</li>
-                  <li>• "Estimates under $10,000"</li>
+                  <li>• "What estimate needs the most attention?"</li>
+                  <li>• "Which jobs are at risk of going over budget?"</li>
                   <li>• "Unpaid invoices for Acme"</li>
-                  <li>• "Customers with lifetime value over $5000"</li>
+                  <li>• "Show all estimates under $10,000"</li>
                 </ul>
               </TooltipContent>
             </Tooltip>
@@ -465,8 +466,29 @@ export default function CRMSearchBar({ onNavigate }: CRMSearchBarProps) {
                 </Badge>
               </div>
 
+              {/* AI Insight */}
+              {searchResult.aiInsight && (
+                <div className="px-4 py-3 bg-primary/5 border-b">
+                  <div className="flex items-start gap-2">
+                    <Sparkles className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                    <div className="text-sm text-foreground space-y-1.5 prose prose-sm max-w-none [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4 [&_li]:text-sm [&_p]:text-sm [&_strong]:font-semibold">
+                      {searchResult.aiInsight.split('\n').map((line, i) => {
+                        if (!line.trim()) return null;
+                        if (line.trim().startsWith('- ') || line.trim().startsWith('* ')) {
+                          return <p key={i} className="ml-3 text-xs text-muted-foreground">• {line.trim().replace(/^[-*]\s*/, '')}</p>;
+                        }
+                        if (line.trim().startsWith('**') && line.trim().endsWith('**')) {
+                          return <p key={i} className="font-semibold text-sm">{line.trim().replace(/\*\*/g, '')}</p>;
+                        }
+                        return <p key={i}>{line}</p>;
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Results List */}
-              <ScrollArea className={cn(isMobile ? "max-h-[55vh]" : "max-h-[45vh]")}>
+              <ScrollArea className={cn(isMobile ? "max-h-[55vh]" : searchResult.aiInsight ? "max-h-[30vh]" : "max-h-[45vh]")}>
                 {searchResult.results.length === 0 ? (
                   <div className="py-12 text-center text-sm text-muted-foreground">
                     No results found. Try a different query.
