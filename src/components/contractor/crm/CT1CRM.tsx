@@ -18,13 +18,16 @@ import {
   CreditCard,
   Receipt,
   Building2,
-  Contact
+  Contact,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Separator } from '@/components/ui/separator';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { 
   BookOpen, 
   Bot, 
@@ -303,59 +306,81 @@ const navItems = [
     { id: 'help', label: 'Help Center', icon: HelpCircle, feature: null },
   ];
 
-  const NavigationContent = () => (
-    <nav className="flex-1 overflow-y-auto p-4">
-      <ul className="space-y-1">
-        {navItems.map((item) => (
-          <li key={item.id}>
-            <button
-              onClick={() => handleSectionChange(item.id)}
-              className={cn(
-                'w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors',
-                'hover:bg-accent',
-                activeSection === item.id
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground'
-              )}
-            >
-              <item.icon className="h-5 w-5 flex-shrink-0" />
-              {(!isMobile || mobileMenuOpen || sidebarOpen) && <span>{item.label}</span>}
-            </button>
-          </li>
-        ))}
-      </ul>
+  const NavButton = ({ icon: Icon, label, isActive, onClick }: { icon: any; label: string; isActive: boolean; onClick: () => void }) => {
+    const button = (
+      <button
+        onClick={onClick}
+        className={cn(
+          'w-full flex items-center gap-3 rounded-lg transition-colors',
+          sidebarOpen ? 'px-3 py-2' : 'justify-center p-2.5',
+          'hover:bg-accent',
+          isActive
+            ? 'bg-primary text-primary-foreground'
+            : 'text-muted-foreground'
+        )}
+      >
+        <Icon className="h-5 w-5 flex-shrink-0" />
+        {sidebarOpen && <span className="text-sm">{label}</span>}
+      </button>
+    );
 
-      {/* Hub Navigation - Desktop only */}
-      {!isMobile && onHubSectionChange && (
-        <>
-          <Separator className="my-3" />
-          <p className="px-3 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            {sidebarOpen ? 'CT1 Hub' : ''}
-          </p>
-          <ul className="space-y-1 mt-1">
-            {hubNavItems
-              .filter(item => !item.feature || !tierFeatures || tierFeatures[item.feature])
-              .map((item) => (
-                <li key={item.id}>
-                  <button
-                    onClick={() => onHubSectionChange(item.id)}
-                    className={cn(
-                      'w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors',
-                      'hover:bg-accent',
-                      activeHubSection === item.id
-                        ? 'bg-primary text-primary-foreground'
-                        : 'text-muted-foreground'
-                    )}
-                  >
-                    <item.icon className="h-5 w-5 flex-shrink-0" />
-                    {sidebarOpen && <span>{item.label}</span>}
-                  </button>
-                </li>
-              ))}
-          </ul>
-        </>
-      )}
-    </nav>
+    if (!sidebarOpen) {
+      return (
+        <Tooltip delayDuration={0}>
+          <TooltipTrigger asChild>{button}</TooltipTrigger>
+          <TooltipContent side="right" className="font-medium">
+            {label}
+          </TooltipContent>
+        </Tooltip>
+      );
+    }
+
+    return button;
+  };
+
+  const NavigationContent = () => (
+    <TooltipProvider>
+      <nav className={cn("flex-1 overflow-y-auto", sidebarOpen ? "p-4" : "p-2")}>
+        <ul className="space-y-1">
+          {navItems.map((item) => (
+            <li key={item.id}>
+              <NavButton
+                icon={item.icon}
+                label={item.label}
+                isActive={activeSection === item.id}
+                onClick={() => handleSectionChange(item.id)}
+              />
+            </li>
+          ))}
+        </ul>
+
+        {/* Hub Navigation - Desktop only */}
+        {!isMobile && onHubSectionChange && (
+          <>
+            <Separator className="my-3" />
+            {sidebarOpen && (
+              <p className="px-3 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                CT1 Hub
+              </p>
+            )}
+            <ul className="space-y-1 mt-1">
+              {hubNavItems
+                .filter(item => !item.feature || !tierFeatures || tierFeatures[item.feature])
+                .map((item) => (
+                  <li key={item.id}>
+                    <NavButton
+                      icon={item.icon}
+                      label={item.label}
+                      isActive={activeHubSection === item.id}
+                      onClick={() => onHubSectionChange(item.id)}
+                    />
+                  </li>
+                ))}
+            </ul>
+          </>
+        )}
+      </nav>
+    </TooltipProvider>
   );
 
   return (
@@ -403,11 +428,14 @@ const navItems = [
           <aside
             className={cn(
               'flex-shrink-0 flex flex-col bg-card border-r transition-all duration-300',
-              sidebarOpen ? 'w-64' : 'w-16'
+              sidebarOpen ? 'w-64' : 'w-14'
             )}
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b">
+            <div className={cn(
+              "flex items-center border-b",
+              sidebarOpen ? "justify-between p-4" : "justify-center p-3"
+            )}>
               {sidebarOpen && (
                 <div className="flex items-center gap-2">
                   <img src={ct1Logo} alt="CT1" className="h-8 w-8" />
@@ -418,9 +446,9 @@ const navItems = [
                 variant="ghost"
                 size="icon"
                 onClick={() => setSidebarOpen(!sidebarOpen)}
-                className={cn(!sidebarOpen && 'mx-auto')}
+                className="h-8 w-8"
               >
-                {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                {sidebarOpen ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
               </Button>
             </div>
 
