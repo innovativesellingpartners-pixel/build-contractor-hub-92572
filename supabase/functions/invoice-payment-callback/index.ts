@@ -209,7 +209,7 @@ async function sendPaidReceipt(supabase: any, resend: any, invoice: any, totalPa
         </div>
         
         <div style="text-align: center; padding: 20px; font-size: 12px; color: #999;">
-          <p>This receipt was sent via CT1 Business Suite</p>
+          <p>Powered by CT1</p>
         </div>
       </body>
       </html>

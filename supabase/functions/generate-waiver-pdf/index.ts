@@ -346,7 +346,7 @@ function generateWaiverHtml(
   </div>
 
   <div class="footer">
-    This lien waiver was generated via CT1 Business Suite
+    Powered by CT1
   </div>
 </body>
 </html>

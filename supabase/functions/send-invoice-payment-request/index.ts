@@ -176,7 +176,7 @@ serve(async (req: Request) => {
             </div>
             
             <div style="text-align: center; padding: 20px; font-size: 12px; color: #999;">
-              <p>This payment request was sent via CT1 Business Suite</p>
+              <p>Powered by CT1</p>
             </div>
           </body>
           </html>

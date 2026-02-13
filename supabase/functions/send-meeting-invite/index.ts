@@ -362,7 +362,7 @@ const handler = async (req: Request): Promise<Response> => {
         </div>
         
         <div style="text-align: center; padding: 20px; font-size: 12px; color: #999;">
-          <p>This meeting invitation was sent via CT1 Business Suite</p>
+          <p>Powered by CT1</p>
         </div>
       </body>
       </html>
