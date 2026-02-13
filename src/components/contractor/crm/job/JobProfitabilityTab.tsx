@@ -5,6 +5,7 @@ import { useJobCosts, JobCost } from '@/hooks/useJobCosts';
 import { Job } from '@/hooks/useJobs';
 import { useAuth } from '@/contexts/AuthContext';
 import { QBEnhancedJobData } from './QBEnhancedJobData';
+import { useQBExpenses } from '@/hooks/useQuickBooksQuery';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -88,6 +89,44 @@ export default function JobProfitabilityTab({ job }: JobProfitabilityTabProps) {
     enabled: !!user?.id,
   });
 
+  // Fetch banking/Plaid transactions for this job
+  const { data: plaidTransactions } = useQuery({
+    queryKey: ['job-plaid-txns', job.id, user?.id],
+    queryFn: async () => {
+      if (!user?.id || !job.id) return [];
+      const { data, error } = await supabase
+        .from('plaid_transactions')
+        .select('id, amount, category, transaction_date, description, vendor')
+        .eq('contractor_id', user.id)
+        .eq('job_id', job.id)
+        .order('transaction_date', { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user?.id && !!job.id,
+  });
+
+  // Fetch bank-sourced expenses (those with plaid_transaction_id)
+  const { data: bankExpenses } = useQuery({
+    queryKey: ['job-bank-expenses', job.id, user?.id],
+    queryFn: async () => {
+      if (!user?.id || !job.id) return [];
+      const { data, error } = await supabase
+        .from('expenses')
+        .select('id, amount, category, date, description, plaid_transaction_id')
+        .eq('contractor_id', user.id)
+        .eq('job_id', job.id)
+        .not('plaid_transaction_id', 'is', null)
+        .order('date', { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user?.id && !!job.id,
+  });
+
+  // Fetch QB expenses matched to this job
+  const { data: qbExpenseData } = useQBExpenses(!!qbConnected);
+
   // Fetch invoices for this job
   const { data: invoices, isLoading: invoicesLoading } = useQuery({
     queryKey: ['job-invoices-profit', job.id],
@@ -134,40 +173,74 @@ export default function JobProfitabilityTab({ job }: JobProfitabilityTabProps) {
     enabled: !!job.id,
   });
 
-  // Compute financials
+  // Banking totals
+  const bankingTotal = useMemo(() => {
+    const plaidTotal = plaidTransactions?.reduce((s, t) => s + Math.abs(Number(t.amount)), 0) || 0;
+    const bankExpTotal = bankExpenses?.reduce((s, e) => s + Number(e.amount), 0) || 0;
+    return plaidTotal + bankExpTotal;
+  }, [plaidTransactions, bankExpenses]);
+
+  // Matched QB expenses for this job
+  const matchedQBExpenses = useMemo(() => {
+    if (!qbExpenseData || !job.name) return [];
+    const lower = job.name.toLowerCase();
+    return qbExpenseData.filter((e: any) => {
+      const memo = (e.PrivateNote || e.DocNumber || '').toLowerCase();
+      const vendor = (e.EntityRef?.name || '').toLowerCase();
+      return memo.includes(lower) || vendor.includes(lower);
+    });
+  }, [qbExpenseData, job.name]);
+
+  const qbExpenseTotal = matchedQBExpenses.reduce((s: number, e: any) => s + Number(e.TotalAmt || 0), 0);
+
+  // Compute financials (include all sources)
+  const allSourcesCostTotal = totalCosts + bankingTotal + qbExpenseTotal;
+
   const financials = useMemo(() => {
     const revenue = Number(job.total_contract_value) || Number(job.contract_value) || Number(job.total_cost) || 0;
     const invoiceRevenue = invoices?.reduce((sum, inv) => sum + (Number(inv.amount_due) || 0), 0) || 0;
     const totalRevenue = Math.max(revenue, invoiceRevenue);
     const collected = invoices?.reduce((sum, inv) => sum + (Number(inv.amount_paid) || 0), 0) || 0;
     const outstanding = totalRevenue - collected;
-    const actualCosts = totalCosts;
+    const actualCosts = allSourcesCostTotal;
     const netProfit = totalRevenue - actualCosts;
     const margin = totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0;
 
-    // Estimate comparison
     const estimatedTotal = estimate ? Number(estimate.total_amount) || 0 : null;
     const revenueVariance = estimatedTotal !== null ? totalRevenue - estimatedTotal : null;
-    const costVariance = estimatedTotal !== null ? actualCosts - (estimatedTotal * 0.65) : null; // Rough cost estimate
-    const profitVariance = estimatedTotal !== null ? netProfit - (estimatedTotal * 0.35) : null;
 
     return { totalRevenue, collected, outstanding, actualCosts, netProfit, margin, estimatedTotal, revenueVariance };
-  }, [job, invoices, totalCosts, estimate]);
+  }, [job, invoices, allSourcesCostTotal, estimate]);
 
   // Group costs by category
   const costsByCategory = useMemo(() => {
-    const grouped: Record<string, JobCost[]> = {};
+    const grouped: Record<string, (JobCost & { source?: string })[]> = {};
     COST_CATEGORIES.forEach(cat => { grouped[cat.value] = []; });
     costs.forEach(cost => {
       const cat = cost.category?.toLowerCase() || 'other';
+      const entry = { ...cost, source: 'Manual' };
       if (grouped[cat]) {
-        grouped[cat].push(cost);
+        grouped[cat].push(entry);
       } else {
-        grouped['other'].push(cost);
+        grouped['other'].push(entry);
       }
     });
+    // Add bank expenses to categories
+    bankExpenses?.forEach(exp => {
+      const cat = exp.category?.toLowerCase() || 'other';
+      const entry = { id: exp.id, amount: exp.amount, category: exp.category, description: exp.description, cost_date: exp.date, source: 'Bank' } as any;
+      if (grouped[cat]) grouped[cat].push(entry);
+      else grouped['other'].push(entry);
+    });
+    // Add plaid transactions to categories
+    plaidTransactions?.forEach(txn => {
+      const cat = txn.category?.toLowerCase() || 'other';
+      const entry = { id: txn.id, amount: Math.abs(txn.amount), category: txn.category, description: txn.description || txn.vendor, cost_date: txn.transaction_date, source: 'Bank' } as any;
+      if (grouped[cat]) grouped[cat].push(entry);
+      else grouped['other'].push(entry);
+    });
     return grouped;
-  }, [costs]);
+  }, [costs, bankExpenses, plaidTransactions]);
 
   const categoryTotals = useMemo(() => {
     const totals: Record<string, number> = {};
@@ -285,7 +358,7 @@ export default function JobProfitabilityTab({ job }: JobProfitabilityTabProps) {
       <Card className="p-4 space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="font-semibold text-sm flex items-center gap-2">
-            <Receipt className="h-4 w-4 text-red-500" />
+            <Receipt className="h-4 w-4 text-destructive" />
             Cost Breakdown
           </h3>
           <Button
@@ -298,6 +371,19 @@ export default function JobProfitabilityTab({ job }: JobProfitabilityTabProps) {
             Add Cost
           </Button>
         </div>
+
+        {/* Source summary */}
+        {(bankingTotal > 0 || qbExpenseTotal > 0) && (
+          <div className="flex flex-wrap gap-2">
+            <Badge variant="outline" className="text-[10px]">Manual: {formatCurrency(totalCosts)}</Badge>
+            {bankingTotal > 0 && (
+              <Badge variant="outline" className="text-[10px] bg-blue-500/10 text-blue-700 border-blue-200">Bank: {formatCurrency(bankingTotal)}</Badge>
+            )}
+            {qbExpenseTotal > 0 && (
+              <Badge variant="outline" className="text-[10px] bg-emerald-500/10 text-emerald-700 border-emerald-200">QuickBooks: {formatCurrency(qbExpenseTotal)}</Badge>
+            )}
+          </div>
+        )}
 
         {/* Add Cost Form */}
         {showAddCost && (
@@ -312,7 +398,7 @@ export default function JobProfitabilityTab({ job }: JobProfitabilityTabProps) {
         )}
 
         {/* Category Cost Cards */}
-        {totalCosts === 0 && !showAddCost ? (
+        {allSourcesCostTotal === 0 && !showAddCost ? (
           <div className="text-center py-6 text-sm text-muted-foreground">
             <Receipt className="h-8 w-8 mx-auto mb-2 opacity-40" />
             <p>No costs recorded yet.</p>
@@ -323,7 +409,7 @@ export default function JobProfitabilityTab({ job }: JobProfitabilityTabProps) {
             {COST_CATEGORIES.map(cat => {
               const items = costsByCategory[cat.value] || [];
               const total = categoryTotals[cat.value] || 0;
-              const pct = totalCosts > 0 ? (total / totalCosts) * 100 : 0;
+              const pct = allSourcesCostTotal > 0 ? (total / allSourcesCostTotal) * 100 : 0;
               const Icon = cat.icon;
               const isExpanded = expandedCategory === cat.value;
 
@@ -352,33 +438,39 @@ export default function JobProfitabilityTab({ job }: JobProfitabilityTabProps) {
                           <TableRow>
                             <TableHead className="text-xs">Date</TableHead>
                             <TableHead className="text-xs">Description</TableHead>
+                            <TableHead className="text-xs">Source</TableHead>
                             <TableHead className="text-xs text-right">Amount</TableHead>
                             <TableHead className="w-8" />
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {items.map(cost => (
+                          {items.map((cost: any) => (
                             <TableRow key={cost.id}>
                               <TableCell className="text-xs tabular-nums">
                                 {cost.cost_date ? format(new Date(cost.cost_date), 'MMM d') : '—'}
                               </TableCell>
-                              <TableCell className="text-xs truncate max-w-[140px]">
+                              <TableCell className="text-xs truncate max-w-[120px]">
                                 {cost.description || '—'}
+                              </TableCell>
+                              <TableCell>
+                                <SourceBadge source={cost.source || 'Manual'} />
                               </TableCell>
                               <TableCell className="text-xs text-right font-medium tabular-nums">
                                 {formatCurrencyPrecise(Number(cost.amount))}
                               </TableCell>
                               <TableCell>
-                                <button
-                                  onClick={() => {
-                                    if (confirm('Delete this cost entry?')) {
-                                      deleteCost(cost.id);
-                                    }
-                                  }}
-                                  className="p-1 hover:bg-destructive/10 rounded text-destructive/60 hover:text-destructive"
-                                >
-                                  <Trash2 className="h-3 w-3" />
-                                </button>
+                                {cost.source === 'Manual' && (
+                                  <button
+                                    onClick={() => {
+                                      if (confirm('Delete this cost entry?')) {
+                                        deleteCost(cost.id);
+                                      }
+                                    }}
+                                    className="p-1 hover:bg-destructive/10 rounded text-destructive/60 hover:text-destructive"
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </button>
+                                )}
                               </TableCell>
                             </TableRow>
                           ))}
@@ -392,8 +484,8 @@ export default function JobProfitabilityTab({ job }: JobProfitabilityTabProps) {
 
             {/* Cost Totals */}
             <div className="flex justify-between items-center pt-3 border-t border-border">
-              <span className="text-sm font-semibold">Total Costs</span>
-              <span className="text-sm font-bold tabular-nums text-destructive">{formatCurrencyPrecise(totalCosts)}</span>
+              <span className="text-sm font-semibold">Total Costs (All Sources)</span>
+              <span className="text-sm font-bold tabular-nums text-destructive">{formatCurrencyPrecise(allSourcesCostTotal)}</span>
             </div>
           </div>
         )}
@@ -479,6 +571,19 @@ export default function JobProfitabilityTab({ job }: JobProfitabilityTabProps) {
 }
 
 // --- Sub-components ---
+
+function SourceBadge({ source }: { source: string }) {
+  const styles: Record<string, string> = {
+    Manual: 'bg-muted text-muted-foreground',
+    Bank: 'bg-blue-500/10 text-blue-700 border-blue-200',
+    QuickBooks: 'bg-emerald-500/10 text-emerald-700 border-emerald-200',
+  };
+  return (
+    <Badge variant="outline" className={`text-[9px] py-0 px-1.5 ${styles[source] || styles.Manual}`}>
+      {source}
+    </Badge>
+  );
+}
 
 function MetricCard({ label, value, variance, icon, positive, negative }: {
   label: string;
