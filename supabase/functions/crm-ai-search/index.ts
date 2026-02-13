@@ -56,7 +56,7 @@ serve(async (req: Request) => {
 
     const systemPrompt = `You are a CRM query parser. Parse the user's natural language request into a structured JSON intent for querying a contractor CRM database.
 
-Available report types: jobs, estimates, invoices, customers, leads, payments, expenses, materials, change_orders, job_costs, plaid_transactions, budget_items, daily_logs, crew
+Available report types: jobs, estimates, invoices, customers, leads, payments, all_expenses, expenses, materials, change_orders, job_costs, plaid_transactions, budget_items, daily_logs, crew
 
 Report type descriptions:
 - jobs: Active/completed construction jobs
@@ -65,7 +65,8 @@ Report type descriptions:
 - customers: Client contact records
 - leads: Potential clients/prospects
 - payments: Payments received from clients
-- expenses: Business expenses (manual entries)
+- all_expenses: UNIFIED view of ALL expenses from every source — manual expenses, bank transactions, job costs, and materials. USE THIS when the user says "expenses", "all expenses", "my expenses", "spending", "money spent", or any general expense/accounting query. This is the DEFAULT for any expense-related request.
+- expenses: Only manual expense entries (rarely used alone — prefer all_expenses)
 - materials: Construction materials ordered/used for jobs
 - change_orders: Scope/cost changes on jobs
 - job_costs: Cost tracking entries per job (labor, materials, etc.)
@@ -73,6 +74,11 @@ Report type descriptions:
 - budget_items: Budget line items for jobs (budgeted vs actual amounts)
 - daily_logs: Daily field reports/logs for jobs
 - crew: Crew members and their roles
+
+IMPORTANT ROUTING RULES:
+- When the user asks about "expenses", "all expenses", "spending", "money spent", "costs", or any general financial/accounting expense query, ALWAYS use reportType "all_expenses" (NOT "expenses").
+- Only use "expenses" if the user specifically says "manual expenses" or "manually entered expenses".
+- When the user mentions "accounting data" or "accounting", consider all financial report types: all_expenses, payments, invoices, budget_items, job_costs.
 
 Available filters:
 - amount: { operator: "lt" | "gt" | "eq" | "gte" | "lte", value: number, field?: string }
@@ -106,13 +112,15 @@ Set "openAsReport" to true when the user explicitly asks to "run a report", "gen
 Examples:
 - "Pull a report of all jobs that have materials" → {"reportType":"jobs","filters":{"hasMaterials":true,"limit":200},"summary":"All jobs with materials","needsAnalysis":false,"openAsReport":true}
 - "Show all estimates under 10000 from this year" → {"reportType":"estimates","filters":{"amount":{"operator":"lt","value":10000,"field":"total_amount"},"dateRange":{"preset":"this_year"}},"summary":"Estimates under $10,000 from this year","needsAnalysis":false,"openAsReport":false}
-- "Run a report showing all my expenses" → {"reportType":"expenses","filters":{"limit":200},"summary":"All expenses report","needsAnalysis":false,"openAsReport":true}
+- "Run a report showing all my expenses" → {"reportType":"all_expenses","filters":{"limit":200},"summary":"All expenses report","needsAnalysis":false,"openAsReport":true}
 - "Show all my materials" → {"reportType":"materials","filters":{},"summary":"All materials","needsAnalysis":false,"openAsReport":false}
 - "Run a report of bank transactions this month" → {"reportType":"plaid_transactions","filters":{"dateRange":{"preset":"this_month"},"limit":200},"summary":"Bank transactions this month","needsAnalysis":false,"openAsReport":true}
 - "Show my crew members" → {"reportType":"crew","filters":{},"summary":"All crew members","needsAnalysis":false,"openAsReport":false}
 - "Daily logs for this week" → {"reportType":"daily_logs","filters":{"dateRange":{"preset":"this_week"}},"summary":"Daily logs this week","needsAnalysis":false,"openAsReport":false}
 - "Change orders that are pending" → {"reportType":"change_orders","filters":{"status":"pending"},"summary":"Pending change orders","needsAnalysis":false,"openAsReport":false}
-- "Budget items over budget" → {"reportType":"budget_items","filters":{},"summary":"Budget items over budget","needsAnalysis":true,"openAsReport":false}`;
+- "Budget items over budget" → {"reportType":"budget_items","filters":{},"summary":"Budget items over budget","needsAnalysis":true,"openAsReport":false}
+- "Show my expenses" → {"reportType":"all_expenses","filters":{},"summary":"All expenses (unified)","needsAnalysis":false,"openAsReport":false}
+- "What have I spent this month" → {"reportType":"all_expenses","filters":{"dateRange":{"preset":"this_month"}},"summary":"All spending this month","needsAnalysis":false,"openAsReport":false}`;
 
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -505,6 +513,132 @@ Examples:
         if (error) throw error;
         results = data || [];
         totalCount = count || 0;
+        break;
+      }
+
+      case "all_expenses": {
+        // Unified expenses: pull from expenses, plaid_transactions, job_costs, and materials
+        const allItems: any[] = [];
+
+        // 1. Manual expenses
+        const { data: expData } = await supabase
+          .from("expenses")
+          .select("id, amount, category, description, date, notes, job_id, jobs(name, job_number), created_at")
+          .eq("contractor_id", userId)
+          .order("date", { ascending: false })
+          .limit(limit);
+        if (expData) {
+          for (const e of expData) {
+            if (dateStart && e.date < dateStart) continue;
+            if (dateEnd && e.date > dateEnd) continue;
+            if (filters.search && !`${e.description} ${e.category} ${e.notes}`.toLowerCase().includes(filters.search.toLowerCase())) continue;
+            allItems.push({ ...e, source: "manual_expense" });
+          }
+        }
+
+        // 2. Bank transactions (Plaid)
+        const { data: plaidData } = await supabase
+          .from("plaid_transactions")
+          .select("id, amount, transaction_date, category, vendor, description, notes, is_expense, jobs(name, job_number), created_at")
+          .eq("contractor_id", userId)
+          .order("transaction_date", { ascending: false })
+          .limit(limit);
+        if (plaidData) {
+          for (const t of plaidData) {
+            if (dateStart && t.transaction_date < dateStart) continue;
+            if (dateEnd && t.transaction_date > dateEnd) continue;
+            if (filters.search && !`${t.description} ${t.category} ${t.vendor} ${t.notes}`.toLowerCase().includes(filters.search.toLowerCase())) continue;
+            allItems.push({
+              id: t.id,
+              amount: t.amount,
+              category: t.category || "Bank Transaction",
+              description: t.vendor ? `${t.vendor} - ${t.description || ""}` : t.description,
+              date: t.transaction_date,
+              notes: t.notes,
+              jobs: t.jobs,
+              created_at: t.created_at,
+              source: "bank_transaction",
+            });
+          }
+        }
+
+        // 3. Job costs
+        const { data: costData } = await supabase
+          .from("job_costs")
+          .select("id, amount, category, description, cost_date, jobs(name, job_number), created_at")
+          .eq("user_id", userId)
+          .order("cost_date", { ascending: false })
+          .limit(limit);
+        if (costData) {
+          for (const c of costData) {
+            if (dateStart && c.cost_date < dateStart) continue;
+            if (dateEnd && c.cost_date > dateEnd) continue;
+            if (filters.search && !`${c.description} ${c.category}`.toLowerCase().includes(filters.search.toLowerCase())) continue;
+            allItems.push({
+              id: c.id,
+              amount: c.amount,
+              category: c.category || "Job Cost",
+              description: c.description,
+              date: c.cost_date,
+              notes: null,
+              jobs: c.jobs,
+              created_at: c.created_at,
+              source: "job_cost",
+            });
+          }
+        }
+
+        // 4. Materials
+        const { data: matData } = await supabase
+          .from("materials")
+          .select("id, description, total_cost, supplier_name, date_ordered, jobs(name, job_number), created_at")
+          .eq("user_id", userId)
+          .order("date_ordered", { ascending: false })
+          .limit(limit);
+        if (matData) {
+          for (const m of matData) {
+            if (dateStart && m.date_ordered && m.date_ordered < dateStart) continue;
+            if (dateEnd && m.date_ordered && m.date_ordered > dateEnd) continue;
+            if (filters.search && !`${m.description} ${m.supplier_name}`.toLowerCase().includes(filters.search.toLowerCase())) continue;
+            allItems.push({
+              id: m.id,
+              amount: m.total_cost,
+              category: "Materials",
+              description: m.supplier_name ? `${m.supplier_name} - ${m.description}` : m.description,
+              date: m.date_ordered,
+              notes: null,
+              jobs: m.jobs,
+              created_at: m.created_at,
+              source: "material",
+            });
+          }
+        }
+
+        // Sort by date descending
+        allItems.sort((a, b) => {
+          const da = a.date || a.created_at || "";
+          const db = b.date || b.created_at || "";
+          return filters.sortDir === "asc" ? da.localeCompare(db) : db.localeCompare(da);
+        });
+
+        // Apply amount filter
+        let filtered = allItems;
+        if (filters.amount) {
+          const op = filters.amount.operator;
+          const val = filters.amount.value;
+          filtered = filtered.filter((item: any) => {
+            const amt = item.amount || 0;
+            if (op === "lt") return amt < val;
+            if (op === "gt") return amt > val;
+            if (op === "gte") return amt >= val;
+            if (op === "lte") return amt <= val;
+            if (op === "eq") return amt === val;
+            return true;
+          });
+        }
+
+        results = filtered.slice(0, limit);
+        totalCount = filtered.length;
         break;
       }
 
