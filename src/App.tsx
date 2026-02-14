@@ -95,7 +95,7 @@ function PocketbotWrapper() {
   );
   
   // Don't show on auth, dashboard, admin, or estimate pages
-  const excludedPaths = ['/auth', '/dashboard', '/admin', '/crm', '/reporting', '/accounting', '/estimate/', '/p/estimate/'];
+  const excludedPaths = ['/auth', '/dashboard', '/admin', '/crm', '/reporting', '/accounting', '/estimate/', '/p/estimate/', '/app-install'];
   const isExcluded = excludedPaths.some(path => location.pathname.startsWith(path));
   
   if (isPublicPage && !isExcluded) {
