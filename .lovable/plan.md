@@ -1,106 +1,55 @@
 
 
-# Upgrade AI Search to Access All Platform Data and Generate Full-Page Reports
+# Redesign App Install Page with Step-by-Step Visual Instructions
 
-## Problem
-The CRM AI search currently only queries 7 tables (jobs, estimates, invoices, customers, leads, payments, expenses). When a user asks "run a report that shows all my expenses," the system can fetch the data but cannot:
-1. Query additional data sources like bank transactions, materials, job costs, change orders, budget line items, daily logs, or crew data
-2. Open results as a full-page report (it only shows a dropdown panel)
+## What Changes
 
-## Solution Overview
+Rebuild the `/app-install` page to match the clean, card-based step-by-step layout shown in the Coursiv reference screenshots. The current page uses a numbered list inside a card -- the new design will use individual visual step cards with relevant icons, platform-specific instructions, and a prominent "Got it" button.
 
-### 1. Expand the Edge Function Data Sources
-Add support for these additional report types in the `crm-ai-search` edge function:
+## Design
 
-| New Report Type | Table | Owner Field | Key Fields |
-|---|---|---|---|
-| `materials` | `materials` | `user_id` | name, quantity, cost_per_unit, total_cost, job relation |
-| `change_orders` | `change_orders` | `user_id` | title, status, additional_cost, job relation |
-| `job_costs` | `job_costs` | `user_id` | amount, category, cost_date, description, job relation |
-| `plaid_transactions` | `plaid_transactions` | `contractor_id` | amount, category, vendor, transaction_date, description |
-| `budget_items` | `job_budget_line_items` | via jobs.user_id | trade, budget_amount, actual_amount, variance |
-| `daily_logs` | `daily_logs` | `user_id` | notes, weather, crew_count, job relation |
-| `crew` | `crew_members` | `user_id` | name, role, contact_info |
+The page will feature:
+- CT1 logo and a headline like "Add CT1 to Your Home Screen"
+- A subtitle: "You can use CT1 like a regular app. Please follow these quick and easy steps below:"
+- A phone mockup image placeholder on the right (decorative, using the CT1 logo)
+- Individual step cards, each with a colored icon on the left and bold title + description on the right
+- A completion message at the bottom with CT1 branding: "Done! You can now open CT1 anytime from your Home Screen"
+- A full-width "Got it" button that navigates back to the dashboard
+- Platform detection (iOS Safari, Android Chrome, Desktop Chrome/Edge, Mac Safari) with tailored steps for each
 
-Update the AI system prompt to list all available report types so the LLM can correctly route queries like "show all expenses" or "list my bank transactions."
+### Platform-Specific Steps
 
-### 2. Add a "Full Report" Action
-When the user asks to "run a report" or "show a report in a new page," the AI search will:
-- Detect the intent via a new `openAsReport: true` flag from the AI parser
-- Pass the full result set to a new dedicated report page/view within the CRM
-- The CRM search bar will call `onNavigate` with a special route like `ai-report` and pass the data via state (React context or sessionStorage)
+**iOS (Safari)**
+1. Tap the Share icon (square with arrow) -- show share icon
+2. Scroll down and tap "Add to Home Screen" -- show plus-in-box icon
+3. Tap "Add" in the top right corner -- show Add badge
 
-### 3. Create an AI Report View Component
-Build a new `AIReportView` component that renders a full-page, printable table of results with:
-- Title and summary from the AI
-- A formatted data table with sortable columns
-- Export to CSV/PDF capability (using existing jspdf setup)
-- AI insight panel at the top (if analysis was requested)
-- Back button to return to previous CRM section
+**Android (Chrome)**
+1. Tap the three-dot menu icon -- show ellipsis icon
+2. Tap "Install app" or "Add to Home screen" -- show download icon
+3. Tap "Install" -- show check icon
 
----
+**Desktop (Chrome/Edge)**
+1. Look for the install icon in the address bar -- show monitor icon
+2. Click "Install" -- show download icon
+3. CT1 will open as a standalone app -- show check icon
+
+**Mac (Safari)**
+1. Click File in the menu bar -- show menu icon
+2. Click "Add to Dock" -- show plus icon
+3. CT1 will appear in your Dock -- show check icon
 
 ## Technical Details
 
-### Files to Modify
+### File to Modify
+- `src/pages/AppInstall.tsx` -- Complete redesign with new layout
 
-**`supabase/functions/crm-ai-search/index.ts`**
-- Add 7 new `case` blocks in the switch statement for the new report types
-- Update the system prompt to include all new report types and their available filters
-- Add `openAsReport` boolean to the AI output schema so the LLM can detect when users want a full-page report vs. a quick search
-- Increase default limit to 200 when `openAsReport` is true
-
-**`src/components/contractor/crm/CRMSearchBar.tsx`**
-- When `openAsReport` is true in the response, call `onNavigate('ai-report')` and store the result data in sessionStorage
-- Add "Open as full report" button to the results dropdown for any search
-
-**`src/components/contractor/crm/CT1CRM.tsx`**
-- Add `'ai-report'` to the `Section` type union
-- Add a case to render the new `AIReportView` component
-- Pass a back-navigation callback
-
-**New file: `src/components/contractor/crm/sections/AIReportView.tsx`**
-- Full-page report component with:
-  - Header showing report title, date, record count
-  - AI insight summary (if present)
-  - Auto-columned data table based on report type
-  - Export buttons (CSV download, PDF via jspdf)
-  - Back button
-
-### AI Prompt Changes
-The system prompt will be updated to include all report types:
-
-```
-Available report types: jobs, estimates, invoices, customers, leads, 
-payments, expenses, materials, change_orders, job_costs, 
-plaid_transactions, budget_items, daily_logs, crew
-
-Additional output field:
-- openAsReport: true/false (set true when user says "run a report", 
-  "generate a report", "show report in new page", etc.)
-```
-
-### Data Flow
-
-```text
-User types: "Run a report showing all my expenses"
-        |
-        v
-  AI Parser (Gemini) --> { reportType: "expenses", 
-                           openAsReport: true, 
-                           filters: { limit: 200 } }
-        |
-        v
-  Edge function queries expenses table (up to 200 rows)
-        |
-        v
-  Response includes openAsReport: true
-        |
-        v
-  CRMSearchBar stores result in sessionStorage,
-  calls onNavigate('ai-report')
-        |
-        v
-  CT1CRM renders AIReportView with full data table
-```
-
+### Implementation
+- Detect platform (iOS, Android, Mac Safari, Desktop Chrome/Edge) using user agent
+- Render step cards using a mapped array of `{ icon, title, description }` per platform
+- Each step card: rounded border, icon circle on the left, bold title + muted description on the right
+- Use Lucide icons: `MoreHorizontal`, `Share`, `PlusSquare`, `Download`, `Monitor`, `Menu`, `CheckCircle`
+- "Got it" button at the bottom styled as a full-width primary button
+- Keep existing `beforeinstallprompt` logic for browsers that support native install prompts
+- Already-installed detection remains unchanged
+- Responsive: looks great on mobile (primary use case) and desktop
