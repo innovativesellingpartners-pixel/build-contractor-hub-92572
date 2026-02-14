@@ -12,6 +12,8 @@ import {
   Monitor,
   Menu,
   Plus,
+  ArrowLeft,
+  LayoutDashboard,
   type LucideIcon,
 } from "lucide-react";
 
@@ -170,6 +172,28 @@ export default function AppInstall() {
   return (
     <div className="min-h-screen bg-background flex items-start justify-center px-4 py-8 sm:py-16">
       <div className="w-full max-w-lg space-y-8">
+        {/* Back & Dashboard */}
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate(-1)}
+            className="gap-1 px-2 text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span className="text-xs">Back</span>
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate("/dashboard")}
+            className="gap-1 px-2"
+          >
+            <LayoutDashboard className="h-4 w-4" />
+            <span className="text-xs">Dashboard</span>
+          </Button>
+        </div>
+
         {/* Header */}
         <div className="text-center space-y-4">
           <img src={ct1Logo} alt="CT1 Logo" className="h-20 w-20 mx-auto" />
