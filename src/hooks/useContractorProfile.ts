@@ -119,9 +119,9 @@ export function useContractorProfile() {
   // Get default estimate settings
   const getEstimateDefaults = () => {
     return {
-      salesTaxRate: profile?.default_sales_tax_rate || 6.0,
-      depositPercent: profile?.default_deposit_percent || 30.0,
-      warrantyYears: profile?.default_warranty_years || 2,
+      salesTaxRate: profile?.default_sales_tax_rate ?? 6.0,
+      depositPercent: profile?.default_deposit_percent ?? 30.0,
+      warrantyYears: profile?.default_warranty_years ?? 2,
     };
   };
 

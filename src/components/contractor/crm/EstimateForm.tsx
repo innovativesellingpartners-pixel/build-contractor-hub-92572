@@ -304,9 +304,9 @@ export default function EstimateForm({ onSubmit, onCancel, initialData }: Estima
       setScopeTimeline(initialData.scope_timeline || '');
 
       // Load financial settings
-      setSalesTaxRatePercent(initialData.sales_tax_rate_percent || initialData.tax_rate || 6.0);
-      setPermitFeeSurcharge(initialData.permit_fee || 0);
-      setRequiredDepositPercent(initialData.required_deposit_percent || 30.0);
+      setSalesTaxRatePercent(initialData.sales_tax_rate_percent ?? initialData.tax_rate ?? 6.0);
+      setPermitFeeSurcharge(initialData.permit_fee ?? 0);
+      setRequiredDepositPercent(initialData.required_deposit_percent ?? 30.0);
 
       // Load terms
       setValidityDays(30);
