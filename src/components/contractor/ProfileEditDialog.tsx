@@ -172,9 +172,9 @@ export function ProfileEditDialog() {
           break;
         case 'defaults':
           updateData = {
-            default_sales_tax_rate: formData.default_sales_tax_rate ? parseFloat(formData.default_sales_tax_rate) : 6.0,
-            default_deposit_percent: formData.default_deposit_percent ? parseFloat(formData.default_deposit_percent) : 30.0,
-            default_warranty_years: formData.default_warranty_years ? parseInt(formData.default_warranty_years) : 2,
+            default_sales_tax_rate: formData.default_sales_tax_rate !== '' ? parseFloat(formData.default_sales_tax_rate) : null,
+            default_deposit_percent: formData.default_deposit_percent !== '' ? parseFloat(formData.default_deposit_percent) : null,
+            default_warranty_years: formData.default_warranty_years !== '' ? parseInt(formData.default_warranty_years) : null,
           };
           break;
       }
