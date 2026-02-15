@@ -46,7 +46,7 @@ export function useQBProfitAndLoss(dateRange: { start: string; end: string }, en
 }
 
 export function useQBBalanceSheet(asOfDate: string, enabled = true) {
-  const endpoint = `reports/BalanceSheet?date_macro=custom&start_date=${asOfDate}&end_date=${asOfDate}&minorversion=73`;
+  const endpoint = `reports/BalanceSheet?start_date=${asOfDate}&end_date=${asOfDate}&minorversion=73`;
   return useQuickBooksQuery("balance-sheet", endpoint, {
     enabled,
     transform: (data: any) => {
