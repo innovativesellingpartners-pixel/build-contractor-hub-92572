@@ -17,9 +17,11 @@ export function ReportEmptyState({
   icon,
 }: Props) {
   return (
-    <Card className="border-dashed">
-      <CardContent className="flex flex-col items-center justify-center py-12">
-        {icon || <BarChart3 className="h-10 w-10 text-muted-foreground mb-3" />}
+    <Card className="border-dashed border-border/40">
+      <CardContent className="flex flex-col items-center justify-center py-16">
+        <div className="h-12 w-12 rounded-xl bg-muted/60 flex items-center justify-center mb-4">
+          {icon || <BarChart3 className="h-6 w-6 text-muted-foreground" />}
+        </div>
         <p className="text-base font-semibold mb-1">{title}</p>
         <p className="text-sm text-muted-foreground text-center max-w-md">{description}</p>
       </CardContent>

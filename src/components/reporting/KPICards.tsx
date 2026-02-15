@@ -4,9 +4,36 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { DollarSign, FileText, TrendingUp, AlertCircle, CheckCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ReportingFilters } from "@/pages/Reporting";
+import { cn } from "@/lib/utils";
 
 interface KPICardsProps {
   filters: ReportingFilters;
+}
+
+const variantAccent: Record<string, string> = {
+  green: "bg-green-500/8 text-green-600 dark:text-green-400",
+  blue: "bg-blue-500/8 text-blue-600 dark:text-blue-400",
+  orange: "bg-orange-500/8 text-orange-600 dark:text-orange-400",
+  red: "bg-red-500/8 text-red-600 dark:text-red-400",
+  purple: "bg-purple-500/8 text-purple-600 dark:text-purple-400",
+  primary: "bg-primary/8 text-primary",
+};
+
+function MetricCard({ label, value, sub, icon, color }: { label: string; value: string; sub?: string; icon: React.ReactNode; color: string }) {
+  return (
+    <Card className="p-5">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex-1 min-w-0 space-y-1">
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider truncate">{label}</p>
+          <p className="text-2xl font-bold tabular-nums tracking-tight break-words">{value}</p>
+          {sub && <p className="text-xs text-muted-foreground truncate">{sub}</p>}
+        </div>
+        <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0", variantAccent[color])}>
+          {icon}
+        </div>
+      </div>
+    </Card>
+  );
 }
 
 export function KPICards({ filters }: KPICardsProps) {
@@ -143,8 +170,8 @@ export function KPICards({ filters }: KPICardsProps) {
     return (
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {[...Array(8)].map((_, i) => (
-          <Card key={i} className="p-6">
-            <Skeleton className="h-20 w-full" />
+          <Card key={i} className="p-5">
+            <Skeleton className="h-20 w-full rounded-lg" />
           </Card>
         ))}
       </div>
@@ -152,116 +179,20 @@ export function KPICards({ filters }: KPICardsProps) {
   }
 
   const formatCurrency = (value: number) =>
-    new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 0,
-    }).format(value);
+    new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 0 }).format(value);
 
   const formatPercent = (value: number) => `${value.toFixed(1)}%`;
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      <Card className="p-4 border-l-4 border-l-green-600/20">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide truncate">Total Revenue</p>
-            <p className="text-2xl font-bold mt-1 break-words">{formatCurrency(kpis?.profitability.revenue || 0)}</p>
-            <p className="text-xs text-muted-foreground mt-1 truncate">{kpis?.sales.totalSold || 0} jobs</p>
-          </div>
-          <div className="h-8 w-8 rounded-md bg-green-600/10 flex items-center justify-center flex-shrink-0">
-            <DollarSign className="h-4 w-4 text-green-600" />
-          </div>
-        </div>
-      </Card>
-
-      <Card className="p-4 border-l-4 border-l-green-500/20">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide truncate">Gross Profit</p>
-            <p className="text-2xl font-bold mt-1 break-words">{formatCurrency(kpis?.profitability.grossProfit || 0)}</p>
-            <p className="text-xs text-muted-foreground mt-1 truncate">{formatPercent(kpis?.profitability.grossMargin || 0)}</p>
-          </div>
-          <div className="h-8 w-8 rounded-md bg-green-500/10 flex items-center justify-center flex-shrink-0">
-            <TrendingUp className="h-4 w-4 text-green-500" />
-          </div>
-        </div>
-      </Card>
-
-      <Card className="p-4 border-l-4 border-l-blue-600/20">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide truncate">Operating Income</p>
-            <p className="text-2xl font-bold mt-1 break-words">{formatCurrency(kpis?.profitability.operatingIncome || 0)}</p>
-            <p className="text-xs text-muted-foreground mt-1 truncate">{formatPercent(kpis?.profitability.operatingMargin || 0)}</p>
-          </div>
-          <div className="h-8 w-8 rounded-md bg-blue-600/10 flex items-center justify-center flex-shrink-0">
-            <DollarSign className="h-4 w-4 text-blue-600" />
-          </div>
-        </div>
-      </Card>
-
-      <Card className="p-4 border-l-4 border-l-primary/20">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide truncate">Net Income</p>
-            <p className="text-2xl font-bold mt-1 break-words">{formatCurrency(kpis?.profitability.netIncome || 0)}</p>
-            <p className="text-xs text-muted-foreground mt-1 truncate">{formatPercent(kpis?.profitability.netMargin || 0)}</p>
-          </div>
-          <div className="h-8 w-8 rounded-md bg-primary/10 flex items-center justify-center flex-shrink-0">
-            <TrendingUp className="h-4 w-4 text-primary" />
-          </div>
-        </div>
-      </Card>
-
-      <Card className="p-4 border-l-4 border-l-orange-500/20">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide truncate">COGS</p>
-            <p className="text-2xl font-bold mt-1 break-words">{formatCurrency(kpis?.profitability.cogs || 0)}</p>
-          </div>
-          <div className="h-8 w-8 rounded-md bg-orange-500/10 flex items-center justify-center flex-shrink-0">
-            <AlertCircle className="h-4 w-4 text-orange-500" />
-          </div>
-        </div>
-      </Card>
-
-      <Card className="p-4 border-l-4 border-l-red-500/20">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide truncate">Operating Expenses</p>
-            <p className="text-2xl font-bold mt-1 break-words">{formatCurrency(kpis?.profitability.operatingExpenses || 0)}</p>
-          </div>
-          <div className="h-8 w-8 rounded-md bg-red-500/10 flex items-center justify-center flex-shrink-0">
-            <AlertCircle className="h-4 w-4 text-red-500" />
-          </div>
-        </div>
-      </Card>
-
-      <Card className="p-4 border-l-4 border-l-orange-500/20">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide truncate">Accounts Receivable</p>
-            <p className="text-2xl font-bold mt-1 break-words">{formatCurrency(kpis?.financial.accountsReceivable || 0)}</p>
-          </div>
-          <div className="h-8 w-8 rounded-md bg-orange-500/10 flex items-center justify-center flex-shrink-0">
-            <DollarSign className="h-4 w-4 text-orange-500" />
-          </div>
-        </div>
-      </Card>
-
-      <Card className="p-4 border-l-4 border-l-purple-500/20">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide truncate">Conversion Rate</p>
-            <p className="text-2xl font-bold mt-1 break-words">{formatPercent(kpis?.estimates.conversionRate || 0)}</p>
-            <p className="text-xs text-muted-foreground mt-1 truncate">{kpis?.sales.totalSold || 0} sold</p>
-          </div>
-          <div className="h-8 w-8 rounded-md bg-purple-500/10 flex items-center justify-center flex-shrink-0">
-            <CheckCircle className="h-4 w-4 text-purple-500" />
-          </div>
-        </div>
-      </Card>
+      <MetricCard label="Total Revenue" value={formatCurrency(kpis?.profitability.revenue || 0)} sub={`${kpis?.sales.totalSold || 0} jobs`} icon={<DollarSign className="h-4 w-4" />} color="green" />
+      <MetricCard label="Gross Profit" value={formatCurrency(kpis?.profitability.grossProfit || 0)} sub={formatPercent(kpis?.profitability.grossMargin || 0)} icon={<TrendingUp className="h-4 w-4" />} color="green" />
+      <MetricCard label="Operating Income" value={formatCurrency(kpis?.profitability.operatingIncome || 0)} sub={formatPercent(kpis?.profitability.operatingMargin || 0)} icon={<DollarSign className="h-4 w-4" />} color="blue" />
+      <MetricCard label="Net Income" value={formatCurrency(kpis?.profitability.netIncome || 0)} sub={formatPercent(kpis?.profitability.netMargin || 0)} icon={<TrendingUp className="h-4 w-4" />} color="primary" />
+      <MetricCard label="COGS" value={formatCurrency(kpis?.profitability.cogs || 0)} icon={<AlertCircle className="h-4 w-4" />} color="orange" />
+      <MetricCard label="Operating Expenses" value={formatCurrency(kpis?.profitability.operatingExpenses || 0)} icon={<AlertCircle className="h-4 w-4" />} color="red" />
+      <MetricCard label="Accounts Receivable" value={formatCurrency(kpis?.financial.accountsReceivable || 0)} icon={<DollarSign className="h-4 w-4" />} color="orange" />
+      <MetricCard label="Conversion Rate" value={formatPercent(kpis?.estimates.conversionRate || 0)} sub={`${kpis?.sales.totalSold || 0} sold`} icon={<CheckCircle className="h-4 w-4" />} color="purple" />
     </div>
   );
 }

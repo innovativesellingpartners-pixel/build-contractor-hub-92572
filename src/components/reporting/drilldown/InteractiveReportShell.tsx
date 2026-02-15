@@ -51,8 +51,8 @@ export function InteractiveReportShell({
       <DrillDownBreadcrumbs />
 
       {/* Header row */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
-        <div>
+      <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-start">
+        <div className="space-y-1">
           <h2 className="text-xl md:text-2xl font-bold tracking-tight flex items-center gap-2">
             {title}
             {badge}
@@ -82,7 +82,9 @@ export function InteractiveReportShell({
       )}
 
       {/* Content */}
-      {children}
+      <div className="space-y-6">
+        {children}
+      </div>
     </div>
   );
 }

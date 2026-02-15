@@ -25,20 +25,12 @@ interface Props {
   breakdown?: { label: string; value: string }[];
 }
 
-const variantStyles = {
-  default: "border-l-primary/30",
-  success: "border-l-green-500/30",
-  danger: "border-l-red-500/30",
-  warning: "border-l-orange-500/30",
-  info: "border-l-blue-500/30",
-};
-
-const variantIconBg = {
-  default: "bg-primary/10",
-  success: "bg-green-500/10",
-  danger: "bg-red-500/10",
-  warning: "bg-orange-500/10",
-  info: "bg-blue-500/10",
+const variantAccent = {
+  default: "bg-primary/8 text-primary",
+  success: "bg-green-500/8 text-green-600 dark:text-green-400",
+  danger: "bg-red-500/8 text-red-600 dark:text-red-400",
+  warning: "bg-orange-500/8 text-orange-600 dark:text-orange-400",
+  info: "bg-blue-500/8 text-blue-600 dark:text-blue-400",
 };
 
 export function InteractiveMetricCard({
@@ -60,20 +52,19 @@ export function InteractiveMetricCard({
   const cardContent = (
     <Card
       className={cn(
-        "p-4 border-l-4 transition-all",
-        variantStyles[variant],
-        isClickable && "cursor-pointer hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] group"
+        "p-5 transition-all duration-150 relative overflow-hidden",
+        isClickable && "cursor-pointer hover:shadow-md active:scale-[0.98] group"
       )}
       onClick={onClick}
     >
       <div className="flex items-start justify-between gap-3">
-        <div className="flex-1 min-w-0">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide truncate">
+        <div className="flex-1 min-w-0 space-y-1">
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
             {title}
           </p>
-          <p className="text-2xl font-bold mt-1 tabular-nums break-words">{value}</p>
+          <p className="text-2xl font-bold tabular-nums tracking-tight">{value}</p>
           {(trend !== undefined || subtitle) && (
-            <div className="flex items-center gap-1.5 mt-1">
+            <div className="flex items-center gap-1.5">
               {trend !== undefined && (
                 <span className={cn("flex items-center gap-0.5 text-xs font-medium", trendColor)}>
                   <TrendIcon className="h-3 w-3" />
@@ -87,19 +78,16 @@ export function InteractiveMetricCard({
               )}
             </div>
           )}
-          {isClickable && (
-            <div className="flex items-center gap-1 mt-2 text-xs text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-              <span>Click for details</span>
-              <ChevronRight className="h-3 w-3" />
-            </div>
-          )}
         </div>
         {icon && (
-          <div className={cn("h-9 w-9 rounded-lg flex items-center justify-center flex-shrink-0", variantIconBg[variant])}>
+          <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0", variantAccent[variant])}>
             {icon}
           </div>
         )}
       </div>
+      {isClickable && (
+        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary/0 group-hover:bg-primary/40 transition-all duration-200" />
+      )}
     </Card>
   );
 
@@ -112,11 +100,11 @@ export function InteractiveMetricCard({
             {tooltipContent || (
               <div className="space-y-1.5">
                 <p className="font-semibold text-sm">{title}</p>
-                <p className="text-lg font-bold">{value}</p>
+                <p className="text-lg font-bold tabular-nums">{value}</p>
                 {breakdown?.map((item, i) => (
-                  <div key={i} className="flex justify-between text-xs">
+                  <div key={i} className="flex justify-between text-xs gap-4">
                     <span className="text-muted-foreground">{item.label}</span>
-                    <span className="font-medium">{item.value}</span>
+                    <span className="font-medium tabular-nums">{item.value}</span>
                   </div>
                 ))}
                 {isClickable && <p className="text-xs text-primary mt-2">Click for details →</p>}
