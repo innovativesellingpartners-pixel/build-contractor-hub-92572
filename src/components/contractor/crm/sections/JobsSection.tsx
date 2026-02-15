@@ -130,17 +130,23 @@ export default function JobsSection({ onSectionChange, initialJobId, onClearInit
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
-      scheduled: 'bg-blue-500',
-      in_progress: 'bg-yellow-500',
-      completed: 'bg-green-500',
-      cancelled: 'bg-red-500',
-      on_hold: 'bg-gray-500',
+      scheduled: 'bg-blue-500/10 text-blue-700 dark:text-blue-400',
+      in_progress: 'bg-amber-500/10 text-amber-700 dark:text-amber-400',
+      completed: 'bg-green-500/10 text-green-700 dark:text-green-400',
+      cancelled: 'bg-red-500/10 text-red-700 dark:text-red-400',
+      on_hold: 'bg-muted text-muted-foreground',
     };
-    return colors[status] || 'bg-gray-500';
+    return colors[status] || 'bg-muted text-muted-foreground';
   };
 
   if (loading) {
-    return <div className="p-6">Loading jobs...</div>;
+    return (
+      <div className="p-6 space-y-3">
+        {[1,2,3].map(i => (
+          <div key={i} className="h-16 rounded-xl bg-muted/50 animate-pulse" />
+        ))}
+      </div>
+    );
   }
 
   return (
@@ -157,8 +163,8 @@ export default function JobsSection({ onSectionChange, initialJobId, onClearInit
         
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex-1 min-w-0">
-            <h1 className="text-2xl sm:text-3xl font-bold">Jobs</h1>
-            <p className="text-sm sm:text-base text-muted-foreground">Manage your active and completed jobs</p>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Jobs</h1>
+            <p className="text-sm text-muted-foreground">Manage your active and completed jobs</p>
           </div>
           <div className="flex gap-2 flex-shrink-0">
             <Button
@@ -234,7 +240,7 @@ export default function JobsSection({ onSectionChange, initialJobId, onClearInit
                       <h3 className="font-semibold text-sm sm:text-base break-words">
                         {displayLabel}
                       </h3>
-                      <Badge className={`${getStatusColor(job.status)} text-white text-xs`}>
+                      <Badge className={`${getStatusColor(job.status)} text-xs`}>
                         {job.status.replace('_', ' ')}
                       </Badge>
                     </RowTitleLine>
@@ -288,8 +294,10 @@ export default function JobsSection({ onSectionChange, initialJobId, onClearInit
           })}
 
           {jobs.length === 0 && (
-            <div className="text-center py-8 text-muted-foreground">
-              No jobs yet. Create your first job to get started.
+            <div className="text-center py-12 text-muted-foreground">
+              <Briefcase className="h-10 w-10 mx-auto mb-3 text-muted-foreground/50" />
+              <p className="font-medium">No jobs yet</p>
+              <p className="text-sm mt-1">Create your first job to get started.</p>
             </div>
           )}
         </div>

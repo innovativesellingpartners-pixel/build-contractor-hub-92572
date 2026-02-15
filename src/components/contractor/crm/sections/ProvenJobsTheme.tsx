@@ -12,10 +12,13 @@ export function BlueBackground({ children, className }: { children: ReactNode; c
   );
 }
 
-// Section header bar - elegant grey with subtle primary accent
+// Section header bar - modern pill/chip label style
 export function SectionHeader({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <div className={cn('bg-muted text-foreground px-4 py-2 font-semibold text-xs uppercase tracking-wider border-l-4 border-primary', className)}>
+    <div className={cn(
+      'inline-flex items-center gap-2 bg-primary/8 text-primary px-3 py-1.5 rounded-lg font-semibold text-xs uppercase tracking-wider',
+      className
+    )}>
       {children}
     </div>
   );
@@ -24,7 +27,7 @@ export function SectionHeader({ children, className }: { children: ReactNode; cl
 // White info card container
 export function InfoCard({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <div className={cn('bg-card border border-border shadow-sm', className)}>
+    <div className={cn('bg-card border border-border/60 rounded-xl shadow-sm', className)}>
       {children}
     </div>
   );
@@ -44,8 +47,8 @@ export function InfoRow({ label, value, className, valueClassName, isClickable, 
   return (
     <div 
       className={cn(
-        'flex justify-between items-center px-4 py-3 border-b border-border/50 last:border-b-0',
-        isClickable && 'cursor-pointer hover:bg-muted/50 active:bg-muted',
+        'flex justify-between items-center px-4 py-3 border-b border-border/40 last:border-b-0',
+        isClickable && 'cursor-pointer hover:bg-muted/50 active:bg-muted transition-colors',
         className
       )}
       onClick={onClick}
@@ -82,7 +85,7 @@ export function ActionButton({ children, variant = 'primary', onClick, disabled,
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'px-3 py-2.5 rounded-md font-semibold text-xs uppercase tracking-wide transition-colors shadow-sm text-center',
+        'px-3 py-2.5 rounded-xl font-semibold text-xs uppercase tracking-wide transition-all duration-200 shadow-sm text-center',
         variantClasses[variant],
         fullWidth && 'w-full',
         disabled && 'opacity-50 cursor-not-allowed',
@@ -105,7 +108,7 @@ interface DetailHeaderProps {
 
 export function DetailHeader({ title, subtitle, onBack, onDashboard, rightContent }: DetailHeaderProps) {
   return (
-    <div className="sticky top-0 z-50 bg-foreground text-background pt-[calc(1rem+env(safe-area-inset-top))] sm:pt-[max(0.5rem,env(safe-area-inset-top))]">
+    <div className="sticky top-0 z-50 bg-foreground/95 backdrop-blur-sm text-background pt-[calc(1rem+env(safe-area-inset-top))] sm:pt-[max(0.5rem,env(safe-area-inset-top))]">
       {/* Compact header with logo, nav, and actions in one row */}
       <div className="flex items-center justify-between gap-2 px-3 py-2">
         {/* Left: Logo + Nav buttons */}
@@ -118,7 +121,7 @@ export function DetailHeader({ title, subtitle, onBack, onDashboard, rightConten
           {onBack && (
             <button 
               onClick={onBack} 
-              className="flex items-center justify-center gap-1 h-8 px-2.5 bg-white/15 hover:bg-white/25 rounded-md transition-colors text-xs font-medium"
+              className="flex items-center justify-center gap-1 h-8 px-2.5 bg-white/15 hover:bg-white/25 rounded-lg transition-colors text-xs font-medium"
             >
               <ArrowLeft className="w-4 h-4 flex-shrink-0" />
               <span className="hidden sm:inline">Back</span>
@@ -128,7 +131,7 @@ export function DetailHeader({ title, subtitle, onBack, onDashboard, rightConten
             <button
               type="button"
               onClick={onDashboard}
-              className="flex items-center justify-center gap-1 h-8 px-2.5 bg-primary hover:bg-primary/90 rounded-md transition-colors text-xs font-medium text-primary-foreground"
+              className="flex items-center justify-center gap-1 h-8 px-2.5 bg-primary hover:bg-primary/90 rounded-lg transition-colors text-xs font-medium text-primary-foreground"
             >
               <LayoutDashboard className="w-4 h-4 flex-shrink-0" />
               <span className="hidden sm:inline">Dashboard</span>
@@ -146,14 +149,14 @@ export function DetailHeader({ title, subtitle, onBack, onDashboard, rightConten
       
       {/* Title bar - compact */}
       <div className="px-3 pb-2 min-w-0">
-        <h1 className="font-bold text-base truncate leading-tight">{title}</h1>
+        <h1 className="font-bold text-base truncate leading-tight tracking-tight">{title}</h1>
         {subtitle && <p className="text-background/70 text-xs truncate">{subtitle}</p>}
       </div>
     </div>
   );
 }
 
-// Status badge - elegant styling
+// Status badge - modern tinted styling
 interface StatusBadgeProps {
   status: string;
   className?: string;
@@ -169,18 +172,18 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
       case 'in_progress':
       case 'contacted':
       case 'sent':
-        return 'bg-amber-100 text-amber-800';
+        return 'bg-amber-500/10 text-amber-700 dark:text-amber-400';
       case 'completed':
       case 'won':
       case 'accepted':
-        return 'bg-emerald-100 text-emerald-800';
+        return 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400';
       case 'on_hold':
       case 'qualified':
-        return 'bg-purple-100 text-purple-800';
+        return 'bg-purple-500/10 text-purple-700 dark:text-purple-400';
       case 'cancelled':
       case 'lost':
       case 'rejected':
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-500/10 text-red-700 dark:text-red-400';
       default:
         return 'bg-muted text-muted-foreground';
     }
@@ -188,7 +191,7 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
 
   return (
     <span className={cn(
-      'px-2 py-0.5 rounded text-xs font-semibold uppercase',
+      'px-2 py-0.5 rounded-md text-xs font-semibold uppercase',
       getStatusColor(status),
       className
     )}>
@@ -200,7 +203,7 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
 // Action buttons row - grid on mobile, flex on desktop
 export function ActionButtonRow({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <div className={cn('grid grid-cols-2 sm:flex sm:flex-wrap gap-2 px-3 py-2 bg-card border-b border-border', className)}>
+    <div className={cn('grid grid-cols-2 sm:flex sm:flex-wrap gap-2 px-3 py-2.5 bg-card/80 border-b border-border/40', className)}>
       {children}
     </div>
   );
@@ -225,12 +228,12 @@ export function TabNav({ tabs, activeTab, onTabChange }: TabNavProps) {
   return (
     <>
       {/* Mobile: labeled dropdown */}
-      <div className="sm:hidden bg-card border-b border-border px-3 py-2 flex items-center gap-3">
+      <div className="sm:hidden bg-card border-b border-border/40 px-3 py-2 flex items-center gap-3">
         <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">Section</span>
         <select
           value={activeTab}
           onChange={(e) => onTabChange(e.target.value)}
-          className="flex-1 h-9 rounded-md border border-input bg-background px-3 text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          className="flex-1 h-9 rounded-xl border border-input bg-background px-3 text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
         >
           {tabs.map((tab) => (
             <option key={tab.id} value={tab.id}>
@@ -241,7 +244,7 @@ export function TabNav({ tabs, activeTab, onTabChange }: TabNavProps) {
       </div>
 
       {/* Desktop: icon + label tabs */}
-      <div className="hidden sm:flex overflow-x-auto bg-card border-b border-border px-1 gap-0.5 scrollbar-hide">
+      <div className="hidden sm:flex overflow-x-auto bg-card border-b border-border/40 px-1 gap-0.5 scrollbar-hide">
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -279,7 +282,7 @@ export function MoneyDisplay({ amount, label, size = 'md', className }: MoneyDis
 
   return (
     <div className={cn('text-center', className)}>
-      <p className={cn('font-bold text-primary tabular-nums', sizeClasses[size])}>
+      <p className={cn('font-bold text-primary tabular-nums tracking-tight', sizeClasses[size])}>
         ${(amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
       </p>
       {label && <p className="text-xs text-muted-foreground mt-0.5">{label}</p>}
@@ -296,7 +299,7 @@ interface AddressRowProps {
 export function AddressRow({ address, onNavigate }: AddressRowProps) {
   return (
     <div 
-      className="flex justify-between items-center px-4 py-3 border-b border-border/50 cursor-pointer hover:bg-muted/50 active:bg-muted"
+      className="flex justify-between items-center px-4 py-3 border-b border-border/40 cursor-pointer hover:bg-muted/50 active:bg-muted transition-colors"
       onClick={onNavigate}
     >
       <span className="text-muted-foreground font-medium text-sm">Address</span>

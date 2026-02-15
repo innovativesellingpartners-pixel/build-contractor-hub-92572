@@ -1,15 +1,14 @@
 import { useState, useMemo } from 'react';
 import { format } from 'date-fns';
-import { FileText, Search, X, Filter, Download, Send, Eye, ArrowLeft, Plus } from 'lucide-react';
+import { FileText, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useInvoices, Invoice } from '@/hooks/useInvoices';
 import { InvoiceDetailView } from './InvoiceDetailView';
 import { PredictiveSearch } from '../PredictiveSearch';
 import { CrmNavHeader } from '../CrmNavHeader';
+import { HorizontalRowCard, RowAvatar, RowContent, RowTitleLine, RowMetaLine } from './HorizontalRowCard';
 
 interface InvoicesSectionProps {
   onSectionChange?: (section: string) => void;
@@ -46,13 +45,13 @@ export default function InvoicesSection({ onSectionChange }: InvoicesSectionProp
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'draft': return 'bg-slate-100 text-slate-700';
-      case 'sent': return 'bg-blue-100 text-blue-700';
-      case 'viewed': return 'bg-purple-100 text-purple-700';
-      case 'partial': return 'bg-amber-100 text-amber-700';
-      case 'paid': return 'bg-green-100 text-green-700';
-      case 'overdue': return 'bg-red-100 text-red-700';
-      case 'void': return 'bg-gray-100 text-gray-500';
+      case 'draft': return 'bg-secondary text-secondary-foreground';
+      case 'sent': return 'bg-blue-500/10 text-blue-700 dark:text-blue-400';
+      case 'viewed': return 'bg-purple-500/10 text-purple-700 dark:text-purple-400';
+      case 'partial': return 'bg-amber-500/10 text-amber-700 dark:text-amber-400';
+      case 'paid': return 'bg-green-500/10 text-green-700 dark:text-green-400';
+      case 'overdue': return 'bg-red-500/10 text-red-700 dark:text-red-400';
+      case 'void': return 'bg-muted text-muted-foreground';
       default: return 'bg-muted text-muted-foreground';
     }
   };
@@ -87,7 +86,7 @@ export default function InvoicesSection({ onSectionChange }: InvoicesSectionProp
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
               Invoices
             </h1>
             <p className="text-muted-foreground text-sm">Manage and track your invoices</p>
@@ -138,65 +137,57 @@ export default function InvoicesSection({ onSectionChange }: InvoicesSectionProp
 
         {/* Invoice List */}
         {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <div className="space-y-3">
+            {[1,2,3].map(i => (
+              <div key={i} className="h-16 rounded-xl bg-muted/50 animate-pulse" />
+            ))}
           </div>
         ) : filteredInvoices.length === 0 ? (
-          <Card className="p-12 text-center">
-            <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No Invoices Found</h3>
-            <p className="text-muted-foreground mb-4">
+          <div className="text-center py-12">
+            <FileText className="h-10 w-10 mx-auto text-muted-foreground/50 mb-3" />
+            <h3 className="text-base font-semibold mb-1">No Invoices Found</h3>
+            <p className="text-muted-foreground text-sm">
               {searchQuery || statusFilter !== 'all'
                 ? 'No invoices match your search criteria'
                 : 'Invoices will appear here when created from estimates'}
             </p>
-          </Card>
+          </div>
         ) : (
           <div className="space-y-3">
             {filteredInvoices.map((invoice) => (
-              <Card
+              <HorizontalRowCard
                 key={invoice.id}
-                className="p-4 hover:shadow-md transition-shadow cursor-pointer"
                 onClick={() => setSelectedInvoice(invoice)}
               >
-                <div className="flex items-center justify-between gap-4">
-                  {/* Left: Invoice info */}
-                  <div className="flex items-center gap-4 min-w-0 flex-1">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <FileText className="h-5 w-5 text-primary" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-semibold text-sm">
-                          {invoice.invoice_number || 'No Number'}
-                        </span>
-                        <Badge className={getStatusColor(invoice.status)}>
-                          {invoice.status.toUpperCase()}
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-muted-foreground truncate">
-                        {invoice.notes || 'No description'}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        Issued: {format(new Date(invoice.issue_date), 'MMM d, yyyy')}
-                        {invoice.due_date && ` • Due: ${format(new Date(invoice.due_date), 'MMM d, yyyy')}`}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Right: Amount */}
-                  <div className="text-right flex-shrink-0">
-                    <p className="font-bold text-lg text-primary">
-                      {formatCurrency(invoice.amount_due)}
+                <RowAvatar initials="" icon={<FileText className="h-5 w-5 text-primary" />} />
+                <RowContent>
+                  <RowTitleLine>
+                    <span className="font-semibold text-sm">
+                      {invoice.invoice_number || 'No Number'}
+                    </span>
+                    <Badge className={`${getStatusColor(invoice.status)} text-xs`}>
+                      {invoice.status.toUpperCase()}
+                    </Badge>
+                  </RowTitleLine>
+                  <RowMetaLine>
+                    <span className="truncate">{invoice.notes || 'No description'}</span>
+                  </RowMetaLine>
+                  <RowMetaLine>
+                    <span>Issued: {format(new Date(invoice.issue_date), 'MMM d, yyyy')}</span>
+                    {invoice.due_date && <span>Due: {format(new Date(invoice.due_date), 'MMM d, yyyy')}</span>}
+                  </RowMetaLine>
+                </RowContent>
+                <div className="text-right flex-shrink-0">
+                  <p className="font-bold text-sm text-primary tabular-nums tracking-tight">
+                    {formatCurrency(invoice.amount_due)}
+                  </p>
+                  {invoice.amount_paid > 0 && (
+                    <p className="text-xs text-green-600 dark:text-green-400 tabular-nums">
+                      Paid: {formatCurrency(invoice.amount_paid)}
                     </p>
-                    {invoice.amount_paid > 0 && (
-                      <p className="text-xs text-green-600">
-                        Paid: {formatCurrency(invoice.amount_paid)}
-                      </p>
-                    )}
-                  </div>
+                  )}
                 </div>
-              </Card>
+              </HorizontalRowCard>
             ))}
           </div>
         )}

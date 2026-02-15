@@ -12,7 +12,8 @@ export function HorizontalRowCard({ children, onClick, className }: HorizontalRo
   return (
     <div
       className={cn(
-        'flex items-center gap-3 px-3 py-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors',
+        'flex items-center gap-3 px-4 py-3.5 rounded-xl border border-border/60 bg-card',
+        'hover:shadow-md hover:border-primary/20 transition-all duration-200',
         'overflow-hidden max-w-full w-full',
         onClick && 'cursor-pointer',
         className
@@ -33,7 +34,7 @@ interface RowAvatarProps {
 export function RowAvatar({ initials, icon, className }: RowAvatarProps) {
   return (
     <Avatar className={cn('h-10 w-10 flex-shrink-0', className)}>
-      <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">
+      <AvatarFallback className="bg-primary/8 text-primary font-semibold text-xs rounded-xl">
         {icon || initials}
       </AvatarFallback>
     </Avatar>
@@ -102,7 +103,7 @@ interface RowAmountProps {
 export function RowAmount({ amount, label, badge, className }: RowAmountProps) {
   return (
     <div className={cn('text-right flex-shrink-0', className)}>
-      <p className="text-sm font-bold text-primary whitespace-nowrap tabular-nums">
+      <p className="text-sm font-bold text-primary whitespace-nowrap tabular-nums tracking-tight">
         ${amount?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
       </p>
       {label && <p className="text-xs text-muted-foreground whitespace-nowrap">{label}</p>}
