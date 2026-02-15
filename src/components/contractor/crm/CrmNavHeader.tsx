@@ -4,34 +4,15 @@ import { cn } from '@/lib/utils';
 import ct1Logo from '@/assets/ct1-round-logo-new.png';
 
 interface CrmNavHeaderProps {
-  /** Show Back button */
   back?: boolean;
-  /** Show Dashboard button */
   dashboard?: boolean;
-  /** Custom back handler - defaults to window.history.back() */
   onBack?: () => void;
-  /** Custom dashboard handler */
   onDashboard?: () => void;
-  /** Section label for context (e.g., "Leads", "Jobs") */
   sectionLabel?: string;
-  /** Additional className for the container */
   className?: string;
-  /** Children to render on the right side of the header */
   children?: React.ReactNode;
 }
 
-/**
- * Consistent navigation header for all CRM pages.
- * Provides Back and Dashboard buttons with reliable fallback behavior.
- * 
- * Usage:
- * <CrmNavHeader 
- *   back 
- *   dashboard 
- *   onBack={() => handleBack()} 
- *   onDashboard={() => onSectionChange?.('dashboard')} 
- * />
- */
 export function CrmNavHeader({
   back = true,
   dashboard = true,
@@ -45,7 +26,6 @@ export function CrmNavHeader({
     if (onBack) {
       onBack();
     } else {
-      // Fallback: use browser history
       if (window.history.length > 1) {
         window.history.back();
       }
@@ -58,7 +38,6 @@ export function CrmNavHeader({
     }
   };
 
-  // Don't render if nothing to show
   if (!back && !dashboard && !children) {
     return null;
   }
@@ -69,7 +48,6 @@ export function CrmNavHeader({
       className
     )}>
       <div className="flex items-center gap-2 min-w-0 flex-shrink-0">
-        {/* CT1 Logo - always visible */}
         <img 
           src={ct1Logo} 
           alt="CT1" 
@@ -81,10 +59,10 @@ export function CrmNavHeader({
             variant="ghost"
             size="sm"
             onClick={handleBack}
-            className="gap-1 text-muted-foreground hover:text-foreground h-8 px-2 flex-shrink-0"
+            className="gap-1 text-muted-foreground hover:text-foreground h-9 px-3 flex-shrink-0 rounded-xl"
           >
             <ArrowLeft className="h-4 w-4" />
-            <span className="text-xs">Back</span>
+            <span className="text-xs font-medium">Back</span>
           </Button>
         )}
         
@@ -93,15 +71,15 @@ export function CrmNavHeader({
             variant="outline"
             size="sm"
             onClick={handleDashboard}
-            className="gap-1 h-8 px-2 flex-shrink-0"
+            className="gap-1 h-9 px-3 flex-shrink-0 rounded-xl"
           >
             <LayoutDashboard className="h-4 w-4" />
-            <span className="text-xs">Dash</span>
+            <span className="text-xs font-medium">Dash</span>
           </Button>
         )}
         
         {sectionLabel && (
-          <span className="text-xs text-muted-foreground hidden sm:inline truncate">
+          <span className="text-xs text-muted-foreground hidden sm:inline truncate font-medium">
             / {sectionLabel}
           </span>
         )}
@@ -116,10 +94,6 @@ export function CrmNavHeader({
   );
 }
 
-/**
- * Hook to manage CRM navigation context.
- * Provides fallback routes for deep links.
- */
 export function getCrmFallbackRoute(currentSection: string): string {
   const fallbacks: Record<string, string> = {
     leads: 'leads',

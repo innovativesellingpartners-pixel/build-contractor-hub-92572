@@ -164,14 +164,14 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
-      new: 'bg-blue-500',
-      contacted: 'bg-yellow-500',
-      qualified: 'bg-purple-500',
-      quoted: 'bg-orange-500',
-      job: 'bg-green-500',
-      converted: 'bg-emerald-600',
+      new: 'bg-blue-500/10 text-blue-700 dark:text-blue-400',
+      contacted: 'bg-amber-500/10 text-amber-700 dark:text-amber-400',
+      qualified: 'bg-purple-500/10 text-purple-700 dark:text-purple-400',
+      quoted: 'bg-orange-500/10 text-orange-700 dark:text-orange-400',
+      job: 'bg-green-500/10 text-green-700 dark:text-green-400',
+      converted: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400',
     };
-    return colors[status] || 'bg-gray-500';
+    return colors[status] || 'bg-muted text-muted-foreground';
   };
 
   const handleConvertToOpportunity = async () => {
@@ -258,7 +258,13 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
   };
 
   if (loading) {
-    return <div className="p-6">Loading leads...</div>;
+    return (
+      <div className="p-6 space-y-3">
+        {[1,2,3].map(i => (
+          <div key={i} className="h-16 rounded-xl bg-muted/50 animate-pulse" />
+        ))}
+      </div>
+    );
   }
 
   return (
@@ -275,8 +281,8 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
         
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold">Leads</h1>
-            <p className="text-sm sm:text-base text-muted-foreground">Manage and track your leads</p>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Leads</h1>
+            <p className="text-sm text-muted-foreground">Manage and track your leads</p>
           </div>
           <div className="flex gap-2">
             <input
@@ -345,7 +351,7 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
                   <h3 className="font-semibold text-sm sm:text-base break-words">
                     {lead.name}
                   </h3>
-                  <Badge className={`${getStatusColor(lead.status)} text-white text-xs`}>
+                  <Badge className={`${getStatusColor(lead.status)} text-xs`}>
                     {lead.status}
                   </Badge>
                 </RowTitleLine>
@@ -427,8 +433,10 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
         )})}
 
         {leads.length === 0 && (
-          <div className="text-center py-8 text-muted-foreground">
-            No leads yet. Add your first lead to get started.
+          <div className="text-center py-12 text-muted-foreground">
+            <Users className="h-10 w-10 mx-auto mb-3 text-muted-foreground/50" />
+            <p className="font-medium">No leads yet</p>
+            <p className="text-sm mt-1">Add your first lead to get started.</p>
           </div>
         )}
         </div>

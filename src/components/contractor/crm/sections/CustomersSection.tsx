@@ -3,7 +3,7 @@ import { useCustomers, Customer } from '@/hooks/useCustomers';
 import { useEstimates } from '@/hooks/useEstimates';
 import { useJobs } from '@/hooks/useJobs';
 import { Button } from '@/components/ui/button';
-import { Plus, Phone, Mail, Briefcase, FileText, ChevronRight, Merge, Search } from 'lucide-react';
+import { Plus, Phone, Mail, Briefcase, FileText, ChevronRight, Merge, Search, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
@@ -164,7 +164,13 @@ export default function CustomersSection({ onSectionChange }: CustomersSectionPr
   ) || [];
 
   if (loading) {
-    return <div className="p-6">Loading customers...</div>;
+    return (
+      <div className="p-6 space-y-3">
+        {[1,2,3].map(i => (
+          <div key={i} className="h-16 rounded-xl bg-muted/50 animate-pulse" />
+        ))}
+      </div>
+    );
   }
 
   return (
@@ -181,8 +187,8 @@ export default function CustomersSection({ onSectionChange }: CustomersSectionPr
         
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex-1">
-            <h1 className="text-2xl sm:text-3xl font-bold">Customers</h1>
-            <p className="text-sm sm:text-base text-muted-foreground">Manage your customer database</p>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Customers</h1>
+            <p className="text-sm text-muted-foreground">Manage your customer database</p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setShowMergeDialog(true)}>
@@ -312,8 +318,10 @@ export default function CustomersSection({ onSectionChange }: CustomersSectionPr
           })}
 
           {customers.length === 0 && (
-            <div className="text-center py-8 text-muted-foreground">
-              No customers yet. Add your first customer to get started.
+            <div className="text-center py-12 text-muted-foreground">
+              <Users className="h-10 w-10 mx-auto mb-3 text-muted-foreground/50" />
+              <p className="font-medium">No customers yet</p>
+              <p className="text-sm mt-1">Add your first customer to get started.</p>
             </div>
           )}
         </div>

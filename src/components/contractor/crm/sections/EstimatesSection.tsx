@@ -388,8 +388,10 @@ export default function EstimatesSection({ onSectionChange, initialEstimateId, o
       </div>
 
       {isLoading ? (
-        <div className="flex justify-center p-8">
-          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+        <div className="px-4 sm:px-0 space-y-3">
+          {[1,2,3].map(i => (
+            <div key={i} className="h-20 rounded-xl bg-muted/50 animate-pulse" />
+          ))}
         </div>
       ) : estimates && estimates.length > 0 ? (
         <MobileStack className="space-y-2">
@@ -437,7 +439,7 @@ export default function EstimatesSection({ onSectionChange, initialEstimateId, o
                       { label: 'Paid', active: !!estimate.paid_at },
                     ].map((step, i) => (
                       <div key={step.label} className="flex items-center gap-1">
-                        <div className={`h-1.5 w-1.5 rounded-full ${step.active ? 'bg-primary' : 'bg-muted-foreground/30'}`} />
+                        <div className={`h-2 w-2 rounded-full ${step.active ? 'bg-primary' : 'bg-muted-foreground/30'}`} />
                         <span className={`text-[10px] ${step.active ? 'text-primary font-medium' : 'text-muted-foreground/50'}`}>
                           {step.label}
                         </span>

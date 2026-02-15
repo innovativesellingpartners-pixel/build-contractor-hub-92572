@@ -20,15 +20,14 @@ export function MobileOptimizedWrapper({
   return (
     <div className={cn(
       'w-full max-w-full overflow-x-hidden bg-background pb-8',
-      // Force all children to respect container bounds
       '[&_*]:max-w-full',
       className
     )}>
       {title && (
-        <Card className="mb-4 overflow-hidden max-w-full">
+        <Card className="mb-4 overflow-hidden max-w-full rounded-xl border-border/60 shadow-sm">
           <CardHeader className="pb-3 overflow-hidden">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 overflow-hidden">
-              <CardTitle className="text-xl sm:text-2xl truncate max-w-full">{title}</CardTitle>
+              <CardTitle className="text-xl sm:text-2xl truncate max-w-full tracking-tight">{title}</CardTitle>
               <div className="flex gap-2 flex-shrink-0 flex-wrap">
                 {actions}
               </div>
@@ -44,7 +43,7 @@ export function MobileOptimizedWrapper({
 export function MobileCard({ children, className }: { children: ReactNode; className?: string }) {
   return (
     <Card className={cn(
-      'hover:shadow-lg transition-shadow w-full max-w-full overflow-hidden',
+      'hover:shadow-md transition-all duration-200 w-full max-w-full overflow-hidden rounded-xl border-border/60',
       className
     )}>
       <CardContent className="p-4 sm:p-6 overflow-hidden max-w-full">{children}</CardContent>
@@ -67,7 +66,6 @@ export function MobileStack({ children, className }: { children: ReactNode; clas
   return <div className={cn('space-y-3 w-full max-w-full overflow-hidden', className)}>{children}</div>;
 }
 
-// Horizontal row card for list views (like emails/calls)
 export function MobileRowCard({ children, className, onClick }: { 
   children: ReactNode; 
   className?: string;
@@ -76,7 +74,7 @@ export function MobileRowCard({ children, className, onClick }: {
   return (
     <Card 
       className={cn(
-        'hover:shadow-md transition-shadow w-full max-w-full overflow-hidden cursor-pointer',
+        'hover:shadow-md transition-all duration-200 w-full max-w-full overflow-hidden cursor-pointer rounded-xl border-border/60',
         className
       )}
       onClick={onClick}

@@ -127,7 +127,7 @@ export function PredictiveSearch<T>({
           <button
             type="button"
             onClick={handleClear}
-            className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 rounded-full hover:bg-muted flex items-center justify-center"
+            className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 rounded-full hover:bg-muted flex items-center justify-center transition-colors"
           >
             <X className="h-3.5 w-3.5 text-muted-foreground" />
           </button>
@@ -138,7 +138,7 @@ export function PredictiveSearch<T>({
       {isOpen && filteredResults.length > 0 && (
         <div
           ref={dropdownRef}
-          className="absolute z-50 w-full mt-1 bg-background border rounded-lg shadow-lg max-h-[300px] overflow-y-auto"
+          className="absolute z-50 w-full mt-1.5 bg-popover border border-border/60 rounded-xl shadow-lg max-h-[300px] overflow-y-auto"
         >
           {filteredResults.map((item, index) => (
             <div
@@ -146,7 +146,7 @@ export function PredictiveSearch<T>({
               onClick={() => handleSelect(item)}
               onMouseEnter={() => setHighlightedIndex(index)}
               className={cn(
-                'px-4 py-3 cursor-pointer border-b last:border-b-0 transition-colors',
+                'px-4 py-3 cursor-pointer border-b border-border/30 last:border-b-0 transition-colors',
                 index === highlightedIndex
                   ? 'bg-muted'
                   : 'hover:bg-muted/50'
@@ -167,7 +167,7 @@ export function PredictiveSearch<T>({
       {isOpen && query.trim() && filteredResults.length === 0 && (
         <div
           ref={dropdownRef}
-          className="absolute z-50 w-full mt-1 bg-background border rounded-lg shadow-lg"
+          className="absolute z-50 w-full mt-1.5 bg-popover border border-border/60 rounded-xl shadow-lg"
         >
           <div className="px-4 py-3 text-sm text-muted-foreground text-center">
             No results found for "{query}"
