@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DollarSign, TrendingUp, FileText, CreditCard } from "lucide-react";
 import { RevenueProfitChart } from "@/components/reporting/RevenueProfitChart";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from "recharts";
 
 const fmt = (v: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 0 }).format(v);
@@ -63,7 +64,17 @@ export function RevenueFinancialReport() {
       const outstanding = inv.reduce((s, i) => s + Math.max(0, Number(i.amount_due || 0) - Number(i.amount_paid || 0)), 0);
       const overdue = inv.filter(i => i.status === "overdue" || (i.due_date && new Date(i.due_date) < new Date() && i.status !== "paid"))
         .reduce((s, i) => s + Math.max(0, Number(i.amount_due || 0) - Number(i.amount_paid || 0)), 0);
-      return { totalPaid, outstanding, overdue, invoiceCount: inv.length, paymentCount: pay.length, invoices: inv, payments: pay };
+      // Monthly revenue trend
+      const monthlyRev: Record<string, number> = {};
+      pay.forEach(p => {
+        const month = (p.payment_date || "").substring(0, 7);
+        if (month) monthlyRev[month] = (monthlyRev[month] || 0) + Number(p.amount || 0);
+      });
+      const revenueTrend = Object.entries(monthlyRev)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([month, revenue]) => ({ month: month.substring(5), revenue }));
+
+      return { totalPaid, outstanding, overdue, invoiceCount: inv.length, paymentCount: pay.length, invoices: inv, payments: pay, revenueTrend };
     },
     enabled: !!user?.id,
   });
@@ -156,11 +167,36 @@ export function RevenueFinancialReport() {
         />
       </div>
 
-      {/* Revenue trend chart */}
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4">Revenue & Profit Trend</h3>
-        <RevenueProfitChart filters={filters} />
-      </Card>
+      {/* Revenue trend charts */}
+      <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
+        <Card className="p-6">
+          <h3 className="text-base font-semibold mb-4">Revenue & Profit Trend</h3>
+          <RevenueProfitChart filters={filters} />
+        </Card>
+        {nativeRevenue?.revenueTrend && nativeRevenue.revenueTrend.length > 1 && (
+          <Card className="p-6">
+            <h3 className="text-base font-semibold mb-4">Monthly Revenue</h3>
+            <ResponsiveContainer width="100%" height={280}>
+              <AreaChart data={nativeRevenue.revenueTrend}>
+                <defs>
+                  <linearGradient id="revAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="hsl(142, 76%, 36%)" stopOpacity={0.3} />
+                    <stop offset="100%" stopColor="hsl(142, 76%, 36%)" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                <XAxis dataKey="month" className="text-xs" tick={{ fontSize: 11 }} />
+                <YAxis className="text-xs" tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} tick={{ fontSize: 11 }} />
+                <RechartsTooltip
+                  contentStyle={{ backgroundColor: "hsl(var(--background))", border: "1px solid hsl(var(--border))", borderRadius: "8px" }}
+                  formatter={(value: number) => [fmt(value), "Revenue"]}
+                />
+                <Area type="monotone" dataKey="revenue" stroke="hsl(142, 76%, 36%)" fill="url(#revAreaGrad)" strokeWidth={2} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </Card>
+        )}
+      </div>
 
       {/* QB Payments — clickable */}
       {qbConnected && qbPayments && qbPayments.length > 0 && (

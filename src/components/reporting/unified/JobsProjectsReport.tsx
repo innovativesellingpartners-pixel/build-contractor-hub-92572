@@ -18,6 +18,8 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Briefcase, CheckCircle, TrendingUp, Clock } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { DonutChart } from "../charts/DonutChart";
+import { GaugeChart } from "../charts/GaugeChart";
 
 const fmt = (v: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 0 }).format(v);
@@ -66,7 +68,18 @@ export function JobsProjectsReport() {
         margin: d.revenue > 0 ? ((d.revenue - d.cost) / d.revenue) * 100 : 0,
       })).sort((a, b) => b.revenue - a.revenue);
 
-      return { total: jobs.length, active: active.length, completed: completed.length, totalRev, totalCost, avgValue, margin, byTypeData, jobsList: jobs };
+      // Job status distribution
+      const statusCounts: Record<string, number> = {};
+      jobs.forEach(j => {
+        const s = j.job_status || "pending";
+        statusCounts[s] = (statusCounts[s] || 0) + 1;
+      });
+      const statusData = Object.entries(statusCounts).map(([name, value]) => ({
+        name: name.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase()),
+        value,
+      }));
+
+      return { total: jobs.length, active: active.length, completed: completed.length, totalRev, totalCost, avgValue, margin, byTypeData, jobsList: jobs, statusData };
     },
     enabled: !!user?.id,
   });
@@ -144,6 +157,32 @@ export function JobsProjectsReport() {
           </ResponsiveContainer>
         </Card>
       )}
+
+      {/* Job Status Donut + Margin Gauge */}
+      <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
+        {metrics?.statusData && metrics.statusData.length > 0 && (
+          <Card className="p-6">
+            <h3 className="text-base font-semibold mb-3">Job Status Distribution</h3>
+            <DonutChart
+              data={metrics.statusData}
+              centerValue={String(metrics.total || 0)}
+              centerLabel="Total Jobs"
+              height={240}
+              colors={["hsl(217,91%,60%)", "hsl(142,76%,36%)", "hsl(45,93%,47%)", "hsl(0,84%,60%)", "hsl(262,83%,58%)"]}
+            />
+          </Card>
+        )}
+        <Card className="p-6">
+          <h3 className="text-base font-semibold mb-3">Gross Margin</h3>
+          <div className="flex justify-center">
+            <GaugeChart
+              value={metrics?.margin || 0}
+              target={30}
+              label="Overall Gross Margin"
+            />
+          </div>
+        </Card>
+      </div>
 
       {/* Profitability table */}
       <Card className="p-6">

@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TrendingUp, Users, Target, DollarSign, ArrowRight, FileText, UserCheck, Briefcase, ClipboardCheck } from 'lucide-react';
+import { GaugeChart } from './charts/GaugeChart';
 import { useAuth } from '@/contexts/AuthContext';
 import { ReportingFilters } from '@/pages/Reporting';
 
@@ -294,30 +295,44 @@ export function ConversionAnalytics({ filters }: ConversionAnalyticsProps) {
         </Card>
       </div>
 
-      {/* Pipeline Flow Visualization */}
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4">Sales Pipeline Flow</h3>
-        <div className="flex flex-wrap items-center justify-center gap-2 md:gap-4">
-          {[
-            { label: 'Leads', count: metrics.totalLeads, color: 'bg-blue-500' },
-            { label: 'Estimates', count: metrics.totalEstimates, color: 'bg-purple-500' },
-            { label: 'Customers', count: metrics.totalCustomers, color: 'bg-green-500' },
-            { label: 'Jobs', count: metrics.totalJobs, color: 'bg-orange-500' },
-          ].map((stage, index, arr) => (
-            <div key={stage.label} className="flex items-center gap-2 md:gap-4">
-              <div className="text-center">
-                <div className={`w-16 h-16 md:w-20 md:h-20 rounded-full ${stage.color} flex items-center justify-center text-white font-bold text-lg md:text-xl`}>
-                  {stage.count}
+      {/* Pipeline Funnel + Overall Conversion Gauge */}
+      <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
+        <Card className="p-6">
+          <h3 className="text-lg font-semibold mb-4">Sales Pipeline Funnel</h3>
+          <div className="space-y-3">
+            {[
+              { label: 'Leads', count: metrics.totalLeads, color: 'hsl(217,91%,60%)', width: 100 },
+              { label: 'Estimates', count: metrics.totalEstimates, color: 'hsl(262,83%,58%)', width: metrics.totalLeads > 0 ? (metrics.totalEstimates / metrics.totalLeads) * 100 : 80 },
+              { label: 'Customers', count: metrics.totalCustomers, color: 'hsl(142,76%,36%)', width: metrics.totalLeads > 0 ? (metrics.totalCustomers / metrics.totalLeads) * 100 : 60 },
+              { label: 'Jobs', count: metrics.totalJobs, color: 'hsl(24,95%,53%)', width: metrics.totalLeads > 0 ? (metrics.totalJobs / metrics.totalLeads) * 100 : 40 },
+            ].map((stage) => (
+              <div key={stage.label} className="flex items-center gap-3">
+                <span className="text-xs font-medium w-20 text-right text-muted-foreground">{stage.label}</span>
+                <div className="flex-1 relative">
+                  <div
+                    className="h-8 rounded-md flex items-center justify-center transition-all"
+                    style={{ width: `${Math.max(stage.width, 15)}%`, backgroundColor: stage.color }}
+                  >
+                    <span className="text-white text-sm font-bold">{stage.count}</span>
+                  </div>
                 </div>
-                <p className="text-xs md:text-sm font-medium mt-2">{stage.label}</p>
               </div>
-              {index < arr.length - 1 && (
-                <ArrowRight className="h-5 w-5 md:h-6 md:w-6 text-muted-foreground flex-shrink-0" />
-              )}
-            </div>
-          ))}
-        </div>
-      </Card>
+            ))}
+          </div>
+        </Card>
+
+        <Card className="p-6">
+          <h3 className="text-lg font-semibold mb-2">Overall Conversion</h3>
+          <div className="flex justify-center">
+            <GaugeChart
+              value={metrics.overallConversionRate}
+              target={25}
+              label="Lead → Job"
+              thresholds={{ low: 10, mid: 20 }}
+            />
+          </div>
+        </Card>
+      </div>
 
       {/* Status Breakdowns */}
       <div className="grid gap-6 md:grid-cols-2">

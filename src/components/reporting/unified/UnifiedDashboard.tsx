@@ -21,6 +21,10 @@ import {
   DollarSign, TrendingUp, TrendingDown, FileText, Briefcase, Users, BarChart3,
   Target, ArrowRight, ExternalLink, Trophy, AlertOctagon, Gauge
 } from "lucide-react";
+import { GaugeChart } from "../charts/GaugeChart";
+import { DonutChart } from "../charts/DonutChart";
+import { BulletChart } from "../charts/BulletChart";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from "recharts";
 
 const fmt = (v: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 0 }).format(v);
@@ -127,6 +131,27 @@ export function UnifiedDashboard() {
       const activeJobCosts = activeJobs.reduce((s, j) => s + Number(j.actual_cost || 0), 0);
       const burnRate = activeJobs.length > 0 ? activeJobCosts / Math.max(activeJobs.length, 1) : 0;
 
+      // Job status distribution for donut
+      const statusCounts: Record<string, number> = {};
+      jb.forEach(j => {
+        const s = j.job_status || "pending";
+        statusCounts[s] = (statusCounts[s] || 0) + 1;
+      });
+      const jobStatusData = Object.entries(statusCounts).map(([name, value]) => ({
+        name: name.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase()),
+        value,
+      }));
+
+      // Monthly revenue trend
+      const monthlyRevenue: Record<string, number> = {};
+      pay.forEach(p => {
+        const month = (p.payment_date || "").substring(0, 7);
+        if (month) monthlyRevenue[month] = (monthlyRevenue[month] || 0) + Number(p.amount || 0);
+      });
+      const revenueTrend = Object.entries(monthlyRevenue)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([month, revenue]) => ({ month: month.substring(5), revenue }));
+
       return {
         leads: ld.length,
         estimates: est.length,
@@ -152,6 +177,8 @@ export function UnifiedDashboard() {
         activeJobBudgets,
         activeJobCosts,
         burnRate,
+        jobStatusData,
+        revenueTrend,
       };
     },
     enabled: !!user?.id,
@@ -393,14 +420,16 @@ export function UnifiedDashboard() {
       {/* Job Rankings + Forecasting */}
       {d?.jobRankings && d.jobRankings.length > 0 && (
         <div className="grid gap-4 grid-cols-1 lg:grid-cols-3">
-          {/* Gross Margin */}
+          {/* Gross Margin Gauge */}
           <Card>
             <CardHeader><CardTitle className="text-base flex items-center gap-2"><Gauge className="h-4 w-4" /> Gross Margin</CardTitle></CardHeader>
-            <CardContent className="text-center py-4">
-              <p className={`text-3xl font-bold ${(d.grossMargin || 0) >= 20 ? 'text-green-600' : (d.grossMargin || 0) >= 10 ? 'text-amber-600' : 'text-red-600'}`}>
-                {pct(d.grossMargin || 0)}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">Revenue: {fmt(d.totalJobRevenue || 0)} · Cost: {fmt(d.totalJobCost || 0)}</p>
+            <CardContent className="flex flex-col items-center py-2">
+              <GaugeChart
+                value={d.grossMargin || 0}
+                target={30}
+                label="Gross Margin"
+              />
+              <p className="text-xs text-muted-foreground mt-1">Rev: {fmt(d.totalJobRevenue || 0)} · Cost: {fmt(d.totalJobCost || 0)}</p>
             </CardContent>
           </Card>
 
@@ -444,22 +473,64 @@ export function UnifiedDashboard() {
         </div>
       )}
 
-      {/* Cash flow forecast card */}
+      {/* Job Status Donut + Monthly Revenue Trend */}
+      {d && (
+        <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
+          {d.jobStatusData && d.jobStatusData.length > 0 && (
+            <Card className="p-6">
+              <h3 className="text-base font-semibold mb-3">Job Status Distribution</h3>
+              <DonutChart
+                data={d.jobStatusData}
+                centerValue={String(d.totalJobs || 0)}
+                centerLabel="Total Jobs"
+                height={240}
+                colors={["hsl(217,91%,60%)", "hsl(142,76%,36%)", "hsl(45,93%,47%)", "hsl(0,84%,60%)", "hsl(262,83%,58%)"]}
+              />
+            </Card>
+          )}
+          {d.revenueTrend && d.revenueTrend.length > 1 && (
+            <Card className="p-6">
+              <h3 className="text-base font-semibold mb-3">Monthly Revenue Trend</h3>
+              <ResponsiveContainer width="100%" height={240}>
+                <AreaChart data={d.revenueTrend}>
+                  <defs>
+                    <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="hsl(142, 76%, 36%)" stopOpacity={0.3} />
+                      <stop offset="100%" stopColor="hsl(142, 76%, 36%)" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis dataKey="month" className="text-xs" tick={{ fontSize: 11 }} />
+                  <YAxis className="text-xs" tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} tick={{ fontSize: 11 }} />
+                  <RechartsTooltip
+                    contentStyle={{ backgroundColor: "hsl(var(--background))", border: "1px solid hsl(var(--border))", borderRadius: "8px" }}
+                    formatter={(value: number) => [fmt(value), "Revenue"]}
+                  />
+                  <Area type="monotone" dataKey="revenue" stroke="hsl(142, 76%, 36%)" fill="url(#revGrad)" strokeWidth={2} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </Card>
+          )}
+        </div>
+      )}
+
+      {/* Active Jobs Budget vs Spent */}
       {d && d.activeJobs > 0 && (
-        <Card>
-          <CardHeader><CardTitle className="text-base flex items-center gap-2"><TrendingUp className="h-4 w-4" /> Active Jobs Forecast</CardTitle></CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+        <Card className="p-6">
+          <h3 className="text-base font-semibold mb-4 flex items-center gap-2"><TrendingUp className="h-4 w-4" /> Active Jobs Budget</h3>
+          <div className="space-y-3">
+            <BulletChart actual={d.activeJobCosts || 0} target={d.activeJobBudgets || 0} label="Total Spend vs Budget" />
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center pt-2">
               <div>
-                <p className="text-xs text-muted-foreground">Active Budget</p>
+                <p className="text-xs text-muted-foreground">Budget</p>
                 <p className="text-lg font-bold tabular-nums">{fmt(d.activeJobBudgets || 0)}</p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Spent So Far</p>
+                <p className="text-xs text-muted-foreground">Spent</p>
                 <p className="text-lg font-bold tabular-nums text-red-600">{fmt(d.activeJobCosts || 0)}</p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Remaining Budget</p>
+                <p className="text-xs text-muted-foreground">Remaining</p>
                 <p className="text-lg font-bold tabular-nums text-green-600">{fmt((d.activeJobBudgets || 0) - (d.activeJobCosts || 0))}</p>
               </div>
               <div>
@@ -467,7 +538,7 @@ export function UnifiedDashboard() {
                 <p className="text-lg font-bold tabular-nums">{fmt(d.burnRate || 0)}</p>
               </div>
             </div>
-          </CardContent>
+          </div>
         </Card>
       )}
     </InteractiveReportShell>

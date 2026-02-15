@@ -17,8 +17,9 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TrendingDown, DollarSign, Store, BarChart3, ArrowLeftRight } from "lucide-react";
 import { ExpenseAssignmentDialog } from "@/components/accounting/expense-assignment";
-import { ExpenseBreakdown } from "@/components/reporting/ExpenseBreakdown";
 import { ProfitLossStatement } from "@/components/reporting/ProfitLossStatement";
+import { DonutChart } from "../charts/DonutChart";
+import { StackedBarChart } from "../charts/StackedBarChart";
 
 const fmt = (v: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 0 }).format(v);
@@ -70,7 +71,25 @@ export function ExpensesProfitabilityReport() {
 
       const topCategory = Object.entries(byCategory).sort(([,a], [,b]) => b - a)[0];
 
-      return { total, avg, count: exp.length, topCategory: topCategory?.[0] || "N/A", topCategoryAmt: topCategory?.[1] || 0, expenses: exp, byCategory };
+      // Donut data
+      const donutData = Object.entries(byCategory).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
+
+      // Monthly trend by category
+      const monthlyByCategory: Record<string, Record<string, number>> = {};
+      exp.forEach(e => {
+        const month = (e.date || "").substring(0, 7);
+        const cat = e.category || "Uncategorized";
+        if (month) {
+          if (!monthlyByCategory[month]) monthlyByCategory[month] = {};
+          monthlyByCategory[month][cat] = (monthlyByCategory[month][cat] || 0) + Number(e.amount || 0);
+        }
+      });
+      const allCats = [...new Set(exp.map(e => e.category || "Uncategorized"))];
+      const trendData = Object.entries(monthlyByCategory)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([month, cats]) => ({ name: month.substring(5), ...cats }));
+
+      return { total, avg, count: exp.length, topCategory: topCategory?.[0] || "N/A", topCategoryAmt: topCategory?.[1] || 0, expenses: exp, byCategory, donutData, trendData, allCats };
     },
     enabled: !!user?.id,
   });
@@ -146,11 +165,32 @@ export function ExpensesProfitabilityReport() {
         )}
       </div>
 
-      {/* Expense breakdown chart */}
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4">Expense Breakdown</h3>
-        <ExpenseBreakdown filters={filters} />
-      </Card>
+      {/* Expense Donut + Trend */}
+      <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
+        <Card className="p-6">
+          <h3 className="text-base font-semibold mb-3">Expense Breakdown</h3>
+          <DonutChart
+            data={nativeExpenses?.donutData || []}
+            centerValue={fmt(nativeExpenses?.total || 0)}
+            centerLabel="Total"
+            height={260}
+          />
+        </Card>
+        {nativeExpenses?.trendData && nativeExpenses.trendData.length > 1 && (
+          <Card className="p-6">
+            <h3 className="text-base font-semibold mb-3">Expense Trend</h3>
+            <StackedBarChart
+              data={nativeExpenses.trendData}
+              series={(nativeExpenses.allCats || []).slice(0, 6).map((cat, i) => ({
+                key: cat,
+                label: cat,
+                color: ["hsl(217,91%,60%)", "hsl(0,84%,60%)", "hsl(45,93%,47%)", "hsl(142,76%,36%)", "hsl(262,83%,58%)", "hsl(24,95%,53%)"][i % 6],
+              }))}
+              height={260}
+            />
+          </Card>
+        )}
+      </div>
 
       {/* P&L Statement */}
       <ProfitLossStatement filters={filters} />
