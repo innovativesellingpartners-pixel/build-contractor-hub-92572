@@ -20,6 +20,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FileText, DollarSign, Target, TrendingUp } from "lucide-react";
+import { GaugeChart } from "../charts/GaugeChart";
 
 const fmt = (v: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 0 }).format(v);
@@ -98,6 +99,21 @@ export function SalesPipelineReport() {
           breakdown={[{ label: "Won", value: String(salesData?.acceptedCount || 0) }, { label: "Total", value: String(salesData?.estimates?.length || 0) }]}
         />
       </div>
+
+      {/* Conversion Gauge */}
+      {salesData && (
+        <Card className="p-6">
+          <h3 className="text-base font-semibold mb-2">Conversion Rate</h3>
+          <div className="flex justify-center">
+            <GaugeChart
+              value={salesData.conversionRate || 0}
+              target={40}
+              label="Estimate → Job"
+              thresholds={{ low: 15, mid: 30 }}
+            />
+          </div>
+        </Card>
+      )}
 
       {/* Conversion funnel + metrics */}
       <ConversionAnalytics filters={filters} />
