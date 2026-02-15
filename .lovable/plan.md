@@ -1,96 +1,114 @@
 
-# Modernize CRM Section UIs: Leads, Jobs, Customers, Estimates, Invoices
+
+# Enhanced Data Visualizations and KPI Analytics
 
 ## Overview
-Apply the same modern, clean "tech" design language already established in Reporting to all five core CRM sections. This is a visual-only refresh -- no routes, APIs, permissions, or logic changes.
+Add richer chart types and visual analytics across the Dashboard and Report pages to give contractors better insight into their business performance. All existing data sources and logic stay the same -- this adds new visual components on top.
 
-## Shared Foundation Updates
+## What Gets Added
 
-### 1. HorizontalRowCard modernization
-Update the shared list row component used across Leads, Jobs, Customers, and Estimates:
-- Increase border radius to `rounded-xl` (matching card updates)
-- Add subtle shadow on hover (`hover:shadow-md`)
-- Improve padding rhythm (`px-4 py-3.5`)
-- Add a left accent border on hover for visual feedback
-- Clean up avatar with softer background tones
+### 1. Shared Chart Components (new files)
 
-### 2. ProvenJobsTheme modernization
-Update the shared detail view theme components:
-- **DetailHeader**: Soften the dark header from pure `bg-foreground` to a gradient with subtle depth; improve spacing
-- **InfoCard**: Add `rounded-xl` and subtle shadow
-- **SectionHeader**: Modernize from heavy left-border style to a cleaner pill/chip label style
-- **ActionButton**: Match button radius and transition styles from the updated button component
-- **StatusBadge**: Use `rounded-md` with softer tinted backgrounds (matching new badge variants)
-- **ActionButtonRow**: Cleaner spacing and background treatment
-- **MoneyDisplay**: Add `tracking-tight` for numeric emphasis
+**DonutChart** (`src/components/reporting/charts/DonutChart.tsx`)
+- Reusable donut/ring chart with center label showing total or key metric
+- Used for: expense breakdown, estimate status composition, job status composition
+- Replaces the basic PieChart in ExpenseBreakdown with a cleaner donut variant
+- Props: data array, colors, center label, height
 
-### 3. PredictiveSearch modernization
-- Match input styling with updated `rounded-xl` inputs
-- Improve dropdown shadow and border radius
-- Cleaner result row hover states
+**GaugeChart** (`src/components/reporting/charts/GaugeChart.tsx`)
+- Semi-circle gauge showing a value against a target (e.g., gross margin target of 30%)
+- Used for: gross margin gauge on Dashboard, conversion rate gauge on Sales Pipeline
+- Props: value, max, target, label, color thresholds
 
-### 4. CrmNavHeader modernization
-- Softer button styling, slightly larger touch targets
-- Breadcrumb separator styling improvement
+**MiniSparkline** (`src/components/reporting/charts/MiniSparkline.tsx`)
+- Tiny inline line/area chart (50x20px) for embedding in table cells or metric cards
+- Used for: trend columns in job tables, revenue trend in metric cards
+- Props: data points array, color, width, height
 
-### 5. MobileOptimizedWrapper modernization
-- Update card wrappers to use new rounded corners and shadow scale
+**StackedBarChart** (`src/components/reporting/charts/StackedBarChart.tsx`)
+- Stacked bar for comparing composition over time (e.g., revenue by trade type per month, expenses by category per month)
+- Props: data, series config, height
 
-## Section-Specific Updates
+**BulletChart** (`src/components/reporting/charts/BulletChart.tsx`)
+- Horizontal bullet chart for goal-vs-actual display
+- Used for: budget vs actual per job, revenue vs target
+- Props: actual, target, ranges, label
 
-### 6. LeadsSection
-- **Page header**: Stronger typographic hierarchy with `tracking-tight` on the title
-- **Status badges**: Replace raw `bg-blue-500 text-white` classes with tinted variants (e.g., `bg-blue-500/10 text-blue-700`) for a modern flat look
-- **Empty state**: Add icon and improved spacing
-- **Loading state**: Replace plain text with skeleton shimmer
+### 2. Executive Dashboard Enhancements (`UnifiedDashboard.tsx`)
 
-### 7. JobsSection
-- Same header and badge treatment as Leads
-- Status badges updated to tinted pill style
-- Loading and empty state improvements
+Current state: metric cards + text lists + simple pipeline circles
+Changes:
+- Replace the plain "Gross Margin" text display with a **GaugeChart** component
+- Add a **revenue trend sparkline** inside the Total Revenue metric card using MiniSparkline
+- Replace the "Active Jobs Forecast" text grid with a **BulletChart** showing budget vs spent per active category
+- Add a new **"Monthly Revenue Trend"** area chart card below the metric row -- uses the same jobs data already fetched, grouped by month
+- Add a **DonutChart** for job status composition (scheduled / in_progress / completed / on_hold) next to the pipeline funnel
 
-### 8. CustomersSection
-- Same header treatment
-- Customer type badge uses new `secondary` variant styling
-- Linked record badges get cleaner outline treatment
+### 3. Sales Pipeline Report Enhancements (`SalesPipelineReport.tsx`)
 
-### 9. EstimatesSection
-- **Lifecycle progress dots**: Increase size slightly, add subtle connecting line
-- Status filter dropdown gets `rounded-xl` treatment
-- Estimate cards match new HorizontalRowCard style
-- Loading spinner replaced with skeleton cards
+Current state: metric cards + ConversionAnalytics + funnel bar chart + sales over time bar
+Changes:
+- Add a **conversion rate GaugeChart** alongside the existing conversion metrics
+- Upgrade the EstimateFunnelChart with gradient fills and rounded bar corners for modern look
 
-### 10. InvoicesSection
-- **Invoice cards**: Migrate from raw Card usage to HorizontalRowCard pattern for consistency with other sections
-- Status badges use tinted color system instead of raw Tailwind background classes
-- Amount display uses `tabular-nums tracking-tight`
-- Empty state gets icon + cleaner text hierarchy
+### 4. Jobs & Projects Report Enhancements (`JobsProjectsReport.tsx`)
+
+Current state: metric cards + bar chart by trade + profitability table
+Changes:
+- Add **MiniSparkline** trend column to the job profitability table showing margin trend
+- Add a **StackedBarChart** showing revenue breakdown by trade type over time
+- Add a **DonutChart** showing job status distribution
+
+### 5. Revenue Report Enhancements (`RevenueFinancialReport.tsx`)
+
+Current state: metric cards + RevenueProfitChart (composed bar+line) + payment table
+Changes:
+- Add a **monthly revenue area chart** with gradient fill (cleaner alternative view alongside existing bar chart)
+- Add **BulletChart** for revenue vs target if any target data exists
+
+### 6. Expenses Report Enhancements (`ExpensesProfitabilityReport.tsx`)
+
+Current state: metric cards + pie chart + P&L statement + vendor list
+Changes:
+- Replace the basic Pie chart with a **DonutChart** showing expense categories with center total
+- Add a **StackedBarChart** showing expense trend by category over time
+
+### 7. Conversion Analytics Visual Upgrade (`ConversionAnalytics.tsx`)
+
+Current state: cards + circles pipeline + progress bars for status breakdowns
+Changes:
+- Replace the pipeline circles with a proper **funnel visualization** using progressively narrower bars
+- Add **GaugeChart** for overall conversion rate
 
 ## Technical Details
 
-### Files to modify (in order):
-1. `src/components/contractor/crm/sections/HorizontalRowCard.tsx` -- rounded-xl, shadow, hover accent
-2. `src/components/contractor/crm/sections/ProvenJobsTheme.tsx` -- all shared detail components
-3. `src/components/contractor/crm/PredictiveSearch.tsx` -- dropdown and input styling
-4. `src/components/contractor/crm/CrmNavHeader.tsx` -- button and layout refinements
-5. `src/components/contractor/crm/sections/MobileOptimizedWrapper.tsx` -- card wrappers
-6. `src/components/contractor/crm/sections/LeadsSection.tsx` -- badge colors, header, empty/loading states
-7. `src/components/contractor/crm/sections/JobsSection.tsx` -- badge colors, header, empty/loading states
-8. `src/components/contractor/crm/sections/CustomersSection.tsx` -- badge and header styling
-9. `src/components/contractor/crm/sections/EstimatesSection.tsx` -- progress dots, badges, loading
-10. `src/components/contractor/crm/sections/InvoicesSection.tsx` -- card consistency, badge colors, amounts
+### New files to create:
+1. `src/components/reporting/charts/DonutChart.tsx`
+2. `src/components/reporting/charts/GaugeChart.tsx`
+3. `src/components/reporting/charts/MiniSparkline.tsx`
+4. `src/components/reporting/charts/StackedBarChart.tsx`
+5. `src/components/reporting/charts/BulletChart.tsx`
 
-### Design tokens already in place (from prior Reporting update):
-- `--shadow-xs` through `--shadow-xl`
-- `rounded-xl` base radius
-- `tabular-nums` for financial data
-- Tinted badge variants (success, info, warning)
-- Updated card, table, input, and button components
+### Files to modify:
+1. `src/components/reporting/unified/UnifiedDashboard.tsx` -- add gauge, donut, area chart, bullet chart
+2. `src/components/reporting/unified/SalesPipelineReport.tsx` -- add gauge
+3. `src/components/reporting/unified/JobsProjectsReport.tsx` -- add stacked bar, donut, sparklines
+4. `src/components/reporting/unified/ExpensesProfitabilityReport.tsx` -- swap pie for donut, add stacked bar
+5. `src/components/reporting/ConversionAnalytics.tsx` -- upgrade pipeline viz, add gauge
+6. `src/components/reporting/unified/RevenueFinancialReport.tsx` -- add area chart option
+
+### Libraries used:
+- `recharts` (already installed) -- PieChart for donut, custom SVG for gauge, AreaChart, BarChart with stacking
+- All chart components use `ResponsiveContainer` for fluid sizing
+- Consistent color palette using existing HSL design tokens
+
+### Data sources:
+- No new API calls or database queries needed
+- All charts use data already fetched by existing hooks and queries
+- Sparklines derive from the same monthly-grouped data already computed
 
 ### What stays the same:
-- All routes and navigation structure
-- All API calls, hooks, and data fetching logic
-- All dialog/modal behavior and form logic
-- All filters, exports, and action handlers
-- All permissions and auth checks
-- Component public interfaces (props)
+- All existing charts remain (new ones are additive)
+- All metric card logic, drill-down behavior, and click handlers preserved
+- All filter, export, and date range controls unchanged
+- No route, API, or database changes
