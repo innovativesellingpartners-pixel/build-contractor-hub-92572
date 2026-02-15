@@ -1,6 +1,5 @@
 import { Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -23,7 +22,6 @@ function getDateRangeValues(value: string): { dateFrom?: string; dateTo?: string
 
   switch (value) {
     case "all_time":
-      // No date filters for all time
       return {};
     case "today":
       dateFrom = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -71,7 +69,6 @@ function getDateRangeValues(value: string): { dateFrom?: string; dateTo?: string
 }
 
 export function ReportingFilters({ filters, onFiltersChange }: ReportingFiltersProps) {
-  // Initialize date filters on mount if not already set
   useEffect(() => {
     if (filters.dateRange && !filters.dateFrom && !filters.dateTo && filters.dateRange !== "all_time" && filters.dateRange !== "custom") {
       const dates = getDateRangeValues(filters.dateRange);
@@ -95,7 +92,6 @@ export function ReportingFilters({ filters, onFiltersChange }: ReportingFiltersP
   };
 
   const handleReset = () => {
-    // Reset to all time so user can see all their data
     onFiltersChange({ 
       dateRange: "all_time",
       dateFrom: undefined,
@@ -106,73 +102,71 @@ export function ReportingFilters({ filters, onFiltersChange }: ReportingFiltersP
   };
 
   return (
-    <Card className="p-4">
-      <div className="flex flex-wrap gap-4">
-        <div className="flex-1 min-w-[200px]">
-          <Select value={filters.dateRange} onValueChange={handleDateRangeChange}>
-            <SelectTrigger>
-              <Calendar className="mr-2 h-4 w-4" />
-              <SelectValue placeholder="Select date range" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all_time">All Time</SelectItem>
-              <SelectItem value="today">Today</SelectItem>
-              <SelectItem value="this_week">This Week</SelectItem>
-              <SelectItem value="this_month">This Month</SelectItem>
-              <SelectItem value="last_month">Last Month</SelectItem>
-              <SelectItem value="this_quarter">This Quarter</SelectItem>
-              <SelectItem value="last_quarter">Last Quarter</SelectItem>
-              <SelectItem value="this_year">Year to Date</SelectItem>
-              <SelectItem value="custom">Custom Range</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="flex-1 min-w-[200px]">
-          <Select
-            value={filters.tradeType || "all"}
-            onValueChange={(value) => onFiltersChange({ ...filters, tradeType: value === "all" ? undefined : value })}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="All Trades" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Trades</SelectItem>
-              <SelectItem value="electrical">Electrical</SelectItem>
-              <SelectItem value="plumbing">Plumbing</SelectItem>
-              <SelectItem value="hvac">HVAC</SelectItem>
-              <SelectItem value="roofing">Roofing</SelectItem>
-              <SelectItem value="concrete">Concrete</SelectItem>
-              <SelectItem value="general">General Contracting</SelectItem>
-              <SelectItem value="painting">Painting</SelectItem>
-              <SelectItem value="landscaping">Landscaping</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="flex-1 min-w-[200px]">
-          <Select
-            value={filters.status || "all"}
-            onValueChange={(value) => onFiltersChange({ ...filters, status: value === "all" ? undefined : value })}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="All Statuses" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
-              <SelectItem value="draft">Draft</SelectItem>
-              <SelectItem value="sent">Sent</SelectItem>
-              <SelectItem value="accepted">Accepted</SelectItem>
-              <SelectItem value="sold">Sold</SelectItem>
-              <SelectItem value="rejected">Rejected</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <Button variant="outline" onClick={handleReset}>
-          Reset Filters
-        </Button>
+    <div className="flex flex-wrap gap-3 items-center p-4 bg-muted/30 rounded-xl border border-border/40">
+      <div className="flex-1 min-w-[180px]">
+        <Select value={filters.dateRange} onValueChange={handleDateRangeChange}>
+          <SelectTrigger className="h-9 text-sm">
+            <Calendar className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
+            <SelectValue placeholder="Select date range" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all_time">All Time</SelectItem>
+            <SelectItem value="today">Today</SelectItem>
+            <SelectItem value="this_week">This Week</SelectItem>
+            <SelectItem value="this_month">This Month</SelectItem>
+            <SelectItem value="last_month">Last Month</SelectItem>
+            <SelectItem value="this_quarter">This Quarter</SelectItem>
+            <SelectItem value="last_quarter">Last Quarter</SelectItem>
+            <SelectItem value="this_year">Year to Date</SelectItem>
+            <SelectItem value="custom">Custom Range</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
-    </Card>
+
+      <div className="flex-1 min-w-[180px]">
+        <Select
+          value={filters.tradeType || "all"}
+          onValueChange={(value) => onFiltersChange({ ...filters, tradeType: value === "all" ? undefined : value })}
+        >
+          <SelectTrigger className="h-9 text-sm">
+            <SelectValue placeholder="All Trades" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Trades</SelectItem>
+            <SelectItem value="electrical">Electrical</SelectItem>
+            <SelectItem value="plumbing">Plumbing</SelectItem>
+            <SelectItem value="hvac">HVAC</SelectItem>
+            <SelectItem value="roofing">Roofing</SelectItem>
+            <SelectItem value="concrete">Concrete</SelectItem>
+            <SelectItem value="general">General Contracting</SelectItem>
+            <SelectItem value="painting">Painting</SelectItem>
+            <SelectItem value="landscaping">Landscaping</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="flex-1 min-w-[180px]">
+        <Select
+          value={filters.status || "all"}
+          onValueChange={(value) => onFiltersChange({ ...filters, status: value === "all" ? undefined : value })}
+        >
+          <SelectTrigger className="h-9 text-sm">
+            <SelectValue placeholder="All Statuses" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Statuses</SelectItem>
+            <SelectItem value="draft">Draft</SelectItem>
+            <SelectItem value="sent">Sent</SelectItem>
+            <SelectItem value="accepted">Accepted</SelectItem>
+            <SelectItem value="sold">Sold</SelectItem>
+            <SelectItem value="rejected">Rejected</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <Button variant="ghost" size="sm" onClick={handleReset} className="text-xs">
+        Reset
+      </Button>
+    </div>
   );
 }

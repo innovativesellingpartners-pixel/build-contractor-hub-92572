@@ -94,26 +94,26 @@ export function InteractiveTable<T extends Record<string, any>>({
   };
 
   const SortIcon = ({ colKey }: { colKey: string }) => {
-    if (sortKey !== colKey) return <ArrowUpDown className="h-3 w-3 ml-1 opacity-40" />;
+    if (sortKey !== colKey) return <ArrowUpDown className="h-3 w-3 ml-1 opacity-30" />;
     return sortDir === "asc"
       ? <ArrowUp className="h-3 w-3 ml-1 text-primary" />
       : <ArrowDown className="h-3 w-3 ml-1 text-primary" />;
   };
 
   return (
-    <Card>
+    <Card className="overflow-hidden">
       {(title || searchKeys?.length) && (
-        <CardHeader className="pb-3">
+        <CardHeader className="pb-3 border-b border-border/40">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            {title && <CardTitle className="text-base">{title}</CardTitle>}
+            {title && <CardTitle className="text-base font-semibold">{title}</CardTitle>}
             {searchKeys && searchKeys.length > 0 && (
               <div className="relative w-full sm:w-64">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder={searchPlaceholder}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="pl-8 text-sm"
+                  className="pl-9 text-sm h-9"
                 />
               </div>
             )}
@@ -127,19 +127,19 @@ export function InteractiveTable<T extends Record<string, any>>({
       )}
       <CardContent className="p-0">
         {filteredData.length === 0 ? (
-          <div className="py-12 text-center text-sm text-muted-foreground">{emptyMessage}</div>
+          <div className="py-16 text-center text-sm text-muted-foreground">{emptyMessage}</div>
         ) : (
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow>
+                <TableRow className="hover:bg-transparent">
                   {columns.map((col) => (
                     <TableHead
                       key={col.key}
                       className={cn(
                         col.align === "right" && "text-right",
                         col.align === "center" && "text-center",
-                        col.sortable !== false && "cursor-pointer select-none hover:bg-muted/50",
+                        col.sortable !== false && "cursor-pointer select-none hover:text-foreground",
                         col.className,
                       )}
                       style={col.width ? { width: col.width } : undefined}
@@ -159,7 +159,7 @@ export function InteractiveTable<T extends Record<string, any>>({
                   <TableRow
                     key={row.id || i}
                     className={cn(
-                      onRowClick && "cursor-pointer hover:bg-muted/50 transition-colors group"
+                      onRowClick && "cursor-pointer hover:bg-muted/40 transition-colors group"
                     )}
                     onClick={() => onRowClick?.(row)}
                   >
@@ -177,9 +177,9 @@ export function InteractiveTable<T extends Record<string, any>>({
                       </TableCell>
                     ))}
                     {(renderRowActions || onRowClick) && (
-                      <TableCell className="text-right">
+                      <TableCell className="text-right pr-4">
                         {renderRowActions ? renderRowActions(row) : (
-                          <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity inline-block" />
+                          <ChevronRight className="h-4 w-4 text-muted-foreground/40 group-hover:text-primary group-hover:translate-x-0.5 transition-all inline-block" />
                         )}
                       </TableCell>
                     )}
@@ -188,7 +188,7 @@ export function InteractiveTable<T extends Record<string, any>>({
               </TableBody>
             </Table>
             {filteredData.length > maxRows && (
-              <p className="text-xs text-muted-foreground text-center py-3">
+              <p className="text-xs text-muted-foreground text-center py-3 border-t border-border/40">
                 Showing {maxRows} of {filteredData.length} results
               </p>
             )}

@@ -8,19 +8,19 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const Card = React.forwardRef<HTMLDivElement, CardProps>(({ className, variant = 'default', ...props }, ref) => {
   const variantClasses = {
-    default: 'bg-card border-border',
-    blue: 'bg-blue-50 border-blue-200 shadow-blue-100/50',
-    green: 'bg-green-50 border-green-200 shadow-green-100/50',
-    purple: 'bg-purple-50 border-purple-200 shadow-purple-100/50',
-    orange: 'bg-orange-50 border-orange-200 shadow-orange-100/50',
-    gradient: 'bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 border-purple-200',
+    default: 'bg-card border-border/60',
+    blue: 'bg-blue-50 border-blue-200/60 dark:bg-blue-950/30 dark:border-blue-800/40',
+    green: 'bg-green-50 border-green-200/60 dark:bg-green-950/30 dark:border-green-800/40',
+    purple: 'bg-purple-50 border-purple-200/60 dark:bg-purple-950/30 dark:border-purple-800/40',
+    orange: 'bg-orange-50 border-orange-200/60 dark:bg-orange-950/30 dark:border-orange-800/40',
+    gradient: 'bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 border-purple-200/60 dark:from-blue-950/20 dark:via-purple-950/20 dark:to-pink-950/20',
   };
 
   return (
     <div
       ref={ref}
       className={cn(
-        "rounded-lg border shadow-sm hover:shadow-lg transition-all duration-200",
+        "rounded-xl border shadow-sm transition-all duration-200",
         variantClasses[variant],
         "text-card-foreground",
         className
