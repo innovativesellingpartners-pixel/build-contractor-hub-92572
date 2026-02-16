@@ -131,7 +131,7 @@ export function BankingView() {
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => setAssignOpen(true)} className="gap-1.5">
             <ArrowLeftRight className="h-4 w-4" />
-            <span className="hidden sm:inline">Assign Expenses</span>
+            Assign Expenses
           </Button>
           <FinancialConnectionsDropdown
             connections={{ bankConnected, qbConnected, stripeConnected }}
