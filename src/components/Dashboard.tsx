@@ -1076,15 +1076,15 @@ function CRMSidebarNav({ onSectionChange }: CRMSidebarNavProps) {
   const crmNavItems = [
     { id: 'dashboard' as CRMSection, label: 'Dashboard', icon: LayoutDashboard },
     { id: 'leads' as CRMSection, label: 'Leads', icon: ClipboardList },
-    { id: 'estimates' as CRMSection, label: 'Estimates', icon: FileText },
-    { id: 'invoices' as CRMSection, label: 'Invoices', icon: Receipt },
     { id: 'jobs' as CRMSection, label: 'Jobs', icon: Briefcase },
+    { id: 'estimates' as CRMSection, label: 'Estimates', icon: FileText },
+    { id: 'customers' as CRMSection, label: 'Customers', icon: Users },
+    { id: 'invoices' as CRMSection, label: 'Invoices', icon: Receipt },
     { id: 'calls' as CRMSection, label: 'Calls', icon: Phone },
     { id: 'emails' as CRMSection, label: 'Emails', icon: Mail },
     { id: 'calendar' as CRMSection, label: 'Calendar', icon: Calendar },
     { id: 'accounting' as CRMSection, label: 'Accounting', icon: DollarSign },
     { id: 'payments' as CRMSection, label: 'Payments', icon: CreditCard },
-    { id: 'customers' as CRMSection, label: 'Customers', icon: Users },
     { id: 'reporting' as CRMSection, label: 'Reporting', icon: BarChart3 },
   ];
 
