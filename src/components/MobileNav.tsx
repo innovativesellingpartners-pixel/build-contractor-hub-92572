@@ -36,7 +36,7 @@ export function MobileNav({ onContactClick }: MobileNavProps) {
             className="text-lg font-medium text-foreground hover:text-primary transition-colors py-2"
             onClick={() => setOpen(false)}
           >
-            What We Do
+            About Us
           </Link>
           
           {/* Products Dropdown */}

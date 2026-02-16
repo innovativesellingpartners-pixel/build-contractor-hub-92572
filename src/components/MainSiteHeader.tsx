@@ -43,7 +43,7 @@ export function MainSiteHeader({ onContactClick }: MainSiteHeaderProps) {
           </Link>
           
           <nav className="hidden lg:flex items-center space-x-3 xl:space-x-5">
-            <Link to="/what-we-do" className="text-zinc-300 hover:text-white transition-colors font-medium text-sm">What We Do</Link>
+            <Link to="/what-we-do" className="text-zinc-300 hover:text-white transition-colors font-medium text-sm">About Us</Link>
             
             {/* Products Dropdown */}
             <NavigationMenu>

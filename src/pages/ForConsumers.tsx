@@ -76,7 +76,7 @@ export default function ForConsumers() {
             </Link>
             <nav className="hidden md:flex items-center gap-6">
               <Link to="/" className="text-sm hover:text-primary transition-colors">Home</Link>
-              <Link to="/what-we-do" className="text-sm hover:text-primary transition-colors">What We Do</Link>
+              <Link to="/what-we-do" className="text-sm hover:text-primary transition-colors">About Us</Link>
               <Link to="/core-values" className="text-sm hover:text-primary transition-colors">Core Values</Link>
               <Link to="/trades-we-serve" className="text-sm hover:text-primary transition-colors">Trades We Serve</Link>
               <Link to="/pricing" className="text-sm hover:text-primary transition-colors">Pricing</Link>
