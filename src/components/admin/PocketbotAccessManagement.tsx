@@ -25,7 +25,7 @@ interface UserAccess {
   pocketbot_full_access: boolean;
 }
 
-export const PocketbotAccessManagement = () => {
+export const PocketAgentAccessManagement = () => {
   const [users, setUsers] = useState<UserAccess[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<UserAccess[]>([]);
   const [loading, setLoading] = useState(true);

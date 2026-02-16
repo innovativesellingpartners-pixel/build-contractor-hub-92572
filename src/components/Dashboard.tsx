@@ -46,7 +46,7 @@ import CT1CRM from "@/components/contractor/crm/CT1CRM";
 import { Insurance } from "@/components/contractor/Insurance";
 import { ProfileEditDialog } from "@/components/contractor/ProfileEditDialog";
 import { StarRating } from "@/components/contractor/StarRating";
-import { FloatingPocketbot } from "@/components/contractor/FloatingPocketbot";
+import { FloatingPocketAgent } from "@/components/contractor/FloatingPocketbot";
 import { ContactSupport } from "@/components/ContactSupport";
 
 import { BottomNav } from "@/components/contractor/crm/BottomNav";
@@ -81,8 +81,8 @@ export function Dashboard() {
   
   const [activeSection, setActiveSection] = useState<ActiveSection>(getInitialSection);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [pocketbotOpen, setPocketbotOpen] = useState(false);
-  const [pocketbotPosition, setPocketbotPosition] = useState('20px');
+  const [pocketAgentOpen, setPocketAgentOpen] = useState(false);
+  const [pocketAgentPosition, setPocketAgentPosition] = useState('20px');
   const [contactSupportOpen, setContactSupportOpen] = useState(false);
   const [upgradePlanOpen, setUpgradePlanOpen] = useState(false);
   const [crmActiveSection, setCrmActiveSection] = useState<string>(() => {
@@ -200,9 +200,9 @@ export function Dashboard() {
   };
 
   const handleChatButtonClick = () => {
-    // Only toggle pocketbot if user didn't drag
+    // Only toggle Pocket Agent if user didn't drag
     if (!hasDragged) {
-      setPocketbotOpen(!pocketbotOpen);
+      setPocketAgentOpen(!pocketAgentOpen);
     }
     // Reset drag state after click
     setHasDragged(false);
@@ -375,7 +375,7 @@ export function Dashboard() {
           {activeSection === 'leads' ? (
             <div className="bg-card border border-border/50 rounded-xl shadow-md overflow-hidden">
               <CT1CRM 
-                onOpenPocketbot={() => setPocketbotOpen(true)} 
+                onOpenPocketAgent={() => setPocketAgentOpen(true)}
                 onSectionChange={(section) => {
                   if (section === 'help') {
                     handleSectionChange('help');
@@ -698,10 +698,10 @@ export function Dashboard() {
       </div>
 
       {/* Floating Pocket Agent Widget */}
-      {pocketbotOpen && (
-        <FloatingPocketbot 
-          onClose={() => setPocketbotOpen(false)} 
-          onPositionChange={setPocketbotPosition}
+      {pocketAgentOpen && (
+        <FloatingPocketAgent 
+          onClose={() => setPocketAgentOpen(false)} 
+          onPositionChange={setPocketAgentPosition}
           initialPosition={chatButtonPosition || undefined}
         />
       )}
@@ -777,7 +777,7 @@ export function Dashboard() {
               ? { left: chatButtonPosition.x, top: chatButtonPosition.y }
               : { bottom: isMobile && activeSection !== 'leads' ? 84 : 24, right: 24 }
           }
-          aria-label="Open CT1 Pocketbot"
+          aria-label="Open CT1 Pocket Agent"
         >
           <div className="bg-foreground/95 backdrop-blur-md text-background p-3 md:p-4 rounded-full shadow-2xl hover:shadow-primary/50 transition-all duration-300 hover:scale-105 border-2 border-primary/30">
             <div className="relative">

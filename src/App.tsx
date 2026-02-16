@@ -4,7 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
-import { GlobalPocketbot } from "@/components/GlobalPocketbot";
+import { GlobalPocketAgent } from "@/components/GlobalPocketbot";
 import { usePWABackNavigation } from "@/hooks/usePWABackNavigation";
 import { HomeRedirect } from "@/components/HomeRedirect";
 import { NewLandingPage } from "@/components/NewLandingPage";
@@ -45,7 +45,7 @@ import { AdminJobs } from "@/components/admin/AdminJobs";
 import { AdminCustomers } from "@/components/admin/AdminCustomers";
 import { AdminGCContacts } from "@/components/admin/AdminGCContacts";
 import { AdminSettings } from "@/components/admin/AdminSettings";
-import { PocketbotAccessManagement } from "@/components/admin/PocketbotAccessManagement";
+import { PocketAgentAccessManagement } from "@/components/admin/PocketbotAccessManagement";
 import { HelpAdmin } from "@/components/admin/HelpAdmin";
 import ArchiveManagement from "@/components/admin/ArchiveManagement";
 import { BusinessSuite } from "@/pages/BusinessSuite";
@@ -72,7 +72,7 @@ import PublicInvoice from "./pages/PublicInvoice";
 import Reporting from "./pages/Reporting";
 import AppInstall from "./pages/AppInstall";
 import Accounting from "./pages/Accounting";
-import PocketbotProduct from "./pages/products/PocketbotProduct";
+import PocketAgentProduct from "./pages/products/PocketbotProduct";
 import VoiceAIProduct from "./pages/products/VoiceAIProduct";
 import TierLaunch from "./pages/products/TierLaunch";
 import TierGrowth from "./pages/products/TierGrowth";
@@ -80,8 +80,8 @@ import TierMarket from "./pages/products/TierMarket";
 
 const queryClient = new QueryClient();
 
-// Wrapper to conditionally show Pocketbot on public pages only
-function PocketbotWrapper() {
+// Wrapper to conditionally show Pocket Agent on public pages only
+function PocketAgentWrapper() {
   const location = useLocation();
   const publicPaths = [
     '/', '/savings', '/platform', '/for-consumers', '/business-suite', 
@@ -99,7 +99,7 @@ function PocketbotWrapper() {
   const isExcluded = excludedPaths.some(path => location.pathname.startsWith(path));
   
   if (isPublicPage && !isExcluded) {
-    return <GlobalPocketbot />;
+    return <GlobalPocketAgent />;
   }
   return null;
 }
@@ -119,7 +119,7 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
           <PWABackHandler />
-          <PocketbotWrapper />
+          <PocketAgentWrapper />
           <Routes>
             <Route path="/" element={<HomeRedirect />} />
             <Route path="/savings" element={<Savings />} />
@@ -145,7 +145,7 @@ const App = () => (
             <Route path="/nationwide-network" element={<NationwideNetwork />} />
             <Route path="/trades-we-serve" element={<TradesWeServe />} />
             <Route path="/blog-podcast" element={<BlogPodcast />} />
-            <Route path="/products/pocket-agent" element={<PocketbotProduct />} />
+            <Route path="/products/pocket-agent" element={<PocketAgentProduct />} />
             <Route path="/products/pocketbot" element={<Navigate to="/products/pocket-agent" replace />} />
             <Route path="/products/voice-ai" element={<VoiceAIProduct />} />
             <Route path="/products/tier-launch" element={<TierLaunch />} />

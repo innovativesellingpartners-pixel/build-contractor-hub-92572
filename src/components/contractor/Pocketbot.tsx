@@ -18,7 +18,7 @@ interface Message {
 
 const DAILY_LIMIT = 50;
 
-export function Pocketbot() {
+export function PocketAgent() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
