@@ -24,6 +24,7 @@ import {
 import { GaugeChart } from "../charts/GaugeChart";
 import { DonutChart } from "../charts/DonutChart";
 import { BulletChart } from "../charts/BulletChart";
+import { ChartCard } from "../charts/ChartCard";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from "recharts";
 
 const fmt = (v: number) =>
@@ -421,17 +422,21 @@ export function UnifiedDashboard() {
       {d?.jobRankings && d.jobRankings.length > 0 && (
         <div className="grid gap-4 grid-cols-1 lg:grid-cols-3">
           {/* Gross Margin Gauge */}
-          <Card>
-            <CardHeader><CardTitle className="text-base flex items-center gap-2"><Gauge className="h-4 w-4" /> Gross Margin</CardTitle></CardHeader>
-            <CardContent className="flex flex-col items-center py-2">
+          <ChartCard
+            title="Gross Margin"
+            subtitle={`Rev: ${fmt(d.totalJobRevenue || 0)} · Cost: ${fmt(d.totalJobCost || 0)}`}
+            icon={<Gauge className="h-4 w-4" />}
+            isEmpty={!d.totalJobRevenue && !d.totalJobCost}
+            emptyMessage="No job data to calculate gross margin."
+          >
+            <div className="flex justify-center">
               <GaugeChart
                 value={d.grossMargin || 0}
                 target={30}
                 label="Gross Margin"
               />
-              <p className="text-xs text-muted-foreground mt-1">Rev: {fmt(d.totalJobRevenue || 0)} · Cost: {fmt(d.totalJobCost || 0)}</p>
-            </CardContent>
-          </Card>
+            </div>
+          </ChartCard>
 
           {/* Top Profitable */}
           <Card>
@@ -476,41 +481,43 @@ export function UnifiedDashboard() {
       {/* Job Status Donut + Monthly Revenue Trend */}
       {d && (
         <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
-          {d.jobStatusData && d.jobStatusData.length > 0 && (
-            <Card className="p-6">
-              <h3 className="text-base font-semibold mb-3">Job Status Distribution</h3>
-              <DonutChart
-                data={d.jobStatusData}
-                centerValue={String(d.totalJobs || 0)}
-                centerLabel="Total Jobs"
-                height={240}
-                colors={["hsl(217,91%,60%)", "hsl(142,76%,36%)", "hsl(45,93%,47%)", "hsl(0,84%,60%)", "hsl(262,83%,58%)"]}
-              />
-            </Card>
-          )}
-          {d.revenueTrend && d.revenueTrend.length > 1 && (
-            <Card className="p-6">
-              <h3 className="text-base font-semibold mb-3">Monthly Revenue Trend</h3>
-              <ResponsiveContainer width="100%" height={240}>
-                <AreaChart data={d.revenueTrend}>
-                  <defs>
-                    <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="hsl(142, 76%, 36%)" stopOpacity={0.3} />
-                      <stop offset="100%" stopColor="hsl(142, 76%, 36%)" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis dataKey="month" className="text-xs" tick={{ fontSize: 11 }} />
-                  <YAxis className="text-xs" tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} tick={{ fontSize: 11 }} />
-                  <RechartsTooltip
-                    contentStyle={{ backgroundColor: "hsl(var(--background))", border: "1px solid hsl(var(--border))", borderRadius: "8px" }}
-                    formatter={(value: number) => [fmt(value), "Revenue"]}
-                  />
-                  <Area type="monotone" dataKey="revenue" stroke="hsl(142, 76%, 36%)" fill="url(#revGrad)" strokeWidth={2} />
-                </AreaChart>
-              </ResponsiveContainer>
-            </Card>
-          )}
+          <ChartCard
+            title="Job Status Distribution"
+            isEmpty={!d.jobStatusData || d.jobStatusData.length === 0}
+            emptyMessage="No jobs found for the selected period."
+          >
+            <DonutChart
+              data={d.jobStatusData}
+              centerValue={String(d.totalJobs || 0)}
+              centerLabel="Total Jobs"
+              height={240}
+              colors={["hsl(217,91%,60%)", "hsl(142,76%,36%)", "hsl(45,93%,47%)", "hsl(0,84%,60%)", "hsl(262,83%,58%)"]}
+            />
+          </ChartCard>
+          <ChartCard
+            title="Monthly Revenue Trend"
+            isEmpty={!d.revenueTrend || d.revenueTrend.length < 2}
+            emptyMessage="Not enough payment data to show revenue trend."
+          >
+            <ResponsiveContainer width="100%" height={240}>
+              <AreaChart data={d.revenueTrend}>
+                <defs>
+                  <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="hsl(142, 76%, 36%)" stopOpacity={0.3} />
+                    <stop offset="100%" stopColor="hsl(142, 76%, 36%)" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                <XAxis dataKey="month" className="text-xs" tick={{ fontSize: 11 }} />
+                <YAxis className="text-xs" tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} tick={{ fontSize: 11 }} />
+                <RechartsTooltip
+                  contentStyle={{ backgroundColor: "hsl(var(--background))", border: "1px solid hsl(var(--border))", borderRadius: "8px" }}
+                  formatter={(value: number) => [fmt(value), "Revenue"]}
+                />
+                <Area type="monotone" dataKey="revenue" stroke="hsl(142, 76%, 36%)" fill="url(#revGrad)" strokeWidth={2} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </ChartCard>
         </div>
       )}
 

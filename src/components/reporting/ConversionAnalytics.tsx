@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TrendingUp, Users, Target, DollarSign, ArrowRight, FileText, UserCheck, Briefcase, ClipboardCheck } from 'lucide-react';
 import { GaugeChart } from './charts/GaugeChart';
+import { ChartCard } from './charts/ChartCard';
 import { useAuth } from '@/contexts/AuthContext';
 import { ReportingFilters } from '@/pages/Reporting';
 
@@ -321,8 +322,11 @@ export function ConversionAnalytics({ filters }: ConversionAnalyticsProps) {
           </div>
         </Card>
 
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold mb-2">Overall Conversion</h3>
+        <ChartCard
+          title="Overall Conversion"
+          isEmpty={!metrics.totalLeads}
+          emptyMessage="No leads to calculate conversion rate."
+        >
           <div className="flex justify-center">
             <GaugeChart
               value={metrics.overallConversionRate}
@@ -331,7 +335,7 @@ export function ConversionAnalytics({ filters }: ConversionAnalyticsProps) {
               thresholds={{ low: 10, mid: 20 }}
             />
           </div>
-        </Card>
+        </ChartCard>
       </div>
 
       {/* Status Breakdowns */}

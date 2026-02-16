@@ -20,6 +20,7 @@ import { Briefcase, CheckCircle, TrendingUp, Clock } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { DonutChart } from "../charts/DonutChart";
 import { GaugeChart } from "../charts/GaugeChart";
+import { ChartCard } from "../charts/ChartCard";
 
 const fmt = (v: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 0 }).format(v);
@@ -160,20 +161,24 @@ export function JobsProjectsReport() {
 
       {/* Job Status Donut + Margin Gauge */}
       <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
-        {metrics?.statusData && metrics.statusData.length > 0 && (
-          <Card className="p-6">
-            <h3 className="text-base font-semibold mb-3">Job Status Distribution</h3>
-            <DonutChart
-              data={metrics.statusData}
-              centerValue={String(metrics.total || 0)}
-              centerLabel="Total Jobs"
-              height={240}
-              colors={["hsl(217,91%,60%)", "hsl(142,76%,36%)", "hsl(45,93%,47%)", "hsl(0,84%,60%)", "hsl(262,83%,58%)"]}
-            />
-          </Card>
-        )}
-        <Card className="p-6">
-          <h3 className="text-base font-semibold mb-3">Gross Margin</h3>
+        <ChartCard
+          title="Job Status Distribution"
+          isEmpty={!metrics?.statusData || metrics.statusData.length === 0}
+          emptyMessage="No jobs found for the selected period."
+        >
+          <DonutChart
+            data={metrics?.statusData || []}
+            centerValue={String(metrics?.total || 0)}
+            centerLabel="Total Jobs"
+            height={240}
+            colors={["hsl(217,91%,60%)", "hsl(142,76%,36%)", "hsl(45,93%,47%)", "hsl(0,84%,60%)", "hsl(262,83%,58%)"]}
+          />
+        </ChartCard>
+        <ChartCard
+          title="Gross Margin"
+          isEmpty={!metrics?.totalRev && !metrics?.totalCost}
+          emptyMessage="No job data to calculate margin."
+        >
           <div className="flex justify-center">
             <GaugeChart
               value={metrics?.margin || 0}
@@ -181,7 +186,7 @@ export function JobsProjectsReport() {
               label="Overall Gross Margin"
             />
           </div>
-        </Card>
+        </ChartCard>
       </div>
 
       {/* Profitability table */}
