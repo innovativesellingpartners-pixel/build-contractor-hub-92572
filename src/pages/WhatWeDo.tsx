@@ -47,7 +47,7 @@ export const WhatWeDo = () => {
     {
       icon: ShoppingBag,
       title: 'Technology Marketplace',
-      description: 'Access to our technology marketplace with cutting edge tools that integrate seamlessly with your workflow.'
+      description: 'Partnered with 400+ technology providers to ensure our contractors have the right communication, visibility, and business tools they need to succeed.'
     }
   ];
 
