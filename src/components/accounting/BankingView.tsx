@@ -12,7 +12,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
-  Building2, RefreshCw, DollarSign, TrendingDown, TrendingUp, Loader2, ArrowLeftRight
+  Building2, RefreshCw, DollarSign, TrendingDown, TrendingUp, Loader2, ArrowLeftRight, PhoneCall
 } from "lucide-react";
 import { ExpenseAssignmentDialog } from "./expense-assignment";
 import { useAuth } from "@/contexts/AuthContext";
@@ -257,6 +257,30 @@ export function BankingView() {
             )}
           </div>
         </>
+      )}
+
+      {/* QuickBooks Upsell — show when QB is not connected */}
+      {!qbConnected && (
+        <Card className="border border-primary/20 bg-primary/5">
+          <CardContent className="flex flex-col sm:flex-row items-center gap-4 py-6">
+            <div className="p-3 bg-primary/10 rounded-lg flex-shrink-0">
+              <DollarSign className="h-8 w-8 text-primary" />
+            </div>
+            <div className="flex-1 text-center sm:text-left">
+              <p className="font-semibold text-base mb-1">Don't have QuickBooks yet?</p>
+              <p className="text-sm text-muted-foreground">
+                Supercharge your financial tracking by adding QuickBooks to your myCT1 setup. Contact our sales team to get started.
+              </p>
+            </div>
+            <Button
+              onClick={() => window.location.href = '/contact'}
+              className="flex-shrink-0 min-h-[44px]"
+            >
+              <PhoneCall className="h-4 w-4 mr-2" />
+              Contact Sales
+            </Button>
+          </CardContent>
+        </Card>
       )}
     </div>
   );
