@@ -20,6 +20,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { DollarSign, TrendingUp, FileText, CreditCard } from "lucide-react";
 import { RevenueProfitChart } from "@/components/reporting/RevenueProfitChart";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from "recharts";
+import { ChartCard } from "../charts/ChartCard";
 
 const fmt = (v: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 0 }).format(v);
@@ -169,33 +170,33 @@ export function RevenueFinancialReport() {
 
       {/* Revenue trend charts */}
       <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
-        <Card className="p-6">
-          <h3 className="text-base font-semibold mb-4">Revenue & Profit Trend</h3>
+        <ChartCard title="Revenue & Profit Trend" emptyMessage="No revenue data for the selected period.">
           <RevenueProfitChart filters={filters} />
-        </Card>
-        {nativeRevenue?.revenueTrend && nativeRevenue.revenueTrend.length > 1 && (
-          <Card className="p-6">
-            <h3 className="text-base font-semibold mb-4">Monthly Revenue</h3>
-            <ResponsiveContainer width="100%" height={280}>
-              <AreaChart data={nativeRevenue.revenueTrend}>
-                <defs>
-                  <linearGradient id="revAreaGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="hsl(142, 76%, 36%)" stopOpacity={0.3} />
-                    <stop offset="100%" stopColor="hsl(142, 76%, 36%)" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis dataKey="month" className="text-xs" tick={{ fontSize: 11 }} />
-                <YAxis className="text-xs" tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} tick={{ fontSize: 11 }} />
-                <RechartsTooltip
-                  contentStyle={{ backgroundColor: "hsl(var(--background))", border: "1px solid hsl(var(--border))", borderRadius: "8px" }}
-                  formatter={(value: number) => [fmt(value), "Revenue"]}
-                />
-                <Area type="monotone" dataKey="revenue" stroke="hsl(142, 76%, 36%)" fill="url(#revAreaGrad)" strokeWidth={2} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </Card>
-        )}
+        </ChartCard>
+        <ChartCard
+          title="Monthly Revenue"
+          isEmpty={!nativeRevenue?.revenueTrend || nativeRevenue.revenueTrend.length < 2}
+          emptyMessage="Not enough payment data to chart monthly revenue."
+        >
+          <ResponsiveContainer width="100%" height={280}>
+            <AreaChart data={nativeRevenue?.revenueTrend || []}>
+              <defs>
+                <linearGradient id="revAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="hsl(142, 76%, 36%)" stopOpacity={0.3} />
+                  <stop offset="100%" stopColor="hsl(142, 76%, 36%)" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+              <XAxis dataKey="month" className="text-xs" tick={{ fontSize: 11 }} />
+              <YAxis className="text-xs" tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} tick={{ fontSize: 11 }} />
+              <RechartsTooltip
+                contentStyle={{ backgroundColor: "hsl(var(--background))", border: "1px solid hsl(var(--border))", borderRadius: "8px" }}
+                formatter={(value: number) => [fmt(value), "Revenue"]}
+              />
+              <Area type="monotone" dataKey="revenue" stroke="hsl(142, 76%, 36%)" fill="url(#revAreaGrad)" strokeWidth={2} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </ChartCard>
       </div>
 
       {/* QB Payments — clickable */}

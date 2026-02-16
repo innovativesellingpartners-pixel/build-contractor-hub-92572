@@ -20,6 +20,7 @@ import { ExpenseAssignmentDialog } from "@/components/accounting/expense-assignm
 import { ProfitLossStatement } from "@/components/reporting/ProfitLossStatement";
 import { DonutChart } from "../charts/DonutChart";
 import { StackedBarChart } from "../charts/StackedBarChart";
+import { ChartCard } from "../charts/ChartCard";
 
 const fmt = (v: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 0 }).format(v);
@@ -167,29 +168,33 @@ export function ExpensesProfitabilityReport() {
 
       {/* Expense Donut + Trend */}
       <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
-        <Card className="p-6">
-          <h3 className="text-base font-semibold mb-3">Expense Breakdown</h3>
+        <ChartCard
+          title="Expense Breakdown"
+          isEmpty={!nativeExpenses?.donutData || nativeExpenses.donutData.length === 0}
+          emptyMessage="No expenses recorded for this period."
+        >
           <DonutChart
             data={nativeExpenses?.donutData || []}
             centerValue={fmt(nativeExpenses?.total || 0)}
             centerLabel="Total"
             height={260}
           />
-        </Card>
-        {nativeExpenses?.trendData && nativeExpenses.trendData.length > 1 && (
-          <Card className="p-6">
-            <h3 className="text-base font-semibold mb-3">Expense Trend</h3>
-            <StackedBarChart
-              data={nativeExpenses.trendData}
-              series={(nativeExpenses.allCats || []).slice(0, 6).map((cat, i) => ({
-                key: cat,
-                label: cat,
-                color: ["hsl(217,91%,60%)", "hsl(0,84%,60%)", "hsl(45,93%,47%)", "hsl(142,76%,36%)", "hsl(262,83%,58%)", "hsl(24,95%,53%)"][i % 6],
-              }))}
-              height={260}
-            />
-          </Card>
-        )}
+        </ChartCard>
+        <ChartCard
+          title="Expense Trend"
+          isEmpty={!nativeExpenses?.trendData || nativeExpenses.trendData.length < 2}
+          emptyMessage="Not enough data to show expense trends."
+        >
+          <StackedBarChart
+            data={nativeExpenses?.trendData || []}
+            series={(nativeExpenses?.allCats || []).slice(0, 6).map((cat, i) => ({
+              key: cat,
+              label: cat,
+              color: ["hsl(217,91%,60%)", "hsl(0,84%,60%)", "hsl(45,93%,47%)", "hsl(142,76%,36%)", "hsl(262,83%,58%)", "hsl(24,95%,53%)"][i % 6],
+            }))}
+            height={260}
+          />
+        </ChartCard>
       </div>
 
       {/* P&L Statement */}
