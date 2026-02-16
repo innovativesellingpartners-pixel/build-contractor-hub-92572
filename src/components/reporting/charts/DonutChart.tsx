@@ -19,8 +19,8 @@ const DEFAULT_COLORS = [
   "hsl(280, 70%, 55%)",
 ];
 
-const fmt = (v: number) =>
-  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 0 }).format(v);
+const fmtNum = (v: number) =>
+  new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(v);
 
 export function DonutChart({ data, colors = DEFAULT_COLORS, centerLabel, centerValue, height = 280 }: DonutChartProps) {
   if (!data || data.length === 0) {
@@ -52,7 +52,7 @@ export function DonutChart({ data, colors = DEFAULT_COLORS, centerLabel, centerV
               borderRadius: "8px",
               fontSize: "13px",
             }}
-            formatter={(value: number, name: string) => [fmt(value), name]}
+            formatter={(value: number, name: string) => [fmtNum(value), name]}
           />
         </PieChart>
       </ResponsiveContainer>
