@@ -19,52 +19,50 @@ export function GaugeChart({ value, max = 100, target, label, suffix = "%", heig
       ? "hsl(45, 93%, 47%)"
       : "hsl(0, 84%, 60%)";
 
-  const r = 70;
+  const r = 60;
   const cx = 90;
-  const cy = 85;
+  const cy = 80;
+  const strokeW = 10;
 
-  const arcPath = (startAngle: number, endAngle: number, radius: number) => {
-    const s = (Math.PI / 180) * (180 - startAngle);
-    const e = (Math.PI / 180) * (180 - endAngle);
-    const x1 = cx + radius * Math.cos(s);
-    const y1 = cy - radius * Math.sin(s);
-    const x2 = cx + radius * Math.cos(e);
-    const y2 = cy - radius * Math.sin(e);
-    const largeArc = endAngle - startAngle > 180 ? 1 : 0;
-    return `M ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 0 ${x2} ${y2}`;
+  const polarToCart = (angleDeg: number, radius: number) => {
+    const rad = (Math.PI / 180) * (180 - angleDeg);
+    return { x: cx + radius * Math.cos(rad), y: cy - radius * Math.sin(rad) };
   };
 
-  const needleX = cx + (r - 10) * Math.cos((Math.PI / 180) * (180 - angle));
-  const needleY = cy - (r - 10) * Math.sin((Math.PI / 180) * (180 - angle));
+  const arcPath = (startAngle: number, endAngle: number, radius: number) => {
+    const s = polarToCart(startAngle, radius);
+    const e = polarToCart(endAngle, radius);
+    const largeArc = endAngle - startAngle > 180 ? 1 : 0;
+    return `M ${s.x} ${s.y} A ${radius} ${radius} 0 ${largeArc} 0 ${e.x} ${e.y}`;
+  };
+
+  const needleEnd = polarToCart(angle, r - 14);
+  const needleTip = polarToCart(angle, r + 4);
 
   return (
     <div className="flex flex-col items-center" style={{ height }}>
       <svg viewBox="0 0 180 100" className="w-full max-w-[220px]">
         {/* Background arc */}
-        <path d={arcPath(0, 180, r)} fill="none" stroke="hsl(var(--muted))" strokeWidth="14" strokeLinecap="round" />
+        <path d={arcPath(0, 180, r)} fill="none" stroke="hsl(var(--muted))" strokeWidth={strokeW} strokeLinecap="butt" />
         {/* Value arc */}
-        {angle > 0 && (
-          <path d={arcPath(0, angle, r)} fill="none" stroke={color} strokeWidth="14" strokeLinecap="round" />
+        {angle > 0.5 && (
+          <path d={arcPath(0, Math.min(angle, 180), r)} fill="none" stroke={color} strokeWidth={strokeW} strokeLinecap="butt" />
         )}
         {/* Target marker */}
-        {targetAngle !== undefined && (
-          <>
-            <line
-              x1={cx + (r + 2) * Math.cos((Math.PI / 180) * (180 - targetAngle))}
-              y1={cy - (r + 2) * Math.sin((Math.PI / 180) * (180 - targetAngle))}
-              x2={cx + (r - 16) * Math.cos((Math.PI / 180) * (180 - targetAngle))}
-              y2={cy - (r - 16) * Math.sin((Math.PI / 180) * (180 - targetAngle))}
-              stroke="hsl(var(--foreground))"
-              strokeWidth="2"
-              strokeLinecap="round"
-              opacity="0.5"
-            />
-          </>
-        )}
-        {/* Needle dot */}
-        <circle cx={needleX} cy={needleY} r="3" fill={color} />
+        {targetAngle !== undefined && (() => {
+          const t1 = polarToCart(targetAngle, r + 6);
+          const t2 = polarToCart(targetAngle, r - 6);
+          return (
+            <line x1={t1.x} y1={t1.y} x2={t2.x} y2={t2.y}
+              stroke="hsl(var(--foreground))" strokeWidth="1.5" opacity="0.4" />
+          );
+        })()}
+        {/* Needle */}
+        <line x1={needleEnd.x} y1={needleEnd.y} x2={needleTip.x} y2={needleTip.y}
+          stroke="hsl(var(--foreground))" strokeWidth="1.5" opacity="0.7" />
+        <circle cx={cx} cy={cy} r="2.5" fill="hsl(var(--foreground))" opacity="0.5" />
         {/* Center value */}
-        <text x={cx} y={cy - 5} textAnchor="middle" className="fill-foreground text-lg font-bold" style={{ fontSize: "22px" }}>
+        <text x={cx} y={cy - 8} textAnchor="middle" className="fill-foreground" style={{ fontSize: "18px", fontWeight: 700 }}>
           {value.toFixed(1)}{suffix}
         </text>
       </svg>
