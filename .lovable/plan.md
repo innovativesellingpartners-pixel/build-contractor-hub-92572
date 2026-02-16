@@ -1,36 +1,58 @@
 
 
-# Tighten Up the Contact Page Design
+# Redesign "What We Do" into "About Us"
 
-## Problem
-The contact page has excessive spacing between sections and cards, double-padding on card components, and the CT1 logo is missing from the hero area. This makes the page feel stretched and disconnected.
+## Overview
+Transform the current What We Do page into a comprehensive About Us page with a contractor hero image background, updated content from the provided messaging, and rename the navigation tab from "What We Do" to "About Us." The light theme will be maintained throughout.
 
-## Changes (single file: `src/pages/Contact.tsx`)
+## Content Changes
+The entire page content will be replaced with the provided myCT1 messaging, organized into these sections:
+1. **Hero** with contractor hero image background (`hero-construction.jpg`), CT1 logo, and headline "Your Complete Business Command Center"
+2. **Why Contractors Choose myCT1** section with detailed value proposition
+3. **More Than Software** section listing inclusions (training, certifications, leads, insights, marketplace)
+4. **A Nationwide Network** section with the closing message
+5. **CTA** section to drive signups/demos
 
-### 1. Add the CT1 logo to the hero section
-- Place the round CT1 logo (`ct1-round-logo-new.png`) prominently above the "Contact Us" badge in the hero, centered and sized at roughly 64x64px.
+No dashes or emdashes will be used anywhere in the copy.
 
-### 2. Reduce section padding
-- Hero section: `py-20` down to `py-12`
-- Contact Form section: `py-20` down to `py-12`
-- Office Locations section: `py-20` down to `py-12`
-- FAQ section: `py-20` down to `py-12`
-- Section heading bottom margins (`mb-16`) down to `mb-8` or `mb-10`
+## Navigation Rename
+All references to "What We Do" will be renamed to "About Us" in:
+- `MainSiteHeader.tsx` (desktop nav link text)
+- `MobileNav.tsx` (mobile nav link text)
+- `NewLandingPage.tsx` (footer link text)
+- `ForConsumers.tsx` (nav link text)
 
-### 3. Fix double-padding on contact method cards
-- The cards currently have `p-6` on the `<Card>` AND `pt-6` on `<CardContent>` inside, which creates excessive internal spacing.
-- Remove the outer `p-6` from `<Card>` and keep `CardContent` with `p-4 pt-4` for a compact look.
-- Same fix for FAQ cards and the office location card.
+The route will remain `/what-we-do` (or optionally `/about-us`) to avoid breaking existing links.
 
-### 4. Tighten the grid and gaps
-- Contact form/info grid gap: `gap-12` down to `gap-8`
-- Contact methods grid: `gap-6` down to `gap-4`
-- Right column spacing: `space-y-8` down to `space-y-4`
-- FAQ card spacing: `space-y-6` down to `space-y-4`
+## Visual Design
+- **Hero background**: Use `hero-construction.jpg` with a light semi-transparent overlay to keep the light theme while showing the contractor imagery
+- **CT1 logo** (`ct1-round-logo-new.png`) prominently placed in the hero
+- Cards with the existing modern tech aesthetic (12-16px rounded corners, subtle shadows, soft borders)
+- The "More Than Software" inclusions rendered as icon cards in a grid
+- Light color palette maintained throughout (no dark sections)
 
-### 5. Reduce heading text sizes slightly
-- Section h2 headings: `text-4xl` down to `text-3xl` for a tighter vertical rhythm
-- Subtext: `text-xl` down to `text-lg`
+## Technical Details
 
-No new files or dependencies are needed. All changes are within `src/pages/Contact.tsx`.
+### Files Modified
 
+1. **`src/pages/WhatWeDo.tsx`** (full rewrite)
+   - Replace hero gradient background with `hero-construction.jpg` using a white/light overlay
+   - Add CT1 round logo in hero
+   - Replace all body content with the provided messaging sections
+   - Use Lucide icons (GraduationCap, Award, Target, BarChart3, ShoppingBag) for the "More Than Software" feature cards
+   - Keep existing imports for MainSiteHeader, FloatingTrialButton, Card, CardContent, Button, Link
+
+2. **`src/components/MainSiteHeader.tsx`** (line 46)
+   - Change link text from "What We Do" to "About Us"
+
+3. **`src/components/MobileNav.tsx`** (link text change)
+   - Change "What We Do" to "About Us"
+
+4. **`src/components/NewLandingPage.tsx`** (footer link text)
+   - Change "What We Do" to "About Us"
+
+5. **`src/pages/ForConsumers.tsx`** (nav link text)
+   - Change "What We Do" to "About Us"
+
+### No route changes needed
+The `/what-we-do` route path stays the same to preserve any existing links. Only the displayed label changes.
