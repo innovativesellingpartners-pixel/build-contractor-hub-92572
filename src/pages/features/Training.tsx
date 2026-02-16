@@ -3,191 +3,141 @@ import { PublicFooter } from "@/components/PublicFooter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { FloatingTrialButton } from "@/components/FloatingTrialButton";
-import { MobileNav } from "@/components/MobileNav";
-import ct1Logo from "@/assets/ct1-round-logo-new.png";
-import { 
-  Star, 
-  Video, 
-  Award, 
-  Target, 
+import { Badge } from "@/components/ui/badge";
+import { MainSiteHeader } from "@/components/MainSiteHeader";
+import {
+  Star,
+  Video,
+  Award,
+  Target,
   TrendingUp,
   Users,
   BookOpen,
-  CheckCircle2,
   ArrowRight,
-  Play
 } from "lucide-react";
 
 export function Training() {
+  const stats = [
+    { number: "290+", label: "Courses Available" },
+    { number: "40%", label: "Quality Increase" },
+    { number: "5-Star", label: "Training Program" },
+    { number: "24/7", label: "Access Anytime" },
+  ];
+
+  const storyCards = [
+    { icon: Video, title: "Video Courses", description: "Step-by-step training from industry experts" },
+    { icon: Award, title: "Certifications", description: "Earn recognized certifications for your trade" },
+    { icon: Target, title: "Skill Assessments", description: "Track progress with personalized learning paths" },
+    { icon: Users, title: "Team Management", description: "Monitor your entire team's training progress" },
+  ];
+
   const features = [
-    {
-      icon: Video,
-      title: "Interactive Video Courses",
-      description: "Step-by-step video training from industry experts covering every aspect of your trade"
-    },
-    {
-      icon: Award,
-      title: "Industry Certifications",
-      description: "Earn recognized certifications that boost your credibility and win more contracts"
-    },
-    {
-      icon: Target,
-      title: "Skill Assessments",
-      description: "Track progress with comprehensive assessments and personalized learning paths"
-    },
-    {
-      icon: Users,
-      title: "Team Training Management",
-      description: "Monitor your entire team's progress and ensure consistent quality standards"
-    }
-  ];
-
-  const benefits = [
-    "Increase project quality by 40%",
-    "Reduce costly mistakes and rework",
-    "Stay ahead of industry standards",
-    "Build customer confidence",
-    "Command premium pricing",
-    "Faster onboarding for new hires"
-  ];
-
-  const courses = [
-    { category: "Safety & Compliance", count: 45 },
-    { category: "Technical Skills", count: 120 },
-    { category: "Business Management", count: 38 },
-    { category: "Customer Service", count: 22 },
-    { category: "Advanced Techniques", count: 67 }
+    { icon: Video, title: "Interactive Video Courses", description: "Step-by-step video training from industry experts covering every aspect of your trade." },
+    { icon: Award, title: "Industry Certifications", description: "Earn recognized certifications that boost your credibility and win more contracts." },
+    { icon: Target, title: "Skill Assessments", description: "Track progress with comprehensive assessments and personalized learning paths." },
+    { icon: Users, title: "Team Training", description: "Monitor your entire team's progress and ensure consistent quality standards." },
+    { icon: BookOpen, title: "Safety & Compliance", description: "45+ courses covering OSHA compliance, job site safety, and best practices." },
+    { icon: TrendingUp, title: "Business Management", description: "38 courses on running a profitable contracting business and scaling operations." },
+    { icon: Star, title: "Customer Service", description: "22 courses on building lasting customer relationships and earning 5-star reviews." },
+    { icon: Award, title: "Advanced Techniques", description: "67 courses on cutting-edge techniques and methods for your specific trade." },
   ];
 
   return (
     <div className="min-h-screen bg-background">
       <FloatingTrialButton />
-      {/* Header */}
-      <header className="border-b border-border sticky top-0 bg-background/95 backdrop-blur-sm z-50" style={{ paddingTop: "env(safe-area-inset-top)" }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <Link to="/" className="flex items-center space-x-2 sm:space-x-3">
-              <img src={ct1Logo} alt="CT1 Logo" className="h-10 w-10 sm:h-12 sm:w-12" />
-              <div>
-                <h1 className="text-xl sm:text-2xl font-bold text-foreground">CT1</h1>
-                <p className="text-[10px] sm:text-xs text-muted-foreground font-medium">One-Up the Competition</p>
-              </div>
-            </Link>
-            
-            <nav className="hidden md:flex items-center space-x-8">
-              <Link to="/business-suite" className="text-foreground hover:text-primary transition-colors font-medium">Back to Suite</Link>
-              <Link 
-                to="/pricing" 
-                className="bg-primary text-primary-foreground px-6 py-2 rounded-lg font-bold hover:bg-primary-hover transition-colors"
-              >
-                Get Started
-              </Link>
-            </nav>
-
-            <MobileNav />
-          </div>
-        </div>
-      </header>
+      <MainSiteHeader />
 
       {/* Hero Section */}
-      <section className="relative py-12 overflow-hidden bg-gradient-to-br from-yellow-500/10 via-background to-background">
-        <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <div className="text-center mb-8">
-            <div className="mb-6 flex justify-center">
-              <div className="relative">
-                <img src={ct1Logo} alt="CT1" className="h-24 w-24 drop-shadow-2xl" />
-                <div className="absolute -inset-4 bg-yellow-500/20 rounded-full blur-2xl -z-10"></div>
+      <section className="py-20 bg-gradient-to-br from-background to-muted/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <Badge className="mb-4 bg-primary text-primary-foreground px-4 py-2 text-lg">
+              <Star className="h-5 w-5 mr-2" />
+              5-Star Training
+            </Badge>
+            <h1 className="text-5xl font-bold text-foreground mb-6">
+              World-Class Training for <span className="text-primary">Contractors</span>
+            </h1>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              Transform your team into industry-leading professionals with comprehensive training, certifications, and skill assessments.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-4 gap-8">
+            {stats.map((stat, index) => (
+              <Card key={index} className="text-center p-6 card-ct1">
+                <CardContent className="pt-6">
+                  <div className="text-3xl font-bold text-primary mb-2">{stat.number}</div>
+                  <div className="text-muted-foreground">{stat.label}</div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Two-Column Story Section */}
+      <section className="py-20 bg-background">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <h2 className="text-4xl font-bold text-foreground mb-6">Elevate Your Team's <span className="text-primary">Skills</span></h2>
+              <div className="space-y-4 text-muted-foreground">
+                <p>
+                  The best contractors never stop learning. CT1's 5-Star Training Program gives your team access to 290+ courses covering technical skills, safety, business management, and customer service.
+                </p>
+                <p>
+                  Earn industry-recognized certifications that boost your credibility with customers and help you command premium pricing. Track every team member's progress with personalized learning paths.
+                </p>
+                <p>
+                  Contractors who invest in training see a 40% increase in project quality, reduced rework, and faster onboarding for new hires.
+                </p>
               </div>
             </div>
-            
-            <div className="flex justify-center gap-2 mb-4">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="h-10 w-10 fill-yellow-500 text-yellow-500 drop-shadow-lg" />
-              ))}
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-4">
+                {storyCards.slice(0, 2).map((card, index) => (
+                  <Card key={index} className="p-4 card-ct1">
+                    <card.icon className="h-8 w-8 text-primary mb-2" />
+                    <h4 className="font-semibold">{card.title}</h4>
+                    <p className="text-sm text-muted-foreground">{card.description}</p>
+                  </Card>
+                ))}
+              </div>
+              <div className="space-y-4 mt-8">
+                {storyCards.slice(2, 4).map((card, index) => (
+                  <Card key={index} className="p-4 card-ct1">
+                    <card.icon className="h-8 w-8 text-primary mb-2" />
+                    <h4 className="font-semibold">{card.title}</h4>
+                    <p className="text-sm text-muted-foreground">{card.description}</p>
+                  </Card>
+                ))}
+              </div>
             </div>
-            
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 text-foreground">
-              5-Star Training
-              <span className="block text-primary mt-2">Excellence Program</span>
-            </h1>
-            
-            <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-              World-class training that transforms your team into industry-leading professionals
-            </p>
           </div>
         </div>
       </section>
 
       {/* Features Grid */}
-      <section className="py-10 bg-muted/30">
+      <section className="py-20 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Elevate Your Team's <span className="text-primary">Skills & Performance</span>
-            </h2>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-4 mb-10">
-            {features.map((feature, idx) => {
-              const Icon = feature.icon;
-              return (
-                <Card key={idx} className="group hover:shadow-2xl hover:shadow-primary/20 transition-all duration-300 border-2 hover:border-primary/50">
-                  <CardContent className="p-8">
-                    <div className="mb-6 inline-flex p-4 rounded-2xl bg-gradient-to-br from-yellow-500 to-orange-500 group-hover:scale-110 transition-transform">
-                      <Icon className="h-10 w-10 text-white" />
-                    </div>
-                    <h3 className="text-2xl font-bold text-foreground mb-3">{feature.title}</h3>
-                    <p className="text-muted-foreground">{feature.description}</p>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-
-          {/* Benefits */}
-          <Card className="border-2 border-yellow-500/30 bg-gradient-to-br from-yellow-500/5 to-background">
-            <CardContent className="p-8">
-              <h3 className="text-3xl font-bold mb-6 flex items-center gap-3">
-                <TrendingUp className="h-8 w-8 text-yellow-500" />
-                Proven Results for Your Business
-              </h3>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {benefits.map((benefit, idx) => (
-                  <div key={idx} className="flex items-center gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-yellow-500 flex-shrink-0" />
-                    <span className="font-medium">{benefit}</span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
-
-      {/* Course Library */}
-      <section className="py-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-foreground mb-6">
               Comprehensive <span className="text-primary">Course Library</span>
             </h2>
-            <p className="text-lg text-muted-foreground">Over 290+ courses across all categories</p>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              Over 290+ courses across all categories to elevate every aspect of your business.
+            </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {courses.map((course, idx) => (
-              <Card key={idx} className="group hover:shadow-xl hover:shadow-primary/10 transition-all hover:border-primary/50 border-2">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <BookOpen className="h-8 w-8 text-primary" />
-                    <span className="text-3xl font-bold text-primary">{course.count}</span>
-                  </div>
-                  <h3 className="text-xl font-bold mb-2">{course.category}</h3>
-                  <Button variant="ghost" className="w-full group-hover:bg-primary group-hover:text-primary-foreground">
-                    <Play className="h-4 w-4 mr-2" />
-                    Start Learning
-                  </Button>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {features.map((feature, index) => (
+              <Card key={index} className="card-ct1 p-6">
+                <CardContent className="pt-6 text-center">
+                  <feature.icon className="h-12 w-12 text-primary mx-auto mb-4" />
+                  <h3 className="text-xl font-bold text-foreground mb-3">{feature.title}</h3>
+                  <p className="text-muted-foreground">{feature.description}</p>
                 </CardContent>
               </Card>
             ))}
@@ -196,44 +146,30 @@ export function Training() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-12 bg-gradient-to-br from-yellow-500/10 to-background">
+      <section className="py-20 bg-gradient-to-r from-primary to-primary-hover text-primary-foreground">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="flex justify-center gap-2 mb-6">
-            {[...Array(5)].map((_, i) => (
-              <Star key={i} className="h-8 w-8 fill-yellow-500 text-yellow-500" />
-            ))}
-          </div>
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
-            Start Your <span className="text-primary">5-Star Journey</span> Today
+          <h2 className="text-4xl font-bold mb-6">
+            Start Your 5-Star Journey Today
           </h2>
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+          <p className="text-xl opacity-90 mb-8 max-w-2xl mx-auto">
             Join thousands of contractors who have elevated their skills and grown their business with CT1 Training.
           </p>
-          
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/pricing">
-              <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground text-xl px-12 py-6 font-bold">
-                Get Started Free
-                <ArrowRight className="ml-2 h-6 w-6" />
+              <Button size="lg" className="bg-background text-primary hover:bg-background/90 text-lg px-8 py-4 font-bold">
+                Get Started Today
+                <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
-            <Link to="/business-suite">
-              <Button size="lg" variant="outline" className="text-xl px-12 py-6 font-bold">
-                Back to Suite
+            <Link to="/contact">
+              <Button size="lg" variant="outline" className="border-2 border-background text-background hover:bg-background hover:text-foreground text-lg px-8 py-4 font-bold">
+                Contact Us
               </Button>
             </Link>
           </div>
         </div>
       </section>
 
-      <style>{`
-        .bg-grid-pattern {
-          background-image: 
-            linear-gradient(to right, hsl(var(--primary) / 0.1) 1px, transparent 1px),
-            linear-gradient(to bottom, hsl(var(--primary) / 0.1) 1px, transparent 1px);
-          background-size: 40px 40px;
-        }
-      `}</style>
       <PublicFooter />
     </div>
   );

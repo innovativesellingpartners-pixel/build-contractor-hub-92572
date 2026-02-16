@@ -2,13 +2,12 @@ import { useState } from "react";
 import { PublicFooter } from "@/components/PublicFooter";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { ContactForm } from "@/components/ContactForm";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { MainSiteHeader } from "@/components/MainSiteHeader";
+import { FloatingTrialButton } from "@/components/FloatingTrialButton";
 import {
   ArrowRight,
-  CheckCircle,
   Calculator,
   FileText,
   Send,
@@ -17,12 +16,23 @@ import {
   Pen,
   DollarSign,
   Eye,
-  Phone,
   Layers,
 } from "lucide-react";
 
 export default function Estimating() {
-  const [activeContactForm, setActiveContactForm] = useState<string | null>(null);
+  const stats = [
+    { number: "5 min", label: "Average Estimate Time" },
+    { number: "100%", label: "Digital Delivery" },
+    { number: "24 hr", label: "Avg Signature Time" },
+    { number: "+28%", label: "Close Rate Increase" },
+  ];
+
+  const storyCards = [
+    { icon: Layers, title: "Pro Templates", description: "Pre-built estimate templates for every trade" },
+    { icon: Pen, title: "E-Signatures", description: "Collect legally binding signatures digitally" },
+    { icon: Eye, title: "View Tracking", description: "Know when customers open your estimates" },
+    { icon: CreditCard, title: "Online Payments", description: "Accept deposits directly from estimates" },
+  ];
 
   const features = [
     { icon: Layers, title: "Professional Templates", description: "Pre-built estimate templates for every trade. Customize once, use forever." },
@@ -31,235 +41,138 @@ export default function Estimating() {
     { icon: Pen, title: "E-Signatures", description: "Collect legally binding signatures digitally. No printing required." },
     { icon: CreditCard, title: "Online Payments", description: "Accept deposits and payments directly from the estimate with Stripe." },
     { icon: Eye, title: "View Tracking", description: "Know when customers open and view your estimates in real-time." },
-  ];
-
-  const benefits = [
-    "Create professional estimates in under 5 minutes",
-    "Send estimates directly from your phone on the job site",
-    "Track which estimates are viewed, signed, and paid",
-    "Automatically calculate tax and generate totals",
-    "Convert signed estimates to jobs with one click",
-    "Build estimate templates with reusable line items",
+    { icon: FileText, title: "Auto Conversion", description: "Convert signed estimates to jobs with one click for seamless workflow." },
+    { icon: DollarSign, title: "Smart Calculations", description: "Automatically calculate tax, generate totals, and track margins." },
   ];
 
   return (
     <div className="min-h-screen bg-background">
-      <MainSiteHeader onContactClick={() => setActiveContactForm("contact-sales")} />
+      <FloatingTrialButton />
+      <MainSiteHeader />
 
       {/* Hero Section */}
-      <section className="pt-24 pb-16 bg-gradient-to-b from-muted/50 to-background">
+      <section className="py-20 bg-gradient-to-br from-background to-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <div className="bg-primary/10 p-3 rounded-lg w-fit mb-6">
-                <Calculator className="h-10 w-10 text-primary" />
-              </div>
-              <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-6">
-                Estimating & <span className="text-primary">Proposals</span>
-              </h1>
-              <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
-                Build professional estimates fast, send them digitally, and get paid faster. 
-                From line items to e-signatures, everything in one place.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Dialog open={activeContactForm === "demo"} onOpenChange={(open) => setActiveContactForm(open ? "demo" : null)}>
-                  <DialogTrigger asChild>
-                    <Button className="btn-ct1 text-lg px-8 py-4">
-                      Book a Demo
-                      <ArrowRight className="ml-2 h-5 w-5" />
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-2xl">
-                    <ContactForm
-                      title="Book an Estimating Demo"
-                      description="See how CT1 can streamline your estimating process"
-                      ctaText="Schedule Demo"
-                      formType="estimating-demo"
-                      onClose={() => setActiveContactForm(null)}
-                    />
-                  </DialogContent>
-                </Dialog>
-                <Link to="/trial-signup">
-                  <Button variant="outline" className="text-lg px-8 py-4">
-                    Start Free Trial
-                  </Button>
-                </Link>
-              </div>
-            </div>
-            <Card className="p-6 bg-card border">
-              <div className="border-b border-border pb-4 mb-4">
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Estimate #EST-2024-0142</p>
-                    <p className="text-xl font-bold text-foreground">Kitchen Remodel</p>
-                  </div>
-                  <span className="px-3 py-1 bg-green-500/20 text-green-600 rounded-full text-sm">Signed</span>
-                </div>
-                <p className="text-sm text-muted-foreground">John & Mary Davis • 123 Oak Street</p>
-              </div>
-              <div className="space-y-2 mb-4">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Cabinets & Installation</span>
-                  <span className="text-foreground">$12,500</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Countertops (Granite)</span>
-                  <span className="text-foreground">$4,800</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Labor & Finishing</span>
-                  <span className="text-foreground">$8,200</span>
-                </div>
-              </div>
-              <div className="border-t border-border pt-4">
-                <div className="flex justify-between font-bold text-lg">
-                  <span className="text-foreground">Total</span>
-                  <span className="text-primary">$25,500</span>
-                </div>
-                <div className="flex justify-between text-sm text-muted-foreground mt-1">
-                  <span>Deposit Required (30%)</span>
-                  <span>$7,650</span>
-                </div>
-              </div>
-            </Card>
+          <div className="text-center mb-16">
+            <Badge className="mb-4 bg-primary text-primary-foreground px-4 py-2 text-lg">
+              <Calculator className="h-5 w-5 mr-2" />
+              Estimating & Proposals
+            </Badge>
+            <h1 className="text-5xl font-bold text-foreground mb-6">
+              Win More Jobs with <span className="text-primary">Better Estimates</span>
+            </h1>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              Build professional estimates fast, send them digitally, and get paid faster. From line items to e-signatures, everything in one place.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-4 gap-8">
+            {stats.map((stat, index) => (
+              <Card key={index} className="text-center p-6 card-ct1">
+                <CardContent className="pt-6">
+                  <div className="text-3xl font-bold text-primary mb-2">{stat.number}</div>
+                  <div className="text-muted-foreground">{stat.label}</div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-16 bg-background">
+      {/* Two-Column Story Section */}
+      <section className="py-20 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <h2 className="text-4xl font-bold text-foreground mb-6">From Estimate to <span className="text-primary">Payment</span></h2>
+              <div className="space-y-4 text-muted-foreground">
+                <p>
+                  Create professional, detailed estimates in under 5 minutes—right from your phone on the job site. No more going back to the office to write up quotes.
+                </p>
+                <p>
+                  Send estimates digitally with one click. Customers can view, sign, and pay their deposit online. You'll know the moment they open it, so you can follow up at the perfect time.
+                </p>
+                <p>
+                  Contractors using CT1 estimating have increased their close rate by 28% with professional presentation and faster turnaround times.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-4">
+                {storyCards.slice(0, 2).map((card, index) => (
+                  <Card key={index} className="p-4 card-ct1">
+                    <card.icon className="h-8 w-8 text-primary mb-2" />
+                    <h4 className="font-semibold">{card.title}</h4>
+                    <p className="text-sm text-muted-foreground">{card.description}</p>
+                  </Card>
+                ))}
+              </div>
+              <div className="space-y-4 mt-8">
+                {storyCards.slice(2, 4).map((card, index) => (
+                  <Card key={index} className="p-4 card-ct1">
+                    <card.icon className="h-8 w-8 text-primary mb-2" />
+                    <h4 className="font-semibold">{card.title}</h4>
+                    <p className="text-sm text-muted-foreground">{card.description}</p>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Grid */}
+      <section className="py-20 bg-muted/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-foreground mb-6">
               Professional Estimates, <span className="text-primary">Effortlessly</span>
             </h2>
-            <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               Everything you need to create, send, and track estimates that win more jobs.
             </p>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => (
-              <Card key={index} className="p-6 hover:shadow-lg transition-all hover:-translate-y-1">
-                <div className="bg-primary/10 p-3 rounded-lg w-fit mb-4">
-                  <feature.icon className="h-8 w-8 text-primary" />
-                </div>
-                <h3 className="text-lg font-bold text-foreground mb-2">{feature.title}</h3>
-                <p className="text-muted-foreground">{feature.description}</p>
+              <Card key={index} className="card-ct1 p-6">
+                <CardContent className="pt-6 text-center">
+                  <feature.icon className="h-12 w-12 text-primary mx-auto mb-4" />
+                  <h3 className="text-xl font-bold text-foreground mb-3">{feature.title}</h3>
+                  <p className="text-muted-foreground">{feature.description}</p>
+                </CardContent>
               </Card>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Process Section */}
-      <section className="py-16 bg-muted/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-              From Estimate to <span className="text-primary">Payment</span>
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-              A streamlined workflow that gets you paid faster.
-            </p>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              { icon: FileText, step: "1", title: "Create", description: "Build your estimate with templates and line items" },
-              { icon: Send, step: "2", title: "Send", description: "Email the estimate directly to your customer" },
-              { icon: Pen, step: "3", title: "Sign", description: "Customer reviews and signs digitally" },
-              { icon: DollarSign, step: "4", title: "Get Paid", description: "Collect deposit via credit card or ACH" },
-            ].map((item, index) => (
-              <Card key={index} className="p-6 text-center hover:shadow-lg transition-all relative">
-                <div className="h-12 w-12 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-xl font-bold text-primary-foreground">{item.step}</span>
-                </div>
-                <item.icon className="h-8 w-8 text-primary mx-auto mb-3" />
-                <h3 className="font-bold text-foreground mb-2">{item.title}</h3>
-                <p className="text-sm text-muted-foreground">{item.description}</p>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Benefits Section */}
-      <section className="py-16 bg-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-6">
-                Win More Jobs with <span className="text-primary">Better Estimates</span>
-              </h2>
-              <ul className="space-y-4">
-                {benefits.map((item, index) => (
-                  <li key={index} className="flex items-start gap-3">
-                    <CheckCircle className="h-6 w-6 text-primary mt-0.5 flex-shrink-0" />
-                    <span className="text-foreground">{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <Card className="p-6 text-center">
-                <Clock className="h-10 w-10 text-primary mx-auto mb-3" />
-                <p className="text-3xl font-bold text-foreground">5 min</p>
-                <p className="text-sm text-muted-foreground">Average Estimate Time</p>
-              </Card>
-              <Card className="p-6 text-center">
-                <FileText className="h-10 w-10 text-primary mx-auto mb-3" />
-                <p className="text-3xl font-bold text-foreground">100%</p>
-                <p className="text-sm text-muted-foreground">Digital Delivery</p>
-              </Card>
-              <Card className="p-6 text-center">
-                <Pen className="h-10 w-10 text-primary mx-auto mb-3" />
-                <p className="text-3xl font-bold text-foreground">24 hr</p>
-                <p className="text-sm text-muted-foreground">Avg Signature Time</p>
-              </Card>
-              <Card className="p-6 text-center">
-                <DollarSign className="h-10 w-10 text-primary mx-auto mb-3" />
-                <p className="text-3xl font-bold text-foreground">+28%</p>
-                <p className="text-sm text-muted-foreground">Close Rate Increase</p>
-              </Card>
-            </div>
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-foreground text-background">
+      <section className="py-20 bg-gradient-to-r from-primary to-primary-hover text-primary-foreground">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold mb-6">
+          <h2 className="text-4xl font-bold mb-6">
             Ready to Create Better Estimates?
           </h2>
-          <p className="text-xl text-background/80 mb-8">
+          <p className="text-xl opacity-90 mb-8 max-w-2xl mx-auto">
             Join contractors who've increased their close rate by 28% with professional estimates.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Dialog open={activeContactForm === "cta-demo"} onOpenChange={(open) => setActiveContactForm(open ? "cta-demo" : null)}>
-              <DialogTrigger asChild>
-                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground text-lg px-8 py-4">
-                  <Phone className="mr-2 h-5 w-5" />
-                  Book a Demo
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl">
-                <ContactForm
-                  title="Book an Estimating Demo"
-                  description="See how CT1 can help you create winning estimates"
-                  ctaText="Schedule Demo"
-                  formType="estimating-demo"
-                  onClose={() => setActiveContactForm(null)}
-                />
-              </DialogContent>
-            </Dialog>
-            <Link to="/trial-signup">
-              <Button variant="outline" className="border-background text-background hover:bg-background hover:text-foreground text-lg px-8 py-4">
-                Start Free Trial
+            <Link to="/pricing">
+              <Button size="lg" className="bg-background text-primary hover:bg-background/90 text-lg px-8 py-4 font-bold">
+                Get Started Today
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+            <Link to="/contact">
+              <Button size="lg" variant="outline" className="border-2 border-background text-background hover:bg-background hover:text-foreground text-lg px-8 py-4 font-bold">
+                Contact Us
               </Button>
             </Link>
           </div>
         </div>
       </section>
+
       <PublicFooter />
     </div>
   );
