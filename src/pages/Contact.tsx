@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { PublicFooter } from "@/components/PublicFooter";
 import { ContactForm } from "@/components/ContactForm";
 import { Card, CardContent } from "@/components/ui/card";
 import { FloatingTrialButton } from "@/components/FloatingTrialButton";
@@ -239,72 +240,7 @@ export function Contact() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-foreground text-background py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center space-x-3 mb-4">
-                <img src={ct1Logo} alt="CT1 Logo" className="h-10 w-10" />
-                <div>
-                  <h3 className="text-xl font-bold text-background">CT1</h3>
-                  <p className="text-xs text-muted">One-Up Your Business</p>
-                </div>
-              </div>
-              <p className="text-muted text-sm">
-                Empowering contractors to build better businesses with comprehensive tools and professional support.
-              </p>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold text-background mb-4">Quick Links</h4>
-              <ul className="space-y-2 text-sm text-muted">
-                <li><Link to="/about" className="hover:text-primary transition-colors">About Us</Link></li>
-                <li><Link to="/for-contractors" className="hover:text-primary transition-colors">For Contractors</Link></li>
-                <li><Link to="/find-contractor" className="hover:text-primary transition-colors">Find Contractors</Link></li>
-                <li><Link to="/pricing" className="hover:text-primary transition-colors">Get Started</Link></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold text-background mb-4">Support</h4>
-              <ul className="space-y-2 text-sm text-muted">
-                <li><a href="tel:(248)752-7308" className="hover:text-primary transition-colors">Phone Support</a></li>
-                <li><a href="mailto:support@myct1.com" className="hover:text-primary transition-colors">Email Support</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Help Center</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Training Resources</a></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold text-background mb-4">Contact Info</h4>
-              <div className="space-y-2 text-sm text-muted">
-                <div className="flex items-center gap-2">
-                  <Phone className="h-4 w-4" />
-                  <span>(248) 752-7308</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Mail className="h-4 w-4" />
-                  <span>sales@myct1.com</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Globe className="h-4 w-4" />
-                  <span>Nationwide Service</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div className="border-t border-muted mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-            <p className="text-sm text-muted">© 2024 CT1. All rights reserved.</p>
-            <div className="flex space-x-6 mt-4 md:mt-0">
-              <Link to="/legal/privacy" className="text-sm text-muted hover:text-primary transition-colors">Privacy Policy</Link>
-              <Link to="/legal/terms" className="text-sm text-muted hover:text-primary transition-colors">Terms of Service</Link>
-              <a href="#" className="text-sm text-muted hover:text-primary transition-colors">Sitemap</a>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <PublicFooter />
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { PublicFooter } from "@/components/PublicFooter";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -350,12 +351,7 @@ const PocketbotProduct = () => {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-8 border-t border-border">
-        <div className="container mx-auto px-4 text-center text-muted-foreground">
-          <p>© {new Date().getFullYear()} myCT1. All rights reserved.</p>
-        </div>
-      </footer>
+      <PublicFooter />
     </div>
   );
 };

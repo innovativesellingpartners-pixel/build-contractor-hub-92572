@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { PublicFooter } from "@/components/PublicFooter";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { FloatingTrialButton } from "@/components/FloatingTrialButton";
@@ -350,6 +351,8 @@ export function Pricing() {
           </div>
         </div>
       </section>
+
+      <PublicFooter />
 
       {selectedTier && (
         <TierCheckout

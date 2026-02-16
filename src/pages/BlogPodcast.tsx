@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { PublicFooter } from "@/components/PublicFooter";
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -222,17 +223,7 @@ export const BlogPodcast = () => {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t py-12 bg-muted/30">
-        <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-          <p>&copy; 2025 CT1. All rights reserved.</p>
-          <div className="flex justify-center gap-6 mt-4">
-            <Link to="/legal/terms" className="hover:text-primary">Terms</Link>
-            <Link to="/legal/privacy" className="hover:text-primary">Privacy</Link>
-            <Link to="/contact" className="hover:text-primary">Contact</Link>
-          </div>
-        </div>
-      </footer>
+      <PublicFooter />
     </div>
   );
 };

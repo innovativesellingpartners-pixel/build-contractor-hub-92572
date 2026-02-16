@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { PublicFooter } from "@/components/PublicFooter";
 import { Button } from '@/components/ui/button';
 import { FloatingTrialButton } from '@/components/FloatingTrialButton';
 import { MainSiteHeader } from '@/components/MainSiteHeader';
@@ -201,12 +202,7 @@ export const Terms = () => {
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="border-t py-12 bg-muted/30 mt-20">
-        <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-          <p>&copy; 2025 CT1. All rights reserved.</p>
-        </div>
-      </footer>
+      <PublicFooter />
     </div>
   );
 };
