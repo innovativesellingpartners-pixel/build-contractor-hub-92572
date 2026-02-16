@@ -1,11 +1,11 @@
 import { useState, useRef } from "react";
-import { FloatingPocketbot } from "@/components/contractor/FloatingPocketbot";
+import { FloatingPocketAgent } from "@/components/contractor/FloatingPocketbot";
 import { Button } from "@/components/ui/button";
 import { ChatWithUsBubble, ChatWithUsPanel } from "@/components/ChatWithUs";
 import ct1Logo from "@/assets/ct1-round-logo-new.png";
 
-export function GlobalPocketbot() {
-  const [showPocketbot, setShowPocketbot] = useState(false);
+export function GlobalPocketAgent() {
+  const [showPocketAgent, setShowPocketAgent] = useState(false);
   const [showChatWithUs, setShowChatWithUs] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
@@ -15,7 +15,7 @@ export function GlobalPocketbot() {
       <div className="fixed top-28 right-4 z-50 md:hidden" style={{ paddingTop: "env(safe-area-inset-top)" }}>
         <Button
           ref={buttonRef}
-          onClick={() => setShowPocketbot(true)}
+          onClick={() => setShowPocketAgent(true)}
           className="bg-foreground/95 backdrop-blur-md text-background hover:bg-foreground hover:text-background h-11 px-5 rounded-full font-semibold shadow-[0_6px_24px_rgba(255,255,255,0.5),0_2px_8px_rgba(255,255,255,0.3)] transition-all duration-300 hover:scale-105"
         >
           <img src={ct1Logo} alt="CT1" className="h-5 w-5 mr-2" />
@@ -28,7 +28,7 @@ export function GlobalPocketbot() {
         <div className="flex flex-col items-end gap-3">
           {/* Pocket Agent Button */}
           <Button
-            onClick={() => setShowPocketbot(true)}
+            onClick={() => setShowPocketAgent(true)}
             className="bg-foreground/95 backdrop-blur-md text-background hover:bg-foreground hover:text-background h-12 min-w-[160px] px-5 rounded-full font-semibold shadow-[0_6px_24px_rgba(255,255,255,0.5),0_2px_8px_rgba(255,255,255,0.3)] transition-all duration-300 hover:scale-105"
           >
             <img src={ct1Logo} alt="CT1" className="h-5 w-5 mr-2" />
@@ -50,8 +50,8 @@ export function GlobalPocketbot() {
       </div>
 
       {/* Pocket Agent Modal */}
-      {showPocketbot && (
-        <FloatingPocketbot onClose={() => setShowPocketbot(false)} />
+      {showPocketAgent && (
+        <FloatingPocketAgent onClose={() => setShowPocketAgent(false)} />
       )}
 
       {/* Chat With Us Panel */}

@@ -20,13 +20,13 @@ interface Message {
 const MAX_FREE_PROMPTS = 3;
 const SUBSCRIPTION_PRICE = 10;
 
-interface FloatingPocketbotProps {
+interface FloatingPocketAgentProps {
   onClose: () => void;
   onPositionChange?: (position: string) => void;
   initialPosition?: { x: number; y: number };
 }
 
-export function FloatingPocketbot({ onClose, onPositionChange, initialPosition }: FloatingPocketbotProps) {
+export function FloatingPocketAgent({ onClose, onPositionChange, initialPosition }: FloatingPocketAgentProps) {
   const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([
     {

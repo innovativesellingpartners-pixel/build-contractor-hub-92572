@@ -67,7 +67,7 @@ import { TemplatesSection } from './estimate/TemplatesSection';
 type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calendar' | 'emails' | 'estimates' | 'reporting' | 'financials' | 'more' | 'payments' | 'accounting' | 'invoices' | 'templates' | 'gc' | 'contacts' | 'help' | 'portal' | 'ai-report';
 
 interface CT1CRMProps {
-  onOpenPocketbot?: () => void;
+  onOpenPocketAgent?: () => void;
   onSectionChange?: (section: string) => void;
   onHubSectionChange?: (section: string) => void;
   tierFeatures?: {
@@ -86,7 +86,7 @@ interface CT1CRMProps {
   activeHubSection?: string;
 }
 
-export default function CT1CRM({ onOpenPocketbot, onSectionChange, onHubSectionChange, tierFeatures, activeHubSection }: CT1CRMProps = {}) {
+export default function CT1CRM({ onOpenPocketAgent, onSectionChange, onHubSectionChange, tierFeatures, activeHubSection }: CT1CRMProps = {}) {
 
 const navItems = [
   { id: 'dashboard' as Section, label: 'Dashboard', icon: LayoutDashboard },
