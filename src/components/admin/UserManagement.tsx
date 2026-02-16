@@ -642,7 +642,7 @@ export const UserManagement = () => {
                     <Bot className="h-5 w-5 text-primary" />
                     <div>
                       <Label htmlFor="pocketbot-access" className="text-sm font-medium">
-                        Full Pocketbot Access
+                        Full Pocket Agent Access
                       </Label>
                       <p className="text-xs text-muted-foreground">
                         Grant unlimited AI assistant access without subscription

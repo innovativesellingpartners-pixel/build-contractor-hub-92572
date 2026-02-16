@@ -63,7 +63,7 @@ export const VoiceAISettings = ({ contractorId }: VoiceAISettingsProps) => {
           contractor_id: contractorId,
           ai_enabled: false,
           inbound_call_mode: 'ai_assistant',
-          voice_id: 'pocketbot',
+          voice_id: 'pocket-agent',
           business_name: '',
           trade: '',
           services_offered: [],
@@ -475,9 +475,9 @@ export const VoiceAISettings = ({ contractorId }: VoiceAISettingsProps) => {
           <div className="space-y-2">
             <Label>Voice ID</Label>
             <Input
-              value={formData.voice_id || 'pocketbot'}
+              value={formData.voice_id || 'pocket-agent'}
               onChange={(e) => updateField('voice_id', e.target.value)}
-              placeholder="pocketbot"
+              placeholder="pocket-agent"
             />
           </div>
 

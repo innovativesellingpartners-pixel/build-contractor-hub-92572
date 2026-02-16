@@ -697,7 +697,7 @@ export function Dashboard() {
         </div>
       </div>
 
-      {/* Floating Pocketbot Widget */}
+      {/* Floating Pocket Agent Widget */}
       {pocketbotOpen && (
         <FloatingPocketbot 
           onClose={() => setPocketbotOpen(false)} 

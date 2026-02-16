@@ -252,7 +252,7 @@ export const PocketbotAccessManagement = () => {
             Automatic Access Rules
           </h4>
           <ul className="text-sm text-muted-foreground space-y-1">
-            <li>• Users with active subscriptions automatically receive full Pocketbot access</li>
+            <li>• Users with active subscriptions automatically receive full Pocket Agent access</li>
             <li>• Access can be manually granted or revoked using the toggles above</li>
             <li>• Changes take effect immediately for the user's next session</li>
           </ul>

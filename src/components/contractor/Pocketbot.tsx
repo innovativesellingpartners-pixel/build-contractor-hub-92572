@@ -22,7 +22,7 @@ export function Pocketbot() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "Hi! I'm your CT1 Pocketbot assistant. I'm here to help you with trades, business, sales training and development, project management, and estimating. How can I help you today?"
+      content: "Hi! I'm your CT1 Pocket Agent assistant. I'm here to help you with trades, business, sales training and development, project management, and estimating. How can I help you today?"
     }
   ]);
   const [input, setInput] = useState("");
@@ -171,7 +171,7 @@ export function Pocketbot() {
     if (!session) {
       toast({
         title: "Authentication Required",
-        description: "Please sign in to use the Pocketbot.",
+        description: "Please sign in to use Pocket Agent.",
         variant: "destructive"
       });
       return;
@@ -215,7 +215,7 @@ export function Pocketbot() {
         if (errorData.upgrade_required) {
           toast({
             title: "Upgrade Required",
-            description: "Get unlimited prompts and full responses with a CT1 Pocketbot subscription!",
+            description: "Get unlimited prompts and full responses with a CT1 Pocket Agent subscription!",
             action: (
               <Button 
                 size="sm" 
@@ -367,7 +367,7 @@ export function Pocketbot() {
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-                  CT1 Pocketbot
+                  CT1 Pocket Agent
                 </h2>
               </div>
               <p className="text-xs md:text-sm text-muted-foreground font-medium hidden sm:block">
@@ -403,7 +403,7 @@ export function Pocketbot() {
               <Bot className="relative h-8 w-8 text-primary" />
             </div>
             <div>
-              <CardTitle className="text-2xl">CT1 Pocketbot</CardTitle>
+              <CardTitle className="text-2xl">CT1 Pocket Agent</CardTitle>
               <CardDescription>Your AI business consultant</CardDescription>
             </div>
           </div>

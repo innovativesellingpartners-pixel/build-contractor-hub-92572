@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MainSiteHeader } from "@/components/MainSiteHeader";
 import { FloatingTrialButton } from "@/components/FloatingTrialButton";
+import heroBg from "@/assets/hero-tech-dashboard.jpg";
 import { useConversation } from "@elevenlabs/react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -137,8 +138,12 @@ const PocketAgentProduct = () => {
       <MainSiteHeader />
 
       {/* Hero Section - matching About Us */}
-      <section className="py-20 bg-gradient-to-br from-background to-muted/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="relative py-20 overflow-hidden">
+        <div className="absolute inset-0">
+          <img src={heroBg} alt="" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-background/85 backdrop-blur-sm" />
+        </div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <Badge className="mb-4 bg-primary text-primary-foreground px-4 py-2 text-lg">
               <Brain className="h-5 w-5 mr-2" />

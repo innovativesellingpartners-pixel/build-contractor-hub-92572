@@ -11,7 +11,7 @@ export function GlobalPocketbot() {
 
   return (
     <>
-      {/* Mobile: Pocketbot button - top right, below header */}
+      {/* Mobile: Pocket Agent button - top right, below header */}
       <div className="fixed top-28 right-4 z-50 md:hidden" style={{ paddingTop: "env(safe-area-inset-top)" }}>
         <Button
           ref={buttonRef}
@@ -26,7 +26,7 @@ export function GlobalPocketbot() {
       {/* Desktop: Bottom right stack */}
       <div className="fixed bottom-6 right-6 z-40 pb-safe hidden md:block">
         <div className="flex flex-col items-end gap-3">
-          {/* Pocketbot Button */}
+          {/* Pocket Agent Button */}
           <Button
             onClick={() => setShowPocketbot(true)}
             className="bg-foreground/95 backdrop-blur-md text-background hover:bg-foreground hover:text-background h-12 min-w-[160px] px-5 rounded-full font-semibold shadow-[0_6px_24px_rgba(255,255,255,0.5),0_2px_8px_rgba(255,255,255,0.3)] transition-all duration-300 hover:scale-105"
@@ -49,7 +49,7 @@ export function GlobalPocketbot() {
         )}
       </div>
 
-      {/* Pocketbot Modal */}
+      {/* Pocket Agent Modal */}
       {showPocketbot && (
         <FloatingPocketbot onClose={() => setShowPocketbot(false)} />
       )}

@@ -77,7 +77,7 @@ export function Marketplace() {
     {
       icon: Bot,
       title: "AI Automation",
-      description: "PocketBots handle routine tasks and client communication"
+      description: "Pocket Agents handle routine tasks and client communication"
     }
   ];
 

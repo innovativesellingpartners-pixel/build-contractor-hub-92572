@@ -396,7 +396,7 @@ export function Subscribe() {
                   </li>
                   <li className="flex items-start gap-3">
                     <CheckCircle className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
-                    <span className="text-sm text-gray-300">24/7 AI Business Assistant (Pocket Bot)</span>
+                    <span className="text-sm text-gray-300">24/7 AI Business Assistant (Pocket Agent)</span>
                   </li>
                 </ul>
                 <Button className="w-full bg-red-500 hover:bg-red-600 text-white" size="lg">
@@ -452,7 +452,7 @@ export function Subscribe() {
                   </li>
                   <li className="flex items-start gap-3">
                     <CheckCircle className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
-                    <span className="text-sm text-gray-300">Complete AI toolset (Pocket Bot, Sales Bot, Project Manager Bot, Admin Bot)</span>
+                    <span className="text-sm text-gray-300">Complete AI toolset (Pocket Agent, Sales Bot, Project Manager Bot, Admin Bot)</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <CheckCircle className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />

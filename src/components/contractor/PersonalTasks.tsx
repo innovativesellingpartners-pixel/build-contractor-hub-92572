@@ -214,7 +214,7 @@ export const PersonalTasks: React.FC = () => {
           <CardContent className="py-12 text-center">
             <p className="text-muted-foreground mb-4">No tasks yet</p>
             <p className="text-sm text-muted-foreground">
-              Add tasks manually or say "Add a task" in Pocketbot
+              Add tasks manually or say "Add a task" in Pocket Agent
             </p>
           </CardContent>
         </Card>
@@ -238,7 +238,7 @@ export const PersonalTasks: React.FC = () => {
                         {task.title}
                       </span>
                       {task.source === 'pocketbot' && (
-                        <Bot className="h-3.5 w-3.5 text-primary" aria-label="Created via Pocketbot" />
+                        <Bot className="h-3.5 w-3.5 text-primary" aria-label="Created via Pocket Agent" />
                       )}
                     </div>
                     {task.notes && (

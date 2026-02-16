@@ -38,7 +38,7 @@ export function FloatingPocketbot({ onClose, onPositionChange, initialPosition }
   const [isLoading, setIsLoading] = useState(false);
   const [hasFullAccess, setHasFullAccess] = useState(false);
   const [promptCount, setPromptCount] = useState(() => {
-    const saved = localStorage.getItem('ct1_pocketbot_prompts');
+    const saved = localStorage.getItem('ct1_pocket_agent_prompts');
     return saved ? parseInt(saved, 10) : 0;
   });
   const [showPaywall, setShowPaywall] = useState(false);
@@ -68,7 +68,7 @@ export function FloatingPocketbot({ onClose, onPositionChange, initialPosition }
       return { x, y };
     }
     
-    const saved = localStorage.getItem('ct1_pocketbot_position');
+    const saved = localStorage.getItem('ct1_pocket_agent_position');
     const isMobile = window.innerWidth < 768;
     const cardWidth = isMobile ? window.innerWidth - 32 : 360;
     const cardHeight = 450;
@@ -133,7 +133,7 @@ export function FloatingPocketbot({ onClose, onPositionChange, initialPosition }
   useEffect(() => {
     if (hasFullAccess) {
       setPromptCount(0);
-      localStorage.removeItem('ct1_pocketbot_prompts');
+      localStorage.removeItem('ct1_pocket_agent_prompts');
     }
   }, [hasFullAccess]);
 
@@ -166,7 +166,7 @@ export function FloatingPocketbot({ onClose, onPositionChange, initialPosition }
       
       const newPosition = { x: constrainedX, y: constrainedY };
       setPosition(newPosition);
-      localStorage.setItem('ct1_pocketbot_position', JSON.stringify(newPosition));
+      localStorage.setItem('ct1_pocket_agent_position', JSON.stringify(newPosition));
       
       if (onPositionChange) {
         onPositionChange(`${constrainedY}px`);
@@ -212,7 +212,7 @@ export function FloatingPocketbot({ onClose, onPositionChange, initialPosition }
       
       const newPosition = { x: constrainedX, y: constrainedY };
       setPosition(newPosition);
-      localStorage.setItem('ct1_pocketbot_position', JSON.stringify(newPosition));
+      localStorage.setItem('ct1_pocket_agent_position', JSON.stringify(newPosition));
       
       if (onPositionChange) {
         onPositionChange(`${constrainedY}px`);
@@ -392,7 +392,7 @@ export function FloatingPocketbot({ onClose, onPositionChange, initialPosition }
     if (!hasFullAccess) {
       const newPromptCount = promptCount + 1;
       setPromptCount(newPromptCount);
-      localStorage.setItem('ct1_pocketbot_prompts', newPromptCount.toString());
+      localStorage.setItem('ct1_pocket_agent_prompts', newPromptCount.toString());
       
       if (newPromptCount === MAX_FREE_PROMPTS) {
         const newMessages = [...messages, { role: "user" as const, content: userMessage }];
