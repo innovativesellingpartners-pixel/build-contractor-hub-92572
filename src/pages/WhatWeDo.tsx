@@ -43,7 +43,7 @@ export const WhatWeDo = () => {
 
       {/* Hero Section with contractor background */}
       <section
-        className="relative py-20 sm:py-28 lg:py-36"
+        className="relative py-16 sm:py-20 lg:py-24"
         style={{
           backgroundImage: `url(${heroImage})`,
           backgroundSize: 'cover',
@@ -52,7 +52,7 @@ export const WhatWeDo = () => {
       >
         <div className="absolute inset-0 bg-white/80 backdrop-blur-[2px]" />
         <div className="container mx-auto px-4 text-center relative z-10">
-          <img src={ct1Logo} alt="CT1" className="h-24 w-24 sm:h-32 sm:w-32 mx-auto mb-8 drop-shadow-lg" />
+          <img src={ct1Logo} alt="CT1" className="h-20 w-20 sm:h-24 sm:w-24 mx-auto mb-6 drop-shadow-lg" />
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 text-foreground">
             Your Complete Business Command Center
           </h1>
@@ -71,7 +71,7 @@ export const WhatWeDo = () => {
       </section>
 
       {/* Why Contractors Choose myCT1 */}
-      <section className="py-16 sm:py-20 lg:py-24">
+      <section className="py-10 sm:py-14 lg:py-16">
         <div className="container mx-auto px-4 max-w-4xl">
           <h2 className="text-3xl sm:text-4xl font-bold mb-6 text-center">
             Why Contractors Choose <span className="text-primary">myCT1</span>
@@ -86,23 +86,23 @@ export const WhatWeDo = () => {
       </section>
 
       {/* More Than Software */}
-      <section className="py-16 sm:py-20 lg:py-24 bg-muted/30">
+      <section className="py-10 sm:py-14 lg:py-16 bg-muted/30">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4">More Than Software</h2>
+          <div className="text-center mb-8">
+            <h2 className="text-3xl sm:text-4xl font-bold mb-3">More Than Software</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               We are not just handing you a login and wishing you luck. Every myCT1 subscription includes:
             </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 max-w-5xl mx-auto">
             {inclusions.map((item, index) => (
               <Card key={index} className="border hover:border-primary/50 transition-colors rounded-xl shadow-sm">
-                <CardContent className="p-6">
-                  <div className="bg-primary/10 p-3 rounded-lg w-fit mb-4">
-                    <item.icon className="h-8 w-8 text-primary" />
+                <CardContent className="p-5">
+                  <div className="bg-primary/10 p-2.5 rounded-lg w-fit mb-3">
+                    <item.icon className="h-6 w-6 text-primary" />
                   </div>
-                  <h3 className="text-xl font-bold mb-2">{item.title}</h3>
-                  <p className="text-muted-foreground">{item.description}</p>
+                  <h3 className="text-lg font-bold mb-1.5">{item.title}</h3>
+                  <p className="text-sm text-muted-foreground">{item.description}</p>
                 </CardContent>
               </Card>
             ))}
@@ -111,7 +111,7 @@ export const WhatWeDo = () => {
       </section>
 
       {/* A Nationwide Network */}
-      <section className="py-16 sm:py-20 lg:py-24">
+      <section className="py-10 sm:py-14 lg:py-16">
         <div className="container mx-auto px-4 max-w-4xl text-center">
           <h2 className="text-3xl sm:text-4xl font-bold mb-6">A Nationwide Network</h2>
           <p className="text-lg text-muted-foreground leading-relaxed">
@@ -121,7 +121,7 @@ export const WhatWeDo = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 sm:py-20 bg-muted/30">
+      <section className="py-10 sm:py-14 bg-muted/30">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl sm:text-4xl font-bold mb-6">Ready to Transform Your Business?</h2>
           <p className="text-xl text-muted-foreground mb-8">
