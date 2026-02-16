@@ -43,7 +43,7 @@ export function Pricing() {
         "Full Customer & Jobs Management system",
         "1 personal monthly business training session",
         "Marketplace access to vetted tech vendors",
-        "24/7 AI Business Assistant (Pocket Bot)"
+        "24/7 AI Business Assistant (Pocket Agent)"
       ]
     },
     {
@@ -60,7 +60,7 @@ export function Pricing() {
         "AI Phone Assistant for call answering and screening",
         "2 personal monthly business training sessions",
         "5 qualified leads per month",
-        "Complete AI toolset (Pocket Bot, Sales Bot, Project Manager Bot, Admin Bot)",
+        "Complete AI toolset (Pocket Agent, Sales Bot, Project Manager Bot, Admin Bot)",
         "Priority marketplace support"
       ]
     },
@@ -101,7 +101,7 @@ export function Pricing() {
       ]
     },
     {
-      id: "pocketbot",
+      id: "pocket-agent",
       name: "Pocket Agent AI Assistant",
       price: 20,
       icon: <Bot className="h-10 w-10" />,
