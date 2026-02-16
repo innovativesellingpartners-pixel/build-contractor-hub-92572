@@ -19,7 +19,7 @@ About CT1:
 - CT1 is an all-in-one business management platform built specifically for contractors and tradespeople
 - It includes CRM, estimating, invoicing, project management, AI-powered tools, and more
 - CT1 helps contractors streamline their operations, win more jobs, and grow their business
-- The platform includes Pocketbot AI assistant, voice AI for calls, estimate builder, job tracking, crew management, and financial tools
+- The platform includes Pocket Agent AI assistant, voice AI for calls, estimate builder, job tracking, crew management, and financial tools
 - CT1 serves all trades including HVAC, plumbing, electrical, roofing, general contracting, painting, landscaping, and more
 
 Your responsibilities:

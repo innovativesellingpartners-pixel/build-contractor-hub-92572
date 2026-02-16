@@ -55,11 +55,11 @@ export function MainSiteHeader({ onContactClick }: MainSiteHeaderProps) {
                   <NavigationMenuContent>
                     <div className="w-[320px] p-4 bg-popover">
                       <div className="space-y-1">
-                        <Link to="/products/pocketbot" className="block">
+                        <Link to="/products/pocket-agent" className="block">
                           <NavigationMenuLink className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted transition-colors">
                             <Bot className="h-5 w-5 text-primary mt-0.5" />
                             <div>
-                              <div className="font-medium text-foreground">myCT1 Pocketbot</div>
+                              <div className="font-medium text-foreground">myCT1 Pocket Agent</div>
                               <p className="text-sm text-muted-foreground">AI-powered business assistant</p>
                             </div>
                           </NavigationMenuLink>

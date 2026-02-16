@@ -181,7 +181,7 @@ const handler = async (req: Request): Promise<Response> => {
             <div style="background-color: #fef2f2; border-left: 4px solid #dc2626; padding: 20px; margin: 20px 0; border-radius: 4px;">
               <h3 style="color: #dc2626; margin: 0 0 10px 0; font-size: 18px;">While you wait, here's what CT1 offers:</h3>
               <ul style="color: #374151; margin: 0; padding-left: 20px; line-height: 1.6;">
-                <li>AI-powered PocketBots for business automation</li>
+                <li>AI-powered Pocket Agents for business automation</li>
                 <li>Comprehensive CRM & PSA integration</li>
                 <li>Lead generation and management</li>
                 <li>Professional training and certifications</li>

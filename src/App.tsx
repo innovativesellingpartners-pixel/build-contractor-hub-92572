@@ -145,7 +145,8 @@ const App = () => (
             <Route path="/nationwide-network" element={<NationwideNetwork />} />
             <Route path="/trades-we-serve" element={<TradesWeServe />} />
             <Route path="/blog-podcast" element={<BlogPodcast />} />
-            <Route path="/products/pocketbot" element={<PocketbotProduct />} />
+            <Route path="/products/pocket-agent" element={<PocketbotProduct />} />
+            <Route path="/products/pocketbot" element={<Navigate to="/products/pocket-agent" replace />} />
             <Route path="/products/voice-ai" element={<VoiceAIProduct />} />
             <Route path="/products/tier-launch" element={<TierLaunch />} />
             <Route path="/products/tier-growth" element={<TierGrowth />} />

@@ -90,7 +90,7 @@ export const PocketbotAccessManagement = () => {
       );
 
       toast.success(
-        `Pocketbot access ${!currentAccess ? 'granted' : 'revoked'} successfully`
+        `Pocket Agent access ${!currentAccess ? 'granted' : 'revoked'} successfully`
       );
     } catch (error: any) {
       toast.error('Failed to update access: ' + error.message);
@@ -100,7 +100,7 @@ export const PocketbotAccessManagement = () => {
   };
 
   const grantAccessToAll = async () => {
-    if (!confirm('Grant Pocketbot access to ALL users? This action cannot be undone easily.')) {
+    if (!confirm('Grant Pocket Agent access to ALL users? This action cannot be undone easily.')) {
       return;
     }
 
@@ -113,7 +113,7 @@ export const PocketbotAccessManagement = () => {
 
       if (error) throw error;
 
-      toast.success('Pocketbot access granted to all users');
+      toast.success('Pocket Agent access granted to all users');
       fetchUsers();
     } catch (error: any) {
       toast.error('Failed to grant access: ' + error.message);
@@ -129,10 +129,10 @@ export const PocketbotAccessManagement = () => {
           <div>
             <CardTitle className="flex items-center gap-2">
               <Bot className="h-5 w-5" />
-              Pocketbot Access Management
+              Pocket Agent Access Management
             </CardTitle>
             <CardDescription>
-              Manage which users have full access to CT1 Pocketbot
+              Manage which users have full access to CT1 Pocket Agent
             </CardDescription>
           </div>
           <Button onClick={grantAccessToAll} variant="outline" size="sm">

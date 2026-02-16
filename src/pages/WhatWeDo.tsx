@@ -96,7 +96,7 @@ export const WhatWeDo = () => {
             Running a contracting business means juggling estimates, managing crews, tracking jobs, handling invoices, and somehow finding time to answer the phone. We built myCT1 to handle all of it in one place, giving you back hours every week. Our platform gives you the tools enterprise contractors use, at a price that makes sense for growing businesses.
           </p>
           <p className="text-lg text-muted-foreground leading-relaxed">
-            From our AI Phone Assistant that never misses a call to our PocketBots that help you respond to clients instantly, we automate the busywork so you can focus on what matters: delivering great work and growing your bottom line. Communicate with clients, manage your team, and track every job, all without jumping between apps.
+            From our AI Phone Assistant that never misses a call to our Pocket Agents that help you respond to clients instantly, we automate the busywork so you can focus on what matters: delivering great work and growing your bottom line. Communicate with clients, manage your team, and track every job, all without jumping between apps.
           </p>
         </div>
       </section>

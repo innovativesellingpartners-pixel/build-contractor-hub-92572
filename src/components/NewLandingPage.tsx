@@ -64,7 +64,7 @@ export function NewLandingPage() {
 
   const testimonials = [
     {
-      text: "CT1 transformed my business. The PocketBots handle all my estimates and client communication automatically. I've increased my revenue by 40% in just 6 months.",
+      text: "CT1 transformed my business. The Pocket Agents handle all my estimates and client communication automatically. I've increased my revenue by 40% in just 6 months.",
       name: "Mike J.",
       company: "Owner at a large construction company in Michigan"
     },

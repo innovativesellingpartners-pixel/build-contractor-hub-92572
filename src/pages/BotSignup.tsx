@@ -127,10 +127,10 @@ export function BotSignup() {
           {/* Hero Section */}
           <div className="text-center mb-10">
             <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
-              Sign Up for Full Pocketbot Access
+              Sign Up for Full Pocket Agent Access
             </h1>
             <p className="text-xl text-muted-foreground mb-6">
-              Get unlimited Pocketbot plus complete contractor portal access
+              Get unlimited Pocket Agent plus complete contractor portal access
             </p>
             <div className="grid md:grid-cols-2 gap-4 max-w-2xl mx-auto mb-8">
               <div className="flex items-center gap-3 p-4 bg-card border border-border rounded-lg">
@@ -169,13 +169,13 @@ export function BotSignup() {
             {/* Pricing Information */}
             <div className="mb-8 p-6 bg-primary/5 border-2 border-primary/20 rounded-xl">
               <div className="text-center">
-                <h3 className="text-2xl font-bold mb-2">Pocketbot Full Access</h3>
+                <h3 className="text-2xl font-bold mb-2">Pocket Agent Full Access</h3>
                 <div className="flex items-baseline justify-center gap-2 mb-3">
                   <span className="text-4xl font-bold text-primary">$200</span>
                   <span className="text-muted-foreground">/month</span>
                 </div>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Includes unlimited Pocketbot access plus:
+                  Includes unlimited Pocket Agent access plus:
                 </p>
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div className="flex items-center gap-2 text-left">

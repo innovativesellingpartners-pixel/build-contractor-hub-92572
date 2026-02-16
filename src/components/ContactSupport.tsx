@@ -34,7 +34,7 @@ export function ContactSupport({ open, onOpenChange }: ContactSupportProps) {
     "Training Access",
     "CRM/Jobs Hub",
     "QuickBooks Integration",
-    "Pocketbot/AI Assistant",
+    "Pocket Agent/AI Assistant",
     "Billing & Payments",
     "VoiceAI",
     "Insurance Portal",

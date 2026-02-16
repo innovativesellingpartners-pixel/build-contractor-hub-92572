@@ -27,7 +27,7 @@ export function PublicFooter() {
             <ul className="space-y-2 text-sm text-background/70">
               <li><Link to="/business-suite" className="hover:text-primary transition-colors">Business Suite</Link></li>
               <li><Link to="/pricing" className="hover:text-primary transition-colors">Pricing</Link></li>
-              <li><Link to="/products/pocketbot" className="hover:text-primary transition-colors">Pocketbot</Link></li>
+              <li><Link to="/products/pocket-agent" className="hover:text-primary transition-colors">Pocket Agent</Link></li>
               <li><Link to="/products/voice-ai" className="hover:text-primary transition-colors">Voice AI</Link></li>
               <li><Link to="/savings" className="hover:text-primary transition-colors">Savings</Link></li>
             </ul>

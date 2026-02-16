@@ -235,7 +235,7 @@ export function LandingPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground mb-4">
-                  AI-powered PocketBots handle routine tasks and client communication.
+                  AI-powered Pocket Agents handle routine tasks and client communication.
                 </p>
                 <ul className="space-y-2 text-sm">
                   <li className="flex items-center gap-2">
