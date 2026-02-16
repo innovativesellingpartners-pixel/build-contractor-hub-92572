@@ -78,10 +78,11 @@ export function Contact() {
       <MainSiteHeader />
 
       {/* Hero Section */}
-      <section className="py-20 bg-gradient-to-br from-background to-muted/30">
+      <section className="py-12 bg-gradient-to-br from-background to-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <FormNavigation className="mb-8" />
-          <div className="text-center mb-16">
+          <div className="text-center mb-10">
+            <img src={ct1Logo} alt="CT1 Logo" className="h-16 w-16 mx-auto mb-4" />
             <Badge className="mb-4 bg-primary text-primary-foreground px-4 py-2 text-lg">
               <MessageSquare className="h-5 w-5 mr-2" />
               Contact Us
@@ -89,7 +90,7 @@ export function Contact() {
             <h1 className="text-5xl font-bold text-foreground mb-6">
               Get in Touch with <span className="text-primary">CT1</span>
             </h1>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
               Ready to transform your contracting business? Our team is here to help you get started with CT1's comprehensive platform.
             </p>
           </div>
@@ -97,9 +98,9 @@ export function Contact() {
       </section>
 
       {/* Contact Form and Info */}
-      <section className="py-20 bg-background">
+      <section className="py-12 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12">
+          <div className="grid lg:grid-cols-2 gap-8">
             {/* Contact Form */}
             <div>
               <ContactForm
@@ -111,7 +112,7 @@ export function Contact() {
             </div>
 
             {/* Contact Information */}
-            <div className="space-y-8">
+            <div className="space-y-4">
               <div>
                 <h2 className="text-3xl font-bold text-foreground mb-6">Multiple Ways to Connect</h2>
                 <p className="text-muted-foreground mb-8">
@@ -119,10 +120,10 @@ export function Contact() {
                 </p>
               </div>
 
-              <div className="grid gap-6">
+              <div className="grid gap-4">
                 {contactMethods.map((method, index) => (
-                  <Card key={index} className="card-ct1 p-6">
-                    <CardContent className="pt-6">
+                  <Card key={index} className="card-ct1">
+                    <CardContent className="p-4">
                       <div className="flex items-start gap-4">
                         <div className="bg-primary/10 p-3 rounded-lg">
                           <method.icon className="h-6 w-6 text-primary" />
@@ -147,21 +148,21 @@ export function Contact() {
       </section>
 
       {/* Office Locations */}
-      <section className="py-20 bg-muted/30">
+      <section className="py-12 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-foreground mb-6">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-bold text-foreground mb-4">
               Our <span className="text-primary">Locations</span>
             </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
               CT1 operates nationwide with regional offices to better serve contractors across the United States.
             </p>
           </div>
 
           <div className="flex justify-center">
             {offices.map((office, index) => (
-              <Card key={index} className="card-ct1 p-8 text-center max-w-md">
-                <CardContent className="pt-6">
+              <Card key={index} className="card-ct1 text-center max-w-md">
+                <CardContent className="p-6">
                   <MapPin className="h-10 w-10 text-primary mx-auto mb-4" />
                   <h3 className="text-2xl font-bold text-foreground mb-2">{office.city}</h3>
                   <Badge className="mb-4 bg-primary/10 text-primary">{office.region}</Badge>
@@ -187,20 +188,20 @@ export function Contact() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-20 bg-background">
+      <section className="py-12 bg-background">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-foreground mb-6">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-foreground mb-4">
               Frequently Asked <span className="text-primary">Questions</span>
             </h2>
-            <p className="text-xl text-muted-foreground">
+            <p className="text-lg text-muted-foreground">
               Quick answers to common questions about CT1 and our services.
             </p>
           </div>
 
-          <div className="space-y-6">
-            <Card className="card-ct1 p-6">
-              <CardContent className="pt-6">
+          <div className="space-y-4">
+            <Card className="card-ct1">
+              <CardContent className="p-4">
                 <h3 className="font-semibold text-foreground mb-2">How quickly can I get started with CT1?</h3>
                 <p className="text-muted-foreground">
                   Most contractors can be fully set up and trained on the CT1 platform within 1-2 weeks. Our onboarding team provides personalized support to ensure a smooth transition.
@@ -208,8 +209,8 @@ export function Contact() {
               </CardContent>
             </Card>
 
-            <Card className="card-ct1 p-6">
-              <CardContent className="pt-6">
+            <Card className="card-ct1">
+              <CardContent className="p-4">
                 <h3 className="font-semibold text-foreground mb-2">What kind of support do you provide?</h3>
                 <p className="text-muted-foreground">
                   We offer comprehensive support including phone, email, live chat, and technical assistance. Our team also provides training resources, webinars, and one-on-one coaching sessions.
@@ -217,8 +218,8 @@ export function Contact() {
               </CardContent>
             </Card>
 
-            <Card className="card-ct1 p-6">
-              <CardContent className="pt-6">
+            <Card className="card-ct1">
+              <CardContent className="p-4">
                 <h3 className="font-semibold text-foreground mb-2">Do you work with contractors of all sizes?</h3>
                 <p className="text-muted-foreground">
                   Yes! CT1 is designed to scale with your business, whether you're a solo contractor just starting out or a large contracting company with multiple teams and locations.
@@ -226,8 +227,8 @@ export function Contact() {
               </CardContent>
             </Card>
 
-            <Card className="card-ct1 p-6">
-              <CardContent className="pt-6">
+            <Card className="card-ct1">
+              <CardContent className="p-4">
                 <h3 className="font-semibold text-foreground mb-2">What makes CT1 different from other platforms?</h3>
                 <p className="text-muted-foreground">
                   CT1 is the only platform built specifically for contractors that combines AI-powered automation, comprehensive business management tools, professional training, and a supportive community all in one place.
