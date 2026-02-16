@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Building2, LinkIcon, ChevronDown, CreditCard, Loader2,
-  Unlink, Wifi, WifiOff
+  Unlink, Wifi, WifiOff, PhoneCall
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -125,10 +125,16 @@ export function FinancialConnectionsDropdown({
           </DropdownMenuItem>
         )}
         {!qbConnected && (
-          <DropdownMenuItem onClick={handleConnectQuickBooks} disabled={qbLoading}>
-            {qbLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <LinkIcon className="h-4 w-4 mr-2" />}
-            Connect QuickBooks
-          </DropdownMenuItem>
+          <>
+            <DropdownMenuItem onClick={handleConnectQuickBooks} disabled={qbLoading}>
+              {qbLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <LinkIcon className="h-4 w-4 mr-2" />}
+              Connect QuickBooks
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => window.location.href = '/contact'}>
+              <PhoneCall className="h-4 w-4 mr-2" />
+              Don't have QuickBooks? Contact Sales
+            </DropdownMenuItem>
+          </>
         )}
         {!stripeConnected && (
           <DropdownMenuItem onClick={handleConnectStripe} disabled={stripeLoading}>
