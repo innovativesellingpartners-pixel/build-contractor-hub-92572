@@ -19,7 +19,7 @@ export function GlobalPocketbot() {
           className="bg-foreground/95 backdrop-blur-md text-background hover:bg-foreground hover:text-background h-11 px-5 rounded-full font-semibold shadow-[0_6px_24px_rgba(255,255,255,0.5),0_2px_8px_rgba(255,255,255,0.3)] transition-all duration-300 hover:scale-105"
         >
           <img src={ct1Logo} alt="CT1" className="h-5 w-5 mr-2" />
-          Pocketbot
+          Pocket Agent
         </Button>
       </div>
 
@@ -32,7 +32,7 @@ export function GlobalPocketbot() {
             className="bg-foreground/95 backdrop-blur-md text-background hover:bg-foreground hover:text-background h-12 min-w-[160px] px-5 rounded-full font-semibold shadow-[0_6px_24px_rgba(255,255,255,0.5),0_2px_8px_rgba(255,255,255,0.3)] transition-all duration-300 hover:scale-105"
           >
             <img src={ct1Logo} alt="CT1" className="h-5 w-5 mr-2" />
-            Pocketbot
+            Pocket Agent
           </Button>
 
           {/* Chat With Us Bubble */}

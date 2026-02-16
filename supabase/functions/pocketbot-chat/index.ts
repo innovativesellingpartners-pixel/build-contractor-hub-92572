@@ -139,7 +139,7 @@ serve(async (req) => {
         // Rate limit exceeded
         const errorMessage = hasPaidBot 
           ? `Daily limit of ${RATE_LIMIT_PER_DAY} prompts reached. Resets at midnight.`
-          : `You've reached your free limit of ${FREE_USER_LIMIT} prompts. To continue using CT1 Pocketbot with unlimited prompts and full responses, please upgrade your subscription at /bot-signup`;
+          : `You've reached your free limit of ${FREE_USER_LIMIT} prompts. To continue using CT1 Pocket Agent with unlimited prompts and full responses, please upgrade your subscription at /bot-signup`;
         
         return new Response(
           JSON.stringify({ 
@@ -276,7 +276,7 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You are CT1 Pocketbot, an expert AI assistant specializing in helping contractors grow their business.
+            content: `You are CT1 Pocket Agent, an expert AI assistant specializing in helping contractors grow their business.
 
 IMPORTANT: You ONLY provide guidance on these specific topics:
 - Trades and construction work
@@ -301,7 +301,7 @@ You can generate PDF documents for users when they request guides, checklists, r
 STRICT TOPIC ENFORCEMENT:
 If a user asks about ANY topic outside of trades, business, sales training, project management, estimating, or construction-related topics, you MUST respond with EXACTLY this message:
 
-"We apologize for the inconvenience, the CT1 Pocketbot is only trained to give responses related to the trades, business and Sales Training and development, project management and estimating"
+"We apologize for the inconvenience, the CT1 Pocket Agent is only trained to give responses related to the trades, business and Sales Training and development, project management and estimating"
 
 Do NOT answer questions about:
 - General knowledge, trivia, or non-business topics
@@ -515,7 +515,7 @@ You are knowledgeable, professional, friendly, and provide actionable advice wit
         messages: [
           {
             role: "system",
-            content: `You are CT1 Pocketbot, an expert AI assistant specializing in helping contractors grow their business. 
+            content: `You are CT1 Pocket Agent, an expert AI assistant specializing in helping contractors grow their business. 
 
 IMPORTANT: You ONLY provide guidance on these specific topics:
 - Trades and construction work
@@ -540,7 +540,7 @@ You can generate PDF documents for users when they request guides, checklists, r
 STRICT TOPIC ENFORCEMENT:
 If a user asks about ANY topic outside of trades, business, sales training, project management, estimating, or construction-related topics, you MUST respond with EXACTLY this message:
 
-"We apologize for the inconvenience, the CT1 Pocketbot is only trained to give responses related to the trades, business and Sales Training and development, project management and estimating"
+"We apologize for the inconvenience, the CT1 Pocket Agent is only trained to give responses related to the trades, business and Sales Training and development, project management and estimating"
 
 Do NOT answer questions about:
 - General knowledge, trivia, or non-business topics

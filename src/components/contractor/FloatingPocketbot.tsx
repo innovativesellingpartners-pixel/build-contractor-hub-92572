@@ -31,7 +31,7 @@ export function FloatingPocketbot({ onClose, onPositionChange, initialPosition }
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "Hi! I'm your CT1 Pocketbot assistant. I'm here to help you with trades, business, sales training and development, project management, and estimating. How can I help you today?"
+      content: "Hi! I'm your CT1 Pocket Agent assistant. I'm here to help you with trades, business, sales training and development, project management, and estimating. How can I help you today?"
     }
   ]);
   const [input, setInput] = useState("");
@@ -251,7 +251,7 @@ export function FloatingPocketbot({ onClose, onPositionChange, initialPosition }
   const handleSubscribe = () => {
     toast({
       title: "Subscription Coming Soon",
-      description: `CT1 Pocketbot subscription for $${SUBSCRIPTION_PRICE}/month will be available soon!`,
+      description: `CT1 Pocket Agent subscription for $${SUBSCRIPTION_PRICE}/month will be available soon!`,
     });
   };
 
@@ -400,7 +400,7 @@ export function FloatingPocketbot({ onClose, onPositionChange, initialPosition }
         setIsLoading(false);
         setMessages([...newMessages, {
           role: "assistant",
-          content: "You've reached your free prompt limit. Subscribe for $10/month to continue using CT1 Pocketbot!"
+          content: "You've reached your free prompt limit. Subscribe for $10/month to continue using CT1 Pocket Agent!"
         }]);
         setShowPaywall(true);
         return;
@@ -417,7 +417,7 @@ export function FloatingPocketbot({ onClose, onPositionChange, initialPosition }
       const accessToken = sessionData?.session?.access_token;
 
       if (sessionError || !accessToken) {
-        throw new Error("You must be signed in to use CT1 Pocketbot.");
+        throw new Error("You must be signed in to use CT1 Pocket Agent.");
       }
 
       const response = await fetch(
@@ -561,7 +561,7 @@ export function FloatingPocketbot({ onClose, onPositionChange, initialPosition }
           <div className="flex items-center gap-2">
             <GripVertical className="h-4 w-4 text-muted-foreground mr-1" />
             <img src={ct1Logo} alt="CT1" className="h-6 w-6" />
-            <span className="font-semibold text-sm">CT1 Pocketbot</span>
+            <span className="font-semibold text-sm">CT1 Pocket Agent</span>
           </div>
           <div className="flex items-center gap-1">
             <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setIsMinimized(false)}>
@@ -619,7 +619,7 @@ export function FloatingPocketbot({ onClose, onPositionChange, initialPosition }
             <img src={ct1Logo} alt="CT1" className="h-6 w-6 md:h-8 md:w-8" />
             <div>
               <div className="flex items-center gap-1">
-                <h3 className="font-bold text-sm md:text-base">CT1 Pocketbot</h3>
+                <h3 className="font-bold text-sm md:text-base">CT1 Pocket Agent</h3>
                 <Sparkles className="h-3 w-3 md:h-4 md:w-4 text-primary" />
               </div>
               <Badge 
@@ -654,17 +654,17 @@ export function FloatingPocketbot({ onClose, onPositionChange, initialPosition }
               </p>
             </div>
             
-            {/* Pocketbot Only Option */}
+            {/* Pocket Agent Only Option */}
             <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-5 rounded-xl border-2 border-primary/20 hover:border-primary/40 transition-colors">
-              <p className="text-xs font-semibold text-muted-foreground mb-1">POCKETBOT ONLY</p>
+              <p className="text-xs font-semibold text-muted-foreground mb-1">POCKET AGENT ONLY</p>
               <p className="text-3xl font-bold mb-2">
                 ${SUBSCRIPTION_PRICE}
                 <span className="text-sm font-normal text-muted-foreground">/month</span>
               </p>
-              <p className="text-xs text-muted-foreground mb-3">Unlimited Pocketbot prompts</p>
+              <p className="text-xs text-muted-foreground mb-3">Unlimited Pocket Agent prompts</p>
               <Button onClick={handleSubscribe} className="w-full" size="sm">
                 <Sparkles className="mr-2 h-4 w-4" />
-                Subscribe to Pocketbot
+                Subscribe to Pocket Agent
               </Button>
             </div>
 
@@ -682,7 +682,7 @@ export function FloatingPocketbot({ onClose, onPositionChange, initialPosition }
               <p className="text-xs font-semibold text-primary mb-1">FULL ACCESS</p>
               <p className="text-lg font-bold mb-2">Choose Your Tier</p>
               <p className="text-xs text-muted-foreground mb-3">
-                Get unlimited Pocketbot + Training + CRM + Marketplace + Monthly Coaching
+                Get unlimited Pocket Agent + Training + CRM + Marketplace + Monthly Coaching
               </p>
               <Button 
                 onClick={() => window.location.href = '/pricing'} 

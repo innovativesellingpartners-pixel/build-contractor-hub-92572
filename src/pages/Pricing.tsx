@@ -102,7 +102,7 @@ export function Pricing() {
     },
     {
       id: "pocketbot",
-      name: "Pocket Bot AI Assistant",
+      name: "Pocket Agent AI Assistant",
       price: 20,
       icon: <Bot className="h-10 w-10" />,
       description: "Your personal AI business assistant available 24/7 to help with estimates, proposals, customer communication, and business questions. Get instant answers and generate professional content without leaving your dashboard.",

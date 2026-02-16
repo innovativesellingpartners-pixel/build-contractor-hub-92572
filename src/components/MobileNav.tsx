@@ -47,13 +47,13 @@ export function MobileNav({ onContactClick }: MobileNavProps) {
             </CollapsibleTrigger>
             <CollapsibleContent className="pl-4 space-y-3 mt-2">
               <Link 
-                to="/products/pocketbot" 
+                to="/products/pocket-agent" 
                 className="flex items-center gap-3 py-2 hover:bg-muted rounded-lg px-2 transition-colors"
                 onClick={() => setOpen(false)}
               >
                 <Bot className="h-5 w-5 text-primary" />
                 <div>
-                  <div className="text-base font-medium text-foreground">MyCT1 Pocketbot</div>
+                  <div className="text-base font-medium text-foreground">MyCT1 Pocket Agent</div>
                   <p className="text-xs text-muted-foreground">Complete AI business assistant</p>
                 </div>
               </Link>
