@@ -1,6 +1,6 @@
 /**
- * GaugeChart — Robust semi-circle gauge with responsive sizing.
- * Uses a proper SVG viewBox with no clipping, butt linecaps, and locked aspect ratio.
+ * GaugeChart — Clean semi-circle gauge with no clipping or stray marks.
+ * Uses thin arcs, proper viewBox padding, and simple needle.
  */
 
 interface GaugeChartProps {
@@ -22,12 +22,9 @@ export function GaugeChart({
   height = 180,
   thresholds = { low: 15, mid: 25 },
 }: GaugeChartProps) {
-  // Clamp value to 0..max
   const clamped = Math.min(Math.max(value, 0), max);
   const pct = max > 0 ? clamped / max : 0;
-  const sweepAngle = pct * 180; // 0–180 degrees
 
-  // Color based on thresholds
   const color =
     value >= thresholds.mid
       ? "hsl(142, 76%, 36%)"
@@ -35,147 +32,81 @@ export function GaugeChart({
         ? "hsl(45, 93%, 47%)"
         : "hsl(0, 84%, 60%)";
 
-  // SVG geometry — all dimensions relative to viewBox
-  const viewW = 200;
-  const viewH = 120; // enough for the arc + labels below
-  const cx = viewW / 2;
-  const cy = 95; // center of the arc (near bottom)
-  const r = 70; // arc radius
-  const stroke = 14; // arc thickness
+  // Geometry — generous viewBox with padding
+  const cx = 100;
+  const cy = 100;
+  const r = 80;
+  const strokeW = 8;
+  const viewBox = "0 0 200 130";
 
-  // Polar to cartesian (0° = left, 180° = right on a top semi-circle)
-  const toXY = (deg: number, radius: number) => {
-    const rad = (Math.PI / 180) * (180 - deg);
-    return { x: cx + radius * Math.cos(rad), y: cy - radius * Math.sin(rad) };
+  // Convert angle (0=left, 180=right) to SVG coordinates
+  const polar = (deg: number, radius: number) => {
+    const rad = ((180 - deg) * Math.PI) / 180;
+    return [cx + radius * Math.cos(rad), cy - radius * Math.sin(rad)] as const;
   };
 
-  // Arc path from startDeg to endDeg
-  const arc = (startDeg: number, endDeg: number, radius: number) => {
-    const s = toXY(startDeg, radius);
-    const e = toXY(endDeg, radius);
-    const large = endDeg - startDeg > 180 ? 1 : 0;
-    return `M ${s.x} ${s.y} A ${radius} ${radius} 0 ${large} 0 ${e.x} ${e.y}`;
+  // SVG arc path
+  const arcPath = (from: number, to: number) => {
+    const [sx, sy] = polar(from, r);
+    const [ex, ey] = polar(to, r);
+    const large = to - from > 180 ? 1 : 0;
+    return `M${sx},${sy} A${r},${r} 0 ${large} 0 ${ex},${ey}`;
   };
 
-  // Target marker
-  const targetPct = target != null ? Math.min(Math.max(target, 0), max) / max : undefined;
-  const targetDeg = targetPct != null ? targetPct * 180 : undefined;
+  const sweepDeg = pct * 180;
 
-  // Needle
-  const needleBase = toXY(sweepAngle, r - 20);
-  const needleTip = toXY(sweepAngle, r + 6);
+  // Needle endpoint
+  const [nx, ny] = polar(sweepDeg, r - strokeW - 4);
 
   return (
-    <div
-      className="flex flex-col items-center w-full"
-      style={{ height, maxWidth: 260 }}
-    >
-      <svg
-        viewBox={`0 0 ${viewW} ${viewH}`}
-        className="w-full"
-        style={{ aspectRatio: `${viewW}/${viewH}` }}
-        role="img"
-        aria-label={`Gauge showing ${value.toFixed(1)}${suffix}`}
-      >
+    <div className="flex flex-col items-center w-full" style={{ maxWidth: 240 }}>
+      <svg viewBox={viewBox} className="w-full" role="img" aria-label={`${value.toFixed(1)}${suffix}`}>
         {/* Background track */}
         <path
-          d={arc(0, 180, r)}
+          d={arcPath(0, 180)}
           fill="none"
           stroke="hsl(var(--muted))"
-          strokeWidth={stroke}
-          strokeLinecap="butt"
+          strokeWidth={strokeW}
+          strokeLinecap="round"
         />
 
-        {/* Foreground progress arc */}
-        {sweepAngle > 0.5 && (
+        {/* Value arc */}
+        {sweepDeg > 1 && (
           <path
-            d={arc(0, Math.min(sweepAngle, 180), r)}
+            d={arcPath(0, Math.min(sweepDeg, 179.9))}
             fill="none"
             stroke={color}
-            strokeWidth={stroke}
-            strokeLinecap="butt"
+            strokeWidth={strokeW}
+            strokeLinecap="round"
           />
         )}
 
-        {/* Target marker line */}
-        {targetDeg != null && (() => {
-          const outer = toXY(targetDeg, r + stroke / 2 + 4);
-          const inner = toXY(targetDeg, r - stroke / 2 - 4);
+        {/* Target tick */}
+        {target != null && (() => {
+          const tDeg = (Math.min(Math.max(target, 0), max) / max) * 180;
+          const [ox, oy] = polar(tDeg, r + strokeW / 2 + 3);
+          const [ix, iy] = polar(tDeg, r - strokeW / 2 - 3);
           return (
-            <line
-              x1={outer.x}
-              y1={outer.y}
-              x2={inner.x}
-              y2={inner.y}
-              stroke="hsl(var(--foreground))"
-              strokeWidth="2"
-              opacity="0.45"
-            />
+            <line x1={ix} y1={iy} x2={ox} y2={oy} stroke="hsl(var(--foreground))" strokeWidth="1.5" opacity="0.35" />
           );
         })()}
 
-        {/* Needle */}
-        <line
-          x1={needleBase.x}
-          y1={needleBase.y}
-          x2={needleTip.x}
-          y2={needleTip.y}
-          stroke="hsl(var(--foreground))"
-          strokeWidth="2"
-          opacity="0.7"
-          strokeLinecap="round"
-        />
-        <circle
-          cx={cx}
-          cy={cy}
-          r="3"
-          fill="hsl(var(--foreground))"
-          opacity="0.5"
-        />
+        {/* Needle line from center to arc */}
+        <line x1={cx} y1={cy} x2={nx} y2={ny} stroke="hsl(var(--foreground))" strokeWidth="1.5" opacity="0.6" strokeLinecap="round" />
+        <circle cx={cx} cy={cy} r="2.5" fill="hsl(var(--muted-foreground))" />
 
-        {/* Center value */}
-        <text
-          x={cx}
-          y={cy - 12}
-          textAnchor="middle"
-          className="fill-foreground"
-          style={{ fontSize: "22px", fontWeight: 700 }}
-        >
-          {value.toFixed(1)}
-          {suffix}
+        {/* Value text */}
+        <text x={cx} y={cy - 16} textAnchor="middle" className="fill-foreground" style={{ fontSize: "20px", fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>
+          {value.toFixed(1)}{suffix}
         </text>
 
-        {/* Min/Max labels */}
-        <text
-          x={cx - r - 2}
-          y={cy + 14}
-          textAnchor="middle"
-          className="fill-muted-foreground"
-          style={{ fontSize: "10px" }}
-        >
-          0
-        </text>
-        <text
-          x={cx + r + 2}
-          y={cy + 14}
-          textAnchor="middle"
-          className="fill-muted-foreground"
-          style={{ fontSize: "10px" }}
-        >
-          {max}
-        </text>
+        {/* Min / Max */}
+        <text x={cx - r} y={cy + 16} textAnchor="middle" className="fill-muted-foreground" style={{ fontSize: "9px" }}>0</text>
+        <text x={cx + r} y={cy + 16} textAnchor="middle" className="fill-muted-foreground" style={{ fontSize: "9px" }}>{max}</text>
       </svg>
 
-      {/* Labels below the gauge */}
-      {label && (
-        <span className="text-xs text-muted-foreground -mt-2">{label}</span>
-      )}
-      {target != null && (
-        <span className="text-[10px] text-muted-foreground">
-          Target: {target}
-          {suffix}
-        </span>
-      )}
+      {label && <span className="text-xs text-muted-foreground -mt-1">{label}</span>}
+      {target != null && <span className="text-[10px] text-muted-foreground">Target: {target}{suffix}</span>}
     </div>
   );
 }
