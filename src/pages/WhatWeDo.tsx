@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { FloatingTrialButton } from '@/components/FloatingTrialButton';
 import { MainSiteHeader } from '@/components/MainSiteHeader';
-import { GraduationCap, Award, Target, BarChart3, ShoppingBag, ArrowRight } from 'lucide-react';
+import { GraduationCap, Target, BarChart3, ShoppingBag, ArrowRight, Users, Briefcase, Calculator, FileText, DollarSign } from 'lucide-react';
 import heroImage from '@/assets/hero-construction.jpg';
 import ct1Logo from '@/assets/ct1-round-logo-new.png';
 
@@ -15,9 +15,24 @@ export const WhatWeDo = () => {
       description: 'Step by step training from industry experts who have been in your boots.'
     },
     {
-      icon: Award,
-      title: 'Industry Certifications',
-      description: 'Industry certifications that set you apart from the competition.'
+      icon: Users,
+      title: 'Full CRM',
+      description: 'Complete customer relationship management to track every interaction from first call to repeat business.'
+    },
+    {
+      icon: Briefcase,
+      title: 'Jobs Management',
+      description: 'Schedule crews, assign tasks, and track progress from first visit to job completion.'
+    },
+    {
+      icon: Calculator,
+      title: 'Estimates & Invoices',
+      description: 'Build professional estimates, send invoices, and get paid faster with digital approvals and payments.'
+    },
+    {
+      icon: DollarSign,
+      title: 'Financial Reporting',
+      description: 'Real time visibility into revenue, expenses, margins, and profitability across every job.'
     },
     {
       icon: Target,
@@ -94,7 +109,7 @@ export const WhatWeDo = () => {
               We are not just handing you a login and wishing you luck. Every myCT1 subscription includes:
             </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 max-w-6xl mx-auto">
             {inclusions.map((item, index) => (
               <Card key={index} className="border hover:border-primary/50 transition-colors rounded-xl shadow-sm">
                 <CardContent className="p-5">
