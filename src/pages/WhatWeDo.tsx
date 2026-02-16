@@ -3,39 +3,36 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { FloatingTrialButton } from '@/components/FloatingTrialButton';
 import { MainSiteHeader } from '@/components/MainSiteHeader';
-import { Wrench, Users, TrendingUp, Award, Phone, Bot } from 'lucide-react';
+import { GraduationCap, Award, Target, BarChart3, ShoppingBag, ArrowRight } from 'lucide-react';
+import heroImage from '@/assets/hero-construction.jpg';
+import ct1Logo from '@/assets/ct1-round-logo-new.png';
 
 export const WhatWeDo = () => {
-  const services = [
+  const inclusions = [
+    {
+      icon: GraduationCap,
+      title: 'Expert Training',
+      description: 'Step by step training from industry experts who have been in your boots.'
+    },
     {
       icon: Award,
-      title: 'CT1 5-Star Training',
-      description: 'Comprehensive business and sales training designed specifically for contractors to build a professional, profitable operation.'
+      title: 'Industry Certifications',
+      description: 'Industry certifications that set you apart from the competition.'
     },
     {
-      icon: Users,
-      title: 'Customer & Jobs Management',
-      description: 'Complete CRM system to manage your customers, track jobs, and streamline your operations all in one place.'
+      icon: Target,
+      title: 'Qualified Leads',
+      description: 'Warm, qualified leads delivered directly to your dashboard.'
     },
     {
-      icon: TrendingUp,
-      title: 'Qualified Lead Generation',
-      description: 'Get warm, qualified leads delivered directly to you. Focus on closing jobs, not chasing prospects.'
+      icon: BarChart3,
+      title: 'Real Time Insights',
+      description: "Real time insights into what's driving profit and what's costing you money."
     },
     {
-      icon: Phone,
-      title: 'AI Phone Assistant',
-      description: 'Never miss a call again. Our AI assistant answers, screens, and qualifies leads 24/7.'
-    },
-    {
-      icon: Bot,
-      title: 'Complete AI Toolset',
-      description: 'Pocket Bot, Sales Bot, Project Manager Bot, and Admin Bot to automate and optimize your business operations.'
-    },
-    {
-      icon: Wrench,
-      title: 'Vetted Vendor Marketplace',
-      description: 'Access trusted technology vendors and service providers to support your business growth.'
+      icon: ShoppingBag,
+      title: 'Technology Marketplace',
+      description: 'Access to our technology marketplace with cutting edge tools that integrate seamlessly with your workflow.'
     }
   ];
 
@@ -44,13 +41,23 @@ export const WhatWeDo = () => {
       <FloatingTrialButton />
       <MainSiteHeader />
 
-      {/* Hero Section */}
-      <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-br from-primary/5 to-primary/10">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6">What We Do</h1>
-          <p className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto mb-6 sm:mb-8 px-4">
-            We provide contractors with the training, tools, and qualified leads needed to build a thriving business. 
-            Everything you need in one place.
+      {/* Hero Section with contractor background */}
+      <section
+        className="relative py-20 sm:py-28 lg:py-36"
+        style={{
+          backgroundImage: `url(${heroImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        <div className="absolute inset-0 bg-white/80 backdrop-blur-[2px]" />
+        <div className="container mx-auto px-4 text-center relative z-10">
+          <img src={ct1Logo} alt="CT1" className="h-24 w-24 sm:h-32 sm:w-32 mx-auto mb-8 drop-shadow-lg" />
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 text-foreground">
+            Your Complete Business Command Center
+          </h1>
+          <p className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto mb-8 px-4">
+            myCT1 is the all in one business platform built specifically for contractors who want peace of mind, time back in their day, and the ability to manage and scale their business effectively.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center max-w-md mx-auto sm:max-w-none">
             <Link to="/pricing" className="w-full sm:w-auto">
@@ -63,16 +70,39 @@ export const WhatWeDo = () => {
         </div>
       </section>
 
-      {/* Services Grid */}
-      <section className="py-12 sm:py-16 lg:py-20">
+      {/* Why Contractors Choose myCT1 */}
+      <section className="py-16 sm:py-20 lg:py-24">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <h2 className="text-3xl sm:text-4xl font-bold mb-6 text-center">
+            Why Contractors Choose <span className="text-primary">myCT1</span>
+          </h2>
+          <p className="text-lg text-muted-foreground leading-relaxed mb-6">
+            Running a contracting business means juggling estimates, managing crews, tracking jobs, handling invoices, and somehow finding time to answer the phone. We built myCT1 to handle all of it in one place, giving you back hours every week. Our platform gives you the tools enterprise contractors use, at a price that makes sense for growing businesses.
+          </p>
+          <p className="text-lg text-muted-foreground leading-relaxed">
+            From our AI Phone Assistant that never misses a call to our PocketBots that help you respond to clients instantly, we automate the busywork so you can focus on what matters: delivering great work and growing your bottom line. Communicate with clients, manage your team, and track every job, all without jumping between apps.
+          </p>
+        </div>
+      </section>
+
+      {/* More Than Software */}
+      <section className="py-16 sm:py-20 lg:py-24 bg-muted/30">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-            {services.map((service, index) => (
-              <Card key={index} className="border-2 hover:border-primary transition-colors">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4">More Than Software</h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              We are not just handing you a login and wishing you luck. Every myCT1 subscription includes:
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-5xl mx-auto">
+            {inclusions.map((item, index) => (
+              <Card key={index} className="border hover:border-primary/50 transition-colors rounded-xl shadow-sm">
                 <CardContent className="p-6">
-                  <service.icon className="h-12 w-12 text-primary mb-4" />
-                  <h3 className="text-xl font-bold mb-3">{service.title}</h3>
-                  <p className="text-muted-foreground">{service.description}</p>
+                  <div className="bg-primary/10 p-3 rounded-lg w-fit mb-4">
+                    <item.icon className="h-8 w-8 text-primary" />
+                  </div>
+                  <h3 className="text-xl font-bold mb-2">{item.title}</h3>
+                  <p className="text-muted-foreground">{item.description}</p>
                 </CardContent>
               </Card>
             ))}
@@ -80,31 +110,29 @@ export const WhatWeDo = () => {
         </div>
       </section>
 
-      {/* Our Goal */}
-      <section className="py-20 bg-muted/50">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl font-bold mb-6">Our Goal for You</h2>
-          <p className="text-2xl text-primary font-bold mb-4">$250,000 Cash on Hand After Expenses</p>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
-            We're not just about growth for growth's sake. We're focused on helping you build real wealth 
-            and financial security through your contracting business.
+      {/* A Nationwide Network */}
+      <section className="py-16 sm:py-20 lg:py-24">
+        <div className="container mx-auto px-4 max-w-4xl text-center">
+          <h2 className="text-3xl sm:text-4xl font-bold mb-6">A Nationwide Network</h2>
+          <p className="text-lg text-muted-foreground leading-relaxed">
+            myCT1 serves contractors across all 50 states, from solo operators to growing teams. Whether you are closing your fifth job or your five hundredth, we give you access to enterprise level technology and a single platform to manage it all, helping you work smarter, win more, and build the business you have been working toward.
           </p>
-          <Link to="/pricing">
-            <Button size="lg">See Our Plans</Button>
-          </Link>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-20">
+      <section className="py-16 sm:py-20 bg-muted/30">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl font-bold mb-6">Ready to Transform Your Business?</h2>
+          <h2 className="text-3xl sm:text-4xl font-bold mb-6">Ready to Transform Your Business?</h2>
           <p className="text-xl text-muted-foreground mb-8">
-            Join hundreds of contractors who are building better businesses with CT1.
+            Join hundreds of contractors who are building better businesses with myCT1.
           </p>
-          <div className="flex gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/auth">
-              <Button size="lg">Start Your Free Trial</Button>
+              <Button size="lg">
+                Start Your Free Trial
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
             </Link>
             <Link to="/contact">
               <Button size="lg" variant="outline">Schedule a Demo</Button>

@@ -583,7 +583,7 @@ export function NewLandingPage() {
             <div>
               <h4 className="font-semibold text-background mb-4">Company</h4>
               <ul className="space-y-2 text-sm text-muted">
-                <li><Link to="/what-we-do" className="hover:text-primary transition-colors">What We Do</Link></li>
+                <li><Link to="/what-we-do" className="hover:text-primary transition-colors">About Us</Link></li>
                 <li><Link to="/core-values" className="hover:text-primary transition-colors">Core Values</Link></li>
                 <li><Link to="/blog-podcast" className="hover:text-primary transition-colors">Blog & Podcast</Link></li>
                 <li><Link to="/contact" className="hover:text-primary transition-colors">Contact</Link></li>
