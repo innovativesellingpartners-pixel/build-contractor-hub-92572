@@ -2,29 +2,42 @@ import { useState } from "react";
 import { PublicFooter } from "@/components/PublicFooter";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { ContactForm } from "@/components/ContactForm";
 import { MainSiteHeader } from "@/components/MainSiteHeader";
+import { FloatingTrialButton } from "@/components/FloatingTrialButton";
 import {
   ArrowRight,
-  CheckCircle,
   HardHat,
   Calendar,
   Users,
   ClipboardList,
   Camera,
   DollarSign,
-  Clock,
-  MapPin,
-  Phone,
-  Wrench,
   FileText,
+  Clock,
   TrendingUp,
+  Wrench,
 } from "lucide-react";
 
 export default function Jobs() {
   const [activeContactForm, setActiveContactForm] = useState<string | null>(null);
+
+  const stats = [
+    { number: "98%", label: "On-Time Completion" },
+    { number: "+15%", label: "Profit Margin" },
+    { number: "3x", label: "Crew Efficiency" },
+    { number: "Real-Time", label: "Job Visibility" },
+  ];
+
+  const storyCards = [
+    { icon: Calendar, title: "Smart Scheduling", description: "Set start dates, milestones, and track deadlines visually" },
+    { icon: Users, title: "Crew Coordination", description: "Assign team members and track hours per project" },
+    { icon: DollarSign, title: "Job Costing", description: "Track materials, labor, and expenses against budget" },
+    { icon: Camera, title: "Photo Documentation", description: "Upload job photos with notes to document progress" },
+  ];
 
   const features = [
     { icon: Calendar, title: "Scheduling", description: "Schedule crews, set milestones, and track deadlines on a visual calendar." },
@@ -33,234 +46,138 @@ export default function Jobs() {
     { icon: Camera, title: "Photo Documentation", description: "Upload job photos with notes to document progress and quality." },
     { icon: DollarSign, title: "Job Costing", description: "Track materials, labor, and expenses against budget in real-time." },
     { icon: FileText, title: "Change Orders", description: "Document scope changes with automatic contract value updates." },
-  ];
-
-  const jobStatuses = [
-    { status: "Scheduled", count: 3, color: "bg-blue-500" },
-    { status: "In Progress", count: 5, color: "bg-yellow-500" },
-    { status: "On Hold", count: 1, color: "bg-orange-500" },
-    { status: "Complete", count: 12, color: "bg-green-500" },
+    { icon: Wrench, title: "Job Lifecycle", description: "Track every job from estimate acceptance to final payment." },
+    { icon: Clock, title: "Time Tracking", description: "Log hours by crew member and job for accurate labor costing." },
   ];
 
   return (
     <div className="min-h-screen bg-background">
-      <MainSiteHeader onContactClick={() => setActiveContactForm("contact-sales")} />
+      <FloatingTrialButton />
+      <MainSiteHeader />
 
       {/* Hero Section */}
-      <section className="pt-24 pb-16 bg-gradient-to-b from-muted/50 to-background">
+      <section className="py-20 bg-gradient-to-br from-background to-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <div className="bg-primary/10 p-3 rounded-lg w-fit mb-6">
-                <HardHat className="h-10 w-10 text-primary" />
-              </div>
-              <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-6">
-                Jobs <span className="text-primary">Management</span>
-              </h1>
-              <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
-                Schedule crews, track progress, and manage every job from start to finish. 
-                Keep projects on time, on budget, and customers happy.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Dialog open={activeContactForm === "demo"} onOpenChange={(open) => setActiveContactForm(open ? "demo" : null)}>
-                  <DialogTrigger asChild>
-                    <Button className="btn-ct1 text-lg px-8 py-4">
-                      Book a Demo
-                      <ArrowRight className="ml-2 h-5 w-5" />
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-2xl">
-                    <ContactForm
-                      title="Book a Jobs Demo"
-                      description="See how CT1 can help you manage jobs more efficiently"
-                      ctaText="Schedule Demo"
-                      formType="jobs-demo"
-                      onClose={() => setActiveContactForm(null)}
-                    />
-                  </DialogContent>
-                </Dialog>
-                <Link to="/trial-signup">
-                  <Button variant="outline" className="text-lg px-8 py-4">
-                    Start Free Trial
-                  </Button>
-                </Link>
-              </div>
-            </div>
-            <Card className="p-6 bg-card border">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="font-bold text-foreground">Active Jobs</h3>
-                <span className="text-sm text-muted-foreground">This Week</span>
-              </div>
-              <div className="space-y-3 mb-4">
-                {jobStatuses.map((job, index) => (
-                  <div key={index} className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={`h-3 w-3 rounded-full ${job.color}`}></div>
-                      <span className="text-foreground">{job.status}</span>
-                    </div>
-                    <span className="font-bold text-foreground">{job.count}</span>
-                  </div>
-                ))}
-              </div>
-              <div className="border-t border-border pt-4">
-                <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-                  <MapPin className="h-5 w-5 text-primary" />
-                  <div className="flex-1">
-                    <p className="font-semibold text-foreground text-sm">Kitchen Remodel - Davis</p>
-                    <p className="text-xs text-muted-foreground">123 Oak Street • Day 3 of 14</p>
-                  </div>
-                  <span className="px-2 py-1 bg-yellow-500/20 text-yellow-600 rounded text-xs">In Progress</span>
-                </div>
-              </div>
-            </Card>
+          <div className="text-center mb-16">
+            <Badge className="mb-4 bg-primary text-primary-foreground px-4 py-2 text-lg">
+              <HardHat className="h-5 w-5 mr-2" />
+              Jobs Management
+            </Badge>
+            <h1 className="text-5xl font-bold text-foreground mb-6">
+              Keep Every Job <span className="text-primary">On Track</span>
+            </h1>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              Schedule crews, track progress, and manage every job from start to finish. Keep projects on time, on budget, and customers happy.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-4 gap-8">
+            {stats.map((stat, index) => (
+              <Card key={index} className="text-center p-6 card-ct1">
+                <CardContent className="pt-6">
+                  <div className="text-3xl font-bold text-primary mb-2">{stat.number}</div>
+                  <div className="text-muted-foreground">{stat.label}</div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-16 bg-background">
+      {/* Two-Column Story Section */}
+      <section className="py-20 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-              Everything You Need to <span className="text-primary">Manage Jobs</span>
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <h2 className="text-4xl font-bold text-foreground mb-6">From Estimate to <span className="text-primary">Final Payment</span></h2>
+              <div className="space-y-4 text-muted-foreground">
+                <p>
+                  Never miss a deadline or blow a budget again. CT1's job management system gives you complete visibility into every project—from the moment an estimate is signed to the final payment.
+                </p>
+                <p>
+                  Coordinate crews across multiple job sites, document progress with photos, and keep customers informed with real-time updates. Everything your team needs, in one place.
+                </p>
+                <p>
+                  Contractors using CT1 complete 98% of jobs on time and see a 15% increase in profit margins through better job costing and resource allocation.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-4">
+                {storyCards.slice(0, 2).map((card, index) => (
+                  <Card key={index} className="p-4 card-ct1">
+                    <card.icon className="h-8 w-8 text-primary mb-2" />
+                    <h4 className="font-semibold">{card.title}</h4>
+                    <p className="text-sm text-muted-foreground">{card.description}</p>
+                  </Card>
+                ))}
+              </div>
+              <div className="space-y-4 mt-8">
+                {storyCards.slice(2, 4).map((card, index) => (
+                  <Card key={index} className="p-4 card-ct1">
+                    <card.icon className="h-8 w-8 text-primary mb-2" />
+                    <h4 className="font-semibold">{card.title}</h4>
+                    <p className="text-sm text-muted-foreground">{card.description}</p>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Grid */}
+      <section className="py-20 bg-muted/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-foreground mb-6">
+              Complete Job <span className="text-primary">Lifecycle Management</span>
             </h2>
-            <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               From scheduling to completion, track every aspect of your projects.
             </p>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => (
-              <Card key={index} className="p-6 hover:shadow-lg transition-all hover:-translate-y-1">
-                <div className="bg-primary/10 p-3 rounded-lg w-fit mb-4">
-                  <feature.icon className="h-8 w-8 text-primary" />
-                </div>
-                <h3 className="text-lg font-bold text-foreground mb-2">{feature.title}</h3>
-                <p className="text-muted-foreground">{feature.description}</p>
+              <Card key={index} className="card-ct1 p-6">
+                <CardContent className="pt-6 text-center">
+                  <feature.icon className="h-12 w-12 text-primary mx-auto mb-4" />
+                  <h3 className="text-xl font-bold text-foreground mb-3">{feature.title}</h3>
+                  <p className="text-muted-foreground">{feature.description}</p>
+                </CardContent>
               </Card>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Workflow Section */}
-      <section className="py-16 bg-muted/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-              Job Lifecycle <span className="text-primary">Management</span>
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-              Track every job from estimate acceptance to final payment.
-            </p>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
-            {[
-              { icon: FileText, title: "Estimate Sold", description: "Signed estimate converts to a job" },
-              { icon: Calendar, title: "Scheduled", description: "Set start date and milestones" },
-              { icon: Wrench, title: "In Progress", description: "Track daily work and tasks" },
-              { icon: Camera, title: "Document", description: "Photos, notes, and updates" },
-              { icon: DollarSign, title: "Complete & Paid", description: "Final invoice and payment" },
-            ].map((item, index) => (
-              <Card key={index} className="p-4 text-center hover:shadow-lg transition-all relative">
-                <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <item.icon className="h-5 w-5 text-primary" />
-                </div>
-                <h3 className="font-bold text-foreground text-sm mb-1">{item.title}</h3>
-                <p className="text-xs text-muted-foreground">{item.description}</p>
-                {index < 4 && (
-                  <ArrowRight className="hidden lg:block absolute -right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-primary z-10" />
-                )}
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Benefits Section */}
-      <section className="py-16 bg-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-6">
-                Keep Every Job <span className="text-primary">On Track</span>
-              </h2>
-              <ul className="space-y-4">
-                {[
-                  "See all jobs at a glance with status dashboards",
-                  "Never miss a deadline with milestone tracking",
-                  "Keep customers informed with progress updates",
-                  "Track profitability in real-time with job costing",
-                  "Document everything for disputes and warranty claims",
-                  "Coordinate crews across multiple job sites",
-                ].map((item, index) => (
-                  <li key={index} className="flex items-start gap-3">
-                    <CheckCircle className="h-6 w-6 text-primary mt-0.5 flex-shrink-0" />
-                    <span className="text-foreground">{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <Card className="p-6 text-center">
-                <Clock className="h-10 w-10 text-primary mx-auto mb-3" />
-                <p className="text-3xl font-bold text-foreground">98%</p>
-                <p className="text-sm text-muted-foreground">On-Time Completion</p>
-              </Card>
-              <Card className="p-6 text-center">
-                <DollarSign className="h-10 w-10 text-primary mx-auto mb-3" />
-                <p className="text-3xl font-bold text-foreground">+15%</p>
-                <p className="text-sm text-muted-foreground">Profit Margin</p>
-              </Card>
-              <Card className="p-6 text-center">
-                <Users className="h-10 w-10 text-primary mx-auto mb-3" />
-                <p className="text-3xl font-bold text-foreground">3x</p>
-                <p className="text-sm text-muted-foreground">Crew Efficiency</p>
-              </Card>
-              <Card className="p-6 text-center">
-                <TrendingUp className="h-10 w-10 text-primary mx-auto mb-3" />
-                <p className="text-3xl font-bold text-foreground">Real-Time</p>
-                <p className="text-sm text-muted-foreground">Job Visibility</p>
-              </Card>
-            </div>
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-foreground text-background">
+      <section className="py-20 bg-gradient-to-r from-primary to-primary-hover text-primary-foreground">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold mb-6">
+          <h2 className="text-4xl font-bold mb-6">
             Ready to Manage Jobs Like a Pro?
           </h2>
-          <p className="text-xl text-background/80 mb-8">
+          <p className="text-xl opacity-90 mb-8 max-w-2xl mx-auto">
             Join contractors who complete 98% of jobs on time with CT1's job management.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Dialog open={activeContactForm === "cta-demo"} onOpenChange={(open) => setActiveContactForm(open ? "cta-demo" : null)}>
-              <DialogTrigger asChild>
-                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground text-lg px-8 py-4">
-                  <Phone className="mr-2 h-5 w-5" />
-                  Book a Demo
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl">
-                <ContactForm
-                  title="Book a Jobs Demo"
-                  description="See how CT1 can help you manage projects more efficiently"
-                  ctaText="Schedule Demo"
-                  formType="jobs-demo"
-                  onClose={() => setActiveContactForm(null)}
-                />
-              </DialogContent>
-            </Dialog>
-            <Link to="/trial-signup">
-              <Button variant="outline" className="border-background text-background hover:bg-background hover:text-foreground text-lg px-8 py-4">
-                Start Free Trial
+            <Link to="/pricing">
+              <Button size="lg" className="bg-background text-primary hover:bg-background/90 text-lg px-8 py-4 font-bold">
+                Get Started Today
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+            <Link to="/contact">
+              <Button size="lg" variant="outline" className="border-2 border-background text-background hover:bg-background hover:text-foreground text-lg px-8 py-4 font-bold">
+                Contact Us
               </Button>
             </Link>
           </div>
         </div>
       </section>
+
       <PublicFooter />
     </div>
   );
