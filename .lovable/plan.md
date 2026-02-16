@@ -1,58 +1,57 @@
 
+# Redesign Product and Feature Pages to Mirror About Us Layout
 
-# Redesign "What We Do" into "About Us"
+## Problem
+The About Us page has a clean, consistent design with specific patterns (Badge hero, gradient background, stats grid, two-column alternating sections, card grids, gradient CTA). The 14 product and feature pages each use different, inconsistent layouts -- custom headers instead of `MainSiteHeader`, different hero styles, different section backgrounds, different CTA sections, and inconsistent spacing.
 
-## Overview
-Transform the current What We Do page into a comprehensive About Us page with a contractor hero image background, updated content from the provided messaging, and rename the navigation tab from "What We Do" to "About Us." The light theme will be maintained throughout.
+## About Us Page Layout Pattern (the template)
 
-## Content Changes
-The entire page content will be replaced with the provided myCT1 messaging, organized into these sections:
-1. **Hero** with contractor hero image background (`hero-construction.jpg`), CT1 logo, and headline "Your Complete Business Command Center"
-2. **Why Contractors Choose myCT1** section with detailed value proposition
-3. **More Than Software** section listing inclusions (training, certifications, leads, insights, marketplace)
-4. **A Nationwide Network** section with the closing message
-5. **CTA** section to drive signups/demos
+1. **Header**: Uses `MainSiteHeader` (shared site header)
+2. **Hero Section**: `py-20 bg-gradient-to-br from-background to-muted/30` with centered `Badge` (icon + text), large `text-5xl` heading with `text-primary` accent span, `text-xl` description paragraph, followed by a 4-column stats grid of `Card` components
+3. **Two-Column Story Section**: `py-20 bg-background` with `lg:grid-cols-2` -- text on left (heading, paragraphs), staggered 2x2 card grid on right with icons
+4. **Values/Features Grid**: `py-20 bg-muted/30` with centered heading, `md:grid-cols-2 lg:grid-cols-4` card grid with icon, title, description
+5. **CTA Section**: `py-20 bg-gradient-to-r from-primary to-primary-hover text-primary-foreground` with heading, description, two buttons (primary inverted + outline)
+6. **Footer**: `PublicFooter`
 
-No dashes or emdashes will be used anywhere in the copy.
+## Pages to Redesign (14 total)
 
-## Navigation Rename
-All references to "What We Do" will be renamed to "About Us" in:
-- `MainSiteHeader.tsx` (desktop nav link text)
-- `MobileNav.tsx` (mobile nav link text)
-- `NewLandingPage.tsx` (footer link text)
-- `ForConsumers.tsx` (nav link text)
+### Feature Pages (9)
+- `src/pages/features/CRM.tsx`
+- `src/pages/features/Jobs.tsx`
+- `src/pages/features/Estimating.tsx`
+- `src/pages/features/Reporting.tsx`
+- `src/pages/features/VoiceAI.tsx`
+- `src/pages/features/Insurance.tsx`
+- `src/pages/features/Leads.tsx`
+- `src/pages/features/Training.tsx`
+- `src/pages/features/QuickBooks.tsx`
 
-The route will remain `/what-we-do` (or optionally `/about-us`) to avoid breaking existing links.
+### Product Pages (5)
+- `src/pages/products/PocketbotProduct.tsx` (already redesigned -- will verify alignment)
+- `src/pages/products/VoiceAIProduct.tsx`
+- `src/pages/products/TierGrowth.tsx`
+- `src/pages/products/TierLaunch.tsx`
+- `src/pages/products/TierMarket.tsx`
 
-## Visual Design
-- **Hero background**: Use `hero-construction.jpg` with a light semi-transparent overlay to keep the light theme while showing the contractor imagery
-- **CT1 logo** (`ct1-round-logo-new.png`) prominently placed in the hero
-- Cards with the existing modern tech aesthetic (12-16px rounded corners, subtle shadows, soft borders)
-- The "More Than Software" inclusions rendered as icon cards in a grid
-- Light color palette maintained throughout (no dark sections)
+## Changes Per Page
+
+Each page will be restructured to follow this exact skeleton while keeping its unique content/data:
+
+1. **Replace any custom header** with `MainSiteHeader` (some pages like CRM have their own inline header)
+2. **Hero section**: Centered layout with `Badge` component (page icon + label), `text-5xl` bold heading with `text-primary` accent, `text-xl` subtitle, 4-column stats grid below -- using `py-20 bg-gradient-to-br from-background to-muted/30`
+3. **Two-column section**: `py-20 bg-background` with `lg:grid-cols-2` layout -- descriptive text on one side, staggered card grid or feature cards on the other
+4. **Features/values card grid**: `py-20 bg-muted/30` with centered heading, grid of cards using `card-ct1` class with centered icons, bold titles, descriptions
+5. **CTA section**: `py-20 bg-gradient-to-r from-primary to-primary-hover text-primary-foreground` with two buttons ("Get Started" linking to pricing/auth + "Contact Us" linking to contact)
+6. **Footer**: `PublicFooter` (already present on all pages)
 
 ## Technical Details
 
-### Files Modified
+- All pages will use the same imports: `Badge` from `@/components/ui/badge`, `Card`/`CardContent`, `Button`, `MainSiteHeader`, `PublicFooter`, `FloatingTrialButton`, `Link`
+- Same CSS class patterns: `py-20` section spacing, `max-w-7xl mx-auto px-4 sm:px-6 lg:px-8` container, `card-ct1` card styling, `text-5xl` hero headings
+- Same gradient patterns: `bg-gradient-to-br from-background to-muted/30` for hero, `bg-muted/30` for alternating sections, `bg-gradient-to-r from-primary to-primary-hover` for CTA
+- The data/content (features, stats, descriptions) stays the same for each page -- only the layout structure changes
+- Tier pages (Growth, Launch, Market) will keep their pricing info but present it within the About Us layout framework (stats grid can show price, included features count, etc.)
+- Pages with contact form dialogs (Jobs, Estimating, etc.) will keep that functionality but integrate the trigger buttons into the standardized CTA section
 
-1. **`src/pages/WhatWeDo.tsx`** (full rewrite)
-   - Replace hero gradient background with `hero-construction.jpg` using a white/light overlay
-   - Add CT1 round logo in hero
-   - Replace all body content with the provided messaging sections
-   - Use Lucide icons (GraduationCap, Award, Target, BarChart3, ShoppingBag) for the "More Than Software" feature cards
-   - Keep existing imports for MainSiteHeader, FloatingTrialButton, Card, CardContent, Button, Link
-
-2. **`src/components/MainSiteHeader.tsx`** (line 46)
-   - Change link text from "What We Do" to "About Us"
-
-3. **`src/components/MobileNav.tsx`** (link text change)
-   - Change "What We Do" to "About Us"
-
-4. **`src/components/NewLandingPage.tsx`** (footer link text)
-   - Change "What We Do" to "About Us"
-
-5. **`src/pages/ForConsumers.tsx`** (nav link text)
-   - Change "What We Do" to "About Us"
-
-### No route changes needed
-The `/what-we-do` route path stays the same to preserve any existing links. Only the displayed label changes.
+## Execution Order
+All 14 pages will be updated in parallel since they are independent files with no cross-dependencies.
