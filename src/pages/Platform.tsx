@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { PublicFooter } from "@/components/PublicFooter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FloatingTrialButton } from "@/components/FloatingTrialButton";
@@ -360,6 +361,7 @@ export default function Platform() {
           </Card>
         </div>
       </section>
+      <PublicFooter />
     </div>
   );
 }

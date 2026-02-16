@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { PublicFooter } from "@/components/PublicFooter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { FloatingTrialButton } from "@/components/FloatingTrialButton";
@@ -187,30 +188,7 @@ export function About() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-foreground text-background py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="flex items-center space-x-3 mb-4 md:mb-0">
-              <img src={ct1Logo} alt="CT1 Logo" className="h-10 w-10" />
-              <div>
-                <h3 className="text-xl font-bold text-background">CT1</h3>
-                <p className="text-xs text-muted">One-Up Your Business</p>
-              </div>
-            </div>
-            
-            <div className="flex space-x-6">
-              <Link to="/legal/privacy" className="text-sm text-muted hover:text-primary transition-colors">Privacy Policy</Link>
-              <Link to="/legal/terms" className="text-sm text-muted hover:text-primary transition-colors">Terms of Service</Link>
-              <Link to="/contact" className="text-sm text-muted hover:text-primary transition-colors">Support</Link>
-            </div>
-          </div>
-          
-          <div className="border-t border-muted mt-8 pt-8 text-center">
-            <p className="text-sm text-muted">© 2024 CT1. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <PublicFooter />
     </div>
   );
 }

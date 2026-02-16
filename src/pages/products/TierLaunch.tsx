@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { PublicFooter } from "@/components/PublicFooter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle, Star, Users, BookOpen, ShoppingBag, Bot, Calendar } from "lucide-react";
@@ -200,6 +201,7 @@ export default function TierLaunch() {
           </div>
         </div>
       </section>
+      <PublicFooter />
     </div>
   );
 }

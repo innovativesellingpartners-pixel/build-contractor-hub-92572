@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { PublicFooter } from "@/components/PublicFooter";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -631,57 +632,7 @@ export default function NationwideNetwork() {
         </div>
       </section>
 
-      {/* Standard Footer */}
-      <footer className="py-12 bg-foreground text-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <img src={ct1Logo} alt="CT1" className="h-12 w-12 mb-4" />
-              <p className="text-background/70 text-sm">
-                The nationwide contractor platform built for trades companies that want to grow.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Platform</h4>
-              <ul className="space-y-2 text-background/70 text-sm">
-                <li><Link to="/business-suite" className="hover:text-primary transition-colors">Business Suite</Link></li>
-                <li><Link to="/pricing" className="hover:text-primary transition-colors">Pricing</Link></li>
-                <li><Link to="/products/pocketbot" className="hover:text-primary transition-colors">Pocketbot</Link></li>
-                <li><Link to="/products/voice-ai" className="hover:text-primary transition-colors">Voice AI</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Company</h4>
-              <ul className="space-y-2 text-background/70 text-sm">
-                <li><Link to="/about" className="hover:text-primary transition-colors">About</Link></li>
-                <li><Link to="/core-values" className="hover:text-primary transition-colors">Core Values</Link></li>
-                <li><Link to="/blog" className="hover:text-primary transition-colors">Blog & Podcast</Link></li>
-                <li><Link to="/contact" className="hover:text-primary transition-colors">Contact</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Contact</h4>
-              <ul className="space-y-2 text-background/70 text-sm">
-                <li className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4" />
-                  Fraser, Michigan
-                </li>
-                <li className="flex items-center gap-2">
-                  <Phone className="h-4 w-4" />
-                  <a href="tel:+15865551234" className="hover:text-primary transition-colors">(586) 555-1234</a>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-background/20 mt-8 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <p className="text-background/50 text-sm">© 2024 CT1. All rights reserved.</p>
-            <div className="flex gap-6 text-background/50 text-sm">
-              <Link to="/legal/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
-              <Link to="/legal/terms" className="hover:text-primary transition-colors">Terms of Service</Link>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <PublicFooter />
     </div>
   );
 }

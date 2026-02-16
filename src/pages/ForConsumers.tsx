@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { PublicFooter } from "@/components/PublicFooter";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -287,28 +288,7 @@ export default function ForConsumers() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t py-12 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-            <div className="flex items-center space-x-3">
-              <img src={ct1Logo} alt="CT1 Logo" className="h-10 w-10" />
-              <div>
-                <p className="text-sm font-bold">CT1</p>
-                <p className="text-xs text-muted-foreground">One-Up Your Business</p>
-              </div>
-            </div>
-            <div className="flex gap-6 text-sm text-muted-foreground">
-              <Link to="/legal/terms" className="hover:text-primary">Terms</Link>
-              <Link to="/legal/privacy" className="hover:text-primary">Privacy</Link>
-              <Link to="/contact" className="hover:text-primary">Contact</Link>
-            </div>
-          </div>
-          <div className="text-center mt-6 text-sm text-muted-foreground">
-            <p>&copy; 2025 CT1. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <PublicFooter />
     </div>
   );
 }

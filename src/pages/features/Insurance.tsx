@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { PublicFooter } from "@/components/PublicFooter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { FloatingTrialButton } from "@/components/FloatingTrialButton";
@@ -339,6 +340,7 @@ export function Insurance() {
           background-size: 40px 40px;
         }
       `}</style>
+      <PublicFooter />
     </div>
   );
 }

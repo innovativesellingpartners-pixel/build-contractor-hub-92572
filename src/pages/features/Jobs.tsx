@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { PublicFooter } from "@/components/PublicFooter";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -260,6 +261,7 @@ export default function Jobs() {
           </div>
         </div>
       </section>
+      <PublicFooter />
     </div>
   );
 }
