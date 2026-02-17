@@ -48,6 +48,7 @@ const PullQuote = ({ children }: { children: string }) => (
 );
 
 const tocItems = [
+  { id: "vision", label: "The Vision Behind CT1" },
   { id: "what-is-platform", label: "What Does It Mean to Run on a Single Platform?" },
   { id: "signs", label: "5 Signs Your Business Needs a Better System" },
   { id: "lean-fast-scalable", label: "Lean. Fast. Scalable." },
@@ -55,7 +56,7 @@ const tocItems = [
   { id: "financial-layer", label: "The Financial Layer Most Contractors Are Missing" },
   { id: "marketplace", label: "The Technology Marketplace Advantage" },
   { id: "family-community", label: "Building a Life Worth Having" },
-  { id: "myct1", label: "How myCT1 Approaches All of This" },
+  { id: "how-ct1-delivers", label: "How CT1 Delivers on This" },
   { id: "conclusion", label: "The Bottom Line" },
 ];
 
@@ -134,6 +135,14 @@ export const ContractorCRMGuide = () => {
                 <StatCard number="3×" label="faster growth for contractors using integrated business platforms" />
               </div>
 
+              <h2 id="vision" className="text-2xl md:text-3xl font-bold mt-12 mb-4 border-l-4 border-primary pl-4">The Vision Behind CT1</h2>
+
+              <p className="text-muted-foreground leading-relaxed mb-5">That philosophy comes straight from our CEO, <strong className="text-foreground">Joe Cipriano</strong>, and it's worth understanding where it comes from. Joe didn't start CONSTRUCTEAM by studying the software industry. He started it because he lived the problem firsthand. That experience is baked into every feature we ship, and it's why our platform feels different from anything else in the market.</p>
+
+              <p className="text-muted-foreground leading-relaxed mb-5">Joe founded CONSTRUCTEAM with a vision that goes far beyond software. His mission has always been to support the trades, to mentor contractors, and to build a community where tradespeople lift each other up. That conviction, that the trades deserve world-class tools and genuine investment in their success, is what drives our entire team every single day. It's the reason we don't just build features. We build a platform that helps contractors start, grow, scale, and sustain businesses that let them live their best lives.</p>
+
+              <p className="text-muted-foreground leading-relaxed mb-5">At CT1, we set out to build something the industry had never had: a true single pane of glass for the entire contractor business. Not a CT1 product with some extras bolted on. Not a job management tool that sort of handles invoicing. A complete business command center, built from the ground up for the trades.</p>
+
               <h2 id="what-is-platform" className="text-2xl md:text-3xl font-bold mt-12 mb-4 border-l-4 border-primary pl-4">What Does It Mean to Run on a Single Platform?</h2>
 
               <p className="text-muted-foreground leading-relaxed mb-5">Most contractors are running their business across five, six, maybe ten different tools. One app for scheduling. Another for invoicing. A spreadsheet for job tracking. A separate system for estimates. A bank they can barely connect to anything. And somehow, they're supposed to see the full picture of their business in real time.</p>
@@ -148,7 +157,7 @@ export const ContractorCRMGuide = () => {
 
               <p className="text-muted-foreground leading-relaxed mb-5"><strong className="text-foreground">Here's the hard truth:</strong> most contractors are running their business out of a combination of their head, a notepad, a few text threads, and maybe a spreadsheet. That works until you hit a wall. And when it stops working, you're not just losing efficiency. You're losing jobs, revenue, and sleep.</p>
 
-              <PullQuote>The contractors winning right now aren't the ones working longer hours. They're the ones who built a lean, fast, scalable operation, and a great platform is the engine underneath it. -- Patrick Montgomery, COO, myCT1.com</PullQuote>
+              <PullQuote>The contractors winning right now aren't the ones working longer hours. They're the ones who built a lean, fast, scalable operation, and a great platform is the engine underneath it. - Patrick Montgomery, COO, myCT1.com</PullQuote>
 
               <h2 id="signs" className="text-2xl md:text-3xl font-bold mt-12 mb-4 border-l-4 border-primary pl-4">5 Signs Your Business Needs a Better System</h2>
 
@@ -180,17 +189,17 @@ export const ContractorCRMGuide = () => {
               <div className="bg-primary/5 border border-primary/30 p-6 my-10 flex flex-col sm:flex-row items-center gap-6">
                 <span className="text-4xl">⚡</span>
                 <div className="flex-1">
-                  <h4 className="font-bold uppercase tracking-wide text-foreground mb-1">See How myCT1 Works for Your Trade</h4>
+                  <h4 className="font-bold uppercase tracking-wide text-foreground mb-1">See How CT1 Works for Your Trade</h4>
                   <p className="text-sm text-muted-foreground">Get a personalized walkthrough of the platform built specifically for contractors like you.</p>
                 </div>
-                <a href="mailto:pwm@myct1.com">
+                <Link to="/contact">
                   <Button>Book a Demo</Button>
-                </a>
+                </Link>
               </div>
 
               <h2 id="what-to-look-for" className="text-2xl md:text-3xl font-bold mt-12 mb-4 border-l-4 border-primary pl-4">What to Look For in a Contractor Business Platform</h2>
 
-              <p className="text-muted-foreground leading-relaxed mb-5">Not every platform is created equal, and for contractors, the wrong tool is almost worse than no tool at all. Here's what separates a genuinely useful contractor platform from expensive software that just creates more work:</p>
+              <p className="text-muted-foreground leading-relaxed mb-5">Not every platform is created equal, and for contractors, the wrong tool is almost worse than no tool at all. Here's what separates a genuinely useful contractor platform from expensive software that just creates more work.</p>
 
               <FeatureGrid title="Essential Capabilities Checklist" items={[
                 "Voice AI to handle calls and client communication",
@@ -232,23 +241,17 @@ export const ContractorCRMGuide = () => {
 
               <p className="text-muted-foreground leading-relaxed mb-5">When your business is running on systems instead of running on you, something shifts. You stop being on the phone at dinner. You start making your kid's games. You take a weekend off and the business doesn't collapse. That's not a luxury reserved for big companies. It's what scalable systems make possible for every contractor willing to invest in them.</p>
 
-              <p className="text-muted-foreground leading-relaxed mb-5"><strong className="text-foreground">There's also a community dimension here.</strong> Contractors are the backbone of every neighborhood in America. When your business is healthy, you hire locally. You support your crews' families. You invest back into the towns you serve. A thriving contractor business isn't just good for the owner, it ripples outward into the entire community. We take that seriously at myCT1, and we build our platform with that bigger picture in mind.</p>
+              <p className="text-muted-foreground leading-relaxed mb-5"><strong className="text-foreground">There's also a community dimension here.</strong> Contractors are the backbone of every neighborhood in America. When your business is healthy, you hire locally. You support your crews' families. You invest back into the towns you serve. A thriving contractor business isn't just good for the owner, it ripples outward into the entire community. We take that seriously at CT1, and we build our platform with that bigger picture in mind.</p>
 
-              <PullQuote>When you're not buried in busywork, you become a better business owner, a better parent, and a stronger member of your community. That's the real return on building a great operation. -- Patrick Montgomery, COO, myCT1.com</PullQuote>
+              <PullQuote>When you're not buried in busywork, you become a better business owner, a better parent, and a stronger member of your community. That's the real return on building a great operation. - Patrick Montgomery, COO, myCT1.com</PullQuote>
 
-              <h2 id="myct1" className="text-2xl md:text-3xl font-bold mt-12 mb-4 border-l-4 border-primary pl-4">How myCT1 Approaches All of This</h2>
-
-              <p className="text-muted-foreground leading-relaxed mb-5">That philosophy comes straight from our CEO, <strong className="text-foreground">Joe Cipriano</strong>, and it's worth understanding where it comes from. Joe didn't start ConstructTeam by studying the software industry. He started it because he lived the problem firsthand. That experience is baked into every feature we ship, and it's why our platform feels different from anything else in the market.</p>
-
-              <p className="text-muted-foreground leading-relaxed mb-5">Joe founded ConstructTeam with a vision that goes far beyond software. His mission has always been to support the trades, to mentor contractors, and to build a community where tradespeople lift each other up. That conviction, that the trades deserve world-class tools and genuine investment in their success, is what drives our entire team every single day. It's the reason we don't just build features. We build a platform that helps contractors start, grow, scale, and sustain businesses that let them live their best lives.</p>
-
-              <p className="text-muted-foreground leading-relaxed mb-5">At myCT1, we set out to build something the industry had never had: a true single pane of glass for the entire contractor business. Not a CRM with some extras bolted on. Not a job management tool that sort of handles invoicing. A complete business command center, built from the ground up for the trades.</p>
+              <h2 id="how-ct1-delivers" className="text-2xl md:text-3xl font-bold mt-12 mb-4 border-l-4 border-primary pl-4">How CT1 Delivers on This</h2>
 
               <p className="text-muted-foreground leading-relaxed mb-5">Our <strong className="text-foreground">Voice AI</strong> means your business never stops, even when you do. Calls get answered, clients get responses, and opportunities get captured whether you're on a roof, in a crawl space, or at your kid's soccer game. Our <strong className="text-foreground">financial integrations</strong> connect directly to your bank and sync with QuickBooks, so your numbers are always accurate and always current. Our <strong className="text-foreground">marketplace</strong> gives you access to over 400 technology partners, from specialized trade tools to customer financing to insurance, keeping your operation connected to the best the industry has to offer.</p>
 
               <p className="text-muted-foreground leading-relaxed mb-5">Every job, every dollar, every client, and every opportunity lives in one place. That's what contractors have always needed, and that's what we built.</p>
 
-              <FeatureGrid title="What's Included in Every myCT1 Subscription" items={[
+              <FeatureGrid title="Some of myCT1's Offerings" items={[
                 "Full business management platform (start, run, manage, and scale)",
                 "Voice AI to handle calls and client communication",
                 "Job scheduling and crew management",
@@ -268,7 +271,7 @@ export const ContractorCRMGuide = () => {
 
               <p className="text-muted-foreground leading-relaxed mb-5">The contracting industry is more competitive than ever, but it's also full of more opportunity than ever. The contractors who win in the next decade will be the ones who build lean, fast, scalable businesses backed by smart systems. A great platform isn't an expense. It's the infrastructure of a high-performance operation.</p>
 
-              <p className="text-muted-foreground leading-relaxed mb-5">Whether you're starting your first company or scaling your fiftieth crew, you deserve tools built for the way you work, financial visibility that actually helps you make decisions, a technology ecosystem that keeps you growing, and training from people who understand your world. That's what we built at myCT1, and it's available to every contractor in America, starting today.</p>
+              <p className="text-muted-foreground leading-relaxed mb-5">Whether you're starting your first company or scaling your fiftieth crew, you deserve tools built for the way you work, financial visibility that actually helps you make decisions, a technology ecosystem that keeps you growing, and training from people who understand your world. That's what we built at CT1, and it's available to every contractor in America, starting today.</p>
 
               <p className="text-foreground font-semibold leading-relaxed mb-5">More money in the bank. More time for your family. More strength for your community. The trades built this country. Let's make sure the business side matches the craft.</p>
 
@@ -287,9 +290,9 @@ export const ContractorCRMGuide = () => {
                 <img src={ct1Logo} alt="CT1" className="w-16 h-16 mx-auto mb-3" />
                 <h4 className="text-xl font-bold mb-2">Ready to Scale Your Business?</h4>
                 <p className="text-sm text-muted-foreground mb-5">Join contractors running their entire operation on myCT1, launching in Michigan and expanding nationwide.</p>
-                <a href="mailto:pwm@myct1.com" className="block">
-                  <Button className="w-full mb-2">Contact Patrick</Button>
-                </a>
+                <Link to="/contact" className="block">
+                  <Button className="w-full mb-2">Contact Sales</Button>
+                </Link>
                 <Link to="/" className="block">
                   <Button variant="outline" className="w-full">Learn More</Button>
                 </Link>
@@ -319,13 +322,12 @@ export const ContractorCRMGuide = () => {
                 </div>
                 <div className="p-4">
                   <p className="text-sm text-muted-foreground mb-4">Questions about the CT1 platform? Reach out directly to our team.</p>
-                  <a href="mailto:pwm@myct1.com" className="block mb-2">
-                    <Button className="w-full">Email Patrick</Button>
-                  </a>
+                  <Link to="/contact" className="block mb-2">
+                    <Button className="w-full">Contact Sales</Button>
+                  </Link>
                   <Link to="/" className="block">
                     <Button variant="outline" className="w-full">Visit myCT1.com</Button>
                   </Link>
-                  <p className="text-xs text-muted-foreground text-center mt-3">pwm@myct1.com</p>
                 </div>
               </div>
             </aside>
@@ -345,15 +347,15 @@ export const ContractorCRMGuide = () => {
             Whether you're a solo operator or managing a growing crew, myCT1 gives you the platform, training, and leads to take your business to the next level. Launching in Michigan and expanding nationwide, contractors are running leaner, earning more, and getting their time back.
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
-            <a href="mailto:pwm@myct1.com">
+            <Link to="/contact">
               <Button size="lg">Talk to Our Team</Button>
-            </a>
+            </Link>
             <Link to="/">
               <Button size="lg" variant="outline">Explore myCT1</Button>
             </Link>
           </div>
           <p className="text-sm text-muted-foreground mt-6">
-            Interested in the CT1 platform? Contact us at <a href="mailto:pwm@myct1.com" className="text-primary hover:underline">pwm@myct1.com</a> | <Link to="/" className="text-primary hover:underline">www.myct1.com</Link>
+            Interested in the CT1 platform? <Link to="/contact" className="text-primary hover:underline">Contact Sales</Link> | <Link to="/" className="text-primary hover:underline">www.myct1.com</Link>
           </p>
         </div>
       </section>
