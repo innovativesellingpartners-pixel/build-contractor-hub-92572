@@ -7,6 +7,7 @@ import { FloatingTrialButton } from '@/components/FloatingTrialButton';
 import { MainSiteHeader } from '@/components/MainSiteHeader';
 import { Youtube, FileText, Mic, Play } from 'lucide-react';
 import podcastThumbnail from '@/assets/podcast-thumbnail.png';
+import heroBg from '@/assets/hero-tech-dashboard.jpg';
 
 export const BlogPodcast = () => {
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
@@ -65,8 +66,12 @@ export const BlogPodcast = () => {
       <MainSiteHeader />
 
       {/* Hero Section */}
-      <section className="py-20 bg-gradient-to-br from-primary/5 to-primary/10">
-        <div className="container mx-auto px-4 text-center">
+      <section className="relative py-20 overflow-hidden">
+        <div className="absolute inset-0">
+          <img src={heroBg} alt="" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-background/85 backdrop-blur-sm" />
+        </div>
+        <div className="relative container mx-auto px-4 text-center">
           <h1 className="text-5xl md:text-6xl font-bold mb-6">Blog & Podcast</h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             Insights, strategies, and success stories to help you build a better contracting business.

@@ -6,6 +6,7 @@ import { FloatingTrialButton } from '@/components/FloatingTrialButton';
 import { MainSiteHeader } from '@/components/MainSiteHeader';
 import { Heart, Shield, Target, Users, Lightbulb, Trophy, Download } from 'lucide-react';
 import joeCipriano from '@/assets/joe-cipriano.png';
+import heroBg from '@/assets/hero-crm-business.jpg';
 
 export const CoreValues = () => {
   const values = [
@@ -47,8 +48,12 @@ export const CoreValues = () => {
       <MainSiteHeader />
 
       {/* Hero Section with Founder Quote */}
-      <section className="py-20 bg-gradient-to-br from-primary/5 to-primary/10">
-        <div className="container mx-auto px-4">
+      <section className="relative py-20 overflow-hidden">
+        <div className="absolute inset-0">
+          <img src={heroBg} alt="" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-background/85 backdrop-blur-sm" />
+        </div>
+        <div className="relative container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             <div className="flex flex-col md:flex-row items-center gap-12 mb-12">
               <div className="flex-shrink-0">
