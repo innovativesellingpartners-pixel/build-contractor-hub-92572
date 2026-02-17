@@ -48,13 +48,14 @@ const PullQuote = ({ children }: { children: string }) => (
 );
 
 const tocItems = [
-  { id: "what-is-crm", label: "What Is a Contractor CRM?" },
-  { id: "signs", label: "5 Signs You've Outgrown Your System" },
+  { id: "what-is-platform", label: "What Does It Mean to Run on a Single Platform?" },
+  { id: "signs", label: "5 Signs Your Business Needs a Better System" },
   { id: "lean-fast-scalable", label: "Lean. Fast. Scalable." },
   { id: "what-to-look-for", label: "What to Look For" },
+  { id: "financial-layer", label: "The Financial Layer Most Contractors Are Missing" },
+  { id: "marketplace", label: "The Technology Marketplace Advantage" },
   { id: "family-community", label: "Building a Life Worth Having" },
-  { id: "myct1", label: "How myCT1 Fits In" },
-  { id: "getting-started", label: "Making the Transition" },
+  { id: "myct1", label: "How myCT1 Approaches All of This" },
   { id: "conclusion", label: "The Bottom Line" },
 ];
 
@@ -62,8 +63,8 @@ export const ContractorCRMGuide = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title="The Complete Guide to Contractor CRM Systems | myCT1"
-        description="Why every growing contractor needs a CRM and how choosing the right one can put more money in your bank, more time with your family, and more strength back into your community."
+        title="The Complete Guide to Running a Modern Contractor Business | myCT1"
+        description="Why every growing contractor needs a single platform, and how choosing the right one can put more money in your bank, more time with your family, and more strength back into your community."
       />
       <FloatingTrialButton />
       <MainSiteHeader />
@@ -87,10 +88,10 @@ export const ContractorCRMGuide = () => {
             </div>
             <img src={ct1Logo} alt="CT1" className="w-20 h-20 mx-auto mb-6 drop-shadow-lg" />
             <h1 className="text-5xl font-bold text-foreground mb-6">
-              The Complete Guide to <span className="text-primary">Contractor CRM Systems</span>
+              The Complete Guide to <span className="text-primary">Running a Modern Contractor Business</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Why every growing contractor needs a CRM, and how choosing the right one can put more money in your bank, more time with your family, and more strength back into your community.
+              Why every growing contractor needs a single platform, and how choosing the right one can put more money in your bank, more time with your family, and more strength back into your community.
             </p>
           </div>
 
@@ -124,48 +125,54 @@ export const ContractorCRMGuide = () => {
             {/* Article */}
             <article className="prose-article">
               <p className="text-lg text-muted-foreground border-l-[3px] border-primary pl-6 leading-relaxed mb-8">
-                Over the last few years working alongside contractors, one pattern is clear. The ones who scale fast, bank serious money, and still make it home for dinner? They don't work harder than the rest. They work leaner. They've built systems, and at the center of every one of those systems is a CRM that actually works for them.
+                Over the last few years working alongside contractors, one pattern is clear. The ones who scale fast, bank serious money, and still make it home for dinner? They don't work harder than the rest. They work leaner. At the center of every lean operation is a platform that actually works for them, one that runs the entire business, not just one piece of it.
               </p>
 
               <div className="grid sm:grid-cols-3 gap-4 my-10">
-                <StatCard number="68%" label="of contractor leads lost due to slow follow-up" />
+                <StatCard number="68%" label="of contractors using disconnected tools report lost revenue" />
                 <StatCard number="11hrs" label="average time wasted weekly on admin tasks" />
-                <StatCard number="3×" label="faster growth for CRM-using contractors" />
+                <StatCard number="3×" label="faster growth for contractors using integrated business platforms" />
               </div>
 
-              <h2 id="what-is-crm" className="text-2xl md:text-3xl font-bold mt-12 mb-4 border-l-4 border-primary pl-4">What Is a CRM and Why Does It Matter for Contractors?</h2>
+              <h2 id="what-is-platform" className="text-2xl md:text-3xl font-bold mt-12 mb-4 border-l-4 border-primary pl-4">What Does It Mean to Run on a Single Platform?</h2>
 
-              <p className="text-muted-foreground leading-relaxed mb-5">A Customer Relationship Management system, or CRM, is the digital backbone of your customer pipeline. It tracks every lead, every quote, every job, and every invoice, keeping you from falling through the cracks that cost real money.</p>
+              <p className="text-muted-foreground leading-relaxed mb-5">Most contractors are running their business across five, six, maybe ten different tools. One app for scheduling. Another for invoicing. A spreadsheet for job tracking. A separate system for estimates. A bank they can barely connect to anything. And somehow, they're supposed to see the full picture of their business in real time.</p>
 
-              <p className="text-muted-foreground leading-relaxed mb-5">For trade professionals, a generic CRM built for retail salespeople or software companies won't cut it. You need something that understands the rhythm of how contractors actually work: the morning call from a new lead, the job site chaos at 2pm, the crew scheduling headache, the follow-up you meant to send but never did. That's the gap a contractor-specific CRM fills, and fills well.</p>
+              <p className="text-muted-foreground leading-relaxed mb-5">They can't. And that's the problem.</p>
 
-              <p className="text-muted-foreground leading-relaxed mb-5"><strong className="text-foreground">Here's the hard truth:</strong> most contractors are running their business out of a combination of their head, a notepad, a few text threads, and maybe a spreadsheet. That works until it doesn't. And when it stops working, you're not just losing efficiency. You're losing jobs, revenue, and sleep.</p>
+              <p className="text-muted-foreground leading-relaxed mb-5">A true business platform for contractors brings all of it together: voice AI, job management, estimating, invoicing, lead generation, financial tools, and a marketplace of over 400 technology partners, all accessible from a single dashboard. No more switching between apps. No more data living in three different places. No more guessing where your business actually stands.</p>
 
-              <PullQuote>The contractors winning right now aren't the ones working longer hours. They're the ones who built a lean, fast, scalable operation, and a CRM is the engine underneath it.</PullQuote>
+              <p className="text-muted-foreground leading-relaxed mb-5">This is what contractors today call a single pane of glass. One login. Full visibility. Total control.</p>
 
-              <h2 id="signs" className="text-2xl md:text-3xl font-bold mt-12 mb-4 border-l-4 border-primary pl-4">5 Signs You've Outgrown Your Current System</h2>
+              <p className="text-muted-foreground leading-relaxed mb-5">For trade professionals, generic software built for retail or corporate teams won't cut it. You need something that understands the rhythm of how contractors actually work: the early morning call from a new lead, the job site chaos at 2pm, the crew scheduling headache, the invoice that should have gone out Tuesday. A platform built specifically for the trades fills that gap in a way no general-purpose tool ever will.</p>
+
+              <p className="text-muted-foreground leading-relaxed mb-5"><strong className="text-foreground">Here's the hard truth:</strong> most contractors are running their business out of a combination of their head, a notepad, a few text threads, and maybe a spreadsheet. That works until you hit a wall. And when it stops working, you're not just losing efficiency. You're losing jobs, revenue, and sleep.</p>
+
+              <PullQuote>The contractors winning right now aren't the ones working longer hours. They're the ones who built a lean, fast, scalable operation, and a great platform is the engine underneath it. -- Patrick Montgomery, COO, myCT1.com</PullQuote>
+
+              <h2 id="signs" className="text-2xl md:text-3xl font-bold mt-12 mb-4 border-l-4 border-primary pl-4">5 Signs Your Business Needs a Better System</h2>
 
               <ul className="list-none space-y-0 mb-6">
-                <CheckItem title="Leads fall through the cracks." description="Someone called Monday, you meant to call back, and by Friday you've lost the job to a competitor who followed up in 20 minutes." />
+                <CheckItem title="You don't have a clear picture of your finances." description="Your invoicing, banking, and job costs live in different places and reconciling them takes hours you don't have." />
                 <CheckItem title="You can't track job status without making calls." description="You're texting your crew to find out where things stand instead of seeing it on a dashboard." />
-                <CheckItem title="Invoicing is chaotic." description="You're chasing payments, unsure what's been sent, what's been paid, and what's been ignored." />
+                <CheckItem title="Your tools don't talk to each other." description="You're re-entering the same data in multiple places and things still fall through the cracks." />
                 <CheckItem title="You can't see your profit clearly." description="You're busy, but you're not sure if you're actually making good money or just moving money around." />
                 <CheckItem title="Growth feels like more chaos." description="Every new job adds stress instead of confidence because you have no scalable process behind it." />
               </ul>
 
-              <p className="text-muted-foreground leading-relaxed mb-5">If two or more of those hit home, you're not just inefficient. You're actively leaving money on the table. The right CRM addresses all five simultaneously.</p>
+              <p className="text-muted-foreground leading-relaxed mb-5">If two or more of those hit home, you're not just inefficient. You're actively leaving money on the table. The right platform addresses all five simultaneously.</p>
 
               <h2 id="lean-fast-scalable" className="text-2xl md:text-3xl font-bold mt-12 mb-4 border-l-4 border-primary pl-4">Lean. Fast. Scalable. The New Standard for Trades.</h2>
 
               <p className="text-muted-foreground leading-relaxed mb-5">The trades are going through a transformation. The contractors thriving today aren't just the best at the craft. They're the best at running a business. That means building systems that let you operate lean, respond fast, and scale without proportionally adding headache.</p>
 
-              <p className="text-muted-foreground leading-relaxed mb-5">Think about what a truly lean operation looks like: every lead is captured automatically, every follow-up happens on schedule, every job has a clear status, every invoice goes out on time, and your team knows exactly what to do without you managing every detail. That's not a fantasy. It's what the right platform makes possible.</p>
+              <p className="text-muted-foreground leading-relaxed mb-5">Think about what a truly lean operation looks like: every lead is captured and responded to automatically, every job has a clear status, every estimate converts cleanly into an invoice, your finances sync in real time with your bank and your accounting software, and your team knows exactly what to do without you managing every detail. That's not a fantasy. It's what the right platform makes possible.</p>
 
               <h3 className="text-lg font-bold uppercase tracking-wide text-foreground mt-8 mb-3">Operating Lean Means Doing More With Less</h3>
-              <p className="text-muted-foreground leading-relaxed mb-5">A CRM removes the redundancy in your business: the double-entry, the phone tag, the manual updates. When you're not wasting motion, you can take on more jobs without hiring more office staff. Your overhead stays tight while your revenue grows.</p>
+              <p className="text-muted-foreground leading-relaxed mb-5">An integrated platform removes the redundancy in your business: the double-entry, the phone tag, the manual updates, the end-of-month scramble to figure out where the money went. When you're not wasting motion, you can take on more jobs without hiring more office staff. Your overhead stays tight while your revenue grows.</p>
 
               <h3 className="text-lg font-bold uppercase tracking-wide text-foreground mt-8 mb-3">Moving Fast Wins More Business</h3>
-              <p className="text-muted-foreground leading-relaxed mb-5">Speed is the number one differentiator in the lead game right now. Studies show that contacting a lead within five minutes is 100× more effective than waiting 30 minutes. Most contractors are calling back hours later, or the next morning. An AI-powered CRM closes that gap automatically, responding to leads instantly, booking appointments, and keeping you first in the customer's mind.</p>
+              <p className="text-muted-foreground leading-relaxed mb-5">Speed is the number one differentiator in contracting right now. Studies show that contacting a lead within five minutes is 100x more effective than waiting 30 minutes. Most contractors are calling back hours later, or the next morning. AI-powered voice technology closes that gap automatically, answering calls, responding to clients, and keeping your business moving even when you're on a job site and can't pick up the phone.</p>
 
               <h3 className="text-lg font-bold uppercase tracking-wide text-foreground mt-8 mb-3">Scalable Systems Build Real Wealth</h3>
               <p className="text-muted-foreground leading-relaxed mb-5">Here's the conversation I have with contractors all the time: "I want to grow, but every time I take on more, I'm more stressed." That's a systems problem, not a capacity problem. When your operation is built on scalable software, where adding a new job or a new crew member doesn't require you to rebuild how you work, growth becomes additive, not exhausting. That's when real wealth starts to build.</p>
@@ -181,30 +188,43 @@ export const ContractorCRMGuide = () => {
                 </a>
               </div>
 
-              <h2 id="what-to-look-for" className="text-2xl md:text-3xl font-bold mt-12 mb-4 border-l-4 border-primary pl-4">What to Look For in a Contractor CRM</h2>
+              <h2 id="what-to-look-for" className="text-2xl md:text-3xl font-bold mt-12 mb-4 border-l-4 border-primary pl-4">What to Look For in a Contractor Business Platform</h2>
 
-              <p className="text-muted-foreground leading-relaxed mb-5">Not every CRM is created equal, and for contractors, the wrong tool is almost worse than no tool at all. Here's what separates a genuinely useful contractor CRM from expensive software that just creates more work:</p>
+              <p className="text-muted-foreground leading-relaxed mb-5">Not every platform is created equal, and for contractors, the wrong tool is almost worse than no tool at all. Here's what separates a genuinely useful contractor platform from expensive software that just creates more work:</p>
 
-              <FeatureGrid title="Essential Features Checklist" items={[
-                "Lead capture and pipeline management",
-                "Automated follow-up and drip sequences",
-                "Estimate and quote generation",
+              <FeatureGrid title="Essential Capabilities Checklist" items={[
+                "Voice AI to handle calls and client communication",
+                "Lead generation and pipeline management",
                 "Job scheduling and crew management",
+                "Estimating and quote generation",
                 "Invoicing and payment tracking",
+                "Real-time financial visibility and banking connections",
+                "Accounting integration (QuickBooks and others)",
                 "Mobile access from the field",
                 "Customer communication history",
                 "Real-time job status tracking",
                 "Reporting and profit visibility",
-                "AI-assisted client responses",
-                "Integration with your existing tools",
-                "Qualified lead delivery"
+                "A marketplace of technology partners to extend what's possible",
+                "Dedicated onboarding and training support"
               ]} />
 
-              <h3 className="text-lg font-bold uppercase tracking-wide text-foreground mt-8 mb-3">Industry-Specific vs. Generic CRMs</h3>
-              <p className="text-muted-foreground leading-relaxed mb-5">Salesforce and HubSpot are powerful, but they're built for software sales teams and marketing departments. They require extensive customization, expensive add-ons, and weeks of setup, all without ever understanding what a punch list or a change order is. Contractor-specific platforms come pre-configured for how you actually work, cutting your setup time and learning curve dramatically.</p>
+              <h3 className="text-lg font-bold uppercase tracking-wide text-foreground mt-8 mb-3">Industry-Specific vs. Generic Software</h3>
+              <p className="text-muted-foreground leading-relaxed mb-5">Salesforce and HubSpot are powerful, but they're built for software sales teams and marketing departments. QuickBooks is useful, but it's an accounting tool, not a business command center. Generic platforms require extensive customization, expensive add-ons, and weeks of setup, all without ever understanding what a punch list or a change order is. Contractor-specific platforms come pre-configured for how you actually work, cutting your setup time and learning curve dramatically.</p>
+
+              <h2 id="financial-layer" className="text-2xl md:text-3xl font-bold mt-12 mb-4 border-l-4 border-primary pl-4">The Financial Layer Most Contractors Are Missing</h2>
+
+              <p className="text-muted-foreground leading-relaxed mb-5">Here's what separates a real business platform from a basic job management tool: financial integration that actually works. That means a direct connection to your bank, seamless syncing with QuickBooks, and the ability to see your cash position, outstanding invoices, and job-level profitability all in one place.</p>
+
+              <p className="text-muted-foreground leading-relaxed mb-5">When your financials are disconnected from your operations, you're always flying blind. You finish a busy month and you're not sure if you made money. You have invoices sitting unpaid that you forgot to follow up on. You're making hiring decisions without knowing what your margins actually look like. An integrated financial layer fixes all of that. Your numbers are always current, always connected, and always visible.</p>
+
+              <h2 id="marketplace" className="text-2xl md:text-3xl font-bold mt-12 mb-4 border-l-4 border-primary pl-4">The Technology Marketplace Advantage</h2>
+
+              <p className="text-muted-foreground leading-relaxed mb-5">The right contractor platform doesn't try to do everything itself. It connects you to the best tools in the industry through an open marketplace. Over 400 technology partners means you're never locked into one way of doing things. Whether you need specialized tools for your trade, insurance products, financing options for your customers, or software your crews already use, the right marketplace keeps your operation connected and growing without forcing you to abandon what already works.</p>
+
+              <p className="text-muted-foreground leading-relaxed mb-5">This is how modern contractor businesses stay on the cutting edge without constantly chasing new software. The platform grows with you, and the ecosystem grows with the industry.</p>
 
               <h3 className="text-lg font-bold uppercase tracking-wide text-foreground mt-8 mb-3">Training and Onboarding Matter More Than Features</h3>
-              <p className="text-muted-foreground leading-relaxed mb-5">The best CRM in the world doesn't help if your team won't use it. Look for platforms that include real onboarding support, not just video tutorials, but actual human beings who understand your industry. The difference between adoption and abandonment is usually how well a contractor was trained in those first 30 days.</p>
+              <p className="text-muted-foreground leading-relaxed mb-5">The best platform in the world doesn't help if your team won't use it. Look for platforms that include real onboarding support, not just video tutorials, but actual human beings who understand your industry. The difference between adoption and abandonment is usually how well a contractor was trained in those first 30 days.</p>
 
               <h2 id="family-community" className="text-2xl md:text-3xl font-bold mt-12 mb-4 border-l-4 border-primary pl-4">More Than Business: Building a Life Worth Having</h2>
 
@@ -214,56 +234,43 @@ export const ContractorCRMGuide = () => {
 
               <p className="text-muted-foreground leading-relaxed mb-5"><strong className="text-foreground">There's also a community dimension here.</strong> Contractors are the backbone of every neighborhood in America. When your business is healthy, you hire locally. You support your crews' families. You invest back into the towns you serve. A thriving contractor business isn't just good for the owner, it ripples outward into the entire community. We take that seriously at myCT1, and we build our platform with that bigger picture in mind.</p>
 
-              <p className="text-muted-foreground leading-relaxed mb-5">That philosophy comes straight from our CEO, <strong className="text-foreground">Joe Cipriano</strong>. Joe founded ConstructTeam with a vision that goes far beyond software. His mission has always been to support the trades, to mentor contractors, and to build a community where tradespeople lift each other up. That conviction, that the trades deserve world class tools and genuine investment in their success, is what drives our entire team every single day. It's the reason we don't just build features. We build a platform that helps contractors start, grow, scale, and sustain businesses that let them live their best lives.</p>
-
-              <PullQuote>When you're not buried in busywork, you become a better business owner, a better parent, and a stronger member of your community. That's the real return on a good CRM.</PullQuote>
+              <PullQuote>When you're not buried in busywork, you become a better business owner, a better parent, and a stronger member of your community. That's the real return on building a great operation. -- Patrick Montgomery, COO, myCT1.com</PullQuote>
 
               <h2 id="myct1" className="text-2xl md:text-3xl font-bold mt-12 mb-4 border-l-4 border-primary pl-4">How myCT1 Approaches All of This</h2>
 
-              <p className="text-muted-foreground leading-relaxed mb-5">At myCT1, we didn't build a CRM and call it a day. We built a complete business command center. That ambition stems directly from Joe Cipriano's leadership and his relentless belief that contractors deserve a single platform powerful enough to run their entire operation, yet simple enough to use from a job site at 7 AM. His passion for mentoring the trades through ConstructTeam has fueled our team to create something truly comprehensive, not just another piece of software, but a launchpad for contractors ready to take control of their future.</p>
+              <p className="text-muted-foreground leading-relaxed mb-5">That philosophy comes straight from our CEO, <strong className="text-foreground">Joe Cipriano</strong>, and it's worth understanding where it comes from. Joe didn't start ConstructTeam by studying the software industry. He started it because he lived the problem firsthand. That experience is baked into every feature we ship, and it's why our platform feels different from anything else in the market.</p>
 
-              <p className="text-muted-foreground leading-relaxed mb-5">Our <strong className="text-foreground">AI Phone Assistant</strong> means you never miss a lead again, even when you're on a job site. Our <strong className="text-foreground">Pocket Agents</strong> respond to clients instantly, so your response time is measured in seconds, not hours. Our dashboard gives you real-time visibility into every job, every dollar, and every opportunity in your pipeline.</p>
+              <p className="text-muted-foreground leading-relaxed mb-5">Joe founded ConstructTeam with a vision that goes far beyond software. His mission has always been to support the trades, to mentor contractors, and to build a community where tradespeople lift each other up. That conviction, that the trades deserve world-class tools and genuine investment in their success, is what drives our entire team every single day. It's the reason we don't just build features. We build a platform that helps contractors start, grow, scale, and sustain businesses that let them live their best lives.</p>
 
-              <p className="text-muted-foreground leading-relaxed mb-5">But here's what truly separates us: every subscription includes step-by-step training from industry experts who've actually run contractor businesses. We deliver warm, qualified leads straight to your dashboard. We offer industry certifications that make you stand out. And we give you access to a technology marketplace that keeps your operation on the cutting edge.</p>
+              <p className="text-muted-foreground leading-relaxed mb-5">At myCT1, we set out to build something the industry had never had: a true single pane of glass for the entire contractor business. Not a CRM with some extras bolted on. Not a job management tool that sort of handles invoicing. A complete business command center, built from the ground up for the trades.</p>
+
+              <p className="text-muted-foreground leading-relaxed mb-5">Our <strong className="text-foreground">Voice AI</strong> means your business never stops, even when you do. Calls get answered, clients get responses, and opportunities get captured whether you're on a roof, in a crawl space, or at your kid's soccer game. Our <strong className="text-foreground">financial integrations</strong> connect directly to your bank and sync with QuickBooks, so your numbers are always accurate and always current. Our <strong className="text-foreground">marketplace</strong> gives you access to over 400 technology partners, from specialized trade tools to customer financing to insurance, keeping your operation connected to the best the industry has to offer.</p>
+
+              <p className="text-muted-foreground leading-relaxed mb-5">Every job, every dollar, every client, and every opportunity lives in one place. That's what contractors have always needed, and that's what we built.</p>
 
               <FeatureGrid title="What's Included in Every myCT1 Subscription" items={[
-                "All-in-one contractor CRM platform",
-                "AI Phone Assistant (never miss a call)",
-                "Pocket Agents for instant client response",
-                "Job scheduling & crew management",
-                "Estimating & invoicing tools",
-                "Real-time profit & pipeline reporting",
-                "Warm, qualified leads to your dashboard",
+                "Full business management platform (start, run, manage, and scale)",
+                "Voice AI to handle calls and client communication",
+                "Job scheduling and crew management",
+                "Estimating and invoicing tools",
+                "Lead generation and pipeline management",
+                "Real-time financial visibility with direct banking connections",
+                "QuickBooks and accounting software integration",
+                "Marketplace access with 400+ technology partners",
+                "Real-time profit and pipeline reporting",
                 "Step-by-step training from industry experts",
                 "Industry certifications",
-                "Technology marketplace integrations",
                 "Nationwide contractor network access",
                 "Dedicated onboarding support"
               ]} />
 
-              <h2 id="getting-started" className="text-2xl md:text-3xl font-bold mt-12 mb-4 border-l-4 border-primary pl-4">Making the Transition: How to Adopt a New System Without Losing Your Mind</h2>
-
-              <p className="text-muted-foreground leading-relaxed mb-5">Here's the objection I hear most often: "Patrick, I don't have time to learn a new system." I get it. You're busy. The irony is that you don't have time <em>not</em> to. Every week you run on a broken process is another week of leaked leads, late invoices, and unnecessary stress.</p>
-
-              <p className="text-muted-foreground leading-relaxed mb-5">The key to a smooth transition is choosing a platform that does the heavy lifting for you. Look for a system that imports your existing customer data, provides real onboarding support, and has a mobile-first interface your crew can actually use in the field. Don't try to implement everything at once. Start with lead management and follow-up, get that locked in, then build from there.</p>
-
-              <h3 className="text-lg font-bold uppercase tracking-wide text-foreground mt-8 mb-3">30-Day Adoption Roadmap</h3>
-              <ul className="list-none space-y-0 mb-6">
-                <CheckItem title="Week 1:" description="Import existing contacts, set up your pipeline stages, and activate automated lead follow-up." />
-                <CheckItem title="Week 2:" description="Move all active jobs into the platform. Start tracking job status and crew assignments in one place." />
-                <CheckItem title="Week 3:" description="Activate invoicing. Send your first batch of invoices through the system and get comfortable with the payment tracking." />
-                <CheckItem title="Week 4:" description="Review your first dashboard report. You'll start seeing your pipeline, profit, and performance with clarity you didn't have before." />
-              </ul>
-
-              <p className="text-muted-foreground leading-relaxed mb-5">By day 30, most contractors tell us the same thing: they can't believe they ran their business any other way. The clarity is addictive, and the extra time in the day is priceless.</p>
-
               <h2 id="conclusion" className="text-2xl md:text-3xl font-bold mt-12 mb-4 border-l-4 border-primary pl-4">The Bottom Line</h2>
 
-              <p className="text-muted-foreground leading-relaxed mb-5">The contracting industry is more competitive than ever, but it's also full of more opportunity than ever. The contractors who win in the next decade will be the ones who build lean, fast, scalable businesses backed by smart systems. A CRM isn't an expense; it's the infrastructure of a high-performance operation.</p>
+              <p className="text-muted-foreground leading-relaxed mb-5">The contracting industry is more competitive than ever, but it's also full of more opportunity than ever. The contractors who win in the next decade will be the ones who build lean, fast, scalable businesses backed by smart systems. A great platform isn't an expense. It's the infrastructure of a high-performance operation.</p>
 
-              <p className="text-muted-foreground leading-relaxed mb-5">Whether you're closing your fifth job or your five-hundredth, you deserve tools built for the way you work, training from people who understand your world, and a platform that grows with you. That's what we built at myCT1, and it's available to every contractor in America, starting today.</p>
+              <p className="text-muted-foreground leading-relaxed mb-5">Whether you're starting your first company or scaling your fiftieth crew, you deserve tools built for the way you work, financial visibility that actually helps you make decisions, a technology ecosystem that keeps you growing, and training from people who understand your world. That's what we built at myCT1, and it's available to every contractor in America, starting today.</p>
 
-              <p className="text-foreground font-semibold leading-relaxed mb-5">More money in the bank. More time for your family. More strength for your community. That's not just a tagline. It's the measurable result of running a smarter operation. Let's build it together.</p>
+              <p className="text-foreground font-semibold leading-relaxed mb-5">More money in the bank. More time for your family. More strength for your community. The trades built this country. Let's make sure the business side matches the craft.</p>
 
               <div className="flex items-center gap-4 my-10">
                 <span className="flex-1 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
