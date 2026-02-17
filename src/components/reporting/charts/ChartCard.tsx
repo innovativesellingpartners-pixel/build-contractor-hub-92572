@@ -122,7 +122,7 @@ export function ChartCard({
           {headerActions}
         </div>
       </CardHeader>
-      <CardContent className="min-h-[120px]">
+      <CardContent className="min-h-[120px] overflow-hidden">
         {children}
         {source && (
           <p className="text-[10px] text-muted-foreground mt-2 text-right">Source: {source}</p>
