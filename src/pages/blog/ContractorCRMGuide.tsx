@@ -66,6 +66,7 @@ export const ContractorCRMGuide = () => {
       <SEOHead
         title="The Complete Guide to Running a Modern Contractor Business | myCT1"
         description="Why every growing contractor needs a single platform, and how choosing the right one can put more money in your bank, more time with your family, and more strength back into your community."
+        ogImage="https://build-contractor-hub-92572.lovable.app/og-blog-creative.png"
       />
       <FloatingTrialButton />
       <MainSiteHeader />

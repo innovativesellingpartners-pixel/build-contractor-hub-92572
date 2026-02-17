@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FloatingTrialButton } from '@/components/FloatingTrialButton';
 import { MainSiteHeader } from '@/components/MainSiteHeader';
+import { SEOHead } from '@/components/SEOHead';
 import { Youtube, FileText, Mic, Play } from 'lucide-react';
 import podcastThumbnail from '@/assets/podcast-thumbnail.png';
 import heroBg from '@/assets/hero-tech-dashboard.jpg';
@@ -63,6 +64,11 @@ export const BlogPodcast = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Blog & Podcast - Contractor Business Insights"
+        description="Insights, strategies, and success stories to help you build a better contracting business."
+        ogImage="https://build-contractor-hub-92572.lovable.app/og-blog-creative.png"
+      />
       <FloatingTrialButton />
       <MainSiteHeader />
 
