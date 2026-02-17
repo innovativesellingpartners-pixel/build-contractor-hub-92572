@@ -67,7 +67,7 @@ export const BlogPodcast = () => {
       <SEOHead
         title="Blog & Podcast - Contractor Business Insights"
         description="Insights, strategies, and success stories to help you build a better contracting business."
-        ogImage="https://build-contractor-hub-92572.lovable.app/og-blog-creative.png"
+        ogImage="https://build-contractor-hub-92572.lovable.app/og-blog-creative-3.png"
       />
       <FloatingTrialButton />
       <MainSiteHeader />
