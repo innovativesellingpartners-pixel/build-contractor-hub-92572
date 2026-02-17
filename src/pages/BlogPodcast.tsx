@@ -11,7 +11,7 @@ import heroBg from '@/assets/hero-tech-dashboard.jpg';
 
 export const BlogPodcast = () => {
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
-  // Placeholder data - will be replaced with actual content
+
   const podcastEpisodes = [
     {
       title: 'Episode 1: Building Your First 5-Star Contractor Business',
@@ -43,8 +43,9 @@ export const BlogPodcast = () => {
     {
       title: 'The Complete Guide to Contractor CRM Systems',
       excerpt: 'Why every growing contractor needs a CRM and how to choose the right one.',
-      date: 'Coming Soon',
-      category: 'Business Tools'
+      date: 'Read Now',
+      category: 'Business Tools',
+      link: '/blog/contractor-crm-guide'
     },
     {
       title: 'Pricing Strategies That Maximize Profit',
@@ -79,8 +80,48 @@ export const BlogPodcast = () => {
         </div>
       </section>
 
-      {/* Podcast Section */}
+      {/* Blog Section - Articles First */}
       <section className="py-20">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center gap-3 mb-8">
+            <FileText className="h-8 w-8 text-primary" />
+            <h2 className="text-4xl font-bold">Latest Articles</h2>
+          </div>
+          <p className="text-muted-foreground mb-8 text-lg">
+            Practical advice and actionable strategies you can implement in your business today.
+          </p>
+          <div className="grid md:grid-cols-2 gap-6 mb-8">
+            {blogPosts.map((post, index) => {
+              const card = (
+                <Card className={`hover:shadow-lg transition-shadow h-full ${post.link ? 'ring-2 ring-primary/20' : ''}`}>
+                  <CardHeader>
+                    <div className="flex items-start justify-between gap-4">
+                      <CardTitle className="text-xl">{post.title}</CardTitle>
+                      <span className="text-xs bg-primary/10 text-primary px-3 py-1 rounded-full whitespace-nowrap">
+                        {post.category}
+                      </span>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground mb-4">{post.excerpt}</p>
+                    <p className="text-xs text-primary font-semibold">{post.link ? 'Read Now →' : post.date}</p>
+                  </CardContent>
+                </Card>
+              );
+              return post.link ? (
+                <Link key={index} to={post.link} className="no-underline">
+                  {card}
+                </Link>
+              ) : (
+                <div key={index}>{card}</div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Podcast Section */}
+      <section className="py-20 bg-muted/50">
         <div className="container mx-auto px-4">
           <div className="flex items-center gap-3 mb-8">
             <Mic className="h-8 w-8 text-primary" />
@@ -91,7 +132,6 @@ export const BlogPodcast = () => {
             Episodes will be linked from our YouTube channel.
           </p>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            {/* Featured Video */}
             <Card className="overflow-hidden hover:shadow-lg transition-shadow md:col-span-2 lg:col-span-3">
               <div className="aspect-video relative">
                 {isVideoPlaying ? (
@@ -124,7 +164,6 @@ export const BlogPodcast = () => {
               </CardHeader>
             </Card>
             
-            {/* Upcoming Episodes */}
             {podcastEpisodes.map((episode, index) => (
               <Card key={index} className="overflow-hidden hover:shadow-lg transition-shadow">
                 <div className="aspect-video bg-muted flex items-center justify-center">
@@ -144,42 +183,6 @@ export const BlogPodcast = () => {
             <Button size="lg" variant="outline" disabled>
               <Youtube className="mr-2 h-5 w-5" />
               View All Episodes on YouTube (Coming Soon)
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* Blog Section */}
-      <section className="py-20 bg-muted/50">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center gap-3 mb-8">
-            <FileText className="h-8 w-8 text-primary" />
-            <h2 className="text-4xl font-bold">Latest Articles</h2>
-          </div>
-          <p className="text-muted-foreground mb-8 text-lg">
-            Practical advice and actionable strategies you can implement in your business today.
-          </p>
-          <div className="grid md:grid-cols-2 gap-6 mb-8">
-            {blogPosts.map((post, index) => (
-              <Card key={index} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="flex items-start justify-between gap-4">
-                    <CardTitle className="text-xl">{post.title}</CardTitle>
-                    <span className="text-xs bg-primary/10 text-primary px-3 py-1 rounded-full whitespace-nowrap">
-                      {post.category}
-                    </span>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground mb-4">{post.excerpt}</p>
-                  <p className="text-xs text-primary font-semibold">{post.date}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-          <div className="text-center">
-            <Button size="lg" variant="outline" disabled>
-              Read More Articles (Coming Soon)
             </Button>
           </div>
         </div>
