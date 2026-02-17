@@ -124,7 +124,7 @@ export const ContractorCRMGuide = () => {
             {/* Article */}
             <article className="prose-article">
               <p className="text-lg text-muted-foreground border-l-[3px] border-primary pl-6 leading-relaxed mb-8">
-                Over the last few years working alongside contractors across all 50 states, one pattern is clear. The ones who scale fast, bank serious money, and still make it home for dinner? They don't work harder than the rest. They work leaner. They've built systems, and at the center of every one of those systems is a CRM that actually works for them.
+                Over the last few years working alongside contractors, one pattern is clear. The ones who scale fast, bank serious money, and still make it home for dinner? They don't work harder than the rest. They work leaner. They've built systems, and at the center of every one of those systems is a CRM that actually works for them.
               </p>
 
               <div className="grid sm:grid-cols-3 gap-4 my-10">
@@ -279,7 +279,7 @@ export const ContractorCRMGuide = () => {
                 <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-primary to-transparent" />
                 <img src={ct1Logo} alt="CT1" className="w-16 h-16 mx-auto mb-3" />
                 <h4 className="text-xl font-bold mb-2">Ready to Scale Your Business?</h4>
-                <p className="text-sm text-muted-foreground mb-5">Join contractors across all 50 states running their entire operation on myCT1.</p>
+                <p className="text-sm text-muted-foreground mb-5">Join contractors running their entire operation on myCT1, launching in Michigan and expanding nationwide.</p>
                 <a href="mailto:pwm@myct1.com" className="block">
                   <Button className="w-full mb-2">Contact Patrick</Button>
                 </a>
@@ -335,7 +335,7 @@ export const ContractorCRMGuide = () => {
             Ready to Build a <span className="text-primary">Smarter</span> Operation?
           </h2>
           <p className="text-lg text-muted-foreground mb-8">
-            Whether you're a solo operator or managing a growing crew, myCT1 gives you the platform, training, and leads to take your business to the next level. Contractors across all 50 states are running leaner, earning more, and getting their time back.
+            Whether you're a solo operator or managing a growing crew, myCT1 gives you the platform, training, and leads to take your business to the next level. Launching in Michigan and expanding nationwide, contractors are running leaner, earning more, and getting their time back.
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
             <a href="mailto:pwm@myct1.com">
