@@ -133,15 +133,15 @@ export const ContractorCRMGuide = () => {
                 <StatCard number="3×" label="faster growth for CRM-using contractors" />
               </div>
 
-              <h2 id="what-is-crm" className="text-2xl md:text-3xl font-bold mt-12 mb-4 border-l-4 border-primary pl-4">What Is a CRM — And Why Does It Matter for Contractors?</h2>
+              <h2 id="what-is-crm" className="text-2xl md:text-3xl font-bold mt-12 mb-4 border-l-4 border-primary pl-4">What Is a CRM and Why Does It Matter for Contractors?</h2>
 
-              <p className="text-muted-foreground leading-relaxed mb-5">A Customer Relationship Management system, or CRM, is the digital backbone of your customer pipeline. It tracks every lead, every quote, every job, and every invoice—keeping you from falling through the cracks that cost real money.</p>
+              <p className="text-muted-foreground leading-relaxed mb-5">A Customer Relationship Management system, or CRM, is the digital backbone of your customer pipeline. It tracks every lead, every quote, every job, and every invoice, keeping you from falling through the cracks that cost real money.</p>
 
-              <p className="text-muted-foreground leading-relaxed mb-5">For trade professionals, a generic CRM built for retail salespeople or software companies won't cut it. You need something that understands the rhythm of how contractors actually work: the morning call from a new lead, the job site chaos at 2pm, the crew scheduling headache, the follow-up you meant to send but never did. That's the gap a contractor-specific CRM fills—and fills well.</p>
+              <p className="text-muted-foreground leading-relaxed mb-5">For trade professionals, a generic CRM built for retail salespeople or software companies won't cut it. You need something that understands the rhythm of how contractors actually work: the morning call from a new lead, the job site chaos at 2pm, the crew scheduling headache, the follow-up you meant to send but never did. That's the gap a contractor-specific CRM fills, and fills well.</p>
 
-              <p className="text-muted-foreground leading-relaxed mb-5"><strong className="text-foreground">Here's the hard truth:</strong> most contractors are running their business out of a combination of their head, a notepad, a few text threads, and maybe a spreadsheet. That works until it doesn't. And when it stops working, you're not just losing efficiency—you're losing jobs, revenue, and sleep.</p>
+              <p className="text-muted-foreground leading-relaxed mb-5"><strong className="text-foreground">Here's the hard truth:</strong> most contractors are running their business out of a combination of their head, a notepad, a few text threads, and maybe a spreadsheet. That works until it doesn't. And when it stops working, you're not just losing efficiency. You're losing jobs, revenue, and sleep.</p>
 
-              <PullQuote>The contractors winning right now aren't the ones working longer hours. They're the ones who built a lean, fast, scalable operation—and a CRM is the engine underneath it.</PullQuote>
+              <PullQuote>The contractors winning right now aren't the ones working longer hours. They're the ones who built a lean, fast, scalable operation, and a CRM is the engine underneath it.</PullQuote>
 
               <h2 id="signs" className="text-2xl md:text-3xl font-bold mt-12 mb-4 border-l-4 border-primary pl-4">5 Signs You've Outgrown Your Current System</h2>
 
@@ -149,26 +149,26 @@ export const ContractorCRMGuide = () => {
                 <CheckItem title="Leads fall through the cracks." description="Someone called Monday, you meant to call back, and by Friday you've lost the job to a competitor who followed up in 20 minutes." />
                 <CheckItem title="You can't track job status without making calls." description="You're texting your crew to find out where things stand instead of seeing it on a dashboard." />
                 <CheckItem title="Invoicing is chaotic." description="You're chasing payments, unsure what's been sent, what's been paid, and what's been ignored." />
-                <CheckItem title="You can't see your profit clearly." description="You're busy, but you're not sure if you're actually making good money—or just moving money around." />
+                <CheckItem title="You can't see your profit clearly." description="You're busy, but you're not sure if you're actually making good money or just moving money around." />
                 <CheckItem title="Growth feels like more chaos." description="Every new job adds stress instead of confidence because you have no scalable process behind it." />
               </ul>
 
-              <p className="text-muted-foreground leading-relaxed mb-5">If two or more of those hit home, you're not just inefficient—you're actively leaving money on the table. The right CRM addresses all five simultaneously.</p>
+              <p className="text-muted-foreground leading-relaxed mb-5">If two or more of those hit home, you're not just inefficient. You're actively leaving money on the table. The right CRM addresses all five simultaneously.</p>
 
               <h2 id="lean-fast-scalable" className="text-2xl md:text-3xl font-bold mt-12 mb-4 border-l-4 border-primary pl-4">Lean. Fast. Scalable. The New Standard for Trades.</h2>
 
-              <p className="text-muted-foreground leading-relaxed mb-5">The trades are going through a transformation. The contractors thriving today aren't just the best at the craft—they're the best at running a business. That means building systems that let you operate lean, respond fast, and scale without proportionally adding headache.</p>
+              <p className="text-muted-foreground leading-relaxed mb-5">The trades are going through a transformation. The contractors thriving today aren't just the best at the craft. They're the best at running a business. That means building systems that let you operate lean, respond fast, and scale without proportionally adding headache.</p>
 
-              <p className="text-muted-foreground leading-relaxed mb-5">Think about what a truly lean operation looks like: every lead is captured automatically, every follow-up happens on schedule, every job has a clear status, every invoice goes out on time, and your team knows exactly what to do without you managing every detail. That's not a fantasy—it's what the right platform makes possible.</p>
+              <p className="text-muted-foreground leading-relaxed mb-5">Think about what a truly lean operation looks like: every lead is captured automatically, every follow-up happens on schedule, every job has a clear status, every invoice goes out on time, and your team knows exactly what to do without you managing every detail. That's not a fantasy. It's what the right platform makes possible.</p>
 
               <h3 className="text-lg font-bold uppercase tracking-wide text-foreground mt-8 mb-3">Operating Lean Means Doing More With Less</h3>
-              <p className="text-muted-foreground leading-relaxed mb-5">A CRM removes the redundancy in your business—the double-entry, the phone tag, the manual updates. When you're not wasting motion, you can take on more jobs without hiring more office staff. Your overhead stays tight while your revenue grows.</p>
+              <p className="text-muted-foreground leading-relaxed mb-5">A CRM removes the redundancy in your business: the double-entry, the phone tag, the manual updates. When you're not wasting motion, you can take on more jobs without hiring more office staff. Your overhead stays tight while your revenue grows.</p>
 
               <h3 className="text-lg font-bold uppercase tracking-wide text-foreground mt-8 mb-3">Moving Fast Wins More Business</h3>
-              <p className="text-muted-foreground leading-relaxed mb-5">Speed is the number one differentiator in the lead game right now. Studies show that contacting a lead within five minutes is 100× more effective than waiting 30 minutes. Most contractors are calling back hours later, or the next morning. An AI-powered CRM closes that gap automatically—responding to leads instantly, booking appointments, and keeping you first in the customer's mind.</p>
+              <p className="text-muted-foreground leading-relaxed mb-5">Speed is the number one differentiator in the lead game right now. Studies show that contacting a lead within five minutes is 100× more effective than waiting 30 minutes. Most contractors are calling back hours later, or the next morning. An AI-powered CRM closes that gap automatically, responding to leads instantly, booking appointments, and keeping you first in the customer's mind.</p>
 
               <h3 className="text-lg font-bold uppercase tracking-wide text-foreground mt-8 mb-3">Scalable Systems Build Real Wealth</h3>
-              <p className="text-muted-foreground leading-relaxed mb-5">Here's the conversation I have with contractors all the time: "I want to grow, but every time I take on more, I'm more stressed." That's a systems problem, not a capacity problem. When your operation is built on scalable software—where adding a new job or a new crew member doesn't require you to rebuild how you work—growth becomes additive, not exhausting. That's when real wealth starts to build.</p>
+              <p className="text-muted-foreground leading-relaxed mb-5">Here's the conversation I have with contractors all the time: "I want to grow, but every time I take on more, I'm more stressed." That's a systems problem, not a capacity problem. When your operation is built on scalable software, where adding a new job or a new crew member doesn't require you to rebuild how you work, growth becomes additive, not exhausting. That's when real wealth starts to build.</p>
 
               <div className="bg-primary/5 border border-primary/30 p-6 my-10 flex flex-col sm:flex-row items-center gap-6">
                 <span className="text-4xl">⚡</span>
@@ -183,7 +183,7 @@ export const ContractorCRMGuide = () => {
 
               <h2 id="what-to-look-for" className="text-2xl md:text-3xl font-bold mt-12 mb-4 border-l-4 border-primary pl-4">What to Look For in a Contractor CRM</h2>
 
-              <p className="text-muted-foreground leading-relaxed mb-5">Not every CRM is created equal—and for contractors, the wrong tool is almost worse than no tool at all. Here's what separates a genuinely useful contractor CRM from expensive software that just creates more work:</p>
+              <p className="text-muted-foreground leading-relaxed mb-5">Not every CRM is created equal, and for contractors, the wrong tool is almost worse than no tool at all. Here's what separates a genuinely useful contractor CRM from expensive software that just creates more work:</p>
 
               <FeatureGrid title="Essential Features Checklist" items={[
                 "Lead capture and pipeline management",
@@ -201,16 +201,16 @@ export const ContractorCRMGuide = () => {
               ]} />
 
               <h3 className="text-lg font-bold uppercase tracking-wide text-foreground mt-8 mb-3">Industry-Specific vs. Generic CRMs</h3>
-              <p className="text-muted-foreground leading-relaxed mb-5">Salesforce and HubSpot are powerful, but they're built for software sales teams and marketing departments. They require extensive customization, expensive add-ons, and weeks of setup—all without ever understanding what a punch list or a change order is. Contractor-specific platforms come pre-configured for how you actually work, cutting your setup time and learning curve dramatically.</p>
+              <p className="text-muted-foreground leading-relaxed mb-5">Salesforce and HubSpot are powerful, but they're built for software sales teams and marketing departments. They require extensive customization, expensive add-ons, and weeks of setup, all without ever understanding what a punch list or a change order is. Contractor-specific platforms come pre-configured for how you actually work, cutting your setup time and learning curve dramatically.</p>
 
               <h3 className="text-lg font-bold uppercase tracking-wide text-foreground mt-8 mb-3">Training and Onboarding Matter More Than Features</h3>
-              <p className="text-muted-foreground leading-relaxed mb-5">The best CRM in the world doesn't help if your team won't use it. Look for platforms that include real onboarding support—not just video tutorials—but actual human beings who understand your industry. The difference between adoption and abandonment is usually how well a contractor was trained in those first 30 days.</p>
+              <p className="text-muted-foreground leading-relaxed mb-5">The best CRM in the world doesn't help if your team won't use it. Look for platforms that include real onboarding support, not just video tutorials, but actual human beings who understand your industry. The difference between adoption and abandonment is usually how well a contractor was trained in those first 30 days.</p>
 
               <h2 id="family-community" className="text-2xl md:text-3xl font-bold mt-12 mb-4 border-l-4 border-primary pl-4">More Than Business: Building a Life Worth Having</h2>
 
               <p className="text-muted-foreground leading-relaxed mb-5">I want to say something that doesn't get talked about enough in the contractor world: the goal isn't just a bigger business. The goal is a better life.</p>
 
-              <p className="text-muted-foreground leading-relaxed mb-5">When your business is running on systems instead of running on you, something shifts. You stop being on the phone at dinner. You start making your kid's games. You take a weekend off and the business doesn't collapse. That's not a luxury reserved for big companies—it's what scalable systems make possible for every contractor willing to invest in them.</p>
+              <p className="text-muted-foreground leading-relaxed mb-5">When your business is running on systems instead of running on you, something shifts. You stop being on the phone at dinner. You start making your kid's games. You take a weekend off and the business doesn't collapse. That's not a luxury reserved for big companies. It's what scalable systems make possible for every contractor willing to invest in them.</p>
 
               <p className="text-muted-foreground leading-relaxed mb-5"><strong className="text-foreground">There's also a community dimension here.</strong> Contractors are the backbone of every neighborhood in America. When your business is healthy, you hire locally. You support your crews' families. You invest back into the towns you serve. A thriving contractor business isn't just good for the owner, it ripples outward into the entire community. We take that seriously at myCT1, and we build our platform with that bigger picture in mind.</p>
 
@@ -245,7 +245,7 @@ export const ContractorCRMGuide = () => {
 
               <p className="text-muted-foreground leading-relaxed mb-5">Here's the objection I hear most often: "Patrick, I don't have time to learn a new system." I get it. You're busy. The irony is that you don't have time <em>not</em> to. Every week you run on a broken process is another week of leaked leads, late invoices, and unnecessary stress.</p>
 
-              <p className="text-muted-foreground leading-relaxed mb-5">The key to a smooth transition is choosing a platform that does the heavy lifting for you. Look for a system that imports your existing customer data, provides real onboarding support, and has a mobile-first interface your crew can actually use in the field. Don't try to implement everything at once—start with lead management and follow-up, get that locked in, then build from there.</p>
+              <p className="text-muted-foreground leading-relaxed mb-5">The key to a smooth transition is choosing a platform that does the heavy lifting for you. Look for a system that imports your existing customer data, provides real onboarding support, and has a mobile-first interface your crew can actually use in the field. Don't try to implement everything at once. Start with lead management and follow-up, get that locked in, then build from there.</p>
 
               <h3 className="text-lg font-bold uppercase tracking-wide text-foreground mt-8 mb-3">30-Day Adoption Roadmap</h3>
               <ul className="list-none space-y-0 mb-6">
@@ -259,11 +259,11 @@ export const ContractorCRMGuide = () => {
 
               <h2 id="conclusion" className="text-2xl md:text-3xl font-bold mt-12 mb-4 border-l-4 border-primary pl-4">The Bottom Line</h2>
 
-              <p className="text-muted-foreground leading-relaxed mb-5">The contracting industry is more competitive than ever—but it's also full of more opportunity than ever. The contractors who win in the next decade will be the ones who build lean, fast, scalable businesses backed by smart systems. A CRM isn't an expense; it's the infrastructure of a high-performance operation.</p>
+              <p className="text-muted-foreground leading-relaxed mb-5">The contracting industry is more competitive than ever, but it's also full of more opportunity than ever. The contractors who win in the next decade will be the ones who build lean, fast, scalable businesses backed by smart systems. A CRM isn't an expense; it's the infrastructure of a high-performance operation.</p>
 
-              <p className="text-muted-foreground leading-relaxed mb-5">Whether you're closing your fifth job or your five-hundredth, you deserve tools built for the way you work, training from people who understand your world, and a platform that grows with you. That's what we built at myCT1—and it's available to every contractor in America, starting today.</p>
+              <p className="text-muted-foreground leading-relaxed mb-5">Whether you're closing your fifth job or your five-hundredth, you deserve tools built for the way you work, training from people who understand your world, and a platform that grows with you. That's what we built at myCT1, and it's available to every contractor in America, starting today.</p>
 
-              <p className="text-foreground font-semibold leading-relaxed mb-5">More money in the bank. More time for your family. More strength for your community. That's not just a tagline—it's the measurable result of running a smarter operation. Let's build it together.</p>
+              <p className="text-foreground font-semibold leading-relaxed mb-5">More money in the bank. More time for your family. More strength for your community. That's not just a tagline. It's the measurable result of running a smarter operation. Let's build it together.</p>
 
               <div className="flex items-center gap-4 my-10">
                 <span className="flex-1 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
