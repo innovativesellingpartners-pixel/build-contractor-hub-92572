@@ -298,7 +298,7 @@ export function ConversionAnalytics({ filters }: ConversionAnalyticsProps) {
 
       {/* Pipeline Funnel + Overall Conversion Gauge */}
       <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
-        <Card className="p-6">
+        <Card className="p-6 overflow-hidden">
           <h3 className="text-lg font-semibold mb-4">Sales Pipeline Funnel</h3>
           <div className="space-y-3">
             {[
