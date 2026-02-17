@@ -16,6 +16,7 @@ import { WhatWeDo } from "@/pages/WhatWeDo";
 import { CoreValues } from "@/pages/CoreValues";
 import { TradesWeServe } from "@/pages/TradesWeServe";
 import { BlogPodcast } from "@/pages/BlogPodcast";
+import { ContractorCRMGuide } from "@/pages/blog/ContractorCRMGuide";
 import { Privacy } from "@/pages/Privacy";
 import { Terms } from "@/pages/Terms";
 import { Dashboard } from "@/components/Dashboard";
@@ -85,7 +86,7 @@ function PocketAgentWrapper() {
   const location = useLocation();
   const publicPaths = [
     '/', '/savings', '/platform', '/for-consumers', '/business-suite', 
-    '/what-we-do', '/core-values', '/trades-we-serve', '/blog-podcast',
+    '/what-we-do', '/core-values', '/trades-we-serve', '/blog-podcast', '/blog/',
     '/pricing', '/contact', '/nationwide-network', '/network-map',
     '/features/', '/products/', '/legal/', '/about'
   ];
@@ -145,6 +146,7 @@ const App = () => (
             <Route path="/nationwide-network" element={<NationwideNetwork />} />
             <Route path="/trades-we-serve" element={<TradesWeServe />} />
             <Route path="/blog-podcast" element={<BlogPodcast />} />
+            <Route path="/blog/contractor-crm-guide" element={<ContractorCRMGuide />} />
             <Route path="/products/pocket-agent" element={<PocketAgentProduct />} />
             <Route path="/products/pocketbot" element={<Navigate to="/products/pocket-agent" replace />} />
             <Route path="/products/voice-ai" element={<VoiceAIProduct />} />
