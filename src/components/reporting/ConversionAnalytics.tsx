@@ -303,13 +303,13 @@ export function ConversionAnalytics({ filters }: ConversionAnalyticsProps) {
           <div className="space-y-3">
             {[
               { label: 'Leads', count: metrics.totalLeads, color: 'hsl(217,91%,60%)', width: 100 },
-              { label: 'Estimates', count: metrics.totalEstimates, color: 'hsl(262,83%,58%)', width: metrics.totalLeads > 0 ? (metrics.totalEstimates / metrics.totalLeads) * 100 : 80 },
-              { label: 'Customers', count: metrics.totalCustomers, color: 'hsl(142,76%,36%)', width: metrics.totalLeads > 0 ? (metrics.totalCustomers / metrics.totalLeads) * 100 : 60 },
-              { label: 'Jobs', count: metrics.totalJobs, color: 'hsl(24,95%,53%)', width: metrics.totalLeads > 0 ? (metrics.totalJobs / metrics.totalLeads) * 100 : 40 },
+              { label: 'Estimates', count: metrics.totalEstimates, color: 'hsl(262,83%,58%)', width: metrics.totalLeads > 0 ? Math.min((metrics.totalEstimates / metrics.totalLeads) * 100, 100) : 80 },
+              { label: 'Customers', count: metrics.totalCustomers, color: 'hsl(142,76%,36%)', width: metrics.totalLeads > 0 ? Math.min((metrics.totalCustomers / metrics.totalLeads) * 100, 100) : 60 },
+              { label: 'Jobs', count: metrics.totalJobs, color: 'hsl(24,95%,53%)', width: metrics.totalLeads > 0 ? Math.min((metrics.totalJobs / metrics.totalLeads) * 100, 100) : 40 },
             ].map((stage) => (
               <div key={stage.label} className="flex items-center gap-3">
                 <span className="text-xs font-medium w-20 text-right text-muted-foreground">{stage.label}</span>
-                <div className="flex-1 relative">
+                <div className="flex-1 relative overflow-hidden">
                   <div
                     className="h-8 rounded-md flex items-center justify-center transition-all"
                     style={{ width: `${Math.max(stage.width, 15)}%`, backgroundColor: stage.color }}

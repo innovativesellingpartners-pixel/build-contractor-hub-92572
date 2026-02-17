@@ -97,7 +97,7 @@ export function GaugeChart({
       <div className="w-full" style={{ aspectRatio: "200 / 120" }}>
         <svg
           viewBox="0 0 200 120"
-          className="w-full h-full block overflow-visible"
+          className="w-full h-full block overflow-hidden"
           role="img"
           aria-label={`${clamped.toFixed(1)}${suffix}`}
           preserveAspectRatio="xMidYMid meet"
