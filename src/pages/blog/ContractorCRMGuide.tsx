@@ -127,7 +127,7 @@ export const ContractorCRMGuide = () => {
             {/* Article */}
             <article className="prose-article">
               <p className="text-lg text-muted-foreground border-l-[3px] border-primary pl-6 leading-relaxed mb-8">
-                Over the last few years working alongside contractors, one pattern is clear. Over the last few years working alongside contractors, one pattern is clear. The ones who scale fast, bank serious money, and still make it home for dinner — they don't work harder than the rest. They work leaner. At the center of every lean operation is a platform that actually works for them, one that runs the entire business, not just one piece of it. They work leaner. At the center of every lean operation is a platform that actually works for them, one that runs the entire business, not just one piece of it.
+                Over the last few years working alongside contractors, one pattern is clear. The ones who scale fast, bank serious money, and still make it home for dinner... they don't work harder than the rest. They work leaner. At the center of every lean operation is a platform that actually works for them, one that runs the entire business, not just one piece of it.
               </p>
 
               <div className="grid sm:grid-cols-3 gap-4 my-10">
