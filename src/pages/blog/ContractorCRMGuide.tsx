@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { FloatingTrialButton } from '@/components/FloatingTrialButton';
 import { MainSiteHeader } from '@/components/MainSiteHeader';
 import { SEOHead } from '@/components/SEOHead';
-import { ArrowLeft, CheckCircle2, ChevronRight } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { ArrowLeft, CheckCircle2, ChevronRight, FileText } from 'lucide-react';
 import heroBg from '@/assets/hero-crm-business.jpg';
 import ct1Logo from '@/assets/ct1-round-logo-new.png';
 
@@ -68,44 +69,48 @@ export const ContractorCRMGuide = () => {
       <MainSiteHeader />
 
       {/* Hero */}
-      <section className="relative py-20 md:py-28 overflow-hidden">
+      <section className="relative py-20 overflow-hidden">
         <div className="absolute inset-0">
           <img src={heroBg} alt="" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-background/90 backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-background/85 backdrop-blur-sm" />
         </div>
-        <div className="relative container mx-auto px-4">
-          <Link to="/blog-podcast" className="inline-flex items-center gap-2 text-sm text-primary hover:underline mb-6">
-            <ArrowLeft className="h-4 w-4" /> Back to Blog & Podcast
-          </Link>
-          <div className="flex flex-col md:flex-row items-start md:items-center gap-8 md:gap-16">
-            {/* Left: Text */}
-            <div className="flex-1">
-              <div className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-4">Business Tools</div>
-              <h1 className="text-4xl md:text-6xl font-bold mb-4 leading-tight">
-                The Complete Guide to<br /><span className="text-primary">Contractor CRM</span><br />Systems
-              </h1>
-              <p className="text-lg text-muted-foreground max-w-2xl mb-6">
-                Why every growing contractor needs a CRM, and how choosing the right one can put more money in your bank, more time with your family, and more strength back into your community.
-              </p>
-              <div className="inline-flex items-center gap-4 bg-card/60 border-l-[3px] border-l-primary px-5 py-4 rounded-r-md">
-                <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-sm">PM</div>
-                <div>
-                  <div className="font-semibold text-foreground">Patrick Montgomery</div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <Link to="/blog-podcast" className="inline-flex items-center gap-2 text-sm text-primary hover:underline mb-6">
+              <ArrowLeft className="h-4 w-4" /> Back to Blog & Podcast
+            </Link>
+            <div className="flex justify-center mb-4">
+              <Badge className="bg-primary text-primary-foreground px-4 py-2 text-lg">
+                <FileText className="h-5 w-5 mr-2" />
+                Business Tools
+              </Badge>
+            </div>
+            <img src={ct1Logo} alt="CT1" className="w-20 h-20 mx-auto mb-6 drop-shadow-lg" />
+            <h1 className="text-5xl font-bold text-foreground mb-6">
+              The Complete Guide to <span className="text-primary">Contractor CRM Systems</span>
+            </h1>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              Why every growing contractor needs a CRM, and how choosing the right one can put more money in your bank, more time with your family, and more strength back into your community.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6 max-w-3xl mx-auto">
+            <div className="bg-card/60 backdrop-blur-sm rounded-xl p-5 text-center border border-border/60">
+              <div className="flex items-center justify-center gap-3 mb-1">
+                <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-xs">PM</div>
+                <div className="text-left">
+                  <div className="font-semibold text-foreground text-sm">Patrick Montgomery</div>
                   <div className="text-xs text-muted-foreground">COO, myCT1.com</div>
-                </div>
-                <div className="hidden sm:block w-px h-8 bg-border mx-2" />
-                <div className="hidden sm:block text-xs text-muted-foreground">
-                  <strong className="block text-foreground/80">Published</strong>February 2026
-                </div>
-                <div className="hidden sm:block w-px h-8 bg-border mx-2" />
-                <div className="hidden sm:block text-xs text-muted-foreground">
-                  <strong className="block text-foreground/80">Read Time</strong>12 min
                 </div>
               </div>
             </div>
-            {/* Right: Logo */}
-            <div className="hidden md:flex flex-shrink-0 items-center justify-center">
-              <img src={ct1Logo} alt="CT1" className="w-40 h-40 drop-shadow-xl" />
+            <div className="bg-card/60 backdrop-blur-sm rounded-xl p-5 text-center border border-border/60">
+              <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Published</div>
+              <div className="text-lg font-bold text-foreground">February 2026</div>
+            </div>
+            <div className="bg-card/60 backdrop-blur-sm rounded-xl p-5 text-center border border-border/60">
+              <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Read Time</div>
+              <div className="text-lg font-bold text-foreground">12 Minutes</div>
             </div>
           </div>
         </div>
