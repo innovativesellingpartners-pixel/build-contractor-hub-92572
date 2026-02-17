@@ -77,26 +77,35 @@ export const ContractorCRMGuide = () => {
           <Link to="/blog-podcast" className="inline-flex items-center gap-2 text-sm text-primary hover:underline mb-6">
             <ArrowLeft className="h-4 w-4" /> Back to Blog & Podcast
           </Link>
-          <div className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-4">Business Tools</div>
-          <h1 className="text-4xl md:text-6xl font-bold mb-4 leading-tight">
-            The Complete Guide to<br /><span className="text-primary">Contractor CRM</span><br />Systems
-          </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mb-8">
-            Why every growing contractor needs a CRM—and how choosing the right one can put more money in your bank, more time with your family, and more strength back into your community.
-          </p>
-          <div className="inline-flex items-center gap-4 bg-card/60 border-l-[3px] border-l-primary px-5 py-4 rounded-r-md">
-            <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-sm">PM</div>
-            <div>
-              <div className="font-semibold text-foreground">Patrick Montgomery</div>
-              <div className="text-xs text-muted-foreground">COO, myCT1.com</div>
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-8 md:gap-16">
+            {/* Left: Text */}
+            <div className="flex-1">
+              <div className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-4">Business Tools</div>
+              <h1 className="text-4xl md:text-6xl font-bold mb-4 leading-tight">
+                The Complete Guide to<br /><span className="text-primary">Contractor CRM</span><br />Systems
+              </h1>
+              <p className="text-lg text-muted-foreground max-w-2xl mb-6">
+                Why every growing contractor needs a CRM, and how choosing the right one can put more money in your bank, more time with your family, and more strength back into your community.
+              </p>
+              <div className="inline-flex items-center gap-4 bg-card/60 border-l-[3px] border-l-primary px-5 py-4 rounded-r-md">
+                <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-sm">PM</div>
+                <div>
+                  <div className="font-semibold text-foreground">Patrick Montgomery</div>
+                  <div className="text-xs text-muted-foreground">COO, myCT1.com</div>
+                </div>
+                <div className="hidden sm:block w-px h-8 bg-border mx-2" />
+                <div className="hidden sm:block text-xs text-muted-foreground">
+                  <strong className="block text-foreground/80">Published</strong>February 2026
+                </div>
+                <div className="hidden sm:block w-px h-8 bg-border mx-2" />
+                <div className="hidden sm:block text-xs text-muted-foreground">
+                  <strong className="block text-foreground/80">Read Time</strong>12 min
+                </div>
+              </div>
             </div>
-            <div className="hidden sm:block w-px h-8 bg-border mx-2" />
-            <div className="hidden sm:block text-xs text-muted-foreground">
-              <strong className="block text-foreground/80">Published</strong>February 2026
-            </div>
-            <div className="hidden sm:block w-px h-8 bg-border mx-2" />
-            <div className="hidden sm:block text-xs text-muted-foreground">
-              <strong className="block text-foreground/80">Read Time</strong>12 min
+            {/* Right: Logo */}
+            <div className="hidden md:flex flex-shrink-0 items-center justify-center">
+              <img src={ct1Logo} alt="CT1" className="w-40 h-40 drop-shadow-xl" />
             </div>
           </div>
         </div>
@@ -110,7 +119,7 @@ export const ContractorCRMGuide = () => {
             {/* Article */}
             <article className="prose-article">
               <p className="text-lg text-muted-foreground border-l-[3px] border-primary pl-6 leading-relaxed mb-8">
-                I've spent years working alongside contractors across all 50 states. The ones who scale fast, bank serious money, and still make it home for dinner? They don't work harder than the rest. They work leaner. They've built systems—and at the center of every one of those systems is a CRM that actually works for them.
+                Over the last few years working alongside contractors across all 50 states, one pattern is clear. The ones who scale fast, bank serious money, and still make it home for dinner? They don't work harder than the rest. They work leaner. They've built systems, and at the center of every one of those systems is a CRM that actually works for them.
               </p>
 
               <div className="grid sm:grid-cols-3 gap-4 my-10">
