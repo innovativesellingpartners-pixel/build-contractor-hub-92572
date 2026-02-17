@@ -88,7 +88,7 @@ export const ContractorCRMGuide = () => {
             </div>
             <img src={ct1Logo} alt="CT1" className="w-20 h-20 mx-auto mb-6 drop-shadow-lg" />
             <h1 className="text-5xl font-bold text-foreground mb-6">
-              The Complete Guide to<br /><span className="text-primary">Running a Modern Contractor Business</span>
+              <span className="text-primary">Running a Modern Contractor Business</span><br />The Complete Guide
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               Why every growing contractor needs a single platform, and how choosing the right one can put more money in your bank, more time with your family, and more strength back into your community.
