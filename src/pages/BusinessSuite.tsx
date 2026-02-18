@@ -198,58 +198,54 @@ export function BusinessSuite() {
               const isHovered = hoveredCard === module.id;
               
               return (
-                <Card
-                  key={module.id}
-                  className="group relative overflow-hidden border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/20 cursor-pointer transform hover:-translate-y-2"
-                  onMouseEnter={() => setHoveredCard(module.id)}
-                  onMouseLeave={() => setHoveredCard(null)}
-                >
-                  <div className={`absolute inset-0 bg-gradient-to-br ${module.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`}></div>
-                  
-                  <CardContent className="p-5 sm:p-6 md:p-8 relative">
-                    <div className="mb-4 sm:mb-6 relative">
-                      <div className={`inline-flex p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-br ${module.color} transition-transform duration-300 ${isHovered ? 'scale-110' : 'scale-100'}`}>
-                        <Icon className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
-                      </div>
-                      {isHovered && (
-                        <Sparkles className="absolute -top-2 -right-2 h-5 w-5 sm:h-6 sm:w-6 text-primary animate-pulse" />
-                      )}
-                    </div>
+                <Link key={module.id} to={`/business-suite/${module.id}`} className="block">
+                  <Card
+                    className="group relative overflow-hidden border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/20 cursor-pointer transform hover:-translate-y-2 h-full"
+                    onMouseEnter={() => setHoveredCard(module.id)}
+                    onMouseLeave={() => setHoveredCard(null)}
+                  >
+                    <div className={`absolute inset-0 bg-gradient-to-br ${module.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`}></div>
                     
-                    <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground mb-2 sm:mb-3 group-hover:text-primary transition-colors flex items-center gap-2 flex-wrap">
-                      {module.title}
-                      {module.id === 'training' && (
-                        <span className="flex gap-0.5">
-                          {[...Array(5)].map((_, i) => (
-                            <Star key={i} className="h-3 w-3 sm:h-4 sm:w-4 fill-yellow-500 text-yellow-500" />
-                          ))}
-                        </span>
-                      )}
-                    </h3>
-                    
-                    <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6 line-clamp-2 sm:line-clamp-none">
-                      {module.description}
-                    </p>
-                    
-                    <div className="space-y-1.5 sm:space-y-2">
-                      {module.features.map((feature, idx) => (
-                        <div key={idx} className="flex items-center gap-2 text-xs sm:text-sm">
-                          <Zap className="h-3 w-3 sm:h-4 sm:w-4 text-primary flex-shrink-0" />
-                          <span className="text-foreground/80">{feature}</span>
+                    <CardContent className="p-5 sm:p-6 md:p-8 relative">
+                      <div className="mb-4 sm:mb-6 relative">
+                        <div className={`inline-flex p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-br ${module.color} transition-transform duration-300 ${isHovered ? 'scale-110' : 'scale-100'}`}>
+                          <Icon className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
                         </div>
-                      ))}
-                    </div>
+                        {isHovered && (
+                          <Sparkles className="absolute -top-2 -right-2 h-5 w-5 sm:h-6 sm:w-6 text-primary animate-pulse" />
+                        )}
+                      </div>
+                      
+                      <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground mb-2 sm:mb-3 group-hover:text-primary transition-colors flex items-center gap-2 flex-wrap">
+                        {module.title}
+                        {module.id === 'training' && (
+                          <span className="flex gap-0.5">
+                            {[...Array(5)].map((_, i) => (
+                              <Star key={i} className="h-3 w-3 sm:h-4 sm:w-4 fill-yellow-500 text-yellow-500" />
+                            ))}
+                          </span>
+                        )}
+                      </h3>
+                      
+                      <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6 line-clamp-2 sm:line-clamp-none">
+                        {module.description}
+                      </p>
+                      
+                      <div className="space-y-1.5 sm:space-y-2">
+                        {module.features.map((feature, idx) => (
+                          <div key={idx} className="flex items-center gap-2 text-xs sm:text-sm">
+                            <Zap className="h-3 w-3 sm:h-4 sm:w-4 text-primary flex-shrink-0" />
+                            <span className="text-foreground/80">{feature}</span>
+                          </div>
+                        ))}
+                      </div>
 
-                    <Link to={`/business-suite/${module.id}`}>
-                      <Button 
-                        variant="ghost" 
-                        className="mt-4 sm:mt-6 w-full group-hover:bg-primary group-hover:text-primary-foreground transition-all text-sm sm:text-base py-2 sm:py-2.5"
-                      >
+                      <div className="mt-4 sm:mt-6 w-full text-center py-2 sm:py-2.5 rounded-md group-hover:bg-primary group-hover:text-primary-foreground transition-all text-sm sm:text-base font-medium flex items-center justify-center">
                         Learn More <ArrowRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    </Link>
-                  </CardContent>
-                </Card>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
               );
             })}
           </div>
