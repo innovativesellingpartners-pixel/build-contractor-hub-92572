@@ -100,10 +100,10 @@ export const ContractorCRMGuide = () => {
           <div className="grid md:grid-cols-3 gap-6 max-w-3xl mx-auto">
             <div className="bg-card/60 backdrop-blur-sm rounded-xl p-5 text-center border border-border/60">
               <div className="flex items-center justify-center gap-3 mb-1">
-                <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-xs">PM</div>
+                <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-xs">JC</div>
                 <div className="text-left">
-                  <div className="font-semibold text-foreground text-sm">Patrick Montgomery</div>
-                  <div className="text-xs text-muted-foreground">COO, myCT1.com</div>
+                  <div className="font-semibold text-foreground text-sm">Joe Cipriano</div>
+                  <div className="text-xs text-muted-foreground">CEO, myCT1.com</div>
                 </div>
               </div>
             </div>
@@ -158,7 +158,7 @@ export const ContractorCRMGuide = () => {
 
               <p className="text-muted-foreground leading-relaxed mb-5"><strong className="text-foreground">Here's the hard truth:</strong> most contractors are running their business out of a combination of their head, a notepad, a few text threads, and maybe a spreadsheet. That works until you hit a wall. And when it stops working, you're not just losing efficiency. You're losing jobs, revenue, and sleep.</p>
 
-              <PullQuote>The contractors winning right now aren't the ones working longer hours. They're the ones who built a lean, fast, scalable operation, and a great platform is the engine underneath it. - Patrick Montgomery, COO, myCT1.com</PullQuote>
+              <PullQuote>The contractors winning right now aren't the ones working longer hours. They're the ones who built a lean, fast, scalable operation, and a great platform is the engine underneath it. - Joe Cipriano, CEO, myCT1.com</PullQuote>
 
               <h2 id="signs" className="text-2xl md:text-3xl font-bold mt-12 mb-4 border-l-4 border-primary pl-4">5 Signs Your Business Needs a Better System</h2>
 
@@ -244,7 +244,7 @@ export const ContractorCRMGuide = () => {
 
               <p className="text-muted-foreground leading-relaxed mb-5"><strong className="text-foreground">There's also a community dimension here.</strong> Contractors are the backbone of every neighborhood in America. When your business is healthy, you hire locally. You support your crews' families. You invest back into the towns you serve. A thriving contractor business isn't just good for the owner, it ripples outward into the entire community. We take that seriously at CT1, and we build our platform with that bigger picture in mind.</p>
 
-              <PullQuote>When you're not buried in busywork, you become a better business owner, a better parent, and a stronger member of your community. That's the real return on building a great operation. - Patrick Montgomery, COO, myCT1.com</PullQuote>
+              <PullQuote>When you're not buried in busywork, you become a better business owner, a better parent, and a stronger member of your community. That's the real return on building a great operation. - Joe Cipriano, CEO, myCT1.com</PullQuote>
 
               <h2 id="how-ct1-delivers" className="text-2xl md:text-3xl font-bold mt-12 mb-4 border-l-4 border-primary pl-4">How CT1 Delivers on This</h2>
 
