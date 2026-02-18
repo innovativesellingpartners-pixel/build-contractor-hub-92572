@@ -8,10 +8,12 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { ContactForm } from "@/components/ContactForm";
 import { MainSiteHeader } from "@/components/MainSiteHeader";
 import heroBg from "@/assets/hero-jobs-management.jpg";
+import screenshotBoard from "@/assets/screenshots/jobs-board.jpg";
+import screenshotScheduling from "@/assets/screenshots/jobs-scheduling.jpg";
+import screenshotDetail from "@/assets/screenshots/jobs-detail.jpg";
 import { FloatingTrialButton } from "@/components/FloatingTrialButton";
 import {
   ArrowRight,
-  ImageIcon,
   HardHat,
   Calendar,
   Users,
@@ -22,6 +24,7 @@ import {
   Clock,
   TrendingUp,
   Wrench,
+  Eye,
 } from "lucide-react";
 
 export default function Jobs() {
@@ -138,7 +141,7 @@ export default function Jobs() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <Badge className="mb-4 bg-primary/10 text-primary px-4 py-2 text-lg">
-              <ImageIcon className="h-5 w-5 mr-2" />
+              <Eye className="h-5 w-5 mr-2" />
               See It In Action
             </Badge>
             <h2 className="text-4xl font-bold text-foreground mb-4">
@@ -150,15 +153,15 @@ export default function Jobs() {
           </div>
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              "Job Board - All active jobs with status, crew, and timeline",
-              "Scheduling View - Crew assignments and calendar management",
-              "Job Detail - Progress tracking, photos, and cost breakdown",
-            ].map((label, index) => (
-              <div key={index} className="rounded-xl border-2 border-dashed border-primary/30 bg-background p-4">
-                <div className="aspect-video rounded-lg bg-muted/50 flex items-center justify-center mb-3">
-                  <ImageIcon className="h-16 w-16 text-muted-foreground/30" />
+              { img: screenshotBoard, label: "Job Board - All active jobs with status, crew, and timeline" },
+              { img: screenshotScheduling, label: "Scheduling View - Crew assignments and calendar management" },
+              { img: screenshotDetail, label: "Job Detail - Progress tracking, photos, and cost breakdown" },
+            ].map((shot, index) => (
+              <div key={index} className="rounded-xl border border-border bg-background p-4 shadow-sm">
+                <div className="aspect-video rounded-lg overflow-hidden mb-3">
+                  <img src={shot.img} alt={shot.label} className="w-full h-full object-cover" />
                 </div>
-                <p className="text-sm text-muted-foreground text-center font-medium">{label}</p>
+                <p className="text-sm text-muted-foreground text-center font-medium">{shot.label}</p>
               </div>
             ))}
           </div>

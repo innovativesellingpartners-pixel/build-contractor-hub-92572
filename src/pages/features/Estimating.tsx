@@ -6,10 +6,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MainSiteHeader } from "@/components/MainSiteHeader";
 import heroBg from "@/assets/hero-estimating-software.jpg";
+import screenshotBuilder from "@/assets/screenshots/estimating-builder.jpg";
+import screenshotCustomerView from "@/assets/screenshots/estimating-customer-view.jpg";
+import screenshotDashboard from "@/assets/screenshots/estimating-dashboard.jpg";
 import { FloatingTrialButton } from "@/components/FloatingTrialButton";
 import {
   ArrowRight,
-  ImageIcon,
   Calculator,
   FileText,
   Send,
@@ -133,7 +135,7 @@ export default function Estimating() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <Badge className="mb-4 bg-primary/10 text-primary px-4 py-2 text-lg">
-              <ImageIcon className="h-5 w-5 mr-2" />
+              <Eye className="h-5 w-5 mr-2" />
               See It In Action
             </Badge>
             <h2 className="text-4xl font-bold text-foreground mb-4">
@@ -145,15 +147,15 @@ export default function Estimating() {
           </div>
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              "Estimate Builder - Line items, templates, and automatic calculations",
-              "Digital Delivery - Customer view with e-signature and payment",
-              "Estimate Dashboard - Track status, views, and conversions",
-            ].map((label, index) => (
-              <div key={index} className="rounded-xl border-2 border-dashed border-primary/30 bg-background p-4">
-                <div className="aspect-video rounded-lg bg-muted/50 flex items-center justify-center mb-3">
-                  <ImageIcon className="h-16 w-16 text-muted-foreground/30" />
+              { img: screenshotBuilder, label: "Estimate Builder - Line items, templates, and automatic calculations" },
+              { img: screenshotCustomerView, label: "Digital Delivery - Customer view with e-signature and payment" },
+              { img: screenshotDashboard, label: "Estimate Dashboard - Track status, views, and conversions" },
+            ].map((shot, index) => (
+              <div key={index} className="rounded-xl border border-border bg-background p-4 shadow-sm">
+                <div className="aspect-video rounded-lg overflow-hidden mb-3">
+                  <img src={shot.img} alt={shot.label} className="w-full h-full object-cover" />
                 </div>
-                <p className="text-sm text-muted-foreground text-center font-medium">{label}</p>
+                <p className="text-sm text-muted-foreground text-center font-medium">{shot.label}</p>
               </div>
             ))}
           </div>
