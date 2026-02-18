@@ -172,18 +172,21 @@ export function ExpensesProfitabilityReport() {
           title="Expense Breakdown"
           isEmpty={!nativeExpenses?.donutData || nativeExpenses.donutData.length === 0}
           emptyMessage="No expenses recorded for this period."
+          onClick={() => openPanel({ type: "category-breakdown", title: "All Expenses", data: { category: "All", type: "expense", totalAmount: nativeExpenses?.total || 0 } })}
         >
           <DonutChart
             data={nativeExpenses?.donutData || []}
             centerValue={fmt(nativeExpenses?.total || 0)}
             centerLabel="Total"
             height={260}
+            onSegmentClick={(entry) => openPanel({ type: "category-breakdown", title: `${entry.name} Expenses`, data: { category: entry.name, type: "expense", totalAmount: entry.value } })}
           />
         </ChartCard>
         <ChartCard
           title="Expense Trend"
           isEmpty={!nativeExpenses?.trendData || nativeExpenses.trendData.length < 2}
           emptyMessage="Not enough data to show expense trends."
+          onClick={() => openPanel({ type: "category-breakdown", title: "Expense Trend", data: { category: "All", type: "expense", totalAmount: nativeExpenses?.total || 0 } })}
         >
           <StackedBarChart
             data={nativeExpenses?.trendData || []}
@@ -193,6 +196,7 @@ export function ExpensesProfitabilityReport() {
               color: ["hsl(217,91%,60%)", "hsl(0,84%,60%)", "hsl(45,93%,47%)", "hsl(142,76%,36%)", "hsl(262,83%,58%)", "hsl(24,95%,53%)"][i % 6],
             }))}
             height={260}
+            onBarClick={(data) => openPanel({ type: "category-breakdown", title: `Expenses · ${data.name}`, data: { category: data.name, type: "expense", totalAmount: 0 } })}
           />
         </ChartCard>
       </div>

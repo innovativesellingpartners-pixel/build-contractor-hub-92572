@@ -1,13 +1,15 @@
 /**
  * ChartCard — Unified wrapper for every chart/visualization in reporting.
  * Provides consistent title, subtitle, loading skeleton, empty state, error state with retry.
+ * Supports onClick to make the entire card clickable for drill-down.
  */
 
 import { ReactNode } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { BarChart3, RefreshCcw, AlertTriangle } from "lucide-react";
+import { BarChart3, RefreshCcw, AlertTriangle, ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface ChartCardProps {
   title: string;
@@ -23,6 +25,7 @@ interface ChartCardProps {
   skeletonHeight?: number;
   icon?: ReactNode;
   headerActions?: ReactNode;
+  onClick?: () => void;
 }
 
 export function ChartCard({
@@ -39,7 +42,10 @@ export function ChartCard({
   skeletonHeight = 260,
   icon,
   headerActions,
+  onClick,
 }: ChartCardProps) {
+  const isClickable = !!onClick;
+
   if (isLoading) {
     return (
       <Card className={`border-border/60 ${className}`}>
@@ -81,7 +87,7 @@ export function ChartCard({
 
   if (isEmpty) {
     return (
-      <Card className={`border-dashed border-border/50 ${className}`}>
+      <Card className={cn("border-dashed border-border/50", isClickable && "cursor-pointer hover:shadow-md hover:border-border transition-all group", className)} onClick={onClick}>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
             {icon}
@@ -102,7 +108,14 @@ export function ChartCard({
   }
 
   return (
-    <Card className={`border-border/60 ${className}`}>
+    <Card
+      className={cn(
+        "border-border/60",
+        isClickable && "cursor-pointer hover:shadow-md hover:border-border transition-all group",
+        className
+      )}
+      onClick={onClick}
+    >
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between gap-2">
           <div>
@@ -112,7 +125,12 @@ export function ChartCard({
             </CardTitle>
             {subtitle && <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>}
           </div>
-          {headerActions}
+          <div className="flex items-center gap-2">
+            {headerActions}
+            {isClickable && (
+              <ChevronRight className="h-4 w-4 text-muted-foreground/40 group-hover:text-primary transition-colors" />
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent className="min-h-[120px] overflow-hidden">

@@ -6,6 +6,7 @@ interface DonutChartProps {
   centerLabel?: string;
   centerValue?: string;
   height?: number;
+  onSegmentClick?: (entry: { name: string; value: number }) => void;
 }
 
 const DEFAULT_COLORS = [
@@ -22,7 +23,7 @@ const DEFAULT_COLORS = [
 const fmtNum = (v: number) =>
   new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(v);
 
-export function DonutChart({ data, colors = DEFAULT_COLORS, centerLabel, centerValue, height = 280 }: DonutChartProps) {
+export function DonutChart({ data, colors = DEFAULT_COLORS, centerLabel, centerValue, height = 280, onSegmentClick }: DonutChartProps) {
   if (!data || data.length === 0) {
     return <div className="flex items-center justify-center text-muted-foreground text-sm" style={{ height }}>No data</div>;
   }
@@ -40,6 +41,12 @@ export function DonutChart({ data, colors = DEFAULT_COLORS, centerLabel, centerV
             paddingAngle={2}
             dataKey="value"
             stroke="none"
+            className={onSegmentClick ? "cursor-pointer" : ""}
+            onClick={(_, index) => {
+              if (onSegmentClick && data[index]) {
+                onSegmentClick(data[index]);
+              }
+            }}
           >
             {data.map((_, index) => (
               <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
@@ -65,12 +72,20 @@ export function DonutChart({ data, colors = DEFAULT_COLORS, centerLabel, centerV
       {/* Legend */}
       <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 mt-2">
         {data.map((entry, i) => (
-          <div key={entry.name} className="flex items-center gap-1.5 text-xs">
+          <button
+            key={entry.name}
+            className="flex items-center gap-1.5 text-xs hover:underline underline-offset-2 transition-colors"
+            onClick={() => onSegmentClick?.(entry)}
+            type="button"
+          >
             <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: colors[i % colors.length] }} />
             <span className="text-muted-foreground">{entry.name}</span>
-          </div>
+          </button>
         ))}
       </div>
+      {onSegmentClick && (
+        <p className="text-[10px] text-muted-foreground text-center mt-1">Click a segment or label to drill down</p>
+      )}
     </div>
   );
 }

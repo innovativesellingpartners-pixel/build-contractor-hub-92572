@@ -1,6 +1,6 @@
 /**
  * UnifiedDashboard — Executive summary combining myCT1 native + QB data.
- * All metric cards and lists are interactive with drill-down.
+ * All metric cards, charts, and lists are interactive with drill-down.
  */
 
 import { useState } from "react";
@@ -115,7 +115,6 @@ export function UnifiedDashboard() {
         .sort((a, b) => Number(b.lifetime_value || 0) - Number(a.lifetime_value || 0))
         .slice(0, 5);
 
-      // Job rankings
       const jobRankings = jb.map(j => {
         const budget = Number(j.budget_amount || 0);
         const cost = Number(j.actual_cost || 0);
@@ -124,15 +123,12 @@ export function UnifiedDashboard() {
         return { id: j.id, name: j.name || 'Unnamed', profit, margin, budget, cost, status: j.job_status };
       }).sort((a, b) => b.profit - a.profit);
 
-      // Gross margin
       const grossMargin = totalJobRevenue > 0 ? ((totalJobRevenue - totalJobCost) / totalJobRevenue) * 100 : 0;
 
-      // Cash flow forecast (simple: current burn rate projected)
       const activeJobBudgets = activeJobs.reduce((s, j) => s + Number(j.budget_amount || 0), 0);
       const activeJobCosts = activeJobs.reduce((s, j) => s + Number(j.actual_cost || 0), 0);
       const burnRate = activeJobs.length > 0 ? activeJobCosts / Math.max(activeJobs.length, 1) : 0;
 
-      // Job status distribution for donut
       const statusCounts: Record<string, number> = {};
       jb.forEach(j => {
         const s = j.job_status || "pending";
@@ -143,7 +139,6 @@ export function UnifiedDashboard() {
         value,
       }));
 
-      // Monthly revenue trend
       const monthlyRevenue: Record<string, number> = {};
       pay.forEach(p => {
         const month = (p.payment_date || "").substring(0, 7);
@@ -306,25 +301,28 @@ export function UnifiedDashboard() {
 
       {/* Pipeline funnel — clickable stages */}
       <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
-        <Card className="border-border/60">
+        <Card className="border-border/60 cursor-pointer hover:shadow-md hover:border-border transition-all group" onClick={() => navigateToReport("sales")}>
           <CardHeader>
-            <CardTitle className="text-base">Sales Pipeline</CardTitle>
+            <CardTitle className="text-sm font-semibold flex items-center justify-between">
+              Sales Pipeline
+              <span className="text-[10px] text-primary opacity-0 group-hover:opacity-100 transition-opacity">View details →</span>
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-center gap-3 py-4">
               {funnelData.map((stage, i) => (
                 <div key={stage.name} className="flex items-center gap-3">
                   <button
-                    onClick={stage.onClick}
-                    className="text-center group cursor-pointer"
+                    onClick={(e) => { e.stopPropagation(); stage.onClick(); }}
+                    className="text-center group/stage cursor-pointer"
                   >
                     <div
-                      className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg group-hover:scale-110 transition-transform"
+                      className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg group-hover/stage:scale-110 transition-transform"
                       style={{ backgroundColor: COLORS[i] }}
                     >
                       {stage.value}
                     </div>
-                    <p className="text-xs font-medium mt-1.5 group-hover:text-primary transition-colors">{stage.name}</p>
+                    <p className="text-xs font-medium mt-1.5 group-hover/stage:text-primary transition-colors">{stage.name}</p>
                   </button>
                   {i < funnelData.length - 1 && <ArrowRight className="h-4 w-4 text-muted-foreground" />}
                 </div>
@@ -334,9 +332,12 @@ export function UnifiedDashboard() {
         </Card>
 
         {/* Top Customers — clickable rows */}
-        <Card className="border-border/60">
+        <Card className="border-border/60 cursor-pointer hover:shadow-md hover:border-border transition-all group" onClick={() => navigateToReport("customers")}>
           <CardHeader>
-            <CardTitle className="text-sm font-semibold">Top Customers</CardTitle>
+            <CardTitle className="text-sm font-semibold flex items-center justify-between">
+              Top Customers
+              <span className="text-[10px] text-primary opacity-0 group-hover:opacity-100 transition-opacity">View all →</span>
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {d?.topCustomers && d.topCustomers.length > 0 ? (
@@ -346,11 +347,14 @@ export function UnifiedDashboard() {
                     key={c.id}
                     variant="ghost"
                     className="w-full justify-between text-sm h-auto py-2 px-3 hover:bg-muted"
-                    onClick={() => openPanel({
-                      type: "customer",
-                      title: c.name,
-                      data: c,
-                    })}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openPanel({
+                        type: "customer",
+                        title: c.name,
+                        data: c,
+                      });
+                    }}
                   >
                     <span className="truncate mr-3">{c.name}</span>
                     <span className="tabular-nums font-medium flex-shrink-0">{fmt(Number(c.lifetime_value || 0))}</span>
@@ -367,8 +371,13 @@ export function UnifiedDashboard() {
       {/* QB Customers + Vendors — clickable rows */}
       {qbConnected && (
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-          <Card className="border-border/60">
-            <CardHeader><CardTitle className="text-sm font-semibold flex items-center gap-2"><Users className="h-4 w-4" /> QB Customers</CardTitle></CardHeader>
+          <Card className="border-border/60 cursor-pointer hover:shadow-md hover:border-border transition-all group" onClick={() => navigateToReport("customers")}>
+            <CardHeader>
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <Users className="h-4 w-4" /> QB Customers
+                <span className="ml-auto text-[10px] text-primary opacity-0 group-hover:opacity-100 transition-opacity">View all →</span>
+              </CardTitle>
+            </CardHeader>
             <CardContent>
               {qbCustomers?.length ? (
                 <div className="space-y-1">
@@ -377,11 +386,14 @@ export function UnifiedDashboard() {
                       key={c.Id}
                       variant="ghost"
                       className="w-full justify-between text-sm h-auto py-2 px-3 hover:bg-muted"
-                      onClick={() => openPanel({
-                        type: "customer",
-                        title: c.DisplayName,
-                        data: { name: c.DisplayName, email: c.PrimaryEmailAddr?.Address },
-                      })}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openPanel({
+                          type: "customer",
+                          title: c.DisplayName,
+                          data: { name: c.DisplayName, email: c.PrimaryEmailAddr?.Address },
+                        });
+                      }}
                     >
                       <span className="truncate mr-3">{c.DisplayName}</span>
                       <span className="tabular-nums font-medium">{fmt(parseFloat(c.Balance || "0"))}</span>
@@ -391,8 +403,13 @@ export function UnifiedDashboard() {
               ) : <p className="text-sm text-muted-foreground">No data</p>}
             </CardContent>
           </Card>
-          <Card className="border-border/60">
-            <CardHeader><CardTitle className="text-sm font-semibold flex items-center gap-2"><Users className="h-4 w-4" /> QB Vendors</CardTitle></CardHeader>
+          <Card className="border-border/60 cursor-pointer hover:shadow-md hover:border-border transition-all group" onClick={() => navigateToReport("ap")}>
+            <CardHeader>
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <Users className="h-4 w-4" /> QB Vendors
+                <span className="ml-auto text-[10px] text-primary opacity-0 group-hover:opacity-100 transition-opacity">View all →</span>
+              </CardTitle>
+            </CardHeader>
             <CardContent>
               {qbVendors?.length ? (
                 <div className="space-y-1">
@@ -401,11 +418,14 @@ export function UnifiedDashboard() {
                       key={v.Id}
                       variant="ghost"
                       className="w-full justify-between text-sm h-auto py-2 px-3 hover:bg-muted"
-                      onClick={() => openPanel({
-                        type: "vendor",
-                        title: v.DisplayName,
-                        data: v,
-                      })}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openPanel({
+                          type: "vendor",
+                          title: v.DisplayName,
+                          data: v,
+                        });
+                      }}
                     >
                       <span className="truncate mr-3">{v.DisplayName}</span>
                       <span className="tabular-nums font-medium">{fmt(parseFloat(v.Balance || "0"))}</span>
@@ -428,24 +448,31 @@ export function UnifiedDashboard() {
             icon={<Gauge className="h-4 w-4" />}
             isEmpty={!d.totalJobRevenue && !d.totalJobCost}
             emptyMessage="No job data to calculate gross margin."
+            onClick={() => navigateToReport("jobs")}
           >
             <div className="flex justify-center">
               <GaugeChart
                 value={d.grossMargin || 0}
                 target={30}
                 label="Gross Margin"
+                onClick={() => navigateToReport("jobs")}
               />
             </div>
           </ChartCard>
 
           {/* Top Profitable */}
-          <Card className="border-border/60">
-            <CardHeader><CardTitle className="text-sm font-semibold flex items-center gap-2"><Trophy className="h-4 w-4 text-emerald-600" /> Top 5 Profitable</CardTitle></CardHeader>
+          <Card className="border-border/60 cursor-pointer hover:shadow-md hover:border-border transition-all group" onClick={() => navigateToReport("jobs")}>
+            <CardHeader>
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <Trophy className="h-4 w-4 text-emerald-600" /> Top 5 Profitable
+                <span className="ml-auto text-[10px] text-primary opacity-0 group-hover:opacity-100 transition-opacity">View all →</span>
+              </CardTitle>
+            </CardHeader>
             <CardContent>
               <div className="space-y-1.5">
                 {d.jobRankings.slice(0, 5).map((j: any, i: number) => (
                   <Button key={j.id} variant="ghost" className="w-full justify-between text-sm h-auto py-1.5 px-2 hover:bg-muted"
-                    onClick={() => openPanel({ type: "job", title: j.name, data: j })}>
+                    onClick={(e) => { e.stopPropagation(); openPanel({ type: "job", title: j.name, data: j }); }}>
                     <span className="flex items-center gap-2 truncate">
                       <span className="text-xs font-bold text-muted-foreground w-4">{i + 1}</span>
                       <span className="truncate">{j.name}</span>
@@ -458,13 +485,18 @@ export function UnifiedDashboard() {
           </Card>
 
           {/* Least Profitable */}
-          <Card className="border-border/60">
-            <CardHeader><CardTitle className="text-sm font-semibold flex items-center gap-2"><AlertOctagon className="h-4 w-4 text-red-600" /> Bottom 5 Jobs</CardTitle></CardHeader>
+          <Card className="border-border/60 cursor-pointer hover:shadow-md hover:border-border transition-all group" onClick={() => navigateToReport("jobs")}>
+            <CardHeader>
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <AlertOctagon className="h-4 w-4 text-red-600" /> Bottom 5 Jobs
+                <span className="ml-auto text-[10px] text-primary opacity-0 group-hover:opacity-100 transition-opacity">View all →</span>
+              </CardTitle>
+            </CardHeader>
             <CardContent>
               <div className="space-y-1.5">
                 {[...d.jobRankings].reverse().slice(0, 5).map((j: any, i: number) => (
                   <Button key={j.id} variant="ghost" className="w-full justify-between text-sm h-auto py-1.5 px-2 hover:bg-muted"
-                    onClick={() => openPanel({ type: "job", title: j.name, data: j })}>
+                    onClick={(e) => { e.stopPropagation(); openPanel({ type: "job", title: j.name, data: j }); }}>
                     <span className="flex items-center gap-2 truncate">
                       <span className="text-xs font-bold text-muted-foreground w-4">{i + 1}</span>
                       <span className="truncate">{j.name}</span>
@@ -485,6 +517,7 @@ export function UnifiedDashboard() {
             title="Job Status Distribution"
             isEmpty={!d.jobStatusData || d.jobStatusData.length === 0}
             emptyMessage="No jobs found for the selected period."
+            onClick={() => navigateToReport("jobs")}
           >
             <DonutChart
               data={d.jobStatusData}
@@ -492,12 +525,20 @@ export function UnifiedDashboard() {
               centerLabel="Total Jobs"
               height={240}
               colors={["hsl(217,91%,60%)", "hsl(142,76%,36%)", "hsl(45,93%,47%)", "hsl(0,84%,60%)", "hsl(262,83%,58%)"]}
+              onSegmentClick={(entry) => {
+                openPanel({
+                  type: "category-breakdown",
+                  title: `${entry.name} Jobs · ${entry.value} total`,
+                  data: { category: entry.name, type: "job-status", totalAmount: entry.value },
+                });
+              }}
             />
           </ChartCard>
           <ChartCard
             title="Monthly Revenue Trend"
             isEmpty={!d.revenueTrend || d.revenueTrend.length < 2}
             emptyMessage="Not enough payment data to show revenue trend."
+            onClick={() => navigateToReport("revenue")}
           >
             <ResponsiveContainer width="100%" height={240}>
               <AreaChart data={d.revenueTrend}>
@@ -523,10 +564,18 @@ export function UnifiedDashboard() {
 
       {/* Active Jobs Budget vs Spent */}
       {d && d.activeJobs > 0 && (
-        <Card className="p-6 border-border/60">
-          <h3 className="text-sm font-semibold mb-4 flex items-center gap-2"><TrendingUp className="h-4 w-4" /> Active Jobs Budget</h3>
+        <Card className="p-6 border-border/60 cursor-pointer hover:shadow-md hover:border-border transition-all group" onClick={() => navigateToReport("jobs")}>
+          <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
+            <TrendingUp className="h-4 w-4" /> Active Jobs Budget
+            <span className="ml-auto text-[10px] text-primary opacity-0 group-hover:opacity-100 transition-opacity">View details →</span>
+          </h3>
           <div className="space-y-3">
-            <BulletChart actual={d.activeJobCosts || 0} target={d.activeJobBudgets || 0} label="Total Spend vs Budget" />
+            <BulletChart
+              actual={d.activeJobCosts || 0}
+              target={d.activeJobBudgets || 0}
+              label="Total Spend vs Budget"
+              onClick={() => navigateToReport("jobs")}
+            />
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center pt-2">
               <div>
                 <p className="text-xs text-muted-foreground">Budget</p>

@@ -165,6 +165,7 @@ export function JobsProjectsReport() {
           title="Job Status Distribution"
           isEmpty={!metrics?.statusData || metrics.statusData.length === 0}
           emptyMessage="No jobs found for the selected period."
+          onClick={() => openPanel({ type: "category-breakdown", title: "Job Status Breakdown", data: { category: "All", type: "job-status", totalAmount: metrics?.total || 0 } })}
         >
           <DonutChart
             data={metrics?.statusData || []}
@@ -172,18 +173,21 @@ export function JobsProjectsReport() {
             centerLabel="Total Jobs"
             height={240}
             colors={["hsl(217,91%,60%)", "hsl(142,76%,36%)", "hsl(45,93%,47%)", "hsl(0,84%,60%)", "hsl(262,83%,58%)"]}
+            onSegmentClick={(entry) => openPanel({ type: "category-breakdown", title: `${entry.name} Jobs · ${entry.value}`, data: { category: entry.name, type: "job-status", totalAmount: entry.value } })}
           />
         </ChartCard>
         <ChartCard
           title="Gross Margin"
           isEmpty={!metrics?.totalRev && !metrics?.totalCost}
           emptyMessage="No job data to calculate margin."
+          onClick={() => openPanel({ type: "category-breakdown", title: "Cost Breakdown", data: { category: "All", type: "cost", totalAmount: metrics?.totalCost || 0 } })}
         >
           <div className="flex justify-center">
             <GaugeChart
               value={metrics?.margin || 0}
               target={30}
               label="Overall Gross Margin"
+              onClick={() => openPanel({ type: "category-breakdown", title: "Margin Details", data: { category: "All", type: "cost", totalAmount: metrics?.totalCost || 0 } })}
             />
           </div>
         </ChartCard>
