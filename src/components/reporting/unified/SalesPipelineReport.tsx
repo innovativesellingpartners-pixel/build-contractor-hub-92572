@@ -103,10 +103,11 @@ export function SalesPipelineReport() {
 
       {/* Conversion Gauge */}
       {salesData && (
-        <ChartCard
+      <ChartCard
           title="Conversion Rate"
           isEmpty={!salesData.estimates?.length}
           emptyMessage="No estimates to calculate conversion rate."
+          onClick={() => openPanel({ type: "category-breakdown", title: "Conversion Funnel", data: { category: "Conversion", type: "revenue", totalAmount: salesData?.totalValue || 0 } })}
         >
           <div className="flex justify-center">
             <GaugeChart
@@ -114,6 +115,7 @@ export function SalesPipelineReport() {
               target={40}
               label="Estimate → Job"
               thresholds={{ low: 15, mid: 30 }}
+              onClick={() => openPanel({ type: "category-breakdown", title: "Conversion Funnel", data: { category: "Conversion", type: "revenue", totalAmount: salesData?.totalValue || 0 } })}
             />
           </div>
         </ChartCard>

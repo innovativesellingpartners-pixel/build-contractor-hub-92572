@@ -170,13 +170,15 @@ export function RevenueFinancialReport() {
 
       {/* Revenue trend charts */}
       <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
-        <ChartCard title="Revenue & Profit Trend" emptyMessage="No revenue data for the selected period.">
+        <ChartCard title="Revenue & Profit Trend" emptyMessage="No revenue data for the selected period."
+          onClick={() => openPanel({ type: "category-breakdown", title: "Revenue Breakdown", data: { category: "Revenue", type: "revenue", totalAmount: totalRevenue } })}>
           <RevenueProfitChart filters={filters} />
         </ChartCard>
         <ChartCard
           title="Monthly Revenue"
           isEmpty={!nativeRevenue?.revenueTrend || nativeRevenue.revenueTrend.length < 2}
           emptyMessage="Not enough payment data to chart monthly revenue."
+          onClick={() => openPanel({ type: "category-breakdown", title: "Monthly Revenue", data: { category: "Revenue", type: "revenue", totalAmount: nativeRevenue?.totalPaid || 0 } })}
         >
           <ResponsiveContainer width="100%" height={280}>
             <AreaChart data={nativeRevenue?.revenueTrend || []}>
