@@ -6,8 +6,10 @@ import { FloatingTrialButton } from "@/components/FloatingTrialButton";
 import { Badge } from "@/components/ui/badge";
 import { MainSiteHeader } from "@/components/MainSiteHeader";
 import heroBg from "@/assets/hero-leads-generation.jpg";
+import screenshotLeadsDash from "@/assets/screenshots/leads-dashboard.jpg";
+import screenshotLeadsDetail from "@/assets/screenshots/leads-detail.jpg";
+import screenshotLeadsFollowup from "@/assets/screenshots/leads-followup.jpg";
 import {
-  ImageIcon,
   Target,
   Zap,
   MessageSquare,
@@ -17,6 +19,7 @@ import {
   ArrowRight,
   Clock,
   DollarSign,
+  Eye,
   Users,
 } from "lucide-react";
 
@@ -132,7 +135,7 @@ export function Leads() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <Badge className="mb-4 bg-primary/10 text-primary px-4 py-2 text-lg">
-              <ImageIcon className="h-5 w-5 mr-2" />
+              <Eye className="h-5 w-5 mr-2" />
               See It In Action
             </Badge>
             <h2 className="text-4xl font-bold text-foreground mb-4">
@@ -144,15 +147,15 @@ export function Leads() {
           </div>
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              "Lead Dashboard - Incoming leads with status and source tracking",
-              "Lead Detail - Full contact info, project scope, and follow-up history",
-              "AI Follow-Up - Automated sequences that convert leads to jobs",
-            ].map((label, index) => (
-              <div key={index} className="rounded-xl border-2 border-dashed border-primary/30 bg-background p-4">
-                <div className="aspect-video rounded-lg bg-muted/50 flex items-center justify-center mb-3">
-                  <ImageIcon className="h-16 w-16 text-muted-foreground/30" />
+              { img: screenshotLeadsDash, label: "Lead Dashboard - Incoming leads with status and source tracking" },
+              { img: screenshotLeadsDetail, label: "Lead Detail - Full contact info, project scope, and follow-up history" },
+              { img: screenshotLeadsFollowup, label: "AI Follow-Up - Automated sequences that convert leads to jobs" },
+            ].map((shot, index) => (
+              <div key={index} className="rounded-xl border border-border bg-background p-4 shadow-sm">
+                <div className="aspect-video rounded-lg overflow-hidden mb-3">
+                  <img src={shot.img} alt={shot.label} className="w-full h-full object-cover" />
                 </div>
-                <p className="text-sm text-muted-foreground text-center font-medium">{label}</p>
+                <p className="text-sm text-muted-foreground text-center font-medium">{shot.label}</p>
               </div>
             ))}
           </div>

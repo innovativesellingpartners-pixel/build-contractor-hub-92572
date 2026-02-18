@@ -6,6 +6,9 @@ import { FloatingTrialButton } from "@/components/FloatingTrialButton";
 import { Badge } from "@/components/ui/badge";
 import { MainSiteHeader } from "@/components/MainSiteHeader";
 import heroBg from "@/assets/hero-communication-hub.jpg";
+import screenshotInbox from "@/assets/screenshots/communication-inbox.jpg";
+import screenshotTimeline from "@/assets/screenshots/communication-timeline.jpg";
+import screenshotFollowup from "@/assets/screenshots/communication-followup.jpg";
 import {
   ArrowRight,
   MessageSquare,
@@ -17,7 +20,7 @@ import {
   History,
   Users,
   Globe,
-  ImageIcon,
+  Eye,
 } from "lucide-react";
 
 export default function Communication() {
@@ -47,9 +50,9 @@ export default function Communication() {
   ];
 
   const screenshots = [
-    { label: "Unified Inbox - All emails, texts, and calls in one view" },
-    { label: "Communication Timeline - Full history for every customer" },
-    { label: "Auto Follow-Up Sequences - Set it and never miss a touchpoint" },
+    { img: screenshotInbox, label: "Unified Inbox - All emails, texts, and calls in one view" },
+    { img: screenshotTimeline, label: "Communication Timeline - Full history for every customer" },
+    { img: screenshotFollowup, label: "Auto Follow-Up Sequences - Set it and never miss a touchpoint" },
   ];
 
   return (
@@ -138,7 +141,7 @@ export default function Communication() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <Badge className="mb-4 bg-primary/10 text-primary px-4 py-2 text-lg">
-              <ImageIcon className="h-5 w-5 mr-2" />
+              <Eye className="h-5 w-5 mr-2" />
               See It In Action
             </Badge>
             <h2 className="text-4xl font-bold text-foreground mb-4">
@@ -150,9 +153,9 @@ export default function Communication() {
           </div>
           <div className="grid md:grid-cols-3 gap-8">
             {screenshots.map((shot, index) => (
-              <div key={index} className="rounded-xl border-2 border-dashed border-primary/30 bg-background p-4">
-                <div className="aspect-video rounded-lg bg-muted/50 flex items-center justify-center mb-3">
-                  <ImageIcon className="h-16 w-16 text-muted-foreground/30" />
+              <div key={index} className="rounded-xl border border-border bg-background p-4 shadow-sm">
+                <div className="aspect-video rounded-lg overflow-hidden mb-3">
+                  <img src={shot.img} alt={shot.label} className="w-full h-full object-cover" />
                 </div>
                 <p className="text-sm text-muted-foreground text-center font-medium">{shot.label}</p>
               </div>
