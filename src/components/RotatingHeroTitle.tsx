@@ -25,7 +25,7 @@ export function RotatingHeroTitle() {
         setCurrentIndex((prev) => (prev + 1) % titles.length);
         setIsVisible(true);
       }, 500);
-    }, 4000);
+    }, 5000);
 
     return () => clearInterval(interval);
   }, []);
