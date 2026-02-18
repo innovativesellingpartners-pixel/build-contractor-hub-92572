@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { RotatingHeroTitle } from "@/components/RotatingHeroTitle";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -137,8 +138,8 @@ export function NewLandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-20 w-full">
           <div className="flex flex-col items-center text-center">
             {/* MASSIVE Logo with Multiple Glow Layers */}
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-black mb-8 leading-none text-white tracking-tight" style={{ textShadow: '2px 2px 8px rgba(0, 0, 0, 0.5)' }}>
-              <span>One-Up </span><span className="text-primary" style={{ textShadow: '2px 2px 8px rgba(0, 0, 0, 0.5), 0 0 40px rgba(220, 38, 38, 0.5)' }}>The Competition</span>
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-black mb-8 leading-none text-white tracking-tight min-h-[2.5em]" style={{ textShadow: '2px 2px 8px rgba(0, 0, 0, 0.5)' }}>
+              <RotatingHeroTitle />
             </h1>
 
             <div className="relative mb-12 group cursor-pointer" onClick={() => setShowContactDialog(true)}>
