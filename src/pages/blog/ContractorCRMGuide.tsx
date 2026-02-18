@@ -100,10 +100,10 @@ export const ContractorCRMGuide = () => {
           <div className="grid md:grid-cols-3 gap-6 max-w-3xl mx-auto">
             <div className="bg-card/60 backdrop-blur-sm rounded-xl p-5 text-center border border-border/60">
               <div className="flex items-center justify-center gap-3 mb-1">
-                <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-xs">JC</div>
+                <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-xs">PM</div>
                 <div className="text-left">
-                  <div className="font-semibold text-foreground text-sm">Joe Cipriano</div>
-                  <div className="text-xs text-muted-foreground">CEO, myCT1.com</div>
+                  <div className="font-semibold text-foreground text-sm">Patrick Montgomery</div>
+                  <div className="text-xs text-muted-foreground">COO, myCT1.com</div>
                 </div>
               </div>
             </div>
