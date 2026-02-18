@@ -76,7 +76,7 @@ export function SalesPipelineReport() {
       dateRange={dateRange}
       onDateRangeChange={setDateRange}
     >
-      <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
         <InteractiveMetricCard title="Leads" value={String(salesData?.leads?.length || 0)} subtitle="Total leads" icon={<Target className="h-4 w-4 text-blue-600" />} variant="info"
           onClick={() => {
             const firstLead = salesData?.leads?.[0];
@@ -127,12 +127,12 @@ export function SalesPipelineReport() {
 
       {/* Charts */}
       <div className="grid gap-6 md:grid-cols-2">
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold mb-4">Estimate Funnel</h3>
+        <Card className="p-6 border-border/60">
+          <h3 className="text-sm font-semibold mb-4">Estimate Funnel</h3>
           <EstimateFunnelChart filters={filters} />
         </Card>
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold mb-4">Sales Over Time</h3>
+        <Card className="p-6 border-border/60">
+          <h3 className="text-sm font-semibold mb-4">Sales Over Time</h3>
           <SalesOverTimeChart filters={filters} />
         </Card>
       </div>

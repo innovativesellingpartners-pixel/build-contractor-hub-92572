@@ -81,7 +81,7 @@ export function CustomersReport() {
       dateRange={dateRange}
       onDateRangeChange={setDateRange}
     >
-      <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
         <InteractiveMetricCard title="Total Customers" value={String(customers?.length || 0)} subtitle="myCT1 records" icon={<Users className="h-4 w-4 text-blue-600" />} variant="info"
           onClick={() => { const first = customers?.[0]; if (first) openPanel({ type: "customer", title: first.name, data: first }); }}
           breakdown={[{ label: "Total", value: String(customers?.length || 0) }]}

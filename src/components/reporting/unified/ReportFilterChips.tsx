@@ -27,13 +27,13 @@ export function ReportFilterChips({ filters, onRemove, onClearAll }: Props) {
         <Badge
           key={f.key}
           variant="secondary"
-          className="flex items-center gap-1 pr-1 cursor-pointer hover:bg-secondary/80"
+          className="flex items-center gap-1.5 pr-1 cursor-pointer hover:bg-secondary/80 rounded-lg h-7"
         >
-          <span className="text-xs text-muted-foreground mr-0.5">{f.label}:</span>
-          <span className="text-xs font-medium">{f.value}</span>
+          <span className="text-[11px] text-muted-foreground font-medium">{f.label}:</span>
+          <span className="text-[11px] font-semibold">{f.value}</span>
           <button
             onClick={() => onRemove(f.key)}
-            className="ml-0.5 rounded-full p-0.5 hover:bg-muted"
+            className="ml-0.5 rounded-full p-0.5 hover:bg-muted transition-colors"
           >
             <X className="h-3 w-3" />
           </button>
@@ -42,7 +42,7 @@ export function ReportFilterChips({ filters, onRemove, onClearAll }: Props) {
       {filters.length > 1 && onClearAll && (
         <button
           onClick={onClearAll}
-          className="text-xs text-muted-foreground hover:text-foreground underline"
+          className="text-[11px] text-muted-foreground hover:text-foreground underline underline-offset-2 transition-colors"
         >
           Clear all
         </button>

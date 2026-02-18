@@ -1,6 +1,6 @@
 /**
  * ReportDateRangePicker — Universal date range selector with presets.
- * Sits at the top of every report view for consistent date filtering.
+ * Polished with icon and consistent sizing.
  */
 
 import { Calendar } from "lucide-react";
@@ -84,8 +84,8 @@ export function ReportDateRangePicker({ value, onChange }: Props) {
 
   return (
     <Select value={value.preset} onValueChange={handleChange}>
-      <SelectTrigger className="w-[180px]">
-        <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
+      <SelectTrigger className="w-[180px] h-9 text-sm bg-background">
+        <Calendar className="h-3.5 w-3.5 mr-2 text-muted-foreground" />
         <SelectValue />
       </SelectTrigger>
       <SelectContent className="bg-popover z-50">

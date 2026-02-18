@@ -231,7 +231,7 @@ export function UnifiedDashboard() {
       }}
     >
       {/* Revenue metrics — all clickable */}
-      <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
         <InteractiveMetricCard
           title="Total Revenue"
           value={fmt(totalRevenue)}
@@ -306,7 +306,7 @@ export function UnifiedDashboard() {
 
       {/* Pipeline funnel — clickable stages */}
       <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
-        <Card>
+        <Card className="border-border/60">
           <CardHeader>
             <CardTitle className="text-base">Sales Pipeline</CardTitle>
           </CardHeader>
@@ -334,9 +334,9 @@ export function UnifiedDashboard() {
         </Card>
 
         {/* Top Customers — clickable rows */}
-        <Card>
+        <Card className="border-border/60">
           <CardHeader>
-            <CardTitle className="text-base">Top Customers</CardTitle>
+            <CardTitle className="text-sm font-semibold">Top Customers</CardTitle>
           </CardHeader>
           <CardContent>
             {d?.topCustomers && d.topCustomers.length > 0 ? (
@@ -367,8 +367,8 @@ export function UnifiedDashboard() {
       {/* QB Customers + Vendors — clickable rows */}
       {qbConnected && (
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-          <Card>
-            <CardHeader><CardTitle className="text-base flex items-center gap-2"><Users className="h-4 w-4" /> QB Customers</CardTitle></CardHeader>
+          <Card className="border-border/60">
+            <CardHeader><CardTitle className="text-sm font-semibold flex items-center gap-2"><Users className="h-4 w-4" /> QB Customers</CardTitle></CardHeader>
             <CardContent>
               {qbCustomers?.length ? (
                 <div className="space-y-1">
@@ -391,8 +391,8 @@ export function UnifiedDashboard() {
               ) : <p className="text-sm text-muted-foreground">No data</p>}
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader><CardTitle className="text-base flex items-center gap-2"><Users className="h-4 w-4" /> QB Vendors</CardTitle></CardHeader>
+          <Card className="border-border/60">
+            <CardHeader><CardTitle className="text-sm font-semibold flex items-center gap-2"><Users className="h-4 w-4" /> QB Vendors</CardTitle></CardHeader>
             <CardContent>
               {qbVendors?.length ? (
                 <div className="space-y-1">
@@ -439,8 +439,8 @@ export function UnifiedDashboard() {
           </ChartCard>
 
           {/* Top Profitable */}
-          <Card>
-            <CardHeader><CardTitle className="text-base flex items-center gap-2"><Trophy className="h-4 w-4 text-green-600" /> Top 5 Profitable</CardTitle></CardHeader>
+          <Card className="border-border/60">
+            <CardHeader><CardTitle className="text-sm font-semibold flex items-center gap-2"><Trophy className="h-4 w-4 text-emerald-600" /> Top 5 Profitable</CardTitle></CardHeader>
             <CardContent>
               <div className="space-y-1.5">
                 {d.jobRankings.slice(0, 5).map((j: any, i: number) => (
@@ -458,8 +458,8 @@ export function UnifiedDashboard() {
           </Card>
 
           {/* Least Profitable */}
-          <Card>
-            <CardHeader><CardTitle className="text-base flex items-center gap-2"><AlertOctagon className="h-4 w-4 text-red-600" /> Bottom 5 Jobs</CardTitle></CardHeader>
+          <Card className="border-border/60">
+            <CardHeader><CardTitle className="text-sm font-semibold flex items-center gap-2"><AlertOctagon className="h-4 w-4 text-red-600" /> Bottom 5 Jobs</CardTitle></CardHeader>
             <CardContent>
               <div className="space-y-1.5">
                 {[...d.jobRankings].reverse().slice(0, 5).map((j: any, i: number) => (
@@ -523,8 +523,8 @@ export function UnifiedDashboard() {
 
       {/* Active Jobs Budget vs Spent */}
       {d && d.activeJobs > 0 && (
-        <Card className="p-6">
-          <h3 className="text-base font-semibold mb-4 flex items-center gap-2"><TrendingUp className="h-4 w-4" /> Active Jobs Budget</h3>
+        <Card className="p-6 border-border/60">
+          <h3 className="text-sm font-semibold mb-4 flex items-center gap-2"><TrendingUp className="h-4 w-4" /> Active Jobs Budget</h3>
           <div className="space-y-3">
             <BulletChart actual={d.activeJobCosts || 0} target={d.activeJobBudgets || 0} label="Total Spend vs Budget" />
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center pt-2">

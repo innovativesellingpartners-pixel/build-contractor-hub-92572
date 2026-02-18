@@ -46,13 +46,13 @@ export function InteractiveReportShell({
   children,
 }: InteractiveReportShellProps) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Breadcrumbs */}
       <DrillDownBreadcrumbs />
 
       {/* Header row */}
       <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-start">
-        <div className="space-y-1">
+        <div className="space-y-0.5">
           <h2 className="text-xl md:text-2xl font-bold tracking-tight flex items-center gap-2">
             {title}
             {badge}
@@ -82,7 +82,7 @@ export function InteractiveReportShell({
       )}
 
       {/* Content */}
-      <div className="space-y-6">
+      <div className="space-y-5">
         {children}
       </div>
     </div>

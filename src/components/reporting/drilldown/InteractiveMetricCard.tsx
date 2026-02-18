@@ -1,5 +1,6 @@
 /**
  * InteractiveMetricCard — Clickable metric card with hover tooltip and drill-down.
+ * Polished modern SaaS design with gradient accents and micro-interactions.
  */
 
 import { Card } from "@/components/ui/card";
@@ -11,6 +12,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { MiniSparkline } from "../charts/MiniSparkline";
 
 interface Props {
   title: string;
@@ -23,14 +25,35 @@ interface Props {
   onClick?: () => void;
   tooltipContent?: React.ReactNode;
   breakdown?: { label: string; value: string }[];
+  sparkData?: number[];
 }
 
-const variantAccent = {
-  default: "bg-primary/8 text-primary",
-  success: "bg-green-500/8 text-green-600 dark:text-green-400",
-  danger: "bg-red-500/8 text-red-600 dark:text-red-400",
-  warning: "bg-orange-500/8 text-orange-600 dark:text-orange-400",
-  info: "bg-blue-500/8 text-blue-600 dark:text-blue-400",
+const variantStyles = {
+  default: {
+    iconBg: "bg-primary/10",
+    iconText: "text-primary",
+    accentLine: "bg-primary",
+  },
+  success: {
+    iconBg: "bg-emerald-500/10",
+    iconText: "text-emerald-600 dark:text-emerald-400",
+    accentLine: "bg-emerald-500",
+  },
+  danger: {
+    iconBg: "bg-red-500/10",
+    iconText: "text-red-600 dark:text-red-400",
+    accentLine: "bg-red-500",
+  },
+  warning: {
+    iconBg: "bg-amber-500/10",
+    iconText: "text-amber-600 dark:text-amber-400",
+    accentLine: "bg-amber-500",
+  },
+  info: {
+    iconBg: "bg-blue-500/10",
+    iconText: "text-blue-600 dark:text-blue-400",
+    accentLine: "bg-blue-500",
+  },
 };
 
 export function InteractiveMetricCard({
@@ -44,49 +67,69 @@ export function InteractiveMetricCard({
   onClick,
   tooltipContent,
   breakdown,
+  sparkData,
 }: Props) {
   const TrendIcon = trend === undefined || trend === 0 ? Minus : trend > 0 ? TrendingUp : TrendingDown;
-  const trendColor = trend === undefined ? "text-muted-foreground" : trend > 0 ? "text-green-600" : trend < 0 ? "text-red-600" : "text-muted-foreground";
+  const trendColor = trend === undefined ? "text-muted-foreground" : trend > 0 ? "text-emerald-600 dark:text-emerald-400" : trend < 0 ? "text-red-600 dark:text-red-400" : "text-muted-foreground";
   const isClickable = !!onClick;
+  const styles = variantStyles[variant];
 
   const cardContent = (
     <Card
       className={cn(
-        "p-5 transition-all duration-150 relative overflow-hidden",
-        isClickable && "cursor-pointer hover:shadow-md active:scale-[0.98] group"
+        "relative overflow-hidden border-border/60 transition-all duration-200",
+        isClickable && "cursor-pointer hover:shadow-md hover:border-border active:scale-[0.98] group"
       )}
       onClick={onClick}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex-1 min-w-0 space-y-1">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-            {title}
-          </p>
-          <p className="text-2xl font-bold tabular-nums tracking-tight">{value}</p>
-          {(trend !== undefined || subtitle) && (
-            <div className="flex items-center gap-1.5">
-              {trend !== undefined && (
-                <span className={cn("flex items-center gap-0.5 text-xs font-medium", trendColor)}>
-                  <TrendIcon className="h-3 w-3" />
-                  {Math.abs(trend).toFixed(1)}%
-                </span>
-              )}
-              {(trendLabel || subtitle) && (
-                <span className="text-xs text-muted-foreground truncate">
-                  {trendLabel || subtitle}
-                </span>
-              )}
-            </div>
-          )}
-        </div>
-        {icon && (
-          <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0", variantAccent[variant])}>
-            {icon}
+      {/* Top accent line */}
+      <div className={cn("absolute top-0 left-0 right-0 h-0.5", styles.accentLine, "opacity-60")} />
+      
+      <div className="p-5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0 space-y-1.5">
+            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest">
+              {title}
+            </p>
+            <p className="text-2xl font-bold tabular-nums tracking-tight leading-none">{value}</p>
+            {(trend !== undefined || subtitle) && (
+              <div className="flex items-center gap-1.5 pt-0.5">
+                {trend !== undefined && (
+                  <span className={cn("inline-flex items-center gap-0.5 text-xs font-semibold px-1.5 py-0.5 rounded-md", 
+                    trend > 0 ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : 
+                    trend < 0 ? "bg-red-500/10 text-red-600 dark:text-red-400" : 
+                    "bg-muted text-muted-foreground"
+                  )}>
+                    <TrendIcon className="h-3 w-3" />
+                    {Math.abs(trend).toFixed(1)}%
+                  </span>
+                )}
+                {(trendLabel || subtitle) && (
+                  <span className="text-xs text-muted-foreground truncate">
+                    {trendLabel || subtitle}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
-        )}
+          <div className="flex flex-col items-end gap-2">
+            {icon && (
+              <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0", styles.iconBg)}>
+                {icon}
+              </div>
+            )}
+            {sparkData && sparkData.length > 1 && (
+              <MiniSparkline data={sparkData} width={64} height={24} />
+            )}
+          </div>
+        </div>
       </div>
+      
+      {/* Clickable indicator */}
       {isClickable && (
-        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary/0 group-hover:bg-primary/40 transition-all duration-200" />
+        <div className="absolute bottom-2 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+          <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+        </div>
       )}
     </Card>
   );
