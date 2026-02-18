@@ -15,6 +15,7 @@ import { WorkerDetailPanel } from "./panels/WorkerDetailPanel";
 import { ARAgingPanel } from "./panels/ARAgingPanel";
 import { EstimateDetailPanel } from "./panels/EstimateDetailPanel";
 import { QBRecordDetailPanel } from "./panels/QBRecordDetailPanel";
+import { ListPanel } from "./panels/ListPanel";
 
 export function DrillDownPanel() {
   const { activePanel, closePanel } = useDrillDown();
@@ -44,6 +45,8 @@ export function DrillDownPanel() {
         return <EstimateDetailPanel data={activePanel.data} />;
       case "qb-record":
         return <QBRecordDetailPanel data={activePanel.data?.record} recordType={activePanel.data?.recordType} />;
+      case "list":
+        return <ListPanel data={activePanel.data} />;
       default:
         return null;
     }
