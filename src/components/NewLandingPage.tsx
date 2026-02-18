@@ -228,19 +228,22 @@ export function NewLandingPage() {
             {/* Left: Content */}
             <div>
               <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-6">
-                Why Contractors Choose <span className="text-primary">CT1</span>
+                Why Contractors Choose <span className="text-primary">myCT1</span>
               </h2>
               <p className="text-lg text-muted-foreground mb-6 leading-relaxed">
-                You want consistent work, healthy margin, and time back. CT1 gives you the structure to run a serious business, not a collection of jobs.
+                Running a contracting business means juggling estimates, managing crews, chasing invoices, and somehow finding time to answer the phone. CT1 handles all of it in one place - giving you back hours every week and the peace of mind to actually grow.
               </p>
               
               <ul className="space-y-4 mb-8">
                 {[
-                  "More quality leads tracked from first call to closed job.",
-                  "Standard workflows from inbound lead to final invoice.",
-                  "Fewer dropped balls with task tracking and automation.",
-                  "Better visibility into margin, revenue, and crew workload.",
-                  "Training built into the same platform your team uses every day."
+                  "A full CRM to track every client interaction from first call to repeat business.",
+                  "Jobs management that lets you schedule crews, assign tasks, and monitor progress all in one dashboard.",
+                  "Professional estimates and invoices with digital approvals so you get paid faster.",
+                  "Real-time financial reporting across every job - revenue, expenses, margins, and profitability, always current.",
+                  "Warm, qualified leads delivered directly to your dashboard.",
+                  "Expert training from people who've actually been in your boots - included with every subscription.",
+                  "Access to 400+ technology partners through our marketplace to keep your operation connected and growing.",
+                  "An AI Phone Assistant that never misses a call, so every lead is captured even when you're on the job site."
                 ].map((item, index) => (
                   <li key={index} className="flex items-start gap-3">
                     <CheckCircle className="h-6 w-6 text-primary mt-0.5 flex-shrink-0" />
