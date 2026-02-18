@@ -67,28 +67,22 @@ export default function Reporting() {
 
   return (
     <DrillDownProvider onNavigateToReport={setActiveSection}>
-      <div className="flex-1 space-y-5 p-4 md:p-8 pt-4 md:pt-6 pb-24 md:pb-8 overflow-y-auto">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5">
-              <Button variant="ghost" size="sm" className="h-8 px-2 text-muted-foreground hover:text-foreground" onClick={() => navigate(-1)}>
-                <ArrowLeft className="h-4 w-4 mr-1" /> Back
-              </Button>
-              <Button variant="ghost" size="sm" className="h-8 px-2 text-muted-foreground hover:text-foreground" onClick={() => navigate("/dashboard")}>
-                <Home className="h-4 w-4 mr-1" /> Dashboard
-              </Button>
+      <div className="flex-1 space-y-4 p-4 md:p-8 pt-3 md:pt-6 pb-24 md:pb-8 overflow-y-auto">
+        {/* Nav row — compact on mobile */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="sm" className="h-8 px-2 text-muted-foreground hover:text-foreground" onClick={() => navigate(-1)}>
+              <ArrowLeft className="h-4 w-4 mr-1" /> Back
+            </Button>
+            <Button variant="ghost" size="sm" className="h-8 px-2 text-muted-foreground hover:text-foreground" onClick={() => navigate("/dashboard")}>
+              <Home className="h-4 w-4 mr-1" /> Dashboard
+            </Button>
+          </div>
+          <div className="hidden sm:flex items-center gap-2">
+            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+              <ActiveIcon className="h-4 w-4 text-primary" />
             </div>
-            <div className="h-6 w-px bg-border/60 hidden sm:block" />
-            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-              <ActiveIcon className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Reporting & Analytics</h1>
-              <p className="text-xs text-muted-foreground">
-                Unified business intelligence across all data sources
-              </p>
-            </div>
+            <h1 className="text-xl font-bold tracking-tight">Reporting</h1>
           </div>
         </div>
 
