@@ -32,7 +32,7 @@ export function RotatingHeroTitle() {
 
   return (
     <span
-      className="text-primary block mt-2 transition-all duration-500 ease-in-out"
+      className="block transition-all duration-500 ease-in-out"
       style={{
         opacity: isVisible ? 1 : 0,
         transform: isVisible ? "translateY(0)" : "translateY(12px)",
