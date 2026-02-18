@@ -79,15 +79,42 @@ export function SalesPipelineReport() {
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
         <InteractiveMetricCard title="Leads" value={String(salesData?.leads?.length || 0)} subtitle="Total leads" icon={<Target className="h-4 w-4 text-blue-600" />} variant="info"
           onClick={() => {
-            const firstLead = salesData?.leads?.[0];
-            if (firstLead) openPanel({ type: "customer", title: firstLead.name || "Lead", data: { name: firstLead.name, email: firstLead.email } });
+            openPanel({
+              type: "list",
+              title: `All Leads (${salesData?.leads?.length || 0})`,
+              data: {
+                items: salesData?.leads || [],
+                columns: [
+                  { key: "name", label: "Name" },
+                  { key: "email", label: "Email" },
+                  { key: "status", label: "Status" },
+                  { key: "created_at", label: "Created" },
+                ],
+                searchKeys: ["name", "email"],
+                onItemClick: (item: any) => ({ type: "customer", title: item.name || "Lead", data: { name: item.name, email: item.email, id: item.id } }),
+              },
+            });
           }}
           breakdown={salesData?.leads?.slice(0, 3).map((l: any) => ({ label: l.name || "Lead", value: l.status || "new" }))}
         />
         <InteractiveMetricCard title="Estimates" value={String(salesData?.estimates?.length || 0)} subtitle={`${salesData?.acceptedCount || 0} accepted`} icon={<FileText className="h-4 w-4 text-primary" />} variant="default"
           onClick={() => {
-            const firstEst = salesData?.estimates?.[0];
-            if (firstEst) openPanel({ type: "estimate", title: firstEst.title || "Estimate", data: firstEst });
+            openPanel({
+              type: "list",
+              title: `All Estimates (${salesData?.estimates?.length || 0})`,
+              data: {
+                items: salesData?.estimates || [],
+                columns: [
+                  { key: "title", label: "Title" },
+                  { key: "client_name", label: "Client" },
+                  { key: "status", label: "Status" },
+                  { key: "total_amount", label: "Amount" },
+                  { key: "created_at", label: "Created" },
+                ],
+                searchKeys: ["title", "client_name"],
+                onItemClick: (item: any) => ({ type: "estimate", title: item.title || "Estimate", data: item }),
+              },
+            });
           }}
           breakdown={[{ label: "Accepted", value: String(salesData?.acceptedCount || 0) }, { label: "Total", value: String(salesData?.estimates?.length || 0) }]}
         />

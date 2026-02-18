@@ -83,7 +83,22 @@ export function CustomersReport() {
     >
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
         <InteractiveMetricCard title="Total Customers" value={String(customers?.length || 0)} subtitle="myCT1 records" icon={<Users className="h-4 w-4 text-blue-600" />} variant="info"
-          onClick={() => { const first = customers?.[0]; if (first) openPanel({ type: "customer", title: first.name, data: first }); }}
+          onClick={() => openPanel({
+            type: "list",
+            title: `All Customers (${customers?.length || 0})`,
+            data: {
+              items: customers || [],
+              columns: [
+                { key: "name", label: "Name" },
+                { key: "email", label: "Email" },
+                { key: "phone", label: "Phone" },
+                { key: "lifetime_value", label: "Lifetime Value" },
+                { key: "created_at", label: "Created" },
+              ],
+              searchKeys: ["name", "email"],
+              onItemClick: (item: any) => ({ type: "customer", title: item.name, data: item }),
+            },
+          })}
           breakdown={[{ label: "Total", value: String(customers?.length || 0) }]}
         />
         <InteractiveMetricCard title="Total Lifetime Value" value={fmt(totalLTV)} subtitle="All customers" icon={<DollarSign className="h-4 w-4 text-green-600" />} variant="success"
@@ -95,7 +110,19 @@ export function CustomersReport() {
           breakdown={[{ label: "Total LTV", value: fmt(totalLTV) }, { label: "Customers", value: String(customers?.length || 0) }]}
         />
         {qbConnected && <InteractiveMetricCard title="QB Customers" value={String(qbCustomers?.length || 0)} subtitle="From connected accounting" icon={<UserPlus className="h-4 w-4 text-green-600" />} variant="success"
-          onClick={() => { const first = qbCustomers?.[0]; if (first) openPanel({ type: "customer", title: first.DisplayName, data: { name: first.DisplayName, email: first.PrimaryEmailAddr?.Address } }); }}
+          onClick={() => openPanel({
+            type: "list",
+            title: `QB Customers (${qbCustomers?.length || 0})`,
+            data: {
+              items: (qbCustomers || []).map((c: any) => ({ id: c.Id, name: c.DisplayName, email: c.PrimaryEmailAddr?.Address })),
+              columns: [
+                { key: "name", label: "Name" },
+                { key: "email", label: "Email" },
+              ],
+              searchKeys: ["name", "email"],
+              onItemClick: (item: any) => ({ type: "customer", title: item.name, data: item }),
+            },
+          })}
         />}
       </div>
 
