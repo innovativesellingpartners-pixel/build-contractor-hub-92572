@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MainSiteHeader } from "@/components/MainSiteHeader";
-import heroBg from "@/assets/hero-tech-dashboard.jpg";
+import heroBg from "@/assets/hero-reporting-dashboard.jpg";
 import { FloatingTrialButton } from "@/components/FloatingTrialButton";
 import {
   ArrowRight,
