@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { FloatingTrialButton } from "@/components/FloatingTrialButton";
 import { Badge } from "@/components/ui/badge";
 import { MainSiteHeader } from "@/components/MainSiteHeader";
-import heroBg from "@/assets/hero-tech-dashboard.jpg";
+import heroBg from "@/assets/hero-accounting-finance.jpg";
 import {
   ArrowRight,
   DollarSign,
