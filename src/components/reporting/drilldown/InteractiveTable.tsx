@@ -1,6 +1,6 @@
 /**
- * InteractiveTable — Table with clickable rows, sortable columns, and search.
- * Generic wrapper for any data table that supports drill-down.
+ * InteractiveTable — Table with clickable rows, sortable columns, sticky header, and search.
+ * Polished modern SaaS design with clear visual hierarchy.
  */
 
 import { useState, useMemo } from "react";
@@ -101,11 +101,11 @@ export function InteractiveTable<T extends Record<string, any>>({
   };
 
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden border-border/60">
       {(title || searchKeys?.length) && (
-        <CardHeader className="pb-3 border-b border-border/40">
+        <CardHeader className="pb-3 border-b border-border/40 bg-muted/20">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            {title && <CardTitle className="text-base font-semibold">{title}</CardTitle>}
+            {title && <CardTitle className="text-sm font-semibold">{title}</CardTitle>}
             {searchKeys && searchKeys.length > 0 && (
               <div className="relative w-full sm:w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -113,14 +113,14 @@ export function InteractiveTable<T extends Record<string, any>>({
                   placeholder={searchPlaceholder}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="pl-9 text-sm h-9"
+                  className="pl-9 text-sm h-9 bg-background"
                 />
               </div>
             )}
           </div>
           {onRowClick && (
-            <p className="text-xs text-muted-foreground mt-1">
-              Click any row for details • Click column headers to sort
+            <p className="text-[11px] text-muted-foreground mt-1">
+              Click any row for details · Click column headers to sort
             </p>
           )}
         </CardHeader>
@@ -132,14 +132,15 @@ export function InteractiveTable<T extends Record<string, any>>({
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="hover:bg-transparent">
+                <TableRow className="hover:bg-transparent bg-muted/30">
                   {columns.map((col) => (
                     <TableHead
                       key={col.key}
                       className={cn(
+                        "text-[11px] font-semibold uppercase tracking-wider text-muted-foreground",
                         col.align === "right" && "text-right",
                         col.align === "center" && "text-center",
-                        col.sortable !== false && "cursor-pointer select-none hover:text-foreground",
+                        col.sortable !== false && "cursor-pointer select-none hover:text-foreground transition-colors",
                         col.className,
                       )}
                       style={col.width ? { width: col.width } : undefined}
@@ -159,6 +160,7 @@ export function InteractiveTable<T extends Record<string, any>>({
                   <TableRow
                     key={row.id || i}
                     className={cn(
+                      "border-border/30",
                       onRowClick && "cursor-pointer hover:bg-muted/40 transition-colors group"
                     )}
                     onClick={() => onRowClick?.(row)}
@@ -167,6 +169,7 @@ export function InteractiveTable<T extends Record<string, any>>({
                       <TableCell
                         key={col.key}
                         className={cn(
+                          "text-sm",
                           col.align === "right" && "text-right",
                           col.align === "center" && "text-center",
                           "tabular-nums",
@@ -188,7 +191,7 @@ export function InteractiveTable<T extends Record<string, any>>({
               </TableBody>
             </Table>
             {filteredData.length > maxRows && (
-              <p className="text-xs text-muted-foreground text-center py-3 border-t border-border/40">
+              <p className="text-xs text-muted-foreground text-center py-3 border-t border-border/40 bg-muted/10">
                 Showing {maxRows} of {filteredData.length} results
               </p>
             )}

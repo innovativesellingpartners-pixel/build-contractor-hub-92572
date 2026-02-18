@@ -100,7 +100,7 @@ export function AccountsPayableReport() {
       dateRange={dateRange}
       onDateRangeChange={setDateRange}
     >
-      <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
         {qbConnected && (
           <>
             <InteractiveMetricCard title="Outstanding Bills" value={fmt(totalBillsAmount)} subtitle={`${qbBills?.length || 0} bills`} icon={<FileText className="h-4 w-4 text-red-600" />} variant="danger"

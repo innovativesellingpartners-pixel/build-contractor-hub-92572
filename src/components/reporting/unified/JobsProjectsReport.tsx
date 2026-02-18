@@ -110,7 +110,7 @@ export function JobsProjectsReport() {
       dateRange={dateRange}
       onDateRangeChange={setDateRange}
     >
-      <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
         <InteractiveMetricCard title="Total Jobs" value={String(metrics?.total || 0)} subtitle={`${metrics?.active || 0} active`} icon={<Briefcase className="h-4 w-4 text-blue-600" />} variant="info"
           onClick={() => openPanel({ type: "category-breakdown", title: `All Jobs · ${metrics?.total || 0} total`, data: { category: "Jobs", type: "revenue", totalAmount: metrics?.totalRev || 0 } })}
           breakdown={[{ label: "Active", value: String(metrics?.active || 0) }, { label: "Completed", value: String(metrics?.completed || 0) }]}
@@ -133,9 +133,9 @@ export function JobsProjectsReport() {
 
       {/* By job type chart — clickable bars */}
       {metrics?.byTypeData && metrics.byTypeData.length > 0 && (
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold mb-1">Revenue by Job Type</h3>
-          <p className="text-xs text-muted-foreground mb-4">Click a bar to filter jobs by type</p>
+        <Card className="p-6 border-border/60">
+          <h3 className="text-sm font-semibold mb-1">Revenue by Job Type</h3>
+          <p className="text-[11px] text-muted-foreground mb-4">Click a bar to filter jobs by type</p>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={metrics.byTypeData}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -190,8 +190,8 @@ export function JobsProjectsReport() {
       </div>
 
       {/* Profitability table */}
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4">Job Profitability</h3>
+      <Card className="p-6 border-border/60">
+        <h3 className="text-sm font-semibold mb-4">Job Profitability</h3>
         <JobProfitability filters={filters} />
       </Card>
 

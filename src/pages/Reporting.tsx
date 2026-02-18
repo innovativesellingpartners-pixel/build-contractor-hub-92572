@@ -59,19 +59,20 @@ export default function Reporting() {
   const [activeSection, setActiveSection] = useState("dashboard");
 
   const ActiveIcon = sections.find(s => s.value === activeSection)?.icon || LayoutDashboard;
+  const activeLabel = sections.find(s => s.value === activeSection)?.label || "Dashboard";
 
   return (
     <DrillDownProvider onNavigateToReport={setActiveSection}>
-      <div className="flex-1 space-y-6 p-4 md:p-8 pt-4 md:pt-6 pb-24 md:pb-8 overflow-y-auto">
+      <div className="flex-1 space-y-5 p-4 md:p-8 pt-4 md:pt-6 pb-24 md:pb-8 overflow-y-auto">
         {/* Header */}
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
               <ActiveIcon className="h-5 w-5 text-primary" />
             </div>
             <div>
               <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Reporting & Analytics</h1>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Unified business intelligence across all data sources
               </p>
             </div>
@@ -82,16 +83,16 @@ export default function Reporting() {
         <DrillDownBreadcrumbs />
 
         {/* Section selector — pill nav on desktop, dropdown on mobile */}
-        <div className="hidden sm:flex flex-wrap gap-1.5 p-1 bg-muted/40 rounded-xl border border-border/40">
+        <div className="hidden sm:flex flex-wrap gap-1 p-1 bg-muted/50 rounded-xl border border-border/40">
           {sections.map((s) => (
             <button
               key={s.value}
               onClick={() => setActiveSection(s.value)}
               className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150",
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150",
                 activeSection === s.value
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground hover:bg-background/50"
+                  ? "bg-background text-foreground shadow-sm border border-border/60"
+                  : "text-muted-foreground hover:text-foreground hover:bg-background/60"
               )}
             >
               <s.icon className="h-3.5 w-3.5" />
@@ -102,7 +103,7 @@ export default function Reporting() {
 
         <div className="sm:hidden">
           <Select value={activeSection} onValueChange={setActiveSection}>
-            <SelectTrigger className="w-full">
+            <SelectTrigger className="w-full h-9 text-sm bg-background">
               <SelectValue placeholder="Select report" />
             </SelectTrigger>
             <SelectContent className="bg-popover z-50">

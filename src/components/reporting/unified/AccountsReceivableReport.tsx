@@ -136,7 +136,7 @@ export function AccountsReceivableReport() {
       dateRange={dateRange}
       onDateRangeChange={setDateRange}
     >
-      <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
         <InteractiveMetricCard
           title="Total Outstanding"
           value={fmt(arData?.totalOutstanding || 0)}
@@ -173,9 +173,9 @@ export function AccountsReceivableReport() {
 
       {/* Aging chart — clickable bars */}
       {arData?.agingChart && (
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold mb-1">Aging Summary</h3>
-          <p className="text-xs text-muted-foreground mb-4">Click any bar to see invoices in that bucket</p>
+        <Card className="p-6 border-border/60">
+          <h3 className="text-sm font-semibold mb-1">Aging Summary</h3>
+          <p className="text-[11px] text-muted-foreground mb-4">Click any bar to see invoices in that bucket</p>
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={arData.agingChart} onClick={(e) => {
               if (e?.activePayload?.[0]?.payload) handleBucketClick(e.activePayload[0].payload);

@@ -125,7 +125,7 @@ export function ExpensesProfitabilityReport() {
       }
     >
       <ExpenseAssignmentDialog open={assignOpen} onOpenChange={setAssignOpen} />
-      <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
         <InteractiveMetricCard
           title="Total Expenses"
           value={fmt(totalExpenses)}
