@@ -6,6 +6,7 @@ import { MobileNav } from "@/components/MobileNav";
 import heroImage from "@/assets/hero-construction.jpg";
 import ct1Logo from "@/assets/ct1-round-logo-new.png";
 import constructeamLogo from "@/assets/ct1-round-logo-new.png";
+import { RotatingHeroTitle } from "@/components/RotatingHeroTitle";
 import { 
   ArrowRight, 
   Bot, 
@@ -69,7 +70,7 @@ export function LandingPage() {
               
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 leading-tight drop-shadow-lg">
                 CT1 Unified Business Suite
-                <span className="text-primary block mt-2 arrow-up">Everything You Need to Run Your Business</span>
+                <RotatingHeroTitle />
               </h1>
               
               <p className="text-base sm:text-lg md:text-xl mb-6 sm:mb-8 leading-relaxed drop-shadow-md opacity-90">
