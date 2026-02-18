@@ -59,6 +59,8 @@ import Estimating from "@/pages/features/Estimating";
 import Jobs from "@/pages/features/Jobs";
 import VoiceAI from "@/pages/features/VoiceAI";
 import ReportingFeature from "@/pages/features/Reporting";
+import AccountingFeature from "@/pages/features/Accounting";
+import Communication from "@/pages/features/Communication";
 import { TrialSignup } from "@/pages/TrialSignup";
 import { BotSignup } from "@/pages/BotSignup";
 import Savings from "./pages/Savings";
@@ -132,6 +134,12 @@ const App = () => (
             <Route path="/business-suite/leads" element={<Leads />} />
             <Route path="/business-suite/quickbooks" element={<QuickBooks />} />
             <Route path="/business-suite/insurance" element={<Insurance />} />
+            <Route path="/business-suite/accounting" element={<AccountingFeature />} />
+            <Route path="/business-suite/estimating" element={<Estimating />} />
+            <Route path="/business-suite/jobs" element={<Jobs />} />
+            <Route path="/business-suite/communication" element={<Communication />} />
+            <Route path="/business-suite/voice-ai" element={<VoiceAI />} />
+            <Route path="/business-suite/reporting" element={<ReportingFeature />} />
             <Route path="/features/training" element={<Training />} />
             <Route path="/features/crm" element={<CRM />} />
             <Route path="/features/estimating" element={<Estimating />} />
