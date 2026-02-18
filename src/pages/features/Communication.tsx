@@ -1,55 +1,55 @@
-import { useState } from "react";
-import { PublicFooter } from "@/components/PublicFooter";
 import { Link } from "react-router-dom";
+import { PublicFooter } from "@/components/PublicFooter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { FloatingTrialButton } from "@/components/FloatingTrialButton";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { ContactForm } from "@/components/ContactForm";
 import { MainSiteHeader } from "@/components/MainSiteHeader";
 import heroBg from "@/assets/hero-crm-business.jpg";
-import { FloatingTrialButton } from "@/components/FloatingTrialButton";
 import {
   ArrowRight,
-  ImageIcon,
-  HardHat,
-  Calendar,
-  Users,
-  ClipboardList,
-  Camera,
-  DollarSign,
+  MessageSquare,
+  Mail,
+  Phone,
+  MessagesSquare,
   FileText,
-  Clock,
-  TrendingUp,
-  Wrench,
+  RefreshCw,
+  History,
+  Users,
+  Globe,
+  ImageIcon,
 } from "lucide-react";
 
-export default function Jobs() {
-  const [activeContactForm, setActiveContactForm] = useState<string | null>(null);
-
+export default function Communication() {
   const stats = [
-    { number: "98%", label: "On-Time Completion" },
-    { number: "+15%", label: "Profit Margin" },
-    { number: "3x", label: "Crew Efficiency" },
-    { number: "Real-Time", label: "Job Visibility" },
+    { number: "Unified", label: "Inbox" },
+    { number: "100%", label: "Message Capture" },
+    { number: "Auto", label: "Follow-Ups" },
+    { number: "0", label: "Missed Messages" },
   ];
 
   const storyCards = [
-    { icon: Calendar, title: "Smart Scheduling", description: "Set start dates, milestones, and track deadlines visually" },
-    { icon: Users, title: "Crew Coordination", description: "Assign team members and track hours per project" },
-    { icon: DollarSign, title: "Job Costing", description: "Track materials, labor, and expenses against budget" },
-    { icon: Camera, title: "Photo Documentation", description: "Upload job photos with notes to document progress" },
+    { icon: Mail, title: "Email Integration", description: "Send and receive emails directly from the CRM" },
+    { icon: Phone, title: "Call Tracking", description: "Log every call with notes and follow-up reminders" },
+    { icon: MessagesSquare, title: "SMS/Text", description: "Text customers right from their contact profile" },
+    { icon: RefreshCw, title: "Auto Follow-Ups", description: "Automated sequences so nothing falls through" },
   ];
 
   const features = [
-    { icon: Calendar, title: "Scheduling", description: "Schedule crews, set milestones, and track deadlines on a visual calendar." },
-    { icon: Users, title: "Crew Management", description: "Assign team members to jobs and track hours worked on each project." },
-    { icon: ClipboardList, title: "Task Tracking", description: "Create task lists, assign owners, and mark completion as work progresses." },
-    { icon: Camera, title: "Photo Documentation", description: "Upload job photos with notes to document progress and quality." },
-    { icon: DollarSign, title: "Job Costing", description: "Track materials, labor, and expenses against budget in real-time." },
-    { icon: FileText, title: "Change Orders", description: "Document scope changes with automatic contract value updates." },
-    { icon: Wrench, title: "Job Lifecycle", description: "Track every job from estimate acceptance to final payment." },
-    { icon: Clock, title: "Time Tracking", description: "Log hours by crew member and job for accurate labor costing." },
+    { icon: Mail, title: "Email Integration", description: "Send and receive emails directly from customer profiles. Every message logged automatically." },
+    { icon: Phone, title: "Call Tracking", description: "Log every inbound and outbound call with notes, duration, and follow-up reminders." },
+    { icon: MessagesSquare, title: "SMS/Text Messaging", description: "Text customers directly from their contact profile. Templates for quick responses." },
+    { icon: FileText, title: "Message Templates", description: "Pre-built templates for estimates, follow-ups, reminders, and thank-you messages." },
+    { icon: RefreshCw, title: "Auto Follow-Ups", description: "Set automated follow-up sequences so no lead or customer falls through the cracks." },
+    { icon: History, title: "Communication History", description: "Complete timeline of every email, text, call, and note for each customer." },
+    { icon: Users, title: "Team Messaging", description: "Internal messaging between team members tied to specific jobs or customers." },
+    { icon: Globe, title: "Customer Portal", description: "Give customers a portal to view updates, approve changes, and communicate with you." },
+  ];
+
+  const screenshots = [
+    { label: "Unified Inbox - All emails, texts, and calls in one view" },
+    { label: "Communication Timeline - Full history for every customer" },
+    { label: "Auto Follow-Up Sequences - Set it and never miss a touchpoint" },
   ];
 
   return (
@@ -66,14 +66,14 @@ export default function Jobs() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <Badge className="mb-4 bg-primary text-primary-foreground px-4 py-2 text-lg">
-              <HardHat className="h-5 w-5 mr-2" />
-              Jobs Management
+              <MessageSquare className="h-5 w-5 mr-2" />
+              Communication Hub
             </Badge>
             <h1 className="text-5xl font-bold text-foreground mb-6">
-              Keep Every Job <span className="text-primary">On Track</span>
+              Every Conversation, <span className="text-primary">One Place</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Schedule crews, track progress, and manage every job from start to finish. Keep projects on time, on budget, and customers happy.
+              Centralize emails, texts, calls, and follow-ups so nothing slips through the cracks. Keep every customer touchpoint organized and accessible.
             </p>
           </div>
 
@@ -95,16 +95,16 @@ export default function Jobs() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
-              <h2 className="text-4xl font-bold text-foreground mb-6">From Estimate to <span className="text-primary">Final Payment</span></h2>
+              <h2 className="text-4xl font-bold text-foreground mb-6">Stop Losing Messages <span className="text-primary">Between Tools</span></h2>
               <div className="space-y-4 text-muted-foreground">
                 <p>
-                  Never miss a deadline or blow a budget again. CT1's job management system gives you complete visibility into every project—from the moment an estimate is signed to the final payment.
+                  Emails in one app, texts on your phone, voicemails in another. Important messages get buried, follow-ups get forgotten, and customers feel ignored. Sound familiar?
                 </p>
                 <p>
-                  Coordinate crews across multiple job sites, document progress with photos, and keep customers informed with real-time updates. Everything your team needs, in one place.
+                  CT1's Communication Hub brings every channel into one unified timeline for each customer. See every email, text, call, and note in chronological order so your team always knows the full story.
                 </p>
                 <p>
-                  Contractors using CT1 complete 98% of jobs on time and see a 15% increase in profit margins through better job costing and resource allocation.
+                  Set up automated follow-up sequences to ensure every lead gets a response and every customer feels valued. Never let a message fall through the cracks again.
                 </p>
               </div>
             </div>
@@ -142,23 +142,19 @@ export default function Jobs() {
               See It In Action
             </Badge>
             <h2 className="text-4xl font-bold text-foreground mb-4">
-              Your Job Management <span className="text-primary">Dashboard</span>
+              Your Communication <span className="text-primary">Command Center</span>
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Here's what managing jobs and crews looks like inside CT1.
+              Here's what centralized communication looks like inside CT1.
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
-            {[
-              "Job Board - All active jobs with status, crew, and timeline",
-              "Scheduling View - Crew assignments and calendar management",
-              "Job Detail - Progress tracking, photos, and cost breakdown",
-            ].map((label, index) => (
+            {screenshots.map((shot, index) => (
               <div key={index} className="rounded-xl border-2 border-dashed border-primary/30 bg-background p-4">
                 <div className="aspect-video rounded-lg bg-muted/50 flex items-center justify-center mb-3">
                   <ImageIcon className="h-16 w-16 text-muted-foreground/30" />
                 </div>
-                <p className="text-sm text-muted-foreground text-center font-medium">{label}</p>
+                <p className="text-sm text-muted-foreground text-center font-medium">{shot.label}</p>
               </div>
             ))}
           </div>
@@ -170,10 +166,10 @@ export default function Jobs() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-foreground mb-6">
-              Complete Job <span className="text-primary">Lifecycle Management</span>
+              Complete Communication <span className="text-primary">Toolkit</span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              From scheduling to completion, track every aspect of your projects.
+              Every channel, every conversation, organized and actionable.
             </p>
           </div>
 
@@ -195,10 +191,10 @@ export default function Jobs() {
       <section className="py-20 bg-gradient-to-r from-primary to-primary-hover text-primary-foreground">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl font-bold mb-6">
-            Ready to Manage Jobs Like a Pro?
+            Ready to Centralize Your Communication?
           </h2>
           <p className="text-xl opacity-90 mb-8 max-w-2xl mx-auto">
-            Join contractors who complete 98% of jobs on time with CT1's job management.
+            Join contractors who never miss a message with CT1's Communication Hub.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/pricing">

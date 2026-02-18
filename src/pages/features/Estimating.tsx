@@ -9,6 +9,7 @@ import heroBg from "@/assets/hero-tech-dashboard.jpg";
 import { FloatingTrialButton } from "@/components/FloatingTrialButton";
 import {
   ArrowRight,
+  ImageIcon,
   Calculator,
   FileText,
   Send,
@@ -123,6 +124,38 @@ export default function Estimating() {
                 ))}
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Screenshot Showcase */}
+      <section className="py-20 bg-muted/20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <Badge className="mb-4 bg-primary/10 text-primary px-4 py-2 text-lg">
+              <ImageIcon className="h-5 w-5 mr-2" />
+              See It In Action
+            </Badge>
+            <h2 className="text-4xl font-bold text-foreground mb-4">
+              Professional Estimates <span className="text-primary">Made Easy</span>
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Here's what building and sending estimates looks like inside CT1.
+            </p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              "Estimate Builder - Line items, templates, and automatic calculations",
+              "Digital Delivery - Customer view with e-signature and payment",
+              "Estimate Dashboard - Track status, views, and conversions",
+            ].map((label, index) => (
+              <div key={index} className="rounded-xl border-2 border-dashed border-primary/30 bg-background p-4">
+                <div className="aspect-video rounded-lg bg-muted/50 flex items-center justify-center mb-3">
+                  <ImageIcon className="h-16 w-16 text-muted-foreground/30" />
+                </div>
+                <p className="text-sm text-muted-foreground text-center font-medium">{label}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>

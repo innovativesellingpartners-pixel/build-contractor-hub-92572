@@ -6,6 +6,7 @@ import { FloatingTrialButton } from "@/components/FloatingTrialButton";
 import { Badge } from "@/components/ui/badge";
 import { MainSiteHeader } from "@/components/MainSiteHeader";
 import heroBg from "@/assets/hero-construction-aerial.jpg";
+import { ImageIcon } from "lucide-react";
 import {
   Star,
   Video,
@@ -120,6 +121,38 @@ export function Training() {
                 ))}
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Screenshot Showcase */}
+      <section className="py-20 bg-muted/20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <Badge className="mb-4 bg-primary/10 text-primary px-4 py-2 text-lg">
+              <ImageIcon className="h-5 w-5 mr-2" />
+              See It In Action
+            </Badge>
+            <h2 className="text-4xl font-bold text-foreground mb-4">
+              Your Training <span className="text-primary">Hub</span>
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Here's what world-class training looks like inside CT1.
+            </p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              "Course Library - Browse 290+ courses by category and trade",
+              "Video Player - Interactive lessons with progress tracking",
+              "Team Dashboard - Monitor your entire crew's certifications",
+            ].map((label, index) => (
+              <div key={index} className="rounded-xl border-2 border-dashed border-primary/30 bg-background p-4">
+                <div className="aspect-video rounded-lg bg-muted/50 flex items-center justify-center mb-3">
+                  <ImageIcon className="h-16 w-16 text-muted-foreground/30" />
+                </div>
+                <p className="text-sm text-muted-foreground text-center font-medium">{label}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>

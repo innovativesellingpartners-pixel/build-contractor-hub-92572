@@ -1,55 +1,54 @@
-import { useState } from "react";
-import { PublicFooter } from "@/components/PublicFooter";
 import { Link } from "react-router-dom";
+import { PublicFooter } from "@/components/PublicFooter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { ContactForm } from "@/components/ContactForm";
-import { MainSiteHeader } from "@/components/MainSiteHeader";
-import heroBg from "@/assets/hero-crm-business.jpg";
 import { FloatingTrialButton } from "@/components/FloatingTrialButton";
+import { Badge } from "@/components/ui/badge";
+import { MainSiteHeader } from "@/components/MainSiteHeader";
+import heroBg from "@/assets/hero-tech-dashboard.jpg";
 import {
   ArrowRight,
-  ImageIcon,
-  HardHat,
-  Calendar,
-  Users,
-  ClipboardList,
-  Camera,
   DollarSign,
-  FileText,
-  Clock,
+  Receipt,
+  PieChart,
   TrendingUp,
-  Wrench,
+  CreditCard,
+  FileText,
+  Wallet,
+  BarChart3,
+  ImageIcon,
 } from "lucide-react";
 
-export default function Jobs() {
-  const [activeContactForm, setActiveContactForm] = useState<string | null>(null);
-
+export default function Accounting() {
   const stats = [
-    { number: "98%", label: "On-Time Completion" },
-    { number: "+15%", label: "Profit Margin" },
-    { number: "3x", label: "Crew Efficiency" },
-    { number: "Real-Time", label: "Job Visibility" },
+    { number: "10+ hrs", label: "Saved Weekly" },
+    { number: "Real-Time", label: "P&L Reports" },
+    { number: "100%", label: "Job Cost Visibility" },
+    { number: "+18%", label: "Margin Improvement" },
   ];
 
   const storyCards = [
-    { icon: Calendar, title: "Smart Scheduling", description: "Set start dates, milestones, and track deadlines visually" },
-    { icon: Users, title: "Crew Coordination", description: "Assign team members and track hours per project" },
-    { icon: DollarSign, title: "Job Costing", description: "Track materials, labor, and expenses against budget" },
-    { icon: Camera, title: "Photo Documentation", description: "Upload job photos with notes to document progress" },
+    { icon: Receipt, title: "Invoice Management", description: "Create, send, and track invoices from one dashboard" },
+    { icon: Wallet, title: "Expense Tracking", description: "Capture receipts and categorize expenses by job" },
+    { icon: PieChart, title: "Job Costing", description: "Track costs against budget for every project" },
+    { icon: TrendingUp, title: "Profit & Loss", description: "Real-time P&L statements across all jobs" },
   ];
 
   const features = [
-    { icon: Calendar, title: "Scheduling", description: "Schedule crews, set milestones, and track deadlines on a visual calendar." },
-    { icon: Users, title: "Crew Management", description: "Assign team members to jobs and track hours worked on each project." },
-    { icon: ClipboardList, title: "Task Tracking", description: "Create task lists, assign owners, and mark completion as work progresses." },
-    { icon: Camera, title: "Photo Documentation", description: "Upload job photos with notes to document progress and quality." },
-    { icon: DollarSign, title: "Job Costing", description: "Track materials, labor, and expenses against budget in real-time." },
-    { icon: FileText, title: "Change Orders", description: "Document scope changes with automatic contract value updates." },
-    { icon: Wrench, title: "Job Lifecycle", description: "Track every job from estimate acceptance to final payment." },
-    { icon: Clock, title: "Time Tracking", description: "Log hours by crew member and job for accurate labor costing." },
+    { icon: Receipt, title: "Invoice Management", description: "Create professional invoices, send digitally, and track payment status automatically." },
+    { icon: Wallet, title: "Expense Tracking", description: "Capture receipts, categorize expenses by job, and keep your books clean." },
+    { icon: PieChart, title: "Job Costing", description: "Track materials, labor, and overhead against budget for every project." },
+    { icon: TrendingUp, title: "Profit & Loss", description: "Real-time P&L statements so you always know where your money is going." },
+    { icon: CreditCard, title: "Payment Processing", description: "Accept payments online, track deposits, and manage payment schedules." },
+    { icon: FileText, title: "Tax Reports", description: "Organized quarterly and annual reports that make tax time painless." },
+    { icon: DollarSign, title: "Budget Tracking", description: "Set budgets per job and get alerts before costs exceed estimates." },
+    { icon: BarChart3, title: "Financial Dashboards", description: "At-a-glance financial health with revenue, expenses, and margins." },
+  ];
+
+  const screenshots = [
+    { label: "Accounting Dashboard - Revenue, expenses, and profitability at a glance" },
+    { label: "Invoice Management - Create, send, and track invoices" },
+    { label: "Profit & Loss Reports - Real-time financial statements by job" },
   ];
 
   return (
@@ -66,14 +65,14 @@ export default function Jobs() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <Badge className="mb-4 bg-primary text-primary-foreground px-4 py-2 text-lg">
-              <HardHat className="h-5 w-5 mr-2" />
-              Jobs Management
+              <DollarSign className="h-5 w-5 mr-2" />
+              Accounting & Financials
             </Badge>
             <h1 className="text-5xl font-bold text-foreground mb-6">
-              Keep Every Job <span className="text-primary">On Track</span>
+              Take Control of Your <span className="text-primary">Finances</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Schedule crews, track progress, and manage every job from start to finish. Keep projects on time, on budget, and customers happy.
+              Track every dollar across every job. From invoicing to job costing to real-time P&L, CT1 gives you the financial clarity to grow with confidence.
             </p>
           </div>
 
@@ -95,16 +94,16 @@ export default function Jobs() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
-              <h2 className="text-4xl font-bold text-foreground mb-6">From Estimate to <span className="text-primary">Final Payment</span></h2>
+              <h2 className="text-4xl font-bold text-foreground mb-6">Financial Clarity for <span className="text-primary">Every Job</span></h2>
               <div className="space-y-4 text-muted-foreground">
                 <p>
-                  Never miss a deadline or blow a budget again. CT1's job management system gives you complete visibility into every project—from the moment an estimate is signed to the final payment.
+                  Most contractors don't know if a job was profitable until weeks after it's done. CT1 changes that with real-time financial tracking that shows you exactly where you stand on every project.
                 </p>
                 <p>
-                  Coordinate crews across multiple job sites, document progress with photos, and keep customers informed with real-time updates. Everything your team needs, in one place.
+                  Create and send professional invoices in seconds, track expenses by job with receipt capture, and see your profit margins update in real time. No more spreadsheets, no more guessing.
                 </p>
                 <p>
-                  Contractors using CT1 complete 98% of jobs on time and see a 15% increase in profit margins through better job costing and resource allocation.
+                  Contractors using CT1's accounting tools save 10+ hours per week on bookkeeping and see an average 18% improvement in profit margins through better job costing.
                 </p>
               </div>
             </div>
@@ -142,23 +141,19 @@ export default function Jobs() {
               See It In Action
             </Badge>
             <h2 className="text-4xl font-bold text-foreground mb-4">
-              Your Job Management <span className="text-primary">Dashboard</span>
+              Your Financial <span className="text-primary">Command Center</span>
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Here's what managing jobs and crews looks like inside CT1.
+              Here's what your accounting dashboard looks like inside CT1.
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
-            {[
-              "Job Board - All active jobs with status, crew, and timeline",
-              "Scheduling View - Crew assignments and calendar management",
-              "Job Detail - Progress tracking, photos, and cost breakdown",
-            ].map((label, index) => (
+            {screenshots.map((shot, index) => (
               <div key={index} className="rounded-xl border-2 border-dashed border-primary/30 bg-background p-4">
                 <div className="aspect-video rounded-lg bg-muted/50 flex items-center justify-center mb-3">
                   <ImageIcon className="h-16 w-16 text-muted-foreground/30" />
                 </div>
-                <p className="text-sm text-muted-foreground text-center font-medium">{label}</p>
+                <p className="text-sm text-muted-foreground text-center font-medium">{shot.label}</p>
               </div>
             ))}
           </div>
@@ -170,10 +165,10 @@ export default function Jobs() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-foreground mb-6">
-              Complete Job <span className="text-primary">Lifecycle Management</span>
+              Complete Financial <span className="text-primary">Toolkit</span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              From scheduling to completion, track every aspect of your projects.
+              Everything you need to manage the financial side of your contracting business.
             </p>
           </div>
 
@@ -195,10 +190,10 @@ export default function Jobs() {
       <section className="py-20 bg-gradient-to-r from-primary to-primary-hover text-primary-foreground">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl font-bold mb-6">
-            Ready to Manage Jobs Like a Pro?
+            Ready to Take Control of Your Finances?
           </h2>
           <p className="text-xl opacity-90 mb-8 max-w-2xl mx-auto">
-            Join contractors who complete 98% of jobs on time with CT1's job management.
+            Join contractors saving 10+ hours per week on bookkeeping with CT1.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/pricing">
