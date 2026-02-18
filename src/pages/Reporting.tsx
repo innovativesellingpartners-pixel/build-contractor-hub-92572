@@ -6,6 +6,8 @@
  */
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 /** Re-exported for backward compatibility — many reporting components import this type from here. */
 export interface ReportingFilters {
@@ -23,7 +25,7 @@ import {
 } from "@/components/ui/select";
 import {
   LayoutDashboard, TrendingUp, Briefcase, DollarSign, Receipt,
-  Users, FileText, Store, Wrench, Gauge,
+  Users, FileText, Store, Wrench, Gauge, ArrowLeft, Home,
 } from "lucide-react";
 
 import { DrillDownProvider } from "@/components/reporting/drilldown/DrillDownProvider";
@@ -58,6 +60,8 @@ const sections = [
 export default function Reporting() {
   const [activeSection, setActiveSection] = useState("dashboard");
 
+  const navigate = useNavigate();
+
   const ActiveIcon = sections.find(s => s.value === activeSection)?.icon || LayoutDashboard;
   const activeLabel = sections.find(s => s.value === activeSection)?.label || "Dashboard";
 
@@ -67,6 +71,15 @@ export default function Reporting() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5">
+              <Button variant="ghost" size="sm" className="h-8 px-2 text-muted-foreground hover:text-foreground" onClick={() => navigate(-1)}>
+                <ArrowLeft className="h-4 w-4 mr-1" /> Back
+              </Button>
+              <Button variant="ghost" size="sm" className="h-8 px-2 text-muted-foreground hover:text-foreground" onClick={() => navigate("/dashboard")}>
+                <Home className="h-4 w-4 mr-1" /> Dashboard
+              </Button>
+            </div>
+            <div className="h-6 w-px bg-border/60 hidden sm:block" />
             <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
               <ActiveIcon className="h-5 w-5 text-primary" />
             </div>
