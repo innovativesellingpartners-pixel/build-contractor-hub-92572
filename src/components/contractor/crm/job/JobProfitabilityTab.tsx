@@ -106,9 +106,9 @@ export default function JobProfitabilityTab({ job }: JobProfitabilityTabProps) {
     enabled: !!user?.id && !!job.id,
   });
 
-  // Fetch bank-sourced expenses (those with plaid_transaction_id)
-  const { data: bankExpenses } = useQuery({
-    queryKey: ['job-bank-expenses', job.id, user?.id],
+  // Fetch ALL expenses for this job (manual + bank-sourced)
+  const { data: jobExpenses } = useQuery({
+    queryKey: ['job-all-expenses', job.id, user?.id],
     queryFn: async () => {
       if (!user?.id || !job.id) return [];
       const { data, error } = await supabase
@@ -116,13 +116,16 @@ export default function JobProfitabilityTab({ job }: JobProfitabilityTabProps) {
         .select('id, amount, category, date, description, plaid_transaction_id')
         .eq('contractor_id', user.id)
         .eq('job_id', job.id)
-        .not('plaid_transaction_id', 'is', null)
         .order('date', { ascending: false });
       if (error) throw error;
       return data || [];
     },
     enabled: !!user?.id && !!job.id,
   });
+
+  // Split into bank-sourced and manual expenses
+  const bankExpenses = useMemo(() => jobExpenses?.filter(e => e.plaid_transaction_id) || [], [jobExpenses]);
+  const manualExpenses = useMemo(() => jobExpenses?.filter(e => !e.plaid_transaction_id) || [], [jobExpenses]);
 
   // Fetch QB expenses matched to this job
   const { data: qbExpenseData } = useQBExpenses(!!qbConnected);
@@ -173,10 +176,11 @@ export default function JobProfitabilityTab({ job }: JobProfitabilityTabProps) {
     enabled: !!job.id,
   });
 
-  // Banking totals
+  // Expense totals
+  const manualExpenseTotal = useMemo(() => manualExpenses.reduce((s, e) => s + Number(e.amount), 0), [manualExpenses]);
   const bankingTotal = useMemo(() => {
     const plaidTotal = plaidTransactions?.reduce((s, t) => s + Math.abs(Number(t.amount)), 0) || 0;
-    const bankExpTotal = bankExpenses?.reduce((s, e) => s + Number(e.amount), 0) || 0;
+    const bankExpTotal = bankExpenses.reduce((s, e) => s + Number(e.amount), 0);
     return plaidTotal + bankExpTotal;
   }, [plaidTransactions, bankExpenses]);
 
@@ -194,7 +198,34 @@ export default function JobProfitabilityTab({ job }: JobProfitabilityTabProps) {
   const qbExpenseTotal = matchedQBExpenses.reduce((s: number, e: any) => s + Number(e.TotalAmt || 0), 0);
 
   // Compute financials (include all sources)
-  const allSourcesCostTotal = totalCosts + bankingTotal + qbExpenseTotal;
+  const allSourcesCostTotal = totalCosts + manualExpenseTotal + bankingTotal + qbExpenseTotal;
+
+  // Parse estimate line items into cost categories for comparison
+  const estimateLineItemBreakdown = useMemo(() => {
+    if (!estimate?.line_items) return null;
+    const items = Array.isArray(estimate.line_items) ? estimate.line_items : [];
+    const breakdown: Record<string, { estimated: number; items: any[] }> = {};
+    COST_CATEGORIES.forEach(cat => { breakdown[cat.value] = { estimated: 0, items: [] }; });
+
+    items.forEach((item: any) => {
+      const total = Number(item.total) || Number(item.amount) || (Number(item.quantity || 1) * Number(item.unit_price || item.unitPrice || 0));
+      const desc = (item.description || item.name || '').toLowerCase();
+      // Categorize line items by keywords
+      let cat = 'other';
+      if (/labor|crew|work(er)?s?|hour|install/i.test(desc)) cat = 'labor';
+      else if (/material|supply|lumber|pipe|wire|drywall|concrete|paint/i.test(desc)) cat = 'materials';
+      else if (/sub|subcontract/i.test(desc)) cat = 'subcontractor';
+      else if (/equip|rental|tool|machine/i.test(desc)) cat = 'equipment';
+      // Also check for explicit category field
+      if (item.category) {
+        const itemCat = item.category.toLowerCase();
+        if (COST_CATEGORIES.some(c => c.value === itemCat)) cat = itemCat;
+      }
+      breakdown[cat].estimated += total;
+      breakdown[cat].items.push({ ...item, total });
+    });
+    return breakdown;
+  }, [estimate]);
 
   const financials = useMemo(() => {
     const revenue = Number(job.total_contract_value) || Number(job.contract_value) || Number(job.total_cost) || 0;
@@ -225,8 +256,15 @@ export default function JobProfitabilityTab({ job }: JobProfitabilityTabProps) {
         grouped['other'].push(entry);
       }
     });
+    // Add manual expenses (non-bank) to categories
+    manualExpenses.forEach(exp => {
+      const cat = exp.category?.toLowerCase() || 'other';
+      const entry = { id: exp.id, amount: exp.amount, category: exp.category, description: exp.description, cost_date: exp.date, source: 'Expense' } as any;
+      if (grouped[cat]) grouped[cat].push(entry);
+      else grouped['other'].push(entry);
+    });
     // Add bank expenses to categories
-    bankExpenses?.forEach(exp => {
+    bankExpenses.forEach(exp => {
       const cat = exp.category?.toLowerCase() || 'other';
       const entry = { id: exp.id, amount: exp.amount, category: exp.category, description: exp.description, cost_date: exp.date, source: 'Bank' } as any;
       if (grouped[cat]) grouped[cat].push(entry);
@@ -240,7 +278,7 @@ export default function JobProfitabilityTab({ job }: JobProfitabilityTabProps) {
       else grouped['other'].push(entry);
     });
     return grouped;
-  }, [costs, bankExpenses, plaidTransactions]);
+  }, [costs, manualExpenses, bankExpenses, plaidTransactions]);
 
   const categoryTotals = useMemo(() => {
     const totals: Record<string, number> = {};
@@ -373,9 +411,10 @@ export default function JobProfitabilityTab({ job }: JobProfitabilityTabProps) {
         </div>
 
         {/* Source summary */}
-        {(bankingTotal > 0 || qbExpenseTotal > 0) && (
+        {(manualExpenseTotal > 0 || bankingTotal > 0 || qbExpenseTotal > 0 || totalCosts > 0) && (
           <div className="flex flex-wrap gap-2">
-            <Badge variant="outline" className="text-[10px]">Manual: {formatCurrency(totalCosts)}</Badge>
+            {totalCosts > 0 && <Badge variant="outline" className="text-[10px]">Job Costs: {formatCurrency(totalCosts)}</Badge>}
+            {manualExpenseTotal > 0 && <Badge variant="outline" className="text-[10px] bg-amber-500/10 text-amber-700 border-amber-200">Expenses: {formatCurrency(manualExpenseTotal)}</Badge>}
             {bankingTotal > 0 && (
               <Badge variant="outline" className="text-[10px] bg-blue-500/10 text-blue-700 border-blue-200">Bank: {formatCurrency(bankingTotal)}</Badge>
             )}
@@ -505,15 +544,38 @@ export default function JobProfitabilityTab({ job }: JobProfitabilityTabProps) {
               actual={financials.totalRevenue}
               isRevenue
             />
+
+            {/* Line item breakdown by category */}
+            {estimateLineItemBreakdown && (
+              <>
+                <div className="border-t border-border pt-2 mt-2">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Cost Breakdown by Category</p>
+                </div>
+                {COST_CATEGORIES.map(cat => {
+                  const estAmount = estimateLineItemBreakdown[cat.value]?.estimated || 0;
+                  const actualAmount = categoryTotals[cat.value] || 0;
+                  if (estAmount === 0 && actualAmount === 0) return null;
+                  return (
+                    <ComparisonRow
+                      key={cat.value}
+                      label={cat.label}
+                      estimated={estAmount > 0 ? estAmount : null}
+                      actual={actualAmount}
+                    />
+                  );
+                })}
+              </>
+            )}
+
             <ComparisonRow
               label="Total Costs"
-              estimated={null}
+              estimated={estimateLineItemBreakdown ? Object.values(estimateLineItemBreakdown).reduce((s, v) => s + v.estimated, 0) || null : null}
               actual={financials.actualCosts}
             />
             <div className="border-t border-border pt-2">
               <ComparisonRow
                 label="Net Profit"
-                estimated={null}
+                estimated={estimateLineItemBreakdown ? (Number(estimate.total_amount) || 0) - Object.values(estimateLineItemBreakdown).reduce((s, v) => s + v.estimated, 0) : null}
                 actual={financials.netProfit}
                 isRevenue
               />
@@ -575,6 +637,7 @@ export default function JobProfitabilityTab({ job }: JobProfitabilityTabProps) {
 function SourceBadge({ source }: { source: string }) {
   const styles: Record<string, string> = {
     Manual: 'bg-muted text-muted-foreground',
+    Expense: 'bg-amber-500/10 text-amber-700 border-amber-200',
     Bank: 'bg-blue-500/10 text-blue-700 border-blue-200',
     QuickBooks: 'bg-emerald-500/10 text-emerald-700 border-emerald-200',
   };
