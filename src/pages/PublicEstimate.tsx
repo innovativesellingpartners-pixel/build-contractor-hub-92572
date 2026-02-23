@@ -213,8 +213,8 @@ export default function PublicEstimate() {
     accent: contractor?.brand_accent_color || '#c9a227',
   };
 
-  // Use contractor logo if available, otherwise fallback to CT1 logo
-  const displayLogo = contractor?.logo_url || ct1PoweredLogo;
+  // Use contractor logo if available, otherwise show Building2 icon
+  const displayLogo = contractor?.logo_url;
   const companyName = contractor?.company_name || 'Professional Estimate';
 
   return (
@@ -231,11 +231,15 @@ export default function PublicEstimate() {
               <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
                 <div className="flex items-center gap-6">
                   <div className="bg-white rounded-full p-3 shadow-2xl">
-                    <img 
-                      src={displayLogo}
-                      alt="Company Logo" 
-                      className="w-14 h-14 sm:w-16 sm:h-16 object-contain"
-                    />
+                    {displayLogo ? (
+                      <img 
+                        src={displayLogo}
+                        alt="Company Logo" 
+                        className="w-14 h-14 sm:w-16 sm:h-16 object-contain"
+                      />
+                    ) : (
+                      <Building2 className="w-14 h-14 sm:w-16 sm:h-16 text-muted-foreground" />
+                    )}
                   </div>
                   <div>
                     <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
