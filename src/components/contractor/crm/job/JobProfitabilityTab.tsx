@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, Component, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useJobCosts, JobCost } from '@/hooks/useJobCosts';
@@ -58,6 +58,36 @@ interface JobProfitabilityTabProps {
   job: Job;
 }
 
+// Error boundary to prevent white screen crashes
+class ProfitabilityErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(error: any, info: any) {
+    console.error('JobProfitabilityTab crashed:', error, info);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="p-6 text-center space-y-2">
+          <p className="text-sm font-medium text-destructive">Something went wrong loading P&L data.</p>
+          <button
+            onClick={() => this.setState({ hasError: false })}
+            className="text-sm text-primary underline"
+          >
+            Try again
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 const COST_CATEGORIES = [
   { value: 'materials', label: 'Materials', icon: Package, color: 'text-blue-600 bg-blue-50 border-blue-200' },
   { value: 'labor', label: 'Labor', icon: Users, color: 'text-amber-600 bg-amber-50 border-amber-200' },
@@ -72,8 +102,8 @@ const formatCurrency = (value: number | null | undefined) =>
 const formatCurrencyPrecise = (value: number | null | undefined) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value || 0);
 
-export default function JobProfitabilityTab({ job }: JobProfitabilityTabProps) {
-  const { costs, loading: costsLoading, addCost, deleteCost, totalCosts, refreshCosts } = useJobCosts(job.id);
+function JobProfitabilityTabInner({ job }: JobProfitabilityTabProps) {
+  const { costs, loading: costsLoading, addCost, deleteCost, totalCosts, refreshCosts } = useJobCosts(job?.id);
   const [showAddCost, setShowAddCost] = useState(false);
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
   const { user } = useAuth();
@@ -91,36 +121,52 @@ export default function JobProfitabilityTab({ job }: JobProfitabilityTabProps) {
 
   // Fetch banking/Plaid transactions for this job
   const { data: plaidTransactions } = useQuery({
-    queryKey: ['job-plaid-txns', job.id, user?.id],
+    queryKey: ['job-plaid-txns', job?.id, user?.id],
     queryFn: async () => {
-      if (!user?.id || !job.id) return [];
-      const { data, error } = await supabase
-        .from('plaid_transactions')
-        .select('id, amount, category, transaction_date, description, vendor')
-        .eq('contractor_id', user.id)
-        .eq('job_id', job.id)
-        .order('transaction_date', { ascending: false });
-      if (error) throw error;
-      return data || [];
+      if (!user?.id || !job?.id) return [];
+      try {
+        const { data, error } = await supabase
+          .from('plaid_transactions')
+          .select('id, amount, category, transaction_date, description, vendor')
+          .eq('contractor_id', user.id)
+          .eq('job_id', job.id)
+          .order('transaction_date', { ascending: false });
+        if (error) {
+          console.error('Plaid transactions error:', error);
+          return [];
+        }
+        return data || [];
+      } catch (e) {
+        console.error('Plaid transactions fetch failed:', e);
+        return [];
+      }
     },
-    enabled: !!user?.id && !!job.id,
+    enabled: !!user?.id && !!job?.id,
   });
 
   // Fetch ALL expenses for this job (manual + bank-sourced)
   const { data: jobExpenses } = useQuery({
-    queryKey: ['job-all-expenses', job.id, user?.id],
+    queryKey: ['job-all-expenses', job?.id, user?.id],
     queryFn: async () => {
-      if (!user?.id || !job.id) return [];
-      const { data, error } = await supabase
-        .from('expenses')
-        .select('id, amount, category, date, description, plaid_transaction_id')
-        .eq('contractor_id', user.id)
-        .eq('job_id', job.id)
-        .order('date', { ascending: false });
-      if (error) throw error;
-      return data || [];
+      if (!user?.id || !job?.id) return [];
+      try {
+        const { data, error } = await supabase
+          .from('expenses')
+          .select('id, amount, category, date, description, plaid_transaction_id')
+          .eq('contractor_id', user.id)
+          .eq('job_id', job.id)
+          .order('date', { ascending: false });
+        if (error) {
+          console.error('Expenses fetch error:', error);
+          return [];
+        }
+        return data || [];
+      } catch (e) {
+        console.error('Expenses fetch failed:', e);
+        return [];
+      }
     },
-    enabled: !!user?.id && !!job.id,
+    enabled: !!user?.id && !!job?.id,
   });
 
   // Split into bank-sourced and manual expenses
@@ -132,48 +178,75 @@ export default function JobProfitabilityTab({ job }: JobProfitabilityTabProps) {
 
   // Fetch invoices for this job
   const { data: invoices, isLoading: invoicesLoading } = useQuery({
-    queryKey: ['job-invoices-profit', job.id],
+    queryKey: ['job-invoices-profit', job?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('invoices')
-        .select('id, invoice_number, issue_date, amount_due, amount_paid, balance_due, status')
-        .eq('job_id', job.id!)
-        .order('issue_date', { ascending: true });
-      if (error) throw error;
-      return data || [];
+      if (!job?.id) return [];
+      try {
+        const { data, error } = await supabase
+          .from('invoices')
+          .select('id, invoice_number, issue_date, amount_due, amount_paid, balance_due, status')
+          .eq('job_id', job.id)
+          .order('issue_date', { ascending: true });
+        if (error) {
+          console.error('Invoices fetch error:', error);
+          return [];
+        }
+        return data || [];
+      } catch (e) {
+        console.error('Invoices fetch failed:', e);
+        return [];
+      }
     },
-    enabled: !!job.id,
+    enabled: !!job?.id,
   });
 
   // Fetch original estimate for comparison
   const { data: estimate } = useQuery({
-    queryKey: ['job-estimate-profit', job.original_estimate_id],
+    queryKey: ['job-estimate-profit', job?.original_estimate_id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('estimates')
-        .select('id, title, total_amount, line_items, subtotal, tax_amount')
-        .eq('id', job.original_estimate_id!)
-        .single();
-      if (error) throw error;
-      return data;
+      if (!job?.original_estimate_id) return null;
+      try {
+        const { data, error } = await supabase
+          .from('estimates')
+          .select('id, title, total_amount, line_items, subtotal, tax_amount')
+          .eq('id', job.original_estimate_id)
+          .single();
+        if (error) {
+          console.error('Estimate fetch error:', error);
+          return null;
+        }
+        return data;
+      } catch (e) {
+        console.error('Estimate fetch failed:', e);
+        return null;
+      }
     },
-    enabled: !!job.original_estimate_id,
+    enabled: !!job?.original_estimate_id,
   });
 
   // Fetch change orders for this job
   const { data: changeOrders } = useQuery({
-    queryKey: ['job-change-orders-profit', job.id],
+    queryKey: ['job-change-orders-profit', job?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('change_orders')
-        .select('id, change_order_number, description, additional_cost, status, date_requested')
-        .eq('job_id', job.id!)
-        .eq('status', 'approved')
-        .order('date_requested', { ascending: true });
-      if (error) throw error;
-      return data || [];
+      if (!job?.id) return [];
+      try {
+        const { data, error } = await supabase
+          .from('change_orders')
+          .select('id, change_order_number, description, additional_cost, status, date_requested')
+          .eq('job_id', job.id)
+          .eq('status', 'approved')
+          .order('date_requested', { ascending: true });
+        if (error) {
+          console.error('Change orders fetch error:', error);
+          return [];
+        }
+        return data || [];
+      } catch (e) {
+        console.error('Change orders fetch failed:', e);
+        return [];
+      }
     },
-    enabled: !!job.id,
+    enabled: !!job?.id,
   });
 
   // Expense totals
@@ -629,6 +702,14 @@ export default function JobProfitabilityTab({ job }: JobProfitabilityTabProps) {
         />
       )}
     </div>
+  );
+}
+
+export default function JobProfitabilityTab({ job }: JobProfitabilityTabProps) {
+  return (
+    <ProfitabilityErrorBoundary>
+      <JobProfitabilityTabInner job={job} />
+    </ProfitabilityErrorBoundary>
   );
 }
 
