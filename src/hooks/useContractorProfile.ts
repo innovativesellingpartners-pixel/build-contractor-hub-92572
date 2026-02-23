@@ -25,6 +25,11 @@ export interface ContractorProfile {
   brand_primary_color: string | null;
   brand_secondary_color: string | null;
   brand_accent_color: string | null;
+  // Payment settings
+  zelle_email: string | null;
+  zelle_phone: string | null;
+  ach_instructions: string | null;
+  accepted_payment_methods: string[] | null;
 }
 
 export function useContractorProfile() {
@@ -58,7 +63,11 @@ export function useContractorProfile() {
           default_warranty_years,
           brand_primary_color,
           brand_secondary_color,
-          brand_accent_color
+          brand_accent_color,
+          zelle_email,
+          zelle_phone,
+          ach_instructions,
+          accepted_payment_methods
         `)
         .eq('user_id', user.id)
         .single();

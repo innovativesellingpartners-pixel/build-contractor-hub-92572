@@ -7,6 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CheckCircle, FileText, Loader2, Building2, Calendar, DollarSign, CreditCard, Phone, Mail, MapPin, Globe } from 'lucide-react';
+import { AlternativePaymentMethods } from '@/components/payments/AlternativePaymentMethods';
 import { toast } from 'sonner';
 
 export default function PublicInvoice() {
@@ -350,6 +351,12 @@ export default function PublicInvoice() {
             )}
           </CardContent>
         </Card>
+
+        {/* Alternative Payment Methods */}
+        <AlternativePaymentMethods 
+          contractor={contractor} 
+          primaryColor={primaryColor}
+        />
 
         {/* Notes */}
         {invoice.notes && (

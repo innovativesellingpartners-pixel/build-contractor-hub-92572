@@ -7,6 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CheckCircle, FileText, Loader2, CreditCard, Building2, Calendar, DollarSign, Wallet, AlertCircle } from 'lucide-react';
+import { AlternativePaymentMethods } from '@/components/payments/AlternativePaymentMethods';
 import SignatureCanvas from 'react-signature-canvas';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
@@ -816,6 +817,12 @@ export default function PublicEstimate() {
             </CardContent>
           </Card>
         )}
+
+        {/* Alternative Payment Methods */}
+        <AlternativePaymentMethods 
+          contractor={contractor} 
+          primaryColor={brandColors.primary}
+        />
 
         {/* Footer Branding */}
         <Card className="bg-gradient-to-br from-muted/50 to-background border border-border/50 shadow-sm">

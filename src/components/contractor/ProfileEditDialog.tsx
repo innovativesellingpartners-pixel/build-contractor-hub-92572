@@ -15,7 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 
-type SectionKey = 'logo' | 'business' | 'branding' | 'licensing' | 'colors' | 'defaults';
+type SectionKey = 'logo' | 'business' | 'branding' | 'licensing' | 'colors' | 'defaults' | 'payments';
 
 export function ProfileEditDialog() {
   const { profile, user } = useAuth();
@@ -50,6 +50,11 @@ export function ProfileEditDialog() {
     default_sales_tax_rate: '',
     default_deposit_percent: '',
     default_warranty_years: '',
+    // Payment Methods
+    zelle_email: '',
+    zelle_phone: '',
+    ach_instructions: '',
+    accepted_payment_methods: ['card'] as string[],
   });
 
   // Sync form data when dialog opens or profile changes
@@ -76,6 +81,10 @@ export function ProfileEditDialog() {
         default_sales_tax_rate: profile.default_sales_tax_rate?.toString() || '6.00',
         default_deposit_percent: profile.default_deposit_percent?.toString() || '30.00',
         default_warranty_years: profile.default_warranty_years?.toString() || '2',
+        zelle_email: profile.zelle_email || '',
+        zelle_phone: profile.zelle_phone || '',
+        ach_instructions: profile.ach_instructions || '',
+        accepted_payment_methods: profile.accepted_payment_methods || ['card'],
       });
       setActiveTab("business");
     }
@@ -177,6 +186,14 @@ export function ProfileEditDialog() {
             default_warranty_years: formData.default_warranty_years !== '' ? parseInt(formData.default_warranty_years) : null,
           };
           break;
+        case 'payments':
+          updateData = {
+            zelle_email: formData.zelle_email || null,
+            zelle_phone: formData.zelle_phone || null,
+            ach_instructions: formData.ach_instructions || null,
+            accepted_payment_methods: formData.accepted_payment_methods,
+          };
+          break;
       }
 
       const { error } = await supabase
@@ -242,7 +259,7 @@ export function ProfileEditDialog() {
         </DialogHeader>
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 overflow-hidden flex flex-col">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="business" className="gap-2">
               <Building2 className="h-4 w-4" />
               <span className="hidden sm:inline">Business</span>
@@ -251,8 +268,12 @@ export function ProfileEditDialog() {
               <Globe className="h-4 w-4" />
               <span className="hidden sm:inline">Branding</span>
             </TabsTrigger>
-            <TabsTrigger value="defaults" className="gap-2">
+            <TabsTrigger value="payments" className="gap-2">
               <DollarSign className="h-4 w-4" />
+              <span className="hidden sm:inline">Payments</span>
+            </TabsTrigger>
+            <TabsTrigger value="defaults" className="gap-2">
+              <Percent className="h-4 w-4" />
               <span className="hidden sm:inline">Defaults</span>
             </TabsTrigger>
             <TabsTrigger value="warranties" className="gap-2">
@@ -633,6 +654,114 @@ export function ProfileEditDialog() {
                   <SectionSaveButton section="colors" />
                 </CardFooter>
               </Card>
+            </TabsContent>
+
+            {/* Payments Tab */}
+            <TabsContent value="payments" className="space-y-6 mt-0">
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <DollarSign className="h-4 w-4" />
+                    Accepted Payment Methods
+                  </CardTitle>
+                  <CardDescription>Select which payment methods to display on customer-facing estimates and invoices</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {[
+                      { key: 'card', label: 'Card / Online' },
+                      { key: 'zelle', label: 'Zelle' },
+                      { key: 'ach', label: 'ACH / Bank Transfer' },
+                      { key: 'check', label: 'Check' },
+                    ].map((method) => {
+                      const isActive = formData.accepted_payment_methods.includes(method.key);
+                      return (
+                        <button
+                          key={method.key}
+                          type="button"
+                          onClick={() => {
+                            setFormData(prev => ({
+                              ...prev,
+                              accepted_payment_methods: isActive
+                                ? prev.accepted_payment_methods.filter((m: string) => m !== method.key)
+                                : [...prev.accepted_payment_methods, method.key],
+                            }));
+                          }}
+                          className={`p-3 rounded-lg border-2 text-sm font-medium transition-colors ${
+                            isActive
+                              ? 'border-primary bg-primary/10 text-primary'
+                              : 'border-border bg-muted/30 text-muted-foreground hover:border-muted-foreground'
+                          }`}
+                        >
+                          {method.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {formData.accepted_payment_methods.includes('zelle') && (
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm">Zelle Information</CardTitle>
+                    <CardDescription>Your Zelle details will be shown on customer documents so they can send payments directly</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="zelle_email">Zelle Email</Label>
+                        <Input
+                          id="zelle_email"
+                          name="zelle_email"
+                          type="email"
+                          value={formData.zelle_email}
+                          onChange={handleChange}
+                          placeholder="payments@yourcompany.com"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="zelle_phone">Zelle Phone</Label>
+                        <Input
+                          id="zelle_phone"
+                          name="zelle_phone"
+                          type="tel"
+                          value={formData.zelle_phone}
+                          onChange={handleChange}
+                          placeholder="(555) 123-4567"
+                        />
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground">Provide at least one — email or phone — for Zelle payments.</p>
+                  </CardContent>
+                </Card>
+              )}
+
+              {formData.accepted_payment_methods.includes('ach') && (
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm">ACH / Bank Transfer Instructions</CardTitle>
+                    <CardDescription>Provide instructions for customers to send bank transfers (routing info, portal link, etc.)</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      <Label htmlFor="ach_instructions">ACH Instructions</Label>
+                      <textarea
+                        id="ach_instructions"
+                        name="ach_instructions"
+                        value={formData.ach_instructions}
+                        onChange={(e) => setFormData({ ...formData, ach_instructions: e.target.value })}
+                        placeholder="Bank Name: First National Bank&#10;Routing: XXXXXXXXX&#10;Account: XXXXXXXXX&#10;&#10;Or visit: https://pay.yourbank.com/yourcompany"
+                        className="w-full min-h-[120px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              <CardFooter className="border-t pt-4 flex justify-end px-0">
+                <SectionSaveButton section="payments" />
+              </CardFooter>
             </TabsContent>
 
             {/* Defaults Tab */}
