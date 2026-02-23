@@ -133,7 +133,7 @@ export default function EstimateBuilder({ initialData, onSave, onCancel }: Estim
       tax_amount: initialData?.tax_amount || 0,
       permit_fee: initialData?.permit_fee || 0,
       grand_total: initialData?.grand_total || initialData?.total_amount || 0,
-      required_deposit_percent: initialData?.required_deposit_percent || defaults.depositPercent,
+      required_deposit_percent: initialData?.required_deposit_percent ?? defaults.depositPercent,
       required_deposit: initialData?.required_deposit || 0,
       balance_due: initialData?.balance_due || 0,
       
