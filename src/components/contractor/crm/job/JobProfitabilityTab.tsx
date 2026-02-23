@@ -301,7 +301,8 @@ function JobProfitabilityTabInner({ job }: JobProfitabilityTabProps) {
   }, [estimate]);
 
   const financials = useMemo(() => {
-    const revenue = Number(job.total_contract_value) || Number(job.contract_value) || Number(job.total_cost) || 0;
+    const estimatedTotal = estimate ? Number(estimate.total_amount) || 0 : null;
+    const revenue = Number(job.total_contract_value) || Number(job.contract_value) || estimatedTotal || Number(job.total_cost) || 0;
     const invoiceRevenue = invoices?.reduce((sum, inv) => sum + (Number(inv.amount_due) || 0), 0) || 0;
     const totalRevenue = Math.max(revenue, invoiceRevenue);
     const collected = invoices?.reduce((sum, inv) => sum + (Number(inv.amount_paid) || 0), 0) || 0;
@@ -310,11 +311,15 @@ function JobProfitabilityTabInner({ job }: JobProfitabilityTabProps) {
     const netProfit = totalRevenue - actualCosts;
     const margin = totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0;
 
-    const estimatedTotal = estimate ? Number(estimate.total_amount) || 0 : null;
+    // Estimated costs from line items
+    const estimatedCosts = estimateLineItemBreakdown 
+      ? Object.values(estimateLineItemBreakdown).reduce((s, v) => s + v.estimated, 0) 
+      : null;
+    const estimatedProfit = estimatedTotal !== null && estimatedCosts !== null ? estimatedTotal - estimatedCosts : null;
     const revenueVariance = estimatedTotal !== null ? totalRevenue - estimatedTotal : null;
 
-    return { totalRevenue, collected, outstanding, actualCosts, netProfit, margin, estimatedTotal, revenueVariance };
-  }, [job, invoices, allSourcesCostTotal, estimate]);
+    return { totalRevenue, collected, outstanding, actualCosts, netProfit, margin, estimatedTotal, estimatedCosts, estimatedProfit, revenueVariance };
+  }, [job, invoices, allSourcesCostTotal, estimate, estimateLineItemBreakdown]);
 
   // Group costs by category
   const costsByCategory = useMemo(() => {
