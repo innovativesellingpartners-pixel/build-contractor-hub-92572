@@ -43,15 +43,29 @@ serve(async (req) => {
       throw new Error('leadId is required');
     }
 
-    console.log('Converting lead to job', { leadId, contractorId: user.id });
+    // Check if the authenticated user is a super_admin
+    const { data: roleData } = await adminClient
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .eq('role', 'super_admin')
+      .maybeSingle();
 
-    // Get the lead with all fields including source (verifying ownership via user_id)
-    const { data: lead, error: leadError } = await adminClient
+    const isSuperAdmin = !!roleData;
+
+    console.log('Converting lead to job', { leadId, contractorId: user.id, isSuperAdmin });
+
+    // Get the lead - super_admins can access any lead, regular users only their own
+    let leadQuery = adminClient
       .from('leads')
       .select('*, lead_sources(id, name)')
-      .eq('id', leadId)
-      .eq('user_id', user.id)
-      .single();
+      .eq('id', leadId);
+
+    if (!isSuperAdmin) {
+      leadQuery = leadQuery.eq('user_id', user.id);
+    }
+
+    const { data: lead, error: leadError } = await leadQuery.single();
 
     if (leadError || !lead) {
       console.error('Lead fetch error:', leadError);
@@ -101,6 +115,9 @@ serve(async (req) => {
       notes: lead.notes,
     });
 
+    // Use the lead's user_id as the owner (important for super_admin converting other users' leads)
+    const ownerId = lead.user_id;
+
     // Step 1: Create Customer from Lead (if not already exists)
     let customerId = lead.customer_id;
     let customer;
@@ -109,7 +126,7 @@ serve(async (req) => {
       const { data: newCustomer, error: customerError } = await adminClient
         .from('customers')
         .insert({
-          user_id: user.id,
+          user_id: ownerId,
           name: lead.name,
           email: lead.email,
           phone: lead.phone,
@@ -169,7 +186,7 @@ serve(async (req) => {
     const { data: newJob, error: jobError } = await adminClient
       .from('jobs')
       .insert({
-        user_id: user.id,
+        user_id: ownerId,
         customer_id: customerId,
         lead_id: leadId,
         name: jobName || lead.project_type || `Job for ${lead.name}`,
