@@ -36,7 +36,11 @@ serve(async (req: Request) => {
       });
     }
 
-    const { to, portalUrl } = await req.json();
+    const { to: rawTo, portalUrl } = await req.json();
+    const recipients = typeof rawTo === 'string'
+      ? rawTo.split(/[,;]/).map(e => e.trim()).filter(e => e.length > 0)
+      : [];
+    const to = recipients.length > 0 ? recipients[0] : null;
 
     if (!to || !portalUrl) {
       return new Response(JSON.stringify({ error: "Missing 'to' or 'portalUrl'" }), {
@@ -90,7 +94,7 @@ serve(async (req: Request) => {
       },
       body: JSON.stringify({
         from: `${businessName} <onboarding@resend.dev>`,
-        to: [to],
+        to: recipients,
         subject: `${businessName} - Your Project Portal`,
         html: emailHtml,
       }),
