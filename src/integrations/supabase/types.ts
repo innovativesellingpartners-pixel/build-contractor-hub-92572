@@ -4341,6 +4341,8 @@ export type Database = {
       }
       profiles: {
         Row: {
+          accepted_payment_methods: string[] | null
+          ach_instructions: string | null
           brand_accent_color: string | null
           brand_primary_color: string | null
           brand_secondary_color: string | null
@@ -4377,9 +4379,13 @@ export type Database = {
           user_id: string
           username: string | null
           website_url: string | null
+          zelle_email: string | null
+          zelle_phone: string | null
           zip_code: string | null
         }
         Insert: {
+          accepted_payment_methods?: string[] | null
+          ach_instructions?: string | null
           brand_accent_color?: string | null
           brand_primary_color?: string | null
           brand_secondary_color?: string | null
@@ -4416,9 +4422,13 @@ export type Database = {
           user_id: string
           username?: string | null
           website_url?: string | null
+          zelle_email?: string | null
+          zelle_phone?: string | null
           zip_code?: string | null
         }
         Update: {
+          accepted_payment_methods?: string[] | null
+          ach_instructions?: string | null
           brand_accent_color?: string | null
           brand_primary_color?: string | null
           brand_secondary_color?: string | null
@@ -4455,6 +4465,8 @@ export type Database = {
           user_id?: string
           username?: string | null
           website_url?: string | null
+          zelle_email?: string | null
+          zelle_phone?: string | null
           zip_code?: string | null
         }
         Relationships: []

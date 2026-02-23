@@ -30,6 +30,11 @@ interface Profile {
   default_sales_tax_rate?: number;
   default_deposit_percent?: number;
   default_warranty_years?: number;
+  // Payment settings
+  zelle_email?: string;
+  zelle_phone?: string;
+  ach_instructions?: string;
+  accepted_payment_methods?: string[];
   // Timestamps
   created_at: string;
   updated_at: string;
