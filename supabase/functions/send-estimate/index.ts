@@ -125,8 +125,11 @@ const handler = async (req: Request): Promise<Response> => {
     const replyToEmail = profile?.business_email || contractorEmail || authenticatedUserEmail;
     console.log('Using reply-to email:', replyToEmail, 'Brand colors:', { primaryColor, secondaryColor, accentColor });
 
-    // Send email to client
-    const recipients = [estimate.client_email];
+    // Send email to client - split comma/semicolon-separated emails into individual recipients
+    const recipients = estimate.client_email
+      .split(/[,;]/)
+      .map((e: string) => e.trim())
+      .filter((e: string) => e.length > 0);
     const bcc: string[] | undefined = contractorEmail ? [contractorEmail] : undefined;
 
     // Log if using default resend.dev email
