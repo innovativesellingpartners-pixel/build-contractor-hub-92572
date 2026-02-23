@@ -50,6 +50,45 @@ export default function JobBudgetTracker({ job }: JobBudgetTrackerProps) {
   const [showAdd, setShowAdd] = useState(false);
   const [newLine, setNewLine] = useState({ description: '', budgeted_amount: '' });
 
+  // Fetch estimate line items directly for display when no budget lines exist
+  const { data: estimate } = useQuery({
+    queryKey: ['job-estimate-budget', job.original_estimate_id],
+    queryFn: async () => {
+      if (!job.original_estimate_id) return null;
+      const { data, error } = await supabase
+        .from('estimates')
+        .select('id, title, total_amount, line_items, subtotal, tax_amount')
+        .eq('id', job.original_estimate_id)
+        .single();
+      if (error) return null;
+      return data;
+    },
+    enabled: !!job.original_estimate_id,
+  });
+
+  // Parse estimate line items for display when no budget lines imported yet
+  const estimateLineItems = useMemo(() => {
+    if (!estimate?.line_items || !Array.isArray(estimate.line_items)) return [];
+    return (estimate.line_items as any[]).map((item: any, idx: number) => {
+      const amount = Number(item.total) || Number(item.amount) || (Number(item.quantity || 1) * Number(item.unit_price || item.unitPrice || 0));
+      return {
+        id: `est-${idx}`,
+        description: item.description || item.name || `Line item ${idx + 1}`,
+        category: item.category || 'General',
+        budgeted_amount: amount,
+        actual_amount: 0,
+        quantity: Number(item.quantity) || 1,
+        unit_price: Number(item.unit_price || item.unitPrice) || 0,
+        isEstimate: true,
+      };
+    });
+  }, [estimate]);
+
+  // Use budget lines if they exist, otherwise fall back to estimate line items
+  const hasImportedBudget = budgetLines.length > 0;
+  const displayBudgetLines = hasImportedBudget ? budgetLines : estimateLineItems;
+  const displayTotalBudgeted = hasImportedBudget ? totalBudgeted : estimateLineItems.reduce((s, l) => s + l.budgeted_amount, 0);
+
   // Fetch invoices for actual revenue
   const { data: invoices } = useQuery({
     queryKey: ['job-invoices-budget', job.id],
@@ -64,7 +103,7 @@ export default function JobBudgetTracker({ job }: JobBudgetTrackerProps) {
     enabled: !!job.id,
   });
 
-  const budgetAmount = Number(job.budget_amount) || Number(job.contract_value) || totalBudgeted || 0;
+  const budgetAmount = Number(job.budget_amount) || Number(job.contract_value) || displayTotalBudgeted || 0;
   const actualSpend = totalCosts || totalActual || Number(job.actual_cost) || 0;
   const consumedPct = budgetAmount > 0 ? (actualSpend / budgetAmount) * 100 : 0;
   const remaining = budgetAmount - actualSpend;
@@ -82,16 +121,16 @@ export default function JobBudgetTracker({ job }: JobBudgetTrackerProps) {
 
   // Chart data for budget vs actual by category
   const chartData = useMemo(() => {
-    if (budgetLines.length === 0) return [];
+    if (displayBudgetLines.length === 0) return [];
     const byCategory: Record<string, { budgeted: number; actual: number }> = {};
-    budgetLines.forEach(line => {
+    displayBudgetLines.forEach((line: any) => {
       const cat = line.category || 'General';
       if (!byCategory[cat]) byCategory[cat] = { budgeted: 0, actual: 0 };
       byCategory[cat].budgeted += Number(line.budgeted_amount || 0);
       byCategory[cat].actual += Number(line.actual_amount || 0);
     });
     return Object.entries(byCategory).map(([name, d]) => ({ name, ...d }));
-  }, [budgetLines]);
+  }, [displayBudgetLines]);
 
   // Costs grouped by category for Actual tab
   const costsByCategory = useMemo(() => {
@@ -186,7 +225,7 @@ export default function JobBudgetTracker({ job }: JobBudgetTrackerProps) {
               </div>
               <div className="flex justify-between py-1.5 border-b border-border/50">
                 <span className="text-sm text-muted-foreground">Budgeted Cost</span>
-                <span className="text-sm font-semibold tabular-nums">{fmt(budgetAmount)}</span>
+                <span className="text-sm font-semibold tabular-nums">{fmt(displayTotalBudgeted || budgetAmount)}</span>
               </div>
               <div className="flex justify-between py-1.5">
                 <span className="text-sm font-medium">Expected Margin</span>
@@ -202,19 +241,34 @@ export default function JobBudgetTracker({ job }: JobBudgetTrackerProps) {
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-semibold">Budget Line Items</h3>
               <div className="flex gap-2">
-                {budgetLines.length > 0 && (
-                  <Button size="sm" variant="outline" onClick={() => exportBudgetReport(budgetLines)}>
+                {hasImportedBudget ? (
+                  <>
+                    {budgetLines.length === 0 && job.original_estimate_id && (
+                      <Button size="sm" variant="outline" onClick={() => initFromEstimate(job.original_estimate_id!, job.id!)}>
+                        Import from Estimate
+                      </Button>
+                    )}
+                    <Button size="sm" variant="outline" onClick={() => setShowAdd(!showAdd)}>
+                      <Plus className="h-3 w-3 mr-1" /> Add Line
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    {job.original_estimate_id && (
+                      <Button size="sm" variant="outline" onClick={() => initFromEstimate(job.original_estimate_id!, job.id!)}>
+                        Lock as Budget
+                      </Button>
+                    )}
+                    <Button size="sm" variant="outline" onClick={() => setShowAdd(!showAdd)}>
+                      <Plus className="h-3 w-3 mr-1" /> Add Line
+                    </Button>
+                  </>
+                )}
+                {displayBudgetLines.length > 0 && (
+                  <Button size="sm" variant="outline" onClick={() => exportBudgetReport(hasImportedBudget ? budgetLines : displayBudgetLines as any)}>
                     Export
                   </Button>
                 )}
-                {budgetLines.length === 0 && job.original_estimate_id && (
-                  <Button size="sm" variant="outline" onClick={() => initFromEstimate(job.original_estimate_id!, job.id!)}>
-                    Import from Estimate
-                  </Button>
-                )}
-                <Button size="sm" variant="outline" onClick={() => setShowAdd(!showAdd)}>
-                  <Plus className="h-3 w-3 mr-1" /> Add Line
-                </Button>
               </div>
             </div>
 
@@ -242,7 +296,14 @@ export default function JobBudgetTracker({ job }: JobBudgetTrackerProps) {
               </div>
             )}
 
-            {budgetLines.length > 0 ? (
+            {!hasImportedBudget && estimateLineItems.length > 0 && (
+              <div className="mb-3 flex items-center gap-2 p-2 rounded-md bg-blue-500/10 text-blue-700 text-xs">
+                <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                <span>Showing estimate line items as budget baseline. Click "Lock as Budget" to make editable.</span>
+              </div>
+            )}
+
+            {displayBudgetLines.length > 0 ? (
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
@@ -250,26 +311,28 @@ export default function JobBudgetTracker({ job }: JobBudgetTrackerProps) {
                       <TableHead className="text-xs">Description</TableHead>
                       <TableHead className="text-xs">Category</TableHead>
                       <TableHead className="text-xs text-right">Budget</TableHead>
-                      <TableHead className="w-8" />
+                      {hasImportedBudget && <TableHead className="w-8" />}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {budgetLines.map(line => (
+                    {displayBudgetLines.map((line: any) => (
                       <TableRow key={line.id}>
                         <TableCell className="text-xs font-medium">{line.description}</TableCell>
                         <TableCell className="text-xs text-muted-foreground">{line.category}</TableCell>
                         <TableCell className="text-xs text-right tabular-nums">{fmt(line.budgeted_amount)}</TableCell>
-                        <TableCell>
-                          <button onClick={() => deleteBudgetLine(line.id)} className="p-1 hover:bg-destructive/10 rounded text-destructive/60 hover:text-destructive">
-                            <Trash2 className="h-3 w-3" />
-                          </button>
-                        </TableCell>
+                        {hasImportedBudget && (
+                          <TableCell>
+                            <button onClick={() => deleteBudgetLine(line.id)} className="p-1 hover:bg-destructive/10 rounded text-destructive/60 hover:text-destructive">
+                              <Trash2 className="h-3 w-3" />
+                            </button>
+                          </TableCell>
+                        )}
                       </TableRow>
                     ))}
                     <TableRow className="border-t-2 font-semibold">
                       <TableCell className="text-xs" colSpan={2}>Total</TableCell>
-                      <TableCell className="text-xs text-right tabular-nums">{fmt(totalBudgeted)}</TableCell>
-                      <TableCell />
+                      <TableCell className="text-xs text-right tabular-nums">{fmt(displayTotalBudgeted)}</TableCell>
+                      {hasImportedBudget && <TableCell />}
                     </TableRow>
                   </TableBody>
                 </Table>
@@ -279,7 +342,7 @@ export default function JobBudgetTracker({ job }: JobBudgetTrackerProps) {
                 <Target className="h-8 w-8 mx-auto mb-2 opacity-40" />
                 <p>No budget line items yet.</p>
                 {job.original_estimate_id ? (
-                  <p className="text-xs mt-1">Click "Import from Estimate" to auto-populate budget from the original estimate.</p>
+                  <p className="text-xs mt-1">This job has no estimate line items. Add budget lines manually.</p>
                 ) : (
                   <p className="text-xs mt-1">Add budget lines manually to track costs against plan.</p>
                 )}
@@ -381,7 +444,7 @@ export default function JobBudgetTracker({ job }: JobBudgetTrackerProps) {
           )}
 
           {/* Line-item variance table */}
-          {budgetLines.length > 0 && (
+          {displayBudgetLines.length > 0 && (
             <Card className="p-4">
               <h3 className="text-sm font-semibold mb-3">Line Item Variance</h3>
               <div className="overflow-x-auto">
@@ -392,29 +455,29 @@ export default function JobBudgetTracker({ job }: JobBudgetTrackerProps) {
                       <TableHead className="text-xs text-right">Budget</TableHead>
                       <TableHead className="text-xs text-right">Actual</TableHead>
                       <TableHead className="text-xs text-right">Variance</TableHead>
-                      <TableHead className="text-xs text-right">%</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {budgetLines.map(line => (
-                      <TableRow key={line.id}>
-                        <TableCell className="text-xs font-medium">{line.description}</TableCell>
-                        <TableCell className="text-xs text-right tabular-nums">{fmt(line.budgeted_amount)}</TableCell>
-                        <TableCell className="text-xs text-right tabular-nums">{fmt(line.actual_amount)}</TableCell>
-                        <TableCell className={`text-xs text-right tabular-nums font-medium ${line.variance_amount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                          {fmt(line.variance_amount)}
-                        </TableCell>
-                        <TableCell className={`text-xs text-right tabular-nums ${line.variance_percent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                          {fmtPct(line.variance_percent)}
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {displayBudgetLines.map((line: any) => {
+                      const budgeted = Number(line.budgeted_amount) || 0;
+                      const actual = Number(line.actual_amount) || 0;
+                      const variance = budgeted - actual;
+                      return (
+                        <TableRow key={line.id}>
+                          <TableCell className="text-xs font-medium">{line.description}</TableCell>
+                          <TableCell className="text-xs text-right tabular-nums">{fmt(budgeted)}</TableCell>
+                          <TableCell className="text-xs text-right tabular-nums">{fmt(actual)}</TableCell>
+                          <TableCell className={`text-xs text-right tabular-nums font-medium ${variance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {fmt(variance)}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                     <TableRow className="border-t-2 font-semibold">
                       <TableCell className="text-xs">Total</TableCell>
-                      <TableCell className="text-xs text-right tabular-nums">{fmt(totalBudgeted)}</TableCell>
+                      <TableCell className="text-xs text-right tabular-nums">{fmt(displayTotalBudgeted)}</TableCell>
                       <TableCell className="text-xs text-right tabular-nums">{fmt(totalActual)}</TableCell>
-                      <TableCell className={`text-xs text-right tabular-nums ${totalVariance >= 0 ? 'text-green-600' : 'text-red-600'}`}>{fmt(totalVariance)}</TableCell>
-                      <TableCell className={`text-xs text-right tabular-nums ${variancePercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>{fmtPct(variancePercent)}</TableCell>
+                      <TableCell className={`text-xs text-right tabular-nums ${(displayTotalBudgeted - totalActual) >= 0 ? 'text-green-600' : 'text-red-600'}`}>{fmt(displayTotalBudgeted - totalActual)}</TableCell>
                     </TableRow>
                   </TableBody>
                 </Table>
