@@ -206,7 +206,7 @@ export default function TasksTab({ jobId }: TasksTabProps) {
       )}
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingTask ? 'Edit Task' : 'Add New Task'}</DialogTitle>
           </DialogHeader>
