@@ -185,7 +185,7 @@ export default function ProjectInfoStep({ data, onChange }: ProjectInfoStepProps
                       aria-expanded={gcOpen}
                       className="flex-1 justify-between"
                     >
-                      {selectedGC ? (
+                    {selectedGC ? (
                         <span className="truncate">
                           {selectedGC.name}
                           {selectedGC.company && <span className="text-muted-foreground ml-1">({selectedGC.company})</span>}
@@ -193,7 +193,21 @@ export default function ProjectInfoStep({ data, onChange }: ProjectInfoStepProps
                       ) : (
                         <span className="text-muted-foreground">Select a GC...</span>
                       )}
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      <div className="ml-2 flex items-center gap-1 shrink-0">
+                        {selectedGC && (
+                          <span
+                            role="button"
+                            className="h-4 w-4 rounded-full hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onChange({ gc_contact_id: '' });
+                            }}
+                          >
+                            ✕
+                          </span>
+                        )}
+                        <ChevronsUpDown className="h-4 w-4 opacity-50" />
+                      </div>
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-[400px] p-0" align="start">
