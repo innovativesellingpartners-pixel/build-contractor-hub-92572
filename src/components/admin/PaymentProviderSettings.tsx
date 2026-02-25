@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -37,8 +37,9 @@ export function PaymentProviderSettings({ contractorId }: PaymentProviderSetting
   const [initialized, setInitialized] = useState(false);
   const [showProvisionForm, setShowProvisionForm] = useState(false);
 
-  // Provision form state
-  const [provisionData, setProvisionData] = useState({
+  const DRAFT_KEY = `finix-provision-draft-${contractorId}`;
+
+  const defaultProvisionData = {
     business_name: '',
     business_type: 'INDIVIDUAL_SOLE_PROPRIETORSHIP',
     doing_business_as: '',
@@ -63,27 +64,60 @@ export function PaymentProviderSettings({ contractorId }: PaymentProviderSetting
     bank_account_number: '',
     bank_account_type: 'CHECKING',
     default_statement_descriptor: '',
+  };
+
+  // Provision form state — restore from localStorage draft if available
+  const [provisionData, setProvisionData] = useState(() => {
+    try {
+      const saved = localStorage.getItem(DRAFT_KEY);
+      if (saved) return { ...defaultProvisionData, ...JSON.parse(saved) };
+    } catch { /* ignore */ }
+    return defaultProvisionData;
   });
+
+  const [hasDraft, setHasDraft] = useState(() => !!localStorage.getItem(DRAFT_KEY));
+
+  // Auto-save draft whenever form data changes (debounced via effect)
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      // Only save if at least one non-default field has a value
+      const hasData = Object.entries(provisionData).some(
+        ([key, val]) => val && val !== defaultProvisionData[key as keyof typeof defaultProvisionData]
+      );
+      if (hasData) {
+        localStorage.setItem(DRAFT_KEY, JSON.stringify(provisionData));
+        setHasDraft(true);
+      }
+    }, 500);
+    return () => clearTimeout(timeout);
+  }, [provisionData, DRAFT_KEY]);
+
+  const clearDraft = useCallback(() => {
+    localStorage.removeItem(DRAFT_KEY);
+    setHasDraft(false);
+  }, [DRAFT_KEY]);
 
   if (profile && !initialized) {
     setProvider(profile.preferred_payment_provider || 'finix');
     setFinixMerchantId(profile.finix_merchant_id || '');
 
-    // Pre-fill provision form with known contractor data
-    const nameParts = (profile.contact_name || '').split(' ');
-    setProvisionData(prev => ({
-      ...prev,
-      business_name: profile.company_name || '',
-      first_name: nameParts[0] || '',
-      last_name: nameParts.slice(1).join(' ') || '',
-      email: profile.business_email || '',
-      phone: (profile.phone || '').replace(/\D/g, ''),
-      business_address_line1: profile.business_address || '',
-      business_address_city: profile.city || '',
-      business_address_state: profile.state || '',
-      business_address_postal_code: profile.zip_code || '',
-      default_statement_descriptor: (profile.company_name || '').substring(0, 20),
-    }));
+    // Only pre-fill from profile if there's NO saved draft
+    if (!localStorage.getItem(DRAFT_KEY)) {
+      const nameParts = (profile.contact_name || '').split(' ');
+      setProvisionData(prev => ({
+        ...prev,
+        business_name: profile.company_name || '',
+        first_name: nameParts[0] || '',
+        last_name: nameParts.slice(1).join(' ') || '',
+        email: profile.business_email || '',
+        phone: (profile.phone || '').replace(/\D/g, ''),
+        business_address_line1: profile.business_address || '',
+        business_address_city: profile.city || '',
+        business_address_state: profile.state || '',
+        business_address_postal_code: profile.zip_code || '',
+        default_statement_descriptor: (profile.company_name || '').substring(0, 20),
+      }));
+    }
     setInitialized(true);
   }
 
@@ -156,6 +190,7 @@ export function PaymentProviderSettings({ contractorId }: PaymentProviderSetting
     onSuccess: (data) => {
       setFinixMerchantId(data.identity_id);
       setShowProvisionForm(false);
+      clearDraft();
       queryClient.invalidateQueries({ queryKey: ['contractor-payment-settings', contractorId] });
       toast.success(`Finix merchant provisioned! Status: ${data.onboarding_state}`);
     },
@@ -260,6 +295,12 @@ export function PaymentProviderSettings({ contractorId }: PaymentProviderSetting
 
           {showProvisionForm && (
             <div className="space-y-6">
+              {hasDraft && (
+                <div className="flex items-center gap-2 p-3 bg-primary/10 rounded-lg text-sm">
+                  <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0" />
+                  <span>Draft restored — your previously entered data has been loaded.</span>
+                </div>
+              )}
               {/* Business Info */}
               <div className="space-y-4">
                 <h3 className="font-semibold flex items-center gap-2">
@@ -433,6 +474,21 @@ export function PaymentProviderSettings({ contractorId }: PaymentProviderSetting
                 >
                   Cancel
                 </Button>
+                {hasDraft && (
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      clearDraft();
+                      setProvisionData(defaultProvisionData);
+                      toast.info('Draft cleared');
+                    }}
+                    disabled={provisionMutation.isPending}
+                    className="text-destructive"
+                    type="button"
+                  >
+                    Clear Draft
+                  </Button>
+                )}
                 <Button
                   onClick={() => provisionMutation.mutate()}
                   disabled={provisionMutation.isPending}
