@@ -1,63 +1,67 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Contractor Platform Design System - Industrial & Modern */
+/* ═══════════════════════════════════════════════════════════
+   myCT1 Design System — Modern SaaS Edition
+   ═══════════════════════════════════════════════════════════ */
 
 @layer base {
   :root {
-    /* Light Theme - Clean whites with CT1 red accents */
-    --background: 0 0% 98%;               /* Near white background */
-    --foreground: 0 0% 10%;               /* Dark text */
-    --card: 0 0% 100%;                    /* Pure white cards */
-    --card-foreground: 0 0% 10%;          /* Dark text on cards */
-    --card-hover: 0 0% 96%;               /* Slightly gray on hover */
-    --popover: 0 0% 100%;                 /* White popover */
-    --popover-foreground: 0 0% 10%;       /* Dark text */
+    /* ── Surface & Text ── */
+    --background: 210 20% 98%;
+    --foreground: 220 14% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 14% 10%;
+    --card-hover: 210 14% 96%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 14% 10%;
 
-    /* Primary: CT1 Brand Red #D50A22 */
-    --primary: 353 91% 44%;               /* CT1 brand red #D50A22 */
-    --primary-foreground: 0 0% 100%;      /* White text on red */
-    --primary-hover: 353 91% 38%;         /* Slightly darker on hover */
+    /* ── Primary: CT1 Brand Red #D50A22 ── */
+    --primary: 353 91% 44%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 353 91% 38%;
 
-    /* Secondary: Light Gray */
-    --secondary: 0 0% 94%;                /* Light gray */
-    --secondary-foreground: 0 0% 15%;     /* Dark text on light */
-    
-    --muted: 0 0% 96%;                    /* Light muted background */
-    --muted-foreground: 0 0% 45%;         /* Medium gray text */
-    
-    /* Accent: CT1 Brand Red */
-    --accent: 353 91% 44%;                /* CT1 brand red accent */
-    --accent-foreground: 0 0% 100%;       /* White on red */
-    
-    --destructive: 0 62.8% 50%;           /* Destructive red */
+    /* ── Secondary ── */
+    --secondary: 210 16% 93%;
+    --secondary-foreground: 220 14% 15%;
+
+    /* ── Muted ── */
+    --muted: 210 14% 95%;
+    --muted-foreground: 215 13% 50%;
+
+    /* ── Accent (maps to primary for brand consistency) ── */
+    --accent: 353 91% 44%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    
-    --border: 0 0% 75%;                   /* Gray borders for visibility */
-    --input: 0 0% 96%;                    /* Light input background */
-    --input-border: 0 0% 55%;             /* Darker input borders for better visibility */
-    --ring: 353 91% 44%;                  /* CT1 brand red focus ring */
 
-    /* CT1 specific brand colors - light palette */
-    --ct1-red: 353 91% 44%;               /* CT1 brand red #D50A22 */
-    --ct1-black: 0 0% 10%;                /* Near black */
-    --ct1-white: 0 0% 100%;               /* Pure white */
-    --ct1-dark-red: 353 91% 38%;          /* Darker red variant */
-    --ct1-light-red: 353 91% 55%;         /* Lighter red variant */
+    /* ── Borders & Inputs ── */
+    --border: 214 14% 85%;
+    --input: 210 14% 95%;
+    --input-border: 214 14% 72%;
+    --ring: 353 91% 44%;
 
-    /* Vibrant accent colors */
-    --blue-vibrant: 217 91% 60%;          /* Electric blue */
-    --green-vibrant: 142 71% 45%;         /* Success green */
-    --purple-vibrant: 262 83% 58%;        /* Rich purple */
-    --orange-vibrant: 25 95% 53%;         /* Bright orange */
-    --yellow-vibrant: 45 93% 47%;         /* Golden yellow */
-    --cyan-vibrant: 189 94% 43%;          /* Bright cyan */
-    --pink-vibrant: 330 81% 60%;          /* Hot pink */
-    
-    /* Soft backgrounds (for cards) */
+    /* ── CT1 Brand Tokens ── */
+    --ct1-red: 353 91% 44%;
+    --ct1-black: 220 14% 10%;
+    --ct1-white: 0 0% 100%;
+    --ct1-dark-red: 353 91% 38%;
+    --ct1-light-red: 353 91% 55%;
+
+    /* ── Vibrant Accents ── */
+    --blue-vibrant: 217 91% 60%;
+    --green-vibrant: 142 71% 45%;
+    --purple-vibrant: 262 83% 58%;
+    --orange-vibrant: 25 95% 53%;
+    --yellow-vibrant: 45 93% 47%;
+    --cyan-vibrant: 189 94% 43%;
+    --pink-vibrant: 330 81% 60%;
+
+    /* ── Soft Backgrounds ── */
     --bg-blue-soft: 217 91% 95%;
     --bg-green-soft: 142 71% 95%;
     --bg-purple-soft: 262 83% 96%;
@@ -65,7 +69,7 @@
     --bg-cyan-soft: 189 94% 95%;
     --bg-pink-soft: 330 81% 95%;
 
-    /* Success, info, warning colors */
+    /* ── Semantic Status ── */
     --success: 142 71% 45%;
     --success-foreground: 0 0% 100%;
     --info: 217 91% 60%;
@@ -73,116 +77,127 @@
     --warning: 25 95% 53%;
     --warning-foreground: 0 0% 100%;
 
-    /* Light gradients */
-    --gradient-hero: linear-gradient(135deg, hsl(0 0% 98%), hsl(0 0% 94%));
+    /* ── Gradients ── */
+    --gradient-hero: linear-gradient(135deg, hsl(210 20% 98%), hsl(210 16% 94%));
     --gradient-card: linear-gradient(180deg, hsl(var(--card)), hsl(var(--muted)));
     --gradient-red: linear-gradient(45deg, hsl(var(--ct1-red) / 0.08), hsl(var(--ct1-light-red) / 0.05));
-    --gradient-black: linear-gradient(135deg, hsl(0 0% 98%), hsl(0 0% 94%));
-    
-    /* Colorful gradients */
+    --gradient-black: linear-gradient(135deg, hsl(210 20% 98%), hsl(210 16% 94%));
     --gradient-blue: linear-gradient(135deg, hsl(217 91% 60% / 0.08), hsl(262 83% 58% / 0.04));
     --gradient-success: linear-gradient(135deg, hsl(142 71% 45% / 0.08), hsl(189 94% 43% / 0.04));
 
-    /* Soft shadows for light theme */
-    --shadow-soft: 0 4px 20px -4px hsl(0 0% 0% / 0.08);
-    --shadow-card: 0 2px 12px -2px hsl(0 0% 0% / 0.06);
+    /* ── Shadows — Layered for depth ── */
+    --shadow-xs: 0 1px 2px 0 hsl(220 14% 10% / 0.03);
+    --shadow-sm: 0 1px 3px 0 hsl(220 14% 10% / 0.04), 0 1px 2px -1px hsl(220 14% 10% / 0.03);
+    --shadow-md: 0 4px 6px -1px hsl(220 14% 10% / 0.05), 0 2px 4px -2px hsl(220 14% 10% / 0.03);
+    --shadow-lg: 0 10px 15px -3px hsl(220 14% 10% / 0.06), 0 4px 6px -4px hsl(220 14% 10% / 0.03);
+    --shadow-xl: 0 20px 25px -5px hsl(220 14% 10% / 0.06), 0 8px 10px -6px hsl(220 14% 10% / 0.03);
+    --shadow-soft: 0 4px 20px -4px hsl(220 14% 10% / 0.08);
+    --shadow-card: 0 1px 3px 0 hsl(220 14% 10% / 0.04), 0 1px 2px -1px hsl(220 14% 10% / 0.03);
+    --shadow-card-hover: 0 4px 12px -2px hsl(220 14% 10% / 0.08), 0 2px 4px -2px hsl(220 14% 10% / 0.04);
     --shadow-red-glow: 0 0 30px hsl(var(--ct1-red) / 0.15);
 
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-smooth: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-    
-    --radius: 0.75rem;
-    
-    /* Modern spacing & shadow scales */
-    --shadow-xs: 0 1px 2px 0 hsl(0 0% 0% / 0.03);
-    --shadow-sm: 0 1px 3px 0 hsl(0 0% 0% / 0.04), 0 1px 2px -1px hsl(0 0% 0% / 0.04);
-    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.05), 0 2px 4px -2px hsl(0 0% 0% / 0.04);
-    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.06), 0 4px 6px -4px hsl(0 0% 0% / 0.04);
-    --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.06), 0 8px 10px -6px hsl(0 0% 0% / 0.04);
 
+    --radius: 0.75rem;
+
+    /* ── Sidebar ── */
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 0 0% 15%;
+    --sidebar-foreground: 220 14% 15%;
     --sidebar-primary: 353 91% 44%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 96%;
-    --sidebar-accent-foreground: 0 0% 15%;
-    --sidebar-border: 0 0% 90%;
+    --sidebar-accent: 210 14% 96%;
+    --sidebar-accent-foreground: 220 14% 15%;
+    --sidebar-border: 214 14% 91%;
     --sidebar-ring: 353 91% 44%;
   }
 
   .dark {
-    /* Dark mode: CT1 soft red with dark backgrounds */
-    --background: 0 0% 5%;                /* Very dark background */
-    --foreground: 0 0% 100%;              /* White text */
-    --card: 0 0% 8%;
-    --card-foreground: 0 0% 100%;
-    --card-hover: 0 0% 12%;
-    --popover: 0 0% 8%;
-    --popover-foreground: 0 0% 100%;
+    --background: 220 16% 6%;
+    --foreground: 210 20% 98%;
+    --card: 220 14% 9%;
+    --card-foreground: 210 20% 98%;
+    --card-hover: 220 14% 13%;
+    --popover: 220 14% 9%;
+    --popover-foreground: 210 20% 98%;
 
-    --primary: 353 91% 44%;               /* CT1 brand red #D50A22 */
+    --primary: 353 91% 48%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 353 91% 38%;
+    --primary-hover: 353 91% 42%;
 
-    --secondary: 0 0% 15%;                /* Dark gray */
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 220 14% 16%;
+    --secondary-foreground: 210 20% 98%;
 
-    --muted: 0 0% 12%;                    /* Darker muted */
-    --muted-foreground: 0 0% 70%;         /* Light gray text */
+    --muted: 220 14% 13%;
+    --muted-foreground: 215 13% 60%;
 
-    --accent: 353 91% 44%;                /* CT1 brand red accent */
+    --accent: 353 91% 48%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 62.8% 50%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 30%;                   /* Visible border in dark mode */
-    --input: 0 0% 15%;                    /* Dark input bg */
-    --input-border: 0 0% 45%;             /* Darker input borders for better visibility in dark mode */
-    --ring: 353 91% 44%;                  /* CT1 brand red focus ring */
+    --border: 220 14% 22%;
+    --input: 220 14% 16%;
+    --input-border: 220 14% 35%;
+    --ring: 353 91% 48%;
 
-    /* CT1 dark mode colors */
-    --ct1-red: 353 91% 44%;               /* CT1 brand red #D50A22 */
-    --ct1-soft-red: 353 91% 25%;          /* Soft red for dark backgrounds */
-    --ct1-black: 0 0% 5%;                 /* Very dark */
-    --ct1-white: 0 0% 100%;               /* Pure white */
-    --ct1-dark-red: 353 91% 38%;          /* Darker red variant */
-    --ct1-light-red: 353 91% 55%;         /* Lighter red variant */
+    --ct1-red: 353 91% 48%;
+    --ct1-soft-red: 353 91% 25%;
+    --ct1-black: 220 16% 6%;
+    --ct1-white: 210 20% 98%;
+    --ct1-dark-red: 353 91% 42%;
+    --ct1-light-red: 353 91% 55%;
 
-    /* Dark gradients */
-    --gradient-hero: linear-gradient(135deg, hsl(0 0% 5%), hsl(0 0% 10%));
+    --gradient-hero: linear-gradient(135deg, hsl(220 16% 6%), hsl(220 14% 11%));
     --gradient-card: linear-gradient(180deg, hsl(var(--card)), hsl(var(--muted)));
     --gradient-red: linear-gradient(45deg, hsl(var(--ct1-red) / 0.15), hsl(var(--ct1-light-red) / 0.1));
-    --gradient-black: linear-gradient(135deg, hsl(0 0% 8%), hsl(0 0% 15%));
+    --gradient-black: linear-gradient(135deg, hsl(220 14% 9%), hsl(220 14% 16%));
 
-    /* Soft shadows for dark mode */
-    --shadow-soft: 0 4px 20px -4px hsl(var(--ct1-red) / 0.3);
-    --shadow-card: 0 2px 12px -2px hsl(0 0% 0% / 0.3);
+    --shadow-soft: 0 4px 20px -4px hsl(0 0% 0% / 0.4);
+    --shadow-card: 0 1px 3px 0 hsl(0 0% 0% / 0.3), 0 1px 2px -1px hsl(0 0% 0% / 0.2);
+    --shadow-card-hover: 0 4px 12px -2px hsl(0 0% 0% / 0.4), 0 2px 4px -2px hsl(0 0% 0% / 0.2);
     --shadow-red-glow: 0 0 30px hsl(var(--ct1-red) / 0.3);
 
-    --sidebar-background: 0 0% 8%;
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 353 91% 44%;
+    --sidebar-background: 220 14% 9%;
+    --sidebar-foreground: 210 20% 98%;
+    --sidebar-primary: 353 91% 48%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 15%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 0 0% 20%;
-    --sidebar-ring: 353 91% 44%;
+    --sidebar-accent: 220 14% 16%;
+    --sidebar-accent-foreground: 210 20% 98%;
+    --sidebar-border: 220 14% 18%;
+    --sidebar-ring: 353 91% 48%;
   }
 }
 
+/* ── Typography Scale ── */
 @layer base {
   * {
     @apply border-border;
   }
 
   body {
-    @apply bg-background text-foreground font-['Inter',sans-serif];
+    @apply bg-background text-foreground font-['Inter',sans-serif] antialiased;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
-  
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-semibold tracking-tight;
+
+  /* Type scale — sentence case everywhere, no forced uppercase */
+  h1 {
+    @apply text-2xl sm:text-3xl font-bold tracking-tight text-foreground leading-tight;
+  }
+  h2 {
+    @apply text-xl sm:text-2xl font-semibold tracking-tight text-foreground;
+  }
+  h3 {
+    @apply text-lg font-semibold tracking-tight text-foreground;
+  }
+  h4 {
+    @apply text-base font-semibold text-foreground;
+  }
+  h5, h6 {
+    @apply text-sm font-semibold text-foreground;
   }
 
   /* No forced text-transform on editable fields */
@@ -191,15 +206,58 @@
   }
 }
 
+/* ── Component Utilities ── */
 @layer components {
-  /* CT1 Custom component styles - refined and soft */
+  /* Page section containers */
+  .page-container {
+    @apply w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .section-gap {
+    @apply space-y-6 sm:space-y-8;
+  }
+
+  /* Page header pattern */
+  .page-header {
+    @apply flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4;
+  }
+
+  .page-header-info {
+    @apply flex-1 min-w-0;
+  }
+
+  .page-header-actions {
+    @apply flex items-center gap-2 flex-shrink-0;
+  }
+
+  /* Card hover effect */
+  .card-interactive {
+    @apply transition-all duration-200 hover:shadow-[var(--shadow-card-hover)] hover:border-border;
+  }
+
+  /* Status chip base */
+  .status-chip {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+
+  /* Filter bar */
+  .filter-bar {
+    @apply flex flex-col sm:flex-row gap-3 items-stretch sm:items-center;
+  }
+
+  /* Metric card row */
+  .metric-row {
+    @apply grid gap-4 grid-cols-2 xl:grid-cols-4;
+  }
+
+  /* CT1 Hero & CTA styles */
   .btn-hero {
-    @apply bg-gradient-to-r from-primary to-primary-hover text-primary-foreground px-8 py-4 rounded-lg font-bold text-lg shadow-lg hover:shadow-xl;
+    @apply bg-gradient-to-r from-primary to-primary-hover text-primary-foreground px-8 py-4 rounded-lg font-bold text-lg;
     box-shadow: var(--shadow-soft);
     transition: var(--transition-smooth);
     border: 2px solid transparent;
   }
-  
+
   .btn-hero:hover {
     transform: translateY(-1px) scale(1.02);
     box-shadow: var(--shadow-red-glow);
@@ -232,7 +290,6 @@
     @apply text-primary-foreground;
   }
 
-  /* Arrow motif utility classes - softer */
   .arrow-up {
     @apply relative;
   }
@@ -242,13 +299,12 @@
     @apply absolute -top-2 -right-2 w-3 h-3 border-t-2 border-r-2 border-primary/50 rotate-45 opacity-20;
   }
 
-  /* Utility classes */
   .text-ct1-red {
     @apply text-primary;
   }
 
   .bg-ct1-pattern {
-    background-image: 
+    background-image:
       linear-gradient(45deg, transparent 50%, hsl(var(--primary) / 0.03) 55%, transparent 60%),
       linear-gradient(-45deg, transparent 50%, hsl(var(--primary) / 0.03) 55%, transparent 60%);
     background-size: 80px 80px;
@@ -257,9 +313,14 @@
   .accent-red {
     @apply text-primary;
   }
-  
+
   .border-construction {
     border-left: 3px solid hsl(var(--primary) / 0.5);
+  }
+
+  /* Tabular nums for all financial values */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
   }
 }
 
@@ -267,26 +328,24 @@
   .pt-safe {
     padding-top: env(safe-area-inset-top);
   }
-  
+
   .pb-safe {
     padding-bottom: env(safe-area-inset-bottom);
   }
-  
+
   .pl-safe {
     padding-left: env(safe-area-inset-left);
   }
-  
+
   .pr-safe {
     padding-right: env(safe-area-inset-right);
   }
-  
-  /* Mobile overflow protection - prevent horizontal scrolling */
+
   .mobile-safe {
     max-width: 100vw;
     overflow-x: hidden;
   }
-  
-  /* Ensure text never bleeds off screen */
+
   .text-safe {
     overflow-wrap: break-word;
     word-wrap: break-word;
@@ -301,32 +360,27 @@
     overflow-x: hidden;
     max-width: 100vw;
   }
-  
-  /* Prevent any element from causing horizontal overflow */
+
   .container, [class*="container"] {
     max-width: 100vw !important;
     overflow-x: hidden;
   }
-  
-  /* Force all cards and sections to respect viewport bounds */
+
   .card, [class*="Card"], [class*="card"] {
     max-width: 100%;
     overflow: hidden;
   }
-  
-  /* Ensure buttons don't overflow */
+
   button, .btn, [class*="Button"], [class*="button"] {
     max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  
-  /* Ensure form inputs don't overflow */
+
   input, textarea, select {
     max-width: 100%;
   }
-  
-  /* Force text truncation on mobile */
+
   h1, h2, h3, h4, h5, h6, p, span, a, label {
     overflow-wrap: break-word;
     word-wrap: break-word;

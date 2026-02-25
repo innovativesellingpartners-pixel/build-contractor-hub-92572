@@ -1,6 +1,6 @@
 /**
  * InteractiveMetricCard — Clickable metric card with hover tooltip and drill-down.
- * Polished modern SaaS design with gradient accents and micro-interactions.
+ * Clean, modern SaaS design with subtle accent lines and smooth interactions.
  */
 
 import { Card } from "@/components/ui/card";
@@ -30,27 +30,27 @@ interface Props {
 
 const variantStyles = {
   default: {
-    iconBg: "bg-primary/10",
+    iconBg: "bg-primary/8",
     iconText: "text-primary",
     accentLine: "bg-primary",
   },
   success: {
-    iconBg: "bg-emerald-500/10",
+    iconBg: "bg-emerald-500/8",
     iconText: "text-emerald-600 dark:text-emerald-400",
     accentLine: "bg-emerald-500",
   },
   danger: {
-    iconBg: "bg-red-500/10",
+    iconBg: "bg-red-500/8",
     iconText: "text-red-600 dark:text-red-400",
     accentLine: "bg-red-500",
   },
   warning: {
-    iconBg: "bg-amber-500/10",
+    iconBg: "bg-amber-500/8",
     iconText: "text-amber-600 dark:text-amber-400",
     accentLine: "bg-amber-500",
   },
   info: {
-    iconBg: "bg-blue-500/10",
+    iconBg: "bg-blue-500/8",
     iconText: "text-blue-600 dark:text-blue-400",
     accentLine: "bg-blue-500",
   },
@@ -70,34 +70,34 @@ export function InteractiveMetricCard({
   sparkData,
 }: Props) {
   const TrendIcon = trend === undefined || trend === 0 ? Minus : trend > 0 ? TrendingUp : TrendingDown;
-  const trendColor = trend === undefined ? "text-muted-foreground" : trend > 0 ? "text-emerald-600 dark:text-emerald-400" : trend < 0 ? "text-red-600 dark:text-red-400" : "text-muted-foreground";
   const isClickable = !!onClick;
   const styles = variantStyles[variant];
 
   const cardContent = (
     <Card
       className={cn(
-        "relative overflow-hidden border-border/60 transition-all duration-200",
-        isClickable && "cursor-pointer hover:shadow-md hover:border-border active:scale-[0.98] group"
+        "relative overflow-hidden transition-all duration-200",
+        isClickable && "cursor-pointer hover:border-border active:scale-[0.98] group"
       )}
+      style={isClickable ? { boxShadow: 'var(--shadow-sm)' } : undefined}
       onClick={onClick}
     >
       {/* Top accent line */}
-      <div className={cn("absolute top-0 left-0 right-0 h-0.5", styles.accentLine, "opacity-60")} />
-      
+      <div className={cn("absolute top-0 left-0 right-0 h-[2px]", styles.accentLine, "opacity-50")} />
+
       <div className="p-5">
         <div className="flex items-start justify-between gap-3">
-          <div className="flex-1 min-w-0 space-y-1.5">
-            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest">
+          <div className="flex-1 min-w-0 space-y-2">
+            <p className="text-xs font-medium text-muted-foreground tracking-wide">
               {title}
             </p>
             <p className="text-2xl font-bold tabular-nums tracking-tight leading-none">{value}</p>
             {(trend !== undefined || subtitle) && (
               <div className="flex items-center gap-1.5 pt-0.5">
                 {trend !== undefined && (
-                  <span className={cn("inline-flex items-center gap-0.5 text-xs font-semibold px-1.5 py-0.5 rounded-md", 
-                    trend > 0 ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : 
-                    trend < 0 ? "bg-red-500/10 text-red-600 dark:text-red-400" : 
+                  <span className={cn("inline-flex items-center gap-0.5 text-xs font-semibold px-2 py-0.5 rounded-full",
+                    trend > 0 ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" :
+                    trend < 0 ? "bg-red-500/10 text-red-600 dark:text-red-400" :
                     "bg-muted text-muted-foreground"
                   )}>
                     <TrendIcon className="h-3 w-3" />
@@ -124,10 +124,10 @@ export function InteractiveMetricCard({
           </div>
         </div>
       </div>
-      
+
       {/* Clickable indicator */}
       {isClickable && (
-        <div className="absolute bottom-2 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="absolute bottom-2.5 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
           <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
         </div>
       )}

@@ -162,11 +162,11 @@ export default function CRMDashboard({ onSectionChange }: CRMDashboardProps) {
 
   return (
     <div className="w-full h-full overflow-y-auto overflow-x-hidden pb-20 bg-background pt-safe pt-16 sm:pt-6">
-      <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 w-full sm:max-w-7xl sm:mx-auto">
+      <div className="p-4 sm:p-6 space-y-6 sm:space-y-8 w-full sm:max-w-7xl sm:mx-auto">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold">MyCT1 Dashboard</h1>
-            <p className="text-sm sm:text-base text-muted-foreground">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Dashboard</h1>
+            <p className="text-sm text-muted-foreground mt-1">
               {isEditMode ? 'Drag to reorder · Click eye to show/hide' : 'Navigate to your workspace'}
             </p>
           </div>
@@ -224,32 +224,35 @@ export default function CRMDashboard({ onSectionChange }: CRMDashboardProps) {
               >
                 <Card
                   className={cn(
-                    'cursor-pointer transition-all duration-200 bg-gradient-to-br border-2 relative',
-                    tile.gradient, tile.borderColor,
-                    'hover:shadow-2xl hover:scale-105 active:scale-95 text-white',
-                    isEditMode && 'ring-2 ring-white/30 ring-offset-2 ring-offset-background',
+                    'cursor-pointer transition-all duration-200 relative overflow-hidden',
+                    'bg-card border border-border/40',
+                    'hover:border-border hover:shadow-md active:scale-[0.97]',
+                    isEditMode && 'ring-2 ring-primary/20 ring-offset-2 ring-offset-background',
                     isEditMode && hidden.includes(tile.id) && 'opacity-40'
                   )}
                   onClick={() => !isEditMode && onSectionChange(tile.id)}
                 >
+                  {/* Gradient accent strip */}
+                  <div className={cn('absolute top-0 left-0 right-0 h-1 bg-gradient-to-r', tile.gradient, 'opacity-70')} />
+                  
                   {isEditMode && (
                     <button
                       onClick={(e) => { e.stopPropagation(); toggleHidden(tile.id); }}
-                      className="absolute top-2 right-2 z-10 w-7 h-7 rounded-full bg-black/30 backdrop-blur flex items-center justify-center hover:bg-black/50 transition-colors"
+                      className="absolute top-3 right-3 z-10 w-7 h-7 rounded-full bg-muted/80 flex items-center justify-center hover:bg-muted transition-colors"
                     >
                       {hidden.includes(tile.id) ? (
-                        <EyeOff className="h-3.5 w-3.5 text-white" />
+                        <EyeOff className="h-3.5 w-3.5 text-muted-foreground" />
                       ) : (
-                        <Eye className="h-3.5 w-3.5 text-white" />
+                        <Eye className="h-3.5 w-3.5 text-muted-foreground" />
                       )}
                     </button>
                   )}
-                  <CardContent className="p-6 flex flex-col items-center justify-center gap-3 min-h-[120px]">
-                    <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur flex items-center justify-center">
-                      <tile.icon className="h-7 w-7 text-white" />
+                  <CardContent className="p-5 pt-6 flex flex-col items-center justify-center gap-3 min-h-[130px]">
+                    <div className={cn('w-12 h-12 rounded-xl bg-gradient-to-br flex items-center justify-center', tile.gradient)}>
+                      <tile.icon className="h-6 w-6 text-white" />
                     </div>
-                    <span className="font-semibold text-center text-white">{tile.label}</span>
-                    <p className="text-xs text-white/80 text-center">{tile.description}</p>
+                    <span className="font-semibold text-sm text-center text-foreground">{tile.label}</span>
+                    <p className="text-xs text-muted-foreground text-center leading-relaxed">{tile.description}</p>
                   </CardContent>
                 </Card>
               </SortableItem>

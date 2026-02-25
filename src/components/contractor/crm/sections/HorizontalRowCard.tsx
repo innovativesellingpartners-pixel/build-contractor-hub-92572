@@ -12,12 +12,14 @@ export function HorizontalRowCard({ children, onClick, className }: HorizontalRo
   return (
     <div
       className={cn(
-        'flex items-center gap-3 px-4 py-3.5 rounded-xl border border-border/60 bg-card',
-        'hover:shadow-md hover:border-primary/20 transition-all duration-200',
+        'flex items-center gap-3 px-4 py-3.5 rounded-xl border border-border/40 bg-card',
+        'transition-all duration-200',
+        'hover:bg-card-hover hover:border-border/60',
         'overflow-hidden max-w-full w-full',
         onClick && 'cursor-pointer',
         className
       )}
+      style={{ boxShadow: 'var(--shadow-xs)' }}
       onClick={onClick}
     >
       {children}
@@ -74,7 +76,7 @@ interface RowMetaLineProps {
 
 export function RowMetaLine({ children, className }: RowMetaLineProps) {
   return (
-    <div className={cn('flex items-center gap-2 text-xs text-muted-foreground mt-0.5 max-w-full overflow-hidden flex-wrap', className)}>
+    <div className={cn('flex items-center gap-2 text-xs text-muted-foreground mt-1 max-w-full overflow-hidden flex-wrap', className)}>
       {children}
     </div>
   );
@@ -87,7 +89,7 @@ interface RowBadgeGroupProps {
 
 export function RowBadgeGroup({ children, className }: RowBadgeGroupProps) {
   return (
-    <div className={cn('flex items-center gap-1.5 flex-wrap mt-1', className)}>
+    <div className={cn('flex items-center gap-1.5 flex-wrap mt-1.5', className)}>
       {children}
     </div>
   );
@@ -103,10 +105,10 @@ interface RowAmountProps {
 export function RowAmount({ amount, label, badge, className }: RowAmountProps) {
   return (
     <div className={cn('text-right flex-shrink-0', className)}>
-      <p className="text-sm font-bold text-primary whitespace-nowrap tabular-nums tracking-tight">
+      <p className="text-sm font-bold text-foreground whitespace-nowrap tabular-nums tracking-tight">
         ${amount?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
       </p>
-      {label && <p className="text-xs text-muted-foreground whitespace-nowrap">{label}</p>}
+      {label && <p className="text-xs text-muted-foreground whitespace-nowrap mt-0.5">{label}</p>}
       {badge && <div className="mt-1">{badge}</div>}
     </div>
   );

@@ -73,7 +73,7 @@ export default function InvoicesSection({ onSectionChange }: InvoicesSectionProp
 
   return (
     <div className="w-full h-full overflow-y-auto overflow-x-hidden pb-20 bg-background">
-      <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 w-full sm:max-w-7xl sm:mx-auto">
+      <div className="p-4 sm:p-6 space-y-5 sm:space-y-6 w-full sm:max-w-7xl sm:mx-auto">
         {/* Navigation Header */}
         <CrmNavHeader
           back
@@ -165,8 +165,8 @@ export default function InvoicesSection({ onSectionChange }: InvoicesSectionProp
                     <span className="font-semibold text-sm">
                       {invoice.invoice_number || 'No Number'}
                     </span>
-                    <Badge className={`${getStatusColor(invoice.status)} text-xs`}>
-                      {invoice.status.toUpperCase()}
+                     <Badge className={`${getStatusColor(invoice.status)} text-xs`}>
+                      {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
                     </Badge>
                   </RowTitleLine>
                   <RowMetaLine>

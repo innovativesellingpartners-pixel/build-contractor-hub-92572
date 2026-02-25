@@ -242,10 +242,10 @@ export function Dashboard() {
   };
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex flex-col">
+    <div className="relative min-h-screen bg-background flex flex-col">
       {/* Top Navigation Bar */}
       <div
-        className="bg-card/80 backdrop-blur-sm border-b shadow-sm sticky top-0 z-40"
+        className="bg-card/95 backdrop-blur-md border-b border-border/50 sticky top-0 z-40"
         style={{ paddingTop: "env(safe-area-inset-top)" }}
       >
         <div className="container mx-auto px-4 md:px-6 py-3">
@@ -290,15 +290,15 @@ export function Dashboard() {
               <Link to="/" className="flex items-center gap-2 md:gap-4 hover:opacity-80 transition-opacity">
                 <img src={ct1Logo} alt="CT1 Logo" className="h-8 w-8 md:h-10 md:w-10" />
                 <div className="hidden sm:block">
-                  <h1 className="text-base md:text-lg font-bold">Welcome to the CT1 Contractor Hub</h1>
+                  <h1 className="text-sm md:text-base font-semibold text-foreground">CT1 Contractor Hub</h1>
                   <p className="text-xs text-muted-foreground">Hello, {profile?.contact_name || 'Contractor'}</p>
                 </div>
               </Link>
             </div>
             <div className="flex items-center gap-2 md:gap-4">
-              <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-primary/5 rounded-lg border border-primary/20">
-                <Building2 className="h-4 w-4 text-primary" />
-                <span className="font-semibold text-sm">{profile?.company_name || 'Your Company'}</span>
+              <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-muted/60 rounded-lg border border-border/40">
+                <Building2 className="h-4 w-4 text-muted-foreground" />
+                <span className="font-medium text-sm">{profile?.company_name || 'Your Company'}</span>
               </div>
               
               {/* Account Button */}
@@ -353,27 +353,27 @@ export function Dashboard() {
         </div>
       </div>
 
-      {/* Contractor Name Banner - Mobile Optimized */}
+      {/* Contractor Name Banner */}
       <div 
-        className="bg-black text-white"
+        className="bg-foreground text-background border-b border-border/10"
         style={{ 
           paddingTop: "max(0.5rem, env(safe-area-inset-top))",
-          paddingBottom: "0.5rem"
+          paddingBottom: "0.625rem"
         }}
       >
         <div className="container mx-auto px-4 md:px-6">
-          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
+          <h2 className="text-xl md:text-2xl font-bold tracking-tight">
             {profile?.company_name || 'Company'}
           </h2>
         </div>
       </div>
 
       {/* Main Content Area */}
-      <div className="container mx-auto px-4 md:px-6 pt-0 pb-6 flex-1 flex gap-0">
+      <div className="container mx-auto px-4 md:px-6 pt-4 pb-6 flex-1 flex gap-0">
         {/* Main Content Panel */}
         <div className="flex-1 overflow-auto min-w-0">
           {activeSection === 'leads' ? (
-            <div className="bg-card border border-border/50 rounded-xl shadow-md overflow-hidden">
+            <div className="bg-card border border-border/40 rounded-xl overflow-hidden" style={{ boxShadow: 'var(--shadow-sm)' }}>
               <CT1CRM 
                 onOpenPocketAgent={() => setPocketAgentOpen(true)}
                 onSectionChange={(section) => {
@@ -404,7 +404,7 @@ export function Dashboard() {
                 />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="bg-card border border-border/50 rounded-xl shadow-md overflow-hidden">
+                <div className="bg-card border border-border/40 rounded-xl overflow-hidden" style={{ boxShadow: 'var(--shadow-sm)' }}>
                   {activeSection === 'training' && (
                     <div className="p-3 md:p-4 lg:p-6 min-h-[400px] md:min-h-[600px] pb-20">
                       <BackNavigation 
