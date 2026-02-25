@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -62,6 +62,7 @@ import { PersonalTasks } from "@/components/contractor/PersonalTasks";
 type ActiveSection = 'training' | 'crm' | 'marketplace' | 'leads' | 'insurance' | 'account' | 'voiceai' | 'reporting' | 'tasks' | 'help';
 
 export function Dashboard() {
+  const navigate = useNavigate();
   const { user, profile, signOut } = useAuth();
   const { isAdmin } = useAdminAuth();
   const { tierFeatures, hasFullAccess } = useUserTier();
@@ -316,11 +317,13 @@ export function Dashboard() {
               <Button 
                 variant="outline" 
                 size="sm"
-                onClick={() => handleSectionChange('help')}
+                asChild
                 className="flex items-center gap-1 px-2 hover:bg-primary/10 transition-colors"
               >
-                <HelpCircle className="h-4 w-4" />
-                <span className="text-xs">Help</span>
+                <Link to="/dashboard/helpcenter">
+                  <HelpCircle className="h-4 w-4" />
+                  <span className="text-xs">Help</span>
+                </Link>
               </Button>
               
               {/* Get App Button */}
@@ -378,7 +381,7 @@ export function Dashboard() {
                 onOpenPocketAgent={() => setPocketAgentOpen(true)}
                 onSectionChange={(section) => {
                   if (section === 'help') {
-                    handleSectionChange('help');
+                    navigate('/dashboard/helpcenter');
                   } else {
                     setCrmActiveSection(section);
                   }
@@ -1037,16 +1040,14 @@ function SidebarNav({ activeSection, setActiveSection, tierFeatures }: SidebarNa
       <div className="my-2 border-t border-border/50" />
       
       <Button
-        variant={activeSection === 'help' ? 'default' : 'ghost'}
-        className={`w-full justify-start transition-all ${
-          activeSection === 'help' 
-            ? 'shadow-md' 
-            : 'hover:bg-primary/10 hover:border-primary hover:text-foreground border border-transparent'
-        }`}
-        onClick={() => setActiveSection('help')}
+        variant="ghost"
+        className="w-full justify-start transition-all hover:bg-primary/10 hover:border-primary hover:text-foreground border border-transparent"
+        asChild
       >
-        <HelpCircle className="h-4 w-4 mr-3" />
-        Help Center
+        <Link to="/dashboard/helpcenter">
+          <HelpCircle className="h-4 w-4 mr-3" />
+          Help Center
+        </Link>
       </Button>
       
       {tierFeatures.home && (

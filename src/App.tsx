@@ -82,6 +82,7 @@ import TierGrowth from "./pages/products/TierGrowth";
 import TierMarket from "./pages/products/TierMarket";
 import PublicHelpCenter from "./pages/PublicHelpCenter";
 import PublicSupport from "./pages/PublicSupport";
+import DashboardHelpCenter from "./pages/DashboardHelpCenter";
 
 const queryClient = new QueryClient();
 
@@ -190,6 +191,11 @@ const App = () => (
             <Route path="/dashboard" element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/dashboard/helpcenter" element={
+              <ProtectedRoute>
+                <DashboardHelpCenter />
               </ProtectedRoute>
             } />
             <Route path="/app-install" element={<AppInstall />} />
