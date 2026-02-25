@@ -14,9 +14,10 @@ type HelpView = 'home' | 'article' | 'category' | 'support';
 interface HelpCenterProps {
   onBack?: () => void;
   onNavigateToSection?: (section: string) => void;
+  showChatbot?: boolean;
 }
 
-export default function HelpCenter({ onBack, onNavigateToSection }: HelpCenterProps) {
+export default function HelpCenter({ onBack, onNavigateToSection, showChatbot = true }: HelpCenterProps) {
   const navigate = useNavigate();
   const [currentView, setCurrentView] = useState<HelpView>('home');
   const [selectedArticleSlug, setSelectedArticleSlug] = useState<string | null>(null);
@@ -140,7 +141,7 @@ export default function HelpCenter({ onBack, onNavigateToSection }: HelpCenterPr
       <PublicFooter />
 
       {/* Floating Chat Button */}
-      {!chatbotOpen && (
+      {showChatbot && !chatbotOpen && (
         <Button
           onClick={handleOpenChat}
           className="fixed bottom-20 right-4 z-40 h-14 w-14 rounded-full shadow-lg bg-primary hover:bg-primary/90"
@@ -151,18 +152,20 @@ export default function HelpCenter({ onBack, onNavigateToSection }: HelpCenterPr
       )}
 
       {/* Chatbot */}
-      <HelpChatbot
-        isOpen={chatbotOpen}
-        onClose={() => setChatbotOpen(false)}
-        onNavigateToArticle={(slug) => {
-          setChatbotOpen(false);
-          handleArticleClick(slug);
-        }}
-        onNavigateToSupport={() => {
-          setChatbotOpen(false);
-          handleContactSupport();
-        }}
-      />
+      {showChatbot && (
+        <HelpChatbot
+          isOpen={chatbotOpen}
+          onClose={() => setChatbotOpen(false)}
+          onNavigateToArticle={(slug) => {
+            setChatbotOpen(false);
+            handleArticleClick(slug);
+          }}
+          onNavigateToSupport={() => {
+            setChatbotOpen(false);
+            handleContactSupport();
+          }}
+        />
+      )}
     </div>
   );
 }
