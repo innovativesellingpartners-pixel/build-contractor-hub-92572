@@ -99,14 +99,21 @@ serve(async (req) => {
       ? Math.max(requestedAnnualCardVolume, 0)
       : 1000000;
     
+    // Strip non-digits from tax IDs and phone numbers for Finix validation
+    const stripNonDigits = (val: string | undefined | null) => (val || '').replace(/\D/g, '');
+    const sanitizedTaxId = stripNonDigits(body.tax_id);
+    const sanitizedBusinessTaxId = stripNonDigits(body.business_tax_id);
+    const sanitizedPhone = stripNonDigits(body.phone);
+    const sanitizedBusinessPhone = stripNonDigits(body.business_phone);
+
     const entityPayload: Record<string, any> = {
       business_name: body.business_name,
       business_type: body.business_type || 'INDIVIDUAL_SOLE_PROPRIETORSHIP',
       first_name: body.first_name,
       last_name: body.last_name,
       email: body.email,
-      phone: body.phone,
-      tax_id: body.tax_id,
+      phone: sanitizedPhone,
+      tax_id: sanitizedTaxId,
       dob: {
         year: parseInt(body.date_of_birth.split('-')[0]),
         month: parseInt(body.date_of_birth.split('-')[1]),
@@ -137,8 +144,8 @@ serve(async (req) => {
     // Add fields required for non-sole-prop business types (LLC, Corp, Partnership)
     if (isNonSoleProp) {
       entityPayload.doing_business_as = body.doing_business_as || body.business_name;
-      entityPayload.business_phone = body.business_phone || body.phone;
-      entityPayload.business_tax_id = body.business_tax_id || body.tax_id;
+      entityPayload.business_phone = sanitizedBusinessPhone || sanitizedPhone;
+      entityPayload.business_tax_id = sanitizedBusinessTaxId || sanitizedTaxId;
       entityPayload.url = body.url || 'https://myct1.com';
       entityPayload.principal_percentage_ownership = parseInt(body.principal_percentage_ownership || '100');
       if (body.incorporation_date) {
