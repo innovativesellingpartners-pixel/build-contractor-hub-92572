@@ -130,7 +130,26 @@ export function PaymentProviderSettings({ contractorId }: PaymentProviderSetting
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        let detailedMessage = error.message || 'Provisioning failed';
+        const responseContext = (error as any)?.context;
+
+        if (responseContext && typeof responseContext.clone === 'function') {
+          try {
+            const errorJson = await responseContext.clone().json();
+            detailedMessage = errorJson?.message || errorJson?.error || detailedMessage;
+          } catch {
+            try {
+              const errorText = await responseContext.clone().text();
+              if (errorText) detailedMessage = errorText;
+            } catch {
+              // Keep fallback message
+            }
+          }
+        }
+
+        throw new Error(detailedMessage);
+      }
       if (!data?.success) throw new Error(data?.message || 'Provisioning failed');
       return data;
     },
