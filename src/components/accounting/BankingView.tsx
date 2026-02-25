@@ -1,37 +1,49 @@
 /**
- * BankingView — Pure bank experience.
- * Shows ONLY bank accounts, balances, and transactions.
- * All QuickBooks content has been removed from this tab.
- *
- * Connection status is checked via:
- *   - Bank: `bank_account_links` table (user_id, status = 'active')
- *   - QB/Stripe: checked for the Financial Connections dropdown only
+ * BankingView — Unified banking experience.
+ * Shows bank accounts (Plaid + Teller), balances, and transactions.
+ * Teller connections use mTLS edge functions for syncing.
  */
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
-  Building2, RefreshCw, DollarSign, TrendingDown, TrendingUp, Loader2, ArrowLeftRight, PhoneCall
+  Building2, RefreshCw, DollarSign, TrendingDown, TrendingUp, Loader2, ArrowLeftRight, Unlink
 } from "lucide-react";
 import { ExpenseAssignmentDialog } from "./expense-assignment";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { usePlaidLink } from "@/hooks/usePlaidLink";
+import { useTellerConnect } from "@/hooks/useTellerConnect";
 import { useToast } from "@/hooks/use-toast";
 import { useSearchParams } from "react-router-dom";
 import { FinancialConnectionsDropdown } from "./FinancialConnectionsDropdown";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export function BankingView() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
   const [qbConnected, setQbConnected] = useState(false);
   const [stripeConnected, setStripeConnected] = useState(false);
   const [assignOpen, setAssignOpen] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [disconnectId, setDisconnectId] = useState<string | null>(null);
+  const [disconnecting, setDisconnecting] = useState(false);
+
+  const refreshAll = () => {
+    queryClient.invalidateQueries({ queryKey: ["bank-accounts"] });
+    queryClient.invalidateQueries({ queryKey: ["teller-connections"] });
+    queryClient.invalidateQueries({ queryKey: ["plaid-transactions"] });
+    queryClient.invalidateQueries({ queryKey: ["teller-transactions"] });
+  };
 
   const { open: openPlaid } = usePlaidLink({
     onSuccess: async (publicToken: string, metadata: any) => {
@@ -40,11 +52,15 @@ export function BankingView() {
           body: { public_token: publicToken, metadata },
         });
         if (error) throw error;
-        window.location.reload();
+        refreshAll();
       } catch (error) {
         console.error("Failed to link bank account:", error);
       }
     },
+  });
+
+  const { open: openTeller, loading: tellerLoading } = useTellerConnect({
+    onSuccess: () => refreshAll(),
   });
 
   // Check QB and Stripe connection statuses
@@ -70,7 +86,7 @@ export function BankingView() {
     }
   }, [user?.id, searchParams, toast]);
 
-  // Bank accounts
+  // Plaid bank accounts
   const { data: bankAccounts, isLoading: loadingAccounts } = useQuery({
     queryKey: ["bank-accounts", user?.id],
     queryFn: async () => {
@@ -85,10 +101,27 @@ export function BankingView() {
     enabled: !!user?.id,
   });
 
-  const bankConnected = (bankAccounts?.length || 0) > 0;
+  // Teller connections
+  const { data: tellerConnections, isLoading: loadingTeller } = useQuery({
+    queryKey: ["teller-connections", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data } = await supabase
+        .from("teller_connections")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("status", "active");
+      return data || [];
+    },
+    enabled: !!user?.id,
+  });
 
-  // Bank transactions (only if bank connected)
-  const { data: transactions, isLoading: loadingTransactions, refetch: refetchTransactions } = useQuery({
+  const bankConnected = (bankAccounts?.length || 0) > 0;
+  const tellerConnected = (tellerConnections?.length || 0) > 0;
+  const anyBankConnected = bankConnected || tellerConnected;
+
+  // Plaid transactions
+  const { data: plaidTransactions, isLoading: loadingPlaidTxns } = useQuery({
     queryKey: ["plaid-transactions", user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
@@ -103,10 +136,67 @@ export function BankingView() {
     enabled: !!user?.id && bankConnected,
   });
 
+  // Teller transactions
+  const { data: tellerTransactions, isLoading: loadingTellerTxns } = useQuery({
+    queryKey: ["teller-transactions", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data } = await supabase
+        .from("teller_transactions")
+        .select("*, job:jobs(name)")
+        .eq("contractor_id", user.id)
+        .order("transaction_date", { ascending: false })
+        .limit(50);
+      return data || [];
+    },
+    enabled: !!user?.id && tellerConnected,
+  });
+
+  // Merge and sort all transactions
+  const allTransactions = [
+    ...(plaidTransactions || []).map((t: any) => ({ ...t, source: 'plaid' as const })),
+    ...(tellerTransactions || []).map((t: any) => ({ ...t, source: 'teller' as const })),
+  ].sort((a, b) => new Date(b.transaction_date).getTime() - new Date(a.transaction_date).getTime()).slice(0, 50);
+
+  const loadingTransactions = loadingPlaidTxns || loadingTellerTxns;
+
+  const handleSyncTeller = async () => {
+    setSyncing(true);
+    try {
+      const { error } = await supabase.functions.invoke("teller-sync-transactions");
+      if (error) throw error;
+      toast({ title: "Sync Complete", description: "Transactions synced from your bank." });
+      refreshAll();
+    } catch (err: any) {
+      toast({ variant: "destructive", title: "Sync Failed", description: err.message });
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const handleDisconnectTeller = async () => {
+    if (!disconnectId) return;
+    setDisconnecting(true);
+    try {
+      const { error } = await supabase
+        .from("teller_connections")
+        .update({ status: "disconnected" })
+        .eq("id", disconnectId);
+      if (error) throw error;
+      toast({ title: "Account Disconnected" });
+      refreshAll();
+    } catch (err: any) {
+      toast({ variant: "destructive", title: "Error", description: err.message });
+    } finally {
+      setDisconnecting(false);
+      setDisconnectId(null);
+    }
+  };
+
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2 }).format(value);
 
-  if (loadingAccounts) {
+  if (loadingAccounts || loadingTeller) {
     return (
       <div className="space-y-4">
         <Skeleton className="h-12 w-full" />
@@ -118,55 +208,93 @@ export function BankingView() {
   return (
     <div className="space-y-4 md:space-y-6">
       <ExpenseAssignmentDialog open={assignOpen} onOpenChange={setAssignOpen} />
+
+      {/* Disconnect confirmation */}
+      <AlertDialog open={!!disconnectId} onOpenChange={(open) => !open && setDisconnectId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Disconnect Bank Account?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will stop syncing transactions from this account. Your existing transaction data will be preserved.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={disconnecting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDisconnectTeller} disabled={disconnecting}>
+              {disconnecting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Disconnect
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
         <div>
           <h2 className="text-xl md:text-2xl font-bold tracking-tight">Banking</h2>
           <p className="text-sm text-muted-foreground">
-            {bankConnected
-              ? `${bankAccounts!.length} bank ${bankAccounts!.length === 1 ? "account" : "accounts"} linked`
+            {anyBankConnected
+              ? `${(bankAccounts?.length || 0) + (tellerConnections?.length || 0)} account${((bankAccounts?.length || 0) + (tellerConnections?.length || 0)) === 1 ? "" : "s"} linked`
               : "Link a bank account to view balances and transactions"}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Button variant="outline" size="sm" onClick={() => setAssignOpen(true)} className="gap-1.5">
             <ArrowLeftRight className="h-4 w-4" />
-            Assign Expenses
+            <span className="hidden sm:inline">Assign Expenses</span>
           </Button>
           <FinancialConnectionsDropdown
-            connections={{ bankConnected, qbConnected, stripeConnected }}
+            connections={{ bankConnected: anyBankConnected, qbConnected, stripeConnected }}
             onConnectBank={openPlaid}
-            onConnectionChange={() => window.location.reload()}
+            onConnectTeller={openTeller}
+            tellerLoading={tellerLoading}
+            onConnectionChange={refreshAll}
           />
-          {bankConnected && (
-            <Button variant="outline" size="sm" onClick={() => { refetchTransactions(); toast({ title: "Syncing..." }); }}>
-              <RefreshCw className="h-4 w-4 mr-1 sm:mr-2" />
+          {anyBankConnected && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                handleSyncTeller();
+                queryClient.invalidateQueries({ queryKey: ["plaid-transactions"] });
+              }}
+              disabled={syncing}
+            >
+              {syncing ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-1 sm:mr-2" />}
               <span className="hidden sm:inline">Sync</span>
             </Button>
           )}
         </div>
       </div>
 
-      {/* EMPTY STATE — no connections at all */}
-      {!bankConnected && !qbConnected && !stripeConnected && (
+      {/* EMPTY STATE */}
+      {!anyBankConnected && !qbConnected && !stripeConnected && (
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center justify-center py-12 md:py-16">
             <Building2 className="h-12 w-12 text-muted-foreground mb-4" />
-            <p className="text-lg font-semibold mb-2">Connect Your Accounts</p>
+            <p className="text-lg font-semibold mb-2">Connect Your Bank Account</p>
             <p className="text-sm text-muted-foreground mb-6 text-center max-w-md px-4">
-              Use the Connections dropdown above to link your bank account, QuickBooks, or Stripe to get started.
+              Link your bank to automatically import transactions, track expenses by job, and see real-time balances.
             </p>
+            <div className="flex gap-3">
+              <Button onClick={openTeller} disabled={tellerLoading}>
+                {tellerLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                <Building2 className="h-4 w-4 mr-2" />
+                Connect Bank
+              </Button>
+            </div>
           </CardContent>
         </Card>
       )}
 
-      {/* BANK ACCOUNTS */}
-      {bankConnected && (
+      {/* LINKED ACCOUNTS */}
+      {anyBankConnected && (
         <>
           <div className="space-y-3">
             <h3 className="text-base md:text-lg font-semibold">Linked Accounts</h3>
             <div className="grid gap-3 md:gap-4 grid-cols-1 md:grid-cols-2">
-              {bankAccounts!.map((account: any) => (
+              {/* Plaid accounts */}
+              {bankAccounts?.map((account: any) => (
                 <Card key={account.id}>
                   <CardHeader className="p-4 md:p-6">
                     <div className="flex justify-between items-start gap-2">
@@ -188,7 +316,52 @@ export function BankingView() {
                   </CardHeader>
                   <CardContent className="px-4 pb-4 md:px-6 md:pb-6 pt-0">
                     <div className="text-xs text-muted-foreground">
-                      Last synced: {new Date(account.updated_at).toLocaleString()}
+                      via Plaid · Last synced: {new Date(account.updated_at).toLocaleString()}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+
+              {/* Teller accounts */}
+              {tellerConnections?.map((conn: any) => (
+                <Card key={conn.id}>
+                  <CardHeader className="p-4 md:p-6">
+                    <div className="flex justify-between items-start gap-2">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="p-2 bg-primary/10 rounded-lg flex-shrink-0">
+                          <Building2 className="h-5 w-5 text-primary" />
+                        </div>
+                        <div className="min-w-0">
+                          <CardTitle className="text-sm md:text-base truncate">
+                            {conn.institution_name || "Bank Account"}
+                            {conn.account_last_four && (
+                              <span className="text-muted-foreground font-normal ml-1">
+                                ····{conn.account_last_four}
+                              </span>
+                            )}
+                          </CardTitle>
+                          <CardDescription className="text-xs">
+                            {conn.account_name && `${conn.account_name} · `}
+                            {conn.account_type && <span className="capitalize">{conn.account_type}</span>}
+                          </CardDescription>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <Badge variant="default">Active</Badge>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                          onClick={() => setDisconnectId(conn.id)}
+                        >
+                          <Unlink className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="px-4 pb-4 md:px-6 md:pb-6 pt-0">
+                    <div className="text-xs text-muted-foreground">
+                      via Teller · {conn.last_synced_at ? `Last synced: ${new Date(conn.last_synced_at).toLocaleString()}` : `Connected ${new Date(conn.created_at).toLocaleDateString()}`}
                     </div>
                   </CardContent>
                 </Card>
@@ -201,12 +374,12 @@ export function BankingView() {
             <h3 className="text-base md:text-lg font-semibold">Recent Transactions</h3>
             {loadingTransactions ? (
               <Skeleton className="h-48 w-full" />
-            ) : transactions && transactions.length > 0 ? (
+            ) : allTransactions.length > 0 ? (
               <Card>
                 <CardContent className="p-0">
                   <div className="divide-y">
-                    {transactions.map((txn: any) => (
-                      <div key={txn.id} className="p-3 md:p-4 hover:bg-muted/50 transition-colors min-h-[56px]">
+                    {allTransactions.map((txn: any) => (
+                      <div key={`${txn.source}-${txn.id}`} className="p-3 md:p-4 hover:bg-muted/50 transition-colors min-h-[56px]">
                         <div className="flex justify-between items-start gap-3">
                           <div className="flex items-start gap-3 min-w-0 flex-1">
                             <div className={`p-1.5 md:p-2 rounded-lg flex-shrink-0 ${Number(txn.amount) < 0 ? "bg-destructive/10" : "bg-green-100 dark:bg-green-900/30"}`}>
@@ -226,6 +399,7 @@ export function BankingView() {
                               <div className="flex flex-wrap gap-1">
                                 {txn.category && <Badge variant="outline" className="text-xs">{txn.category}</Badge>}
                                 {txn.job && <Badge variant="secondary" className="text-xs">{txn.job.name}</Badge>}
+                                <Badge variant="outline" className="text-[10px] opacity-50">{txn.source}</Badge>
                               </div>
                             </div>
                           </div>
@@ -246,7 +420,7 @@ export function BankingView() {
                   <DollarSign className="h-10 w-10 text-muted-foreground mb-3" />
                   <p className="text-base font-semibold mb-2">No transactions yet</p>
                   <p className="text-sm text-muted-foreground text-center px-4">
-                    Transactions will appear here after your bank syncs
+                    Click Sync to import transactions from your bank
                   </p>
                 </CardContent>
               </Card>
@@ -254,7 +428,6 @@ export function BankingView() {
           </div>
         </>
       )}
-
     </div>
   );
 }
