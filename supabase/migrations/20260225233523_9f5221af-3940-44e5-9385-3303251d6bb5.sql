@@ -1,0 +1,1 @@
+UPDATE profiles SET finix_merchant_id = 'MUpcYJeD7zaQ5ezAFt7rtyud' WHERE id = '9135856d-2239-4ef2-b600-cb4b0ff90283';
