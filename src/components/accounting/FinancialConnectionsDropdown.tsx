@@ -1,7 +1,6 @@
 /**
  * FinancialConnectionsDropdown — Compact dropdown for managing financial connections.
- * Shows connection status summary and actions for Bank, QuickBooks, and Stripe.
- * Used in both Banking and QuickBooks tabs for consistent connection management.
+ * Shows connection status summary and actions for Bank (Plaid/Teller), QuickBooks, and Stripe.
  */
 
 import { useState } from "react";
@@ -30,12 +29,16 @@ interface ConnectionStatus {
 interface FinancialConnectionsDropdownProps {
   connections: ConnectionStatus;
   onConnectBank: () => void;
+  onConnectTeller?: () => void;
+  tellerLoading?: boolean;
   onConnectionChange?: () => void;
 }
 
 export function FinancialConnectionsDropdown({
   connections,
   onConnectBank,
+  onConnectTeller,
+  tellerLoading,
   onConnectionChange,
 }: FinancialConnectionsDropdownProps) {
   const { toast } = useToast();
@@ -120,8 +123,22 @@ export function FinancialConnectionsDropdown({
 
         {/* Connect actions */}
         {!bankConnected && (
-          <DropdownMenuItem onClick={onConnectBank}>
-            <Building2 className="h-4 w-4 mr-2" /> Connect Bank
+          <>
+            {onConnectTeller && (
+              <DropdownMenuItem onClick={onConnectTeller} disabled={tellerLoading}>
+                {tellerLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Building2 className="h-4 w-4 mr-2" />}
+                Connect Bank (Teller)
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuItem onClick={onConnectBank}>
+              <Building2 className="h-4 w-4 mr-2" /> Connect Bank (Plaid)
+            </DropdownMenuItem>
+          </>
+        )}
+        {bankConnected && onConnectTeller && (
+          <DropdownMenuItem onClick={onConnectTeller} disabled={tellerLoading}>
+            {tellerLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Building2 className="h-4 w-4 mr-2" />}
+            Add Another Account
           </DropdownMenuItem>
         )}
         {!qbConnected && (

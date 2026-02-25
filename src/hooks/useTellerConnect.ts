@@ -11,7 +11,6 @@ export function useTellerConnect({ onSuccess }: UseTellerConnectProps = {}) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Load Teller Connect script
     if (document.querySelector('script[src*="teller.io/connect"]')) {
       setReady(true);
       return;
@@ -34,17 +33,20 @@ export function useTellerConnect({ onSuccess }: UseTellerConnectProps = {}) {
       return;
     }
 
-    const appId = import.meta.env.VITE_TELLER_APPLICATION_ID;
-    
-    // If app ID isn't in env, fetch from edge function config
-    const applicationId = appId || await getApplicationId();
-
-    if (!applicationId) {
-      toast.error('Teller is not configured');
-      return;
-    }
+    setLoading(true);
 
     try {
+      // Fetch the application ID from the backend
+      const { data: configData, error: configError } = await supabase.functions.invoke('teller-get-config');
+      
+      const applicationId = configData?.applicationId || import.meta.env.VITE_TELLER_APPLICATION_ID;
+
+      if (!applicationId) {
+        toast.error('Teller is not configured. Please contact support.');
+        setLoading(false);
+        return;
+      }
+
       // @ts-ignore - TellerConnect loaded via script tag
       const tellerConnect = window.TellerConnect.setup({
         applicationId,
@@ -52,6 +54,7 @@ export function useTellerConnect({ onSuccess }: UseTellerConnectProps = {}) {
         environment: 'sandbox', // Change to 'production' when ready
         onInit: () => {
           console.log('Teller Connect initialized');
+          setLoading(false);
         },
         onSuccess: async (enrollment: any) => {
           console.log('Teller enrollment success:', enrollment);
@@ -78,6 +81,7 @@ export function useTellerConnect({ onSuccess }: UseTellerConnectProps = {}) {
         },
         onExit: () => {
           console.log('Teller Connect closed');
+          setLoading(false);
         },
       });
 
@@ -85,18 +89,9 @@ export function useTellerConnect({ onSuccess }: UseTellerConnectProps = {}) {
     } catch (error: any) {
       console.error('Teller Connect error:', error);
       toast.error(error.message || 'Failed to open bank connection');
+      setLoading(false);
     }
   }, [ready, onSuccess]);
 
   return { open, ready, loading };
-}
-
-async function getApplicationId(): Promise<string | null> {
-  try {
-    // The app ID is public/publishable, so we can fetch it
-    const tellerAppId = import.meta.env.VITE_TELLER_APPLICATION_ID;
-    return tellerAppId || null;
-  } catch {
-    return null;
-  }
 }
