@@ -230,26 +230,20 @@ serve(async (req) => {
     if (!merchantResponse.ok) {
       const errText = await merchantResponse.text();
       console.error('Merchant provisioning failed:', errText);
-      // Identity was created but merchant failed - still save the identity
-      await supabase
-        .from('profiles')
-        .update({
-          finix_merchant_id: identity.id,
-          preferred_payment_provider: 'finix',
-        })
-        .eq('id', body.contractor_id);
-
-      throw new Error(`Merchant provisioning pending review: ${errText}`);
+      // Identity was created but merchant failed - save identity for reference but NOT as merchant_id
+      // Do NOT update finix_merchant_id here since it's not a valid merchant yet
+      console.error('Merchant provisioning failed, identity created:', identity.id);
+      throw new Error(`Merchant provisioning failed. Identity ${identity.id} was created but merchant underwriting did not pass. Please retry or contact support.`);
     }
 
     const merchant = await merchantResponse.json();
     console.log('Merchant provisioned:', merchant.id, 'state:', merchant.onboarding_state);
 
-    // Step 4: Save to contractor profile
+    // Step 4: Save MERCHANT ID (MU...) to contractor profile — NOT the identity ID
     const { error: updateError } = await supabase
       .from('profiles')
       .update({
-        finix_merchant_id: identity.id,
+        finix_merchant_id: merchant.id,
         preferred_payment_provider: 'finix',
       })
       .eq('id', body.contractor_id);
