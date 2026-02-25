@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft } from 'lucide-react';
 import { VoiceAISettings } from './VoiceAISettings';
+import { PaymentProviderSettings } from './PaymentProviderSettings';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { Navigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
@@ -19,9 +20,8 @@ export const UserDetailPage = () => {
 
   useEffect(() => {
     const tab = searchParams.get('tab');
-    if (tab === 'voice-ai') {
-      setActiveTab('voice-ai');
-    }
+    if (tab === 'voice-ai') setActiveTab('voice-ai');
+    if (tab === 'payments') setActiveTab('payments');
   }, [searchParams]);
 
   const { data: user, isLoading: userLoading } = useQuery({
@@ -75,8 +75,9 @@ export const UserDetailPage = () => {
         </CardHeader>
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="profile">Profile</TabsTrigger>
+              <TabsTrigger value="payments">Payments</TabsTrigger>
               <TabsTrigger value="voice-ai">Voice AI</TabsTrigger>
             </TabsList>
 
@@ -109,6 +110,10 @@ export const UserDetailPage = () => {
                   </p>
                 </div>
               </div>
+            </TabsContent>
+
+            <TabsContent value="payments" className="mt-6">
+              <PaymentProviderSettings contractorId={userId!} />
             </TabsContent>
 
             <TabsContent value="voice-ai" className="mt-6">
