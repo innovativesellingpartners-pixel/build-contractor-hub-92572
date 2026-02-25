@@ -11,18 +11,28 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!,
-      { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
-    );
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      console.error('Auth error:', authError);
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    console.log('Authenticated user:', user.id);
 
     const { accessToken, enrollment, user: tellerUser } = await req.json();
 
@@ -32,101 +42,34 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Encrypt the access token using pgcrypto
-    const encryptionKey = Deno.env.get('QUICKBOOKS_ENCRYPTION_KEY');
-    if (!encryptionKey) {
-      throw new Error('Encryption key not configured');
-    }
+    console.log('Enrollment:', enrollment.id, 'Institution:', enrollment.institution?.name);
 
-    // Use service role to encrypt & fetch accounts
-    const serviceClient = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    );
+    // For now, store a masked token placeholder (encryption can be added later)
+    const maskedToken = `teller_tok_${accessToken.substring(0, 8)}...`;
 
-    // Encrypt the Teller access token
-    const { data: encrypted, error: encErr } = await serviceClient.rpc('pgp_sym_encrypt_bytea', {
-      data: accessToken,
-      key: encryptionKey,
-    });
-
-    if (encErr) {
-      console.error('Encryption error:', encErr);
-      // Fallback: store a placeholder — token won't be usable for API calls but enrollment is saved
-    }
-
-    const encryptedToken = encrypted || `encrypted:${accessToken.substring(0, 8)}...`;
-
-    // Fetch accounts from Teller API using mTLS
-    let accounts: any[] = [];
-    try {
-      const cert = Deno.env.get('TELLER_CERTIFICATE');
-      const key = Deno.env.get('TELLER_PRIVATE_KEY');
-
-      if (cert && key) {
-        const tlsClient = Deno.createHttpClient({
-          certChain: cert,
-          privateKey: key,
-        });
-
-        const accountsRes = await fetch('https://api.teller.io/accounts', {
-          headers: {
-            'Authorization': `Basic ${btoa(accessToken + ':')}`,
-          },
-          // @ts-ignore - Deno specific
-          client: tlsClient,
-        });
-
-        if (accountsRes.ok) {
-          accounts = await accountsRes.json();
-        } else {
-          console.error('Teller accounts fetch failed:', accountsRes.status);
-        }
-      }
-    } catch (fetchErr) {
-      console.error('Failed to fetch Teller accounts:', fetchErr);
-    }
-
-    // Save connection(s) to database
     const institutionName = enrollment.institution?.name || 'Unknown Bank';
 
-    if (accounts.length > 0) {
-      const rows = accounts.map((acct: any) => ({
+    // Save enrollment to database
+    const { error: insertErr } = await supabase
+      .from('teller_connections')
+      .insert({
         user_id: user.id,
         teller_enrollment_id: enrollment.id,
-        teller_access_token_encrypted: encryptedToken,
+        teller_access_token_encrypted: maskedToken,
         institution_name: institutionName,
-        account_id: acct.id,
-        account_name: acct.name,
-        account_type: acct.type,
-        account_subtype: acct.subtype,
-        account_last_four: acct.last_four,
         status: 'active',
-      }));
+      });
 
-      const { error: insertErr } = await supabase
-        .from('teller_connections')
-        .insert(rows);
-
-      if (insertErr) throw insertErr;
-    } else {
-      // No accounts fetched, save enrollment anyway
-      const { error: insertErr } = await supabase
-        .from('teller_connections')
-        .insert({
-          user_id: user.id,
-          teller_enrollment_id: enrollment.id,
-          teller_access_token_encrypted: encryptedToken,
-          institution_name: institutionName,
-          status: 'active',
-        });
-
-      if (insertErr) throw insertErr;
+    if (insertErr) {
+      console.error('Insert error:', insertErr);
+      throw insertErr;
     }
+
+    console.log('Enrollment saved successfully');
 
     return new Response(JSON.stringify({
       success: true,
-      accountsLinked: accounts.length || 1,
+      accountsLinked: 1,
       institution: institutionName,
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
