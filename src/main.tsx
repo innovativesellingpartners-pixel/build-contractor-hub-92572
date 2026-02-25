@@ -35,6 +35,12 @@ if ("serviceWorker" in navigator) {
   });
 }
 
+// Global unhandled promise rejection handler to prevent blank screens
+window.addEventListener('unhandledrejection', (event) => {
+  console.error('Unhandled promise rejection:', event.reason);
+  event.preventDefault();
+});
+
 // Ensure localStorage is accessible (critical for auth persistence)
 try {
   const testKey = '__ct1_storage_test__';

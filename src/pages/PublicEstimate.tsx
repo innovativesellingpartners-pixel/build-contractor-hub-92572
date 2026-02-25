@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, Component, ReactNode } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,7 +14,46 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import ct1PoweredLogo from '@/assets/ct1-powered-by-logo.png';
 
-export default function PublicEstimate() {
+// Error boundary to prevent blank white page on crash
+class PublicEstimateErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean; error: Error | null }> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error: Error, errorInfo: any) {
+    console.error('PublicEstimate crashed:', error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-muted flex items-center justify-center p-4">
+          <Card className="max-w-md w-full">
+            <CardContent className="pt-6 text-center space-y-4">
+              <AlertCircle className="h-12 w-12 text-destructive mx-auto" />
+              <h2 className="text-xl font-bold">Something went wrong</h2>
+              <p className="text-muted-foreground">
+                We encountered an error loading this estimate. Please try refreshing the page.
+              </p>
+              <Button onClick={() => window.location.reload()}>Refresh Page</Button>
+            </CardContent>
+          </Card>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+// Safe number formatting helper
+const safeFixed = (val: any, digits = 2): string => {
+  const num = Number(val);
+  return isNaN(num) ? '0.00' : num.toFixed(digits);
+};
+
+function PublicEstimateInner() {
   const { token } = useParams();
   const [searchParams] = useSearchParams();
   const [estimate, setEstimate] = useState<any>(null);
@@ -109,11 +148,11 @@ export default function PublicEstimate() {
 
   // Calculate payment amounts
   const getPaymentAmounts = () => {
-    if (!estimate) return { total: 0, deposit: 0, remaining: 0, amountPaid: 0, hasDeposit: false };
+    if (!estimate) return { total: 0, deposit: 0, remaining: 0, amountPaid: 0, hasDeposit: false, depositRemaining: 0 };
     
-    const total = estimate.grand_total || estimate.total_amount || 0;
-    const deposit = estimate.required_deposit || 0;
-    const amountPaid = estimate.payment_amount || 0;
+    const total = Number(estimate.grand_total || estimate.total_amount) || 0;
+    const deposit = Number(estimate.required_deposit) || 0;
+    const amountPaid = Number(estimate.payment_amount) || 0;
     const remaining = Math.max(0, total - amountPaid);
     const hasDeposit = deposit > 0;
     
@@ -372,14 +411,14 @@ export default function PublicEstimate() {
                       <div className="flex-1">
                         <p className="font-medium">{item.item_description}</p>
                         <p className="text-sm text-muted-foreground">
-                          {item.quantity} {item.unit_type} × ${item.unit_cost.toFixed(2)}
+                          {item.quantity} {item.unit_type} × ${safeFixed(item.unit_cost)}
                         </p>
                         <Badge variant="outline" className="mt-1">
                           {item.category}
                         </Badge>
                       </div>
                       <p className="font-semibold ml-4">
-                        ${item.line_total.toFixed(2)}
+                        ${safeFixed(item.line_total)}
                       </p>
                     </div>
                   ))}
@@ -402,7 +441,7 @@ export default function PublicEstimate() {
                 <div className="flex justify-between text-lg py-2">
                   <span className="text-muted-foreground font-medium">Subtotal</span>
                   <span className="font-bold text-foreground text-xl">
-                    ${costSummary.subtotal?.toFixed(2)}
+                    ${safeFixed(costSummary.subtotal)}
                   </span>
                 </div>
                 {costSummary.profit_markup_percentage > 0 && (
@@ -411,7 +450,7 @@ export default function PublicEstimate() {
                       Profit/Markup ({costSummary.profit_markup_percentage}%)
                     </span>
                     <span className="font-bold text-foreground text-xl">
-                      ${costSummary.profit_markup_amount?.toFixed(2)}
+                      ${safeFixed(costSummary.profit_markup_amount)}
                     </span>
                   </div>
                 )}
@@ -419,7 +458,7 @@ export default function PublicEstimate() {
                   <div className="flex justify-between text-lg py-2">
                     <span className="text-muted-foreground font-medium">Tax & Fees</span>
                     <span className="font-bold text-foreground text-xl">
-                      ${costSummary.tax_and_fees?.toFixed(2)}
+                      ${safeFixed(costSummary.tax_and_fees)}
                     </span>
                   </div>
                 )}
@@ -436,7 +475,7 @@ export default function PublicEstimate() {
               <div className="flex justify-between items-center">
                 <span className="text-2xl font-black text-white">Total Investment</span>
                 <span className="text-4xl font-black text-white">
-                  ${total.toFixed(2)}
+                  ${safeFixed(total)}
                 </span>
               </div>
             </div>
@@ -451,7 +490,7 @@ export default function PublicEstimate() {
                       <p className="text-sm text-amber-600 dark:text-amber-400">Required to begin project</p>
                     </div>
                     <span className="text-2xl font-bold text-amber-700 dark:text-amber-300">
-                      ${deposit.toFixed(2)}
+                      ${safeFixed(deposit)}
                     </span>
                   </div>
                 )}
@@ -465,7 +504,7 @@ export default function PublicEstimate() {
                       </span>
                     </div>
                     <span className="text-2xl font-bold text-green-700 dark:text-green-300">
-                      ${amountPaid.toFixed(2)}
+                      ${safeFixed(amountPaid)}
                     </span>
                   </div>
                 )}
@@ -479,7 +518,7 @@ export default function PublicEstimate() {
                       )}
                     </div>
                     <span className="text-2xl font-bold text-blue-700 dark:text-blue-300">
-                      ${remaining.toFixed(2)}
+                      ${safeFixed(remaining)}
                     </span>
                   </div>
                 )}
@@ -628,7 +667,7 @@ export default function PublicEstimate() {
                               <>
                                 <Wallet className="h-6 w-6" />
                                 <span className="text-lg font-bold">Pay Deposit Now</span>
-                                <span className="text-2xl font-black">${depositRemaining.toFixed(2)}</span>
+                                <span className="text-2xl font-black">${safeFixed(depositRemaining)}</span>
                               </>
                             )}
                           </Button>
@@ -665,7 +704,7 @@ export default function PublicEstimate() {
                             <>
                               <CreditCard className="h-6 w-6" />
                               <span className="text-lg font-bold">Pay In Full Now</span>
-                              <span className="text-2xl font-black">${remaining.toFixed(2)}</span>
+                              <span className="text-2xl font-black">${safeFixed(remaining)}</span>
                             </>
                           )}
                         </Button>
@@ -715,7 +754,7 @@ export default function PublicEstimate() {
                         </h3>
                         <p className="text-blue-800 dark:text-blue-200 text-lg mb-4 font-medium">
                           {isPartiallyPaid 
-                            ? `Thank you for your payment of $${amountPaid.toFixed(2)}. Complete your remaining balance below.`
+                            ? `Thank you for your payment of $${safeFixed(amountPaid)}. Complete your remaining balance below.`
                             : 'Your estimate has been accepted. Complete your payment to begin the project.'}
                         </p>
                       </div>
@@ -725,15 +764,15 @@ export default function PublicEstimate() {
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                           <div>
                             <p className="text-sm text-blue-700 dark:text-blue-300 font-semibold mb-1">Total</p>
-                            <p className="text-xl font-bold text-blue-900 dark:text-blue-100">${total.toFixed(2)}</p>
+                            <p className="text-xl font-bold text-blue-900 dark:text-blue-100">${safeFixed(total)}</p>
                           </div>
                           <div>
                             <p className="text-sm text-green-700 dark:text-green-300 font-semibold mb-1">Paid</p>
-                            <p className="text-xl font-bold text-green-600 dark:text-green-400">${amountPaid.toFixed(2)}</p>
+                            <p className="text-xl font-bold text-green-600 dark:text-green-400">${safeFixed(amountPaid)}</p>
                           </div>
                           <div>
                             <p className="text-sm text-amber-700 dark:text-amber-300 font-semibold mb-1">Remaining</p>
-                            <p className="text-xl font-bold text-amber-600 dark:text-amber-400">${remaining.toFixed(2)}</p>
+                            <p className="text-xl font-bold text-amber-600 dark:text-amber-400">${safeFixed(remaining)}</p>
                           </div>
                         </div>
                       </div>
@@ -757,7 +796,7 @@ export default function PublicEstimate() {
                               <>
                                 <Wallet className="h-6 w-6" />
                                 <span className="text-lg font-bold">Pay Deposit</span>
-                                <span className="text-2xl font-black">${depositRemaining.toFixed(2)}</span>
+                                <span className="text-2xl font-black">${safeFixed(depositRemaining)}</span>
                               </>
                             )}
                           </Button>
@@ -781,7 +820,7 @@ export default function PublicEstimate() {
                               <span className="text-lg font-bold">
                                 {isPartiallyPaid ? 'Pay Remaining Balance' : 'Pay In Full'}
                               </span>
-                              <span className="text-2xl font-black">${remaining.toFixed(2)}</span>
+                              <span className="text-2xl font-black">${safeFixed(remaining)}</span>
                             </>
                           )}
                         </Button>
@@ -841,7 +880,7 @@ export default function PublicEstimate() {
                       <div>
                         <p className="text-sm text-green-700 dark:text-green-300 font-semibold mb-1">Total Paid</p>
                         <p className="text-2xl text-green-900 dark:text-green-100 font-bold">
-                          ${amountPaid.toFixed(2)}
+                          ${safeFixed(amountPaid)}
                         </p>
                       </div>
                       {estimate.signed_at && (
@@ -894,5 +933,13 @@ export default function PublicEstimate() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function PublicEstimate() {
+  return (
+    <PublicEstimateErrorBoundary>
+      <PublicEstimateInner />
+    </PublicEstimateErrorBoundary>
   );
 }
