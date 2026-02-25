@@ -64,6 +64,7 @@ function PublicEstimateInner() {
   const [signed, setSigned] = useState(false);
   const [agreementAccepted, setAgreementAccepted] = useState(false);
   const [showFinixForm, setShowFinixForm] = useState<'deposit' | 'full' | 'remaining' | null>(null);
+  const [signatureData, setSignatureData] = useState<string | null>(null);
   const clientSigRef = useRef<SignatureCanvas>(null);
   const paymentSectionRef = useRef<HTMLDivElement>(null);
   const agreementRef = useRef<HTMLDivElement>(null);
@@ -170,12 +171,14 @@ function PublicEstimateInner() {
       }
 
       // Save signature first if not already signed
-      if (!signed && clientSigRef.current?.toDataURL()) {
-        const signatureData = clientSigRef.current.toDataURL();
-        await supabase
-          .from('estimates')
-          .update({ client_signature: signatureData })
-          .eq('id', estimate.id);
+      if (!signed && (signatureData || clientSigRef.current?.toDataURL())) {
+        const sigData = signatureData || clientSigRef.current?.toDataURL();
+        if (sigData) {
+          await supabase
+            .from('estimates')
+            .update({ client_signature: sigData })
+            .eq('id', estimate.id);
+        }
       }
 
       // Use Finix for contractor-to-customer payments
@@ -197,12 +200,18 @@ function PublicEstimateInner() {
     setShowFinixForm(null);
     setSigned(true);
     toast.success('Payment successful! Thank you. Our team will contact you shortly.');
-    // Refresh estimate data
     fetchEstimate();
+  };
+
+  const handleSignatureEnd = () => {
+    if (clientSigRef.current && !clientSigRef.current.isEmpty()) {
+      setSignatureData(clientSigRef.current.toDataURL());
+    }
   };
 
   const clearSignature = () => {
     clientSigRef.current?.clear();
+    setSignatureData(null);
   };
 
   if (loading) {
@@ -580,9 +589,16 @@ function PublicEstimateInner() {
                       <CheckCircle className="h-5 w-5 text-primary" />
                       Sign below using your mouse or finger:
                     </label>
-                    <div className="border-4 border-primary/20 rounded-xl p-4 bg-white shadow-inner">
+                    <div className="border-4 border-primary/20 rounded-xl p-4 bg-white shadow-inner" onMouseDown={(e) => e.stopPropagation()} onTouchStart={(e) => e.stopPropagation()}>
                       <SignatureCanvas
-                        ref={clientSigRef}
+                        ref={(ref) => {
+                          (clientSigRef as any).current = ref;
+                          // Restore signature data after re-render
+                          if (ref && signatureData && ref.isEmpty()) {
+                            ref.fromDataURL(signatureData);
+                          }
+                        }}
+                        onEnd={handleSignatureEnd}
                         canvasProps={{
                           className: 'w-full h-52 border-2 border-dashed border-muted-foreground/30 rounded-lg bg-white',
                           style: { touchAction: 'none' },
