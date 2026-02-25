@@ -4930,6 +4930,126 @@ export type Database = {
           },
         ]
       }
+      teller_connections: {
+        Row: {
+          account_id: string | null
+          account_last_four: string | null
+          account_name: string | null
+          account_subtype: string | null
+          account_type: string | null
+          created_at: string | null
+          id: string
+          institution_name: string | null
+          last_synced_at: string | null
+          status: string
+          teller_access_token_encrypted: string
+          teller_enrollment_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          account_id?: string | null
+          account_last_four?: string | null
+          account_name?: string | null
+          account_subtype?: string | null
+          account_type?: string | null
+          created_at?: string | null
+          id?: string
+          institution_name?: string | null
+          last_synced_at?: string | null
+          status?: string
+          teller_access_token_encrypted: string
+          teller_enrollment_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          account_id?: string | null
+          account_last_four?: string | null
+          account_name?: string | null
+          account_subtype?: string | null
+          account_type?: string | null
+          created_at?: string | null
+          id?: string
+          institution_name?: string | null
+          last_synced_at?: string | null
+          status?: string
+          teller_access_token_encrypted?: string
+          teller_enrollment_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      teller_transactions: {
+        Row: {
+          amount: number
+          category: string | null
+          contractor_id: string
+          created_at: string | null
+          description: string | null
+          id: string
+          job_id: string | null
+          notes: string | null
+          receipt_url: string | null
+          status: string | null
+          teller_connection_id: string | null
+          teller_transaction_id: string
+          transaction_date: string
+          updated_at: string | null
+          vendor: string | null
+        }
+        Insert: {
+          amount: number
+          category?: string | null
+          contractor_id: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          job_id?: string | null
+          notes?: string | null
+          receipt_url?: string | null
+          status?: string | null
+          teller_connection_id?: string | null
+          teller_transaction_id: string
+          transaction_date: string
+          updated_at?: string | null
+          vendor?: string | null
+        }
+        Update: {
+          amount?: number
+          category?: string | null
+          contractor_id?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          job_id?: string | null
+          notes?: string | null
+          receipt_url?: string | null
+          status?: string | null
+          teller_connection_id?: string | null
+          teller_transaction_id?: string
+          transaction_date?: string
+          updated_at?: string | null
+          vendor?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "teller_transactions_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teller_transactions_teller_connection_id_fkey"
+            columns: ["teller_connection_id"]
+            isOneToOne: false
+            referencedRelation: "teller_connections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       time_logs: {
         Row: {
           clock_in: string
