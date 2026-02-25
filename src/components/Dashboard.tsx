@@ -362,8 +362,8 @@ export function Dashboard() {
         }}
       >
         <div className="container mx-auto px-4 md:px-6">
-          <h2 className="text-xl md:text-2xl font-bold tracking-tight">
-            {profile?.company_name || 'Company'}
+          <h2 className="text-xl md:text-2xl font-bold tracking-tight text-white">
+            {profile?.company_name || profile?.contact_name || 'Your Business'}
           </h2>
         </div>
       </div>
