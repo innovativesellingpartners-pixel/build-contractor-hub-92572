@@ -7,6 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CheckCircle, FileText, Loader2, CreditCard, Building2, Calendar, DollarSign, Wallet, AlertCircle } from 'lucide-react';
+import { FinixPaymentForm } from '@/components/payments/FinixPaymentForm';
 import { AlternativePaymentMethods } from '@/components/payments/AlternativePaymentMethods';
 import SignatureCanvas from 'react-signature-canvas';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -23,6 +24,7 @@ export default function PublicEstimate() {
   const [processingPayment, setProcessingPayment] = useState<'deposit' | 'full' | null>(null);
   const [signed, setSigned] = useState(false);
   const [agreementAccepted, setAgreementAccepted] = useState(false);
+  const [showFinixForm, setShowFinixForm] = useState<'deposit' | 'full' | 'remaining' | null>(null);
   const clientSigRef = useRef<SignatureCanvas>(null);
   const paymentSectionRef = useRef<HTMLDivElement>(null);
   const agreementRef = useRef<HTMLDivElement>(null);
@@ -136,6 +138,12 @@ export default function PublicEstimate() {
         .eq('id', estimate.id);
     }
 
+    // Check if contractor uses Finix
+    if (contractor?.preferred_payment_provider === 'finix' && contractor?.finix_merchant_id) {
+      setShowFinixForm(intent);
+      return;
+    }
+
     setProcessingPayment(intent === 'deposit' ? 'deposit' : 'full');
     
     try {
@@ -154,14 +162,11 @@ export default function PublicEstimate() {
       if (paymentError) throw paymentError;
 
       if (paymentData?.success && paymentData?.checkout_url) {
-        // Store payment session info
         sessionStorage.setItem('estimate_payment', JSON.stringify({
           estimate_id: estimate.id,
           token,
           intent,
         }));
-
-        // Redirect to Clover checkout
         window.location.href = paymentData.checkout_url;
       } else {
         throw new Error(paymentData?.message || 'Failed to create payment session');
@@ -171,6 +176,14 @@ export default function PublicEstimate() {
       toast.error(error.message || 'Failed to process payment. Please try again.');
       setProcessingPayment(null);
     }
+  };
+
+  const handleFinixSuccess = () => {
+    setShowFinixForm(null);
+    setSigned(true);
+    toast.success('Payment successful! Thank you. Our team will contact you shortly.');
+    // Refresh estimate data
+    fetchEstimate();
   };
 
   const clearSignature = () => {
@@ -659,10 +672,29 @@ export default function PublicEstimate() {
                       </div>
                     </div>
                   </div>
+
+                  {/* Finix Inline Payment Form */}
+                  {showFinixForm && (
+                    <div className="border-2 border-primary/20 rounded-xl p-6 bg-card">
+                      <h3 className="text-lg font-bold mb-4">Enter Card Details</h3>
+                      <FinixPaymentForm
+                        entityType="estimate"
+                        entityId={estimate.id}
+                        publicToken={token!}
+                        paymentIntent={showFinixForm}
+                        customerEmail={estimate.client_email || ''}
+                        amount={showFinixForm === 'deposit' ? depositRemaining : remaining}
+                        finixEnvironment={contractor?.finix_environment || 'sandbox'}
+                        finixApplicationId={contractor?.finix_merchant_id || ''}
+                        onSuccess={handleFinixSuccess}
+                        onCancel={() => setShowFinixForm(null)}
+                      />
+                    </div>
+                  )}
                   
                   <div className="bg-primary/5 border-l-4 border-primary p-4 rounded-r-lg">
                     <p className="text-sm text-muted-foreground">
-                      <strong className="text-foreground">Secure Payment:</strong> Your payment is processed securely through Clover.
+                      <strong className="text-foreground">Secure Payment:</strong> Your payment is processed securely.
                       After payment, this estimate becomes an active project and our team will contact you.
                     </p>
                   </div>
@@ -755,10 +787,29 @@ export default function PublicEstimate() {
                         </Button>
                       </div>
 
+                      {/* Finix Inline Payment Form for signed estimates */}
+                      {showFinixForm && (
+                        <div className="border-2 border-blue-200 dark:border-blue-700 rounded-xl p-6 bg-card">
+                          <h3 className="text-lg font-bold mb-4">Enter Card Details</h3>
+                          <FinixPaymentForm
+                            entityType="estimate"
+                            entityId={estimate.id}
+                            publicToken={token!}
+                            paymentIntent={showFinixForm}
+                            customerEmail={estimate.client_email || ''}
+                            amount={showFinixForm === 'deposit' ? depositRemaining : remaining}
+                            finixEnvironment={contractor?.finix_environment || 'sandbox'}
+                            finixApplicationId={contractor?.finix_merchant_id || ''}
+                            onSuccess={handleFinixSuccess}
+                            onCancel={() => setShowFinixForm(null)}
+                          />
+                        </div>
+                      )}
+
                       <div className="bg-blue-600/10 border-l-4 border-blue-600 p-4 rounded-r-lg">
                         <p className="text-sm text-blue-900 dark:text-blue-100 font-semibold flex items-center gap-2">
                           <CreditCard className="h-4 w-4" />
-                          Secure payment processed through Clover. Our team will contact you after payment is complete.
+                          Secure payment processing. Our team will contact you after payment is complete.
                         </p>
                       </div>
                     </div>

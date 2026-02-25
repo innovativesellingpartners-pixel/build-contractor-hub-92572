@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CheckCircle, FileText, Loader2, Building2, Calendar, DollarSign, CreditCard, Phone, Mail, MapPin, Globe } from 'lucide-react';
 import { AlternativePaymentMethods } from '@/components/payments/AlternativePaymentMethods';
+import { FinixPaymentForm } from '@/components/payments/FinixPaymentForm';
 import { toast } from 'sonner';
 
 export default function PublicInvoice() {
@@ -17,6 +18,7 @@ export default function PublicInvoice() {
   const [contractor, setContractor] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [processingPayment, setProcessingPayment] = useState(false);
+  const [showFinixForm, setShowFinixForm] = useState(false);
 
   useEffect(() => {
     if (token) {
@@ -57,6 +59,12 @@ export default function PublicInvoice() {
   };
 
   const handlePayment = async () => {
+    // Check if contractor uses Finix
+    if (contractor?.preferred_payment_provider === 'finix' && contractor?.finix_merchant_id) {
+      setShowFinixForm(true);
+      return;
+    }
+
     setProcessingPayment(true);
     try {
       const { data: paymentData, error: paymentError } = await supabase.functions.invoke(
@@ -82,6 +90,12 @@ export default function PublicInvoice() {
       toast.error(error.message || 'Failed to process payment. Please try again.');
       setProcessingPayment(false);
     }
+  };
+
+  const handleFinixSuccess = () => {
+    setShowFinixForm(false);
+    toast.success('Payment successful! Thank you.');
+    setTimeout(() => fetchInvoice(), 1000);
   };
 
   if (loading) {
@@ -331,6 +345,26 @@ export default function PublicInvoice() {
                     </>
                   )}
                 </Button>
+
+                {/* Finix Inline Payment Form */}
+                {showFinixForm && (
+                  <div className="border-2 border-primary/20 rounded-xl p-6 bg-card mt-4">
+                    <h3 className="text-lg font-bold mb-4">Enter Card Details</h3>
+                    <FinixPaymentForm
+                      entityType="invoice"
+                      entityId={invoice.id}
+                      publicToken={token!}
+                      paymentIntent="remaining"
+                      customerEmail={invoice.customers?.email || ''}
+                      amount={remainingBalance}
+                      finixEnvironment={contractor?.finix_environment || 'sandbox'}
+                      finixApplicationId={contractor?.finix_merchant_id || ''}
+                      onSuccess={handleFinixSuccess}
+                      onCancel={() => setShowFinixForm(false)}
+                      primaryColor={primaryColor}
+                    />
+                  </div>
+                )}
 
                 <p className="text-center text-sm text-muted-foreground">
                   Secure online payment
