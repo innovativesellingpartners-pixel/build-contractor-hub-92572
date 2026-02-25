@@ -9,26 +9,30 @@ const corsHeaders = {
 interface ProvisionRequest {
   contractor_id: string;
   business_name: string;
-  business_type: string; // INDIVIDUAL_SOLE_PROPRIETORSHIP, CORPORATION, LLC, etc.
+  business_type: string;
+  doing_business_as?: string;
+  business_phone?: string;
+  business_tax_id?: string;
+  incorporation_date?: string;
+  url?: string;
+  principal_percentage_ownership?: string;
   first_name: string;
   last_name: string;
   email: string;
   phone: string;
-  tax_id: string; // EIN or SSN
-  date_of_birth: string; // YYYY-MM-DD
+  tax_id: string;
+  date_of_birth: string;
   business_address_line1: string;
   business_address_line2?: string;
   business_address_city: string;
   business_address_state: string;
   business_address_postal_code: string;
   business_address_country?: string;
-  // Bank account for settlements
   bank_account_name: string;
   bank_routing_number: string;
   bank_account_number: string;
-  bank_account_type: string; // CHECKING or SAVINGS
-  // Business details
-  mcc?: string; // Merchant Category Code
+  bank_account_type: string;
+  mcc?: string;
   max_transaction_amount?: number;
   annual_card_volume?: number;
   default_statement_descriptor?: string;
@@ -81,41 +85,63 @@ serve(async (req) => {
     console.log('Provisioning Finix merchant for contractor:', body.contractor_id);
 
     // Step 1: Create Identity (the merchant's business/owner info)
-    const identityPayload = {
-      entity: {
-        business_name: body.business_name,
-        business_type: body.business_type || 'INDIVIDUAL_SOLE_PROPRIETORSHIP',
-        first_name: body.first_name,
-        last_name: body.last_name,
-        email: body.email,
-        phone: body.phone,
-        tax_id: body.tax_id,
-        dob: {
-          year: parseInt(body.date_of_birth.split('-')[0]),
-          month: parseInt(body.date_of_birth.split('-')[1]),
-          day: parseInt(body.date_of_birth.split('-')[2]),
-        },
-        business_address: {
-          line1: body.business_address_line1,
-          line2: body.business_address_line2 || '',
-          city: body.business_address_city,
-          region: body.business_address_state,
-          postal_code: body.business_address_postal_code,
-          country: body.business_address_country || 'US',
-        },
-        personal_address: {
-          line1: body.business_address_line1,
-          line2: body.business_address_line2 || '',
-          city: body.business_address_city,
-          region: body.business_address_state,
-          postal_code: body.business_address_postal_code,
-          country: body.business_address_country || 'US',
-        },
-        mcc: body.mcc || '1520', // General Contractors
-        max_transaction_amount: (body.max_transaction_amount || 500000) * 100, // in cents
-        annual_card_volume: (body.annual_card_volume || 1000000) * 100,
-        default_statement_descriptor: body.default_statement_descriptor || body.business_name.substring(0, 20),
+    const isNonSoleProp = body.business_type && body.business_type !== 'INDIVIDUAL_SOLE_PROPRIETORSHIP';
+    
+    const entityPayload: Record<string, any> = {
+      business_name: body.business_name,
+      business_type: body.business_type || 'INDIVIDUAL_SOLE_PROPRIETORSHIP',
+      first_name: body.first_name,
+      last_name: body.last_name,
+      email: body.email,
+      phone: body.phone,
+      tax_id: body.tax_id,
+      dob: {
+        year: parseInt(body.date_of_birth.split('-')[0]),
+        month: parseInt(body.date_of_birth.split('-')[1]),
+        day: parseInt(body.date_of_birth.split('-')[2]),
       },
+      business_address: {
+        line1: body.business_address_line1,
+        line2: body.business_address_line2 || '',
+        city: body.business_address_city,
+        region: body.business_address_state,
+        postal_code: body.business_address_postal_code,
+        country: 'USA',
+      },
+      personal_address: {
+        line1: body.business_address_line1,
+        line2: body.business_address_line2 || '',
+        city: body.business_address_city,
+        region: body.business_address_state,
+        postal_code: body.business_address_postal_code,
+        country: 'USA',
+      },
+      mcc: body.mcc || '1520',
+      max_transaction_amount: (body.max_transaction_amount || 500000) * 100,
+      annual_card_volume: (body.annual_card_volume || 1000000) * 100,
+      default_statement_descriptor: body.default_statement_descriptor || body.business_name.substring(0, 20),
+    };
+
+    // Add fields required for non-sole-prop business types (LLC, Corp, Partnership)
+    if (isNonSoleProp) {
+      entityPayload.doing_business_as = body.doing_business_as || body.business_name;
+      entityPayload.business_phone = body.business_phone || body.phone;
+      entityPayload.business_tax_id = body.business_tax_id || body.tax_id;
+      entityPayload.url = body.url || 'https://myct1.com';
+      entityPayload.principal_percentage_ownership = parseInt(body.principal_percentage_ownership || '100');
+      if (body.incorporation_date) {
+        entityPayload.incorporation_date = {
+          year: parseInt(body.incorporation_date.split('-')[0]),
+          month: parseInt(body.incorporation_date.split('-')[1]),
+          day: parseInt(body.incorporation_date.split('-')[2]),
+        };
+      } else {
+        entityPayload.incorporation_date = { year: 2020, month: 1, day: 1 };
+      }
+    }
+
+    const identityPayload = {
+      entity: entityPayload,
       tags: {
         contractor_id: body.contractor_id,
         platform: 'ct1',
