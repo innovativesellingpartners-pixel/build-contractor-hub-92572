@@ -12,7 +12,13 @@ interface FinixPaymentRequest {
   public_token: string;
   payment_intent: 'deposit' | 'full' | 'remaining';
   customer_email: string;
-  finix_token: string; // Tokenized card from Finix.js
+  finix_token?: string; // Tokenized card from Finix.js (legacy)
+  // Direct card details (server-side tokenization)
+  card_number?: string;
+  card_expiry_month?: number;
+  card_expiry_year?: number;
+  card_cvc?: string;
+  card_name?: string;
 }
 
 serve(async (req) => {
@@ -21,6 +27,7 @@ serve(async (req) => {
   }
 
   try {
+    const body: FinixPaymentRequest = await req.json();
     const {
       entity_type,
       entity_id,
@@ -28,10 +35,21 @@ serve(async (req) => {
       payment_intent,
       customer_email,
       finix_token,
-    }: FinixPaymentRequest = await req.json();
+      card_number,
+      card_expiry_month,
+      card_expiry_year,
+      card_cvc,
+      card_name,
+    } = body;
 
-    if (!entity_id || !public_token || !finix_token || !entity_type) {
+    if (!entity_id || !public_token || !entity_type) {
       throw new Error('Missing required fields');
+    }
+
+    // Must have either a finix_token OR raw card details
+    const hasCardDetails = card_number && card_expiry_month && card_expiry_year && card_cvc && card_name;
+    if (!finix_token && !hasCardDetails) {
+      throw new Error('Missing payment details: provide either finix_token or card details');
     }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -44,8 +62,12 @@ serve(async (req) => {
       ? 'https://finix.live-payments-api.com'
       : 'https://finix.sandbox-payments-api.com';
 
-    // Build Basic Auth header from username:password format
     const authHeader = `Basic ${btoa(finixApiKey)}`;
+    const finixHeaders = {
+      'Authorization': authHeader,
+      'Content-Type': 'application/json',
+      'Finix-Version': '2022-02-01',
+    };
 
     let amountToCharge = 0;
     let paymentDescription = '';
@@ -144,47 +166,72 @@ serve(async (req) => {
       entity_id,
       amountToCharge,
       merchantIdentity,
+      hasToken: !!finix_token,
+      hasCardDetails: !!hasCardDetails,
     });
 
-    // Step 1: Create a Payment Instrument from the token
-    const instrumentResponse = await fetch(`${finixBaseUrl}/payment_instruments`, {
-      method: 'POST',
-      headers: {
-        'Authorization': authHeader,
-        'Content-Type': 'application/json',
-        'Finix-Version': '2022-02-01',
-      },
-      body: JSON.stringify({
-        token: finix_token,
-        type: 'TOKEN',
-        identity: merchantIdentity,
-      }),
-    });
+    let paymentInstrumentId: string;
 
-    if (!instrumentResponse.ok) {
-      const errText = await instrumentResponse.text();
-      console.error('Finix instrument error:', errText);
-      throw new Error('Failed to create payment instrument');
+    if (finix_token) {
+      // Legacy path: use pre-tokenized card
+      const instrumentResponse = await fetch(`${finixBaseUrl}/payment_instruments`, {
+        method: 'POST',
+        headers: finixHeaders,
+        body: JSON.stringify({
+          token: finix_token,
+          type: 'TOKEN',
+          identity: merchantIdentity,
+        }),
+      });
+
+      if (!instrumentResponse.ok) {
+        const errText = await instrumentResponse.text();
+        console.error('Finix instrument error:', errText);
+        throw new Error('Failed to create payment instrument');
+      }
+
+      const instrument = await instrumentResponse.json();
+      paymentInstrumentId = instrument.id;
+    } else {
+      // Server-side tokenization: create payment instrument directly from card details
+      const instrumentResponse = await fetch(`${finixBaseUrl}/payment_instruments`, {
+        method: 'POST',
+        headers: finixHeaders,
+        body: JSON.stringify({
+          type: 'PAYMENT_CARD',
+          identity: merchantIdentity,
+          name: card_name,
+          number: card_number,
+          expiration_month: card_expiry_month,
+          expiration_year: card_expiry_year,
+          security_code: card_cvc,
+        }),
+      });
+
+      if (!instrumentResponse.ok) {
+        const errText = await instrumentResponse.text();
+        console.error('Finix card tokenization error:', errText);
+        throw new Error('Card validation failed. Please check your card details and try again.');
+      }
+
+      const instrument = await instrumentResponse.json();
+      paymentInstrumentId = instrument.id;
+      console.log('Card tokenized server-side:', paymentInstrumentId);
     }
 
-    const instrument = await instrumentResponse.json();
-    console.log('Payment instrument created:', instrument.id);
+    console.log('Payment instrument ready:', paymentInstrumentId);
 
-    // Step 2: Create a Transfer (charge)
+    // Create a Transfer (charge)
     const amountInCents = Math.round(amountToCharge * 100);
 
     const transferResponse = await fetch(`${finixBaseUrl}/transfers`, {
       method: 'POST',
-      headers: {
-        'Authorization': authHeader,
-        'Content-Type': 'application/json',
-        'Finix-Version': '2022-02-01',
-      },
+      headers: finixHeaders,
       body: JSON.stringify({
         merchant: merchantIdentity,
         amount: amountInCents,
         currency: 'USD',
-        source: instrument.id,
+        source: paymentInstrumentId,
         tags: {
           entity_type,
           entity_id,
@@ -196,17 +243,16 @@ serve(async (req) => {
     if (!transferResponse.ok) {
       const errText = await transferResponse.text();
       console.error('Finix transfer error:', errText);
-      throw new Error('Payment processing failed');
+      throw new Error('Payment processing failed. Please try again.');
     }
 
     const transfer = await transferResponse.json();
     console.log('Finix transfer created:', transfer.id, 'state:', transfer.state);
 
-    // Step 3: Record payment in our system
+    // Record payment in our system
     const feeAmount = transfer.fee || 0;
     const netAmount = amountToCharge - (feeAmount / 100);
 
-    // Insert payment record
     await supabase.from('payments').insert({
       contractor_id: contractorId,
       customer_id: customerId,
@@ -219,7 +265,7 @@ serve(async (req) => {
       paid_at: transfer.state === 'SUCCEEDED' ? new Date().toISOString() : null,
     });
 
-    // Step 4: Update the entity
+    // Update the entity
     if (entity_type === 'estimate') {
       const { data: est } = await supabase
         .from('estimates')
@@ -248,10 +294,9 @@ serve(async (req) => {
           .eq('id', entity_id);
       }
 
-      // Store in estimate_payment_sessions
       await supabase.from('estimate_payment_sessions').insert({
         estimate_id: entity_id,
-        clover_session_id: transfer.id, // reusing field for finix transfer ID
+        clover_session_id: transfer.id,
         amount: amountToCharge,
         customer_email,
         payment_intent: payment_intent || 'full',
@@ -281,13 +326,8 @@ serve(async (req) => {
             paid_at: isFullyPaid ? new Date().toISOString() : null,
           })
           .eq('id', entity_id);
-
-        if (isFullyPaid && inv) {
-          // Could trigger job completion here
-        }
       }
 
-      // Store in invoice_payment_sessions
       await supabase.from('invoice_payment_sessions').insert({
         invoice_id: entity_id,
         clover_session_id: transfer.id,
