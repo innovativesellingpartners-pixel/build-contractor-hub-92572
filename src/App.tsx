@@ -80,6 +80,8 @@ import VoiceAIProduct from "./pages/products/VoiceAIProduct";
 import TierLaunch from "./pages/products/TierLaunch";
 import TierGrowth from "./pages/products/TierGrowth";
 import TierMarket from "./pages/products/TierMarket";
+import PublicHelpCenter from "./pages/PublicHelpCenter";
+import PublicSupport from "./pages/PublicSupport";
 
 const queryClient = new QueryClient();
 
@@ -90,7 +92,7 @@ function PocketAgentWrapper() {
     '/', '/savings', '/platform', '/for-consumers', '/business-suite', 
     '/what-we-do', '/core-values', '/trades-we-serve', '/blog-podcast', '/blog/',
     '/pricing', '/contact', '/nationwide-network', '/network-map',
-    '/features/', '/products/', '/legal/', '/about'
+    '/features/', '/products/', '/legal/', '/about', '/help', '/support'
   ];
   
   const isPublicPage = publicPaths.some(path => 
@@ -166,6 +168,8 @@ const App = () => (
             <Route path="/privacy" element={<Navigate to="/legal/privacy" replace />} />
             <Route path="/terms" element={<Navigate to="/legal/terms" replace />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/help" element={<PublicHelpCenter />} />
+            <Route path="/support" element={<PublicSupport />} />
             <Route path="/auth" element={<Auth />} />
           <Route path="/estimate/:token" element={<PublicEstimate />} />
           <Route path="/p/estimate/:token" element={<PublicEstimate />} />
