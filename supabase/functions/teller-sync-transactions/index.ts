@@ -11,38 +11,45 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!,
-      { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
-    );
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    const cert = Deno.env.get('TELLER_CERTIFICATE');
-    const key = Deno.env.get('TELLER_PRIVATE_KEY');
-    const encryptionKey = Deno.env.get('QUICKBOOKS_ENCRYPTION_KEY');
-
-    if (!cert || !key || !encryptionKey) {
-      throw new Error('Teller configuration incomplete');
-    }
+    const token = authHeader.replace('Bearer ', '');
 
     const serviceClient = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
+    const { data: { user }, error: authError } = await serviceClient.auth.getUser(token);
+    if (authError || !user) {
+      console.error('Auth error:', authError);
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const cert = Deno.env.get('TELLER_CERTIFICATE');
+    const key = Deno.env.get('TELLER_PRIVATE_KEY');
+
     // Get all active teller connections for user
-    const { data: connections } = await supabase
+    const { data: connections, error: connErr } = await serviceClient
       .from('teller_connections')
       .select('*')
       .eq('user_id', user.id)
       .eq('status', 'active');
+
+    console.log('Connections found:', connections?.length, 'Error:', connErr);
 
     if (!connections?.length) {
       return new Response(JSON.stringify({ synced: 0, message: 'No active connections' }), {
@@ -51,79 +58,157 @@ Deno.serve(async (req) => {
     }
 
     let totalSynced = 0;
+    const errors: string[] = [];
 
-    // Group connections by enrollment to avoid duplicate API calls
-    const enrollmentMap = new Map<string, typeof connections[0]>();
-    for (const conn of connections) {
-      if (!enrollmentMap.has(conn.teller_enrollment_id)) {
-        enrollmentMap.set(conn.teller_enrollment_id, conn);
+    // Check if mTLS certs are available
+    const hasMtls = cert && key;
+    let tlsClient: any = null;
+
+    if (hasMtls) {
+      try {
+        tlsClient = Deno.createHttpClient({
+          certChain: cert,
+          privateKey: key,
+        });
+      } catch (e) {
+        console.error('Failed to create TLS client:', e);
       }
     }
 
-    const tlsClient = Deno.createHttpClient({
-      certChain: cert,
-      privateKey: key,
-    });
-
     for (const conn of connections) {
-      if (!conn.account_id) continue;
-
       try {
-        // Decrypt access token
-        const { data: decrypted } = await serviceClient.rpc('pgp_sym_decrypt_bytea', {
-          data: conn.teller_access_token_encrypted,
-          key: encryptionKey,
-        });
-
-        if (!decrypted) continue;
-
-        const authHeader = `Basic ${btoa(decrypted + ':')}`;
-
-        // Fetch transactions from Teller
-        const txnRes = await fetch(`https://api.teller.io/accounts/${conn.account_id}/transactions`, {
-          headers: { 'Authorization': authHeader },
-          // @ts-ignore
-          client: tlsClient,
-        });
-
-        if (!txnRes.ok) {
-          console.error(`Transactions fetch failed for ${conn.account_id}:`, txnRes.status);
+        // Extract the real access token
+        // In development, tokens are stored as masked placeholders
+        let accessToken = '';
+        const stored = conn.teller_access_token_encrypted || '';
+        
+        if (stored.startsWith('teller_tok_') || stored.startsWith('encrypted:')) {
+          // This is a masked/placeholder token - can't make API calls
+          console.log(`Connection ${conn.id} has placeholder token, skipping API fetch`);
+          errors.push(`Connection ${conn.institution_name}: token not available for API calls (development mode)`);
           continue;
         }
 
-        const transactions: any[] = await txnRes.json();
+        // Try to decrypt if it looks encrypted
+        try {
+          const encryptionKey = Deno.env.get('QUICKBOOKS_ENCRYPTION_KEY');
+          if (encryptionKey) {
+            const { data: decrypted } = await serviceClient.rpc('pgp_sym_decrypt_bytea', {
+              data: stored,
+              key: encryptionKey,
+            });
+            if (decrypted) accessToken = decrypted;
+          }
+        } catch (decryptErr) {
+          console.error('Decryption failed, trying raw:', decryptErr);
+          accessToken = stored;
+        }
 
-        // Upsert transactions
-        for (const txn of transactions) {
-          const { error: upsertErr } = await supabase
-            .from('teller_transactions')
-            .upsert({
-              contractor_id: user.id,
-              teller_connection_id: conn.id,
-              teller_transaction_id: txn.id,
-              amount: parseFloat(txn.amount),
-              description: txn.description,
-              vendor: txn.details?.counterparty?.name || txn.description,
-              category: txn.details?.category || txn.type,
-              transaction_date: txn.date,
-              status: txn.status,
-            }, { onConflict: 'teller_transaction_id' });
+        if (!accessToken) {
+          errors.push(`Connection ${conn.institution_name}: could not retrieve access token`);
+          continue;
+        }
 
-          if (!upsertErr) totalSynced++;
+        if (!tlsClient) {
+          errors.push(`Connection ${conn.institution_name}: mTLS certificates not configured`);
+          continue;
+        }
+
+        // First fetch accounts if we don't have account_id
+        if (!conn.account_id) {
+          console.log('No account_id, fetching accounts for enrollment:', conn.teller_enrollment_id);
+          const accountsRes = await fetch('https://api.teller.io/accounts', {
+            headers: { 'Authorization': `Basic ${btoa(accessToken + ':')}` },
+            // @ts-ignore
+            client: tlsClient,
+          });
+
+          if (accountsRes.ok) {
+            const accounts: any[] = await accountsRes.json();
+            console.log('Fetched accounts:', accounts.length);
+            
+            // Process transactions for each account
+            for (const acct of accounts) {
+              const txnRes = await fetch(`https://api.teller.io/accounts/${acct.id}/transactions`, {
+                headers: { 'Authorization': `Basic ${btoa(accessToken + ':')}` },
+                // @ts-ignore
+                client: tlsClient,
+              });
+
+              if (txnRes.ok) {
+                const transactions: any[] = await txnRes.json();
+                for (const txn of transactions) {
+                  const { error: upsertErr } = await serviceClient
+                    .from('teller_transactions')
+                    .upsert({
+                      contractor_id: user.id,
+                      teller_connection_id: conn.id,
+                      teller_transaction_id: txn.id,
+                      amount: parseFloat(txn.amount),
+                      description: txn.description,
+                      vendor: txn.details?.counterparty?.name || txn.description,
+                      category: txn.details?.category || txn.type,
+                      transaction_date: txn.date,
+                      status: txn.status,
+                    }, { onConflict: 'teller_transaction_id' });
+
+                  if (!upsertErr) totalSynced++;
+                }
+              }
+            }
+          } else {
+            console.error('Accounts fetch failed:', accountsRes.status);
+          }
+        } else {
+          // Fetch transactions for specific account
+          const txnRes = await fetch(`https://api.teller.io/accounts/${conn.account_id}/transactions`, {
+            headers: { 'Authorization': `Basic ${btoa(accessToken + ':')}` },
+            // @ts-ignore
+            client: tlsClient,
+          });
+
+          if (txnRes.ok) {
+            const transactions: any[] = await txnRes.json();
+            for (const txn of transactions) {
+              const { error: upsertErr } = await serviceClient
+                .from('teller_transactions')
+                .upsert({
+                  contractor_id: user.id,
+                  teller_connection_id: conn.id,
+                  teller_transaction_id: txn.id,
+                  amount: parseFloat(txn.amount),
+                  description: txn.description,
+                  vendor: txn.details?.counterparty?.name || txn.description,
+                  category: txn.details?.category || txn.type,
+                  transaction_date: txn.date,
+                  status: txn.status,
+                }, { onConflict: 'teller_transaction_id' });
+
+              if (!upsertErr) totalSynced++;
+            }
+          }
         }
 
         // Update last_synced_at
-        await supabase
+        await serviceClient
           .from('teller_connections')
           .update({ last_synced_at: new Date().toISOString() })
           .eq('id', conn.id);
 
-      } catch (e) {
+      } catch (e: any) {
         console.error(`Sync error for connection ${conn.id}:`, e);
+        errors.push(`Connection ${conn.institution_name}: ${e.message}`);
       }
     }
 
-    return new Response(JSON.stringify({ synced: totalSynced, success: true }), {
+    return new Response(JSON.stringify({ 
+      synced: totalSynced, 
+      success: true,
+      errors: errors.length > 0 ? errors : undefined,
+      message: errors.length > 0 && totalSynced === 0 
+        ? 'Connections found but tokens are in development mode. Re-connect your bank to enable transaction sync.'
+        : undefined,
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error: any) {
