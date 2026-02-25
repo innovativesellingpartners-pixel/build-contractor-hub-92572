@@ -4357,12 +4357,14 @@ export type Database = {
           default_deposit_percent: number | null
           default_sales_tax_rate: number | null
           default_warranty_years: number | null
+          finix_merchant_id: string | null
           id: string
           license_number: string | null
           logo_url: string | null
           online_payments_enabled: boolean | null
           phone: string | null
           pocketbot_full_access: boolean
+          preferred_payment_provider: string | null
           qb_access_token: string | null
           qb_access_token_expires_at: string | null
           qb_last_sync_at: string | null
@@ -4400,12 +4402,14 @@ export type Database = {
           default_deposit_percent?: number | null
           default_sales_tax_rate?: number | null
           default_warranty_years?: number | null
+          finix_merchant_id?: string | null
           id: string
           license_number?: string | null
           logo_url?: string | null
           online_payments_enabled?: boolean | null
           phone?: string | null
           pocketbot_full_access?: boolean
+          preferred_payment_provider?: string | null
           qb_access_token?: string | null
           qb_access_token_expires_at?: string | null
           qb_last_sync_at?: string | null
@@ -4443,12 +4447,14 @@ export type Database = {
           default_deposit_percent?: number | null
           default_sales_tax_rate?: number | null
           default_warranty_years?: number | null
+          finix_merchant_id?: string | null
           id?: string
           license_number?: string | null
           logo_url?: string | null
           online_payments_enabled?: boolean | null
           phone?: string | null
           pocketbot_full_access?: boolean
+          preferred_payment_provider?: string | null
           qb_access_token?: string | null
           qb_access_token_expires_at?: string | null
           qb_last_sync_at?: string | null

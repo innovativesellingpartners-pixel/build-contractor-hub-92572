@@ -94,7 +94,7 @@ serve(async (req) => {
     // Fetch contractor profile for branding (including brand colors)
     const { data: profile } = await supabase
       .from('profiles')
-      .select('company_name, contact_name, logo_url, phone, business_address, city, state, zip_code, business_email, website_url, license_number, brand_primary_color, brand_secondary_color, brand_accent_color, zelle_email, zelle_phone, ach_instructions, accepted_payment_methods')
+      .select('company_name, contact_name, logo_url, phone, business_address, city, state, zip_code, business_email, website_url, license_number, brand_primary_color, brand_secondary_color, brand_accent_color, zelle_email, zelle_phone, ach_instructions, accepted_payment_methods, preferred_payment_provider, finix_merchant_id')
       .eq('id', estimate.user_id)
       .single();
 
