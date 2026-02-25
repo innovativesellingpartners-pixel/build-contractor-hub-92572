@@ -152,3 +152,6 @@ verify_jwt = false
 
 [functions.finix-create-payment]
 verify_jwt = false
+
+[functions.finix-provision-merchant]
+verify_jwt = true
