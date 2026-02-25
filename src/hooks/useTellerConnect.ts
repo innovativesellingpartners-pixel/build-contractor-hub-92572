@@ -51,7 +51,7 @@ export function useTellerConnect({ onSuccess }: UseTellerConnectProps = {}) {
       const tellerConnect = window.TellerConnect.setup({
         applicationId,
         products: ['transactions', 'balance'],
-        environment: 'sandbox', // Change to 'production' when ready
+        environment: 'production',
         onInit: () => {
           console.log('Teller Connect initialized');
           setLoading(false);
