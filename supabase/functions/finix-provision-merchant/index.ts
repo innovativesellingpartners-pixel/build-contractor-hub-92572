@@ -191,7 +191,7 @@ serve(async (req) => {
       account_number: body.bank_account_number,
       bank_code: body.bank_routing_number,
       account_type: body.bank_account_type || 'CHECKING',
-      country: 'US',
+      country: 'USA',
       currency: 'USD',
     };
 
