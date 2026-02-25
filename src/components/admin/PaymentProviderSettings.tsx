@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/password-input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
@@ -264,7 +265,7 @@ export function PaymentProviderSettings({ contractorId }: PaymentProviderSetting
                   </div>
                   <div>
                     <Label>Tax ID (EIN/SSN) *</Label>
-                    <Input value={provisionData.tax_id} onChange={e => updateField('tax_id', e.target.value)} placeholder="XX-XXXXXXX" type="password" />
+                    <PasswordInput value={provisionData.tax_id} onChange={e => updateField('tax_id', e.target.value)} placeholder="XX-XXXXXXX" />
                   </div>
                   <div>
                     <Label>Statement Descriptor</Label>
@@ -286,7 +287,7 @@ export function PaymentProviderSettings({ contractorId }: PaymentProviderSetting
                     </div>
                     <div>
                       <Label>Business Tax ID (EIN) *</Label>
-                      <Input value={provisionData.business_tax_id} onChange={e => updateField('business_tax_id', e.target.value)} placeholder="XX-XXXXXXX" type="password" />
+                      <PasswordInput value={provisionData.business_tax_id} onChange={e => updateField('business_tax_id', e.target.value)} placeholder="XX-XXXXXXX" />
                     </div>
                     <div>
                       <Label>Incorporation Date *</Label>
@@ -382,7 +383,7 @@ export function PaymentProviderSettings({ contractorId }: PaymentProviderSetting
                   </div>
                   <div>
                     <Label>Account Number *</Label>
-                    <Input value={provisionData.bank_account_number} onChange={e => updateField('bank_account_number', e.target.value)} type="password" />
+                    <PasswordInput value={provisionData.bank_account_number} onChange={e => updateField('bank_account_number', e.target.value)} />
                   </div>
                   <div>
                     <Label>Account Type</Label>
