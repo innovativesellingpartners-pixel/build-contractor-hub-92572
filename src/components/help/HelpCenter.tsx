@@ -7,6 +7,7 @@ import { HelpArticleView } from './HelpArticleView';
 import { HelpCategoryView } from './HelpCategoryView';
 import { HelpSupportForm } from './HelpSupportForm';
 import { HelpChatbot } from './HelpChatbot';
+import { PublicFooter } from '@/components/PublicFooter';
 
 type HelpView = 'home' | 'article' | 'category' | 'support';
 
@@ -134,6 +135,9 @@ export default function HelpCenter({ onBack, onNavigateToSection }: HelpCenterPr
           />
         )}
       </div>
+
+      {/* Footer */}
+      <PublicFooter />
 
       {/* Floating Chat Button */}
       {!chatbotOpen && (
