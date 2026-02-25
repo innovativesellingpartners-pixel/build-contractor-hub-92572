@@ -178,38 +178,14 @@ function PublicEstimateInner() {
           .eq('id', estimate.id);
       }
 
-      // Check if contractor uses Finix
-      if (contractor?.preferred_payment_provider === 'finix' && contractor?.finix_merchant_id) {
+      // Use Finix for contractor-to-customer payments
+      if (contractor?.finix_merchant_id) {
         setShowFinixForm(intent);
         return;
       }
 
-      setProcessingPayment(intent === 'deposit' ? 'deposit' : 'full');
-
-      const { data: paymentData, error: paymentError } = await supabase.functions.invoke(
-        'process-estimate-payment',
-        {
-          body: {
-            estimate_id: estimate.id,
-            public_token: token,
-            payment_intent: intent,
-            customer_email: estimate.client_email,
-          },
-        }
-      );
-
-      if (paymentError) throw paymentError;
-
-      if (paymentData?.success && paymentData?.checkout_url) {
-        sessionStorage.setItem('estimate_payment', JSON.stringify({
-          estimate_id: estimate.id,
-          token,
-          intent,
-        }));
-        window.location.href = paymentData.checkout_url;
-      } else {
-        throw new Error(paymentData?.message || 'Failed to create payment session');
-      }
+      // Fallback: if no Finix merchant configured, show error
+      throw new Error('Online payments are not configured for this contractor. Please contact them directly.');
     } catch (error: any) {
       console.error('Error processing payment:', error);
       toast.error(error.message || 'Failed to process payment. Please try again.');
