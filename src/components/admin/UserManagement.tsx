@@ -475,100 +475,54 @@ export const UserManagement = () => {
         <CardHeader>
           <CardTitle>Contractors & Users ({filteredUsers?.length || 0})</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Profile</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Company</TableHead>
-                  <TableHead>Contact</TableHead>
-                  <TableHead>CT1 #</TableHead>
-                  <TableHead>Tier</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Last Sign In</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredUsers?.map(user => <TableRow key={user.id}>
-                    <TableCell>
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src={(user.profile as any)?.logo_url} alt={user.profile?.company_name || user.email} />
-                        <AvatarFallback>
-                          {user.profile?.company_name?.charAt(0) || user.email.charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                    </TableCell>
-                    <TableCell className="font-medium">{user.email}</TableCell>
-                    <TableCell>{user.profile?.company_name || 'N/A'}</TableCell>
-                    <TableCell>{user.profile?.contact_name || 'N/A'}</TableCell>
-                    <TableCell>
-                      {user.profile?.ct1_contractor_number ? <Badge variant="outline">#{user.profile.ct1_contractor_number}</Badge> : 'N/A'}
-                    </TableCell>
-                    <TableCell>
-                      {user.profile?.subscription_tier && <Badge className={`${getTierBadgeColor(user.profile.subscription_tier)} text-white`}>
-                          {user.profile.subscription_tier}
-                        </Badge>}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={getRoleBadgeVariant(user.role)}>
-                        {user.role}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString() : 'Never'}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2 justify-end">
-                        <Button variant="default" size="sm" onClick={() => navigate(`/admin/users/${user.id}?tab=voice-ai`)} title="Configure Voice AI" className="gap-2">
-                          <Bot className="h-4 w-4" />
-                          Voice AI
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={() => navigate(`/admin/users/${user.id}`)} title="View Profile">
-                          
-                        </Button>
-                        <Select value={user.role} onValueChange={value => updateRoleMutation.mutate({
-                      userId: user.id,
-                      newRole: value as 'user' | 'admin' | 'super_admin'
-                    })}>
-                          <SelectTrigger className="w-32">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="user">User</SelectItem>
-                            <SelectItem value="admin">Admin</SelectItem>
-                            <SelectItem value="super_admin">Super Admin</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <Button variant="outline" size="sm" onClick={() => {
-                      console.log('Edit button clicked for user:', user.email);
-                      console.log('Setting editingUser:', user);
-                      setEditingUser(user);
-                      setLogoPreview((user.profile as any)?.logo_url || null);
-                      setIsEditDialogOpen(true);
-                      console.log('Dialog should open now');
-                    }}>
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={() => {
-                      setPasswordResetUser(user);
-                      setIsPasswordDialogOpen(true);
-                    }}>
-                          <Key className="h-4 w-4" />
-                        </Button>
-                        <Button variant="destructive" size="sm" onClick={() => {
-                      setDeletingUser(user);
-                      setIsDeleteDialogOpen(true);
-                    }}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>)}
-              </TableBody>
-            </Table>
+        <CardContent className="p-0">
+          <div className="divide-y">
+            {filteredUsers?.map(user => (
+              <div
+                key={user.id}
+                className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 cursor-pointer transition-colors"
+                onClick={() => navigate(`/admin/users/${user.id}`)}
+              >
+                <Avatar className="h-9 w-9 flex-shrink-0">
+                  <AvatarImage src={(user.profile as any)?.logo_url} alt={user.profile?.company_name || user.email} />
+                  <AvatarFallback className="text-xs">
+                    {user.profile?.company_name?.charAt(0) || user.email.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium truncate">
+                    {user.profile?.company_name || user.profile?.contact_name || user.email}
+                  </p>
+                  <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                </div>
+
+                <div className="hidden sm:flex items-center gap-2 flex-shrink-0">
+                  {user.profile?.ct1_contractor_number && (
+                    <Badge variant="outline" className="text-xs">#{user.profile.ct1_contractor_number}</Badge>
+                  )}
+                  {user.profile?.subscription_tier && (
+                    <Badge className={`${getTierBadgeColor(user.profile.subscription_tier)} text-white text-xs`}>
+                      {user.profile.subscription_tier}
+                    </Badge>
+                  )}
+                  <Badge variant={getRoleBadgeVariant(user.role)} className="text-xs">
+                    {user.role}
+                  </Badge>
+                </div>
+
+                <span className="hidden md:block text-xs text-muted-foreground flex-shrink-0 w-20 text-right">
+                  {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString() : 'Never'}
+                </span>
+
+                <Eye className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+              </div>
+            ))}
+            {filteredUsers?.length === 0 && (
+              <div className="px-4 py-8 text-center text-sm text-muted-foreground">
+                No users found matching your criteria.
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
