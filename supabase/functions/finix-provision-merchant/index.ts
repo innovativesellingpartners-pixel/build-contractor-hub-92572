@@ -86,6 +86,18 @@ serve(async (req) => {
 
     // Step 1: Create Identity (the merchant's business/owner info)
     const isNonSoleProp = body.business_type && body.business_type !== 'INDIVIDUAL_SOLE_PROPRIETORSHIP';
+
+    // Finix sandbox app limit is 1,000,000 cents ($10,000) for max transaction amount.
+    // Body values are expected in dollars from the UI.
+    const requestedMaxTransactionAmount = Number(body.max_transaction_amount ?? 10000);
+    const normalizedMaxTransactionAmount = Number.isFinite(requestedMaxTransactionAmount)
+      ? Math.min(Math.max(requestedMaxTransactionAmount, 1), 10000)
+      : 10000;
+
+    const requestedAnnualCardVolume = Number(body.annual_card_volume ?? 1000000);
+    const normalizedAnnualCardVolume = Number.isFinite(requestedAnnualCardVolume)
+      ? Math.max(requestedAnnualCardVolume, 0)
+      : 1000000;
     
     const entityPayload: Record<string, any> = {
       business_name: body.business_name,
@@ -117,8 +129,8 @@ serve(async (req) => {
         country: 'USA',
       },
       mcc: body.mcc || '1520',
-      max_transaction_amount: (body.max_transaction_amount || 500000) * 100,
-      annual_card_volume: (body.annual_card_volume || 1000000) * 100,
+      max_transaction_amount: normalizedMaxTransactionAmount * 100,
+      annual_card_volume: normalizedAnnualCardVolume * 100,
       default_statement_descriptor: body.default_statement_descriptor || body.business_name.substring(0, 20),
     };
 
