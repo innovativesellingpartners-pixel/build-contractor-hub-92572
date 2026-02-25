@@ -24,18 +24,16 @@ export function MobileOptimizedWrapper({
       className
     )}>
       {title && (
-        <Card className="mb-4 overflow-hidden max-w-full rounded-xl border-border/60 shadow-sm">
-          <CardHeader className="pb-3 overflow-hidden">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 overflow-hidden">
-              <CardTitle className="text-xl sm:text-2xl truncate max-w-full tracking-tight">{title}</CardTitle>
-              <div className="flex gap-2 flex-shrink-0 flex-wrap">
-                {actions}
-              </div>
+        <div className="mb-6 overflow-hidden max-w-full px-4 sm:px-0">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 overflow-hidden">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight truncate max-w-full">{title}</h1>
+            <div className="flex gap-2 flex-shrink-0 flex-wrap">
+              {actions}
             </div>
-          </CardHeader>
-        </Card>
+          </div>
+        </div>
       )}
-      <div className="space-y-4 overflow-hidden">{children}</div>
+      <div className="space-y-5 overflow-hidden">{children}</div>
     </div>
   );
 }
@@ -43,7 +41,7 @@ export function MobileOptimizedWrapper({
 export function MobileCard({ children, className }: { children: ReactNode; className?: string }) {
   return (
     <Card className={cn(
-      'hover:shadow-md transition-all duration-200 w-full max-w-full overflow-hidden rounded-xl border-border/60',
+      'w-full max-w-full overflow-hidden card-interactive',
       className
     )}>
       <CardContent className="p-4 sm:p-6 overflow-hidden max-w-full">{children}</CardContent>
@@ -74,7 +72,7 @@ export function MobileRowCard({ children, className, onClick }: {
   return (
     <Card 
       className={cn(
-        'hover:shadow-md transition-all duration-200 w-full max-w-full overflow-hidden cursor-pointer rounded-xl border-border/60',
+        'w-full max-w-full overflow-hidden cursor-pointer card-interactive',
         className
       )}
       onClick={onClick}

@@ -75,25 +75,25 @@ export default function JobsFinancialOverview({ onNavigateToJobs }: JobsFinancia
   if (isLoading) return <Skeleton className="h-48 w-full rounded-xl" />;
 
   const cards = [
-    { label: 'Revenue', value: metrics.revenue, icon: DollarSign, color: 'text-green-600' },
-    { label: 'Costs', value: metrics.costs, icon: Receipt, color: 'text-red-600' },
-    { label: 'Payments', value: metrics.payments, icon: TrendingUp, color: 'text-blue-600' },
-    { label: 'Outstanding', value: metrics.outstanding, icon: AlertCircle, color: 'text-amber-600' },
+    { label: 'Revenue', value: metrics.revenue, icon: DollarSign, iconBg: 'bg-emerald-500/8', color: 'text-emerald-600 dark:text-emerald-400' },
+    { label: 'Costs', value: metrics.costs, icon: Receipt, iconBg: 'bg-red-500/8', color: 'text-red-600 dark:text-red-400' },
+    { label: 'Payments', value: metrics.payments, icon: TrendingUp, iconBg: 'bg-blue-500/8', color: 'text-blue-600 dark:text-blue-400' },
+    { label: 'Outstanding', value: metrics.outstanding, icon: AlertCircle, iconBg: 'bg-amber-500/8', color: 'text-amber-600 dark:text-amber-400' },
   ];
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Financial Overview</h2>
+        <h2 className="text-lg font-semibold">Financial overview</h2>
         <Select value={preset} onValueChange={(v) => setPreset(v as DatePreset)}>
-          <SelectTrigger className="w-[150px] h-8 text-xs">
+          <SelectTrigger className="w-[150px] h-9 text-xs bg-background">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="this_month">This Month</SelectItem>
-            <SelectItem value="last_month">Last Month</SelectItem>
-            <SelectItem value="this_quarter">This Quarter</SelectItem>
-            <SelectItem value="ytd">Year to Date</SelectItem>
+            <SelectItem value="this_month">This month</SelectItem>
+            <SelectItem value="last_month">Last month</SelectItem>
+            <SelectItem value="this_quarter">This quarter</SelectItem>
+            <SelectItem value="ytd">Year to date</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -102,30 +102,32 @@ export default function JobsFinancialOverview({ onNavigateToJobs }: JobsFinancia
         {cards.map(card => (
           <Card
             key={card.label}
-            className="p-3 cursor-pointer hover:shadow-md transition-shadow"
+            className="p-4 cursor-pointer card-interactive"
             onClick={onNavigateToJobs}
           >
-            <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-              <card.icon className={`h-3.5 w-3.5 ${card.color}`} />
-              {card.label}
+            <div className="flex items-center gap-2 mb-2">
+              <div className={`h-8 w-8 rounded-lg ${card.iconBg} flex items-center justify-center`}>
+                <card.icon className={`h-4 w-4 ${card.color}`} />
+              </div>
             </div>
-            <p className={`text-lg font-bold tabular-nums ${card.color}`}>{fmt(card.value)}</p>
+            <p className="text-xs font-medium text-muted-foreground mb-1">{card.label}</p>
+            <p className={`text-xl font-bold tabular-nums tracking-tight ${card.color}`}>{fmt(card.value)}</p>
           </Card>
         ))}
       </div>
 
       {chartData.length > 0 && (
-        <Card className="p-4">
-          <h3 className="text-xs font-semibold mb-3 text-muted-foreground">Top Jobs by Revenue</h3>
+        <Card className="p-5">
+          <h3 className="text-sm font-semibold text-muted-foreground mb-4">Top jobs by revenue</h3>
           <ResponsiveContainer width="100%" height={140}>
             <BarChart data={chartData}>
-              <XAxis dataKey="name" className="text-[10px]" tick={{ fontSize: 10 }} />
-              <YAxis className="text-[10px]" tick={{ fontSize: 10 }} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
+              <XAxis dataKey="name" className="text-[10px]" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
+              <YAxis className="text-[10px]" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} axisLine={false} tickLine={false} />
               <Tooltip
-                contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))', fontSize: '12px' }}
+                contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '0.75rem', fontSize: '12px', boxShadow: 'var(--shadow-md)' }}
                 formatter={(v: number) => fmt(v)}
               />
-              <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </Card>
