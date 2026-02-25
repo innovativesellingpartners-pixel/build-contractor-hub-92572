@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2, CreditCard, Lock } from 'lucide-react';
 import { toast } from 'sonner';
-import { useFinixPayment } from '@/hooks/useFinixPayment';
+import { supabase } from '@/integrations/supabase/client';
 
 interface FinixPaymentFormProps {
   entityType: 'estimate' | 'invoice';
@@ -13,8 +13,8 @@ interface FinixPaymentFormProps {
   paymentIntent: 'deposit' | 'full' | 'remaining';
   customerEmail: string;
   amount: number;
-  finixEnvironment: string;
-  finixApplicationId: string;
+  finixEnvironment?: string;
+  finixApplicationId?: string;
   onSuccess: () => void;
   onCancel?: () => void;
   primaryColor?: string;
@@ -27,18 +27,15 @@ export function FinixPaymentForm({
   paymentIntent,
   customerEmail,
   amount,
-  finixEnvironment,
-  finixApplicationId,
   onSuccess,
   onCancel,
   primaryColor,
 }: FinixPaymentFormProps) {
-  const { processPayment, processing } = useFinixPayment();
   const [cardNumber, setCardNumber] = useState('');
   const [expiry, setExpiry] = useState('');
   const [cvc, setCvc] = useState('');
   const [name, setName] = useState('');
-  const [tokenizing, setTokenizing] = useState(false);
+  const [processing, setProcessing] = useState(false);
 
   const formatCardNumber = (value: string) => {
     const digits = value.replace(/\D/g, '').slice(0, 16);
@@ -64,58 +61,40 @@ export function FinixPaymentForm({
       return;
     }
 
-    setTokenizing(true);
+    setProcessing(true);
 
     try {
-      // Tokenize using Finix API
-      const finixBaseUrl = finixEnvironment === 'live'
-        ? 'https://finix.live-payments-api.com'
-        : 'https://finix.sandbox-payments-api.com';
-
-      const tokenResponse = await fetch(`${finixBaseUrl}/payment_instruments`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      // Send card details to our secure edge function for server-side tokenization + payment
+      const { data, error } = await supabase.functions.invoke('finix-create-payment', {
+        body: {
+          entity_type: entityType,
+          entity_id: entityId,
+          public_token: publicToken,
+          payment_intent: paymentIntent,
+          customer_email: customerEmail,
+          card_number: digits,
+          card_expiry_month: parseInt(expMonth),
+          card_expiry_year: parseInt(`20${expYear}`),
+          card_cvc: cvc,
+          card_name: name,
         },
-        body: JSON.stringify({
-          application: finixApplicationId,
-          type: 'PAYMENT_CARD',
-          name: name,
-          number: digits,
-          expiration_month: parseInt(expMonth),
-          expiration_year: parseInt(`20${expYear}`),
-          security_code: cvc,
-        }),
       });
 
-      if (!tokenResponse.ok) {
-        throw new Error('Card tokenization failed. Please check your card details.');
-      }
+      if (error) throw error;
 
-      const tokenData = await tokenResponse.json();
-
-      // Process payment using the token
-      const result = await processPayment({
-        entityType,
-        entityId,
-        publicToken,
-        paymentIntent,
-        customerEmail,
-        finixToken: tokenData.id,
-      });
-
-      if (result?.success) {
+      if (data?.success) {
+        toast.success(`Payment of $${data.amount?.toFixed(2)} processed successfully!`);
         onSuccess();
+      } else {
+        throw new Error(data?.message || 'Payment failed');
       }
     } catch (error: any) {
-      console.error('Finix payment error:', error);
-      toast.error(error.message || 'Payment failed');
+      console.error('Payment error:', error);
+      toast.error(error.message || 'Payment failed. Please try again.');
     } finally {
-      setTokenizing(false);
+      setProcessing(false);
     }
   };
-
-  const isProcessing = processing || tokenizing;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -133,7 +112,7 @@ export function FinixPaymentForm({
             onChange={(e) => setName(e.target.value)}
             placeholder="John Smith"
             required
-            disabled={isProcessing}
+            disabled={processing}
           />
         </div>
 
@@ -145,7 +124,7 @@ export function FinixPaymentForm({
             onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
             placeholder="4242 4242 4242 4242"
             required
-            disabled={isProcessing}
+            disabled={processing}
             maxLength={19}
           />
         </div>
@@ -159,7 +138,7 @@ export function FinixPaymentForm({
               onChange={(e) => setExpiry(formatExpiry(e.target.value))}
               placeholder="MM/YY"
               required
-              disabled={isProcessing}
+              disabled={processing}
               maxLength={5}
             />
           </div>
@@ -171,7 +150,7 @@ export function FinixPaymentForm({
               onChange={(e) => setCvc(e.target.value.replace(/\D/g, '').slice(0, 4))}
               placeholder="123"
               required
-              disabled={isProcessing}
+              disabled={processing}
               maxLength={4}
               type="password"
             />
@@ -181,12 +160,12 @@ export function FinixPaymentForm({
 
       <Button
         type="submit"
-        disabled={isProcessing}
+        disabled={processing}
         className="w-full h-auto py-4 text-lg font-bold shadow-lg"
         style={primaryColor ? { backgroundColor: primaryColor } : undefined}
         size="lg"
       >
-        {isProcessing ? (
+        {processing ? (
           <>
             <Loader2 className="h-5 w-5 mr-2 animate-spin" />
             Processing...
@@ -204,7 +183,7 @@ export function FinixPaymentForm({
           type="button"
           variant="ghost"
           onClick={onCancel}
-          disabled={isProcessing}
+          disabled={processing}
           className="w-full"
         >
           Cancel

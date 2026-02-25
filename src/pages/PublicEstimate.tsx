@@ -124,29 +124,29 @@ export default function PublicEstimate() {
   };
 
   const handlePayment = async (intent: 'deposit' | 'full' | 'remaining') => {
-    if (!agreementAccepted && !signed) {
-      toast.error('Please accept the payment agreement to proceed');
-      return;
-    }
-
-    // Save signature first if not already signed
-    if (!signed && clientSigRef.current?.toDataURL()) {
-      const signatureData = clientSigRef.current.toDataURL();
-      await supabase
-        .from('estimates')
-        .update({ client_signature: signatureData })
-        .eq('id', estimate.id);
-    }
-
-    // Check if contractor uses Finix
-    if (contractor?.preferred_payment_provider === 'finix' && contractor?.finix_merchant_id) {
-      setShowFinixForm(intent);
-      return;
-    }
-
-    setProcessingPayment(intent === 'deposit' ? 'deposit' : 'full');
-    
     try {
+      if (!agreementAccepted && !signed) {
+        toast.error('Please accept the payment agreement to proceed');
+        return;
+      }
+
+      // Save signature first if not already signed
+      if (!signed && clientSigRef.current?.toDataURL()) {
+        const signatureData = clientSigRef.current.toDataURL();
+        await supabase
+          .from('estimates')
+          .update({ client_signature: signatureData })
+          .eq('id', estimate.id);
+      }
+
+      // Check if contractor uses Finix
+      if (contractor?.preferred_payment_provider === 'finix' && contractor?.finix_merchant_id) {
+        setShowFinixForm(intent);
+        return;
+      }
+
+      setProcessingPayment(intent === 'deposit' ? 'deposit' : 'full');
+
       const { data: paymentData, error: paymentError } = await supabase.functions.invoke(
         'process-estimate-payment',
         {
