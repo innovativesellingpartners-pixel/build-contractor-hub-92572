@@ -59,37 +59,14 @@ export default function PublicInvoice() {
   };
 
   const handlePayment = async () => {
-    // Check if contractor uses Finix
-    if (contractor?.preferred_payment_provider === 'finix' && contractor?.finix_merchant_id) {
+    // Use Finix for contractor-to-customer payments
+    if (contractor?.finix_merchant_id) {
       setShowFinixForm(true);
       return;
     }
 
-    setProcessingPayment(true);
-    try {
-      const { data: paymentData, error: paymentError } = await supabase.functions.invoke(
-        'process-invoice-payment',
-        {
-          body: {
-            invoice_id: invoice.id,
-            public_token: token,
-            payment_intent: 'remaining',
-            customer_email: invoice.customers?.email,
-          },
-        }
-      );
-
-      if (paymentError) throw paymentError;
-      if (paymentData?.success && paymentData?.checkout_url) {
-        window.location.href = paymentData.checkout_url;
-      } else {
-        throw new Error(paymentData?.message || 'Failed to create payment session');
-      }
-    } catch (error: any) {
-      console.error('Error processing payment:', error);
-      toast.error(error.message || 'Failed to process payment. Please try again.');
-      setProcessingPayment(false);
-    }
+    // Fallback: if no Finix merchant configured, show error
+    toast.error('Online payments are not configured for this contractor. Please contact them directly.');
   };
 
   const handleFinixSuccess = () => {
