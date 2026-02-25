@@ -40,6 +40,12 @@ export function PaymentProviderSettings({ contractorId }: PaymentProviderSetting
   const [provisionData, setProvisionData] = useState({
     business_name: '',
     business_type: 'INDIVIDUAL_SOLE_PROPRIETORSHIP',
+    doing_business_as: '',
+    business_phone: '',
+    business_tax_id: '',
+    incorporation_date: '',
+    url: '',
+    principal_percentage_ownership: '100',
     first_name: '',
     last_name: '',
     email: '',
@@ -265,6 +271,37 @@ export function PaymentProviderSettings({ contractorId }: PaymentProviderSetting
                     <Input value={provisionData.default_statement_descriptor} onChange={e => updateField('default_statement_descriptor', e.target.value)} placeholder="Business name on statements" maxLength={20} />
                   </div>
                 </div>
+
+                {/* LLC/Corp-specific fields */}
+                {provisionData.business_type !== 'INDIVIDUAL_SOLE_PROPRIETORSHIP' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border border-border rounded-lg bg-muted/30">
+                    <p className="md:col-span-2 text-sm font-medium text-muted-foreground">Additional fields required for {provisionData.business_type === 'LIMITED_LIABILITY_COMPANY' ? 'LLC' : provisionData.business_type}</p>
+                    <div>
+                      <Label>DBA (Doing Business As) *</Label>
+                      <Input value={provisionData.doing_business_as} onChange={e => updateField('doing_business_as', e.target.value)} placeholder="Trade name" />
+                    </div>
+                    <div>
+                      <Label>Business Phone *</Label>
+                      <Input value={provisionData.business_phone} onChange={e => updateField('business_phone', e.target.value)} placeholder="5551234567" />
+                    </div>
+                    <div>
+                      <Label>Business Tax ID (EIN) *</Label>
+                      <Input value={provisionData.business_tax_id} onChange={e => updateField('business_tax_id', e.target.value)} placeholder="XX-XXXXXXX" type="password" />
+                    </div>
+                    <div>
+                      <Label>Incorporation Date *</Label>
+                      <Input value={provisionData.incorporation_date} onChange={e => updateField('incorporation_date', e.target.value)} type="date" />
+                    </div>
+                    <div>
+                      <Label>Business Website</Label>
+                      <Input value={provisionData.url} onChange={e => updateField('url', e.target.value)} placeholder="https://example.com" />
+                    </div>
+                    <div>
+                      <Label>Ownership % *</Label>
+                      <Input value={provisionData.principal_percentage_ownership} onChange={e => updateField('principal_percentage_ownership', e.target.value)} placeholder="100" type="number" min="1" max="100" />
+                    </div>
+                  </div>
+                )}
               </div>
 
               <Separator />
