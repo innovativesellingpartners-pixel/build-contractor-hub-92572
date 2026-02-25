@@ -58,109 +58,75 @@ export const AdminDashboard = () => {
   }
 
   const statCards = [
-    {
-      title: 'Total Users',
-      value: stats?.totalUsers || 0,
-      icon: Users,
-      description: 'Registered users',
-    },
-    {
-      title: 'Total Leads',
-      value: stats?.totalLeads || 0,
-      icon: ClipboardList,
-      description: 'All contractor leads',
-    },
-    {
-      title: 'Total Jobs',
-      value: stats?.totalJobs || 0,
-      icon: Briefcase,
-      description: 'Jobs across platform',
-    },
-    {
-      title: 'Total Customers',
-      value: stats?.totalCustomers || 0,
-      icon: UserCheck,
-      description: 'Customer accounts',
-    },
-    {
-      title: 'Training Courses',
-      value: stats?.totalCourses || 0,
-      icon: BookOpen,
-      description: 'Available courses',
-    },
-    {
-      title: 'Marketplace Services',
-      value: stats?.totalServices || 0,
-      icon: ShoppingCart,
-      description: 'Listed services',
-    },
+    { title: 'Total Users', value: stats?.totalUsers || 0, icon: Users, to: '/admin/users' },
+    { title: 'Total Leads', value: stats?.totalLeads || 0, icon: ClipboardList, to: '/admin/leads' },
+    { title: 'Total Jobs', value: stats?.totalJobs || 0, icon: Briefcase, to: '/admin/jobs' },
+    { title: 'Total Customers', value: stats?.totalCustomers || 0, icon: UserCheck, to: '/admin/customers' },
+    { title: 'Training Courses', value: stats?.totalCourses || 0, icon: BookOpen, to: '/admin/training' },
+    { title: 'Marketplace Services', value: stats?.totalServices || 0, icon: ShoppingCart, to: '/admin/marketplace' },
   ];
 
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-3xl font-bold text-foreground mb-2">Admin Dashboard</h2>
-        <p className="text-muted-foreground">
-          Overview of your ConstructeAM platform
-        </p>
+        <p className="text-muted-foreground">Overview of your ConstructeAM platform</p>
       </div>
 
       <ActivitySummaryWidget />
 
+      <Card>
+        <CardHeader>
+          <CardTitle>Quick Actions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <Link to="/admin/users" className="p-3 border rounded-lg hover:bg-accent transition-colors">
+              <div className="font-medium text-sm">Manage Users</div>
+              <div className="text-xs text-muted-foreground">View and edit users</div>
+            </Link>
+            <Link to="/admin/leads" className="p-3 border rounded-lg hover:bg-accent transition-colors">
+              <div className="font-medium text-sm">View Leads</div>
+              <div className="text-xs text-muted-foreground">All contractor leads</div>
+            </Link>
+            <Link to="/admin/marketplace" className="p-3 border rounded-lg hover:bg-accent transition-colors">
+              <div className="font-medium text-sm">Marketplace</div>
+              <div className="text-xs text-muted-foreground">Manage services</div>
+            </Link>
+            <Link to="/admin/support" className="p-3 border rounded-lg hover:bg-accent transition-colors">
+              <div className="font-medium text-sm">Support Tickets</div>
+              <div className="text-xs text-muted-foreground">View open tickets</div>
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {statCards.map((stat) => (
-          <Card key={stat.title} className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex-1 min-w-0 pr-3">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide truncate">
-                  {stat.title}
-                </p>
-                <p className="text-3xl font-bold mt-1">{stat.value}</p>
+          <Link key={stat.title} to={stat.to}>
+            <Card className="p-4 hover:bg-accent/50 transition-colors cursor-pointer">
+              <div className="flex items-center justify-between">
+                <div className="flex-1 min-w-0 pr-3">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide truncate">{stat.title}</p>
+                  <p className="text-3xl font-bold mt-1">{stat.value}</p>
+                </div>
+                <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                  <stat.icon className="h-5 w-5 text-muted-foreground" />
+                </div>
               </div>
-              <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-                <stat.icon className="h-5 w-5 text-muted-foreground" />
-              </div>
-            </div>
-          </Card>
+            </Card>
+          </Link>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">Activity tracking coming soon...</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="grid grid-cols-2 gap-2">
-              <Link to="/admin/users" className="p-3 text-left border rounded-lg hover:bg-accent transition-colors">
-                <div className="font-medium">Manage Users</div>
-                <div className="text-sm text-muted-foreground">View and edit users</div>
-              </Link>
-              <Link to="/admin/training" className="p-3 text-left border rounded-lg hover:bg-accent transition-colors">
-                <div className="font-medium">Add Course</div>
-                <div className="text-sm text-muted-foreground">Create training content</div>
-              </Link>
-              <Link to="/admin/marketplace" className="p-3 text-left border rounded-lg hover:bg-accent transition-colors">
-                <div className="font-medium">Marketplace</div>
-                <div className="text-sm text-muted-foreground">Manage services</div>
-              </Link>
-              <Link to="/admin/users" className="p-3 text-left border rounded-lg hover:bg-accent transition-colors">
-                <div className="font-medium">Add User</div>
-                <div className="text-sm text-muted-foreground">Create new contractor</div>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent Activity</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">Activity tracking coming soon...</p>
+        </CardContent>
+      </Card>
     </div>
   );
 };
