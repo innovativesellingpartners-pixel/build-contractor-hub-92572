@@ -5,6 +5,52 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
+/**
+ * Make an mTLS-authenticated request to the Teller API.
+ * Uses Node.js https module via Deno compatibility layer since
+ * Deno Deploy doesn't support Deno.createHttpClient with client certs.
+ */
+async function tellerFetch(url: string, accessToken: string, cert: string, key: string): Promise<{ ok: boolean; status: number; body: string }> {
+  const { default: https } = await import('node:https');
+  const { URL } = await import('node:url');
+
+  const parsed = new URL(url);
+  const auth = Buffer.from(accessToken + ':').toString('base64');
+
+  return new Promise((resolve, reject) => {
+    const options = {
+      hostname: parsed.hostname,
+      port: 443,
+      path: parsed.pathname + parsed.search,
+      method: 'GET',
+      cert: cert,
+      key: key,
+      headers: {
+        'Authorization': `Basic ${auth}`,
+        'Accept': 'application/json',
+      },
+    };
+
+    const req = https.request(options, (res: any) => {
+      let data = '';
+      res.on('data', (chunk: any) => { data += chunk; });
+      res.on('end', () => {
+        resolve({
+          ok: res.statusCode >= 200 && res.statusCode < 300,
+          status: res.statusCode,
+          body: data,
+        });
+      });
+    });
+
+    req.on('error', (e: any) => {
+      reject(new Error(`HTTPS request failed: ${e.message}`));
+    });
+
+    req.end();
+  });
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -35,8 +81,22 @@ Deno.serve(async (req) => {
 
     console.log('Syncing Teller transactions for user:', user.id);
 
-    const cert = Deno.env.get('TELLER_CERTIFICATE');
-    const key = Deno.env.get('TELLER_PRIVATE_KEY');
+    const rawCert = Deno.env.get('TELLER_CERTIFICATE');
+    const rawKey = Deno.env.get('TELLER_PRIVATE_KEY');
+
+    if (!rawCert || !rawKey) {
+      console.error('TELLER_CERTIFICATE or TELLER_PRIVATE_KEY not configured');
+      return new Response(JSON.stringify({ error: 'mTLS certificates not configured' }), {
+        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Unescape stored newlines
+    const cert = rawCert.replace(/\\n/g, '\n');
+    const key = rawKey.replace(/\\n/g, '\n');
+
+    console.log('Cert starts with:', cert.substring(0, 30), '... length:', cert.length);
+    console.log('Key starts with:', key.substring(0, 30), '... length:', key.length);
 
     // Get all active teller connections for user
     const { data: connections, error: connErr } = await serviceClient
@@ -56,25 +116,8 @@ Deno.serve(async (req) => {
     let totalSynced = 0;
     const errors: string[] = [];
 
-    // Create mTLS client if certs available
-    let tlsClient: any = null;
-    if (cert && key) {
-      try {
-        tlsClient = Deno.createHttpClient({
-          certChain: cert,
-          privateKey: key,
-        });
-        console.log('mTLS client created successfully');
-      } catch (e) {
-        console.error('Failed to create TLS client:', e);
-      }
-    } else {
-      console.warn('TELLER_CERTIFICATE or TELLER_PRIVATE_KEY not configured');
-    }
-
     for (const conn of connections) {
       try {
-        // Extract the access token
         const stored = conn.teller_access_token_encrypted || '';
         let accessToken = '';
 
@@ -83,36 +126,13 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        // In Teller development mode, tokens start with "teller_tok_" and are valid API tokens
         if (stored.startsWith('teller_tok_')) {
           accessToken = stored;
           console.log(`Connection ${conn.id}: using development token`);
         } else if (stored.startsWith('encrypted:')) {
-          // Legacy prefix - strip and use
           accessToken = stored.replace('encrypted:', '');
         } else {
-          // Try to decrypt if it looks encrypted (PGP encrypted data)
-          try {
-            const encryptionKey = Deno.env.get('QUICKBOOKS_ENCRYPTION_KEY');
-            if (encryptionKey) {
-              const { data: decrypted, error: decryptErr } = await serviceClient.rpc('pgp_sym_decrypt_bytea', {
-                data: stored,
-                key: encryptionKey,
-              });
-              if (decrypted && !decryptErr) {
-                accessToken = decrypted;
-                console.log(`Connection ${conn.id}: decrypted token successfully`);
-              } else {
-                console.log(`Connection ${conn.id}: decryption failed, trying raw:`, decryptErr?.message);
-                accessToken = stored;
-              }
-            } else {
-              accessToken = stored;
-            }
-          } catch (decryptErr) {
-            console.error(`Connection ${conn.id}: decryption error, using raw:`, decryptErr);
-            accessToken = stored;
-          }
+          accessToken = stored;
         }
 
         if (!accessToken) {
@@ -120,31 +140,20 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        if (!tlsClient) {
-          errors.push(`Connection ${conn.institution_name}: mTLS certificates not configured — required for Teller API`);
-          continue;
-        }
-
-        const tellerAuth = `Basic ${btoa(accessToken + ':')}`;
-        const fetchOpts = {
-          headers: { 'Authorization': tellerAuth },
-          // @ts-ignore - Deno-specific TLS client
-          client: tlsClient,
-        };
-
         // Step 1: Fetch accounts if we don't have account_id stored
         if (!conn.account_id) {
-          console.log(`Connection ${conn.id}: fetching accounts for enrollment ${conn.teller_enrollment_id}`);
-          const accountsRes = await fetch('https://api.teller.io/accounts', fetchOpts);
+          console.log(`Connection ${conn.id}: fetching accounts`);
+          
+          const accountsRes = await tellerFetch('https://api.teller.io/accounts', accessToken, cert, key);
+          console.log(`Accounts response: status=${accountsRes.status}`);
 
           if (!accountsRes.ok) {
-            const errBody = await accountsRes.text();
-            console.error(`Accounts fetch failed (${accountsRes.status}):`, errBody);
+            console.error(`Accounts fetch failed (${accountsRes.status}):`, accountsRes.body);
             errors.push(`Connection ${conn.institution_name}: failed to fetch accounts (${accountsRes.status})`);
             continue;
           }
 
-          const accounts: any[] = await accountsRes.json();
+          const accounts: any[] = JSON.parse(accountsRes.body);
           console.log(`Connection ${conn.id}: found ${accounts.length} accounts`);
 
           if (accounts.length === 0) {
@@ -152,7 +161,6 @@ Deno.serve(async (req) => {
             continue;
           }
 
-          // Store the first account's details on the connection
           const primaryAccount = accounts[0];
           await serviceClient
             .from('teller_connections')
@@ -166,25 +174,21 @@ Deno.serve(async (req) => {
 
           console.log(`Connection ${conn.id}: stored account ${primaryAccount.id} (${primaryAccount.name})`);
 
-          // Process transactions for ALL accounts
           for (const acct of accounts) {
-            const txnCount = await syncAccountTransactions(serviceClient, user.id, conn.id, acct.id, fetchOpts);
+            const txnCount = await syncAccountTransactions(serviceClient, user.id, conn.id, acct.id, accessToken, cert, key);
             totalSynced += txnCount;
           }
         } else {
-          // Account already known, just sync transactions
-          const txnCount = await syncAccountTransactions(serviceClient, user.id, conn.id, conn.account_id, fetchOpts);
+          const txnCount = await syncAccountTransactions(serviceClient, user.id, conn.id, conn.account_id, accessToken, cert, key);
           totalSynced += txnCount;
         }
 
-        // Update last_synced_at
         await serviceClient
           .from('teller_connections')
           .update({ last_synced_at: new Date().toISOString() })
           .eq('id', conn.id);
 
         console.log(`Connection ${conn.id}: sync complete, ${totalSynced} total transactions`);
-
       } catch (e: any) {
         console.error(`Sync error for connection ${conn.id}:`, e);
         errors.push(`Connection ${conn.institution_name}: ${e.message}`);
@@ -196,12 +200,8 @@ Deno.serve(async (req) => {
       success: true,
       connections: connections.length,
     };
-    if (errors.length > 0) {
-      response.errors = errors;
-    }
-    if (totalSynced === 0 && errors.length > 0) {
-      response.message = errors.join('; ');
-    }
+    if (errors.length > 0) response.errors = errors;
+    if (totalSynced === 0 && errors.length > 0) response.message = errors.join('; ');
 
     console.log('Sync summary:', JSON.stringify(response));
 
@@ -221,41 +221,47 @@ async function syncAccountTransactions(
   userId: string,
   connectionId: string,
   accountId: string,
-  fetchOpts: any,
+  accessToken: string,
+  cert: string,
+  key: string,
 ): Promise<number> {
   console.log(`Fetching transactions for account ${accountId}`);
-  
-  const txnRes = await fetch(`https://api.teller.io/accounts/${accountId}/transactions`, fetchOpts);
-  
+
+  const txnRes = await tellerFetch(`https://api.teller.io/accounts/${accountId}/transactions`, accessToken, cert, key);
+
   if (!txnRes.ok) {
-    const errBody = await txnRes.text();
-    console.error(`Transaction fetch failed for ${accountId} (${txnRes.status}):`, errBody);
+    console.error(`Transaction fetch failed for ${accountId} (${txnRes.status}):`, txnRes.body);
     return 0;
   }
 
-  const transactions: any[] = await txnRes.json();
+  const transactions: any[] = JSON.parse(txnRes.body);
   console.log(`Account ${accountId}: ${transactions.length} transactions fetched`);
-  
+
+  // Batch upsert for efficiency
+  const BATCH_SIZE = 100;
   let synced = 0;
-  for (const txn of transactions) {
+
+  for (let i = 0; i < transactions.length; i += BATCH_SIZE) {
+    const batch = transactions.slice(i, i + BATCH_SIZE).map((txn: any) => ({
+      contractor_id: userId,
+      teller_connection_id: connectionId,
+      teller_transaction_id: txn.id,
+      amount: parseFloat(txn.amount),
+      description: txn.description,
+      vendor: txn.details?.counterparty?.name || txn.merchant_name || txn.description,
+      category: txn.details?.category || txn.type,
+      transaction_date: txn.date,
+      status: txn.status,
+    }));
+
     const { error: upsertErr } = await serviceClient
       .from('teller_transactions')
-      .upsert({
-        contractor_id: userId,
-        teller_connection_id: connectionId,
-        teller_transaction_id: txn.id,
-        amount: parseFloat(txn.amount),
-        description: txn.description,
-        vendor: txn.details?.counterparty?.name || txn.merchant_name || txn.description,
-        category: txn.details?.category || txn.type,
-        transaction_date: txn.date,
-        status: txn.status,
-      }, { onConflict: 'teller_transaction_id' });
+      .upsert(batch, { onConflict: 'teller_transaction_id' });
 
     if (upsertErr) {
-      console.error(`Upsert error for txn ${txn.id}:`, upsertErr.message);
+      console.error(`Batch upsert error:`, upsertErr.message);
     } else {
-      synced++;
+      synced += batch.length;
     }
   }
 
