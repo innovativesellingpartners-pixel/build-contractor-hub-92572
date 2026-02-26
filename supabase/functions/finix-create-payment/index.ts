@@ -148,10 +148,10 @@ serve(async (req) => {
       );
     }
 
-    // Get contractor's Finix merchant ID
+    // Get contractor's Finix merchant ID and identity ID
     const { data: profile } = await supabase
       .from('profiles')
-      .select('finix_merchant_id')
+      .select('finix_merchant_id, finix_identity_id')
       .eq('id', contractorId)
       .single();
 
@@ -159,13 +159,35 @@ serve(async (req) => {
       throw new Error('Finix merchant not configured for this contractor');
     }
 
-    const merchantIdentity = profile.finix_merchant_id;
+    const merchantId = profile.finix_merchant_id;
+    let identityId = profile.finix_identity_id;
+
+    // If identity ID not stored, fetch it from the merchant record
+    if (!identityId) {
+      console.log('Identity ID not cached, fetching from Finix merchant:', merchantId);
+      const merchantLookup = await fetch(`${finixBaseUrl}/merchants/${merchantId}`, {
+        headers: finixHeaders,
+      });
+      if (merchantLookup.ok) {
+        const merchantData = await merchantLookup.json();
+        identityId = merchantData.identity;
+        console.log('Resolved identity from merchant:', identityId);
+        // Cache it for future use
+        if (identityId) {
+          await supabase.from('profiles').update({ finix_identity_id: identityId }).eq('id', contractorId);
+        }
+      }
+      if (!identityId) {
+        throw new Error('Could not resolve Finix identity for this merchant');
+      }
+    }
 
     console.log('Creating Finix payment:', {
       entity_type,
       entity_id,
       amountToCharge,
-      merchantIdentity,
+      merchantId,
+      identityId,
       hasToken: !!finix_token,
       hasCardDetails: !!hasCardDetails,
     });
@@ -180,7 +202,7 @@ serve(async (req) => {
         body: JSON.stringify({
           token: finix_token,
           type: 'TOKEN',
-          identity: merchantIdentity,
+          identity: identityId,
         }),
       });
 
@@ -199,7 +221,7 @@ serve(async (req) => {
         headers: finixHeaders,
         body: JSON.stringify({
           type: 'PAYMENT_CARD',
-          identity: merchantIdentity,
+          identity: identityId,
           name: card_name,
           number: card_number,
           expiration_month: card_expiry_month,
@@ -228,7 +250,7 @@ serve(async (req) => {
       method: 'POST',
       headers: finixHeaders,
       body: JSON.stringify({
-        merchant: merchantIdentity,
+        merchant: merchantId,
         amount: amountInCents,
         currency: 'USD',
         source: paymentInstrumentId,

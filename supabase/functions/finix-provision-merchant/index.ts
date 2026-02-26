@@ -239,11 +239,12 @@ serve(async (req) => {
     const merchant = await merchantResponse.json();
     console.log('Merchant provisioned:', merchant.id, 'state:', merchant.onboarding_state);
 
-    // Step 4: Save MERCHANT ID (MU...) to contractor profile — NOT the identity ID
+    // Step 4: Save MERCHANT ID and Identity ID to contractor profile
     const { error: updateError } = await supabase
       .from('profiles')
       .update({
         finix_merchant_id: merchant.id,
+        finix_identity_id: identity.id,
         preferred_payment_provider: 'finix',
       })
       .eq('id', body.contractor_id);

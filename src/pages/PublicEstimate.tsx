@@ -209,6 +209,19 @@ function PublicEstimateInner() {
     }
   };
 
+  // Restore signature data after re-renders (e.g. when Finix form opens/closes)
+  useEffect(() => {
+    if (signatureData && clientSigRef.current && clientSigRef.current.isEmpty()) {
+      // Small delay to ensure canvas is properly sized
+      const timer = setTimeout(() => {
+        if (clientSigRef.current && clientSigRef.current.isEmpty() && signatureData) {
+          clientSigRef.current.fromDataURL(signatureData, { ratio: 1 });
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [signatureData, showFinixForm, processingPayment]);
+
   const clearSignature = () => {
     clientSigRef.current?.clear();
     setSignatureData(null);
@@ -591,13 +604,7 @@ function PublicEstimateInner() {
                     </label>
                     <div className="border-4 border-primary/20 rounded-xl p-4 bg-white shadow-inner" onMouseDown={(e) => e.stopPropagation()} onTouchStart={(e) => e.stopPropagation()}>
                       <SignatureCanvas
-                        ref={(ref) => {
-                          (clientSigRef as any).current = ref;
-                          // Restore signature data after re-render
-                          if (ref && signatureData && ref.isEmpty()) {
-                            ref.fromDataURL(signatureData);
-                          }
-                        }}
+                        ref={clientSigRef}
                         onEnd={handleSignatureEnd}
                         canvasProps={{
                           className: 'w-full h-52 border-2 border-dashed border-muted-foreground/30 rounded-lg bg-white',

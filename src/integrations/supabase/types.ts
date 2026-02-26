@@ -4357,6 +4357,7 @@ export type Database = {
           default_deposit_percent: number | null
           default_sales_tax_rate: number | null
           default_warranty_years: number | null
+          finix_identity_id: string | null
           finix_merchant_id: string | null
           id: string
           license_number: string | null
@@ -4402,6 +4403,7 @@ export type Database = {
           default_deposit_percent?: number | null
           default_sales_tax_rate?: number | null
           default_warranty_years?: number | null
+          finix_identity_id?: string | null
           finix_merchant_id?: string | null
           id: string
           license_number?: string | null
@@ -4447,6 +4449,7 @@ export type Database = {
           default_deposit_percent?: number | null
           default_sales_tax_rate?: number | null
           default_warranty_years?: number | null
+          finix_identity_id?: string | null
           finix_merchant_id?: string | null
           id?: string
           license_number?: string | null
