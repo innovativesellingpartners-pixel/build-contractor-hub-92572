@@ -6,6 +6,22 @@ const corsHeaders = {
 };
 
 /**
+ * Ensure certificate/private key are valid PEM strings.
+ * Supports secrets stored as raw PEM, escaped PEM, or base64 DER body only.
+ */
+function normalizePem(value: string, type: 'CERTIFICATE' | 'PRIVATE KEY'): string {
+  const unescaped = value.replace(/\\n/g, '\n').trim();
+
+  if (unescaped.includes(`-----BEGIN ${type}-----`)) {
+    return unescaped;
+  }
+
+  const compact = unescaped.replace(/\s+/g, '');
+  const wrapped = compact.match(/.{1,64}/g)?.join('\n') ?? compact;
+  return `-----BEGIN ${type}-----\n${wrapped}\n-----END ${type}-----`;
+}
+
+/**
  * Make an mTLS-authenticated request to the Teller API.
  * Uses Node.js https module via Deno compatibility layer since
  * Deno Deploy doesn't support Deno.createHttpClient with client certs.
@@ -23,8 +39,9 @@ async function tellerFetch(url: string, accessToken: string, cert: string, key: 
       port: 443,
       path: parsed.pathname + parsed.search,
       method: 'GET',
-      cert: cert,
-      key: key,
+      servername: parsed.hostname,
+      cert,
+      key,
       headers: {
         'Authorization': `Basic ${auth}`,
         'Accept': 'application/json',
@@ -91,12 +108,11 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Unescape stored newlines
-    const cert = rawCert.replace(/\\n/g, '\n');
-    const key = rawKey.replace(/\\n/g, '\n');
+    const cert = normalizePem(rawCert, 'CERTIFICATE');
+    const key = normalizePem(rawKey, 'PRIVATE KEY');
 
-    console.log('Cert starts with:', cert.substring(0, 30), '... length:', cert.length);
-    console.log('Key starts with:', key.substring(0, 30), '... length:', key.length);
+    console.log('Cert has PEM header:', cert.includes('-----BEGIN CERTIFICATE-----'), 'length:', cert.length);
+    console.log('Key has PEM header:', key.includes('-----BEGIN PRIVATE KEY-----'), 'length:', key.length);
 
     // Get all active teller connections for user
     const { data: connections, error: connErr } = await serviceClient
