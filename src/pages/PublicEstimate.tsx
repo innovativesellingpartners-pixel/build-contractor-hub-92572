@@ -212,18 +212,23 @@ function PublicEstimateInner() {
     }
   };
 
-  // Restore signature data after re-renders (e.g. when Finix form opens/closes)
+  // Restore signature data after re-renders (e.g. when Finix form opens/closes, agreement checkbox)
   useEffect(() => {
-    if (signatureData && clientSigRef.current && clientSigRef.current.isEmpty()) {
-      // Small delay to ensure canvas is properly sized
-      const timer = setTimeout(() => {
-        if (clientSigRef.current && clientSigRef.current.isEmpty() && signatureData) {
-          clientSigRef.current.fromDataURL(signatureData, { ratio: 1 });
-        }
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [signatureData, showFinixForm, processingPayment]);
+    if (!signatureData) return;
+    
+    const restore = () => {
+      if (clientSigRef.current && clientSigRef.current.isEmpty() && signatureData) {
+        clientSigRef.current.fromDataURL(signatureData, { ratio: 1 });
+      }
+    };
+
+    // Restore immediately and after a delay (canvas may resize async)
+    restore();
+    const t1 = setTimeout(restore, 100);
+    const t2 = setTimeout(restore, 300);
+    const t3 = setTimeout(restore, 600);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+  }, [signatureData, showFinixForm, processingPayment, agreementAccepted, signed]);
 
   const clearSignature = () => {
     clientSigRef.current?.clear();
