@@ -5,6 +5,43 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
+function normalizePem(value: string, type: 'CERTIFICATE' | 'PRIVATE KEY'): string {
+  const unescaped = value.replace(/\\n/g, '\n').trim();
+
+  if (/-----BEGIN [A-Z0-9 ]+-----/.test(unescaped) && /-----END [A-Z0-9 ]+-----/.test(unescaped)) {
+    return unescaped;
+  }
+
+  const compact = unescaped.replace(/\s+/g, '');
+  const wrapped = compact.match(/.{1,64}/g)?.join('\n') ?? compact;
+  return `-----BEGIN ${type}-----\n${wrapped}\n-----END ${type}-----`;
+}
+
+async function tellerFetch(url: string, accessToken: string, cert: string, key: string): Promise<{ ok: boolean; status: number; body: string }> {
+  let tlsClient: Deno.HttpClient;
+
+  try {
+    tlsClient = Deno.createHttpClient({ cert, key } as any);
+  } catch {
+    tlsClient = Deno.createHttpClient({ certChain: cert, privateKey: key } as any);
+  }
+
+  const auth = btoa(accessToken + ':');
+
+  // @ts-ignore - Deno fetch supports `client` option in edge runtime
+  const res = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Basic ${auth}`,
+      'Accept': 'application/json',
+    },
+    client: tlsClient,
+  });
+
+  const body = await res.text();
+  return { ok: res.ok, status: res.status, body };
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -20,7 +57,6 @@ Deno.serve(async (req) => {
 
     const token = authHeader.replace('Bearer ', '');
 
-    // Use service role client to verify user from token
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -36,7 +72,7 @@ Deno.serve(async (req) => {
 
     console.log('Authenticated user:', user.id);
 
-    const { accessToken, enrollment, user: tellerUser } = await req.json();
+    const { accessToken, enrollment } = await req.json();
 
     if (!accessToken || !enrollment?.id) {
       return new Response(JSON.stringify({ error: 'Missing accessToken or enrollment data' }), {
@@ -46,7 +82,37 @@ Deno.serve(async (req) => {
 
     console.log('Enrollment:', enrollment.id, 'Institution:', enrollment.institution?.name);
 
-    // Try to encrypt the token, fall back to storing raw if encryption fails
+    const rawCert = Deno.env.get('TELLER_CERTIFICATE');
+    const rawKey = Deno.env.get('TELLER_PRIVATE_KEY');
+    if (!rawCert || !rawKey) {
+      return new Response(JSON.stringify({ error: 'Bank sync certificates are not configured.' }), {
+        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const cert = normalizePem(rawCert, 'CERTIFICATE');
+    const key = normalizePem(rawKey, 'PRIVATE KEY');
+
+    // Validate that this enrollment token works with current mTLS cert/key BEFORE saving
+    const accountsRes = await tellerFetch('https://api.teller.io/accounts', accessToken, cert, key);
+    if (!accountsRes.ok) {
+      console.error(`Enrollment token validation failed (${accountsRes.status}):`, accountsRes.body);
+      const isRevoked = accountsRes.status === 400 && accountsRes.body.includes('revoked');
+      const isMissingCert = accountsRes.status === 400 && accountsRes.body.includes('Missing certificate');
+
+      return new Response(JSON.stringify({
+        error: isRevoked
+          ? 'Bank connection failed: certificate is revoked. Please rotate Teller credentials and reconnect.'
+          : isMissingCert
+            ? 'Bank connection failed: certificate mismatch. Please confirm Teller application + certificate + key match.'
+            : `Bank connection validation failed (${accountsRes.status})`,
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Try to encrypt the token, fall back to storing raw if encryption function is unavailable
     let storedToken = accessToken;
     const encryptionKey = Deno.env.get('QUICKBOOKS_ENCRYPTION_KEY');
     if (encryptionKey) {
@@ -61,14 +127,20 @@ Deno.serve(async (req) => {
         } else {
           console.log('Encryption failed, storing raw token:', encErr);
         }
-      } catch (e) {
+      } catch {
         console.log('Encryption not available, storing raw token');
       }
     }
 
     const institutionName = enrollment.institution?.name || 'Unknown Bank';
 
-    // Insert using service role to bypass RLS issues
+    // Ensure only one active Teller connection per user to avoid stale token sync attempts
+    await supabase
+      .from('teller_connections')
+      .update({ status: 'inactive', updated_at: new Date().toISOString() })
+      .eq('user_id', user.id)
+      .eq('status', 'active');
+
     const { error: insertErr } = await supabase
       .from('teller_connections')
       .insert({
