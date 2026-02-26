@@ -7,12 +7,13 @@ const corsHeaders = {
 
 /**
  * Ensure certificate/private key are valid PEM strings.
- * Supports secrets stored as raw PEM, escaped PEM, or base64 DER body only.
+ * Supports raw PEM, escaped PEM, or base64 body-only secrets.
  */
 function normalizePem(value: string, type: 'CERTIFICATE' | 'PRIVATE KEY'): string {
   const unescaped = value.replace(/\\n/g, '\n').trim();
 
-  if (unescaped.includes(`-----BEGIN ${type}-----`)) {
+  // Preserve any already-valid PEM block (e.g. CERTIFICATE, PRIVATE KEY, RSA PRIVATE KEY, EC PRIVATE KEY)
+  if (/-----BEGIN [A-Z0-9 ]+-----/.test(unescaped) && /-----END [A-Z0-9 ]+-----/.test(unescaped)) {
     return unescaped;
   }
 
