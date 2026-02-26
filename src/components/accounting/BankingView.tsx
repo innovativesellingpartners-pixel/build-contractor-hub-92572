@@ -163,9 +163,16 @@ export function BankingView() {
   const handleSyncTeller = async () => {
     setSyncing(true);
     try {
-      const { error } = await supabase.functions.invoke("teller-sync-transactions");
+      const { data, error } = await supabase.functions.invoke("teller-sync-transactions");
       if (error) throw error;
-      toast({ title: "Sync Complete", description: "Transactions synced from your bank." });
+      
+      if (data?.errors?.length > 0 && data?.synced === 0) {
+        toast({ variant: "destructive", title: "Sync Issue", description: data.message || data.errors[0] });
+      } else if (data?.synced > 0) {
+        toast({ title: "Sync Complete", description: `${data.synced} transaction${data.synced === 1 ? '' : 's'} synced from your bank.` });
+      } else {
+        toast({ title: "Up to Date", description: "No new transactions found." });
+      }
       refreshAll();
     } catch (err: any) {
       toast({ variant: "destructive", title: "Sync Failed", description: err.message });
@@ -173,6 +180,13 @@ export function BankingView() {
       setSyncing(false);
     }
   };
+
+  // Auto-sync on first load if Teller is connected but never synced
+  useEffect(() => {
+    if (tellerConnections?.some((c: any) => !c.last_synced_at) && !syncing) {
+      handleSyncTeller();
+    }
+  }, [tellerConnections]);
 
   const handleDisconnectTeller = async () => {
     if (!disconnectId) return;
