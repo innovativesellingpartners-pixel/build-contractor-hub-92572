@@ -24,13 +24,18 @@ function normalizePem(value: string, type: 'CERTIFICATE' | 'PRIVATE KEY'): strin
 
 /**
  * Make an mTLS-authenticated request to the Teller API.
- * Uses Deno's HTTP client with certChain/privateKey for client-certificate auth.
+ * Uses Deno's HTTP client with client-cert auth.
  */
 async function tellerFetch(url: string, accessToken: string, cert: string, key: string): Promise<{ ok: boolean; status: number; body: string }> {
-  const tlsClient = Deno.createHttpClient({
-    certChain: cert,
-    privateKey: key,
-  });
+  let tlsClient: Deno.HttpClient;
+
+  try {
+    // Current Deno API
+    tlsClient = Deno.createHttpClient({ cert, key } as any);
+  } catch {
+    // Back-compat for older runtimes
+    tlsClient = Deno.createHttpClient({ certChain: cert, privateKey: key } as any);
+  }
 
   const auth = btoa(accessToken + ':');
 
@@ -99,8 +104,8 @@ Deno.serve(async (req) => {
     const cert = normalizePem(rawCert, 'CERTIFICATE');
     const key = normalizePem(rawKey, 'PRIVATE KEY');
 
-    console.log('Cert has PEM header:', cert.includes('-----BEGIN CERTIFICATE-----'), 'length:', cert.length);
-    console.log('Key has PEM header:', key.includes('-----BEGIN PRIVATE KEY-----'), 'length:', key.length);
+    console.log('Cert has PEM header:', /-----BEGIN [A-Z0-9 ]+-----/.test(cert), 'length:', cert.length);
+    console.log('Key has PEM header:', /-----BEGIN [A-Z0-9 ]+-----/.test(key), 'length:', key.length);
 
     // Get all active teller connections for user
     const { data: connections, error: connErr } = await serviceClient
@@ -153,7 +158,12 @@ Deno.serve(async (req) => {
 
           if (!accountsRes.ok) {
             console.error(`Accounts fetch failed (${accountsRes.status}):`, accountsRes.body);
-            errors.push(`Connection ${conn.institution_name}: failed to fetch accounts (${accountsRes.status})`);
+            const missingCert = accountsRes.status === 400 && accountsRes.body.includes('Missing certificate');
+            errors.push(
+              missingCert
+                ? `Connection ${conn.institution_name}: Teller rejected mTLS certificate. Reconnect this bank after confirming the Teller certificate/key belong to the same application used in Connect.`
+                : `Connection ${conn.institution_name}: failed to fetch accounts (${accountsRes.status})`
+            );
             continue;
           }
 

@@ -57,10 +57,12 @@ Deno.serve(async (req) => {
           });
 
           if (decrypted) {
-            const tlsClient = Deno.createHttpClient({
-              certChain: cert,
-              privateKey: key,
-            });
+            let tlsClient: Deno.HttpClient;
+            try {
+              tlsClient = Deno.createHttpClient({ cert, key } as any);
+            } catch {
+              tlsClient = Deno.createHttpClient({ certChain: cert, privateKey: key } as any);
+            }
 
             const balRes = await fetch(`https://api.teller.io/accounts/${conn.account_id}/balances`, {
               headers: { 'Authorization': `Basic ${btoa(decrypted + ':')}` },
