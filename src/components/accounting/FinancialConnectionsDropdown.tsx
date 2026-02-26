@@ -45,8 +45,8 @@ export function FinancialConnectionsDropdown({
   const [qbLoading, setQbLoading] = useState(false);
   const [stripeLoading, setStripeLoading] = useState(false);
 
-  const { bankConnected, qbConnected, stripeConnected } = connections;
-  const connectedCount = [bankConnected, qbConnected, stripeConnected].filter(Boolean).length;
+  const { bankConnected, qbConnected } = connections;
+  const connectedCount = [bankConnected, qbConnected].filter(Boolean).length;
 
   const handleConnectQuickBooks = async () => {
     try {
@@ -115,9 +115,8 @@ export function FinancialConnectionsDropdown({
         {/* Status summary */}
         <div className="px-3 py-2.5 space-y-2">
           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</p>
-          <ConnectionRow label="Bank" connected={bankConnected} />
+          <ConnectionRow label="Teller / Bank" connected={bankConnected} />
           <ConnectionRow label="QuickBooks" connected={qbConnected} />
-          <ConnectionRow label="Stripe" connected={stripeConnected} />
         </div>
         <DropdownMenuSeparator />
 
@@ -152,12 +151,6 @@ export function FinancialConnectionsDropdown({
               Don't have QuickBooks? Contact Sales
             </DropdownMenuItem>
           </>
-        )}
-        {!stripeConnected && (
-          <DropdownMenuItem onClick={handleConnectStripe} disabled={stripeLoading}>
-            {stripeLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CreditCard className="h-4 w-4 mr-2" />}
-            Connect Stripe
-          </DropdownMenuItem>
         )}
 
         {/* Disconnect */}
