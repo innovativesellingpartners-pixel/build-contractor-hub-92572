@@ -19,12 +19,12 @@ export function MobileOptimizedWrapper({
 }: MobileOptimizedWrapperProps) {
   return (
     <div className={cn(
-      'w-full max-w-full overflow-x-hidden bg-background pb-8',
+      'w-full max-w-full overflow-x-hidden bg-background pb-8 pl-2 sm:pl-4',
       '[&_*]:max-w-full',
       className
     )}>
       {title && (
-        <div className="mb-6 overflow-hidden max-w-full px-4 sm:px-0">
+        <div className="mb-6 overflow-hidden max-w-full px-4 sm:px-2">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 overflow-hidden">
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight truncate max-w-full">{title}</h1>
             <div className="flex gap-2 flex-shrink-0 flex-wrap">
