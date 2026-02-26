@@ -65,6 +65,7 @@ function PublicEstimateInner() {
   const [agreementAccepted, setAgreementAccepted] = useState(false);
   const [showFinixForm, setShowFinixForm] = useState<'deposit' | 'full' | 'remaining' | null>(null);
   const [signatureData, setSignatureData] = useState<string | null>(null);
+  const [paymentComplete, setPaymentComplete] = useState<{ amount: number; type: string } | null>(null);
   const clientSigRef = useRef<SignatureCanvas>(null);
   const paymentSectionRef = useRef<HTMLDivElement>(null);
   const agreementRef = useRef<HTMLDivElement>(null);
@@ -197,9 +198,11 @@ function PublicEstimateInner() {
   };
 
   const handleFinixSuccess = () => {
+    const paidAmount = showFinixForm === 'deposit' ? depositRemaining : remaining;
+    const paidType = showFinixForm === 'deposit' ? 'deposit' : 'full';
     setShowFinixForm(null);
     setSigned(true);
-    toast.success('Payment successful! Thank you. Our team will contact you shortly.');
+    setPaymentComplete({ amount: paidAmount, type: paidType });
     fetchEstimate();
   };
 
@@ -254,7 +257,7 @@ function PublicEstimateInner() {
   const lineItems = estimate.line_items || [];
   const costSummary = estimate.cost_summary || {};
   const { total, deposit, remaining, amountPaid, hasDeposit, depositRemaining } = getPaymentAmounts();
-  const isFullyPaid = remaining <= 0;
+  const isFullyPaid = remaining <= 0 || paymentComplete !== null;
   const isPartiallyPaid = amountPaid > 0 && remaining > 0;
 
   // Get brand colors from contractor profile or use defaults
@@ -267,6 +270,50 @@ function PublicEstimateInner() {
   // Use contractor logo if available, otherwise show Building2 icon
   const displayLogo = contractor?.logo_url;
   const companyName = contractor?.company_name || 'Professional Estimate';
+
+  // Show thank you overlay after successful payment
+  if (paymentComplete) {
+    return (
+      <div className="min-h-screen bg-muted flex items-center justify-center p-4">
+        <Card className="max-w-lg w-full border-4 border-green-500 shadow-2xl overflow-hidden">
+          <div className="bg-gradient-to-br from-green-500 to-green-700 p-10 text-center">
+            <div className="bg-white rounded-full p-4 w-20 h-20 mx-auto mb-6 shadow-xl flex items-center justify-center">
+              <CheckCircle className="h-12 w-12 text-green-600" />
+            </div>
+            <h1 className="text-4xl font-black text-white mb-3">Thank You!</h1>
+            <p className="text-green-100 text-xl font-semibold">Your payment was successful</p>
+          </div>
+          <CardContent className="p-8 space-y-6 text-center">
+            <div className="bg-green-50 dark:bg-green-900/20 rounded-xl p-6 border-2 border-green-200 dark:border-green-700">
+              <p className="text-sm text-green-700 dark:text-green-300 font-semibold mb-1">
+                {paymentComplete.type === 'deposit' ? 'Deposit Paid' : 'Amount Paid'}
+              </p>
+              <p className="text-4xl font-black text-green-700 dark:text-green-300">
+                ${safeFixed(paymentComplete.amount)}
+              </p>
+            </div>
+            
+            <div className="space-y-3">
+              <p className="text-lg text-foreground font-medium">
+                {companyName} appreciates your business!
+              </p>
+              <p className="text-muted-foreground">
+                A confirmation email has been sent to <span className="font-semibold">{estimate.client_email}</span>.
+                Our team will be in touch shortly to schedule your project.
+              </p>
+            </div>
+
+            <Separator />
+            
+            <div className="flex items-center justify-center gap-2 pt-2">
+              <img src={ct1PoweredLogo} alt="CT1" className="w-6 h-6" />
+              <span className="text-xs font-semibold text-muted-foreground tracking-wide uppercase">Powered by CT1</span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-muted py-8 px-4 sm:px-6 lg:px-8">

@@ -291,15 +291,17 @@ serve(async (req) => {
     if (entity_type === 'estimate') {
       const { data: est } = await supabase
         .from('estimates')
-        .select('payment_amount, grand_total, total_amount')
+        .select('payment_amount, grand_total, total_amount, client_name, estimate_number, title')
         .eq('id', entity_id)
         .single();
+
+      let newBalance = 0;
 
       if (est) {
         const prevPaid = est.payment_amount || 0;
         const newPaid = prevPaid + amountToCharge;
         const total = est.grand_total || est.total_amount || 0;
-        const newBalance = Math.max(0, total - newPaid);
+        newBalance = Math.max(0, total - newPaid);
         const paymentStatus = newBalance <= 0 ? 'paid' : newPaid > 0 ? 'partial' : 'unpaid';
 
         await supabase
@@ -326,6 +328,86 @@ serve(async (req) => {
         status: transfer.state === 'SUCCEEDED' ? 'succeeded' : 'pending',
         paid_at: transfer.state === 'SUCCEEDED' ? new Date().toISOString() : null,
       });
+
+      // Send thank you email to customer
+      if (transfer.state === 'SUCCEEDED' && customer_email) {
+        try {
+          const { data: contractorProfile } = await supabase
+            .from('profiles')
+            .select('company_name, full_name, phone')
+            .eq('id', contractorId)
+            .single();
+
+          const companyName = contractorProfile?.company_name || contractorProfile?.full_name || 'Your Contractor';
+          const resendApiKey = Deno.env.get('RESEND_API_KEY');
+          const emailFrom = Deno.env.get('EMAIL_FROM') || 'noreply@myct1.com';
+
+          if (resendApiKey) {
+            const emailHtml = `
+              <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
+                <div style="background: linear-gradient(135deg, #16a34a, #15803d); padding: 40px; text-align: center; border-radius: 8px 8px 0 0;">
+                  <div style="background: white; border-radius: 50%; width: 60px; height: 60px; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center;">
+                    <span style="font-size: 32px;">✓</span>
+                  </div>
+                  <h1 style="color: white; font-size: 28px; margin: 0 0 8px;">Payment Received!</h1>
+                  <p style="color: #bbf7d0; font-size: 16px; margin: 0;">Thank you for your payment</p>
+                </div>
+                <div style="padding: 32px;">
+                  <p style="font-size: 16px; color: #333; margin-bottom: 16px;">
+                    Dear ${est?.client_name || 'Valued Customer'},
+                  </p>
+                  <p style="font-size: 16px; color: #333; margin-bottom: 24px;">
+                    We've received your ${payment_intent === 'deposit' ? 'deposit' : ''} payment of <strong>$${(amountToCharge).toFixed(2)}</strong>. 
+                    Thank you for choosing ${companyName} — we truly appreciate your business!
+                  </p>
+                  <div style="background: #f0fdf4; border: 2px solid #bbf7d0; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                      <tr>
+                        <td style="padding: 8px 0; color: #666; font-size: 14px;">Estimate</td>
+                        <td style="padding: 8px 0; text-align: right; font-weight: bold; color: #333;">${est?.estimate_number || est?.title || 'N/A'}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 8px 0; color: #666; font-size: 14px;">Amount Paid</td>
+                        <td style="padding: 8px 0; text-align: right; font-weight: bold; color: #16a34a; font-size: 18px;">$${(amountToCharge).toFixed(2)}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 8px 0; color: #666; font-size: 14px;">Date</td>
+                        <td style="padding: 8px 0; text-align: right; font-weight: bold; color: #333;">${new Date().toLocaleDateString('en-US', { dateStyle: 'long' })}</td>
+                      </tr>
+                      ${newBalance > 0 ? `<tr><td style="padding: 8px 0; color: #666; font-size: 14px;">Remaining Balance</td><td style="padding: 8px 0; text-align: right; font-weight: bold; color: #d97706;">$${newBalance.toFixed(2)}</td></tr>` : ''}
+                    </table>
+                  </div>
+                  <p style="font-size: 16px; color: #333; margin-bottom: 16px;">
+                    Our team will be in touch shortly to schedule your project. If you have any questions, don't hesitate to reach out.
+                  </p>
+                  ${contractorProfile?.phone ? `<p style="font-size: 14px; color: #666;">Contact us: ${contractorProfile.phone}</p>` : ''}
+                  <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
+                  <p style="font-size: 14px; color: #666; text-align: center;">
+                    With gratitude,<br /><strong>${companyName}</strong>
+                  </p>
+                </div>
+              </div>
+            `;
+
+            await fetch('https://api.resend.com/emails', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${resendApiKey}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                from: `${companyName} <${emailFrom}>`,
+                to: [customer_email],
+                subject: `Payment Confirmation - ${companyName}`,
+                html: emailHtml,
+              }),
+            });
+          }
+        } catch (emailErr) {
+          console.error('Failed to send thank you email:', emailErr);
+          // Don't fail the payment response if email fails
+        }
+      }
     } else if (entity_type === 'invoice') {
       const { data: inv } = await supabase
         .from('invoices')
