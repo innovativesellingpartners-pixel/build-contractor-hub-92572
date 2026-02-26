@@ -159,10 +159,21 @@ Deno.serve(async (req) => {
           if (!accountsRes.ok) {
             console.error(`Accounts fetch failed (${accountsRes.status}):`, accountsRes.body);
             const missingCert = accountsRes.status === 400 && accountsRes.body.includes('Missing certificate');
+            const revokedCert = accountsRes.status === 400 && accountsRes.body.includes('revoked');
+
+            if (revokedCert) {
+              await serviceClient
+                .from('teller_connections')
+                .update({ status: 'inactive', updated_at: new Date().toISOString() })
+                .eq('id', conn.id);
+            }
+
             errors.push(
-              missingCert
-                ? `Connection ${conn.institution_name}: Teller rejected mTLS certificate. Reconnect this bank after confirming the Teller certificate/key belong to the same application used in Connect.`
-                : `Connection ${conn.institution_name}: failed to fetch accounts (${accountsRes.status})`
+              revokedCert
+                ? `Connection ${conn.institution_name}: Teller certificate was revoked. Reconnect this bank to create a fresh enrollment after credential rotation.`
+                : missingCert
+                  ? `Connection ${conn.institution_name}: Teller rejected mTLS certificate. Reconnect this bank after confirming the Teller certificate/key belong to the same application used in Connect.`
+                  : `Connection ${conn.institution_name}: failed to fetch accounts (${accountsRes.status})`
             );
             continue;
           }
