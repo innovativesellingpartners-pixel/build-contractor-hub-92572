@@ -15,7 +15,7 @@ async function tellerFetch(url: string, accessToken: string, cert: string, key: 
   const { URL } = await import('node:url');
 
   const parsed = new URL(url);
-  const auth = Buffer.from(accessToken + ':').toString('base64');
+  const auth = btoa(accessToken + ':');
 
   return new Promise((resolve, reject) => {
     const options = {
