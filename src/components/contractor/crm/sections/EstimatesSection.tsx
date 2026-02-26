@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Plus, FileText, Trash2, Eye, Send, CheckCircle, Clock, AlertCircle, RefreshCw, Users, Copy, ArrowLeft, Briefcase, ChevronRight, LayoutTemplate } from 'lucide-react';
+import { Plus, FileText, Trash2, Eye, Send, CheckCircle, Clock, AlertCircle, RefreshCw, Users, Copy, ArrowLeft, Briefcase, ChevronRight, LayoutTemplate, FlaskConical } from 'lucide-react';
 import { useEstimates, EstimateLineItem } from '@/hooks/useEstimates';
 import { useLeads } from '@/hooks/useLeads';
 import EstimateBuilder from '../EstimateBuilder';
@@ -19,6 +19,7 @@ import { TemplatesSection } from '../estimate/TemplatesSection';
 import { PredictiveSearch } from '../PredictiveSearch';
 import { SwipeToArchive } from '@/components/ui/swipe-to-archive';
 import { CrmNavHeader } from '../CrmNavHeader';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 
 interface EstimatesSectionProps {
   onSectionChange?: (section: string) => void;
@@ -30,6 +31,8 @@ export default function EstimatesSection({ onSectionChange, initialEstimateId, o
   const { estimates, isLoading, createEstimate, createEstimateAsync, updateEstimate, updateEstimateAsync, deleteEstimate, sendEstimate, sendEstimateAsync, isSendingEstimate, duplicateEstimate, duplicateEstimateAsync, isDuplicatingEstimate, archiveEstimate } = useEstimates();
   const { leads } = useLeads();
   const { user } = useAuth();
+  const { isAdmin, isLoading: isAdminLoading } = useAdminAuth();
+  const [isGeneratingTestEstimate, setIsGeneratingTestEstimate] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedEstimate, setSelectedEstimate] = useState<any>(null);
   const [detailViewOpen, setDetailViewOpen] = useState(false);
@@ -192,6 +195,57 @@ export default function EstimatesSection({ onSectionChange, initialEstimateId, o
     setIsFormOpen(true);
   };
 
+  const handleGenerateTestEstimate = async () => {
+    if (!isAdmin || !user?.id) return;
+
+    setIsGeneratingTestEstimate(true);
+    try {
+      await createEstimateAsync({
+        title: 'Kitchen Remodel - Test Estimate',
+        status: 'draft',
+        total_amount: 28750,
+        subtotal: 25000,
+        tax_rate: 0.075,
+        tax_amount: 1875,
+        grand_total: 28750,
+        balance_due: 14375,
+        client_name: 'John & Sarah Mitchell',
+        client_email: 'mitchell.test@example.com',
+        client_phone: '(555) 867-5309',
+        client_address: '742 Evergreen Terrace, Springfield, IL 62704',
+        site_address: '742 Evergreen Terrace, Springfield, IL 62704',
+        project_name: 'Full Kitchen Renovation',
+        project_address: '742 Evergreen Terrace, Springfield, IL 62704',
+        project_description: 'Complete kitchen remodel including cabinet replacement, granite countertop installation, new tile backsplash, updated plumbing fixtures, and LED recessed lighting.',
+        description: 'Full kitchen renovation including demolition, cabinetry, countertops, backsplash, plumbing, and electrical.',
+        scope_objective: 'Transform the existing outdated kitchen into a modern and functional space with premium finishes.',
+        line_items: [
+          { description: 'Demo & Haul Away', quantity: 1, unit: 'lot', unitPrice: 2500, totalPrice: 2500, included: true },
+          { description: 'Custom Shaker Cabinets (12 units)', quantity: 12, unit: 'ea', unitPrice: 850, totalPrice: 10200, included: true },
+          { description: 'Granite Countertops - Installed', quantity: 45, unit: 'sqft', unitPrice: 85, totalPrice: 3825, included: true },
+          { description: 'Subway Tile Backsplash', quantity: 30, unit: 'sqft', unitPrice: 22, totalPrice: 660, included: true },
+          { description: 'Plumbing - Sink & Faucet Install', quantity: 1, unit: 'lot', unitPrice: 1800, totalPrice: 1800, included: true },
+          { description: 'Electrical - Recessed Lighting (8)', quantity: 8, unit: 'ea', unitPrice: 275, totalPrice: 2200, included: true },
+          { description: 'Flooring - LVP Install', quantity: 200, unit: 'sqft', unitPrice: 8.5, totalPrice: 1700, included: true },
+          { description: 'Painting & Trim', quantity: 1, unit: 'lot', unitPrice: 1115, totalPrice: 1115, included: true },
+        ] as EstimateLineItem[],
+        terms_payment_schedule: '50% deposit due upon acceptance, 25% at rough-in completion, 25% upon final walkthrough.',
+        terms_validity: '30 days',
+        terms_warranty_years: 2,
+        warranty_text: 'All workmanship is warranted for 2 years from completion. Manufacturer warranties apply separately to materials and fixtures.',
+        required_deposit: 14375,
+        valid_until: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      });
+
+      toast.success('Test estimate generated and ready to send.');
+      setStatusFilter('all');
+    } catch (error: any) {
+      toast.error(`Failed to generate test estimate: ${error.message}`);
+    } finally {
+      setIsGeneratingTestEstimate(false);
+    }
+  };
+
   const handleOpenDetail = (estimate: any) => {
     setSelectedEstimateForDetail(estimate);
     setDetailViewOpen(true);
@@ -322,6 +376,17 @@ export default function EstimatesSection({ onSectionChange, initialEstimateId, o
       onBackClick={() => onSectionChange?.('dashboard')}
       actions={
         <div className="flex gap-2 flex-wrap">
+          {!isAdminLoading && isAdmin && (
+            <Button
+              variant="outline"
+              onClick={handleGenerateTestEstimate}
+              disabled={isGeneratingTestEstimate}
+              className="w-full sm:w-auto"
+            >
+              <FlaskConical className="h-4 w-4 mr-2" />
+              {isGeneratingTestEstimate ? 'Generating...' : 'Generate Test Estimate'}
+            </Button>
+          )}
           <Button variant="outline" onClick={() => setShowTemplates(true)} className="w-full sm:w-auto">
             <LayoutTemplate className="h-4 w-4 mr-2" />
             Templates
