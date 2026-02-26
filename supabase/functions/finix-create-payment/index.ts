@@ -12,19 +12,59 @@ interface FinixPaymentRequest {
   public_token: string;
   payment_intent: 'deposit' | 'full' | 'remaining';
   customer_email: string;
-  finix_token?: string; // Tokenized card from Finix.js (legacy)
-  // Direct card details (server-side tokenization)
+  finix_token?: string;
   card_number?: string;
   card_expiry_month?: number;
   card_expiry_year?: number;
   card_cvc?: string;
   card_name?: string;
+  idempotency_key?: string;
+}
+
+// Input validation helpers
+function validateEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function validateUUID(id: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+}
+
+function sanitizeCardNumber(num: string): string {
+  return num.replace(/\D/g, '');
+}
+
+function validateCardDetails(body: FinixPaymentRequest): string | null {
+  if (body.card_number) {
+    const digits = sanitizeCardNumber(body.card_number);
+    if (digits.length < 13 || digits.length > 19) return 'Invalid card number length';
+    if (!body.card_expiry_month || body.card_expiry_month < 1 || body.card_expiry_month > 12) return 'Invalid expiry month';
+    if (!body.card_expiry_year || body.card_expiry_year < new Date().getFullYear()) return 'Invalid expiry year';
+    if (!body.card_cvc || body.card_cvc.length < 3 || body.card_cvc.length > 4) return 'Invalid CVC';
+    if (!body.card_name || body.card_name.trim().length < 2) return 'Cardholder name required';
+    // Check if card is expired this month
+    const now = new Date();
+    if (body.card_expiry_year === now.getFullYear() && body.card_expiry_month < (now.getMonth() + 1)) {
+      return 'Card is expired';
+    }
+  }
+  return null;
+}
+
+function errorResponse(message: string, status = 400) {
+  return new Response(
+    JSON.stringify({ success: false, message }),
+    { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  );
 }
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
+
+  const requestId = crypto.randomUUID();
+  console.log(`[${requestId}] Finix payment request started`);
 
   try {
     const body: FinixPaymentRequest = await req.json();
@@ -40,16 +80,35 @@ serve(async (req) => {
       card_expiry_year,
       card_cvc,
       card_name,
+      idempotency_key,
     } = body;
 
-    if (!entity_id || !public_token || !entity_type) {
-      throw new Error('Missing required fields');
+    // === STRICT INPUT VALIDATION ===
+    if (!entity_type || !['estimate', 'invoice'].includes(entity_type)) {
+      return errorResponse('Invalid entity type');
+    }
+    if (!entity_id || !validateUUID(entity_id)) {
+      return errorResponse('Invalid entity ID');
+    }
+    if (!public_token || public_token.length < 10) {
+      return errorResponse('Invalid public token');
+    }
+    if (payment_intent && !['deposit', 'full', 'remaining'].includes(payment_intent)) {
+      return errorResponse('Invalid payment intent');
+    }
+    if (customer_email && !validateEmail(customer_email)) {
+      return errorResponse('Invalid customer email');
     }
 
-    // Must have either a finix_token OR raw card details
     const hasCardDetails = card_number && card_expiry_month && card_expiry_year && card_cvc && card_name;
     if (!finix_token && !hasCardDetails) {
-      throw new Error('Missing payment details: provide either finix_token or card details');
+      return errorResponse('Missing payment details: provide either finix_token or card details');
+    }
+
+    // Validate card details if provided
+    if (hasCardDetails) {
+      const cardError = validateCardDetails(body);
+      if (cardError) return errorResponse(cardError);
     }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -62,12 +121,46 @@ serve(async (req) => {
       ? 'https://finix.live-payments-api.com'
       : 'https://finix.sandbox-payments-api.com';
 
+    if (!finixApiKey) {
+      console.error(`[${requestId}] FINIX_API_KEY not configured`);
+      return errorResponse('Payment processing is not configured', 500);
+    }
+
     const authHeader = `Basic ${btoa(finixApiKey)}`;
-    const finixHeaders = {
+    const finixHeaders: Record<string, string> = {
       'Authorization': authHeader,
       'Content-Type': 'application/json',
       'Finix-Version': '2022-02-01',
     };
+
+    // === IDEMPOTENCY: Check for duplicate payment ===
+    const idempKey = idempotency_key || `${entity_type}_${entity_id}_${payment_intent || 'full'}_${Date.now()}`;
+    
+    // Check for recent successful payment on this entity (within last 60 seconds) to prevent double-charge
+    const recentCutoff = new Date(Date.now() - 60000).toISOString();
+    if (entity_type === 'estimate') {
+      const { data: recentPayment } = await supabase
+        .from('estimate_payment_sessions')
+        .select('id, status, amount, paid_at')
+        .eq('estimate_id', entity_id)
+        .eq('status', 'succeeded')
+        .gte('paid_at', recentCutoff)
+        .limit(1);
+
+      if (recentPayment && recentPayment.length > 0) {
+        console.log(`[${requestId}] Duplicate payment detected for estimate ${entity_id}`);
+        return new Response(
+          JSON.stringify({
+            success: true,
+            duplicate: true,
+            message: 'Payment already processed',
+            amount: recentPayment[0].amount,
+            transfer_id: recentPayment[0].id,
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
 
     let amountToCharge = 0;
     let paymentDescription = '';
@@ -83,7 +176,14 @@ serve(async (req) => {
         .eq('public_token', public_token)
         .single();
 
-      if (error || !estimate) throw new Error('Invalid estimate');
+      if (error || !estimate) {
+        console.error(`[${requestId}] Estimate lookup failed:`, error?.message);
+        return errorResponse('Estimate not found or link expired');
+      }
+
+      // Check estimate is in a valid state for payment
+      if (estimate.voided_at) return errorResponse('This estimate has been voided');
+      if (estimate.archived_at) return errorResponse('This estimate has been archived');
 
       contractorId = estimate.user_id;
       customerId = estimate.customer_id;
@@ -92,23 +192,20 @@ serve(async (req) => {
       const totalAmount = estimate.grand_total || estimate.total_amount || 0;
       const depositAmount = estimate.required_deposit || 0;
       const amountPaid = estimate.payment_amount || 0;
-      const remainingBalance = totalAmount - amountPaid;
+      const remainingBalance = Math.round((totalAmount - amountPaid) * 100) / 100;
 
       if (remainingBalance <= 0) {
-        return new Response(
-          JSON.stringify({ success: false, message: 'Already fully paid' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        return errorResponse('This estimate is already fully paid');
       }
 
       const intent = payment_intent || 'full';
       if (intent === 'deposit') {
         const depositRemaining = Math.max(0, depositAmount - amountPaid);
         amountToCharge = Math.min(depositRemaining, remainingBalance);
-        paymentDescription = `Deposit for Estimate ${estimate.estimate_number}`;
+        paymentDescription = `Deposit for Estimate ${estimate.estimate_number || entity_id}`;
       } else {
         amountToCharge = remainingBalance;
-        paymentDescription = `Payment for Estimate ${estimate.estimate_number}`;
+        paymentDescription = `Payment for Estimate ${estimate.estimate_number || entity_id}`;
       }
     } else if (entity_type === 'invoice') {
       const { data: invoice, error } = await supabase
@@ -118,7 +215,10 @@ serve(async (req) => {
         .eq('public_token', public_token)
         .single();
 
-      if (error || !invoice) throw new Error('Invalid invoice');
+      if (error || !invoice) {
+        console.error(`[${requestId}] Invoice lookup failed:`, error?.message);
+        return errorResponse('Invoice not found or link expired');
+      }
 
       contractorId = invoice.user_id;
       customerId = invoice.customer_id;
@@ -126,29 +226,29 @@ serve(async (req) => {
 
       const amountDue = invoice.amount_due || 0;
       const amountPaid = invoice.amount_paid || 0;
-      const remainingBalance = Math.max(0, amountDue - amountPaid);
+      const remainingBalance = Math.round(Math.max(0, amountDue - amountPaid) * 100) / 100;
 
       if (remainingBalance <= 0) {
-        return new Response(
-          JSON.stringify({ success: false, message: 'Already fully paid' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        return errorResponse('This invoice is already fully paid');
       }
 
       amountToCharge = remainingBalance;
-      paymentDescription = `Payment for Invoice ${invoice.invoice_number}`;
+      paymentDescription = `Payment for Invoice ${invoice.invoice_number || entity_id}`;
     }
 
     amountToCharge = Math.round(amountToCharge * 100) / 100;
 
     if (amountToCharge <= 0) {
-      return new Response(
-        JSON.stringify({ success: false, message: 'Invalid payment amount' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return errorResponse('Invalid payment amount');
     }
 
-    // Get contractor's Finix merchant ID and identity ID
+    // Sanity cap: prevent absurdly large payments (configurable per-merchant later)
+    if (amountToCharge > 100000) {
+      console.error(`[${requestId}] Amount exceeds safety cap: ${amountToCharge}`);
+      return errorResponse('Payment amount exceeds maximum allowed. Please contact the contractor.');
+    }
+
+    // === GET CONTRACTOR FINIX CREDENTIALS ===
     const { data: profile } = await supabase
       .from('profiles')
       .select('finix_merchant_id, finix_identity_id')
@@ -156,46 +256,41 @@ serve(async (req) => {
       .single();
 
     if (!profile?.finix_merchant_id) {
-      throw new Error('Finix merchant not configured for this contractor');
+      console.error(`[${requestId}] No Finix merchant for contractor ${contractorId}`);
+      return errorResponse('Online payments are not configured for this contractor');
     }
 
     const merchantId = profile.finix_merchant_id;
     let identityId = profile.finix_identity_id;
 
-    // If identity ID not stored, fetch it from the merchant record
+    // Resolve identity if not cached
     if (!identityId) {
-      console.log('Identity ID not cached, fetching from Finix merchant:', merchantId);
+      console.log(`[${requestId}] Fetching identity from Finix merchant: ${merchantId}`);
       const merchantLookup = await fetch(`${finixBaseUrl}/merchants/${merchantId}`, {
         headers: finixHeaders,
       });
+      const merchantText = await merchantLookup.text();
       if (merchantLookup.ok) {
-        const merchantData = await merchantLookup.json();
-        identityId = merchantData.identity;
-        console.log('Resolved identity from merchant:', identityId);
-        // Cache it for future use
-        if (identityId) {
-          await supabase.from('profiles').update({ finix_identity_id: identityId }).eq('id', contractorId);
-        }
+        try {
+          const merchantData = JSON.parse(merchantText);
+          identityId = merchantData.identity;
+          if (identityId) {
+            await supabase.from('profiles').update({ finix_identity_id: identityId }).eq('id', contractorId);
+          }
+        } catch { /* parse error */ }
       }
       if (!identityId) {
-        throw new Error('Could not resolve Finix identity for this merchant');
+        console.error(`[${requestId}] Could not resolve identity for merchant ${merchantId}`);
+        return errorResponse('Merchant configuration error. Please contact the contractor.', 500);
       }
     }
 
-    console.log('Creating Finix payment:', {
-      entity_type,
-      entity_id,
-      amountToCharge,
-      merchantId,
-      identityId,
-      hasToken: !!finix_token,
-      hasCardDetails: !!hasCardDetails,
-    });
+    console.log(`[${requestId}] Creating payment: $${amountToCharge} for ${entity_type} ${entity_id}, merchant=${merchantId}`);
 
+    // === TOKENIZE CARD ===
     let paymentInstrumentId: string;
 
     if (finix_token) {
-      // Legacy path: use pre-tokenized card
       const instrumentResponse = await fetch(`${finixBaseUrl}/payment_instruments`, {
         method: 'POST',
         headers: finixHeaders,
@@ -205,50 +300,61 @@ serve(async (req) => {
           identity: identityId,
         }),
       });
-
+      const instrumentText = await instrumentResponse.text();
       if (!instrumentResponse.ok) {
-        const errText = await instrumentResponse.text();
-        console.error('Finix instrument error:', errText);
-        throw new Error('Failed to create payment instrument');
+        console.error(`[${requestId}] Finix token instrument error:`, instrumentText);
+        return errorResponse('Failed to process card token. Please try again.');
       }
-
-      const instrument = await instrumentResponse.json();
+      const instrument = JSON.parse(instrumentText);
       paymentInstrumentId = instrument.id;
     } else {
-      // Server-side tokenization: create payment instrument directly from card details
+      const sanitizedNumber = sanitizeCardNumber(card_number!);
       const instrumentResponse = await fetch(`${finixBaseUrl}/payment_instruments`, {
         method: 'POST',
         headers: finixHeaders,
         body: JSON.stringify({
           type: 'PAYMENT_CARD',
           identity: identityId,
-          name: card_name,
-          number: card_number,
+          name: card_name!.trim(),
+          number: sanitizedNumber,
           expiration_month: card_expiry_month,
           expiration_year: card_expiry_year,
           security_code: card_cvc,
         }),
       });
-
+      const instrumentText = await instrumentResponse.text();
       if (!instrumentResponse.ok) {
-        const errText = await instrumentResponse.text();
-        console.error('Finix card tokenization error:', errText);
-        throw new Error('Card validation failed. Please check your card details and try again.');
+        console.error(`[${requestId}] Card tokenization error:`, instrumentText);
+        // Parse Finix error for better user messaging
+        let userMessage = 'Card validation failed. Please check your card details and try again.';
+        try {
+          const errData = JSON.parse(instrumentText);
+          if (errData?._embedded?.errors?.[0]?.message) {
+            const finixMsg = errData._embedded.errors[0].message.toLowerCase();
+            if (finixMsg.includes('number')) userMessage = 'Invalid card number. Please check and try again.';
+            else if (finixMsg.includes('expir')) userMessage = 'Invalid expiration date. Please check and try again.';
+            else if (finixMsg.includes('security') || finixMsg.includes('cvv')) userMessage = 'Invalid security code. Please check and try again.';
+          }
+        } catch { /* ignore parse error */ }
+        return errorResponse(userMessage);
       }
-
-      const instrument = await instrumentResponse.json();
+      const instrument = JSON.parse(instrumentText);
       paymentInstrumentId = instrument.id;
-      console.log('Card tokenized server-side:', paymentInstrumentId);
+      console.log(`[${requestId}] Card tokenized: ${paymentInstrumentId}`);
     }
 
-    console.log('Payment instrument ready:', paymentInstrumentId);
-
-    // Create a Transfer (charge)
+    // === CREATE TRANSFER (CHARGE) ===
     const amountInCents = Math.round(amountToCharge * 100);
+
+    // Add idempotency header to prevent double-charges on network retries
+    const transferHeaders = { ...finixHeaders };
+    if (idempotency_key) {
+      transferHeaders['Idempotency-Id'] = idempotency_key;
+    }
 
     const transferResponse = await fetch(`${finixBaseUrl}/transfers`, {
       method: 'POST',
-      headers: finixHeaders,
+      headers: transferHeaders,
       body: JSON.stringify({
         merchant: merchantId,
         amount: amountInCents,
@@ -257,25 +363,44 @@ serve(async (req) => {
         tags: {
           entity_type,
           entity_id,
+          request_id: requestId,
           description: paymentDescription,
         },
       }),
     });
 
+    const transferText = await transferResponse.text();
     if (!transferResponse.ok) {
-      const errText = await transferResponse.text();
-      console.error('Finix transfer error:', errText);
-      throw new Error('Payment processing failed. Please try again.');
+      console.error(`[${requestId}] Finix transfer error:`, transferText);
+      // Parse for better messaging
+      let userMessage = 'Payment was declined. Please try a different card.';
+      try {
+        const errData = JSON.parse(transferText);
+        if (errData?._embedded?.errors?.[0]?.message) {
+          const msg = errData._embedded.errors[0].message.toLowerCase();
+          if (msg.includes('insufficient')) userMessage = 'Insufficient funds. Please try a different card.';
+          else if (msg.includes('amount')) userMessage = 'Invalid payment amount. Please contact the contractor.';
+        }
+      } catch { /* ignore */ }
+      return errorResponse(userMessage);
     }
 
-    const transfer = await transferResponse.json();
-    console.log('Finix transfer created:', transfer.id, 'state:', transfer.state);
+    const transfer = JSON.parse(transferText);
+    const transferState = transfer.state || 'UNKNOWN';
+    console.log(`[${requestId}] Transfer ${transfer.id} state: ${transferState}`);
 
-    // Record payment in our system
+    // Check for failed transfer state
+    if (transferState === 'FAILED' || transferState === 'CANCELED') {
+      console.error(`[${requestId}] Transfer failed with state: ${transferState}`);
+      return errorResponse('Payment was declined. Please try a different card or contact your bank.');
+    }
+
+    // === RECORD PAYMENT ===
     const feeAmount = transfer.fee || 0;
     const netAmount = amountToCharge - (feeAmount / 100);
+    const isSucceeded = transferState === 'SUCCEEDED' || transferState === 'PENDING';
 
-    await supabase.from('payments').insert({
+    const { error: paymentInsertError } = await supabase.from('payments').insert({
       contractor_id: contractorId,
       customer_id: customerId,
       job_id: jobId,
@@ -283,11 +408,16 @@ serve(async (req) => {
       amount: amountToCharge,
       fee_amount: feeAmount / 100,
       net_amount: netAmount,
-      status: transfer.state === 'SUCCEEDED' ? 'succeeded' : 'pending',
-      paid_at: transfer.state === 'SUCCEEDED' ? new Date().toISOString() : null,
+      status: transferState === 'SUCCEEDED' ? 'succeeded' : 'pending',
+      paid_at: isSucceeded ? new Date().toISOString() : null,
     });
 
-    // Update the entity
+    if (paymentInsertError) {
+      // Payment was charged but recording failed — log critically but don't fail the user
+      console.error(`[${requestId}] CRITICAL: Payment recorded in Finix (${transfer.id}) but failed to save locally:`, paymentInsertError);
+    }
+
+    // === UPDATE ENTITY ===
     if (entity_type === 'estimate') {
       const { data: est } = await supabase
         .from('estimates')
@@ -299,9 +429,9 @@ serve(async (req) => {
 
       if (est) {
         const prevPaid = est.payment_amount || 0;
-        const newPaid = prevPaid + amountToCharge;
+        const newPaid = Math.round((prevPaid + amountToCharge) * 100) / 100;
         const total = est.grand_total || est.total_amount || 0;
-        newBalance = Math.max(0, total - newPaid);
+        newBalance = Math.round(Math.max(0, total - newPaid) * 100) / 100;
         const paymentStatus = newBalance <= 0 ? 'paid' : newPaid > 0 ? 'partial' : 'unpaid';
 
         await supabase
@@ -322,15 +452,15 @@ serve(async (req) => {
         estimate_id: entity_id,
         clover_session_id: transfer.id,
         amount: amountToCharge,
-        customer_email,
+        customer_email: customer_email || '',
         payment_intent: payment_intent || 'full',
         payment_provider: 'finix',
-        status: transfer.state === 'SUCCEEDED' ? 'succeeded' : 'pending',
-        paid_at: transfer.state === 'SUCCEEDED' ? new Date().toISOString() : null,
+        status: isSucceeded ? 'succeeded' : 'pending',
+        paid_at: isSucceeded ? new Date().toISOString() : null,
       });
 
-      // Send thank you email to customer
-      if (transfer.state === 'SUCCEEDED' && customer_email) {
+      // === SEND CONFIRMATION EMAIL ===
+      if (isSucceeded && customer_email) {
         try {
           const { data: contractorProfile } = await supabase
             .from('profiles')
@@ -357,7 +487,7 @@ serve(async (req) => {
                     Dear ${est?.client_name || 'Valued Customer'},
                   </p>
                   <p style="font-size: 16px; color: #333; margin-bottom: 24px;">
-                    We've received your ${payment_intent === 'deposit' ? 'deposit' : ''} payment of <strong>$${(amountToCharge).toFixed(2)}</strong>. 
+                    We've received your ${payment_intent === 'deposit' ? 'deposit' : ''} payment of <strong>$${amountToCharge.toFixed(2)}</strong>. 
                     Thank you for choosing ${companyName} — we truly appreciate your business!
                   </p>
                   <div style="background: #f0fdf4; border: 2px solid #bbf7d0; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
@@ -368,7 +498,11 @@ serve(async (req) => {
                       </tr>
                       <tr>
                         <td style="padding: 8px 0; color: #666; font-size: 14px;">Amount Paid</td>
-                        <td style="padding: 8px 0; text-align: right; font-weight: bold; color: #16a34a; font-size: 18px;">$${(amountToCharge).toFixed(2)}</td>
+                        <td style="padding: 8px 0; text-align: right; font-weight: bold; color: #16a34a; font-size: 18px;">$${amountToCharge.toFixed(2)}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 8px 0; color: #666; font-size: 14px;">Transaction ID</td>
+                        <td style="padding: 8px 0; text-align: right; font-weight: bold; color: #333; font-size: 12px;">${transfer.id}</td>
                       </tr>
                       <tr>
                         <td style="padding: 8px 0; color: #666; font-size: 14px;">Date</td>
@@ -389,7 +523,7 @@ serve(async (req) => {
               </div>
             `;
 
-            await fetch('https://api.resend.com/emails', {
+            const emailResp = await fetch('https://api.resend.com/emails', {
               method: 'POST',
               headers: {
                 'Authorization': `Bearer ${resendApiKey}`,
@@ -402,10 +536,15 @@ serve(async (req) => {
                 html: emailHtml,
               }),
             });
+            const emailText = await emailResp.text();
+            if (!emailResp.ok) {
+              console.error(`[${requestId}] Email send failed:`, emailText);
+            } else {
+              console.log(`[${requestId}] Confirmation email sent to ${customer_email}`);
+            }
           }
         } catch (emailErr) {
-          console.error('Failed to send thank you email:', emailErr);
-          // Don't fail the payment response if email fails
+          console.error(`[${requestId}] Email error (non-fatal):`, emailErr);
         }
       }
     } else if (entity_type === 'invoice') {
@@ -416,8 +555,8 @@ serve(async (req) => {
         .single();
 
       if (inv) {
-        const newPaid = (inv.amount_paid || 0) + amountToCharge;
-        const newBalance = Math.max(0, (inv.amount_due || 0) - newPaid);
+        const newPaid = Math.round(((inv.amount_paid || 0) + amountToCharge) * 100) / 100;
+        const newBalance = Math.round(Math.max(0, (inv.amount_due || 0) - newPaid) * 100) / 100;
         const isFullyPaid = newBalance <= 0;
 
         await supabase
@@ -439,26 +578,28 @@ serve(async (req) => {
         amount: amountToCharge,
         payment_intent: payment_intent || 'remaining',
         payment_provider: 'finix',
-        status: transfer.state === 'SUCCEEDED' ? 'succeeded' : 'pending',
-        paid_at: transfer.state === 'SUCCEEDED' ? new Date().toISOString() : null,
+        status: isSucceeded ? 'succeeded' : 'pending',
+        paid_at: isSucceeded ? new Date().toISOString() : null,
       });
     }
+
+    console.log(`[${requestId}] Payment complete: $${amountToCharge} via transfer ${transfer.id}`);
 
     return new Response(
       JSON.stringify({
         success: true,
         transfer_id: transfer.id,
-        state: transfer.state,
+        state: transferState,
         amount: amountToCharge,
         payment_intent: payment_intent || 'full',
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error: any) {
-    console.error('Error processing Finix payment:', error);
+    console.error(`[${requestId}] Unhandled error:`, error);
     return new Response(
-      JSON.stringify({ success: false, message: error.message || 'Payment failed' }),
-      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({ success: false, message: error.message || 'An unexpected error occurred. Please try again.' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
