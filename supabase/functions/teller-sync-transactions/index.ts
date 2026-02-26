@@ -24,49 +24,36 @@ function normalizePem(value: string, type: 'CERTIFICATE' | 'PRIVATE KEY'): strin
 
 /**
  * Make an mTLS-authenticated request to the Teller API.
- * Uses Node.js https module via Deno compatibility layer since
- * Deno Deploy doesn't support Deno.createHttpClient with client certs.
+ * Uses Deno's HTTP client with certChain/privateKey for client-certificate auth.
  */
 async function tellerFetch(url: string, accessToken: string, cert: string, key: string): Promise<{ ok: boolean; status: number; body: string }> {
-  const { default: https } = await import('node:https');
-  const { URL } = await import('node:url');
+  const tlsClient = Deno.createHttpClient({
+    certChain: cert,
+    privateKey: key,
+  });
 
-  const parsed = new URL(url);
   const auth = btoa(accessToken + ':');
 
-  return new Promise((resolve, reject) => {
-    const options = {
-      hostname: parsed.hostname,
-      port: 443,
-      path: parsed.pathname + parsed.search,
+  try {
+    // @ts-ignore - Deno fetch supports `client` option in edge runtime
+    const res = await fetch(url, {
       method: 'GET',
-      servername: parsed.hostname,
-      cert,
-      key,
       headers: {
         'Authorization': `Basic ${auth}`,
         'Accept': 'application/json',
       },
+      client: tlsClient,
+    });
+
+    const body = await res.text();
+    return {
+      ok: res.ok,
+      status: res.status,
+      body,
     };
-
-    const req = https.request(options, (res: any) => {
-      let data = '';
-      res.on('data', (chunk: any) => { data += chunk; });
-      res.on('end', () => {
-        resolve({
-          ok: res.statusCode >= 200 && res.statusCode < 300,
-          status: res.statusCode,
-          body: data,
-        });
-      });
-    });
-
-    req.on('error', (e: any) => {
-      reject(new Error(`HTTPS request failed: ${e.message}`));
-    });
-
-    req.end();
-  });
+  } catch (e: any) {
+    throw new Error(`mTLS fetch failed: ${e.message}`);
+  }
 }
 
 Deno.serve(async (req) => {
