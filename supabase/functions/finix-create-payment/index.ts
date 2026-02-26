@@ -459,70 +459,132 @@ serve(async (req) => {
         paid_at: isSucceeded ? new Date().toISOString() : null,
       });
 
-      // === SEND CONFIRMATION EMAIL ===
+      // === SEND CONFIRMATION EMAILS ===
       if (isSucceeded && customer_email) {
+        console.log(`[${requestId}] Preparing confirmation email to ${customer_email}`);
         try {
           const { data: contractorProfile } = await supabase
             .from('profiles')
-            .select('company_name, full_name, phone')
+            .select('company_name, full_name, phone, email, logo_url, brand_primary_color')
             .eq('id', contractorId)
             .single();
 
           const companyName = contractorProfile?.company_name || contractorProfile?.full_name || 'Your Contractor';
+          const brandColor = contractorProfile?.brand_primary_color || '#D50A22';
+          const brandColorDark = '#1e3a5f';
           const resendApiKey = Deno.env.get('RESEND_API_KEY');
           const emailFrom = Deno.env.get('EMAIL_FROM') || 'noreply@myct1.com';
 
-          if (resendApiKey) {
-            const emailHtml = `
-              <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
-                <div style="background: linear-gradient(135deg, #16a34a, #15803d); padding: 40px; text-align: center; border-radius: 8px 8px 0 0;">
-                  <div style="background: white; border-radius: 50%; width: 60px; height: 60px; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center;">
-                    <span style="font-size: 32px;">✓</span>
-                  </div>
-                  <h1 style="color: white; font-size: 28px; margin: 0 0 8px;">Payment Received!</h1>
-                  <p style="color: #bbf7d0; font-size: 16px; margin: 0;">Thank you for your payment</p>
-                </div>
-                <div style="padding: 32px;">
-                  <p style="font-size: 16px; color: #333; margin-bottom: 16px;">
-                    Dear ${est?.client_name || 'Valued Customer'},
-                  </p>
-                  <p style="font-size: 16px; color: #333; margin-bottom: 24px;">
-                    We've received your ${payment_intent === 'deposit' ? 'deposit' : ''} payment of <strong>$${amountToCharge.toFixed(2)}</strong>. 
-                    Thank you for choosing ${companyName} — we truly appreciate your business!
-                  </p>
-                  <div style="background: #f0fdf4; border: 2px solid #bbf7d0; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
-                    <table style="width: 100%; border-collapse: collapse;">
-                      <tr>
-                        <td style="padding: 8px 0; color: #666; font-size: 14px;">Estimate</td>
-                        <td style="padding: 8px 0; text-align: right; font-weight: bold; color: #333;">${est?.estimate_number || est?.title || 'N/A'}</td>
-                      </tr>
-                      <tr>
-                        <td style="padding: 8px 0; color: #666; font-size: 14px;">Amount Paid</td>
-                        <td style="padding: 8px 0; text-align: right; font-weight: bold; color: #16a34a; font-size: 18px;">$${amountToCharge.toFixed(2)}</td>
-                      </tr>
-                      <tr>
-                        <td style="padding: 8px 0; color: #666; font-size: 14px;">Transaction ID</td>
-                        <td style="padding: 8px 0; text-align: right; font-weight: bold; color: #333; font-size: 12px;">${transfer.id}</td>
-                      </tr>
-                      <tr>
-                        <td style="padding: 8px 0; color: #666; font-size: 14px;">Date</td>
-                        <td style="padding: 8px 0; text-align: right; font-weight: bold; color: #333;">${new Date().toLocaleDateString('en-US', { dateStyle: 'long' })}</td>
-                      </tr>
-                      ${newBalance > 0 ? `<tr><td style="padding: 8px 0; color: #666; font-size: 14px;">Remaining Balance</td><td style="padding: 8px 0; text-align: right; font-weight: bold; color: #d97706;">$${newBalance.toFixed(2)}</td></tr>` : ''}
-                    </table>
-                  </div>
-                  <p style="font-size: 16px; color: #333; margin-bottom: 16px;">
-                    Our team will be in touch shortly to schedule your project. If you have any questions, don't hesitate to reach out.
-                  </p>
-                  ${contractorProfile?.phone ? `<p style="font-size: 14px; color: #666;">Contact us: ${contractorProfile.phone}</p>` : ''}
-                  <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
-                  <p style="font-size: 14px; color: #666; text-align: center;">
-                    With gratitude,<br /><strong>${companyName}</strong>
-                  </p>
-                </div>
-              </div>
-            `;
+          if (!resendApiKey) {
+            console.error(`[${requestId}] RESEND_API_KEY not configured — skipping email`);
+          } else {
+            const isDeposit = payment_intent === 'deposit';
+            const paymentLabel = isDeposit ? 'Deposit Payment' : 'Payment';
+            const logoSection = contractorProfile?.logo_url 
+              ? `<img src="${contractorProfile.logo_url}" alt="${companyName}" style="max-width: 180px; max-height: 60px; margin-bottom: 16px;" />`
+              : `<h2 style="color: white; font-size: 24px; margin: 0 0 8px; font-weight: 800;">${companyName}</h2>`;
 
+            const customerEmailHtml = `
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="margin: 0; padding: 0; background-color: #f3f4f6; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+  <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f3f4f6;">
+    <tr><td align="center" style="padding: 40px 16px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" width="600" style="max-width: 600px; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.08);">
+        
+        <!-- Header -->
+        <tr><td style="background: linear-gradient(135deg, ${brandColorDark} 0%, ${brandColor} 100%); padding: 48px 40px; text-align: center;">
+          ${logoSection}
+          <div style="background: rgba(255,255,255,0.15); border-radius: 50%; width: 72px; height: 72px; margin: 16px auto; display: inline-block; line-height: 72px;">
+            <span style="font-size: 36px;">✓</span>
+          </div>
+          <h1 style="color: white; font-size: 30px; margin: 16px 0 4px; font-weight: 800; letter-spacing: -0.5px;">${paymentLabel} Received!</h1>
+          <p style="color: rgba(255,255,255,0.85); font-size: 16px; margin: 0;">Thank you for your trust in ${companyName}</p>
+        </td></tr>
+
+        <!-- Body -->
+        <tr><td style="padding: 40px;">
+          <p style="font-size: 17px; color: #1f2937; margin: 0 0 20px; line-height: 1.6;">
+            Dear <strong>${est?.client_name || 'Valued Customer'}</strong>,
+          </p>
+          <p style="font-size: 16px; color: #374151; margin: 0 0 28px; line-height: 1.6;">
+            We've successfully received your ${isDeposit ? 'deposit' : ''} payment of <strong style="color: ${brandColor};">$${amountToCharge.toFixed(2)}</strong>. 
+            We truly appreciate your business and look forward to delivering exceptional results!
+          </p>
+
+          <!-- Payment Summary Card -->
+          <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; margin-bottom: 28px;">
+            <tr><td style="background: ${brandColor}; padding: 14px 20px;">
+              <p style="color: white; font-size: 14px; font-weight: 700; margin: 0; text-transform: uppercase; letter-spacing: 1px;">Payment Summary</p>
+            </td></tr>
+            <tr><td style="padding: 20px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                  <td style="padding: 10px 0; color: #6b7280; font-size: 14px; border-bottom: 1px solid #f3f4f6;">Estimate</td>
+                  <td style="padding: 10px 0; text-align: right; font-weight: 700; color: #1f2937; border-bottom: 1px solid #f3f4f6;">${est?.estimate_number || est?.title || 'N/A'}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 0; color: #6b7280; font-size: 14px; border-bottom: 1px solid #f3f4f6;">Project</td>
+                  <td style="padding: 10px 0; text-align: right; font-weight: 600; color: #1f2937; border-bottom: 1px solid #f3f4f6;">${est?.title || 'N/A'}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px 0; color: #6b7280; font-size: 14px; border-bottom: 1px solid #f3f4f6;">${paymentLabel}</td>
+                  <td style="padding: 12px 0; text-align: right; font-weight: 800; color: #059669; font-size: 22px; border-bottom: 1px solid #f3f4f6;">$${amountToCharge.toFixed(2)}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 0; color: #6b7280; font-size: 14px; border-bottom: 1px solid #f3f4f6;">Date</td>
+                  <td style="padding: 10px 0; text-align: right; font-weight: 600; color: #1f2937; border-bottom: 1px solid #f3f4f6;">${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 0; color: #6b7280; font-size: 14px;">Transaction ID</td>
+                  <td style="padding: 10px 0; text-align: right; font-weight: 600; color: #6b7280; font-size: 11px; font-family: monospace;">${transfer.id}</td>
+                </tr>
+                ${newBalance > 0 ? `
+                <tr>
+                  <td style="padding: 12px 0; color: #6b7280; font-size: 14px; border-top: 2px solid #e5e7eb;">Remaining Balance</td>
+                  <td style="padding: 12px 0; text-align: right; font-weight: 800; color: #d97706; font-size: 18px; border-top: 2px solid #e5e7eb;">$${newBalance.toFixed(2)}</td>
+                </tr>` : `
+                <tr>
+                  <td style="padding: 12px 0; color: #6b7280; font-size: 14px; border-top: 2px solid #e5e7eb;">Status</td>
+                  <td style="padding: 12px 0; text-align: right; font-weight: 800; color: #059669; font-size: 16px; border-top: 2px solid #e5e7eb;">✓ Paid in Full</td>
+                </tr>`}
+              </table>
+            </td></tr>
+          </table>
+
+          <!-- Next Steps -->
+          <div style="background: #eff6ff; border-left: 4px solid ${brandColor}; padding: 16px 20px; border-radius: 0 8px 8px 0; margin-bottom: 28px;">
+            <p style="font-size: 15px; color: #1e40af; margin: 0 0 4px; font-weight: 700;">What's Next?</p>
+            <p style="font-size: 14px; color: #1e40af; margin: 0; line-height: 1.5;">
+              Our team will be in touch shortly to schedule and coordinate your project. If you have any questions in the meantime, don't hesitate to reach out!
+            </p>
+          </div>
+
+          ${contractorProfile?.phone || contractorProfile?.email ? `
+          <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 24px;">
+            <tr>
+              ${contractorProfile?.phone ? `<td style="padding: 8px 0;"><span style="color: #6b7280; font-size: 13px;">📞</span> <a href="tel:${contractorProfile.phone}" style="color: ${brandColor}; text-decoration: none; font-size: 14px; font-weight: 600;">${contractorProfile.phone}</a></td>` : ''}
+              ${contractorProfile?.email ? `<td style="padding: 8px 0; text-align: right;"><span style="color: #6b7280; font-size: 13px;">✉️</span> <a href="mailto:${contractorProfile.email}" style="color: ${brandColor}; text-decoration: none; font-size: 14px; font-weight: 600;">${contractorProfile.email}</a></td>` : ''}
+            </tr>
+          </table>` : ''}
+        </td></tr>
+
+        <!-- Footer -->
+        <tr><td style="background: #f9fafb; padding: 24px 40px; border-top: 1px solid #e5e7eb; text-align: center;">
+          <p style="font-size: 14px; color: #6b7280; margin: 0 0 4px;">With gratitude,</p>
+          <p style="font-size: 16px; color: #1f2937; font-weight: 700; margin: 0 0 16px;">${companyName}</p>
+          <p style="font-size: 11px; color: #9ca3af; margin: 0;">This is an automated payment confirmation. Please keep this email for your records.</p>
+        </td></tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+
+            // Send customer confirmation email
+            console.log(`[${requestId}] Sending customer email via Resend to ${customer_email} from ${emailFrom}`);
             const emailResp = await fetch('https://api.resend.com/emails', {
               method: 'POST',
               headers: {
@@ -532,15 +594,66 @@ serve(async (req) => {
               body: JSON.stringify({
                 from: `${companyName} <${emailFrom}>`,
                 to: [customer_email],
-                subject: `Payment Confirmation - ${companyName}`,
-                html: emailHtml,
+                subject: `${paymentLabel} Confirmation — ${companyName}`,
+                html: customerEmailHtml,
               }),
             });
             const emailText = await emailResp.text();
             if (!emailResp.ok) {
-              console.error(`[${requestId}] Email send failed:`, emailText);
+              console.error(`[${requestId}] Customer email FAILED (${emailResp.status}):`, emailText);
             } else {
-              console.log(`[${requestId}] Confirmation email sent to ${customer_email}`);
+              console.log(`[${requestId}] ✅ Customer confirmation email sent to ${customer_email}`);
+            }
+
+            // Also notify the contractor
+            if (contractorProfile?.email) {
+              const contractorNotifHtml = `
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"></head>
+<body style="margin: 0; padding: 0; background-color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+  <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background-color: #ffffff;">
+    <tr><td align="center" style="padding: 32px 16px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" width="560" style="max-width: 560px;">
+        <tr><td style="padding-bottom: 24px;">
+          <h1 style="color: #059669; font-size: 24px; margin: 0 0 8px;">💰 New Payment Received!</h1>
+          <p style="color: #6b7280; font-size: 14px; margin: 0;">A customer just made a payment on your estimate.</p>
+        </td></tr>
+        <tr><td style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 20px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+            <tr><td style="padding: 6px 0; color: #374151; font-size: 14px;"><strong>Customer:</strong> ${est?.client_name || 'N/A'}</td></tr>
+            <tr><td style="padding: 6px 0; color: #374151; font-size: 14px;"><strong>Estimate:</strong> ${est?.estimate_number || est?.title || 'N/A'}</td></tr>
+            <tr><td style="padding: 6px 0; color: #059669; font-size: 20px; font-weight: 800;"><strong>Amount:</strong> $${amountToCharge.toFixed(2)} ${isDeposit ? '(Deposit)' : ''}</td></tr>
+            ${newBalance > 0 ? `<tr><td style="padding: 6px 0; color: #d97706; font-size: 14px;"><strong>Remaining Balance:</strong> $${newBalance.toFixed(2)}</td></tr>` : `<tr><td style="padding: 6px 0; color: #059669; font-size: 14px;"><strong>Status:</strong> ✓ Paid in Full</td></tr>`}
+            <tr><td style="padding: 6px 0; color: #6b7280; font-size: 12px;"><strong>Transaction:</strong> ${transfer.id}</td></tr>
+          </table>
+        </td></tr>
+        <tr><td style="padding-top: 20px;"><p style="font-size: 13px; color: #9ca3af; margin: 0;">Powered by CT1 Payment Processing</p></td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+
+              const contractorEmailResp = await fetch('https://api.resend.com/emails', {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${resendApiKey}`,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  from: `CT1 Payments <${emailFrom}>`,
+                  to: [contractorProfile.email],
+                  subject: `💰 Payment Received: $${amountToCharge.toFixed(2)} from ${est?.client_name || 'Customer'}`,
+                  html: contractorNotifHtml,
+                }),
+              });
+              const contractorEmailText = await contractorEmailResp.text();
+              if (!contractorEmailResp.ok) {
+                console.error(`[${requestId}] Contractor notification email FAILED:`, contractorEmailText);
+              } else {
+                console.log(`[${requestId}] ✅ Contractor notification sent to ${contractorProfile.email}`);
+              }
             }
           }
         } catch (emailErr) {
