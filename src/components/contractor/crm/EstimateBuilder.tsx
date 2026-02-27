@@ -60,6 +60,9 @@ export interface EstimateBuilderData {
   warranty_text: string;
   warranty_duration_years: number;
   warranty_duration_months: number;
+  
+  // Document attachments
+  document_attachments: { document_id: string; include_in_body: boolean }[];
 }
 
 interface EstimateBuilderProps {
