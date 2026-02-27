@@ -256,6 +256,7 @@ const navItems = [
           onNavigateToReporting={() => handleSectionChange('reporting')}
           onNavigateToPortal={() => handleSectionChange('portal')}
           onNavigateToCrews={() => handleSectionChange('crews')}
+          onNavigateToDocuments={() => handleSectionChange('documents')}
         />
       );
     }
