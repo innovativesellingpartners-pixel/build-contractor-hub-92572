@@ -166,7 +166,7 @@ export default function CustomerPortal() {
         </div>
       )}
 
-      <header className="bg-background border-b sticky top-0 z-50" style={isContractor ? { position: 'sticky', top: 0 } : undefined}>
+      <header className={cn("bg-background border-b sticky z-50", isContractor ? "top-[40px]" : "top-0")}>
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center gap-3">
           {contractor.logo_url ? (
             <img src={contractor.logo_url} alt="" className="h-10 w-10 rounded-lg object-cover" />
