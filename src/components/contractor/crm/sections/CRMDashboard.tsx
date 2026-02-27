@@ -104,6 +104,14 @@ const mainModules = [
     borderColor: 'border-cyan-400',
     description: 'Manage customer portals'
   },
+  { 
+    id: 'crews' as Section, 
+    label: 'Crews', 
+    icon: Shield, 
+    gradient: 'from-rose-500 to-pink-600',
+    borderColor: 'border-rose-400',
+    description: 'Manage crews & members'
+  },
 ];
 
 const defaultOrder = mainModules.map(m => m.id);
