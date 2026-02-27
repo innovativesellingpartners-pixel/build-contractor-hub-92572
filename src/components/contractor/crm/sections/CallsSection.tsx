@@ -35,7 +35,9 @@ export default function CallsSection({ onSectionChange }: CallsSectionProps) {
   const { data: phoneNumber, isLoading: phoneLoading } = usePhoneNumber();
   const { subscription, hasFullAccess, isLoading: tierLoading } = useUserTier();
   const provisionMutation = useProvisionPhoneNumber();
+  const deleteMutation = useDeletePhoneNumber();
   const { user } = useAuth();
+  const { isAdmin } = useAdminAuth();
   const queryClient = useQueryClient();
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [showManualEntry, setShowManualEntry] = useState(false);
@@ -43,6 +45,7 @@ export default function CallsSection({ onSectionChange }: CallsSectionProps) {
   const [manualSid, setManualSid] = useState('');
   const { callSessions, isLoading: isLoadingCalls, updateCallSession } = useCallSessions();
   const { jobs } = useJobs();
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   
   // Link to job dialog state
   const [linkingCall, setLinkingCall] = useState<CallSession | null>(null);
