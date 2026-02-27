@@ -421,6 +421,13 @@ export default function ScopeTermsStep({ data, onChange }: ScopeTermsStepProps) 
           });
         }}
       />
+
+      {/* Document Attachments Section */}
+      <DocumentAttachmentSection
+        estimateId={data.warranty_id ? undefined : undefined}
+        attachments={data.document_attachments || []}
+        onAttachmentsChange={(attachments) => onChange({ document_attachments: attachments })}
+      />
     </div>
   );
 }

@@ -361,6 +361,9 @@ export default function EstimateBuilder({ initialData, onSave, onCancel }: Estim
       warranty_duration_years: formData.warranty_duration_years,
       warranty_duration_months: formData.warranty_duration_months,
       
+      // Document attachments (handled separately after save)
+      document_attachments: formData.document_attachments,
+      
       status: 'draft',
       date_issued: new Date().toISOString(),
     };
