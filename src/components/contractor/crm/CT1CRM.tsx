@@ -115,7 +115,7 @@ const navItems = [
     // Check for URL param from OAuth callback
     const params = new URLSearchParams(window.location.search);
     const crmSection = params.get('crm_section') as Section | null;
-    if (crmSection && ['dashboard', 'leads', 'jobs', 'customers', 'calls', 'calendar', 'emails', 'estimates', 'reporting', 'financials', 'more', 'payments', 'accounting', 'invoices', 'templates', 'gc', 'contacts', 'help', 'portal', 'ai-report'].includes(crmSection)) {
+    if (crmSection && ['dashboard', 'leads', 'jobs', 'customers', 'calls', 'calendar', 'emails', 'estimates', 'reporting', 'financials', 'more', 'payments', 'accounting', 'invoices', 'templates', 'gc', 'contacts', 'help', 'portal', 'ai-report', 'crews'].includes(crmSection)) {
       sessionStorage.setItem('ct1CrmActiveSection', crmSection);
       // Clean URL param
       params.delete('crm_section');
