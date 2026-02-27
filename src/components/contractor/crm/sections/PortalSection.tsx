@@ -73,6 +73,7 @@ export default function PortalSection() {
         });
         setUnreadCounts(counts);
       }
+      }
     } catch (err) {
       console.error('Error fetching portal tokens:', err);
     } finally {
