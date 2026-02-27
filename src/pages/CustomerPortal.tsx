@@ -367,6 +367,7 @@ function ScheduleTab({ jobId, isContractor = false, contractorId }: { jobId: str
               </>
             )}
           </div>
+        </div>
         {event.description && (
           <p className="text-xs text-muted-foreground pl-[46px] leading-relaxed">{event.description}</p>
         )}
