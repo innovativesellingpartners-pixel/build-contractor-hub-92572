@@ -9,7 +9,7 @@ import { SortableGrid, SortableItem } from '@/components/ui/sortable-grid';
 import { useLayoutPreferences } from '@/hooks/useLayoutPreferences';
 import JobsFinancialOverview from './JobsFinancialOverview';
 
-type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'emails' | 'estimates' | 'reporting' | 'accounting' | 'more' | 'calendar' | 'invoices' | 'portal';
+type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'emails' | 'estimates' | 'reporting' | 'accounting' | 'more' | 'calendar' | 'invoices' | 'portal' | 'crews';
 
 interface CRMDashboardProps {
   onSectionChange?: (section: Section) => void;
