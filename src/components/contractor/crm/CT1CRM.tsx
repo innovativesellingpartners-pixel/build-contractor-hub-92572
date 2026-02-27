@@ -300,6 +300,8 @@ const navItems = [
         return <PortalSection />;
       case 'crews':
         return <CrewsSection onSectionChange={handleSectionChange} />;
+      case 'documents':
+        return <DocumentsSection onSectionChange={handleSectionChange} />;
       case 'ai-report':
         return <AIReportView onBack={handleBack} />;
       default:
