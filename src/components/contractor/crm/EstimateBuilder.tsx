@@ -151,6 +151,7 @@ export default function EstimateBuilder({ initialData, onSave, onCancel }: Estim
       warranty_text: initialData?.warranty_text || '',
       warranty_duration_years: initialData?.warranty_duration_years || defaults.warrantyYears,
       warranty_duration_months: initialData?.warranty_duration_months || 0,
+      document_attachments: [],
     };
   });
 
