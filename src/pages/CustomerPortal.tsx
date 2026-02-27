@@ -43,10 +43,6 @@ export default function CustomerPortal() {
     },
   });
 
-  const isContractor = !!(currentUser && portalData?.portalToken?.contractor_id === currentUser.id);
-
-  // Fetch portalData before using it — define query below
-  const portalData_query_defined_below = null; // placeholder for ordering
 
   const { data: portalData, isLoading, error } = useQuery({
     queryKey: ['portal', token],
