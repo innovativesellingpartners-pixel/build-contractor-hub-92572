@@ -19,7 +19,8 @@ interface PortalToken {
   label: string | null;
   jobs: {
     id: string;
-    title: string;
+    name: string;
+    job_number: string | null;
     status: string;
   } | null;
   customers: {
