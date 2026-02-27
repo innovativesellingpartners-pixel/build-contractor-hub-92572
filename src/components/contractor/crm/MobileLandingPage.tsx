@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { Briefcase, FileText, Users, DollarSign, Phone, Mail, Headset, Calendar, Receipt, Settings2, RotateCcw, UserPlus, BarChart3, Eye, EyeOff, Plus } from 'lucide-react';
+import { Briefcase, FileText, Users, DollarSign, Phone, Mail, Headset, Calendar, Receipt, Settings2, RotateCcw, UserPlus, BarChart3, Eye, EyeOff, Plus, Link as LinkIcon } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ContactSupport } from '@/components/ContactSupport';
