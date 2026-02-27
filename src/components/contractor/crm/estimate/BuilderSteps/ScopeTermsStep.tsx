@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dialog';
 import { EstimateBuilderData } from '../../EstimateBuilder';
 import { WarrantySection } from '../WarrantySection';
+import { DocumentAttachmentSection } from '../DocumentAttachmentSection';
 
 interface ScopeTermsStepProps {
   data: EstimateBuilderData;
