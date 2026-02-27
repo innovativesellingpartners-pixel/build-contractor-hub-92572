@@ -23,7 +23,8 @@ import {
   RotateCcw,
   GripVertical,
   Link as LinkIcon,
-  Shield
+  Shield,
+  FolderOpen
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/components/ui/sheet';
