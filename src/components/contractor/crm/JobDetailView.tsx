@@ -158,9 +158,16 @@ function DailyLogsTab({ jobId, jobName }: { jobId: string; jobName: string }) {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold">Daily Logs</h3>
-        <Button onClick={() => setIsAdding(!isAdding)}>
-          {isAdding ? 'Cancel' : 'Add Log'}
-        </Button>
+        <div className="flex gap-2">
+          {logs && logs.length > 0 && (
+            <Button variant="outline" onClick={() => setShowSendDialog(true)}>
+              <Mail className="h-4 w-4 mr-1" /> Send Logs
+            </Button>
+          )}
+          <Button onClick={() => setIsAdding(!isAdding)}>
+            {isAdding ? 'Cancel' : 'Add Log'}
+          </Button>
+        </div>
       </div>
 
       {isAdding && (
