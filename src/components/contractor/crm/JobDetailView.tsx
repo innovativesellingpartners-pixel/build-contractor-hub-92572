@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { 
-  MapPin, Clock, TrendingUp, AlertCircle, CheckCircle, Edit, Briefcase, FileText, Calculator, Navigation, Copy, Pencil 
+  MapPin, Clock, TrendingUp, AlertCircle, CheckCircle, Edit, Briefcase, FileText, Calculator, Navigation, Copy, Pencil, Mail
 } from 'lucide-react';
 import { useJobs, Job } from '@/hooks/useJobs';
 import { useJobPhotos } from '@/hooks/useJobPhotos';
@@ -17,6 +17,7 @@ import MaterialsTab from './job/MaterialsTab';
 import ChangeOrdersTab from './job/ChangeOrdersTab';
 import InvoicesTab from './job/InvoicesTab';
 import PSFUTab from './job/PSFUTab';
+import SendLogsDialog from './job/SendLogsDialog';
 import { JobFinancialSummary } from './JobFinancialSummary';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
@@ -114,8 +115,9 @@ function PhotosTab({ jobId }: { jobId: string }) {
 }
 
 // Daily Logs Tab Component
-function DailyLogsTab({ jobId }: { jobId: string }) {
+function DailyLogsTab({ jobId, jobName }: { jobId: string; jobName: string }) {
   const { logs, addLog, deleteLog } = useDailyLogs(jobId);
+  const [showSendDialog, setShowSendDialog] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [newLog, setNewLog] = useState({
     log_date: new Date().toISOString().split('T')[0],
@@ -156,9 +158,16 @@ function DailyLogsTab({ jobId }: { jobId: string }) {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold">Daily Logs</h3>
-        <Button onClick={() => setIsAdding(!isAdding)}>
-          {isAdding ? 'Cancel' : 'Add Log'}
-        </Button>
+        <div className="flex gap-2">
+          {logs && logs.length > 0 && (
+            <Button variant="outline" onClick={() => setShowSendDialog(true)}>
+              <Mail className="h-4 w-4 mr-1" /> Send Logs
+            </Button>
+          )}
+          <Button onClick={() => setIsAdding(!isAdding)}>
+            {isAdding ? 'Cancel' : 'Add Log'}
+          </Button>
+        </div>
       </div>
 
       {isAdding && (
@@ -266,6 +275,14 @@ function DailyLogsTab({ jobId }: { jobId: string }) {
           </Card>
         )}
       </div>
+
+      <SendLogsDialog
+        open={showSendDialog}
+        onOpenChange={setShowSendDialog}
+        logs={logs || []}
+        jobId={jobId}
+        jobName={jobName}
+      />
     </div>
   );
 }
@@ -623,7 +640,7 @@ export default function JobDetailView({ job, open, onOpenChange, onCreateEstimat
               </TabsContent>
 
               <TabsContent value="logs" className="mt-4">
-                <DailyLogsTab jobId={job.id!} />
+                <DailyLogsTab jobId={job.id!} jobName={job.name} />
               </TabsContent>
 
               <TabsContent value="psfu" className="mt-4">
