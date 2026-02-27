@@ -3,12 +3,13 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Phone, Copy, AlertCircle, Loader2, ChevronDown, Plus, Link2, X } from 'lucide-react';
-import { usePhoneNumber, useProvisionPhoneNumber } from '@/hooks/usePhoneNumbers';
+import { Phone, Copy, AlertCircle, Loader2, ChevronDown, Plus, Link2, X, Trash2, RefreshCw } from 'lucide-react';
+import { usePhoneNumber, useProvisionPhoneNumber, useDeletePhoneNumber } from '@/hooks/usePhoneNumbers';
 import { useUserTier } from '@/hooks/useUserTier';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import {
