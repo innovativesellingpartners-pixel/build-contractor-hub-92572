@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ct1Logo from '@/assets/ct1-powered-by-logo.png';
+import { AddEditEventDialog, DeleteEventButton, EmailScheduleDialog } from '@/components/portal/PortalScheduleManager';
 
 interface PortalData {
   id: string;
