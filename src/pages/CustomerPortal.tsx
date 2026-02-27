@@ -12,7 +12,8 @@ import { format } from 'date-fns';
 import {
   Home, FileText, Camera, MessageSquare, CreditCard,
   Send, Upload, CheckCircle2, Clock, AlertCircle, Loader2,
-  Building2, MapPin, Phone, Mail, Calendar, ChevronRight
+  Building2, MapPin, Phone, Mail, Calendar, ChevronRight,
+  CalendarDays, MapPinned, Wrench, Flag, CircleDot
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ct1Logo from '@/assets/ct1-powered-by-logo.png';
