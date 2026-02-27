@@ -250,7 +250,7 @@ export default function CustomerPortal() {
 }
 
 // ==================== SCHEDULE TAB ====================
-function ScheduleTab({ jobId }: { jobId: string }) {
+function ScheduleTab({ jobId, isContractor = false, contractorId }: { jobId: string; isContractor?: boolean; contractorId?: string }) {
   const [selectedMonth, setSelectedMonth] = useState(() => new Date());
 
   const { data: events, isLoading } = useQuery({
