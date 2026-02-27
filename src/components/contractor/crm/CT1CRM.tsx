@@ -250,6 +250,7 @@ const navItems = [
           onNavigateToInvoices={() => handleSectionChange('invoices')}
           onNavigateToLeads={() => handleSectionChange('leads')}
           onNavigateToReporting={() => handleSectionChange('reporting')}
+          onNavigateToPortal={() => handleSectionChange('portal')}
         />
       );
     }

@@ -170,6 +170,7 @@ export function MobileLandingPage({
       case 'invoices': onNavigateToInvoices(); break;
       case 'leads': onNavigateToLeads?.(); break;
       case 'reporting': onNavigateToReporting?.(); break;
+      case 'portal': onNavigateToPortal?.(); break;
     }
   };
 
