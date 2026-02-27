@@ -92,7 +92,7 @@ function MemberFormDialog({
         email: form.email.trim() || null,
         phone: form.phone.trim() || null,
         company: form.company.trim() || null,
-        role: form.role,
+        role,
         hourly_rate: form.hourly_rate ? parseFloat(form.hourly_rate) : null,
         skills_trades: form.skills_trades ? form.skills_trades.split(',').map(s => s.trim()).filter(Boolean) : null,
         notes: form.notes.trim() || null,
