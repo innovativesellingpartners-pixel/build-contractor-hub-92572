@@ -49,9 +49,12 @@ export default function GeneratePortalLinkDialog({
     enabled: open,
   });
 
+  const hasActivePortal = existingTokens && existingTokens.length > 0;
+
   const createTokenMutation = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error('Not authenticated');
+      if (hasActivePortal) throw new Error('This job already has an active customer portal');
       const { data, error } = await supabase
         .from('customer_portal_tokens')
         .insert({
