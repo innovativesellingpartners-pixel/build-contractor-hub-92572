@@ -283,7 +283,7 @@ export default function GeneratePortalLinkDialog({
                 <div className="mx-auto h-12 w-12 rounded-full bg-muted flex items-center justify-center">
                   <Link2 className="h-6 w-6 text-muted-foreground" />
                 </div>
-                <p className="text-sm font-medium text-foreground">No active portal links</p>
+                <p className="text-sm font-medium text-foreground">No active customer portals</p>
                 <p className="text-xs text-muted-foreground">
                   Generate a link to give your customer access to their project portal
                 </p>
