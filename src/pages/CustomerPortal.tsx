@@ -208,7 +208,7 @@ export default function CustomerPortal() {
 
       <main className="max-w-5xl mx-auto px-4 py-6 space-y-6">
         {activeTab === 'overview' && <OverviewTab job={job} contractor={contractor} />}
-        {activeTab === 'schedule' && <ScheduleTab jobId={job.id} />}
+        {activeTab === 'schedule' && <ScheduleTab jobId={job.id} isContractor={isContractor} contractorId={portalToken.contractor_id} />}
         {activeTab === 'documents' && <DocumentsTab jobId={job.id} />}
         {activeTab === 'photos' && <PhotosTab jobId={job.id} portalTokenId={portalToken.id} customerName={customer?.name} />}
         {activeTab === 'messages' && (
