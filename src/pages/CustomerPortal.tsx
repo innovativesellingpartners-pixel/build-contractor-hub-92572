@@ -14,10 +14,11 @@ import {
   Send, Upload, CheckCircle2, Clock, AlertCircle, Loader2,
   Building2, MapPin, Phone, Mail, Calendar, ChevronRight,
   CalendarDays, MapPinned, Wrench, Flag, CircleDot,
-  ArrowLeft, LayoutDashboard
+  ArrowLeft, LayoutDashboard, Plus, Pencil
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ct1Logo from '@/assets/ct1-powered-by-logo.png';
+import { AddEditEventDialog, DeleteEventButton, EmailScheduleDialog } from '@/components/portal/PortalScheduleManager';
 
 interface PortalData {
   id: string;
@@ -208,7 +209,7 @@ export default function CustomerPortal() {
 
       <main className="max-w-5xl mx-auto px-4 py-6 space-y-6">
         {activeTab === 'overview' && <OverviewTab job={job} contractor={contractor} />}
-        {activeTab === 'schedule' && <ScheduleTab jobId={job.id} />}
+        {activeTab === 'schedule' && <ScheduleTab jobId={job.id} isContractor={isContractor} contractorId={portalToken.contractor_id} />}
         {activeTab === 'documents' && <DocumentsTab jobId={job.id} />}
         {activeTab === 'photos' && <PhotosTab jobId={job.id} portalTokenId={portalToken.id} customerName={customer?.name} />}
         {activeTab === 'messages' && (
@@ -250,7 +251,7 @@ export default function CustomerPortal() {
 }
 
 // ==================== SCHEDULE TAB ====================
-function ScheduleTab({ jobId }: { jobId: string }) {
+function ScheduleTab({ jobId, isContractor = false, contractorId }: { jobId: string; isContractor?: boolean; contractorId?: string }) {
   const [selectedMonth, setSelectedMonth] = useState(() => new Date());
 
   const { data: events, isLoading } = useQuery({
@@ -348,7 +349,24 @@ function ScheduleTab({ jobId }: { jobId: string }) {
               </div>
             </div>
           </div>
-          <Badge className={cn('text-[10px] shrink-0', statConf.color)}>{statConf.label}</Badge>
+          <div className="flex items-center gap-1 shrink-0">
+            <Badge className={cn('text-[10px]', statConf.color)}>{statConf.label}</Badge>
+            {isContractor && contractorId && (
+              <>
+                <AddEditEventDialog
+                  jobId={jobId}
+                  contractorId={contractorId}
+                  event={event}
+                  trigger={
+                    <Button variant="ghost" size="icon" className="h-7 w-7">
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
+                  }
+                />
+                <DeleteEventButton eventId={event.id} jobId={jobId} />
+              </>
+            )}
+          </div>
         </div>
         {event.description && (
           <p className="text-xs text-muted-foreground pl-[46px] leading-relaxed">{event.description}</p>
@@ -376,6 +394,21 @@ function ScheduleTab({ jobId }: { jobId: string }) {
               Project Calendar
             </CardTitle>
             <div className="flex items-center gap-2">
+              {isContractor && contractorId && (
+                <>
+                  <EmailScheduleDialog jobId={jobId} contractorId={contractorId} events={events || []} />
+                  <AddEditEventDialog
+                    jobId={jobId}
+                    contractorId={contractorId}
+                    trigger={
+                      <Button size="sm" className="gap-1.5">
+                        <Plus className="h-4 w-4" />
+                        Add Event
+                      </Button>
+                    }
+                  />
+                </>
+              )}
               <Button variant="ghost" size="icon" className="h-8 w-8" onClick={prevMonth}>
                 <ChevronRight className="h-4 w-4 rotate-180" />
               </Button>
