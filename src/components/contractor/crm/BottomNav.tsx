@@ -60,6 +60,7 @@ const allNavItems = [
   { id: 'contacts' as Section, label: 'Contacts', icon: Contact },
   { id: 'portal' as Section, label: 'Customer Portal', icon: LinkIcon },
   { id: 'crews' as Section, label: 'Crews', icon: Shield },
+  { id: 'documents' as Section, label: 'Documents', icon: FolderOpen },
   { id: 'help' as Section, label: 'Help Center', icon: HelpCircle },
 ];
 

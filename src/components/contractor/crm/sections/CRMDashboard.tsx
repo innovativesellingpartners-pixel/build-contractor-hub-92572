@@ -112,6 +112,14 @@ const mainModules = [
     borderColor: 'border-rose-400',
     description: 'Manage crews & members'
   },
+  { 
+    id: 'documents' as Section, 
+    label: 'Documents', 
+    icon: FolderOpen, 
+    gradient: 'from-slate-500 to-gray-600',
+    borderColor: 'border-slate-400',
+    description: 'Warranties, COIs & files'
+  },
 ];
 
 const defaultOrder = mainModules.map(m => m.id);

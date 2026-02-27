@@ -190,6 +190,7 @@ export function MobileLandingPage({
       case 'reporting': onNavigateToReporting?.(); break;
       case 'portal': onNavigateToPortal?.(); break;
       case 'crews': onNavigateToCrews?.(); break;
+      case 'documents': onNavigateToDocuments?.(); break;
     }
   };
 
