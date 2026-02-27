@@ -89,7 +89,7 @@ export default function CallsSection({ onSectionChange }: CallsSectionProps) {
   };
 
   const handleProvision = () => {
-    provisionMutation.mutate();
+    provisionMutation.mutate(undefined);
   };
 
   const handleLinkToJob = (call: CallSession) => {
