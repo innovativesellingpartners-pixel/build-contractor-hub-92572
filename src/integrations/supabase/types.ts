@@ -741,6 +741,72 @@ export type Database = {
           },
         ]
       }
+      contractor_documents: {
+        Row: {
+          created_at: string
+          document_category: string
+          document_label: string | null
+          estimate_id: string | null
+          expires_at: string | null
+          file_name: string
+          file_path: string
+          file_size: number
+          file_type: string
+          id: string
+          job_id: string | null
+          notes: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          document_category?: string
+          document_label?: string | null
+          estimate_id?: string | null
+          expires_at?: string | null
+          file_name: string
+          file_path: string
+          file_size?: number
+          file_type?: string
+          id?: string
+          job_id?: string | null
+          notes?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          document_category?: string
+          document_label?: string | null
+          estimate_id?: string | null
+          expires_at?: string | null
+          file_name?: string
+          file_path?: string
+          file_size?: number
+          file_type?: string
+          id?: string
+          job_id?: string | null
+          notes?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contractor_documents_estimate_id_fkey"
+            columns: ["estimate_id"]
+            isOneToOne: false
+            referencedRelation: "estimates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contractor_documents_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contractor_warranties: {
         Row: {
           created_at: string
