@@ -275,6 +275,14 @@ function DailyLogsTab({ jobId, jobName }: { jobId: string; jobName: string }) {
           </Card>
         )}
       </div>
+
+      <SendLogsDialog
+        open={showSendDialog}
+        onOpenChange={setShowSendDialog}
+        logs={logs || []}
+        jobId={jobId}
+        jobName={jobName}
+      />
     </div>
   );
 }
