@@ -47,7 +47,7 @@ export default function PortalSection() {
 
       const { data, error } = await supabase
         .from('customer_portal_tokens')
-        .select('*, jobs(id, title, status), customers(id, name)')
+        .select('*, jobs(id, name, job_number, status), customers(id, name)')
         .eq('contractor_id', user.id)
         .order('created_at', { ascending: false }) as { data: any[] | null; error: any };
 
