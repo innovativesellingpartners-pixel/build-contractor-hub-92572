@@ -49,9 +49,12 @@ export default function GeneratePortalLinkDialog({
     enabled: open,
   });
 
+  const hasActivePortal = existingTokens && existingTokens.length > 0;
+
   const createTokenMutation = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error('Not authenticated');
+      if (hasActivePortal) throw new Error('This job already has an active customer portal');
       const { data, error } = await supabase
         .from('customer_portal_tokens')
         .insert({
@@ -290,19 +293,21 @@ export default function GeneratePortalLinkDialog({
               </div>
             )}
 
-            {/* Generate Button */}
-            <Button
-              className="w-full h-11 gap-2 font-medium"
-              onClick={() => createTokenMutation.mutate()}
-              disabled={createTokenMutation.isPending}
-            >
-              {createTokenMutation.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Link2 className="h-4 w-4" />
-              )}
-              Generate New Customer Portal
-            </Button>
+            {/* Generate Button - only show if no active portal exists */}
+            {!hasActivePortal && (
+              <Button
+                className="w-full h-11 gap-2 font-medium"
+                onClick={() => createTokenMutation.mutate()}
+                disabled={createTokenMutation.isPending}
+              >
+                {createTokenMutation.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Link2 className="h-4 w-4" />
+                )}
+                Generate Customer Portal
+              </Button>
+            )}
           </div>
 
           <Separator />
