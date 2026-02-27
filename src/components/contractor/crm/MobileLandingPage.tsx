@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { Briefcase, FileText, Users, DollarSign, Phone, Mail, Headset, Calendar, Receipt, Settings2, RotateCcw, UserPlus, BarChart3, Eye, EyeOff, Plus } from 'lucide-react';
+import { Briefcase, FileText, Users, DollarSign, Phone, Mail, Headset, Calendar, Receipt, Settings2, RotateCcw, UserPlus, BarChart3, Eye, EyeOff, Plus, Link as LinkIcon } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ContactSupport } from '@/components/ContactSupport';
@@ -18,6 +18,7 @@ interface MobileLandingPageProps {
   onNavigateToInvoices: () => void;
   onNavigateToLeads?: () => void;
   onNavigateToReporting?: () => void;
+  onNavigateToPortal?: () => void;
 }
 
 const mobileModules = [
@@ -91,6 +92,13 @@ const mobileModules = [
     icon: BarChart3,
     gradient: 'from-amber-500 via-yellow-500 to-yellow-600',
   },
+  {
+    id: 'portal',
+    title: 'Customer Portal',
+    description: 'Manage customer portals',
+    icon: LinkIcon,
+    gradient: 'from-cyan-500 via-teal-500 to-teal-600',
+  },
 ];
 
 const defaultOrder = mobileModules.map(m => m.id);
@@ -133,6 +141,7 @@ export function MobileLandingPage({
   onNavigateToInvoices,
   onNavigateToLeads,
   onNavigateToReporting,
+  onNavigateToPortal,
 }: MobileLandingPageProps) {
   const [contactSupportOpen, setContactSupportOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -161,6 +170,7 @@ export function MobileLandingPage({
       case 'invoices': onNavigateToInvoices(); break;
       case 'leads': onNavigateToLeads?.(); break;
       case 'reporting': onNavigateToReporting?.(); break;
+      case 'portal': onNavigateToPortal?.(); break;
     }
   };
 
