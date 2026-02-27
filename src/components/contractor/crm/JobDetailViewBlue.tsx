@@ -528,9 +528,10 @@ function PhotosTabContent({ jobId, jobName, customerName }: { jobId: string; job
 }
 
 // Daily Logs Tab (simplified)
-function LogsTabContent({ jobId }: { jobId: string }) {
+function LogsTabContent({ jobId, jobName }: { jobId: string; jobName: string }) {
   const { logs, addLog, deleteLog } = useDailyLogs(jobId);
   const [isAdding, setIsAdding] = useState(false);
+  const [showSendDialog, setShowSendDialog] = useState(false);
   const [newLog, setNewLog] = useState({
     log_date: new Date().toISOString().split('T')[0],
     weather: '',
@@ -559,7 +560,12 @@ function LogsTabContent({ jobId }: { jobId: string }) {
 
   return (
     <div className="p-4 space-y-4">
-      <div className="flex justify-end">
+      <div className="flex justify-end gap-2">
+        {logs && logs.length > 0 && (
+          <ActionButton variant="secondary" onClick={() => setShowSendDialog(true)}>
+            <Mail className="h-4 w-4 mr-1" /> Send Logs
+          </ActionButton>
+        )}
         <ActionButton variant="secondary" onClick={() => setIsAdding(!isAdding)}>
           {isAdding ? 'Cancel' : 'Add Log'}
         </ActionButton>
