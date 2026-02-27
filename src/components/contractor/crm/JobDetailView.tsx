@@ -640,7 +640,7 @@ export default function JobDetailView({ job, open, onOpenChange, onCreateEstimat
               </TabsContent>
 
               <TabsContent value="logs" className="mt-4">
-                <DailyLogsTab jobId={job.id!} />
+                <DailyLogsTab jobId={job.id!} jobName={job.name} />
               </TabsContent>
 
               <TabsContent value="psfu" className="mt-4">
