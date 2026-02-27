@@ -3,12 +3,13 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Phone, Copy, AlertCircle, Loader2, ChevronDown, Plus, Link2, X } from 'lucide-react';
-import { usePhoneNumber, useProvisionPhoneNumber } from '@/hooks/usePhoneNumbers';
+import { Phone, Copy, AlertCircle, Loader2, ChevronDown, Plus, Link2, X, Trash2, RefreshCw } from 'lucide-react';
+import { usePhoneNumber, useProvisionPhoneNumber, useDeletePhoneNumber } from '@/hooks/usePhoneNumbers';
 import { useUserTier } from '@/hooks/useUserTier';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import {
@@ -34,7 +35,9 @@ export default function CallsSection({ onSectionChange }: CallsSectionProps) {
   const { data: phoneNumber, isLoading: phoneLoading } = usePhoneNumber();
   const { subscription, hasFullAccess, isLoading: tierLoading } = useUserTier();
   const provisionMutation = useProvisionPhoneNumber();
+  const deleteMutation = useDeletePhoneNumber();
   const { user } = useAuth();
+  const { isAdmin } = useAdminAuth();
   const queryClient = useQueryClient();
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [showManualEntry, setShowManualEntry] = useState(false);
@@ -42,6 +45,7 @@ export default function CallsSection({ onSectionChange }: CallsSectionProps) {
   const [manualSid, setManualSid] = useState('');
   const { callSessions, isLoading: isLoadingCalls, updateCallSession } = useCallSessions();
   const { jobs } = useJobs();
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   
   // Link to job dialog state
   const [linkingCall, setLinkingCall] = useState<CallSession | null>(null);
@@ -89,7 +93,7 @@ export default function CallsSection({ onSectionChange }: CallsSectionProps) {
   };
 
   const handleProvision = () => {
-    provisionMutation.mutate();
+    provisionMutation.mutate(undefined);
   };
 
   const handleLinkToJob = (call: CallSession) => {
@@ -188,6 +192,121 @@ export default function CallsSection({ onSectionChange }: CallsSectionProps) {
                     <Copy className="h-4 w-4" />
                   </Button>
                 </div>
+
+                {/* Admin Controls */}
+                {isAdmin && (
+                  <div className="border border-dashed border-primary/30 rounded-lg p-4 space-y-3">
+                    <p className="text-sm font-medium text-primary flex items-center gap-1">
+                      <AlertCircle className="h-4 w-4" /> Admin Controls
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          provisionMutation.mutate(user?.id);
+                        }}
+                        disabled={provisionMutation.isPending}
+                      >
+                        {provisionMutation.isPending ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <RefreshCw className="mr-2 h-4 w-4" />
+                        )}
+                        Generate New Number
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowManualEntry(true)}
+                      >
+                        <Plus className="mr-2 h-4 w-4" />
+                        Add Manual Number
+                      </Button>
+                      {!showDeleteConfirm ? (
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => setShowDeleteConfirm(true)}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Delete Number
+                        </Button>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-destructive">Are you sure?</span>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            disabled={deleteMutation.isPending}
+                            onClick={() => {
+                              deleteMutation.mutate({
+                                phoneNumberId: phoneNumber.id,
+                                contractorId: phoneNumber.contractor_id,
+                              });
+                              setShowDeleteConfirm(false);
+                            }}
+                          >
+                            {deleteMutation.isPending ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              'Confirm Delete'
+                            )}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setShowDeleteConfirm(false)}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Inline manual entry for admins */}
+                    {showManualEntry && (
+                      <div className="space-y-3 mt-3 p-3 bg-muted/50 rounded-lg">
+                        <h4 className="text-sm font-semibold">Register Manual Number</h4>
+                        <div>
+                          <label className="text-sm font-medium mb-1.5 block">Phone Number</label>
+                          <input
+                            type="tel"
+                            placeholder="+1234567890"
+                            value={manualNumber}
+                            onChange={(e) => setManualNumber(e.target.value)}
+                            className="w-full px-3 py-2 border rounded-md bg-background text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium mb-1.5 block">Twilio SID</label>
+                          <input
+                            type="text"
+                            placeholder="PNxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                            value={manualSid}
+                            onChange={(e) => setManualSid(e.target.value)}
+                            className="w-full px-3 py-2 border rounded-md bg-background text-sm"
+                          />
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            onClick={() => registerExistingNumber.mutate()}
+                            disabled={!manualNumber || !manualSid || registerExistingNumber.isPending}
+                          >
+                            {registerExistingNumber.isPending ? (
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : null}
+                            Register
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={() => { setShowManualEntry(false); setManualNumber(''); setManualSid(''); }}>
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 <Alert>
                   <AlertCircle className="h-4 w-4" />

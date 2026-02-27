@@ -1,12 +1,11 @@
 /**
  * Provision Twilio Number for Contractor
  * 
- * This endpoint allows paid contractors to provision their own Twilio phone number.
- * It purchases a local number from Twilio, configures the voice webhook, and stores
- * the number in the database linked to the contractor.
+ * Admins can provision numbers for any user (even replacing existing ones).
+ * Regular users can only provision once (if they don't already have one).
  * 
  * POST /functions/v1/provision-twilio-number
- * Body: { contractorId: string }
+ * Body: { targetUserId?: string } — admins can pass a target user
  */
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
@@ -14,17 +13,15 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
 serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    // Only accept POST requests
     if (req.method !== 'POST') {
       return new Response(
         JSON.stringify({ error: 'Method Not Allowed' }),
@@ -32,13 +29,12 @@ serve(async (req) => {
       );
     }
 
-    // Get authenticated user from JWT
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+    const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const authHeader = req.headers.get('Authorization');
     
     if (!authHeader) {
-      console.error('Missing authorization header');
       return new Response(
         JSON.stringify({ error: 'Missing authorization header' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -47,122 +43,93 @@ serve(async (req) => {
 
     const jwt = authHeader.replace('Bearer ', '').trim();
 
-    // Create Supabase client in non-persistent server mode
     const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-      },
+      auth: { persistSession: false, autoRefreshToken: false },
     });
 
     const { data: { user }, error: userError } = await supabase.auth.getUser(jwt);
     
-    console.log('Auth check result:', { 
-      hasUser: !!user, 
-      userId: user?.id, 
-      error: userError?.message 
-    });
-    
     if (userError || !user) {
-      console.error('Authentication failed:', userError);
       return new Response(
-        JSON.stringify({ 
-          error: 'Unauthorized', 
-          details: userError?.message || 'No user found'
-        }),
+        JSON.stringify({ error: 'Unauthorized' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const contractorId = user.id;
-    console.log('Authenticated user:', contractorId);
-
-    // Create admin client with service role key for database operations (bypasses RLS)
-    const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const adminSupabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-      },
+      auth: { persistSession: false, autoRefreshToken: false },
     });
 
-    // Check if contractor already has a phone number (use admin client to bypass RLS)
-    const { data: existingNumber } = await adminSupabase
-      .from('phone_numbers')
-      .select('twilio_phone_number')
-      .eq('contractor_id', contractorId)
-      .eq('active', true)
-      .single();
+    // Parse body
+    let body: any = {};
+    try { body = await req.json(); } catch (_) {}
 
-    if (existingNumber) {
-      return new Response(
-        JSON.stringify({ 
-          error: 'Contractor already has a phone number',
-          phone_number: existingNumber.twilio_phone_number
-        }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    // Check if caller is admin
+    const { data: roleData } = await adminSupabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    const isAdmin = roleData?.role === 'admin' || roleData?.role === 'super_admin';
+
+    // Determine target contractor
+    const targetUserId = body.targetUserId && isAdmin ? body.targetUserId : user.id;
+
+    console.log('Provision request:', { callerId: user.id, isAdmin, targetUserId });
+
+    // For regular users: block if they already have a number
+    if (!isAdmin) {
+      const { data: existingNumber } = await adminSupabase
+        .from('phone_numbers')
+        .select('twilio_phone_number')
+        .eq('contractor_id', targetUserId)
+        .eq('active', true)
+        .single();
+
+      if (existingNumber) {
+        return new Response(
+          JSON.stringify({ 
+            error: 'You already have a phone number assigned. Contact an admin to change it.',
+            phone_number: existingNumber.twilio_phone_number
+          }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
     }
 
-    // Check if contractor has an active subscription OR has @myct1.com email
-    const { data: subscription } = await supabase
-      .from('subscriptions')
-      .select('status, tier_id')
-      .eq('user_id', contractorId)
-      .eq('status', 'active')
-      .single();
-
-    // Also check profile for subscription tier
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('subscription_tier')
-      .eq('id', contractorId)
-      .single();
-
-    console.log('Subscription check (temporarily bypassed for testing):', { subscription, profileTier: profile?.subscription_tier, userEmail: user.email });
-
-    // TEMPORARY: Bypass subscription checks so we can test Twilio provisioning for any logged-in user
-    const hasAccess = true;
-
-    if (!hasAccess) {
-      return new Response(
-        JSON.stringify({ error: 'Active subscription required to provision a phone number' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    // For admins: deactivate existing number before provisioning new one
+    if (isAdmin) {
+      await adminSupabase
+        .from('phone_numbers')
+        .update({ active: false })
+        .eq('contractor_id', targetUserId)
+        .eq('active', true);
     }
 
     // Get Twilio credentials
     const twilioAccountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
     const twilioAuthToken = Deno.env.get('TWILIO_AUTH_TOKEN');
-    const appUrl = Deno.env.get('APP_URL') || supabaseUrl;
 
     if (!twilioAccountSid || !twilioAuthToken) {
-      console.error('Missing Twilio credentials');
       return new Response(
         JSON.stringify({ error: 'Twilio configuration error' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Construct voice webhook URL
     const voiceWebhookUrl = `${supabaseUrl}/functions/v1/twilio-voice-inbound`;
-
-    console.log('Purchasing Twilio number for contractor:', contractorId);
-
-    // Search for available phone numbers (US local numbers)
-    const searchUrl = `https://api.twilio.com/2010-04-01/Accounts/${twilioAccountSid}/AvailablePhoneNumbers/US/Local.json?Limit=1`;
-    
     const basicAuth = btoa(`${twilioAccountSid}:${twilioAuthToken}`);
-    
+
+    // Search for available numbers
+    const searchUrl = `https://api.twilio.com/2010-04-01/Accounts/${twilioAccountSid}/AvailablePhoneNumbers/US/Local.json?Limit=1`;
     const searchResponse = await fetch(searchUrl, {
-      headers: {
-        'Authorization': `Basic ${basicAuth}`,
-      },
+      headers: { 'Authorization': `Basic ${basicAuth}` },
     });
 
     if (!searchResponse.ok) {
       const errorText = await searchResponse.text();
-      console.error('Failed to search for available numbers:', errorText);
+      console.error('Failed to search numbers:', errorText);
       return new Response(
         JSON.stringify({ error: 'Failed to find available phone numbers' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -170,8 +137,7 @@ serve(async (req) => {
     }
 
     const availableNumbers = await searchResponse.json();
-    
-    if (!availableNumbers.available_phone_numbers || availableNumbers.available_phone_numbers.length === 0) {
+    if (!availableNumbers.available_phone_numbers?.length) {
       return new Response(
         JSON.stringify({ error: 'No phone numbers available' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -179,16 +145,14 @@ serve(async (req) => {
     }
 
     const selectedNumber = availableNumbers.available_phone_numbers[0].phone_number;
-    console.log('Selected number:', selectedNumber);
 
-    // Purchase the phone number
+    // Purchase the number
     const purchaseUrl = `https://api.twilio.com/2010-04-01/Accounts/${twilioAccountSid}/IncomingPhoneNumbers.json`;
-    
     const purchaseBody = new URLSearchParams({
       PhoneNumber: selectedNumber,
       VoiceUrl: voiceWebhookUrl,
       VoiceMethod: 'POST',
-      FriendlyName: `CT1 - ${contractorId.substring(0, 8)}`,
+      FriendlyName: `CT1 - ${targetUserId.substring(0, 8)}`,
     });
 
     const purchaseResponse = await fetch(purchaseUrl, {
@@ -204,26 +168,18 @@ serve(async (req) => {
       const errorText = await purchaseResponse.text();
       console.error('Failed to purchase number:', errorText);
 
-      // Try to parse Twilio error for clearer messaging
       try {
         const twilioError = JSON.parse(errorText);
-        if (
-          twilioError?.code === 21404 &&
-          typeof twilioError?.message === 'string' &&
-          twilioError.message.includes('Trial accounts are allowed only one Twilio number')
-        ) {
+        if (twilioError?.code === 21404 && twilioError?.message?.includes('Trial accounts are allowed only one')) {
           return new Response(
             JSON.stringify({
               error: 'twilio_trial_limit',
-              message:
-                'Your Twilio trial account can only have one phone number. Release your existing trial number in Twilio or upgrade your Twilio account to add another.',
+              message: 'Twilio trial account limit reached. Release existing number or upgrade Twilio.',
             }),
             { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
-      } catch (_) {
-        // fall through to generic error
-      }
+      } catch (_) {}
 
       return new Response(
         JSON.stringify({ error: 'Failed to purchase phone number', details: errorText }),
@@ -233,15 +189,13 @@ serve(async (req) => {
 
     const purchaseResult = await purchaseResponse.json();
     const twilioSid = purchaseResult.sid;
-    
-    console.log('Successfully purchased number:', selectedNumber, 'SID:', twilioSid);
 
-    // Store in database (use admin client to bypass RLS)
-    const { data: phoneNumberRecord, error: insertError } = await adminSupabase
+    // Store in database
+    const { error: insertError } = await adminSupabase
       .from('phone_numbers')
       .insert({
-        contractor_id: contractorId,
-        tenant_id: null, // Can be set later if multi-tenancy is needed
+        contractor_id: targetUserId,
+        tenant_id: null,
         twilio_phone_number: selectedNumber,
         twilio_sid: twilioSid,
         active: true,
@@ -250,38 +204,27 @@ serve(async (req) => {
       .single();
 
     if (insertError) {
-      console.error('Failed to store phone number in database:', insertError);
-      // TODO: Consider releasing the Twilio number if database insert fails
+      console.error('Failed to store phone number:', insertError);
       return new Response(
         JSON.stringify({ error: 'Failed to save phone number' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log('Phone number provisioned successfully for contractor:', contractorId);
-
     return new Response(
       JSON.stringify({
         success: true,
         phone_number: selectedNumber,
         twilio_sid: twilioSid,
-        contractor_id: contractorId,
-        voice_webhook_url: voiceWebhookUrl,
-        message: 'Phone number provisioned successfully',
+        contractor_id: targetUserId,
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
     console.error('Error provisioning Twilio number:', error);
-    
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    
     return new Response(
-      JSON.stringify({ 
-        error: 'Internal server error',
-        message: errorMessage
-      }),
+      JSON.stringify({ error: 'Internal server error', message: error instanceof Error ? error.message : 'Unknown error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
