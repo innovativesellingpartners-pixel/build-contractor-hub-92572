@@ -54,13 +54,15 @@ export default function PortalSection() {
       if (error) throw error;
       setTokens(data || []);
 
-      // Fetch unread message counts
-      const msgResult = await (supabase as any)
-        .from('portal_messages')
-        .select('job_id')
-        .eq('contractor_id', user.id)
-        .eq('sender_type', 'customer')
-        .eq('is_read', false);
+      // Fetch unread message counts via portal tokens belonging to this contractor
+      const tokenIds = (data || []).map((t: any) => t.id);
+      if (tokenIds.length > 0) {
+        const msgResult = await (supabase as any)
+          .from('portal_messages')
+          .select('job_id')
+          .in('portal_token_id', tokenIds)
+          .eq('sender_type', 'customer')
+          .eq('is_read', false);
       const messages = msgResult.data;
       const msgError = msgResult.error;
 
