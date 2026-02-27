@@ -37,6 +37,8 @@ export function useLayoutPreferences<T extends string>(
             merged.push(item);
           }
         });
+        // Persist merged result so new items are saved
+        localStorage.setItem(storageKey, JSON.stringify(merged));
         return merged;
       }
     } catch (e) {
