@@ -261,7 +261,7 @@ export default function DocumentsSection({ onSectionChange }: DocumentsSectionPr
     queryFn: async () => {
       const { data, error } = await supabase
         .from('jobs')
-        .select('id, title, job_number')
+        .select('id, name, job_number')
         .order('created_at', { ascending: false })
         .limit(100);
       if (error) throw error;
