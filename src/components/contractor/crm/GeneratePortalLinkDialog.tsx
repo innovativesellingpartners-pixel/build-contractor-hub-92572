@@ -66,7 +66,7 @@ export default function GeneratePortalLinkDialog({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['portal-tokens', jobId] });
-      toast.success('Portal link created!');
+      toast.success('Customer portal created!');
     },
     onError: () => toast.error('Failed to create portal link'),
   });
