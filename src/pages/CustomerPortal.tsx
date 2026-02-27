@@ -377,6 +377,21 @@ function ScheduleTab({ jobId, isContractor = false, contractorId }: { jobId: str
               Project Calendar
             </CardTitle>
             <div className="flex items-center gap-2">
+              {isContractor && contractorId && (
+                <>
+                  <EmailScheduleDialog jobId={jobId} contractorId={contractorId} events={events || []} />
+                  <AddEditEventDialog
+                    jobId={jobId}
+                    contractorId={contractorId}
+                    trigger={
+                      <Button size="sm" className="gap-1.5">
+                        <Plus className="h-4 w-4" />
+                        Add Event
+                      </Button>
+                    }
+                  />
+                </>
+              )}
               <Button variant="ghost" size="icon" className="h-8 w-8" onClick={prevMonth}>
                 <ChevronRight className="h-4 w-4 rotate-180" />
               </Button>
