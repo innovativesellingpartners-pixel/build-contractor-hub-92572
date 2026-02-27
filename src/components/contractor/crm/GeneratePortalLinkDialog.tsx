@@ -92,7 +92,7 @@ export default function GeneratePortalLinkDialog({
   const copyLink = (token: string, id: string) => {
     navigator.clipboard.writeText(getPortalUrl(token));
     setCopiedId(id);
-    toast.success('Portal link copied!');
+    toast.success('Customer portal link copied!');
     setTimeout(() => setCopiedId(null), 2000);
   };
 
