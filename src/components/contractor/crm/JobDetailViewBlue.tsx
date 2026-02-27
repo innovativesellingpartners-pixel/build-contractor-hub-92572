@@ -1092,7 +1092,7 @@ export default function JobDetailViewBlue({ job, open, onOpenChange, onCreateEst
             )}
 
             {activeTab === 'logs' && (
-              <LogsTabContent jobId={job.id!} />
+              <LogsTabContent jobId={job.id!} jobName={job.name} />
             )}
           </div>
         </BlueBackground>
