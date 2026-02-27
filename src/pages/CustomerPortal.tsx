@@ -30,8 +30,23 @@ interface PortalData {
 
 export default function CustomerPortal() {
   const { token } = useParams<{ token: string }>();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
   const queryClient = useQueryClient();
+
+  // Check if current viewer is the contractor (owner)
+  const { data: currentUser } = useQuery({
+    queryKey: ['current-user-portal'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      return user;
+    },
+  });
+
+  const isContractor = !!(currentUser && portalData?.portalToken?.contractor_id === currentUser.id);
+
+  // Fetch portalData before using it — define query below
+  const portalData_query_defined_below = null; // placeholder for ordering
 
   const { data: portalData, isLoading, error } = useQuery({
     queryKey: ['portal', token],
