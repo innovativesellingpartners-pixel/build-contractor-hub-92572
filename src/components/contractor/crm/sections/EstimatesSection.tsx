@@ -146,10 +146,32 @@ export default function EstimatesSection({ onSectionChange, initialEstimateId, o
   const handleSubmit = async (data: any, isDraft: boolean) => {
     try {
       let saved: any;
+      const { document_attachments, ...estimateData } = data;
+      
       if (selectedEstimate) {
-        saved = await updateEstimateAsync({ id: selectedEstimate.id, ...data });
+        saved = await updateEstimateAsync({ id: selectedEstimate.id, ...estimateData });
       } else {
-        saved = await createEstimateAsync(data);
+        saved = await createEstimateAsync(estimateData);
+      }
+
+      // Save document attachments
+      if (saved?.id && document_attachments && document_attachments.length >= 0) {
+        // Delete existing attachments
+        await (supabase.from('estimate_document_attachments') as any)
+          .delete()
+          .eq('estimate_id', saved.id);
+        
+        // Insert new attachments
+        if (document_attachments.length > 0) {
+          await (supabase.from('estimate_document_attachments') as any)
+            .insert(
+              document_attachments.map((att: any) => ({
+                estimate_id: saved.id,
+                document_id: att.document_id,
+                include_in_body: att.include_in_body,
+              }))
+            );
+        }
       }
 
       // If the user clicked "Send to Client", actually send the email now
