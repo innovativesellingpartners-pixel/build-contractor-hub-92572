@@ -55,6 +55,7 @@ import InvoicesSection from './sections/InvoicesSection';
 import GCSection from './sections/GCSection';
 import ContactsSection from './sections/ContactsSection';
 import PortalSection from './sections/PortalSection';
+import CrewsSection from './sections/CrewsSection';
 import CRMSearchBar from './CRMSearchBar';
 import AIReportView from './sections/AIReportView';
 import ct1Logo from '@/assets/ct1-round-logo-new.png';
