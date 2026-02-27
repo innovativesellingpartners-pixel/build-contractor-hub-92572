@@ -401,6 +401,22 @@ const handler = async (req: Request): Promise<Response> => {
             </td>
           </tr>
           
+          ${documentBodyHtml ? `
+          <!-- Attached Document Content -->
+          <tr>
+            <td style="background-color: #ffffff; padding: 0 40px 24px 40px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                  <td style="border-top: 1px solid #e8e4dc; padding-top: 20px;">
+                    <p style="margin: 0 0 16px 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 16px; font-weight: 600; color: ${secondaryColor};">Included Documents</p>
+                  </td>
+                </tr>
+                ${documentBodyHtml}
+              </table>
+            </td>
+          </tr>
+          ` : ''}
+          
           <!-- Contact Section -->
           <tr>
             <td style="background-color: #ffffff; padding: 0 40px 40px 40px; border-bottom-left-radius: 0; border-bottom-right-radius: 0;">
