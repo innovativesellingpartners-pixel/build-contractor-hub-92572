@@ -70,7 +70,7 @@ function UploadDialog({
   open: boolean;
   onOpenChange: (v: boolean) => void;
   estimates: { id: string; title: string; estimate_number: string | null }[];
-  jobs: { id: string; title: string; job_number: string | null }[];
+  jobs: { id: string; name: string; job_number: string | null }[];
 }) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
