@@ -166,7 +166,7 @@ export default function PortalSection() {
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <p className="font-medium truncate">{token.jobs?.title || 'Unknown Job'}</p>
+                        <p className="font-medium truncate">{token.jobs?.name || token.jobs?.job_number || 'Unknown Job'}</p>
                         {unreadCounts[token.job_id] > 0 && (
                           <Badge variant="destructive" className="text-xs gap-1">
                             <MessageSquare className="h-3 w-3" />
