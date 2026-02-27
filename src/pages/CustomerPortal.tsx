@@ -12,7 +12,8 @@ import { format } from 'date-fns';
 import {
   Home, FileText, Camera, MessageSquare, CreditCard,
   Send, Upload, CheckCircle2, Clock, AlertCircle, Loader2,
-  Building2, MapPin, Phone, Mail, Calendar, ChevronRight
+  Building2, MapPin, Phone, Mail, Calendar, ChevronRight,
+  CalendarDays, MapPinned, Wrench, Flag, CircleDot
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ct1Logo from '@/assets/ct1-powered-by-logo.png';
@@ -114,6 +115,7 @@ export default function CustomerPortal() {
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: Home },
+    { id: 'schedule', label: 'Schedule', icon: CalendarDays },
     { id: 'documents', label: 'Documents', icon: FileText },
     { id: 'photos', label: 'Photos', icon: Camera },
     { id: 'messages', label: 'Messages', icon: MessageSquare },
@@ -164,6 +166,7 @@ export default function CustomerPortal() {
 
       <main className="max-w-5xl mx-auto px-4 py-6 space-y-6">
         {activeTab === 'overview' && <OverviewTab job={job} contractor={contractor} />}
+        {activeTab === 'schedule' && <ScheduleTab jobId={job.id} />}
         {activeTab === 'documents' && <DocumentsTab jobId={job.id} />}
         {activeTab === 'photos' && <PhotosTab jobId={job.id} portalTokenId={portalToken.id} customerName={customer?.name} />}
         {activeTab === 'messages' && (
@@ -204,7 +207,258 @@ export default function CustomerPortal() {
   );
 }
 
-// ==================== OVERVIEW TAB ====================
+// ==================== SCHEDULE TAB ====================
+function ScheduleTab({ jobId }: { jobId: string }) {
+  const [selectedMonth, setSelectedMonth] = useState(() => new Date());
+
+  const { data: events, isLoading } = useQuery({
+    queryKey: ['portal-calendar-events', jobId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('portal_calendar_events')
+        .select('*')
+        .eq('job_id', jobId)
+        .order('event_date', { ascending: true });
+      return data || [];
+    },
+  });
+
+  const eventTypeConfig: Record<string, { icon: typeof Flag; color: string; label: string }> = {
+    milestone: { icon: Flag, color: 'bg-primary/10 text-primary border-primary/20', label: 'Milestone' },
+    inspection: { icon: CheckCircle2, color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', label: 'Inspection' },
+    delivery: { icon: MapPinned, color: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20', label: 'Delivery' },
+    work: { icon: Wrench, color: 'bg-blue-500/10 text-blue-600 border-blue-500/20', label: 'Work Day' },
+    meeting: { icon: Building2, color: 'bg-violet-500/10 text-violet-600 border-violet-500/20', label: 'Meeting' },
+    other: { icon: CircleDot, color: 'bg-muted text-muted-foreground border-border', label: 'Other' },
+  };
+
+  const statusConfig: Record<string, { color: string; label: string }> = {
+    scheduled: { color: 'bg-blue-500/10 text-blue-600', label: 'Scheduled' },
+    in_progress: { color: 'bg-amber-500/10 text-amber-600', label: 'In Progress' },
+    completed: { color: 'bg-emerald-500/10 text-emerald-600', label: 'Completed' },
+    cancelled: { color: 'bg-destructive/10 text-destructive', label: 'Cancelled' },
+    postponed: { color: 'bg-muted text-muted-foreground', label: 'Postponed' },
+  };
+
+  // Group events by month
+  const now = new Date();
+  const upcomingEvents = events?.filter(e => new Date(e.event_date) >= new Date(now.toDateString())) || [];
+  const pastEvents = events?.filter(e => new Date(e.event_date) < new Date(now.toDateString())) || [];
+
+  // Calendar grid for selected month
+  const year = selectedMonth.getFullYear();
+  const month = selectedMonth.getMonth();
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  const startPad = firstDay.getDay();
+  const daysInMonth = lastDay.getDate();
+
+  const eventsThisMonth = events?.filter(e => {
+    const d = new Date(e.event_date);
+    return d.getMonth() === month && d.getFullYear() === year;
+  }) || [];
+
+  const eventsByDay: Record<number, typeof eventsThisMonth> = {};
+  eventsThisMonth.forEach(e => {
+    const day = new Date(e.event_date).getDate();
+    if (!eventsByDay[day]) eventsByDay[day] = [];
+    eventsByDay[day].push(e);
+  });
+
+  const prevMonth = () => setSelectedMonth(new Date(year, month - 1, 1));
+  const nextMonth = () => setSelectedMonth(new Date(year, month + 1, 1));
+
+  const formatTime = (time: string | null) => {
+    if (!time) return null;
+    const [h, m] = time.split(':');
+    const hour = parseInt(h);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const h12 = hour % 12 || 12;
+    return `${h12}:${m} ${ampm}`;
+  };
+
+  const renderEventCard = (event: any) => {
+    const typeConf = eventTypeConfig[event.event_type] || eventTypeConfig.other;
+    const statConf = statusConfig[event.status] || statusConfig.scheduled;
+    const TypeIcon = typeConf.icon;
+
+    return (
+      <div key={event.id} className={cn('rounded-xl border p-4 space-y-2 transition-colors', typeConf.color)}>
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-center gap-2.5">
+            <div className="h-9 w-9 rounded-lg bg-background/80 border flex items-center justify-center shrink-0">
+              <TypeIcon className="h-4.5 w-4.5" />
+            </div>
+            <div>
+              <p className="font-semibold text-sm text-foreground">{event.title}</p>
+              <div className="flex items-center gap-2 mt-0.5">
+                <span className="text-xs text-muted-foreground">
+                  {format(new Date(event.event_date + 'T00:00:00'), 'EEE, MMM d, yyyy')}
+                </span>
+                {!event.is_all_day && event.start_time && (
+                  <span className="text-xs text-muted-foreground">
+                    • {formatTime(event.start_time)}{event.end_time ? ` – ${formatTime(event.end_time)}` : ''}
+                  </span>
+                )}
+                {event.is_all_day && (
+                  <span className="text-xs text-muted-foreground">• All Day</span>
+                )}
+              </div>
+            </div>
+          </div>
+          <Badge className={cn('text-[10px] shrink-0', statConf.color)}>{statConf.label}</Badge>
+        </div>
+        {event.description && (
+          <p className="text-xs text-muted-foreground pl-[46px] leading-relaxed">{event.description}</p>
+        )}
+      </div>
+    );
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-16">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Mini Calendar */}
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base font-semibold flex items-center gap-2">
+              <CalendarDays className="h-5 w-5 text-primary" />
+              Project Calendar
+            </CardTitle>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={prevMonth}>
+                <ChevronRight className="h-4 w-4 rotate-180" />
+              </Button>
+              <span className="text-sm font-medium min-w-[120px] text-center">
+                {format(selectedMonth, 'MMMM yyyy')}
+              </span>
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={nextMonth}>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {/* Day headers */}
+          <div className="grid grid-cols-7 mb-1">
+            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
+              <div key={d} className="text-center text-[11px] font-medium text-muted-foreground py-1">{d}</div>
+            ))}
+          </div>
+          {/* Calendar grid */}
+          <div className="grid grid-cols-7 gap-px bg-border rounded-lg overflow-hidden">
+            {Array.from({ length: startPad }).map((_, i) => (
+              <div key={`pad-${i}`} className="bg-background aspect-square" />
+            ))}
+            {Array.from({ length: daysInMonth }).map((_, i) => {
+              const day = i + 1;
+              const isToday = day === now.getDate() && month === now.getMonth() && year === now.getFullYear();
+              const dayEvents = eventsByDay[day] || [];
+              return (
+                <div
+                  key={day}
+                  className={cn(
+                    'bg-background aspect-square flex flex-col items-center justify-center relative p-0.5',
+                    isToday && 'ring-2 ring-primary ring-inset'
+                  )}
+                >
+                  <span className={cn(
+                    'text-xs font-medium',
+                    isToday ? 'text-primary font-bold' : 'text-foreground'
+                  )}>{day}</span>
+                  {dayEvents.length > 0 && (
+                    <div className="flex gap-0.5 mt-0.5">
+                      {dayEvents.slice(0, 3).map((e, idx) => {
+                        const conf = eventTypeConfig[e.event_type] || eventTypeConfig.other;
+                        return (
+                          <div
+                            key={idx}
+                            className={cn('h-1.5 w-1.5 rounded-full', 
+                              e.event_type === 'milestone' ? 'bg-primary' :
+                              e.event_type === 'inspection' ? 'bg-amber-500' :
+                              e.event_type === 'delivery' ? 'bg-emerald-500' :
+                              e.event_type === 'work' ? 'bg-blue-500' :
+                              e.event_type === 'meeting' ? 'bg-violet-500' :
+                              'bg-muted-foreground'
+                            )}
+                          />
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Legend */}
+          <div className="flex flex-wrap gap-3 mt-4 pt-3 border-t">
+            {Object.entries(eventTypeConfig).map(([key, conf]) => (
+              <div key={key} className="flex items-center gap-1.5">
+                <div className={cn('h-2 w-2 rounded-full',
+                  key === 'milestone' ? 'bg-primary' :
+                  key === 'inspection' ? 'bg-amber-500' :
+                  key === 'delivery' ? 'bg-emerald-500' :
+                  key === 'work' ? 'bg-blue-500' :
+                  key === 'meeting' ? 'bg-violet-500' :
+                  'bg-muted-foreground'
+                )} />
+                <span className="text-[11px] text-muted-foreground">{conf.label}</span>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Upcoming Events */}
+      <div className="space-y-3">
+        <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+          <Clock className="h-4 w-4 text-primary" />
+          Upcoming Events
+          {upcomingEvents.length > 0 && (
+            <Badge variant="secondary" className="text-xs">{upcomingEvents.length}</Badge>
+          )}
+        </h3>
+        {upcomingEvents.length > 0 ? (
+          <div className="space-y-2">
+            {upcomingEvents.map(renderEventCard)}
+          </div>
+        ) : (
+          <Card>
+            <CardContent className="py-8 text-center">
+              <CalendarDays className="h-10 w-10 text-muted-foreground/40 mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">No upcoming events scheduled</p>
+              <p className="text-xs text-muted-foreground/70 mt-1">Your contractor will add schedule items here</p>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+
+      {/* Past Events */}
+      {pastEvents.length > 0 && (
+        <div className="space-y-3">
+          <h3 className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
+            <CheckCircle2 className="h-4 w-4" />
+            Past Events
+          </h3>
+          <div className="space-y-2 opacity-70">
+            {pastEvents.map(renderEventCard)}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
 function OverviewTab({ job, contractor }: { job: any; contractor: any }) {
   const statusConfig: Record<string, { color: string; label: string }> = {
     not_started: { color: 'bg-muted text-muted-foreground', label: 'Not Started' },

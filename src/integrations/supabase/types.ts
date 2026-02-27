@@ -4183,6 +4183,72 @@ export type Database = {
           },
         ]
       }
+      portal_calendar_events: {
+        Row: {
+          color: string | null
+          contractor_id: string
+          created_at: string
+          description: string | null
+          end_time: string | null
+          event_date: string
+          event_type: string
+          id: string
+          is_all_day: boolean
+          job_id: string
+          start_time: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          color?: string | null
+          contractor_id: string
+          created_at?: string
+          description?: string | null
+          end_time?: string | null
+          event_date: string
+          event_type?: string
+          id?: string
+          is_all_day?: boolean
+          job_id: string
+          start_time?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          color?: string | null
+          contractor_id?: string
+          created_at?: string
+          description?: string | null
+          end_time?: string | null
+          event_date?: string
+          event_type?: string
+          id?: string
+          is_all_day?: boolean
+          job_id?: string
+          start_time?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portal_calendar_events_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_calendar_events_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       portal_messages: {
         Row: {
           attachments: Json | null
