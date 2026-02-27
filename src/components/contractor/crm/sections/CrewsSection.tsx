@@ -83,6 +83,7 @@ function MemberFormDialog({
   const mutation = useMutation({
     mutationFn: async () => {
       const fullName = [form.first_name.trim(), form.last_name.trim()].filter(Boolean).join(' ') || 'Unnamed';
+      const role = form.role as 'field_crew_member' | 'office' | 'dispatcher' | 'customer';
       const payload = {
         user_id: user!.id,
         name: fullName,
