@@ -137,7 +137,7 @@ export default function GeneratePortalLinkDialog({
         },
       });
       if (error) throw error;
-      toast.success('Portal link sent via email!');
+      toast.success('Customer portal sent via email!');
     } catch {
       toast.error('Failed to send email');
     }
