@@ -124,6 +124,7 @@ export default function CustomerPortal() {
   }
 
   const { portalToken, job, contractor, customer } = portalData;
+  const isContractor = !!(currentUser && portalToken.contractor_id === currentUser.id);
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: Home },
@@ -136,7 +137,36 @@ export default function CustomerPortal() {
 
   return (
     <div className="min-h-screen bg-muted/30">
-      <header className="bg-background border-b sticky top-0 z-50">
+      {/* Contractor-only navigation bar */}
+      {isContractor && (
+        <div className="bg-primary text-primary-foreground sticky top-0 z-[60]">
+          <div className="max-w-5xl mx-auto px-4 py-2 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 gap-1.5 text-primary-foreground hover:bg-primary-foreground/20 hover:text-primary-foreground"
+                onClick={() => navigate('/')}
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back to Job
+              </Button>
+            </div>
+            <span className="text-xs font-medium opacity-75 hidden sm:inline">Contractor Preview</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 gap-1.5 text-primary-foreground hover:bg-primary-foreground/20 hover:text-primary-foreground"
+              onClick={() => navigate('/')}
+            >
+              <LayoutDashboard className="h-4 w-4" />
+              Dashboard
+            </Button>
+          </div>
+        </div>
+      )}
+
+      <header className="bg-background border-b sticky top-0 z-50" style={isContractor ? { position: 'sticky', top: 0 } : undefined}>
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center gap-3">
           {contractor.logo_url ? (
             <img src={contractor.logo_url} alt="" className="h-10 w-10 rounded-lg object-cover" />
