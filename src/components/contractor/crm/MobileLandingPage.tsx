@@ -180,6 +180,7 @@ export function MobileLandingPage({
       case 'leads': onNavigateToLeads?.(); break;
       case 'reporting': onNavigateToReporting?.(); break;
       case 'portal': onNavigateToPortal?.(); break;
+      case 'crews': onNavigateToCrews?.(); break;
     }
   };
 
