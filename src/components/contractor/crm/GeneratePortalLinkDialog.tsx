@@ -117,7 +117,7 @@ export default function GeneratePortalLinkDialog({
         toast.error(data.error);
         return;
       }
-      toast.success('Portal link sent via SMS!');
+      toast.success('Customer portal sent via SMS!');
     } catch (err: any) {
       console.error('send-portal-sms catch:', err);
       toast.error(err?.message || 'Failed to send SMS');
