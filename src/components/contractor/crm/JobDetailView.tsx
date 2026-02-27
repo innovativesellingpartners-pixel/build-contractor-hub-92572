@@ -17,6 +17,7 @@ import MaterialsTab from './job/MaterialsTab';
 import ChangeOrdersTab from './job/ChangeOrdersTab';
 import InvoicesTab from './job/InvoicesTab';
 import PSFUTab from './job/PSFUTab';
+import SendLogsDialog from './job/SendLogsDialog';
 import { JobFinancialSummary } from './JobFinancialSummary';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
