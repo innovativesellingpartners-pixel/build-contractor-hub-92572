@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { Briefcase, FileText, Users, DollarSign, Phone, Mail, Headset, Calendar, Receipt, Settings2, RotateCcw, UserPlus, BarChart3, Eye, EyeOff, Plus, Link as LinkIcon, Shield } from 'lucide-react';
+import { Briefcase, FileText, Users, DollarSign, Phone, Mail, Headset, Calendar, Receipt, Settings2, RotateCcw, UserPlus, BarChart3, Eye, EyeOff, Plus, Link as LinkIcon, Shield, FolderOpen } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ContactSupport } from '@/components/ContactSupport';
@@ -20,6 +20,7 @@ interface MobileLandingPageProps {
   onNavigateToReporting?: () => void;
   onNavigateToPortal?: () => void;
   onNavigateToCrews?: () => void;
+  onNavigateToDocuments?: () => void;
 }
 
 const mobileModules = [
@@ -107,6 +108,13 @@ const mobileModules = [
     icon: Shield,
     gradient: 'from-rose-500 via-pink-500 to-pink-600',
   },
+  {
+    id: 'documents',
+    title: 'Documents',
+    description: 'Warranties, COIs & files',
+    icon: FolderOpen,
+    gradient: 'from-slate-500 via-gray-500 to-gray-600',
+  },
 ];
 
 const defaultOrder = mobileModules.map(m => m.id);
@@ -151,6 +159,7 @@ export function MobileLandingPage({
   onNavigateToReporting,
   onNavigateToPortal,
   onNavigateToCrews,
+  onNavigateToDocuments,
 }: MobileLandingPageProps) {
   const [contactSupportOpen, setContactSupportOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -181,6 +190,7 @@ export function MobileLandingPage({
       case 'reporting': onNavigateToReporting?.(); break;
       case 'portal': onNavigateToPortal?.(); break;
       case 'crews': onNavigateToCrews?.(); break;
+      case 'documents': onNavigateToDocuments?.(); break;
     }
   };
 
