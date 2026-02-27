@@ -672,8 +672,18 @@ function MessagesTab({ portalTokenId, jobId, customerName, contractorName }: {
         message: newMessage.trim(),
       });
       if (error) throw error;
+      const sentMessage = newMessage.trim();
       setNewMessage('');
       queryClient.invalidateQueries({ queryKey: ['portal-messages', portalTokenId] });
+
+      // Notify contractor via SMS (fire-and-forget, don't block UI)
+      supabase.functions.invoke('notify-portal-message', {
+        body: {
+          portal_token_id: portalTokenId,
+          message: sentMessage,
+          sender_name: customerName,
+        },
+      }).catch((err) => console.error('Failed to notify contractor:', err));
     } catch {
       toast.error('Failed to send message');
     } finally {
