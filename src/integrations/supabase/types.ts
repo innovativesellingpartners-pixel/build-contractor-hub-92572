@@ -1510,6 +1510,45 @@ export type Database = {
           },
         ]
       }
+      estimate_document_attachments: {
+        Row: {
+          created_at: string
+          document_id: string
+          estimate_id: string
+          id: string
+          include_in_body: boolean
+        }
+        Insert: {
+          created_at?: string
+          document_id: string
+          estimate_id: string
+          id?: string
+          include_in_body?: boolean
+        }
+        Update: {
+          created_at?: string
+          document_id?: string
+          estimate_id?: string
+          id?: string
+          include_in_body?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estimate_document_attachments_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "contractor_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estimate_document_attachments_estimate_id_fkey"
+            columns: ["estimate_id"]
+            isOneToOne: false
+            referencedRelation: "estimates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       estimate_drafts: {
         Row: {
           created_at: string
