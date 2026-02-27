@@ -18,6 +18,7 @@ interface MobileLandingPageProps {
   onNavigateToInvoices: () => void;
   onNavigateToLeads?: () => void;
   onNavigateToReporting?: () => void;
+  onNavigateToPortal?: () => void;
 }
 
 const mobileModules = [
