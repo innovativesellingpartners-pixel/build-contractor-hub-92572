@@ -349,8 +349,24 @@ function ScheduleTab({ jobId, isContractor = false, contractorId }: { jobId: str
               </div>
             </div>
           </div>
-          <Badge className={cn('text-[10px] shrink-0', statConf.color)}>{statConf.label}</Badge>
-        </div>
+          <div className="flex items-center gap-1 shrink-0">
+            <Badge className={cn('text-[10px]', statConf.color)}>{statConf.label}</Badge>
+            {isContractor && contractorId && (
+              <>
+                <AddEditEventDialog
+                  jobId={jobId}
+                  contractorId={contractorId}
+                  event={event}
+                  trigger={
+                    <Button variant="ghost" size="icon" className="h-7 w-7">
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
+                  }
+                />
+                <DeleteEventButton eventId={event.id} jobId={jobId} />
+              </>
+            )}
+          </div>
         {event.description && (
           <p className="text-xs text-muted-foreground pl-[46px] leading-relaxed">{event.description}</p>
         )}
