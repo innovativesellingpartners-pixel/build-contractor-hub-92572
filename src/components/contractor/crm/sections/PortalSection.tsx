@@ -19,7 +19,8 @@ interface PortalToken {
   label: string | null;
   jobs: {
     id: string;
-    title: string;
+    name: string;
+    job_number: string | null;
     status: string;
   } | null;
   customers: {
@@ -46,20 +47,22 @@ export default function PortalSection() {
 
       const { data, error } = await supabase
         .from('customer_portal_tokens')
-        .select('*, jobs(id, title, status), customers(id, name)')
+        .select('*, jobs(id, name, job_number, status), customers(id, name)')
         .eq('contractor_id', user.id)
         .order('created_at', { ascending: false }) as { data: any[] | null; error: any };
 
       if (error) throw error;
       setTokens(data || []);
 
-      // Fetch unread message counts
-      const msgResult = await (supabase as any)
-        .from('portal_messages')
-        .select('job_id')
-        .eq('contractor_id', user.id)
-        .eq('sender_type', 'customer')
-        .eq('is_read', false);
+      // Fetch unread message counts via portal tokens belonging to this contractor
+      const tokenIds = (data || []).map((t: any) => t.id);
+      if (tokenIds.length > 0) {
+        const msgResult = await (supabase as any)
+          .from('portal_messages')
+          .select('job_id')
+          .in('portal_token_id', tokenIds)
+          .eq('sender_type', 'customer')
+          .eq('is_read', false);
       const messages = msgResult.data;
       const msgError = msgResult.error;
 
@@ -69,6 +72,7 @@ export default function PortalSection() {
           counts[m.job_id] = (counts[m.job_id] || 0) + 1;
         });
         setUnreadCounts(counts);
+      }
       }
     } catch (err) {
       console.error('Error fetching portal tokens:', err);
@@ -162,7 +166,7 @@ export default function PortalSection() {
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <p className="font-medium truncate">{token.jobs?.title || 'Unknown Job'}</p>
+                        <p className="font-medium truncate">{token.jobs?.name || token.jobs?.job_number || 'Unknown Job'}</p>
                         {unreadCounts[token.job_id] > 0 && (
                           <Badge variant="destructive" className="text-xs gap-1">
                             <MessageSquare className="h-3 w-3" />
@@ -205,7 +209,7 @@ export default function PortalSection() {
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="min-w-0">
-                      <p className="font-medium truncate">{token.jobs?.title || 'Unknown Job'}</p>
+                      <p className="font-medium truncate">{token.jobs?.name || token.jobs?.job_number || 'Unknown Job'}</p>
                       <p className="text-sm text-muted-foreground truncate">
                         {token.customers?.name || 'No customer linked'}
                       </p>
