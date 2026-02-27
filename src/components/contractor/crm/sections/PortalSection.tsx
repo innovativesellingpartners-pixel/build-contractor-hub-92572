@@ -84,7 +84,7 @@ export default function PortalSection() {
   const copyLink = (token: string) => {
     const url = `${window.location.origin}/portal/${token}`;
     navigator.clipboard.writeText(url);
-    toast.success('Portal link copied to clipboard');
+    toast.success('Customer portal link copied to clipboard');
   };
 
   const openPortal = (token: string) => {
