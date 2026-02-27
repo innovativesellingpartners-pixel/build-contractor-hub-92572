@@ -1,6 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FileText, Briefcase, Phone, Mail, DollarSign, Calendar, Headset, Receipt, Users, Settings2, RotateCcw, UserPlus, BarChart3, Eye, EyeOff, Plus, Link as LinkIcon } from 'lucide-react';
+import { FileText, Briefcase, Phone, Mail, DollarSign, Calendar, Headset, Receipt, Users, Settings2, RotateCcw, UserPlus, BarChart3, Eye, EyeOff, Plus, Link as LinkIcon, Shield } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { useState, useCallback } from 'react';
@@ -9,7 +9,7 @@ import { SortableGrid, SortableItem } from '@/components/ui/sortable-grid';
 import { useLayoutPreferences } from '@/hooks/useLayoutPreferences';
 import JobsFinancialOverview from './JobsFinancialOverview';
 
-type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'emails' | 'estimates' | 'reporting' | 'accounting' | 'more' | 'calendar' | 'invoices' | 'portal';
+type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'emails' | 'estimates' | 'reporting' | 'accounting' | 'more' | 'calendar' | 'invoices' | 'portal' | 'crews';
 
 interface CRMDashboardProps {
   onSectionChange?: (section: Section) => void;
@@ -103,6 +103,14 @@ const mainModules = [
     gradient: 'from-cyan-500 to-teal-600',
     borderColor: 'border-cyan-400',
     description: 'Manage customer portals'
+  },
+  { 
+    id: 'crews' as Section, 
+    label: 'Crews', 
+    icon: Shield, 
+    gradient: 'from-rose-500 to-pink-600',
+    borderColor: 'border-rose-400',
+    description: 'Manage crews & members'
   },
 ];
 

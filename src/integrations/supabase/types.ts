@@ -918,36 +918,140 @@ export type Database = {
       }
       crew_members: {
         Row: {
+          company: string | null
           contact_info: Json | null
           created_at: string
+          email: string | null
+          first_name: string | null
+          hourly_rate: number | null
           id: string
+          is_active: boolean
+          last_name: string | null
           name: string
+          notes: string | null
+          phone: string | null
           role: Database["public"]["Enums"]["crew_role"]
           skills_trades: string[] | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          company?: string | null
           contact_info?: Json | null
           created_at?: string
+          email?: string | null
+          first_name?: string | null
+          hourly_rate?: number | null
           id?: string
+          is_active?: boolean
+          last_name?: string | null
           name: string
+          notes?: string | null
+          phone?: string | null
           role?: Database["public"]["Enums"]["crew_role"]
           skills_trades?: string[] | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          company?: string | null
           contact_info?: Json | null
           created_at?: string
+          email?: string | null
+          first_name?: string | null
+          hourly_rate?: number | null
           id?: string
+          is_active?: boolean
+          last_name?: string | null
           name?: string
+          notes?: string | null
+          phone?: string | null
           role?: Database["public"]["Enums"]["crew_role"]
           skills_trades?: string[] | null
           updated_at?: string
           user_id?: string
         }
         Relationships: []
+      }
+      crew_memberships: {
+        Row: {
+          assigned_at: string
+          crew_id: string
+          crew_member_id: string
+          id: string
+        }
+        Insert: {
+          assigned_at?: string
+          crew_id: string
+          crew_member_id: string
+          id?: string
+        }
+        Update: {
+          assigned_at?: string
+          crew_id?: string
+          crew_member_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crew_memberships_crew_id_fkey"
+            columns: ["crew_id"]
+            isOneToOne: false
+            referencedRelation: "crews"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crew_memberships_crew_member_id_fkey"
+            columns: ["crew_member_id"]
+            isOneToOne: false
+            referencedRelation: "crew_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crews: {
+        Row: {
+          color: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          lead_crew_member_id: string | null
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          lead_crew_member_id?: string | null
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          lead_crew_member_id?: string | null
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crews_lead_crew_member_id_fkey"
+            columns: ["lead_crew_member_id"]
+            isOneToOne: false
+            referencedRelation: "crew_members"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       customer_portal_tokens: {
         Row: {

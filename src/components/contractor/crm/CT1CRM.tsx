@@ -55,6 +55,7 @@ import InvoicesSection from './sections/InvoicesSection';
 import GCSection from './sections/GCSection';
 import ContactsSection from './sections/ContactsSection';
 import PortalSection from './sections/PortalSection';
+import CrewsSection from './sections/CrewsSection';
 import CRMSearchBar from './CRMSearchBar';
 import AIReportView from './sections/AIReportView';
 import ct1Logo from '@/assets/ct1-round-logo-new.png';
@@ -64,7 +65,7 @@ import { MobileLandingPage } from './MobileLandingPage';
 import { PaymentsBankingSection } from './sections/PaymentsBankingSection';
 import { TemplatesSection } from './estimate/TemplatesSection';
 
-type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calendar' | 'emails' | 'estimates' | 'reporting' | 'financials' | 'more' | 'payments' | 'accounting' | 'invoices' | 'templates' | 'gc' | 'contacts' | 'help' | 'portal' | 'ai-report';
+type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calendar' | 'emails' | 'estimates' | 'reporting' | 'financials' | 'more' | 'payments' | 'accounting' | 'invoices' | 'templates' | 'gc' | 'contacts' | 'help' | 'portal' | 'ai-report' | 'crews';
 
 interface CT1CRMProps {
   onOpenPocketAgent?: () => void;
@@ -104,6 +105,7 @@ const navItems = [
   { id: 'gc' as Section, label: 'General Contractors', icon: Building2 },
   { id: 'contacts' as Section, label: 'Contacts', icon: Contact },
   { id: 'portal' as Section, label: 'Customer Portal', icon: LinkIcon },
+  { id: 'crews' as Section, label: 'Crews', icon: Shield },
 ];
 
 // Component moved to accept props - see above
@@ -113,7 +115,7 @@ const navItems = [
     // Check for URL param from OAuth callback
     const params = new URLSearchParams(window.location.search);
     const crmSection = params.get('crm_section') as Section | null;
-    if (crmSection && ['dashboard', 'leads', 'jobs', 'customers', 'calls', 'calendar', 'emails', 'estimates', 'reporting', 'financials', 'more', 'payments', 'accounting', 'invoices', 'templates', 'gc', 'contacts', 'help', 'portal', 'ai-report'].includes(crmSection)) {
+    if (crmSection && ['dashboard', 'leads', 'jobs', 'customers', 'calls', 'calendar', 'emails', 'estimates', 'reporting', 'financials', 'more', 'payments', 'accounting', 'invoices', 'templates', 'gc', 'contacts', 'help', 'portal', 'ai-report', 'crews'].includes(crmSection)) {
       sessionStorage.setItem('ct1CrmActiveSection', crmSection);
       // Clean URL param
       params.delete('crm_section');
@@ -251,6 +253,7 @@ const navItems = [
           onNavigateToLeads={() => handleSectionChange('leads')}
           onNavigateToReporting={() => handleSectionChange('reporting')}
           onNavigateToPortal={() => handleSectionChange('portal')}
+          onNavigateToCrews={() => handleSectionChange('crews')}
         />
       );
     }
@@ -292,6 +295,8 @@ const navItems = [
         return <ContactsSection onSectionChange={handleSectionChange} />;
       case 'portal':
         return <PortalSection />;
+      case 'crews':
+        return <CrewsSection onSectionChange={handleSectionChange} />;
       case 'ai-report':
         return <AIReportView onBack={handleBack} />;
       default:
