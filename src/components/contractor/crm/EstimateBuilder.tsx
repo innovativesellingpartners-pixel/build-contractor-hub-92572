@@ -60,6 +60,9 @@ export interface EstimateBuilderData {
   warranty_text: string;
   warranty_duration_years: number;
   warranty_duration_months: number;
+  
+  // Document attachments
+  document_attachments: { document_id: string; include_in_body: boolean }[];
 }
 
 interface EstimateBuilderProps {
@@ -148,6 +151,7 @@ export default function EstimateBuilder({ initialData, onSave, onCancel }: Estim
       warranty_text: initialData?.warranty_text || '',
       warranty_duration_years: initialData?.warranty_duration_years || defaults.warrantyYears,
       warranty_duration_months: initialData?.warranty_duration_months || 0,
+      document_attachments: [],
     };
   });
 
@@ -356,6 +360,9 @@ export default function EstimateBuilder({ initialData, onSave, onCancel }: Estim
       warranty_text: formData.warranty_text,
       warranty_duration_years: formData.warranty_duration_years,
       warranty_duration_months: formData.warranty_duration_months,
+      
+      // Document attachments (handled separately after save)
+      document_attachments: formData.document_attachments,
       
       status: 'draft',
       date_issued: new Date().toISOString(),

@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
-import { Plus, X, FileText, DollarSign, Shield } from 'lucide-react';
+import { Plus, X, FileText, DollarSign, Shield, Paperclip } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dialog';
 import { EstimateBuilderData } from '../../EstimateBuilder';
 import { WarrantySection } from '../WarrantySection';
+import { DocumentAttachmentSection } from '../DocumentAttachmentSection';
 
 interface ScopeTermsStepProps {
   data: EstimateBuilderData;
@@ -419,6 +420,13 @@ export default function ScopeTermsStep({ data, onChange }: ScopeTermsStepProps) 
             terms_warranty_years: warranty.warranty_duration_years,
           });
         }}
+      />
+
+      {/* Document Attachments Section */}
+      <DocumentAttachmentSection
+        estimateId={data.warranty_id ? undefined : undefined}
+        attachments={data.document_attachments || []}
+        onAttachmentsChange={(attachments) => onChange({ document_attachments: attachments })}
       />
     </div>
   );
