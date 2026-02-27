@@ -301,7 +301,7 @@ export default function GeneratePortalLinkDialog({
               ) : (
                 <Link2 className="h-4 w-4" />
               )}
-              Generate New Portal Link
+              Generate New Customer Portal
             </Button>
           </div>
 

@@ -937,7 +937,7 @@ export default function JobDetailViewBlue({ job, open, onOpenChange, onCreateEst
               )}
               <ActionButton variant="muted" onClick={() => setShowPortalLinkDialog(true)} className="flex-1 flex items-center justify-center gap-2">
                 <User className="w-4 h-4" />
-                PORTAL LINK
+                CUSTOMER PORTAL
               </ActionButton>
             </ActionButtonRow>
 

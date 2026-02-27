@@ -143,15 +143,15 @@ export default function PortalSection() {
         )}
       </div>
 
-      {/* Active Portal Links */}
+      {/* Active Customer Portals */}
       <div className="space-y-3">
-        <h2 className="text-lg font-semibold">Active Portal Links</h2>
+        <h2 className="text-lg font-semibold">Active Customer Portals</h2>
         {activeTokens.length === 0 ? (
           <Card>
             <CardContent className="p-6 text-center text-muted-foreground">
               <Link2 className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p>No active portal links yet.</p>
-              <p className="text-xs mt-1">Generate portal links from the job detail view.</p>
+              <p>No active customer portals yet.</p>
+              <p className="text-xs mt-1">Generate customer portals from the job detail view.</p>
             </CardContent>
           </Card>
         ) : (
