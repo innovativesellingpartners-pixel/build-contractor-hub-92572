@@ -108,6 +108,13 @@ const mobileModules = [
     icon: Shield,
     gradient: 'from-rose-500 via-pink-500 to-pink-600',
   },
+  {
+    id: 'documents',
+    title: 'Documents',
+    description: 'Warranties, COIs & files',
+    icon: FolderOpen,
+    gradient: 'from-slate-500 via-gray-500 to-gray-600',
+  },
 ];
 
 const defaultOrder = mobileModules.map(m => m.id);
