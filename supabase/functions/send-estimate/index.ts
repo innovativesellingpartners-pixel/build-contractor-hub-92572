@@ -165,6 +165,73 @@ const handler = async (req: Request): Promise<Response> => {
       console.error('PDF generation failed:', pdfError);
     }
 
+    // Fetch document attachments for this estimate
+    const { data: docAttachments } = await supabase
+      .from('estimate_document_attachments')
+      .select('document_id, include_in_body')
+      .eq('estimate_id', estimateId);
+
+    let documentBodyHtml = '';
+    
+    if (docAttachments && docAttachments.length > 0) {
+      console.log(`Found ${docAttachments.length} document attachments for estimate`);
+      
+      for (const att of docAttachments) {
+        // Get the document record
+        const { data: doc } = await supabase
+          .from('contractor_documents')
+          .select('*')
+          .eq('id', att.document_id)
+          .single();
+        
+        if (!doc) continue;
+
+        // If include_in_body, add document text to email body
+        if (att.include_in_body && doc.notes) {
+          const categoryLabel = doc.document_category === 'certificate_of_insurance' ? 'Certificate of Insurance' 
+            : doc.document_category === 'warranty' ? 'Warranty'
+            : doc.document_label || doc.file_name;
+          
+          documentBodyHtml += `
+            <tr>
+              <td style="padding: 16px 20px; background-color: #f9f8f5; border: 1px solid #e8e4dc; border-radius: 6px; margin-bottom: 12px;">
+                <p style="margin: 0 0 8px 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 13px; font-weight: 700; color: ${secondaryColor}; text-transform: uppercase; letter-spacing: 0.5px;">📄 ${categoryLabel}</p>
+                <p style="margin: 0; font-family: Georgia, 'Times New Roman', serif; font-size: 14px; line-height: 1.7; color: #444444; white-space: pre-wrap;">${doc.notes}</p>
+              </td>
+            </tr>
+            <tr><td style="height: 12px;"></td></tr>
+          `;
+        }
+
+        // Always attach the file to the email (download from storage)
+        try {
+          const { data: fileData, error: dlErr } = await supabase.storage
+            .from('documents')
+            .download(doc.file_path);
+          
+          if (!dlErr && fileData) {
+            const arrayBuffer = await fileData.arrayBuffer();
+            const uint8Array = new Uint8Array(arrayBuffer);
+            let binary = '';
+            for (let i = 0; i < uint8Array.length; i++) {
+              binary += String.fromCharCode(uint8Array[i]);
+            }
+            const base64 = btoa(binary);
+            
+            if (!attachments) attachments = [];
+            attachments.push({
+              filename: doc.file_name,
+              content: base64,
+              contentType: doc.file_type || 'application/octet-stream',
+            });
+            console.log(`Attached document: ${doc.file_name}`);
+          }
+        } catch (dlError) {
+          console.warn(`Failed to download document ${doc.file_name}:`, dlError);
+        }
+      }
+    }
+
     // Premium email template with classic, elegant design
     const emailHtml = `
 <!DOCTYPE html>
