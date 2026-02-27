@@ -20,6 +20,7 @@ interface MobileLandingPageProps {
   onNavigateToReporting?: () => void;
   onNavigateToPortal?: () => void;
   onNavigateToCrews?: () => void;
+  onNavigateToDocuments?: () => void;
 }
 
 const mobileModules = [
