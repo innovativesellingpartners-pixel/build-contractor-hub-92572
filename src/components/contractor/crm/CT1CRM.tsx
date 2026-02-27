@@ -105,6 +105,7 @@ const navItems = [
   { id: 'gc' as Section, label: 'General Contractors', icon: Building2 },
   { id: 'contacts' as Section, label: 'Contacts', icon: Contact },
   { id: 'portal' as Section, label: 'Customer Portal', icon: LinkIcon },
+  { id: 'crews' as Section, label: 'Crews', icon: Shield },
 ];
 
 // Component moved to accept props - see above
