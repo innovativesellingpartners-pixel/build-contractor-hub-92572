@@ -161,7 +161,11 @@ export default function PortalSection() {
         ) : (
           <div className="space-y-2">
             {activeTokens.map((token) => (
-              <Card key={token.id} className="hover:shadow-md transition-shadow">
+              <Card 
+                key={token.id} 
+                className="hover:shadow-md transition-shadow cursor-pointer"
+                onClick={() => openPortal(token.token)}
+              >
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0 flex-1">
@@ -184,12 +188,10 @@ export default function PortalSection() {
                       )}
                     </div>
                     <div className="flex items-center gap-1 flex-shrink-0">
-                      <Button variant="ghost" size="icon" onClick={() => copyLink(token.token)} title="Copy link">
+                      <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); copyLink(token.token); }} title="Copy link">
                         <Copy className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" onClick={() => openPortal(token.token)} title="Open portal">
-                        <ExternalLink className="h-4 w-4" />
-                      </Button>
+                      <ExternalLink className="h-4 w-4 text-muted-foreground" />
                     </div>
                   </div>
                 </CardContent>
