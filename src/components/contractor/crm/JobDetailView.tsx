@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { 
-  MapPin, Clock, TrendingUp, AlertCircle, CheckCircle, Edit, Briefcase, FileText, Calculator, Navigation, Copy, Pencil 
+  MapPin, Clock, TrendingUp, AlertCircle, CheckCircle, Edit, Briefcase, FileText, Calculator, Navigation, Copy, Pencil, Mail
 } from 'lucide-react';
 import { useJobs, Job } from '@/hooks/useJobs';
 import { useJobPhotos } from '@/hooks/useJobPhotos';
