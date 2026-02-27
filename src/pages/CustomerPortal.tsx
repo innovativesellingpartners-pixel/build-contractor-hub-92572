@@ -115,6 +115,7 @@ export default function CustomerPortal() {
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: Home },
+    { id: 'schedule', label: 'Schedule', icon: CalendarDays },
     { id: 'documents', label: 'Documents', icon: FileText },
     { id: 'photos', label: 'Photos', icon: Camera },
     { id: 'messages', label: 'Messages', icon: MessageSquare },
