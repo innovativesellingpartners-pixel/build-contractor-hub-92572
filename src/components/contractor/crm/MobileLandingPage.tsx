@@ -100,6 +100,13 @@ const mobileModules = [
     icon: LinkIcon,
     gradient: 'from-cyan-500 via-teal-500 to-teal-600',
   },
+  {
+    id: 'crews',
+    title: 'Crews',
+    description: 'Manage crews & members',
+    icon: Shield,
+    gradient: 'from-rose-500 via-pink-500 to-pink-600',
+  },
 ];
 
 const defaultOrder = mobileModules.map(m => m.id);
