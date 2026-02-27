@@ -209,7 +209,7 @@ export default function PortalSection() {
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="min-w-0">
-                      <p className="font-medium truncate">{token.jobs?.title || 'Unknown Job'}</p>
+                      <p className="font-medium truncate">{token.jobs?.name || token.jobs?.job_number || 'Unknown Job'}</p>
                       <p className="text-sm text-muted-foreground truncate">
                         {token.customers?.name || 'No customer linked'}
                       </p>
