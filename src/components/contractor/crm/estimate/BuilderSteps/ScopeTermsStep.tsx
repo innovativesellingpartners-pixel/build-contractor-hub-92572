@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
-import { Plus, X, FileText, DollarSign, Shield } from 'lucide-react';
+import { Plus, X, FileText, DollarSign, Shield, Paperclip } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
