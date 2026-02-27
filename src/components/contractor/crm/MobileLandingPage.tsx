@@ -92,6 +92,13 @@ const mobileModules = [
     icon: BarChart3,
     gradient: 'from-amber-500 via-yellow-500 to-yellow-600',
   },
+  {
+    id: 'portal',
+    title: 'Customer Portal',
+    description: 'Manage customer portals',
+    icon: LinkIcon,
+    gradient: 'from-cyan-500 via-teal-500 to-teal-600',
+  },
 ];
 
 const defaultOrder = mobileModules.map(m => m.id);
