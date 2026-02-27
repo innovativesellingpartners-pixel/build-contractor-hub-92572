@@ -102,7 +102,7 @@ const mainModules = [
     icon: LinkIcon, 
     gradient: 'from-cyan-500 to-teal-600',
     borderColor: 'border-cyan-400',
-    description: 'Manage portal links'
+    description: 'Manage customer portals'
   },
 ];
 

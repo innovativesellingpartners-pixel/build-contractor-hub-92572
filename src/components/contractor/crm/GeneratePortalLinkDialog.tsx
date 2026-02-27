@@ -66,9 +66,9 @@ export default function GeneratePortalLinkDialog({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['portal-tokens', jobId] });
-      toast.success('Portal link created!');
+      toast.success('Customer portal created!');
     },
-    onError: () => toast.error('Failed to create portal link'),
+    onError: () => toast.error('Failed to create customer portal'),
   });
 
   const deactivateMutation = useMutation({
@@ -92,7 +92,7 @@ export default function GeneratePortalLinkDialog({
   const copyLink = (token: string, id: string) => {
     navigator.clipboard.writeText(getPortalUrl(token));
     setCopiedId(id);
-    toast.success('Portal link copied!');
+    toast.success('Customer portal link copied!');
     setTimeout(() => setCopiedId(null), 2000);
   };
 
@@ -117,7 +117,7 @@ export default function GeneratePortalLinkDialog({
         toast.error(data.error);
         return;
       }
-      toast.success('Portal link sent via SMS!');
+      toast.success('Customer portal sent via SMS!');
     } catch (err: any) {
       console.error('send-portal-sms catch:', err);
       toast.error(err?.message || 'Failed to send SMS');
@@ -137,7 +137,7 @@ export default function GeneratePortalLinkDialog({
         },
       });
       if (error) throw error;
-      toast.success('Portal link sent via email!');
+      toast.success('Customer portal sent via email!');
     } catch {
       toast.error('Failed to send email');
     }
@@ -283,7 +283,7 @@ export default function GeneratePortalLinkDialog({
                 <div className="mx-auto h-12 w-12 rounded-full bg-muted flex items-center justify-center">
                   <Link2 className="h-6 w-6 text-muted-foreground" />
                 </div>
-                <p className="text-sm font-medium text-foreground">No active portal links</p>
+                <p className="text-sm font-medium text-foreground">No active customer portals</p>
                 <p className="text-xs text-muted-foreground">
                   Generate a link to give your customer access to their project portal
                 </p>
@@ -301,7 +301,7 @@ export default function GeneratePortalLinkDialog({
               ) : (
                 <Link2 className="h-4 w-4" />
               )}
-              Generate New Portal Link
+              Generate New Customer Portal
             </Button>
           </div>
 
