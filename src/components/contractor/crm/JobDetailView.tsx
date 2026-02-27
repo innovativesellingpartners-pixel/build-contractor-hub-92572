@@ -115,8 +115,9 @@ function PhotosTab({ jobId }: { jobId: string }) {
 }
 
 // Daily Logs Tab Component
-function DailyLogsTab({ jobId }: { jobId: string }) {
+function DailyLogsTab({ jobId, jobName }: { jobId: string; jobName: string }) {
   const { logs, addLog, deleteLog } = useDailyLogs(jobId);
+  const [showSendDialog, setShowSendDialog] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [newLog, setNewLog] = useState({
     log_date: new Date().toISOString().split('T')[0],
