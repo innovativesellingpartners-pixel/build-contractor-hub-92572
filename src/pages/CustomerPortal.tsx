@@ -688,16 +688,22 @@ function MessagesTab({ portalTokenId, jobId, customerName, contractorName }: {
           messages.map((msg) => (
             <div key={msg.id} className={cn('flex', msg.sender_type === 'customer' ? 'justify-end' : 'justify-start')}>
               <div className={cn(
-                'max-w-[80%] rounded-2xl px-4 py-2.5 text-sm',
+                'max-w-[80%] rounded-2xl px-4 py-2.5 text-sm shadow-sm',
                 msg.sender_type === 'customer'
-                  ? 'bg-primary text-primary-foreground rounded-br-md'
-                  : 'bg-muted rounded-bl-md'
+                  ? 'bg-[hsl(264,60%,50%)] text-white rounded-br-md'
+                  : 'bg-[hsl(220,14%,92%)] text-[hsl(220,10%,20%)] rounded-bl-md'
               )}>
-                <p className="text-[10px] font-medium mb-1 opacity-70">
+                <p className={cn(
+                  'text-[10px] font-semibold mb-1',
+                  msg.sender_type === 'customer' ? 'text-white/80' : 'text-[hsl(220,10%,40%)]'
+                )}>
                   {msg.sender_type === 'customer' ? customerName : contractorName}
                 </p>
                 <p className="whitespace-pre-wrap">{msg.message}</p>
-                <p className="text-[10px] opacity-50 mt-1">
+                <p className={cn(
+                  'text-[10px] mt-1',
+                  msg.sender_type === 'customer' ? 'text-white/50' : 'text-[hsl(220,10%,55%)]'
+                )}>
                   {format(new Date(msg.created_at), 'MMM d, h:mm a')}
                 </p>
               </div>
