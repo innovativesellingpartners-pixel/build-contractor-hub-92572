@@ -26,6 +26,7 @@ import SendReviewRequestDialog from './SendReviewRequestDialog';
 import GeneratePortalLinkDialog from './GeneratePortalLinkDialog';
 import { useJobPhotos, JobPhoto } from '@/hooks/useJobPhotos';
 import { useDailyLogs } from '@/hooks/useDailyLogs';
+import SendLogsDialog from './job/SendLogsDialog';
 import { ImageViewer } from '@/components/ui/image-viewer';
 import {
   BlueBackground,
