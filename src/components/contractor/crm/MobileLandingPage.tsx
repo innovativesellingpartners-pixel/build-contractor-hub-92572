@@ -159,6 +159,7 @@ export function MobileLandingPage({
   onNavigateToReporting,
   onNavigateToPortal,
   onNavigateToCrews,
+  onNavigateToDocuments,
 }: MobileLandingPageProps) {
   const [contactSupportOpen, setContactSupportOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
