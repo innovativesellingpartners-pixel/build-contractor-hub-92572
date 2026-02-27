@@ -194,7 +194,7 @@ function UploadDialog({
                 <SelectContent>
                   <SelectItem value="">None</SelectItem>
                   {jobs.map((j) => (
-                    <SelectItem key={j.id} value={j.id}>{j.job_number || j.title}</SelectItem>
+                    <SelectItem key={j.id} value={j.id}>{j.job_number || j.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
