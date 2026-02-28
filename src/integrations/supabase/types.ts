@@ -193,6 +193,7 @@ export type Database = {
         Row: {
           access_token_encrypted: string
           calendar_email: string
+          contractor_id: string | null
           created_at: string | null
           expires_at: string
           id: string
@@ -204,6 +205,7 @@ export type Database = {
         Insert: {
           access_token_encrypted: string
           calendar_email: string
+          contractor_id?: string | null
           created_at?: string | null
           expires_at: string
           id?: string
@@ -215,6 +217,7 @@ export type Database = {
         Update: {
           access_token_encrypted?: string
           calendar_email?: string
+          contractor_id?: string | null
           created_at?: string | null
           expires_at?: string
           id?: string
@@ -223,7 +226,15 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "calendar_connections_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       calendar_events: {
         Row: {
@@ -807,6 +818,38 @@ export type Database = {
           },
         ]
       }
+      contractor_users: {
+        Row: {
+          contractor_id: string
+          created_at: string
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          contractor_id: string
+          created_at?: string
+          id?: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          contractor_id?: string
+          created_at?: string
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contractor_users_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contractor_warranties: {
         Row: {
           created_at: string
@@ -846,6 +889,33 @@ export type Database = {
           updated_at?: string
           user_id?: string
           warranty_text?: string
+        }
+        Relationships: []
+      }
+      contractors: {
+        Row: {
+          business_name: string
+          created_at: string
+          id: string
+          subscription_tier: string | null
+          timezone: string | null
+          voice_ai_enabled: boolean | null
+        }
+        Insert: {
+          business_name: string
+          created_at?: string
+          id?: string
+          subscription_tier?: string | null
+          timezone?: string | null
+          voice_ai_enabled?: boolean | null
+        }
+        Update: {
+          business_name?: string
+          created_at?: string
+          id?: string
+          subscription_tier?: string | null
+          timezone?: string | null
+          voice_ai_enabled?: boolean | null
         }
         Relationships: []
       }
