@@ -292,7 +292,12 @@ export default function CallsSection({ onSectionChange }: CallsSectionProps) {
             </Card>
           </div>
         ) : (
-          <Card>
+          <div className="space-y-4">
+            <div>
+              <h1 className="text-3xl font-bold">Calls</h1>
+              <p className="text-muted-foreground">Manage your call history and phone number</p>
+            </div>
+            <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Phone className="h-5 w-5" />
