@@ -72,9 +72,8 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // ── Fetch Google calendar connection ──
-    // Look up calendar connection by contractor_id first, fall back to user_id
-    const { data: connections } = await supabase
+    // ── Fetch Google calendar connection (strictly by contractor_id) ──
+    const { data: calConnections } = await supabase
       .from('calendar_connections')
       .select('*')
       .eq('contractor_id', contractorId)
@@ -82,19 +81,7 @@ serve(async (req) => {
       .order('updated_at', { ascending: false })
       .limit(1);
 
-    let finalConnections = connections;
-    if (!finalConnections || finalConnections.length === 0) {
-      const { data: fallback } = await supabase
-        .from('calendar_connections')
-        .select('*')
-        .eq('user_id', contractorId)
-        .eq('provider', 'google')
-        .order('updated_at', { ascending: false })
-        .limit(1);
-      finalConnections = fallback;
-    }
-
-    if (!finalConnections || finalConnections.length === 0) {
+    if (!calConnections || calConnections.length === 0) {
       return new Response(JSON.stringify({ success: false, reason: 'calendar_not_connected' }), {
         status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
