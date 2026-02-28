@@ -208,29 +208,43 @@ export default function CallsSection({ onSectionChange }: CallsSectionProps) {
         
         {phoneNumber ? (
           <div className="space-y-4">
-            {/* Compact phone number header */}
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold">Calls</h1>
-                <p className="text-muted-foreground">Manage your call history and phone number</p>
+            {/* Forge AI Tab Navigation */}
+            <div className="flex items-center justify-between flex-wrap gap-3">
+              <div className="flex items-center gap-1 overflow-x-auto">
+                {([
+                  { key: 'dashboard' as ForgeTab, label: 'Dashboard', icon: LayoutDashboard },
+                  { key: 'call-center' as ForgeTab, label: 'Call Center', icon: PhoneCall },
+                  { key: 'settings' as ForgeTab, label: 'Settings', icon: Settings },
+                ]).map((tab) => (
+                  <Button
+                    key={tab.key}
+                    variant={activeTab === tab.key ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setActiveTab(tab.key)}
+                    className={activeTab === tab.key ? 'bg-orange-500 hover:bg-orange-600 text-white' : ''}
+                  >
+                    <tab.icon className="h-4 w-4 mr-1.5" />
+                    {tab.label}
+                  </Button>
+                ))}
               </div>
               <div className="flex items-center gap-2">
-                <Badge variant="outline" className="font-mono text-sm px-3 py-1.5 flex items-center gap-2">
-                  <Phone className="h-3.5 w-3.5 text-green-500" />
+                <Badge variant="outline" className="font-mono text-xs px-2 py-1 flex items-center gap-1.5">
+                  <Phone className="h-3 w-3 text-green-500" />
                   {phoneNumber.twilio_phone_number}
-                  <button
-                    onClick={() => copyToClipboard(phoneNumber.twilio_phone_number)}
-                    className="ml-1 hover:text-primary transition-colors"
-                  >
-                    <Copy className="h-3.5 w-3.5" />
+                  <button onClick={() => copyToClipboard(phoneNumber.twilio_phone_number)} className="hover:text-primary">
+                    <Copy className="h-3 w-3" />
                   </button>
                 </Badge>
+                <Badge
+                  variant="outline"
+                  className={`text-xs px-2 py-1 ${isAiActive ? 'border-green-300 text-green-700' : 'text-muted-foreground'}`}
+                >
+                  <span className={`inline-block w-1.5 h-1.5 rounded-full mr-1 ${isAiActive ? 'bg-green-500' : 'bg-muted-foreground'}`} />
+                  {isAiActive ? 'Voice AI Active' : 'AI Inactive'}
+                </Badge>
                 {isAdmin && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowDeleteConfirm(!showDeleteConfirm)}
-                  >
+                  <Button variant="ghost" size="sm" onClick={() => setShowDeleteConfirm(!showDeleteConfirm)}>
                     <Trash2 className="h-4 w-4 text-muted-foreground" />
                   </Button>
                 )}
@@ -244,101 +258,80 @@ export default function CallsSection({ onSectionChange }: CallsSectionProps) {
                 <AlertDescription className="flex items-center justify-between">
                   <span>Delete this phone number?</span>
                   <div className="flex gap-2">
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      disabled={deleteMutation.isPending}
-                      onClick={() => {
-                        deleteMutation.mutate({
-                          phoneNumberId: phoneNumber.id,
-                          contractorId: phoneNumber.contractor_id,
-                        });
-                        setShowDeleteConfirm(false);
-                      }}
+                    <Button variant="destructive" size="sm" disabled={deleteMutation.isPending}
+                      onClick={() => { deleteMutation.mutate({ phoneNumberId: phoneNumber.id, contractorId: phoneNumber.contractor_id }); setShowDeleteConfirm(false); }}
                     >
                       {deleteMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Confirm'}
                     </Button>
-                    <Button variant="ghost" size="sm" onClick={() => setShowDeleteConfirm(false)}>
-                      Cancel
-                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => setShowDeleteConfirm(false)}>Cancel</Button>
                   </div>
                 </AlertDescription>
               </Alert>
             )}
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  Recent Calls
-                  {callSessions.length > 0 && (
-                    <span className="text-sm font-normal text-muted-foreground">
-                      {callSessions.length} total
-                    </span>
-                  )}
-                </CardTitle>
-                <CardDescription>
-                  View your call history and AI-handled conversations
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Predictive Search */}
-                {callSessions.length > 0 && (
-                  <PredictiveSearch
-                    items={callSessions}
-                    placeholder="Search by phone, job number, name..."
-                    getLabel={(call: CallSession) => {
-                      const parts = [formatPhoneNumber(call.from_number)];
-                      if (call.caller_name) parts.push(call.caller_name);
-                      return parts.join(' - ');
-                    }}
-                    getSublabel={(call: CallSession) => {
-                      const parts = [];
-                      if (call.job?.job_number) parts.push(`#${call.job.job_number}`);
-                      if (call.job?.name) parts.push(call.job.name);
-                      if (call.status) parts.push(call.status);
-                      return parts.join(' • ') || undefined;
-                    }}
-                    filterFn={(call: CallSession, query: string) => {
-                      const q = query.toLowerCase();
-                      return (
-                        call.from_number.includes(q) ||
-                        call.caller_name?.toLowerCase().includes(q) ||
-                        call.job?.job_number?.toLowerCase().includes(q) ||
-                        call.job?.name?.toLowerCase().includes(q) ||
-                        call.ai_summary?.toLowerCase().includes(q) ||
-                        call.status?.toLowerCase().includes(q)
-                      ) || false;
-                    }}
-                    onSelect={handleCallSelect}
-                  />
-                )}
+            {/* Dashboard Tab */}
+            {activeTab === 'dashboard' && (
+              <div className="space-y-6">
+                <div className="flex items-center gap-3">
+                  <div className="h-12 w-12 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center shadow-lg">
+                    <Phone className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold tracking-tight">Welcome to Forge AI</h2>
+                    <p className="text-muted-foreground text-sm">Your intelligent voice AI intake & booking platform</p>
+                  </div>
+                </div>
 
-                {isLoadingCalls ? (
-                  <div className="space-y-3">
-                    {[1, 2, 3].map((i) => (
-                      <Skeleton key={i} className="h-32 w-full" />
-                    ))}
-                  </div>
-                ) : callSessions.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Phone className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
-                    <p className="text-muted-foreground">
-                      No calls yet. Your call history will appear here once you receive calls.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {callSessions.map((call) => (
-                      <CallLogItem 
-                        key={call.id} 
-                        call={call} 
-                        onLinkToJob={handleLinkToJob}
-                      />
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {[
+                    { icon: <Phone className="h-5 w-5 text-orange-500" />, value: stats.callsToday, label: 'Calls Today' },
+                    { icon: <Calendar className="h-5 w-5 text-orange-500" />, value: stats.appointmentsBooked, label: 'Appointments Booked' },
+                    { icon: <Users className="h-5 w-5 text-orange-500" />, value: stats.leadsCaptured, label: 'Leads Captured' },
+                    { icon: <TrendingUp className="h-5 w-5 text-orange-500" />, value: `${stats.bookingRate}%`, label: 'Booking Rate' },
+                  ].map((stat) => (
+                    <Card key={stat.label} className="border">
+                      <CardContent className="p-4 space-y-2">
+                        <div className="flex items-center justify-between">{stat.icon}<span className="text-xs text-muted-foreground">—</span></div>
+                        <div><p className="text-2xl font-bold">{stat.value}</p><p className="text-xs text-muted-foreground">{stat.label}</p></div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <button onClick={() => setActiveTab('call-center')} className="text-left group">
+                    <Card className="h-full border hover:border-orange-300 hover:shadow-md transition-all cursor-pointer">
+                      <CardContent className="p-6 flex items-center justify-between">
+                        <div>
+                          <h3 className="text-lg font-semibold">Call Center</h3>
+                          <p className="text-sm text-muted-foreground mt-1">View recordings, transcripts, and booking status</p>
+                        </div>
+                        <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-orange-500 transition-colors" />
+                      </CardContent>
+                    </Card>
+                  </button>
+                  <button onClick={() => setActiveTab('settings')} className="text-left group">
+                    <Card className="h-full border hover:border-orange-300 hover:shadow-md transition-all cursor-pointer">
+                      <CardContent className="p-6 flex items-center justify-between">
+                        <div>
+                          <h3 className="text-lg font-semibold">Voice AI Settings</h3>
+                          <p className="text-sm text-muted-foreground mt-1">Configure hours, booking rules, and integrations</p>
+                        </div>
+                        <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-orange-500 transition-colors" />
+                      </CardContent>
+                    </Card>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'call-center' && (
+              <ForgeCallCenter onBack={() => setActiveTab('dashboard')} />
+            )}
+
+            {activeTab === 'settings' && (
+              <ForgeSettings onBack={() => setActiveTab('dashboard')} />
+            )}
           </div>
         ) : (
           <div className="space-y-4">
