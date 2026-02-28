@@ -87,7 +87,7 @@ serve(async (req) => {
       });
     }
 
-    const connection = finalConnections[0];
+    const connection = calConnections[0];
 
     // ── Refresh Google token ──
     let accessToken = decodeToken(connection.access_token_encrypted);
