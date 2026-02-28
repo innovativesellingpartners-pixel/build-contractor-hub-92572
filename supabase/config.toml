@@ -158,3 +158,9 @@ verify_jwt = true
 
 [functions.notify-portal-message]
 verify_jwt = false
+
+[functions.forge-calendar-check]
+verify_jwt = false
+
+[functions.forge-calendar-book]
+verify_jwt = false
