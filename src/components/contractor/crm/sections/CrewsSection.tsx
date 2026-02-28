@@ -293,10 +293,10 @@ function CrewFormDialog({
           </div>
           <div>
             <Label>Lead Crew Member</Label>
-            <Select value={form.lead_crew_member_id} onValueChange={(v) => setForm({ ...form, lead_crew_member_id: v })}>
+            <Select value={form.lead_crew_member_id || "none"} onValueChange={(v) => setForm({ ...form, lead_crew_member_id: v === "none" ? "" : v })}>
               <SelectTrigger><SelectValue placeholder="Select lead..." /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="">None</SelectItem>
+                <SelectItem value="none">None</SelectItem>
                 {activeMembers.map((m) => (
                   <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
                 ))}
