@@ -436,6 +436,7 @@ export default function CallsSection({ onSectionChange }: CallsSectionProps) {
               )}
             </CardContent>
           </Card>
+          </div>
         )}
       </div>
 
