@@ -73,13 +73,26 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // ── Fetch Google calendar connection ──
+    // Look up calendar connection by contractor_id first, fall back to user_id
     const { data: connections } = await supabase
       .from('calendar_connections')
       .select('*')
-      .eq('user_id', contractorId)
+      .eq('contractor_id', contractorId)
       .eq('provider', 'google')
       .order('updated_at', { ascending: false })
       .limit(1);
+
+    let finalConnections = connections;
+    if (!finalConnections || finalConnections.length === 0) {
+      const { data: fallback } = await supabase
+        .from('calendar_connections')
+        .select('*')
+        .eq('user_id', contractorId)
+        .eq('provider', 'google')
+        .order('updated_at', { ascending: false })
+        .limit(1);
+      finalConnections = fallback;
+    }
 
     if (!connections || connections.length === 0) {
       return new Response(JSON.stringify({ success: false, reason: 'calendar_not_connected' }), {
