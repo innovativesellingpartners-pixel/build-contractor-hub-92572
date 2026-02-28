@@ -94,7 +94,7 @@ serve(async (req) => {
       finalConnections = fallback;
     }
 
-    if (!connections || connections.length === 0) {
+    if (!finalConnections || finalConnections.length === 0) {
       return new Response(JSON.stringify({ success: false, reason: 'calendar_not_connected' }), {
         status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
