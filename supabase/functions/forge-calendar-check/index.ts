@@ -71,15 +71,29 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // ── Fetch contractor's Google calendar connection ──
+    // Look up calendar connection by contractor_id first, fall back to user_id
     const { data: connections } = await supabase
       .from('calendar_connections')
       .select('*')
-      .eq('user_id', contractorId)
+      .eq('contractor_id', contractorId)
       .eq('provider', 'google')
       .order('updated_at', { ascending: false })
       .limit(1);
 
-    if (!connections || connections.length === 0) {
+    // Fallback: try user_id for backward compatibility
+    let finalConnections = connections;
+    if (!finalConnections || finalConnections.length === 0) {
+      const { data: fallback } = await supabase
+        .from('calendar_connections')
+        .select('*')
+        .eq('user_id', contractorId)
+        .eq('provider', 'google')
+        .order('updated_at', { ascending: false })
+        .limit(1);
+      finalConnections = fallback;
+    }
+
+    if (!finalConnections || finalConnections.length === 0) {
       return new Response(JSON.stringify({
         bookingAllowed: false,
         reason: 'calendar_not_connected',
@@ -88,7 +102,7 @@ serve(async (req) => {
       });
     }
 
-    const connection = connections[0];
+    const connection = finalConnections[0];
 
     // ── Refresh Google token ──
     let accessToken = decodeToken(connection.access_token_encrypted);
