@@ -1,9 +1,9 @@
 /**
  * FinancialConnectionsDropdown — Compact dropdown for managing financial connections.
- * Shows connection status summary and actions for Bank (Plaid/Teller), QuickBooks, and Stripe.
+ * Shows connection status summary and actions for Bank (Plaid/Teller), QuickBooks, Finix Payments.
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface ConnectionStatus {
   bankConnected: boolean;
@@ -42,11 +43,29 @@ export function FinancialConnectionsDropdown({
   onConnectionChange,
 }: FinancialConnectionsDropdownProps) {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [qbLoading, setQbLoading] = useState(false);
   const [stripeLoading, setStripeLoading] = useState(false);
+  const [finixConnected, setFinixConnected] = useState(false);
+  const [finixMerchantId, setFinixMerchantId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    const checkFinix = async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('finix_merchant_id')
+        .eq('id', user.id)
+        .single();
+      const connected = !!data?.finix_merchant_id;
+      setFinixConnected(connected);
+      setFinixMerchantId(data?.finix_merchant_id || null);
+    };
+    checkFinix();
+  }, [user?.id]);
 
   const { bankConnected, qbConnected } = connections;
-  const connectedCount = [bankConnected, qbConnected].filter(Boolean).length;
+  const connectedCount = [bankConnected, qbConnected, finixConnected].filter(Boolean).length;
 
   const handleConnectQuickBooks = async () => {
     try {
@@ -117,6 +136,7 @@ export function FinancialConnectionsDropdown({
           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</p>
           <ConnectionRow label="Teller / Bank" connected={bankConnected} />
           <ConnectionRow label="QuickBooks" connected={qbConnected} />
+          <ConnectionRow label="Finix Payments" connected={finixConnected} />
         </div>
         <DropdownMenuSeparator />
 
@@ -151,6 +171,20 @@ export function FinancialConnectionsDropdown({
               Don't have QuickBooks? Contact Sales
             </DropdownMenuItem>
           </>
+        )}
+
+        {/* Finix status */}
+        {!finixConnected && (
+          <DropdownMenuItem disabled className="text-muted-foreground">
+            <CreditCard className="h-4 w-4 mr-2" />
+            Finix — Contact admin to provision
+          </DropdownMenuItem>
+        )}
+        {finixConnected && finixMerchantId && (
+          <DropdownMenuItem disabled className="text-xs text-muted-foreground">
+            <CreditCard className="h-4 w-4 mr-2" />
+            Finix: {finixMerchantId.slice(0, 8)}…
+          </DropdownMenuItem>
         )}
 
         {/* Disconnect */}
