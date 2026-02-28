@@ -164,3 +164,9 @@ verify_jwt = false
 
 [functions.forge-calendar-book]
 verify_jwt = false
+
+[functions.forge-provision]
+verify_jwt = false
+
+[functions.forge-entitlement-sync]
+verify_jwt = false

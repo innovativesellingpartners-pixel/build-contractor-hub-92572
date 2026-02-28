@@ -136,6 +136,19 @@ serve(async (req) => {
     if (stateData.type === 'calendar') {
       console.log('Saving calendar connection for user:', stateData.contractor_id);
       
+      // Resolve contractor_id: look up the contractor this user belongs to
+      let resolvedContractorId: string | null = null;
+      const { data: membership } = await supabase
+        .from('contractor_users')
+        .select('contractor_id')
+        .eq('user_id', stateData.contractor_id)
+        .limit(1)
+        .maybeSingle();
+      
+      if (membership) {
+        resolvedContractorId = membership.contractor_id;
+      }
+      
       // First delete any existing connection to ensure clean state
       await supabase
         .from('calendar_connections')
@@ -147,6 +160,7 @@ serve(async (req) => {
         .from('calendar_connections')
         .insert({
           user_id: stateData.contractor_id,
+          contractor_id: resolvedContractorId,
           provider: 'google',
           calendar_email: userInfo.email,
           access_token_encrypted: tokens.access_token,
