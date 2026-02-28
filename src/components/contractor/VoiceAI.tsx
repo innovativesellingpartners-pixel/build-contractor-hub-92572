@@ -1,279 +1,200 @@
-import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useEffect } from "react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Bot, CheckCircle, Phone, Clock, Users, ExternalLink, PhoneCall, Zap } from "lucide-react";
-import ct1Logo from "@/assets/ct1-round-logo-new.png";
+import { Phone, Calendar, Users, TrendingUp, ArrowRight, Settings } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { ForgeCallCenter } from "./forge/ForgeCallCenter";
+import { ForgeSettings } from "./forge/ForgeSettings";
+
+type ForgeView = "dashboard" | "call-center" | "settings";
 
 export function VoiceAI() {
-  const [smithAIDialogOpen, setSmithAIDialogOpen] = useState(false);
-  const [myCT1DialogOpen, setMyCT1DialogOpen] = useState(false);
+  const [view, setView] = useState<ForgeView>("dashboard");
+  const [isActive, setIsActive] = useState(false);
+  const [stats, setStats] = useState({
+    callsToday: 0,
+    appointmentsBooked: 0,
+    leadsCaptured: 0,
+    bookingRate: 0,
+  });
+
+  useEffect(() => {
+    checkForgeStatus();
+    loadStats();
+  }, []);
+
+  const checkForgeStatus = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data: membership } = await supabase
+      .from("contractor_users")
+      .select("contractor_id")
+      .eq("user_id", user.id)
+      .limit(1)
+      .maybeSingle();
+
+    if (membership) {
+      const { data: contractor } = await supabase
+        .from("contractors")
+        .select("voice_ai_enabled")
+        .eq("id", membership.contractor_id)
+        .maybeSingle();
+
+      setIsActive(contractor?.voice_ai_enabled ?? false);
+    }
+
+    // Fallback: check contractor_ai_profiles
+    const { data: profile } = await supabase
+      .from("contractor_ai_profiles")
+      .select("ai_enabled")
+      .eq("contractor_id", user.id)
+      .maybeSingle();
+
+    if (profile?.ai_enabled) setIsActive(true);
+  };
+
+  const loadStats = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    const { data: calls } = await supabase
+      .from("calls")
+      .select("id, outcome, ai_handled")
+      .eq("contractor_id", user.id)
+      .gte("created_at", todayStart.toISOString());
+
+    if (calls) {
+      const booked = calls.filter(c => c.outcome === "booked" || c.outcome === "appointment_booked").length;
+      const leads = calls.filter(c => c.outcome === "lead_captured" || c.outcome === "booked").length;
+      setStats({
+        callsToday: calls.length,
+        appointmentsBooked: booked,
+        leadsCaptured: leads,
+        bookingRate: calls.length > 0 ? Math.round((booked / calls.length) * 100) : 0,
+      });
+    }
+  };
+
+  if (view === "call-center") {
+    return <ForgeCallCenter onBack={() => setView("dashboard")} />;
+  }
+
+  if (view === "settings") {
+    return <ForgeSettings onBack={() => setView("dashboard")} />;
+  }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-4 border-b">
-        <div className="flex items-center gap-4">
-          <img src={ct1Logo} alt="CT1 Logo" className="h-12 w-12" />
+    <div className="space-y-6 max-w-5xl mx-auto">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="h-12 w-12 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center shadow-lg">
+            <Phone className="h-6 w-6 text-white" />
+          </div>
           <div>
-            <h2 className="text-3xl font-bold flex items-center gap-3">
-              <Bot className="h-8 w-8 text-primary" />
-              Voice AI Assistant
+            <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
+              Welcome to Forge AI
             </h2>
-            <p className="text-muted-foreground mt-1">
-              Connect to AI-powered voice assistants for 24/7 call handling
+            <p className="text-muted-foreground text-sm">
+              Your intelligent voice AI intake & booking platform
             </p>
           </div>
         </div>
+        <Badge
+          variant={isActive ? "default" : "secondary"}
+          className={`text-xs px-3 py-1 ${
+            isActive
+              ? "bg-green-100 text-green-700 border-green-300"
+              : "bg-muted text-muted-foreground"
+          }`}
+        >
+          <span className={`inline-block w-2 h-2 rounded-full mr-1.5 ${isActive ? "bg-green-500" : "bg-muted-foreground"}`} />
+          {isActive ? "Voice AI Active" : "Voice AI Inactive"}
+        </Badge>
       </div>
 
-      {/* Connection Options */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* myCT1 Voice AI Card */}
-        <Card className="border-2 border-primary/30 bg-gradient-to-br from-primary/5 to-primary/10">
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <div className="h-12 w-12 rounded-lg bg-primary/20 flex items-center justify-center">
-                <img src={ct1Logo} alt="myCT1" className="h-8 w-8" />
-              </div>
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <StatCard
+          icon={<Phone className="h-5 w-5 text-orange-500" />}
+          value={stats.callsToday}
+          label="Calls Today"
+        />
+        <StatCard
+          icon={<Calendar className="h-5 w-5 text-orange-500" />}
+          value={stats.appointmentsBooked}
+          label="Appointments Booked"
+        />
+        <StatCard
+          icon={<Users className="h-5 w-5 text-orange-500" />}
+          value={stats.leadsCaptured}
+          label="Leads Captured"
+        />
+        <StatCard
+          icon={<TrendingUp className="h-5 w-5 text-orange-500" />}
+          value={`${stats.bookingRate}%`}
+          label="Booking Rate"
+        />
+      </div>
+
+      {/* Navigation Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <button
+          onClick={() => setView("call-center")}
+          className="text-left group"
+        >
+          <Card className="h-full border hover:border-orange-300 hover:shadow-md transition-all cursor-pointer">
+            <CardContent className="p-6 flex items-center justify-between">
               <div>
-                <CardTitle className="flex items-center gap-2">
-                  myCT1 Voice AI
-                  <Badge variant="default" className="text-xs">Native</Badge>
-                </CardTitle>
-                <CardDescription>Built-in AI voice assistant</CardDescription>
+                <h3 className="text-lg font-semibold">Call Center</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  View recordings, transcripts, and booking status
+                </p>
               </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <ul className="space-y-2 text-sm">
-              <li className="flex items-start gap-2">
-                <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                <span>Native integration with CT1 CRM</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                <span>Automatic lead capture & sync</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                <span>Custom greeting & business hours</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                <span>$50/month per user</span>
-              </li>
-            </ul>
-            <Button 
-              className="w-full" 
-              size="lg"
-              onClick={() => setMyCT1DialogOpen(true)}
-            >
-              <Zap className="h-4 w-4 mr-2" />
-              Connect to myCT1 Voice AI
-            </Button>
-          </CardContent>
-        </Card>
+              <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-orange-500 transition-colors" />
+            </CardContent>
+          </Card>
+        </button>
 
-        {/* Smith AI Card */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center">
-                <Bot className="h-8 w-8 text-muted-foreground" />
-              </div>
+        <button
+          onClick={() => setView("settings")}
+          className="text-left group"
+        >
+          <Card className="h-full border hover:border-orange-300 hover:shadow-md transition-all cursor-pointer">
+            <CardContent className="p-6 flex items-center justify-between">
               <div>
-                <CardTitle className="flex items-center gap-2">
-                  Smith.ai
-                  <Badge variant="secondary" className="text-xs">Third Party</Badge>
-                </CardTitle>
-                <CardDescription>Professional virtual receptionist</CardDescription>
+                <h3 className="text-lg font-semibold">Voice AI Settings</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Configure hours, booking rules, and integrations
+                </p>
               </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <ul className="space-y-2 text-sm">
-              <li className="flex items-start gap-2">
-                <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                <span>Human + AI hybrid answering</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                <span>Appointment scheduling</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                <span>Bilingual English & Spanish</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                <span>Pay-per-call pricing</span>
-              </li>
-            </ul>
-            <Button 
-              variant="outline"
-              className="w-full" 
-              size="lg"
-              onClick={() => setSmithAIDialogOpen(true)}
-            >
-              <ExternalLink className="h-4 w-4 mr-2" />
-              Connect to Smith.ai
-            </Button>
-          </CardContent>
-        </Card>
+              <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-orange-500 transition-colors" />
+            </CardContent>
+          </Card>
+        </button>
       </div>
-
-      {/* Features Overview */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <Phone className="h-8 w-8 text-primary mx-auto mb-2" />
-              <p className="text-2xl font-bold">24/7</p>
-              <p className="text-sm text-muted-foreground">Call Answering</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <Clock className="h-8 w-8 text-primary mx-auto mb-2" />
-              <p className="text-2xl font-bold">Instant</p>
-              <p className="text-sm text-muted-foreground">Response Time</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <Users className="h-8 w-8 text-primary mx-auto mb-2" />
-              <p className="text-2xl font-bold">100%</p>
-              <p className="text-sm text-muted-foreground">Lead Capture</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* myCT1 Voice AI Dialog */}
-      <Dialog open={myCT1DialogOpen} onOpenChange={setMyCT1DialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <img src={ct1Logo} alt="myCT1" className="h-8 w-8" />
-              Connect to myCT1 Voice AI
-            </DialogTitle>
-            <DialogDescription>
-              Get started with the native CT1 AI voice assistant
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 pt-4">
-            <div className="bg-muted/50 p-4 rounded-lg space-y-3">
-              <h4 className="font-semibold">What's Included:</h4>
-              <ul className="space-y-2 text-sm">
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span>24/7 AI call answering with natural voice</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span>Automatic lead creation in CRM</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span>Calendar integration & scheduling</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span>Custom greeting & voicemail options</span>
-                </li>
-              </ul>
-            </div>
-            <div className="text-center p-4 bg-primary/5 rounded-lg">
-              <p className="text-2xl font-bold text-primary">$50/month</p>
-              <p className="text-sm text-muted-foreground">per user</p>
-            </div>
-            <div className="flex gap-3">
-              <Button 
-                className="flex-1" 
-                size="lg"
-                asChild
-              >
-                <a href="/contact">
-                  <PhoneCall className="h-4 w-4 mr-2" />
-                  Contact Sales to Enable
-                </a>
-              </Button>
-            </div>
-            <p className="text-xs text-center text-muted-foreground">
-              Our team will set up your dedicated phone number and configure your AI assistant
-            </p>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Smith.ai Dialog */}
-      <Dialog open={smithAIDialogOpen} onOpenChange={setSmithAIDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Bot className="h-8 w-8 text-primary" />
-              Connect to Smith.ai
-            </DialogTitle>
-            <DialogDescription>
-              Access professional virtual receptionist services
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 pt-4">
-            <div className="bg-muted/50 p-4 rounded-lg space-y-3">
-              <h4 className="font-semibold">Smith.ai Features:</h4>
-              <ul className="space-y-2 text-sm">
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span>Human + AI hybrid call answering</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span>Appointment scheduling & calendar sync</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span>Lead capture & notifications</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span>Bilingual English & Spanish support</span>
-                </li>
-              </ul>
-            </div>
-            <div className="flex gap-3">
-              <Button 
-                className="flex-1" 
-                size="lg"
-                onClick={() => {
-                  window.open('https://app.smith.ai/log-in/', '_blank');
-                  setSmithAIDialogOpen(false);
-                }}
-              >
-                <ExternalLink className="h-4 w-4 mr-2" />
-                Log in to Smith.ai
-              </Button>
-            </div>
-            <Button 
-              variant="outline" 
-              className="w-full"
-              asChild
-            >
-              <a href="/contact">
-                <PhoneCall className="h-4 w-4 mr-2" />
-                Contact Sales for Setup
-              </a>
-            </Button>
-            <p className="text-xs text-center text-muted-foreground">
-              Smith.ai will open in a new window for secure authentication
-            </p>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
+  );
+}
+
+function StatCard({ icon, value, label }: { icon: React.ReactNode; value: number | string; label: string }) {
+  return (
+    <Card className="border">
+      <CardContent className="p-4 space-y-2">
+        <div className="flex items-center justify-between">
+          {icon}
+          <span className="text-xs text-muted-foreground">—</span>
+        </div>
+        <div>
+          <p className="text-2xl font-bold">{value}</p>
+          <p className="text-xs text-muted-foreground">{label}</p>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
