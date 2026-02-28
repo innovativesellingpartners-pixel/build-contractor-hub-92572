@@ -236,6 +236,12 @@ export default function CallsSection({ onSectionChange }: CallsSectionProps) {
                     <Copy className="h-3 w-3" />
                   </button>
                 </Badge>
+                <Badge variant="secondary" className="font-mono text-xs px-2 py-1 flex items-center gap-1.5">
+                  ID: {phoneNumber.contractor_id}
+                  <button onClick={() => { navigator.clipboard.writeText(phoneNumber.contractor_id); toast.success('Contractor ID copied'); }} className="hover:text-primary">
+                    <Copy className="h-3 w-3" />
+                  </button>
+                </Badge>
                 <Badge
                   variant="outline"
                   className={`text-xs px-2 py-1 ${isAiActive ? 'border-green-300 text-green-700' : 'text-muted-foreground'}`}
