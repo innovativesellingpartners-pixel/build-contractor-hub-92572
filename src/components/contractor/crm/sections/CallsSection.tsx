@@ -12,11 +12,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 import { useCallSessions, CallSession } from '@/hooks/useCallSessions';
 import { CallLogItem } from '../CallLogItem';
 import { PredictiveSearch } from '../PredictiveSearch';
