@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Phone, Copy, AlertCircle, Loader2, ChevronDown, Plus, Link2, X, Trash2, RefreshCw } from 'lucide-react';
+import { Phone, Copy, AlertCircle, Loader2, ChevronDown, Plus, Link2, X, Trash2 } from 'lucide-react';
 import { usePhoneNumber, useProvisionPhoneNumber, useDeletePhoneNumber } from '@/hooks/usePhoneNumbers';
 import { useUserTier } from '@/hooks/useUserTier';
 import { toast } from 'sonner';
@@ -12,11 +12,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 import { useCallSessions, CallSession } from '@/hooks/useCallSessions';
 import { CallLogItem } from '../CallLogItem';
 import { PredictiveSearch } from '../PredictiveSearch';
@@ -157,205 +152,65 @@ export default function CallsSection({ onSectionChange }: CallsSectionProps) {
           sectionLabel="Calls"
         />
         
-        <div>
-          <h1 className="text-3xl font-bold">Calls</h1>
-          <p className="text-muted-foreground">Manage your call history and phone number</p>
-        </div>
-
         {phoneNumber ? (
           <div className="space-y-4">
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    <Phone className="h-5 w-5" />
-                    Your CT1 Phone Number
-                  </CardTitle>
-                  <Badge variant={phoneNumber.active ? "default" : "secondary"}>
-                    {phoneNumber.active ? 'Active' : 'Inactive'}
-                  </Badge>
-                </div>
-                <CardDescription>
-                  Use this number to receive calls from clients
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 p-4 bg-muted rounded-lg font-mono text-lg font-semibold">
-                    {phoneNumber.twilio_phone_number}
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="icon"
+            {/* Compact phone number header */}
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold">Calls</h1>
+                <p className="text-muted-foreground">Manage your call history and phone number</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="font-mono text-sm px-3 py-1.5 flex items-center gap-2">
+                  <Phone className="h-3.5 w-3.5 text-green-500" />
+                  {phoneNumber.twilio_phone_number}
+                  <button
                     onClick={() => copyToClipboard(phoneNumber.twilio_phone_number)}
+                    className="ml-1 hover:text-primary transition-colors"
                   >
-                    <Copy className="h-4 w-4" />
-                  </Button>
-                </div>
-
-                {/* Admin Controls */}
+                    <Copy className="h-3.5 w-3.5" />
+                  </button>
+                </Badge>
                 {isAdmin && (
-                  <div className="border border-dashed border-primary/30 rounded-lg p-4 space-y-3">
-                    <p className="text-sm font-medium text-primary flex items-center gap-1">
-                      <AlertCircle className="h-4 w-4" /> Admin Controls
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          provisionMutation.mutate(user?.id);
-                        }}
-                        disabled={provisionMutation.isPending}
-                      >
-                        {provisionMutation.isPending ? (
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        ) : (
-                          <RefreshCw className="mr-2 h-4 w-4" />
-                        )}
-                        Generate New Number
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setShowManualEntry(true)}
-                      >
-                        <Plus className="mr-2 h-4 w-4" />
-                        Add Manual Number
-                      </Button>
-                      {!showDeleteConfirm ? (
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => setShowDeleteConfirm(true)}
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Delete Number
-                        </Button>
-                      ) : (
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-destructive">Are you sure?</span>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            disabled={deleteMutation.isPending}
-                            onClick={() => {
-                              deleteMutation.mutate({
-                                phoneNumberId: phoneNumber.id,
-                                contractorId: phoneNumber.contractor_id,
-                              });
-                              setShowDeleteConfirm(false);
-                            }}
-                          >
-                            {deleteMutation.isPending ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              'Confirm Delete'
-                            )}
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setShowDeleteConfirm(false)}
-                          >
-                            Cancel
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Inline manual entry for admins */}
-                    {showManualEntry && (
-                      <div className="space-y-3 mt-3 p-3 bg-muted/50 rounded-lg">
-                        <h4 className="text-sm font-semibold">Register Manual Number</h4>
-                        <div>
-                          <label className="text-sm font-medium mb-1.5 block">Phone Number</label>
-                          <input
-                            type="tel"
-                            placeholder="+1234567890"
-                            value={manualNumber}
-                            onChange={(e) => setManualNumber(e.target.value)}
-                            className="w-full px-3 py-2 border rounded-md bg-background text-sm"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-sm font-medium mb-1.5 block">Twilio SID</label>
-                          <input
-                            type="text"
-                            placeholder="PNxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-                            value={manualSid}
-                            onChange={(e) => setManualSid(e.target.value)}
-                            className="w-full px-3 py-2 border rounded-md bg-background text-sm"
-                          />
-                        </div>
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            onClick={() => registerExistingNumber.mutate()}
-                            disabled={!manualNumber || !manualSid || registerExistingNumber.isPending}
-                          >
-                            {registerExistingNumber.isPending ? (
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            ) : null}
-                            Register
-                          </Button>
-                          <Button size="sm" variant="ghost" onClick={() => { setShowManualEntry(false); setManualNumber(''); setManualSid(''); }}>
-                            Cancel
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowDeleteConfirm(!showDeleteConfirm)}
+                  >
+                    <Trash2 className="h-4 w-4 text-muted-foreground" />
+                  </Button>
                 )}
+              </div>
+            </div>
 
-                <Alert>
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>
-                    Calls to this number will go to voicemail. Set up call forwarding from your cell phone to receive calls directly.
-                  </AlertDescription>
-                </Alert>
-
-                <Collapsible open={isGuideOpen} onOpenChange={setIsGuideOpen}>
-                  <CollapsibleTrigger asChild>
-                    <Button variant="outline" className="w-full">
-                      {isGuideOpen ? 'Hide' : 'Show'} Call Forwarding Setup Guide
+            {/* Admin delete confirmation */}
+            {isAdmin && showDeleteConfirm && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription className="flex items-center justify-between">
+                  <span>Delete this phone number?</span>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      disabled={deleteMutation.isPending}
+                      onClick={() => {
+                        deleteMutation.mutate({
+                          phoneNumberId: phoneNumber.id,
+                          contractorId: phoneNumber.contractor_id,
+                        });
+                        setShowDeleteConfirm(false);
+                      }}
+                    >
+                      {deleteMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Confirm'}
                     </Button>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="space-y-4 mt-4">
-                    <Card className="bg-muted/50">
-                      <CardHeader>
-                        <CardTitle className="text-base">How to Set Up Conditional Call Forwarding</CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-3 text-sm">
-                        <div>
-                          <p className="font-semibold mb-2">For iPhone:</p>
-                          <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
-                            <li>Open Phone app and dial: <code className="bg-background px-1 rounded">*67{phoneNumber.twilio_phone_number}</code></li>
-                            <li>Press Call button</li>
-                            <li>You'll see a confirmation message</li>
-                          </ol>
-                        </div>
-                        <div>
-                          <p className="font-semibold mb-2">For Android:</p>
-                          <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
-                            <li>Open Phone app</li>
-                            <li>Go to Settings → Calls → Call Forwarding</li>
-                            <li>Select "When busy" or "When unanswered"</li>
-                            <li>Enter: {phoneNumber.twilio_phone_number}</li>
-                          </ol>
-                        </div>
-                        <Alert>
-                          <AlertCircle className="h-4 w-4" />
-                          <AlertDescription>
-                            To disable forwarding, dial <code className="bg-background px-1 rounded">##67#</code>
-                          </AlertDescription>
-                        </Alert>
-                      </CardContent>
-                    </Card>
-                  </CollapsibleContent>
-                </Collapsible>
-              </CardContent>
-            </Card>
+                    <Button variant="ghost" size="sm" onClick={() => setShowDeleteConfirm(false)}>
+                      Cancel
+                    </Button>
+                  </div>
+                </AlertDescription>
+              </Alert>
+            )}
 
             <Card>
               <CardHeader>
@@ -432,7 +287,12 @@ export default function CallsSection({ onSectionChange }: CallsSectionProps) {
             </Card>
           </div>
         ) : (
-          <Card>
+          <div className="space-y-4">
+            <div>
+              <h1 className="text-3xl font-bold">Calls</h1>
+              <p className="text-muted-foreground">Manage your call history and phone number</p>
+            </div>
+            <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Phone className="h-5 w-5" />
@@ -571,6 +431,7 @@ export default function CallsSection({ onSectionChange }: CallsSectionProps) {
               )}
             </CardContent>
           </Card>
+          </div>
         )}
       </div>
 
