@@ -93,7 +93,7 @@ serve(async (req) => {
       finalConnections = fallback;
     }
 
-    if (!connections || connections.length === 0) {
+    if (!finalConnections || finalConnections.length === 0) {
       return new Response(JSON.stringify({
         bookingAllowed: false,
         reason: 'calendar_not_connected',
