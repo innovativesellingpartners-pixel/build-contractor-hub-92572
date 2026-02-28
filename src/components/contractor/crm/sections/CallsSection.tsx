@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Phone, Copy, AlertCircle, Loader2, ChevronDown, Plus, Link2, X, Trash2 } from 'lucide-react';
+import { Phone, Copy, AlertCircle, Loader2, ChevronDown, Plus, Link2, X, Trash2, LayoutDashboard, PhoneCall, Settings, TrendingUp, Calendar, Users, ArrowRight } from 'lucide-react';
 import { usePhoneNumber, useProvisionPhoneNumber, useDeletePhoneNumber } from '@/hooks/usePhoneNumbers';
 import { useUserTier } from '@/hooks/useUserTier';
 import { toast } from 'sonner';
@@ -11,7 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useCallSessions, CallSession } from '@/hooks/useCallSessions';
 import { CallLogItem } from '../CallLogItem';
 import { PredictiveSearch } from '../PredictiveSearch';
@@ -21,6 +21,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { formatPhoneNumber } from '@/lib/phoneUtils';
 import { CrmNavHeader } from '../CrmNavHeader';
+import { ForgeCallCenter } from '../../forge/ForgeCallCenter';
+import { ForgeSettings } from '../../forge/ForgeSettings';
+
+type ForgeTab = 'dashboard' | 'call-center' | 'settings';
 
 interface CallsSectionProps {
   onSectionChange?: (section: string) => void;
@@ -41,12 +45,62 @@ export default function CallsSection({ onSectionChange }: CallsSectionProps) {
   const { callSessions, isLoading: isLoadingCalls, updateCallSession } = useCallSessions();
   const { jobs } = useJobs();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [activeTab, setActiveTab] = useState<ForgeTab>('dashboard');
+  const [isAiActive, setIsAiActive] = useState(false);
+  const [stats, setStats] = useState({ callsToday: 0, appointmentsBooked: 0, leadsCaptured: 0, bookingRate: 0 });
   
   // Link to job dialog state
   const [linkingCall, setLinkingCall] = useState<CallSession | null>(null);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [callerName, setCallerName] = useState('');
   const [isLinking, setIsLinking] = useState(false);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    const checkStatus = async () => {
+      const { data: membership } = await supabase
+        .from('contractor_users')
+        .select('contractor_id')
+        .eq('user_id', user.id)
+        .limit(1)
+        .maybeSingle();
+      if (membership) {
+        const { data: contractor } = await supabase
+          .from('contractors')
+          .select('voice_ai_enabled')
+          .eq('id', membership.contractor_id)
+          .maybeSingle();
+        if (contractor?.voice_ai_enabled) setIsAiActive(true);
+      }
+      const { data: profile } = await supabase
+        .from('contractor_ai_profiles')
+        .select('ai_enabled')
+        .eq('contractor_id', user.id)
+        .maybeSingle();
+      if (profile?.ai_enabled) setIsAiActive(true);
+    };
+    const loadStats = async () => {
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      const { data: calls } = await supabase
+        .from('calls')
+        .select('id, outcome')
+        .eq('contractor_id', user.id)
+        .gte('created_at', todayStart.toISOString());
+      if (calls) {
+        const booked = calls.filter(c => c.outcome === 'booked' || c.outcome === 'appointment_booked').length;
+        const leads = calls.filter(c => c.outcome === 'lead_captured' || c.outcome === 'booked').length;
+        setStats({
+          callsToday: calls.length,
+          appointmentsBooked: booked,
+          leadsCaptured: leads,
+          bookingRate: calls.length > 0 ? Math.round((booked / calls.length) * 100) : 0,
+        });
+      }
+    };
+    checkStatus();
+    loadStats();
+  }, [user?.id]);
 
   const registerExistingNumber = useMutation({
     mutationFn: async () => {
