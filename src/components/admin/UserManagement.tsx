@@ -30,6 +30,11 @@ type UserWithProfile = {
     subscription_tier?: string;
     pocketbot_full_access?: boolean;
   } | null;
+  contractor: {
+    id: string;
+    contractor_number?: string;
+    business_name?: string;
+  } | null;
   role: 'user' | 'admin' | 'super_admin';
 };
 export const UserManagement = () => {

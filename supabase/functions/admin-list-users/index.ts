@@ -67,10 +67,21 @@ serve(async (req) => {
       .from("user_roles")
       .select("*");
 
+    // Get contractor data (contractor_number)
+    const { data: contractorUsers } = await serviceClient
+      .from("contractor_users")
+      .select("user_id, contractor_id");
+
+    const { data: contractors } = await serviceClient
+      .from("contractors")
+      .select("id, contractor_number, business_name");
+
     // Combine the data
     const usersWithData = users.map(authUser => {
       const profile = profiles?.find(p => p.user_id === authUser.id);
       const role = roles?.find(r => r.user_id === authUser.id);
+      const contractorUser = contractorUsers?.find(cu => cu.user_id === authUser.id);
+      const contractor = contractorUser ? contractors?.find(c => c.id === contractorUser.contractor_id) : null;
       
       return {
         id: authUser.id,
@@ -79,7 +90,8 @@ serve(async (req) => {
         last_sign_in_at: authUser.last_sign_in_at,
         email_confirmed_at: authUser.email_confirmed_at,
         profile: profile || null,
-        role: role?.role || 'user'
+        role: role?.role || 'user',
+        contractor: contractor || null
       };
     });
 
