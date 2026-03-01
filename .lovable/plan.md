@@ -1,32 +1,28 @@
 
 
-## Problem
+## Fix: Remove CT1 Logo from Customer-Facing Estimates and Invoices
 
-The `profiles` table has 11 users with CT numbers (CT1000001–CT1000011), but the `contractors` table only has 1 row (CT1000009). The remaining 10 users have no entry in `contractors` or `contractor_users`, so they don't appear in contractor-related queries.
+### Problem
+When estimates are sent to customers, the public estimate page falls back to the CT1 logo when a contractor hasn't uploaded their own logo. Customers should only see their contractor's branding, not CT1 branding in the header.
 
-## Root Cause
+### What Changes
 
-The `contractors` table was introduced after users were already created. The existing user-creation flow assigns a `ct1_contractor_number` in `profiles` but does not create a corresponding `contractors` record or `contractor_users` mapping.
+**File: `src/pages/PublicEstimate.tsx`**
 
-## Plan
+1. **Remove the CT1 logo import** (line 13) -- the `ct1PoweredLogo` import is used in two places: the header fallback and the "Powered by CT1" footer. The footer usage is intentional branding, so the import stays but the header fallback changes.
 
-### 1. Backfill existing users into the contractors table
+2. **Update the header logo fallback** (line 217) -- Instead of falling back to the CT1 logo when the contractor has no logo, use a `Building2` icon (same pattern as `PublicInvoice.tsx`):
+   - Change: `const displayLogo = contractor?.logo_url || ct1PoweredLogo;`
+   - To: `const displayLogo = contractor?.logo_url;`
 
-Write a database migration that:
-- For each profile with a `ct1_contractor_number` that does NOT already have a `contractors` row, creates a `contractors` record using the profile's `user_id` as the contractor `id`, and maps the CT number.
-- Creates a corresponding `contractor_users` row (role: `owner`) for each.
-- Skips CT1000009 since it already exists.
+3. **Update the header logo rendering** (around lines 231-240) -- Add a conditional: if `displayLogo` exists, show the contractor's logo image; otherwise show a generic `Building2` icon in a styled circle, matching the invoice page pattern.
 
-### 2. Auto-create contractor on new user signup
+### What Stays
+- The **"Powered by CT1"** footer branding at the bottom of estimates remains unchanged (this is the platform branding standard).
+- The **PublicInvoice.tsx** page already handles this correctly with the `Building2` fallback icon -- no changes needed there.
+- The **estimate PDF preview/download** components already use only the contractor's `logo_url` with no CT1 fallback -- no changes needed.
 
-Update the `handle_new_user()` database trigger so that when a new user is created:
-- A `contractors` row is automatically created.
-- A `contractor_users` mapping (role: `owner`) is inserted.
-- The `contractor_number` is auto-assigned by the existing trigger on `contractors`.
-
-This ensures all future users are automatically populated in the contractors table.
-
-### 3. Sync the CT numbers
-
-Ensure the `contractor_number` on the `contractors` row matches the `ct1_contractor_number` on the `profiles` row for consistency. The backfill migration will use the profile's CT number as the contractor's `contractor_number`.
-
+### Technical Details
+- Only 1 file modified: `src/pages/PublicEstimate.tsx`
+- ~10 lines changed total
+- Pattern mirrors the existing `PublicInvoice.tsx` implementation (lines 142-154)
