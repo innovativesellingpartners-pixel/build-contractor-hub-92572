@@ -895,6 +895,7 @@ export type Database = {
       contractors: {
         Row: {
           business_name: string
+          contractor_number: string | null
           created_at: string
           id: string
           subscription_tier: string | null
@@ -903,6 +904,7 @@ export type Database = {
         }
         Insert: {
           business_name: string
+          contractor_number?: string | null
           created_at?: string
           id?: string
           subscription_tier?: string | null
@@ -911,6 +913,7 @@ export type Database = {
         }
         Update: {
           business_name?: string
+          contractor_number?: string | null
           created_at?: string
           id?: string
           subscription_tier?: string | null
@@ -5914,6 +5917,10 @@ export type Database = {
       cleanup_expired_oauth_states: { Args: never; Returns: undefined }
       drop_quickbooks_plaintext_columns: { Args: never; Returns: undefined }
       generate_contractor_number: { Args: never; Returns: string }
+      generate_contractor_number_for_contractors: {
+        Args: never
+        Returns: string
+      }
       generate_customer_number: { Args: never; Returns: string }
       generate_estimate_number: { Args: never; Returns: string }
       generate_invoice_number: { Args: never; Returns: string }

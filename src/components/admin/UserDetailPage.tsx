@@ -96,6 +96,10 @@ export const UserDetailPage = () => {
                   <p className="text-base">{user.profile?.ct1_contractor_number || 'N/A'}</p>
                 </div>
                 <div>
+                  <p className="text-sm font-medium text-muted-foreground">Contractor Number</p>
+                  <p className="text-base font-mono">{user.contractor?.contractor_number || 'N/A'}</p>
+                </div>
+                <div>
                   <p className="text-sm font-medium text-muted-foreground">Subscription Tier</p>
                   <p className="text-base">{user.profile?.subscription_tier || 'None'}</p>
                 </div>

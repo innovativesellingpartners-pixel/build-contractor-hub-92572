@@ -30,6 +30,11 @@ type UserWithProfile = {
     subscription_tier?: string;
     pocketbot_full_access?: boolean;
   } | null;
+  contractor: {
+    id: string;
+    contractor_number?: string;
+    business_name?: string;
+  } | null;
   role: 'user' | 'admin' | 'super_admin';
 };
 export const UserManagement = () => {
@@ -498,8 +503,11 @@ export const UserManagement = () => {
                 </div>
 
                 <div className="hidden sm:flex items-center gap-2 flex-shrink-0">
-                  {user.profile?.ct1_contractor_number && (
-                    <Badge variant="outline" className="text-xs">#{user.profile.ct1_contractor_number}</Badge>
+                  {user.contractor?.contractor_number && (
+                    <Badge variant="outline" className="text-xs font-mono">#{user.contractor.contractor_number}</Badge>
+                  )}
+                  {!user.contractor?.contractor_number && user.profile?.ct1_contractor_number && (
+                    <Badge variant="outline" className="text-xs font-mono">#{user.profile.ct1_contractor_number}</Badge>
                   )}
                   {user.profile?.subscription_tier && (
                     <Badge className={`${getTierBadgeColor(user.profile.subscription_tier)} text-white text-xs`}>
