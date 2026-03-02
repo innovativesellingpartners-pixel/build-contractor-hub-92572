@@ -159,19 +159,21 @@ serve(async (req) => {
         .eq('user_id', stateData.contractor_id)
         .eq('provider', 'google');
       
-      const { error: insertError } = await supabase
-        .from('calendar_connections')
-        .insert({
+      const insertPayload: Record<string, any> = {
           user_id: stateData.contractor_id,
           contractor_id: resolvedContractorId,
           provider: 'google',
           calendar_email: calendarEmailToStore,
           access_token_encrypted: tokens.access_token,
-          refresh_token_encrypted: tokens.refresh_token,
+          refresh_token_encrypted: tokens.refresh_token || 'pending',
           expires_at: expiresAt,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
-        });
+      };
+
+      const { error: insertError } = await supabase
+        .from('calendar_connections')
+        .insert(insertPayload);
 
       if (insertError) {
         console.error('Failed to save calendar connection:', insertError);
