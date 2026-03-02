@@ -27,7 +27,7 @@ export function SectionHeader({ children, className }: { children: ReactNode; cl
 // White info card container
 export function InfoCard({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <div className={cn('bg-card border border-border/60 rounded-xl shadow-sm', className)}>
+    <div className={cn('bg-card border border-border rounded-xl shadow-sm', className)}>
       {children}
     </div>
   );
