@@ -1496,7 +1496,7 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
           {selectedDay && (
             <div className="flex-1 overflow-y-auto space-y-4 py-2">
               {(() => {
-                const dayEvents = getEventsForDay(selectedDay);
+                const dayEvents = getFilteredEventsForDay(selectedDay);
                 const dayTasks = getTasksForDay(selectedDay);
                 
                 if (dayEvents.length === 0 && dayTasks.length === 0) {
