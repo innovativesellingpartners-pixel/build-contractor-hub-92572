@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { toast } from 'sonner';
 import { EstimateLineItem } from './useEstimates';
 
@@ -60,14 +61,16 @@ export interface CreateTemplateInput {
 
 export function useEstimateTemplates() {
   const { user } = useAuth();
+  const { isSuperAdmin } = useAdminAuth();
   const queryClient = useQueryClient();
 
-  // Fetch all templates (user's own + account-wide)
+  // Fetch all templates (user's own + account-wide; super admins see all)
   const { data: templates, isLoading } = useQuery({
-    queryKey: ['estimate-templates', user?.id],
+    queryKey: ['estimate-templates', user?.id, isSuperAdmin],
     queryFn: async () => {
       if (!user) throw new Error('Not authenticated');
       
+      // Super admins see all templates via RLS policy; regular users see own + account
       const { data, error } = await supabase
         .from('estimate_templates')
         .select('*')
@@ -204,6 +207,7 @@ export function useEstimateTemplates() {
   return {
     templates,
     isLoading,
+    isSuperAdmin,
     createTemplate,
     updateTemplate,
     deleteTemplate,
