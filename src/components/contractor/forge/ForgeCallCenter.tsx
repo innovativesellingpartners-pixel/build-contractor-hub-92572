@@ -416,55 +416,27 @@ export function ForgeCallCenter({ onBack }: { onBack: () => void }) {
             />
           </div>
 
-          <div className="space-y-2">
-            {filteredCalls.map((call) => {
-              const hasAudio = !!call.recording_url;
-              const hasText = !!(call.transcript || (call.conversation_history && Array.isArray(call.conversation_history) && call.conversation_history.length > 0));
-
-              return (
-                <button
-                  key={call.id}
-                  onClick={() => setSelectedCall(call)}
-                  className="w-full text-left group"
-                >
-                  <Card className="border hover:border-orange-300/50 hover:shadow-sm transition-all duration-150">
-                    <CardContent className="p-4 flex items-center gap-4">
-                      <div className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center shrink-0">
-                        <Phone className="h-4 w-4 text-muted-foreground" />
-                      </div>
-                      <div className="flex-1 min-w-0 grid grid-cols-1 sm:grid-cols-[1fr_auto_auto_auto_auto] items-center gap-2 sm:gap-3">
-                        <div className="min-w-0">
-                          <p className="text-sm font-semibold truncate">
-                            {call.caller_name || call.from_number}
-                          </p>
-                          {call.ai_summary && (
-                            <p className="text-xs text-muted-foreground truncate mt-0.5">{call.ai_summary}</p>
-                          )}
-                        </div>
-                        {/* Feature icons */}
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          {hasAudio && <span title="Recording available"><Volume2 className="h-3.5 w-3.5 text-orange-500" /></span>}
-                          {hasText && <span title="Transcript available"><FileText className="h-3.5 w-3.5 text-blue-500" /></span>}
-                        </div>
-                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0">
-                          <Clock className="h-3 w-3" />
-                          {format(new Date(call.created_at), "MMM d, h:mm a")}
-                        </div>
-                        {call.duration != null && (
-                          <span className="text-xs text-muted-foreground shrink-0">
-                            {formatDuration(call.duration)}
-                          </span>
-                        )}
-                        <div className="shrink-0">
-                          {getOutcomeBadge(call.outcome)}
-                        </div>
-                      </div>
-                      <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-orange-500 transition-colors shrink-0" />
-                    </CardContent>
-                  </Card>
-                </button>
-              );
-            })}
+          <div className="space-y-1">
+            {filteredCalls.map((call) => (
+              <button
+                key={call.id}
+                onClick={() => setSelectedCall(call)}
+                className="w-full text-left group"
+              >
+                <Card className="border hover:border-orange-300/50 hover:shadow-sm transition-all duration-150">
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-full bg-muted flex items-center justify-center shrink-0">
+                      <Phone className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold truncate">{call.from_number}</p>
+                      <p className="text-xs text-muted-foreground">{format(new Date(call.created_at), "MMM d, h:mm a")}</p>
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-orange-500 transition-colors shrink-0" />
+                  </CardContent>
+                </Card>
+              </button>
+            ))}
             {filteredCalls.length === 0 && (
               <p className="text-center text-sm text-muted-foreground py-8">No matching calls</p>
             )}
