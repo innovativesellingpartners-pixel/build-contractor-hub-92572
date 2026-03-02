@@ -228,7 +228,7 @@ export function TabNav({ tabs, activeTab, onTabChange }: TabNavProps) {
   return (
     <>
       {/* Mobile: labeled dropdown */}
-      <div className="sm:hidden bg-card border-b border-border/40 px-3 py-2 flex items-center gap-3">
+      <div className="sm:hidden bg-card border-b border-border px-3 py-2 flex items-center gap-3">
         <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">Section</span>
         <select
           value={activeTab}
