@@ -129,7 +129,6 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
   };
 
   const fetchEmails = async (forceRefresh = false) => {
-    // Skip if emails already fetched and not forcing refresh
     if (emailsFetchedRef.current && !forceRefresh) {
       console.log('Skipping email fetch - already loaded');
       return;
@@ -146,10 +145,18 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
 
       if (error) throw error;
       
-      // Apply locally tracked read states to fetched emails
+      // Handle needs_reauth flag from backend
+      if (data?.needs_reauth && data.needs_reauth.length > 0) {
+        setReauthConnectionIds(data.needs_reauth);
+        const affectedConnections = connections.filter(c => data.needs_reauth.includes(c.id));
+        const providers = affectedConnections.map(c => c.provider === 'google' ? 'Gmail' : 'Outlook').join(' & ');
+        toast.error(`${providers} connection expired. Please reconnect to continue receiving emails.`, {
+          duration: 10000,
+        });
+      }
+      
       const fetchedEmails = (data?.emails || []).map((email: Email) => ({
         ...email,
-        // If we've marked this email as read locally, keep it read even if API says unread
         isUnread: readEmailIdsRef.current.has(email.id) ? false : email.isUnread
       }));
       
