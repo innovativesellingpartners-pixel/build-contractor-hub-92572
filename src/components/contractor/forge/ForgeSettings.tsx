@@ -65,6 +65,16 @@ export function ForgeSettings({ onBack }: { onBack: () => void }) {
   const [profile, setProfile] = useState<AIProfile>(defaultProfile);
   const [saving, setSaving] = useState(false);
   const [calendarConnected, setCalendarConnected] = useState(false);
+  const [showPaymentPrompt, setShowPaymentPrompt] = useState(false);
+  const [showContactSales, setShowContactSales] = useState(false);
+  const { userRole, hasFullAccess, subscription } = useUserTier();
+  
+  const isAdmin = hasFullAccess || userRole === 'super_admin' || userRole === 'admin';
+  // Check if user has Voice AI subscription (bot_user tier includes it, or growth/accel)
+  const hasVoiceAISubscription = subscription?.tier_id === 'bot_user' || 
+    subscription?.tier_id === 'growth' || 
+    subscription?.tier_id === 'accel' || 
+    subscription?.tier_id === 'full_access';
 
   useEffect(() => {
     loadProfile();
