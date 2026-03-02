@@ -88,7 +88,7 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const [editEventOpen, setEditEventOpen] = useState(false);
   const [eventToEdit, setEventToEdit] = useState<CalendarEvent | null>(null);
-  const [viewMode, setViewMode] = useState<CalendarViewMode>('day');
+  const [viewMode, setViewMode] = useState<CalendarViewMode>('5-day');
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
 
