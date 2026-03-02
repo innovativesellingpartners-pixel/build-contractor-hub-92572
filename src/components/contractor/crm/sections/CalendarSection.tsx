@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar as CalendarIcon, Plug, Check, Loader2, X, RefreshCw, Clock, MapPin, ChevronDown, ChevronUp, Trash2, Plus, Briefcase, FileText, ExternalLink, ChevronLeft, ChevronRight, Pencil, CheckSquare, Mail, Users, CheckCircle2, HelpCircle, XCircle } from 'lucide-react';
+import { Calendar as CalendarIcon, Plug, Check, Loader2, X, RefreshCw, Clock, MapPin, ChevronDown, ChevronUp, Trash2, Plus, Briefcase, FileText, ExternalLink, ChevronLeft, ChevronRight, Pencil, CheckSquare, Mail, Users, CheckCircle2, HelpCircle, XCircle, Eye, Layers, Columns, Settings } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
