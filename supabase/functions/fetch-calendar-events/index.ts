@@ -233,7 +233,7 @@ async function refreshGoogleToken(connection: any, supabase: any): Promise<strin
   }
 }
 
-async function fetchGoogleCalendarEvents(accessToken: string): Promise<any[]> {
+async function fetchGoogleCalendarEvents(accessToken: string, preferredCalendarEmail?: string): Promise<any[]> {
   try {
     // Fetch events from past 30 days and next 6 months (210 days total)
     const now = new Date();
@@ -242,7 +242,6 @@ async function fetchGoogleCalendarEvents(accessToken: string): Promise<any[]> {
 
     console.log('Calling Google Calendar API with timeMin:', timeMin, 'timeMax:', timeMax);
 
-    // First, get list of all calendars the user has access to
     const calendarListUrl = 'https://www.googleapis.com/calendar/v3/users/me/calendarList';
     const calendarListResponse = await fetch(calendarListUrl, {
       headers: { Authorization: `Bearer ${accessToken}` }
@@ -250,7 +249,6 @@ async function fetchGoogleCalendarEvents(accessToken: string): Promise<any[]> {
 
     if (!calendarListResponse.ok) {
       console.error('Failed to fetch calendar list:', calendarListResponse.status);
-      // Fallback to just primary calendar
       return await fetchEventsFromCalendar(accessToken, 'primary', timeMin, timeMax);
     }
 
@@ -258,31 +256,47 @@ async function fetchGoogleCalendarEvents(accessToken: string): Promise<any[]> {
     const calendars = calendarListData.items || [];
     console.log('Found', calendars.length, 'calendars:', calendars.map((c: any) => c.summary || c.id).join(', '));
 
-    // Fetch events from all calendars
-    const allEvents: any[] = [];
-    
-    for (const calendar of calendars) {
-      // Only fetch from calendars where the user is owner or has write access
-      // Skip "other" calendars like holidays, birthdays, etc. if they're read-only
-      if (calendar.accessRole === 'freeBusyReader') {
-        console.log('Skipping read-only calendar:', calendar.summary);
-        continue;
-      }
-      
-      console.log('Fetching events from calendar:', calendar.summary || calendar.id, 'accessRole:', calendar.accessRole);
-      const events = await fetchEventsFromCalendar(accessToken, calendar.id, timeMin, timeMax);
-      console.log('Found', events.length, 'events in calendar:', calendar.summary || calendar.id);
-      
-      // Add calendar info to each event
-      allEvents.push(...events.map((e: any) => ({
-        ...e,
-        calendarId: calendar.id,
-        calendarName: calendar.summary
-      })));
+    const normalizedPreferred = preferredCalendarEmail?.trim().toLowerCase();
+    const writableCalendars = calendars.filter((calendar: any) => calendar.accessRole !== 'freeBusyReader');
+
+    const matchedCalendar = normalizedPreferred
+      ? writableCalendars.find((calendar: any) => {
+          const calendarId = String(calendar.id || '').toLowerCase();
+          const calendarSummary = String(calendar.summary || '').toLowerCase();
+          return (
+            calendarId === normalizedPreferred ||
+            calendarSummary === normalizedPreferred ||
+            calendarId.includes(normalizedPreferred)
+          );
+        })
+      : null;
+
+    const fallbackCalendar =
+      writableCalendars.find((calendar: any) => calendar.primary) ||
+      writableCalendars[0] ||
+      calendars.find((calendar: any) => calendar.id === 'primary');
+
+    const targetCalendar = matchedCalendar || fallbackCalendar;
+
+    if (!targetCalendar) {
+      console.log('No eligible calendar found, returning no events');
+      return [];
     }
-    
-    console.log('Total events from all calendars:', allEvents.length);
-    return allEvents;
+
+    if (matchedCalendar) {
+      console.log('Using matched calendar for connection:', targetCalendar.summary || targetCalendar.id);
+    } else {
+      console.log('Preferred calendar not found, falling back to:', targetCalendar.summary || targetCalendar.id);
+    }
+
+    const events = await fetchEventsFromCalendar(accessToken, targetCalendar.id, timeMin, timeMax);
+    console.log('Found', events.length, 'events in calendar:', targetCalendar.summary || targetCalendar.id);
+
+    return events.map((e: any) => ({
+      ...e,
+      calendarId: targetCalendar.id,
+      calendarName: targetCalendar.summary
+    }));
   } catch (error) {
     console.error('Error fetching Google Calendar events:', error);
     return [];
