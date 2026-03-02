@@ -1068,6 +1068,7 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
                           const isHourStart = timeSlot.endsWith(':00');
                           
                           if (eventAtSlot) {
+                            const eventColors = getEventColor(eventAtSlot);
                             // Event starts at this time slot - show event card with edit button
                             return (
                               <div
@@ -1080,7 +1081,7 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
                                 <div
                                   role="button"
                                   tabIndex={0}
-                                  className="flex-1 p-2 rounded-lg bg-primary/10 border border-primary/20 cursor-pointer hover:bg-primary/15 transition-colors"
+                                  className={cn("flex-1 p-2 rounded-lg cursor-pointer hover:opacity-80 transition-colors border", eventColors.bg, eventColors.border)}
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setEventToEdit(eventAtSlot);
