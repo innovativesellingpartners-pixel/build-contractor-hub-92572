@@ -485,7 +485,7 @@ export function UnifiedDashboard() {
           </Card>
 
           {/* Least Profitable */}
-          <Card className="border-border/60 cursor-pointer hover:shadow-md hover:border-border transition-all group" onClick={() => navigateToReport("jobs")}>
+          <Card className="border-border cursor-pointer hover:shadow-md transition-all group" onClick={() => navigateToReport("jobs")}>
             <CardHeader>
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
                 <AlertOctagon className="h-4 w-4 text-red-600" /> Bottom 5 Jobs
