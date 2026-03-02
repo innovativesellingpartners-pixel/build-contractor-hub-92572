@@ -244,7 +244,7 @@ export function TabNav({ tabs, activeTab, onTabChange }: TabNavProps) {
       </div>
 
       {/* Desktop: icon + label tabs */}
-      <div className="hidden sm:flex overflow-x-auto bg-card border-b border-border/40 px-1 gap-0.5 scrollbar-hide">
+      <div className="hidden sm:flex overflow-x-auto bg-card border-b border-border px-1 gap-0.5 scrollbar-hide">
         {tabs.map((tab) => (
           <button
             key={tab.id}
