@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Mail, Plug, Check, Loader2, X, RefreshCw, Circle, ArrowLeft, Reply, Send, ChevronDown, ChevronUp, Search, PenSquare, Paperclip, ChevronLeft, ChevronRight, MailOpen, Calendar as CalendarIcon } from 'lucide-react';
+import { Mail, Plug, Check, Loader2, X, RefreshCw, Circle, ArrowLeft, Reply, Send, ChevronDown, ChevronUp, Search, PenSquare, Paperclip, ChevronLeft, ChevronRight, MailOpen, Calendar as CalendarIcon, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -43,6 +43,7 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
   const [connections, setConnections] = useState<EmailConnection[]>([]);
   const [emails, setEmails] = useState<Email[]>([]);
   const [loading, setLoading] = useState(true);
+  const [reauthConnectionIds, setReauthConnectionIds] = useState<string[]>([]);
   const [loadingEmails, setLoadingEmails] = useState(false);
   const [connecting, setConnecting] = useState<string | null>(null);
   const [connectionsExpanded, setConnectionsExpanded] = useState(false);
@@ -91,10 +92,17 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
 
     if (oauthSuccess === 'email') {
       toast.success(`${provider === 'google' ? 'Gmail' : 'Outlook'} connected successfully!`);
+      setReauthConnectionIds([]);
       fetchConnections();
       window.history.replaceState({}, '', window.location.pathname);
     } else if (oauthError) {
-      toast.error(`Connection failed: ${oauthError}`);
+      const errorMessages: Record<string, string> = {
+        no_refresh_token: 'Could not get persistent access. Please revoke app access in your Google/Outlook account settings and try again.',
+        token_exchange_failed: 'Failed to exchange authorization code. Please try again.',
+        save_failed: 'Failed to save connection. Please try again.',
+        state_expired: 'Connection attempt timed out. Please try again.',
+      };
+      toast.error(errorMessages[oauthError] || `Connection failed: ${oauthError}`);
       window.history.replaceState({}, '', window.location.pathname);
     }
   }, []);
@@ -121,7 +129,6 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
   };
 
   const fetchEmails = async (forceRefresh = false) => {
-    // Skip if emails already fetched and not forcing refresh
     if (emailsFetchedRef.current && !forceRefresh) {
       console.log('Skipping email fetch - already loaded');
       return;
@@ -138,10 +145,18 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
 
       if (error) throw error;
       
-      // Apply locally tracked read states to fetched emails
+      // Handle needs_reauth flag from backend
+      if (data?.needs_reauth && data.needs_reauth.length > 0) {
+        setReauthConnectionIds(data.needs_reauth);
+        const affectedConnections = connections.filter(c => data.needs_reauth.includes(c.id));
+        const providers = affectedConnections.map(c => c.provider === 'google' ? 'Gmail' : 'Outlook').join(' & ');
+        toast.error(`${providers} connection expired. Please reconnect to continue receiving emails.`, {
+          duration: 10000,
+        });
+      }
+      
       const fetchedEmails = (data?.emails || []).map((email: Email) => ({
         ...email,
-        // If we've marked this email as read locally, keep it read even if API says unread
         isUnread: readEmailIdsRef.current.has(email.id) ? false : email.isUnread
       }));
       
@@ -598,6 +613,38 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
             )}
           </div>
         </div>
+
+        {/* Reconnect Banner */}
+        {reauthConnectionIds.length > 0 && (
+          <Card className="p-4 border-destructive/50 bg-destructive/5">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="h-5 w-5 text-destructive mt-0.5 shrink-0" />
+              <div className="flex-1">
+                <p className="font-medium text-sm">Email connection expired</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {connections
+                    .filter(c => reauthConnectionIds.includes(c.id))
+                    .map(c => `${c.provider === 'google' ? 'Gmail' : 'Outlook'} (${c.email_address})`)
+                    .join(', ')
+                  } needs to be reconnected for continued access.
+                </p>
+                <div className="flex gap-2 mt-3">
+                  {connections.filter(c => reauthConnectionIds.includes(c.id)).map(c => (
+                    <Button
+                      key={c.id}
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => handleConnect(c.provider as 'google' | 'outlook')}
+                    >
+                      <RefreshCw className="h-3 w-3 mr-1" />
+                      Reconnect {c.provider === 'google' ? 'Gmail' : 'Outlook'}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </Card>
+        )}
 
         {/* Search Bar */}
         {hasAnyConnection && (
