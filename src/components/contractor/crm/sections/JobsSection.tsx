@@ -368,6 +368,13 @@ export default function JobsSection({ onSectionChange, initialJobId, onClearInit
         />
 
         <ExpenseAssignmentDialog open={assignOpen} onOpenChange={setAssignOpen} />
+
+        <ConvertToEstimateDialog
+          open={convertDialogOpen}
+          onOpenChange={setConvertDialogOpen}
+          onCreateBlank={handleCreateBlankEstimate}
+          onCreateFromTemplate={handleCreateEstimateFromTemplate}
+        />
       </div>
     </div>
   );
