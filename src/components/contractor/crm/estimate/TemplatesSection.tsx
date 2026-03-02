@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { Search, FileText, Tag, Trash2, Plus, Lock, Globe, ArrowLeft, FolderOpen, Receipt } from 'lucide-react';
+import { Search, FileText, Tag, Trash2, Plus, Lock, Globe, ArrowLeft, FolderOpen, Receipt, Pencil } from 'lucide-react';
 import { useEstimateTemplates, TRADES, Trade, EstimateTemplate } from '@/hooks/useEstimateTemplates';
 import { MobileOptimizedWrapper, MobileStack } from '../sections/MobileOptimizedWrapper';
 import { HorizontalRowCard, RowAvatar, RowContent, RowTitleLine, RowMetaLine, RowActions } from '../sections/HorizontalRowCard';
@@ -15,6 +15,7 @@ import { useJobs } from '@/hooks/useJobs';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { CreateTemplateDialog } from './CreateTemplateDialog';
+import { EditTemplateModal } from './EditTemplateModal';
 import PlumbingInvoiceCreator from '../PlumbingInvoiceCreator';
 
 interface TemplatesSectionProps {
@@ -52,7 +53,7 @@ const tradeColors: Record<string, string> = {
 };
 
 export function TemplatesSection({ onBack, onAddToEstimate }: TemplatesSectionProps) {
-  const { templates, isLoading, deleteTemplate, filterTemplates } = useEstimateTemplates();
+  const { templates, isLoading, deleteTemplate, filterTemplates, updateTemplate, isSuperAdmin } = useEstimateTemplates();
   const { createEstimateAsync } = useEstimates();
   const { jobs } = useJobs();
   const { user } = useAuth();
@@ -74,11 +75,20 @@ export function TemplatesSection({ onBack, onAddToEstimate }: TemplatesSectionPr
   // For create template dialog
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
+  // For edit template dialog
+  const [editingTemplate, setEditingTemplate] = useState<EstimateTemplate | null>(null);
+
   // For Plumbing Invoice Creator
   const [showPlumbingInvoiceCreator, setShowPlumbingInvoiceCreator] = useState(false);
   
   // Check if selected trade is plumbing
   const isPlumbingTrade = selectedTrade?.toLowerCase().includes('plumbing');
+
+  // Global search across all templates (when on trade cards view)
+  const globalSearchResults = useMemo(() => {
+    if (!searchQuery || selectedTrade) return null;
+    return filterTemplates(undefined, searchQuery, visibility);
+  }, [templates, searchQuery, visibility, selectedTrade, filterTemplates]);
 
   // Count templates per trade
   const templateCountByTrade = useMemo(() => {
@@ -145,6 +155,15 @@ export function TemplatesSection({ onBack, onAddToEstimate }: TemplatesSectionPr
     }
   };
 
+  const handleToggleVisibility = async (template: EstimateTemplate, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const newVisibility = template.visibility === 'private' ? 'account' : 'private';
+    updateTemplate.mutate({
+      id: template.id,
+      visibility: newVisibility,
+    });
+  };
+
   const handleBackFromTrade = () => {
     setSelectedTrade(null);
     setSearchQuery('');
@@ -153,11 +172,91 @@ export function TemplatesSection({ onBack, onAddToEstimate }: TemplatesSectionPr
 
   const activeJobs = jobs.filter(j => j.status !== 'completed' && j.status !== 'cancelled');
 
-  // If no trade selected, show trade cards dashboard
+  // Render a template row (shared between global search and trade view)
+  const renderTemplateRow = (template: EstimateTemplate, showTrade = false) => (
+    <HorizontalRowCard key={template.id} onClick={() => handleAddClick(template)}>
+      <RowAvatar initials={template.name.substring(0, 2).toUpperCase()} />
+      <RowContent>
+        <RowTitleLine>
+          <h3 className="font-semibold text-sm truncate">{template.name}</h3>
+        </RowTitleLine>
+        <RowMetaLine>
+          {showTrade && (
+            <Badge variant="outline" className="text-xs">{template.trade}</Badge>
+          )}
+          <Badge variant="outline" className="text-xs">
+            {template.line_items?.length || 0} items
+          </Badge>
+          {template.visibility === 'account' ? (
+            <Badge variant="secondary" className="text-xs flex items-center gap-1">
+              <Globe className="h-3 w-3" />
+              Public
+            </Badge>
+          ) : (
+            <Badge variant="outline" className="text-xs flex items-center gap-1">
+              <Lock className="h-3 w-3" />
+              Private
+            </Badge>
+          )}
+          <span className="text-xs text-muted-foreground">
+            {new Date(template.created_at).toLocaleDateString()}
+          </span>
+        </RowMetaLine>
+        {template.tags && template.tags.length > 0 && (
+          <div className="flex gap-1 mt-1 flex-wrap">
+            {template.tags.slice(0, 3).map(tag => (
+              <Badge key={tag} variant="outline" className="text-xs">
+                <Tag className="h-2 w-2 mr-1" />
+                {tag}
+              </Badge>
+            ))}
+          </div>
+        )}
+      </RowContent>
+      <RowActions>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          title={template.visibility === 'private' ? 'Make public' : 'Make private'}
+          onClick={(e) => handleToggleVisibility(template, e)}
+        >
+          {template.visibility === 'private' ? <Globe className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
+        </Button>
+        {(template.user_id === user?.id || isSuperAdmin) && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={(e) => { e.stopPropagation(); setEditingTemplate(template); }}
+            title="Edit template"
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+        )}
+        <Button size="sm" onClick={(e) => { e.stopPropagation(); handleAddClick(template); }}>
+          <Plus className="h-4 w-4 mr-1" />
+          Use
+        </Button>
+        {(template.user_id === user?.id || isSuperAdmin) && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={(e) => handleDeleteClick(template, e)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        )}
+      </RowActions>
+    </HorizontalRowCard>
+  );
+
+  // If no trade selected, show trade cards dashboard with global search
   if (!selectedTrade) {
     return (
       <MobileOptimizedWrapper
-        title="Templates"
+        title={isSuperAdmin ? 'All Templates' : 'Templates'}
         onBackClick={onBack}
         actions={
           <Button onClick={() => setCreateDialogOpen(true)}>
@@ -167,44 +266,92 @@ export function TemplatesSection({ onBack, onAddToEstimate }: TemplatesSectionPr
         }
       >
         <div className="px-4 sm:px-0">
-          <p className="text-muted-foreground mb-6">
-            Select a trade to view and manage templates
-          </p>
-          
-          {isLoading ? (
+          {isSuperAdmin && (
+            <p className="text-sm text-muted-foreground mb-3">Viewing all templates across all users</p>
+          )}
+
+          {/* Global Search */}
+          <div className="flex flex-col sm:flex-row gap-3 mb-6">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search all templates by name, trade, or tag..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            <Select value={visibility} onValueChange={(v) => setVisibility(v as 'all' | 'private' | 'account')}>
+              <SelectTrigger className="w-full sm:w-[150px]">
+                <SelectValue placeholder="Visibility" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Templates</SelectItem>
+                <SelectItem value="private">My Templates</SelectItem>
+                <SelectItem value="account">Shared</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Show search results or trade cards */}
+          {globalSearchResults && globalSearchResults.length > 0 ? (
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground mb-3">
+                {globalSearchResults.length} result{globalSearchResults.length !== 1 ? 's' : ''} for "{searchQuery}"
+              </p>
+              <MobileStack className="space-y-2">
+                {globalSearchResults.map((template) => renderTemplateRow(template, true))}
+              </MobileStack>
+            </div>
+          ) : globalSearchResults && globalSearchResults.length === 0 ? (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <FileText className="h-12 w-12 text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No templates found</h3>
+                <p className="text-muted-foreground text-center">
+                  Try adjusting your search query
+                </p>
+              </CardContent>
+            </Card>
+          ) : isLoading ? (
             <div className="flex justify-center p-8">
               <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {TRADES.map((trade) => {
-                const count = templateCountByTrade[trade] || 0;
-                const colorClass = tradeColors[trade] || 'bg-primary';
-                
-                return (
-                  <Card
-                    key={trade}
-                    className="cursor-pointer hover:shadow-lg transition-all hover:scale-[1.02] overflow-hidden"
-                    onClick={() => setSelectedTrade(trade)}
-                  >
-                    <div className={`h-2 ${colorClass}`} />
-                    <CardContent className="pt-4">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-sm truncate">{trade}</h3>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {count} {count === 1 ? 'template' : 'templates'}
-                          </p>
+            <>
+              <p className="text-muted-foreground mb-4">
+                Select a trade to view and manage templates, or search above
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {TRADES.map((trade) => {
+                  const count = templateCountByTrade[trade] || 0;
+                  const colorClass = tradeColors[trade] || 'bg-primary';
+                  
+                  return (
+                    <Card
+                      key={trade}
+                      className="cursor-pointer hover:shadow-lg transition-all hover:scale-[1.02] overflow-hidden"
+                      onClick={() => setSelectedTrade(trade)}
+                    >
+                      <div className={`h-2 ${colorClass}`} />
+                      <CardContent className="pt-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-sm truncate">{trade}</h3>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {count} {count === 1 ? 'template' : 'templates'}
+                            </p>
+                          </div>
+                          <div className={`p-2 rounded-lg ${colorClass} bg-opacity-20`}>
+                            <FolderOpen className={`h-5 w-5 ${colorClass.replace('bg-', 'text-')}`} />
+                          </div>
                         </div>
-                        <div className={`p-2 rounded-lg ${colorClass} bg-opacity-20`}>
-                          <FolderOpen className={`h-5 w-5 ${colorClass.replace('bg-', 'text-')}`} />
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </>
           )}
         </div>
 
@@ -212,6 +359,15 @@ export function TemplatesSection({ onBack, onAddToEstimate }: TemplatesSectionPr
           open={createDialogOpen}
           onOpenChange={setCreateDialogOpen}
         />
+
+        {/* Edit Template Modal */}
+        {editingTemplate && (
+          <EditTemplateModal
+            open={!!editingTemplate}
+            onOpenChange={(open) => { if (!open) setEditingTemplate(null); }}
+            template={editingTemplate}
+          />
+        )}
       </MobileOptimizedWrapper>
     );
   }
@@ -304,58 +460,7 @@ export function TemplatesSection({ onBack, onAddToEstimate }: TemplatesSectionPr
         </div>
       ) : filteredTemplates.length > 0 ? (
         <MobileStack className="space-y-2">
-          {filteredTemplates.map((template) => (
-            <HorizontalRowCard key={template.id} onClick={() => handleAddClick(template)}>
-              <RowAvatar initials={template.name.substring(0, 2).toUpperCase()} />
-              <RowContent>
-                <RowTitleLine>
-                  <h3 className="font-semibold text-sm truncate">{template.name}</h3>
-                </RowTitleLine>
-                <RowMetaLine>
-                  <Badge variant="outline" className="text-xs">
-                    {template.line_items?.length || 0} items
-                  </Badge>
-                  {template.visibility === 'account' ? (
-                    <Badge variant="secondary" className="text-xs flex items-center gap-1">
-                      <Globe className="h-3 w-3" />
-                      Public
-                    </Badge>
-                  ) : (
-                    <Badge variant="outline" className="text-xs flex items-center gap-1">
-                      <Lock className="h-3 w-3" />
-                      Private
-                    </Badge>
-                  )}
-                </RowMetaLine>
-                {template.tags && template.tags.length > 0 && (
-                  <div className="flex gap-1 mt-1 flex-wrap">
-                    {template.tags.slice(0, 3).map(tag => (
-                      <Badge key={tag} variant="outline" className="text-xs">
-                        <Tag className="h-2 w-2 mr-1" />
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                )}
-              </RowContent>
-              <RowActions>
-                <Button size="sm" onClick={(e) => { e.stopPropagation(); handleAddClick(template); }}>
-                  <Plus className="h-4 w-4 mr-1" />
-                  Use
-                </Button>
-                {template.user_id === user?.id && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={(e) => handleDeleteClick(template, e)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                )}
-              </RowActions>
-            </HorizontalRowCard>
-          ))}
+          {filteredTemplates.map((template) => renderTemplateRow(template))}
         </MobileStack>
       ) : (
         <Card>
@@ -445,12 +550,19 @@ export function TemplatesSection({ onBack, onAddToEstimate }: TemplatesSectionPr
         </DialogContent>
       </Dialog>
 
-      {/* Create Template Dialog */}
       <CreateTemplateDialog
         open={createDialogOpen}
         onOpenChange={setCreateDialogOpen}
-        defaultTrade={selectedTrade}
       />
+
+      {/* Edit Template Modal */}
+      {editingTemplate && (
+        <EditTemplateModal
+          open={!!editingTemplate}
+          onOpenChange={(open) => { if (!open) setEditingTemplate(null); }}
+          template={editingTemplate}
+        />
+      )}
     </MobileOptimizedWrapper>
   );
 }
