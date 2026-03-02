@@ -1517,28 +1517,34 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
                           <CalendarIcon className="h-3 w-3" />
                           Events ({dayEvents.length})
                         </div>
-                        {dayEvents.map((event) => (
-                          <div
-                            key={event.id}
-                            onClick={() => {
-                              setSelectedDay(null);
-                              setSelectedEvent(event);
-                            }}
-                            className="p-3 rounded-lg border bg-card hover:bg-muted/50 cursor-pointer transition-colors"
-                          >
-                            <div className="font-medium truncate">{event.summary || 'Untitled Event'}</div>
-                            <div className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
-                              <Clock className="h-3 w-3" />
-                              {formatEventTimeShort(event)}
-                            </div>
-                            {event.location && (
-                              <div className="text-sm text-muted-foreground flex items-center gap-1 mt-0.5 truncate">
-                                <MapPin className="h-3 w-3 flex-shrink-0" />
-                                <span className="truncate">{event.location}</span>
+                        {dayEvents.map((event) => {
+                          const colors = getEventColor(event);
+                          return (
+                            <div
+                              key={event.id}
+                              onClick={() => {
+                                setSelectedDay(null);
+                                setSelectedEvent(event);
+                              }}
+                              className={cn("p-3 rounded-lg border cursor-pointer transition-colors hover:opacity-80", colors.bg, colors.border)}
+                            >
+                              <div className="font-medium truncate flex items-center gap-1.5">
+                                <div className={cn('w-2 h-2 rounded-full flex-shrink-0', colors.dot)} />
+                                {event.summary || 'Untitled Event'}
                               </div>
-                            )}
-                          </div>
-                        ))}
+                              <div className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
+                                <Clock className="h-3 w-3" />
+                                {formatEventTimeShort(event)}
+                              </div>
+                              {event.location && (
+                                <div className="text-sm text-muted-foreground flex items-center gap-1 mt-0.5 truncate">
+                                  <MapPin className="h-3 w-3 flex-shrink-0" />
+                                  <span className="truncate">{event.location}</span>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
                     
