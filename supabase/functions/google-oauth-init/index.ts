@@ -111,6 +111,12 @@ serve(async (req) => {
     authUrl.searchParams.set('state', state);
     authUrl.searchParams.set('access_type', 'offline');
     authUrl.searchParams.set('prompt', 'select_account consent');
+    if (preferredGoogleEmail) {
+      authUrl.searchParams.set('login_hint', preferredGoogleEmail);
+    }
+    if (preferredGoogleDomain && preferredGoogleDomain !== 'gmail.com' && preferredGoogleDomain !== 'googlemail.com') {
+      authUrl.searchParams.set('hd', preferredGoogleDomain);
+    }
 
     return new Response(
       JSON.stringify({ url: authUrl.toString() }),
