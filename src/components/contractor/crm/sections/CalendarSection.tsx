@@ -533,6 +533,27 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
           onDashboard={() => onSectionChange?.('dashboard')}
           sectionLabel="Calendar"
         />
+
+        {/* Calendar / Emails Tab Toggle */}
+        <div className="flex items-center gap-2 border-b pb-1">
+          <Button
+            variant="default"
+            size="sm"
+            className="gap-2"
+          >
+            <CalendarIcon className="h-4 w-4" />
+            Calendar
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-2"
+            onClick={() => onSectionChange?.('emails')}
+          >
+            <Mail className="h-4 w-4" />
+            Emails
+          </Button>
+        </div>
         
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
