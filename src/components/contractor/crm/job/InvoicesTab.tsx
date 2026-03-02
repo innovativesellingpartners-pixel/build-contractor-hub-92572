@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -55,17 +55,50 @@ export default function InvoicesTab({ jobId, customerId }: InvoicesTabProps) {
   // Get current job info
   const currentJob = jobs?.find(j => j.id === jobId);
 
-  // Invoice form state (keep numeric inputs free-form; do NOT auto-populate 0s)
-  const [formData, setFormData] = useState<Invoice>({
-    job_id: jobId,
-    customer_id: customerId,
-    issue_date: new Date().toISOString().split('T')[0],
-    amount_due: 0,
-    amount_paid: 0,
-    status: 'draft',
+  // Invoice form state with localStorage draft persistence
+  const draftKey = `ct1-draft-invoice-${jobId}`;
+  const [formData, setFormData] = useState<Invoice>(() => {
+    try {
+      const saved = localStorage.getItem(draftKey);
+      if (saved) return { ...JSON.parse(saved), job_id: jobId, customer_id: customerId };
+    } catch { /* ignore */ }
+    return {
+      job_id: jobId,
+      customer_id: customerId,
+      issue_date: new Date().toISOString().split('T')[0],
+      amount_due: 0,
+      amount_paid: 0,
+      status: 'draft',
+    };
   });
-  const [amountDueInput, setAmountDueInput] = useState<string>('');
-  const [amountPaidInput, setAmountPaidInput] = useState<string>('');
+  const [amountDueInput, setAmountDueInput] = useState<string>(() => {
+    try {
+      const saved = localStorage.getItem(draftKey);
+      if (saved) { const p = JSON.parse(saved); return p.amount_due ? String(p.amount_due) : ''; }
+    } catch { /* ignore */ }
+    return '';
+  });
+  const [amountPaidInput, setAmountPaidInput] = useState<string>(() => {
+    try {
+      const saved = localStorage.getItem(draftKey);
+      if (saved) { const p = JSON.parse(saved); return p.amount_paid ? String(p.amount_paid) : ''; }
+    } catch { /* ignore */ }
+    return '';
+  });
+
+  // Auto-save invoice draft
+  useEffect(() => {
+    if (editingInvoice) return; // Don't draft-save edits
+    const hasData = formData.status !== 'draft' || amountDueInput.trim() !== '' || amountPaidInput.trim() !== '';
+    if (!hasData) {
+      localStorage.removeItem(draftKey);
+      return;
+    }
+    const timer = setTimeout(() => {
+      try { localStorage.setItem(draftKey, JSON.stringify({ ...formData, amount_due: parseFloat(amountDueInput) || 0, amount_paid: parseFloat(amountPaidInput) || 0 })); } catch { /* ignore */ }
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [formData, amountDueInput, amountPaidInput, draftKey, editingInvoice]);
 
   // Estimate waiver data for auto-attaching to invoices
   const [estimateWaiver, setEstimateWaiver] = useState<{
@@ -173,6 +206,7 @@ export default function InvoicesTab({ jobId, customerId }: InvoicesTabProps) {
     setAmountDueInput('');
     setAmountPaidInput('');
     setEditingInvoice(null);
+    localStorage.removeItem(draftKey);
   };
 
   const handleEdit = (invoice: Invoice) => {

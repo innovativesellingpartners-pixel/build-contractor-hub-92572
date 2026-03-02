@@ -6,9 +6,27 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { LocationAutocomplete, AddressData } from '@/components/ui/location-autocomplete';
-import { Plus } from 'lucide-react';
+import { Plus, Save } from 'lucide-react';
 import { Lead, LeadSource, OTHER_SOURCE_ID } from '@/hooks/useLeads';
 import { VoiceInputField } from '@/components/ui/voice-input-field';
+import { useFormDraft } from '@/hooks/useFormDraft';
+
+const LEAD_DEFAULTS = {
+  name: '',
+  email: '',
+  phone: '',
+  company: '',
+  project_type: '',
+  value: '',
+  status: 'new' as Lead['status'],
+  source_id: '',
+  source_other: '',
+  address: '',
+  city: '',
+  state: '',
+  zip_code: '',
+  notes: '',
+};
 
 interface AddLeadDialogProps {
   onAdd: (leadData: Omit<Lead, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => Promise<any>;
@@ -18,22 +36,7 @@ interface AddLeadDialogProps {
 
 export function AddLeadDialog({ onAdd, sources, onLeadCreated }: AddLeadDialogProps) {
   const [open, setOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    company: '',
-    project_type: '',
-    value: '',
-    status: 'new' as Lead['status'],
-    source_id: '',
-    source_other: '',
-    address: '',
-    city: '',
-    state: '',
-    zip_code: '',
-    notes: '',
-  });
+  const [formData, setFormData, clearDraft, hasDraft] = useFormDraft('add-lead', LEAD_DEFAULTS);
 
   const isOtherSource = formData.source_id === OTHER_SOURCE_ID;
 
@@ -47,22 +50,7 @@ export function AddLeadDialog({ onAdd, sources, onLeadCreated }: AddLeadDialogPr
         source_other: isOtherSource ? formData.source_other : undefined,
       });
       setOpen(false);
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        company: '',
-        project_type: '',
-        value: '',
-        status: 'new',
-        source_id: '',
-        source_other: '',
-        address: '',
-        city: '',
-        state: '',
-        zip_code: '',
-        notes: '',
-      });
+      clearDraft();
       
       // Navigate to the newly created lead
       if (newLead && onLeadCreated) {
@@ -83,7 +71,14 @@ export function AddLeadDialog({ onAdd, sources, onLeadCreated }: AddLeadDialogPr
       </DialogTrigger>
       <DialogContent className="w-full h-full max-w-full max-h-full rounded-none border-0 overflow-hidden flex flex-col fixed inset-0 translate-x-0 translate-y-0 top-0 left-0">
         <DialogHeader className="flex-shrink-0">
-          <DialogTitle>Add New Lead</DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle>Add New Lead</DialogTitle>
+            {hasDraft && (
+              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                <Save className="h-3 w-3" /> Draft restored
+              </span>
+            )}
+          </div>
           <DialogDescription>Enter the details of your new lead</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto space-y-4 pb-20">
