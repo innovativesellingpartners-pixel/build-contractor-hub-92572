@@ -285,6 +285,11 @@ async function fetchGoogleCalendarEvents(accessToken: string, preferredCalendarE
       writableCalendars[0] ||
       calendars.find((calendar: any) => calendar.id === 'primary');
 
+    if (normalizedPreferred && !matchedCalendar) {
+      console.log('Preferred calendar not found for expected email, returning no events to avoid wrong-account fallback:', normalizedPreferred);
+      return [];
+    }
+
     const targetCalendar = matchedCalendar || fallbackCalendar;
 
     if (!targetCalendar) {
@@ -295,7 +300,7 @@ async function fetchGoogleCalendarEvents(accessToken: string, preferredCalendarE
     if (matchedCalendar) {
       console.log('Using matched calendar for connection:', targetCalendar.summary || targetCalendar.id);
     } else {
-      console.log('Preferred calendar not found, falling back to:', targetCalendar.summary || targetCalendar.id);
+      console.log('No preferred calendar provided, using fallback:', targetCalendar.summary || targetCalendar.id);
     }
 
     const events = await fetchEventsFromCalendar(accessToken, targetCalendar.id, timeMin, timeMax);
