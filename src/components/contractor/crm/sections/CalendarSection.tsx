@@ -452,7 +452,7 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
 
   // Check if a time slot is within an event's duration (busy)
   const isTimeSlotBusy = (day: Date, timeSlot: string): boolean => {
-    const dayEvents = getEventsForDay(day);
+    const dayEvents = getFilteredEventsForDay(day);
     const [hours, minutes] = timeSlot.split(':').map(Number);
     const slotTime = new Date(day);
     slotTime.setHours(hours, minutes, 0, 0);
