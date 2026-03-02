@@ -366,6 +366,63 @@ export function ForgeSettings({ onBack }: { onBack: () => void }) {
           )}
         </CardContent>
       </Card>
+
+      {/* Payment Prompt Dialog */}
+      <AlertDialog open={showPaymentPrompt} onOpenChange={setShowPaymentPrompt}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <PhoneCall className="h-5 w-5 text-orange-500" />
+              Voice AI Subscription Required
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p>Voice AI is an add-on feature that costs <strong>$30/month</strong>.</p>
+              <p>This includes AI-powered call answering, appointment booking, lead capture, and more.</p>
+              <p>Please contact our sales team to add Voice AI to your subscription.</p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                window.location.href = "mailto:sales@myct1.com?subject=Voice AI Subscription&body=I'd like to add Voice AI to my account.";
+              }}
+              className="bg-orange-500 hover:bg-orange-600"
+            >
+              Contact Sales
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Contact Sales to Disable Dialog */}
+      <AlertDialog open={showContactSales} onOpenChange={setShowContactSales}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-orange-500" />
+              Contact Sales to Disable
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p>Voice AI cannot be disabled from your account settings.</p>
+              <p>To disable Voice AI, please contact our sales team and they will assist you with the process.</p>
+              <p className="font-medium">Email: sales@myct1.com</p>
+              <p className="font-medium">Phone: (555) 123-4567</p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Close</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                window.location.href = "mailto:sales@myct1.com?subject=Disable Voice AI&body=I'd like to disable Voice AI on my account.";
+              }}
+              className="bg-orange-500 hover:bg-orange-600"
+            >
+              Email Sales
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
