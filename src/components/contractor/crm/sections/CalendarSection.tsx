@@ -18,6 +18,13 @@ import { cn } from '@/lib/utils';
 import { CrmNavHeader } from '../CrmNavHeader';
 
 type CalendarViewMode = 'day' | '3-day' | '5-day' | 'month';
+type CalendarDisplayMode = 'overlay' | 'toggle' | 'side-by-side';
+
+const PROVIDER_COLORS: Record<string, { bg: string; border: string; text: string; dot: string }> = {
+  google: { bg: 'bg-blue-500/10', border: 'border-blue-500/30', text: 'text-blue-700 dark:text-blue-400', dot: 'bg-blue-500' },
+  outlook: { bg: 'bg-violet-500/10', border: 'border-violet-500/30', text: 'text-violet-700 dark:text-violet-400', dot: 'bg-violet-500' },
+  local: { bg: 'bg-emerald-500/10', border: 'border-emerald-500/30', text: 'text-emerald-700 dark:text-emerald-400', dot: 'bg-emerald-500' },
+};
 
 interface CalendarConnection {
   id: string;
