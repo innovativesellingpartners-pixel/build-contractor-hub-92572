@@ -137,50 +137,7 @@ serve(async (req) => {
       console.log('Saving calendar connection for user:', stateData.contractor_id);
 
       const normalizedGoogleEmail = String(userInfo.email || '').trim().toLowerCase();
-      let calendarEmailToStore = normalizedGoogleEmail;
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('business_email')
-        .eq('user_id', stateData.contractor_id)
-        .maybeSingle();
-
-      const expectedBusinessEmail = String(profile?.business_email || '').trim().toLowerCase();
-
-      if (expectedBusinessEmail && expectedBusinessEmail !== normalizedGoogleEmail) {
-        console.log('Google account does not match business email, validating calendar access for:', expectedBusinessEmail);
-
-        const calendarListResponse = await fetch('https://www.googleapis.com/calendar/v3/users/me/calendarList', {
-          headers: { Authorization: `Bearer ${tokens.access_token}` }
-        });
-
-        const calendarListData = calendarListResponse.ok ? await calendarListResponse.json() : { items: [] };
-        const calendars = Array.isArray(calendarListData.items) ? calendarListData.items : [];
-
-        const hasExpectedCalendar = calendars.some((calendar: any) => {
-          const id = String(calendar?.id || '').trim().toLowerCase();
-          const summary = String(calendar?.summary || '').trim().toLowerCase();
-          return id === expectedBusinessEmail || summary === expectedBusinessEmail || id.includes(expectedBusinessEmail);
-        });
-
-        if (!hasExpectedCalendar) {
-          console.error('Connected Google account cannot access expected calendar:', expectedBusinessEmail);
-
-          // Ensure stale/wrong Google calendar connection is removed instead of silently persisting
-          await supabase
-            .from('calendar_connections')
-            .delete()
-            .eq('user_id', stateData.contractor_id)
-            .eq('provider', 'google');
-
-          return createRedirectResponse(
-            `${APP_URL}/dashboard?oauth_error=google_account_mismatch&expected=${encodeURIComponent(expectedBusinessEmail)}&connected=${encodeURIComponent(normalizedGoogleEmail)}&crm_section=calendar`,
-            'Connection Failed'
-          );
-        }
-
-        calendarEmailToStore = expectedBusinessEmail;
-      }
+      const calendarEmailToStore = normalizedGoogleEmail;
       
       // Resolve contractor_id: look up the contractor this user belongs to
       let resolvedContractorId: string | null = null;
