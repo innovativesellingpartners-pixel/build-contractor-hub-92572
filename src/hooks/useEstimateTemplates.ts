@@ -207,6 +207,7 @@ export function useEstimateTemplates() {
   return {
     templates,
     isLoading,
+    isSuperAdmin,
     createTemplate,
     updateTemplate,
     deleteTemplate,
