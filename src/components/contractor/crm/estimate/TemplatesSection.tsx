@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Search, FileText, Tag, Trash2, Plus, Lock, Globe, FolderOpen, Receipt, Pencil, Eye } from 'lucide-react';
+import { Search, FileText, Tag, Trash2, Plus, Lock, Globe, FolderOpen, Receipt, Pencil, Eye, Briefcase } from 'lucide-react';
 import { useEstimateTemplates, TRADES, Trade, EstimateTemplate } from '@/hooks/useEstimateTemplates';
 import { MobileOptimizedWrapper, MobileStack } from '../sections/MobileOptimizedWrapper';
 import { HorizontalRowCard, RowAvatar, RowContent, RowTitleLine, RowMetaLine, RowActions } from '../sections/HorizontalRowCard';
