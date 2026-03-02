@@ -1162,7 +1162,7 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
                                   {isHourStart ? formatTimeSlot(timeSlot) : ''}
                                 </div>
                                 <div className="flex-1 min-w-0 flex items-center gap-2">
-                                  <div className="flex-1 h-1 bg-primary/20 rounded" />
+                                  <div className={cn("flex-1 h-1 rounded", coveringEvent ? getEventColor(coveringEvent).dot + '/30' : 'bg-primary/20')} />
                                   {isHourStart && coveringEvent && (
                                     <div className="text-[11px] text-muted-foreground truncate">
                                       {coveringEvent.summary || 'Busy'}
