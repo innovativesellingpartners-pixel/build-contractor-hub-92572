@@ -99,40 +99,8 @@ export function TemplatesSection({ onBack, onAddToEstimate }: TemplatesSectionPr
     return filterTemplates(selectedTrade, searchQuery, visibility);
   }, [templates, selectedTrade, searchQuery, visibility, filterTemplates]);
 
-  const handleAddClick = (template: EstimateTemplate) => {
-    setSelectedTemplate(template);
-    setAddDialogOpen(true);
-  };
-
-  const handleConfirmAdd = async () => {
-    if (!selectedTemplate) return;
-    
-    if (!selectedJobId) {
-      toast.error('Please select a job to link this estimate to');
-      return;
-    }
-
-    const selectedJob = jobs.find(j => j.id === selectedJobId);
-    
-    try {
-      await createEstimateAsync({
-        title: `${selectedTemplate.name} - ${selectedJob?.name || 'New Estimate'}`,
-        status: 'draft',
-        total_amount: 0,
-        line_items: selectedTemplate.line_items,
-        job_id: selectedJobId,
-        site_address: selectedJob?.address || '',
-        project_address: [selectedJob?.address, selectedJob?.city, selectedJob?.state, selectedJob?.zip_code].filter(Boolean).join(', '),
-      });
-      toast.success('New estimate created from template and linked to job');
-      onBack();
-    } catch (error) {
-      console.error('Error creating estimate:', error);
-    }
-    
-    setAddDialogOpen(false);
-    setSelectedTemplate(null);
-    setSelectedJobId('');
+  const handlePreviewClick = (template: EstimateTemplate) => {
+    setPreviewTemplate(template);
   };
 
   const handleDeleteClick = (template: EstimateTemplate, e: React.MouseEvent) => {
