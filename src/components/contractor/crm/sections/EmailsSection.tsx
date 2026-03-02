@@ -92,10 +92,17 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
 
     if (oauthSuccess === 'email') {
       toast.success(`${provider === 'google' ? 'Gmail' : 'Outlook'} connected successfully!`);
+      setReauthConnectionIds([]);
       fetchConnections();
       window.history.replaceState({}, '', window.location.pathname);
     } else if (oauthError) {
-      toast.error(`Connection failed: ${oauthError}`);
+      const errorMessages: Record<string, string> = {
+        no_refresh_token: 'Could not get persistent access. Please revoke app access in your Google/Outlook account settings and try again.',
+        token_exchange_failed: 'Failed to exchange authorization code. Please try again.',
+        save_failed: 'Failed to save connection. Please try again.',
+        state_expired: 'Connection attempt timed out. Please try again.',
+      };
+      toast.error(errorMessages[oauthError] || `Connection failed: ${oauthError}`);
       window.history.replaceState({}, '', window.location.pathname);
     }
   }, []);
