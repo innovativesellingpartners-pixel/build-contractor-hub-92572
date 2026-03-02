@@ -55,6 +55,7 @@ serve(async (req) => {
     return new Response(JSON.stringify({
       success: true,
       contractor_id: contractor.id,
+      contractor_number: contractor.contractor_number,
       voice_ai_enabled: true,
     }), {
       status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
