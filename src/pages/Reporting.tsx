@@ -90,7 +90,7 @@ export default function Reporting() {
         <DrillDownBreadcrumbs />
 
         {/* Section selector — pill nav on desktop, dropdown on mobile */}
-        <div className="hidden sm:flex flex-wrap gap-1 p-1 bg-muted/50 rounded-xl border border-border/40">
+        <div className="hidden sm:flex flex-wrap gap-1 p-1 bg-muted/50 rounded-xl border border-border">
           {sections.map((s) => (
             <button
               key={s.value}
