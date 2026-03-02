@@ -985,7 +985,7 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
                 'grid-cols-1 sm:grid-cols-5'
               }`}>
                 {daysToDisplay.map((day, idx) => {
-                  const dayEvents = getEventsForDay(day);
+                  const dayEvents = getFilteredEventsForDay(day);
                   const dayTasks = getTasksForDay(day);
                   const isCurrentDay = isToday(day);
                   
