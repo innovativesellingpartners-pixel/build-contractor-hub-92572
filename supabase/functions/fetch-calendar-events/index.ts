@@ -94,6 +94,14 @@ serve(async (req) => {
       });
     }
 
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('business_email')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    const preferredBusinessCalendarEmail = String(profile?.business_email || '').trim().toLowerCase();
+
     const allEvents: any[] = [];
 
     for (const connection of connections) {
@@ -120,7 +128,8 @@ serve(async (req) => {
         }
         
         console.log('Fetching Google Calendar events with token length:', accessToken?.length);
-        const events = await fetchGoogleCalendarEvents(accessToken, connection.calendar_email);
+        const preferredCalendarEmail = preferredBusinessCalendarEmail || connection.calendar_email;
+        const events = await fetchGoogleCalendarEvents(accessToken, preferredCalendarEmail);
         console.log('Fetched', events.length, 'events');
         allEvents.push(...events.map((e: any) => ({
           ...e,
