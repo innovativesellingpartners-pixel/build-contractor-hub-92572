@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Phone, Copy, AlertCircle, Loader2, ChevronDown, Plus, Link2, X, Trash2, LayoutDashboard, PhoneCall, Settings, TrendingUp, Calendar, Users, ArrowRight } from 'lucide-react';
+import { Phone, Copy, AlertCircle, Loader2, ChevronDown, Plus, Link2, X, Trash2, LayoutDashboard, PhoneCall, Settings, TrendingUp, Calendar, Users, ArrowRight, Flame } from 'lucide-react';
 import { usePhoneNumber, useProvisionPhoneNumber, useDeletePhoneNumber } from '@/hooks/usePhoneNumbers';
 import { useUserTier } from '@/hooks/useUserTier';
 import { toast } from 'sonner';
@@ -23,6 +23,8 @@ import { formatPhoneNumber } from '@/lib/phoneUtils';
 import { CrmNavHeader } from '../CrmNavHeader';
 import { ForgeCallCenter } from '../../forge/ForgeCallCenter';
 import { ForgeSettings } from '../../forge/ForgeSettings';
+import forgeLogoIcon from '@/assets/forgeailogo2.png';
+import forgeLogoFull from '@/assets/forgeailogo.png';
 
 type ForgeTab = 'dashboard' | 'call-center' | 'settings';
 
@@ -114,7 +116,6 @@ export default function CallsSection({ onSectionChange }: CallsSectionProps) {
         })
         .select()
         .single();
-
       if (error) throw error;
       return data;
     },
@@ -138,7 +139,7 @@ export default function CallsSection({ onSectionChange }: CallsSectionProps) {
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    toast.success('Phone number copied to clipboard');
+    toast.success('Copied to clipboard');
   };
 
   const handleProvision = () => {
@@ -153,7 +154,6 @@ export default function CallsSection({ onSectionChange }: CallsSectionProps) {
 
   const handleSaveLinkToJob = async () => {
     if (!linkingCall) return;
-    
     setIsLinking(true);
     try {
       await updateCallSession(linkingCall.id, {
@@ -171,89 +171,100 @@ export default function CallsSection({ onSectionChange }: CallsSectionProps) {
     }
   };
 
-  const handleCallSelect = (call: CallSession) => {
-    // Scroll to the call and expand it - for now just show toast
-    toast.info(`Viewing call from ${formatPhoneNumber(call.from_number)}`);
-  };
-
   if (phoneLoading || tierLoading) {
     return (
       <div className="w-full h-full overflow-y-auto overflow-x-hidden pb-20 bg-background">
-        <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 w-full sm:max-w-7xl sm:mx-auto">
-          <div>
-            <h1 className="text-3xl font-bold">Calls</h1>
-            <p className="text-muted-foreground">Manage your call history and phone number</p>
+        <div className="p-4 sm:p-6 space-y-6 w-full sm:max-w-6xl sm:mx-auto">
+          <Skeleton className="h-16 w-full rounded-xl" />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[1,2,3,4].map(i => <Skeleton key={i} className="h-24 rounded-xl" />)}
           </div>
-          <Card>
-            <CardContent className="p-6">
-              <Skeleton className="h-20 w-full" />
-            </CardContent>
-          </Card>
         </div>
       </div>
     );
   }
 
+  const forgeTabItems = [
+    { key: 'dashboard' as ForgeTab, label: 'Dashboard', icon: LayoutDashboard },
+    { key: 'call-center' as ForgeTab, label: 'Call Center', icon: PhoneCall },
+    { key: 'settings' as ForgeTab, label: 'Settings', icon: Settings },
+  ];
+
   return (
     <div className="w-full h-full overflow-y-auto overflow-x-hidden pb-20 bg-background">
-      <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 w-full sm:max-w-7xl sm:mx-auto">
-        {/* Navigation Header */}
+      <div className="p-4 sm:p-6 w-full sm:max-w-6xl sm:mx-auto space-y-6">
+        {/* Back Nav */}
         <CrmNavHeader
           back
           dashboard
           onBack={() => onSectionChange?.('dashboard')}
           onDashboard={() => onSectionChange?.('dashboard')}
-          sectionLabel="Calls"
+          sectionLabel="Forge AI"
         />
-        
+
         {phoneNumber ? (
-          <div className="space-y-4">
-            {/* Forge AI Tab Navigation */}
-            <div className="flex items-center justify-between flex-wrap gap-3">
-              <div className="flex items-center gap-1 overflow-x-auto">
-                {([
-                  { key: 'dashboard' as ForgeTab, label: 'Dashboard', icon: LayoutDashboard },
-                  { key: 'call-center' as ForgeTab, label: 'Call Center', icon: PhoneCall },
-                  { key: 'settings' as ForgeTab, label: 'Settings', icon: Settings },
-                ]).map((tab) => (
-                  <Button
-                    key={tab.key}
-                    variant={activeTab === tab.key ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setActiveTab(tab.key)}
-                    className={activeTab === tab.key ? 'bg-orange-500 hover:bg-orange-600 text-white' : ''}
+          <div className="space-y-6">
+            {/* ── Branded Header Bar ── */}
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 p-5 sm:p-6">
+              {/* Subtle pattern overlay */}
+              <div className="absolute inset-0 opacity-[0.04]" style={{
+                backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)',
+                backgroundSize: '24px 24px'
+              }} />
+              
+              <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <img src={forgeLogoIcon} alt="Forge AI" className="h-12 w-12 object-contain drop-shadow-lg" />
+                  <div>
+                    <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+                      Forge<span className="text-orange-400">AI</span>
+                    </h1>
+                    <p className="text-slate-400 text-sm">Intelligent voice AI intake & booking</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Badge 
+                    className={`text-xs px-3 py-1.5 rounded-full font-medium border-0 ${
+                      isAiActive 
+                        ? 'bg-green-500/20 text-green-300' 
+                        : 'bg-slate-700 text-slate-400'
+                    }`}
                   >
-                    <tab.icon className="h-4 w-4 mr-1.5" />
-                    {tab.label}
-                  </Button>
-                ))}
+                    <span className={`inline-block w-2 h-2 rounded-full mr-2 ${isAiActive ? 'bg-green-400 animate-pulse' : 'bg-slate-500'}`} />
+                    {isAiActive ? 'Active' : 'Inactive'}
+                  </Badge>
+                  <Badge className="bg-slate-700/60 text-slate-300 border-0 text-xs px-3 py-1.5 rounded-full font-mono">
+                    <Phone className="h-3 w-3 mr-1.5 text-orange-400" />
+                    {phoneNumber.twilio_phone_number}
+                    <button onClick={() => copyToClipboard(phoneNumber.twilio_phone_number)} className="ml-1.5 hover:text-white transition-colors">
+                      <Copy className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                  {isAdmin && (
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-red-400 hover:bg-red-500/10" onClick={() => setShowDeleteConfirm(!showDeleteConfirm)}>
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  )}
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Badge variant="outline" className="font-mono text-xs px-2 py-1 flex items-center gap-1.5">
-                  <Phone className="h-3 w-3 text-green-500" />
-                  {phoneNumber.twilio_phone_number}
-                  <button onClick={() => copyToClipboard(phoneNumber.twilio_phone_number)} className="hover:text-primary">
-                    <Copy className="h-3 w-3" />
+
+              {/* Tab Navigation */}
+              <div className="relative flex items-center gap-1 mt-5 border-t border-slate-700/50 pt-4">
+                {forgeTabItems.map((tab) => (
+                  <button
+                    key={tab.key}
+                    onClick={() => setActiveTab(tab.key)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      activeTab === tab.key
+                        ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/25'
+                        : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+                    }`}
+                  >
+                    <tab.icon className="h-4 w-4" />
+                    <span className="hidden sm:inline">{tab.label}</span>
                   </button>
-                </Badge>
-                <Badge variant="secondary" className="font-mono text-xs px-2 py-1 flex items-center gap-1.5">
-                  ID: {phoneNumber.contractor_id}
-                  <button onClick={() => { navigator.clipboard.writeText(phoneNumber.contractor_id); toast.success('Contractor ID copied'); }} className="hover:text-primary">
-                    <Copy className="h-3 w-3" />
-                  </button>
-                </Badge>
-                <Badge
-                  variant="outline"
-                  className={`text-xs px-2 py-1 ${isAiActive ? 'border-green-300 text-green-700' : 'text-muted-foreground'}`}
-                >
-                  <span className={`inline-block w-1.5 h-1.5 rounded-full mr-1 ${isAiActive ? 'bg-green-500' : 'bg-muted-foreground'}`} />
-                  {isAiActive ? 'Voice AI Active' : 'AI Inactive'}
-                </Badge>
-                {isAdmin && (
-                  <Button variant="ghost" size="sm" onClick={() => setShowDeleteConfirm(!showDeleteConfirm)}>
-                    <Trash2 className="h-4 w-4 text-muted-foreground" />
-                  </Button>
-                )}
+                ))}
               </div>
             </div>
 
@@ -262,12 +273,12 @@ export default function CallsSection({ onSectionChange }: CallsSectionProps) {
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription className="flex items-center justify-between">
-                  <span>Delete this phone number?</span>
+                  <span>Delete this phone number? This cannot be undone.</span>
                   <div className="flex gap-2">
                     <Button variant="destructive" size="sm" disabled={deleteMutation.isPending}
                       onClick={() => { deleteMutation.mutate({ phoneNumberId: phoneNumber.id, contractorId: phoneNumber.contractor_id }); setShowDeleteConfirm(false); }}
                     >
-                      {deleteMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Confirm'}
+                      {deleteMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Confirm Delete'}
                     </Button>
                     <Button variant="ghost" size="sm" onClick={() => setShowDeleteConfirm(false)}>Cancel</Button>
                   </div>
@@ -275,59 +286,71 @@ export default function CallsSection({ onSectionChange }: CallsSectionProps) {
               </Alert>
             )}
 
-            {/* Dashboard Tab */}
+            {/* ── Dashboard Tab ── */}
             {activeTab === 'dashboard' && (
               <div className="space-y-6">
-                <div className="flex items-center gap-3">
-                  <div className="h-12 w-12 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center shadow-lg">
-                    <Phone className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold tracking-tight">Welcome to Forge AI</h2>
-                    <p className="text-muted-foreground text-sm">Your intelligent voice AI intake & booking platform</p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {/* Stats Grid */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                   {[
-                    { icon: <Phone className="h-5 w-5 text-orange-500" />, value: stats.callsToday, label: 'Calls Today' },
-                    { icon: <Calendar className="h-5 w-5 text-orange-500" />, value: stats.appointmentsBooked, label: 'Appointments Booked' },
-                    { icon: <Users className="h-5 w-5 text-orange-500" />, value: stats.leadsCaptured, label: 'Leads Captured' },
-                    { icon: <TrendingUp className="h-5 w-5 text-orange-500" />, value: `${stats.bookingRate}%`, label: 'Booking Rate' },
+                    { icon: Phone, value: stats.callsToday, label: 'Calls Today', color: 'text-orange-500', bg: 'bg-orange-500/10' },
+                    { icon: Calendar, value: stats.appointmentsBooked, label: 'Booked', color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+                    { icon: Users, value: stats.leadsCaptured, label: 'Leads', color: 'text-blue-500', bg: 'bg-blue-500/10' },
+                    { icon: TrendingUp, value: `${stats.bookingRate}%`, label: 'Booking Rate', color: 'text-violet-500', bg: 'bg-violet-500/10' },
                   ].map((stat) => (
-                    <Card key={stat.label} className="border">
-                      <CardContent className="p-4 space-y-2">
-                        <div className="flex items-center justify-between">{stat.icon}<span className="text-xs text-muted-foreground">—</span></div>
-                        <div><p className="text-2xl font-bold">{stat.value}</p><p className="text-xs text-muted-foreground">{stat.label}</p></div>
+                    <Card key={stat.label} className="border-0 shadow-sm hover:shadow-md transition-shadow">
+                      <CardContent className="p-5">
+                        <div className={`inline-flex items-center justify-center h-10 w-10 rounded-xl ${stat.bg} mb-3`}>
+                          <stat.icon className={`h-5 w-5 ${stat.color}`} />
+                        </div>
+                        <p className="text-2xl font-bold tracking-tight">{stat.value}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">{stat.label}</p>
                       </CardContent>
                     </Card>
                   ))}
                 </div>
 
+                {/* Quick Actions */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <button onClick={() => setActiveTab('call-center')} className="text-left group">
-                    <Card className="h-full border hover:border-orange-300 hover:shadow-md transition-all cursor-pointer">
-                      <CardContent className="p-6 flex items-center justify-between">
-                        <div>
-                          <h3 className="text-lg font-semibold">Call Center</h3>
-                          <p className="text-sm text-muted-foreground mt-1">View recordings, transcripts, and booking status</p>
+                    <Card className="h-full border hover:border-orange-300/50 hover:shadow-lg transition-all duration-200">
+                      <CardContent className="p-6 flex items-center gap-4">
+                        <div className="h-12 w-12 rounded-xl bg-orange-500/10 flex items-center justify-center shrink-0 group-hover:bg-orange-500/20 transition-colors">
+                          <PhoneCall className="h-6 w-6 text-orange-500" />
                         </div>
-                        <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-orange-500 transition-colors" />
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-base font-semibold">Call Center</h3>
+                          <p className="text-sm text-muted-foreground mt-0.5">Recordings, transcripts & booking status</p>
+                        </div>
+                        <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-orange-500 group-hover:translate-x-1 transition-all shrink-0" />
                       </CardContent>
                     </Card>
                   </button>
                   <button onClick={() => setActiveTab('settings')} className="text-left group">
-                    <Card className="h-full border hover:border-orange-300 hover:shadow-md transition-all cursor-pointer">
-                      <CardContent className="p-6 flex items-center justify-between">
-                        <div>
-                          <h3 className="text-lg font-semibold">Voice AI Settings</h3>
-                          <p className="text-sm text-muted-foreground mt-1">Configure hours, booking rules, and integrations</p>
+                    <Card className="h-full border hover:border-orange-300/50 hover:shadow-lg transition-all duration-200">
+                      <CardContent className="p-6 flex items-center gap-4">
+                        <div className="h-12 w-12 rounded-xl bg-slate-500/10 flex items-center justify-center shrink-0 group-hover:bg-slate-500/20 transition-colors">
+                          <Settings className="h-6 w-6 text-slate-500" />
                         </div>
-                        <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-orange-500 transition-colors" />
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-base font-semibold">Voice AI Settings</h3>
+                          <p className="text-sm text-muted-foreground mt-0.5">Hours, booking rules & integrations</p>
+                        </div>
+                        <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-orange-500 group-hover:translate-x-1 transition-all shrink-0" />
                       </CardContent>
                     </Card>
                   </button>
                 </div>
+
+                {/* Contractor ID for admins */}
+                {isAdmin && (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <span>Contractor ID:</span>
+                    <code className="bg-muted px-2 py-0.5 rounded font-mono">{phoneNumber.contractor_id}</code>
+                    <button onClick={() => { navigator.clipboard.writeText(phoneNumber.contractor_id); toast.success('Contractor ID copied'); }} className="hover:text-foreground">
+                      <Copy className="h-3 w-3" />
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 
@@ -340,126 +363,62 @@ export default function CallsSection({ onSectionChange }: CallsSectionProps) {
             )}
           </div>
         ) : (
-          <div className="space-y-4">
-            <div>
-              <h1 className="text-3xl font-bold">Calls</h1>
-              <p className="text-muted-foreground">Manage your call history and phone number</p>
+          /* ── No Phone Number State ── */
+          <Card className="border-0 shadow-lg overflow-hidden">
+            <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 p-8 text-center">
+              <img src={forgeLogoFull} alt="Forge AI" className="h-12 mx-auto mb-4" />
+              <p className="text-slate-400 text-sm max-w-md mx-auto">
+                AI-powered voice intake & appointment booking for contractors
+              </p>
             </div>
-            <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Phone className="h-5 w-5" />
-                Get Your CT1 Phone Number
+            <CardContent className="p-6 space-y-4">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Phone className="h-5 w-5 text-orange-500" />
+                Get Your Forge Phone Number
               </CardTitle>
               <CardDescription>
                 {hasActivePaidSubscription
-                  ? "Register your existing Twilio number or generate a new one"
-                  : "Upgrade to access dedicated phone number"}
+                  ? "Register your existing number or generate a new one to get started."
+                  : "Upgrade your subscription to access Forge AI voice features."}
               </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+
               {hasActivePaidSubscription ? (
                 <>
                   {!showManualEntry ? (
-                    <div className="space-y-4">
-                      <div className="text-center space-y-2 py-4">
-                        <Phone className="h-12 w-12 mx-auto text-muted-foreground" />
-                        <h3 className="font-semibold">No Phone Number Yet</h3>
-                        <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                          Register your existing Twilio number or generate a new CT1 phone number 
-                          with AI-powered call handling.
-                        </p>
-                      </div>
-                      <div className="grid gap-3">
-                        <Button
-                          onClick={() => setShowManualEntry(true)}
-                          variant="default"
-                          className="w-full"
-                        >
-                          <Phone className="mr-2 h-4 w-4" />
-                          Register Existing Twilio Number
-                        </Button>
-                        <Button
-                          onClick={handleProvision}
-                          disabled={provisionMutation.isPending}
-                          variant="outline"
-                          className="w-full"
-                        >
-                          {provisionMutation.isPending ? (
-                            <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Provisioning Number...
-                            </>
-                          ) : (
-                            <>
-                              <Plus className="mr-2 h-4 w-4" />
-                              Generate New CT1 Number
-                            </>
-                          )}
-                        </Button>
-                      </div>
+                    <div className="grid gap-3 pt-2">
+                      <Button onClick={() => setShowManualEntry(true)} className="w-full bg-orange-500 hover:bg-orange-600 text-white">
+                        <Phone className="mr-2 h-4 w-4" />
+                        Register Existing Twilio Number
+                      </Button>
+                      <Button onClick={handleProvision} disabled={provisionMutation.isPending} variant="outline" className="w-full">
+                        {provisionMutation.isPending ? (
+                          <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Provisioning...</>
+                        ) : (
+                          <><Plus className="mr-2 h-4 w-4" />Generate New Number</>
+                        )}
+                      </Button>
                     </div>
                   ) : (
-                    <div className="space-y-4">
-                      <div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setShowManualEntry(false)}
-                          className="mb-4"
-                        >
-                          <ChevronDown className="mr-2 h-4 w-4 rotate-90" />
-                          Back
-                        </Button>
-                        <h3 className="font-semibold mb-2">Register Existing Twilio Number</h3>
-                        <p className="text-sm text-muted-foreground mb-4">
-                          Enter your Twilio phone number and SID to register it with CT1.
-                        </p>
-                      </div>
+                    <div className="space-y-4 pt-2">
+                      <Button variant="ghost" size="sm" onClick={() => setShowManualEntry(false)}>
+                        <ChevronDown className="mr-2 h-4 w-4 rotate-90" />Back
+                      </Button>
                       <div className="space-y-3">
                         <div>
-                          <label className="text-sm font-medium mb-1.5 block">
-                            Phone Number
-                          </label>
-                          <input
-                            type="tel"
-                            placeholder="+1234567890"
-                            value={manualNumber}
-                            onChange={(e) => setManualNumber(e.target.value)}
-                            className="w-full px-3 py-2 border rounded-md bg-background"
-                          />
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Include country code (e.g., +1 for US)
-                          </p>
+                          <label className="text-sm font-medium mb-1.5 block">Phone Number</label>
+                          <input type="tel" placeholder="+1234567890" value={manualNumber} onChange={(e) => setManualNumber(e.target.value)}
+                            className="w-full px-3 py-2 border rounded-lg bg-background text-sm" />
+                          <p className="text-xs text-muted-foreground mt-1">Include country code (e.g., +1 for US)</p>
                         </div>
                         <div>
-                          <label className="text-sm font-medium mb-1.5 block">
-                            Twilio SID
-                          </label>
-                          <input
-                            type="text"
-                            placeholder="PNxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-                            value={manualSid}
-                            onChange={(e) => setManualSid(e.target.value)}
-                            className="w-full px-3 py-2 border rounded-md bg-background"
-                          />
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Find this in your Twilio console under Phone Numbers
-                          </p>
+                          <label className="text-sm font-medium mb-1.5 block">Twilio SID</label>
+                          <input type="text" placeholder="PNxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" value={manualSid} onChange={(e) => setManualSid(e.target.value)}
+                            className="w-full px-3 py-2 border rounded-lg bg-background text-sm" />
+                          <p className="text-xs text-muted-foreground mt-1">Find this in your Twilio console under Phone Numbers</p>
                         </div>
-                        <Button
-                          onClick={() => registerExistingNumber.mutate()}
-                          disabled={!manualNumber || !manualSid || registerExistingNumber.isPending}
-                          className="w-full"
-                        >
-                          {registerExistingNumber.isPending ? (
-                            <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Registering...
-                            </>
-                          ) : (
-                            'Register Number'
-                          )}
+                        <Button onClick={() => registerExistingNumber.mutate()} disabled={!manualNumber || !manualSid || registerExistingNumber.isPending}
+                          className="w-full bg-orange-500 hover:bg-orange-600 text-white">
+                          {registerExistingNumber.isPending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Registering...</> : 'Register Number'}
                         </Button>
                       </div>
                     </div>
@@ -471,11 +430,7 @@ export default function CallsSection({ onSectionChange }: CallsSectionProps) {
                   <AlertTitle>Subscription Required</AlertTitle>
                   <AlertDescription>
                     A paid subscription is required to get a dedicated phone number.{' '}
-                    <Button
-                      variant="link"
-                      className="h-auto p-0"
-                      onClick={() => onSectionChange?.('account')}
-                    >
+                    <Button variant="link" className="h-auto p-0" onClick={() => onSectionChange?.('account')}>
                       Upgrade your account
                     </Button>
                     {' '}to unlock this feature.
@@ -484,7 +439,6 @@ export default function CallsSection({ onSectionChange }: CallsSectionProps) {
               )}
             </CardContent>
           </Card>
-          </div>
         )}
       </div>
 
@@ -500,17 +454,11 @@ export default function CallsSection({ onSectionChange }: CallsSectionProps) {
               {linkingCall && `Associate this call from ${formatPhoneNumber(linkingCall.from_number)} with a job.`}
             </DialogDescription>
           </DialogHeader>
-          
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label>Caller Name</Label>
-              <Input
-                placeholder="Enter caller's name..."
-                value={callerName}
-                onChange={(e) => setCallerName(e.target.value)}
-              />
+              <Input placeholder="Enter caller's name..." value={callerName} onChange={(e) => setCallerName(e.target.value)} />
             </div>
-            
             <div className="space-y-2">
               <Label>Link to Job (Optional)</Label>
               <PredictiveSearch
@@ -520,27 +468,21 @@ export default function CallsSection({ onSectionChange }: CallsSectionProps) {
                 getSublabel={(job) => job.job_number ? `#${job.job_number}` : undefined}
                 filterFn={(job, query) => {
                   const q = query.toLowerCase();
-                  return job.name.toLowerCase().includes(q) || 
-                    job.job_number?.toLowerCase().includes(q) || false;
+                  return job.name.toLowerCase().includes(q) || job.job_number?.toLowerCase().includes(q) || false;
                 }}
                 onSelect={(job) => setSelectedJobId(job.id)}
               />
               {selectedJobId && (
                 <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
-                  <span className="text-sm flex-1">
-                    {jobs.find(j => j.id === selectedJobId)?.name}
-                  </span>
-                  <Button variant="ghost" size="sm" onClick={() => setSelectedJobId(null)}>
-                    <X className="h-4 w-4" />
-                  </Button>
+                  <span className="text-sm flex-1">{jobs.find(j => j.id === selectedJobId)?.name}</span>
+                  <Button variant="ghost" size="sm" onClick={() => setSelectedJobId(null)}><X className="h-4 w-4" /></Button>
                 </div>
               )}
             </div>
           </div>
-          
           <DialogFooter>
             <Button variant="outline" onClick={() => setLinkingCall(null)}>Cancel</Button>
-            <Button onClick={handleSaveLinkToJob} disabled={isLinking}>
+            <Button onClick={handleSaveLinkToJob} disabled={isLinking} className="bg-orange-500 hover:bg-orange-600 text-white">
               {isLinking ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
               Save
             </Button>
