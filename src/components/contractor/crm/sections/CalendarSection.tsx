@@ -262,6 +262,26 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
   const outlookConnected = connections.find(c => c.provider === 'outlook');
   const hasAnyConnection = connections.length > 0;
 
+  // Filter events based on display mode and visible providers
+  const getFilteredEventsForDay = (day: Date) => {
+    const allDayEvents = getEventsForDay(day);
+    if (displayMode === 'toggle' && activeCalendar !== 'all') {
+      return allDayEvents.filter(e => e.provider === activeCalendar || (activeCalendar === 'local' && e.isLocal));
+    }
+    if (displayMode === 'overlay') {
+      return allDayEvents.filter(e => {
+        const provider = e.isLocal ? 'local' : (e.provider || 'local');
+        return visibleProviders.has(provider);
+      });
+    }
+    return allDayEvents;
+  };
+
+  const getEventColor = (event: CalendarEvent) => {
+    const provider = event.isLocal ? 'local' : (event.provider || 'local');
+    return PROVIDER_COLORS[provider] || PROVIDER_COLORS.local;
+  };
+
   const formatEventTime = (event: CalendarEvent) => {
     const start = event.start?.dateTime || event.start?.date;
     const end = event.end?.dateTime || event.end?.date;
