@@ -370,7 +370,7 @@ export function ForgeCallCenter({ onBack }: { onBack: () => void }) {
         <Button variant="ghost" size="icon" onClick={onBack} className="shrink-0">
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <img src={forgeLogoIcon} alt="Forge AI" className="h-8 w-8 object-contain" />
+        <img src={forgeLogoIcon} alt="Forge AI" className="h-8 w-8 object-contain ring-2 ring-white rounded-full" />
         <div>
           <h2 className="text-xl font-bold tracking-tight">Call Center</h2>
           <p className="text-xs text-muted-foreground">Recordings, transcripts & booking status</p>
