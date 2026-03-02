@@ -6,9 +6,27 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { LocationAutocomplete, AddressData } from '@/components/ui/location-autocomplete';
-import { Plus } from 'lucide-react';
+import { Plus, Save } from 'lucide-react';
 import { Lead, LeadSource, OTHER_SOURCE_ID } from '@/hooks/useLeads';
 import { VoiceInputField } from '@/components/ui/voice-input-field';
+import { useFormDraft } from '@/hooks/useFormDraft';
+
+const LEAD_DEFAULTS = {
+  name: '',
+  email: '',
+  phone: '',
+  company: '',
+  project_type: '',
+  value: '',
+  status: 'new' as Lead['status'],
+  source_id: '',
+  source_other: '',
+  address: '',
+  city: '',
+  state: '',
+  zip_code: '',
+  notes: '',
+};
 
 interface AddLeadDialogProps {
   onAdd: (leadData: Omit<Lead, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => Promise<any>;
@@ -18,22 +36,7 @@ interface AddLeadDialogProps {
 
 export function AddLeadDialog({ onAdd, sources, onLeadCreated }: AddLeadDialogProps) {
   const [open, setOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    company: '',
-    project_type: '',
-    value: '',
-    status: 'new' as Lead['status'],
-    source_id: '',
-    source_other: '',
-    address: '',
-    city: '',
-    state: '',
-    zip_code: '',
-    notes: '',
-  });
+  const [formData, setFormData, clearDraft, hasDraft] = useFormDraft('add-lead', LEAD_DEFAULTS);
 
   const isOtherSource = formData.source_id === OTHER_SOURCE_ID;
 
