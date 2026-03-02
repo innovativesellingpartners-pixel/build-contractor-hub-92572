@@ -97,6 +97,10 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
   const [viewMode, setViewMode] = useState<CalendarViewMode>('5-day');
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
+  const [displayMode, setDisplayMode] = useState<CalendarDisplayMode>('overlay');
+  const [activeCalendar, setActiveCalendar] = useState<string>('all'); // for toggle mode
+  const [visibleProviders, setVisibleProviders] = useState<Set<string>>(new Set(['google', 'outlook', 'local']));
+  const [showConnectionSettings, setShowConnectionSettings] = useState(false);
 
   // Fetch personal tasks
   const { tasks: personalTasks, toggleComplete } = usePersonalTasks();
@@ -104,7 +108,7 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
   useEffect(() => {
     if (user) {
       fetchConnections();
-      fetchLocalMeetings(); // Always fetch local meetings
+      fetchLocalMeetings();
     }
   }, [user]);
 
