@@ -47,7 +47,7 @@ export function InfoRow({ label, value, className, valueClassName, isClickable, 
   return (
     <div 
       className={cn(
-        'flex justify-between items-center px-4 py-3 border-b border-border/40 last:border-b-0',
+        'flex justify-between items-center px-4 py-3 border-b border-border last:border-b-0',
         isClickable && 'cursor-pointer hover:bg-muted/50 active:bg-muted transition-colors',
         className
       )}
