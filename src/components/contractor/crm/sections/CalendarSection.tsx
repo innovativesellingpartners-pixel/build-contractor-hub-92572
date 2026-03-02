@@ -473,7 +473,7 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
 
   // Get the event that covers a given time slot (useful for clicking mid-event slots)
   const getEventCoveringTimeSlot = (day: Date, timeSlot: string): CalendarEvent | null => {
-    const dayEvents = getEventsForDay(day);
+    const dayEvents = getFilteredEventsForDay(day);
     const [hours, minutes] = timeSlot.split(':').map(Number);
     const slotTime = new Date(day);
     slotTime.setHours(hours, minutes, 0, 0);
