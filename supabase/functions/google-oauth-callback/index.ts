@@ -165,8 +165,16 @@ serve(async (req) => {
 
         if (!hasExpectedCalendar) {
           console.error('Connected Google account cannot access expected calendar:', expectedBusinessEmail);
+
+          // Ensure stale/wrong Google calendar connection is removed instead of silently persisting
+          await supabase
+            .from('calendar_connections')
+            .delete()
+            .eq('user_id', stateData.contractor_id)
+            .eq('provider', 'google');
+
           return createRedirectResponse(
-            `${APP_URL}/dashboard?oauth_error=google_account_mismatch&expected=${encodeURIComponent(expectedBusinessEmail)}&crm_section=calendar`,
+            `${APP_URL}/dashboard?oauth_error=google_account_mismatch&expected=${encodeURIComponent(expectedBusinessEmail)}&connected=${encodeURIComponent(normalizedGoogleEmail)}&crm_section=calendar`,
             'Connection Failed'
           );
         }
