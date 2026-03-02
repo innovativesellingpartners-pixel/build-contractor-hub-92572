@@ -54,6 +54,7 @@ export function TemplatesSection({ onBack, onAddToEstimate }: TemplatesSectionPr
   const { templates, isLoading, deleteTemplate, filterTemplates, updateTemplate, isSuperAdmin } = useEstimateTemplates();
   const { user } = useAuth();
   
+  const [activeTemplateTab, setActiveTemplateTab] = useState<'estimate' | 'job'>('estimate');
   const [selectedTrade, setSelectedTrade] = useState<Trade | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [visibility, setVisibility] = useState<'all' | 'private' | 'account'>('all');
