@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -23,6 +23,8 @@ import { LocationAutocomplete, AddressData } from '@/components/ui/location-auto
 import { Customer, useCustomers } from '@/hooks/useCustomers';
 import { VoiceInputField } from '@/components/ui/voice-input-field';
 import { VoiceTextareaField } from '@/components/ui/voice-textarea-field';
+import { Save } from 'lucide-react';
+import { useFormDraftRHF } from '@/hooks/useFormDraft';
 
 const customerSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -40,6 +42,20 @@ const customerSchema = z.object({
 
 type CustomerFormData = z.infer<typeof customerSchema>;
 
+const CUSTOMER_DEFAULTS: CustomerFormData = {
+  name: '',
+  email: '',
+  phone: '',
+  address: '',
+  city: '',
+  state: '',
+  zip_code: '',
+  customer_type: 'residential',
+  referral_source: '',
+  referral_source_other: '',
+  notes: '',
+};
+
 interface AddCustomerDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -50,23 +66,18 @@ export default function AddCustomerDialog({ open, onOpenChange, onCustomerCreate
   const { addCustomer } = useCustomers();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showOtherInput, setShowOtherInput] = useState(false);
+  const { savedValues, clearDraft, saveDraft, hasDraft } = useFormDraftRHF('add-customer', CUSTOMER_DEFAULTS);
 
   const form = useForm<CustomerFormData>({
     resolver: zodResolver(customerSchema),
-    defaultValues: {
-      name: '',
-      email: '',
-      phone: '',
-      address: '',
-      city: '',
-      state: '',
-      zip_code: '',
-      customer_type: 'residential',
-      referral_source: '',
-      referral_source_other: '',
-      notes: '',
-    },
+    defaultValues: savedValues || CUSTOMER_DEFAULTS,
   });
+
+  // Watch form values and save draft
+  const watchedValues = form.watch();
+  useEffect(() => {
+    saveDraft(watchedValues);
+  }, [watchedValues, saveDraft]);
 
   const onSubmit = async (data: CustomerFormData) => {
     setIsSubmitting(true);
