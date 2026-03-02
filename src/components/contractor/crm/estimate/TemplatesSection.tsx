@@ -54,8 +54,6 @@ const tradeColors: Record<string, string> = {
 
 export function TemplatesSection({ onBack, onAddToEstimate }: TemplatesSectionProps) {
   const { templates, isLoading, deleteTemplate, filterTemplates, updateTemplate, isSuperAdmin } = useEstimateTemplates();
-  const { createEstimateAsync } = useEstimates();
-  const { jobs } = useJobs();
   const { user } = useAuth();
   
   // Two-level navigation: null = trade cards, string = specific trade view
