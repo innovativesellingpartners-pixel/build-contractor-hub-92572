@@ -252,9 +252,35 @@ export function ForgeSettings({ onBack }: { onBack: () => void }) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium">Enable Voice AI</p>
-              <p className="text-xs text-muted-foreground">Toggle AI call handling on/off</p>
+              <p className="text-xs text-muted-foreground">
+                {!isAdmin && profile.ai_enabled 
+                  ? "Contact sales to disable Voice AI" 
+                  : "Toggle AI call handling on/off"}
+              </p>
+              {!isAdmin && profile.ai_enabled && (
+                <p className="text-xs text-orange-600 mt-1 flex items-center gap-1">
+                  <AlertTriangle className="h-3 w-3" />
+                  Once enabled, only a sales representative can disable this feature
+                </p>
+              )}
             </div>
-            <Switch checked={profile.ai_enabled ?? false} onCheckedChange={v => update("ai_enabled", v)} />
+            <Switch 
+              checked={profile.ai_enabled ?? false} 
+              disabled={!isAdmin && profile.ai_enabled === true}
+              onCheckedChange={v => {
+                if (!isAdmin && !v && profile.ai_enabled) {
+                  // User trying to disable — show contact sales dialog
+                  setShowContactSales(true);
+                  return;
+                }
+                if (!isAdmin && v && !hasVoiceAISubscription) {
+                  // User trying to enable without subscription — show payment prompt
+                  setShowPaymentPrompt(true);
+                  return;
+                }
+                update("ai_enabled", v);
+              }} 
+            />
           </div>
           <div className="space-y-1.5">
             <Label>Custom Greeting</Label>
