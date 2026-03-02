@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar as CalendarIcon, Plug, Check, Loader2, X, RefreshCw, Clock, MapPin, ChevronDown, ChevronUp, Trash2, Plus, Briefcase, FileText, ExternalLink, ChevronLeft, ChevronRight, Pencil, CheckSquare, Mail } from 'lucide-react';
+import { Calendar as CalendarIcon, Plug, Check, Loader2, X, RefreshCw, Clock, MapPin, ChevronDown, ChevronUp, Trash2, Plus, Briefcase, FileText, ExternalLink, ChevronLeft, ChevronRight, Pencil, CheckSquare, Mail, Users, CheckCircle2, HelpCircle, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -37,14 +37,13 @@ interface CalendarEvent {
   calendar_email?: string;
   calendarId?: string;
   calendarName?: string;
-  // For local meetings (user_meetings) that have been synced to an external calendar,
-  // store the provider event ID so EditEventDialog can update the original event.
   calendarEventId?: string;
-  // For local meetings, pass through job linkage so edit can preserve job-aware title formatting
   jobId?: string;
-  // Lead ID if meeting is linked to a lead
   leadId?: string;
   isLocal?: boolean;
+  attendees?: Array<{ email: string; responseStatus?: string; displayName?: string }>;
+  organizer?: { email?: string; displayName?: string };
+  htmlLink?: string;
 }
 
 interface UserMeeting {
@@ -1143,7 +1142,7 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
         }}
       />
 
-      {/* Event Detail Dialog */}
+      {/* Event Detail Dialog - Read-Only View */}
       <Dialog open={!!selectedEvent} onOpenChange={(open) => !open && setSelectedEvent(null)}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
@@ -1192,6 +1191,46 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
                 </div>
               )}
 
+              {/* Organizer */}
+              {selectedEvent.organizer?.email && (
+                <div className="flex items-start gap-3">
+                  <Users className="h-5 w-5 text-muted-foreground mt-0.5" />
+                  <div>
+                    <p className="font-medium">Organizer</p>
+                    <p className="text-sm text-muted-foreground">
+                      {selectedEvent.organizer.displayName || selectedEvent.organizer.email}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Attendees */}
+              {selectedEvent.attendees && selectedEvent.attendees.length > 0 && (
+                <div className="flex items-start gap-3">
+                  <Users className="h-5 w-5 text-muted-foreground mt-0.5" />
+                  <div className="flex-1">
+                    <p className="font-medium">Attendees ({selectedEvent.attendees.length})</p>
+                    <div className="mt-1 space-y-1">
+                      {selectedEvent.attendees.map((attendee, idx) => {
+                        const statusIcon = attendee.responseStatus === 'accepted' 
+                          ? <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
+                          : attendee.responseStatus === 'declined'
+                          ? <XCircle className="h-3.5 w-3.5 text-destructive" />
+                          : attendee.responseStatus === 'tentative'
+                          ? <HelpCircle className="h-3.5 w-3.5 text-warning" />
+                          : <Clock className="h-3.5 w-3.5 text-muted-foreground" />;
+                        return (
+                          <div key={idx} className="flex items-center gap-2 text-sm text-muted-foreground">
+                            {statusIcon}
+                            <span>{attendee.displayName || attendee.email}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Description */}
               {selectedEvent.description && (
                 <div className="flex items-start gap-3">
@@ -1203,7 +1242,88 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
                 </div>
               )}
 
-              {/* Actions */}
+              {/* RSVP Section - Only for external calendar events with attendees */}
+              {!selectedEvent.isLocal && selectedEvent.provider !== 'local' && (
+                <div className="pt-4 border-t">
+                  <p className="text-sm font-medium mb-2">Your Response (RSVP)</p>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 border-green-500/30 hover:bg-green-500/10 hover:text-green-600"
+                      onClick={async () => {
+                        try {
+                          const session = await supabase.auth.getSession();
+                          await supabase.functions.invoke('rsvp-calendar-event', {
+                            body: {
+                              eventId: selectedEvent.id,
+                              calendarId: selectedEvent.calendarId,
+                              provider: selectedEvent.provider,
+                              response: 'accepted',
+                            },
+                            headers: { Authorization: `Bearer ${session.data.session?.access_token}` },
+                          });
+                          toast.success('RSVP: Accepted');
+                          fetchEvents();
+                        } catch (e) { toast.error('Failed to send RSVP'); }
+                      }}
+                    >
+                      <CheckCircle2 className="h-4 w-4 mr-1" />
+                      Accept
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 border-yellow-500/30 hover:bg-yellow-500/10 hover:text-yellow-600"
+                      onClick={async () => {
+                        try {
+                          const session = await supabase.auth.getSession();
+                          await supabase.functions.invoke('rsvp-calendar-event', {
+                            body: {
+                              eventId: selectedEvent.id,
+                              calendarId: selectedEvent.calendarId,
+                              provider: selectedEvent.provider,
+                              response: 'tentative',
+                            },
+                            headers: { Authorization: `Bearer ${session.data.session?.access_token}` },
+                          });
+                          toast.success('RSVP: Tentative');
+                          fetchEvents();
+                        } catch (e) { toast.error('Failed to send RSVP'); }
+                      }}
+                    >
+                      <HelpCircle className="h-4 w-4 mr-1" />
+                      Tentative
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 border-red-500/30 hover:bg-red-500/10 hover:text-red-600"
+                      onClick={async () => {
+                        try {
+                          const session = await supabase.auth.getSession();
+                          await supabase.functions.invoke('rsvp-calendar-event', {
+                            body: {
+                              eventId: selectedEvent.id,
+                              calendarId: selectedEvent.calendarId,
+                              provider: selectedEvent.provider,
+                              response: 'declined',
+                            },
+                            headers: { Authorization: `Bearer ${session.data.session?.access_token}` },
+                          });
+                          toast.success('RSVP: Declined');
+                          fetchEvents();
+                        } catch (e) { toast.error('Failed to send RSVP'); }
+                      }}
+                    >
+                      <XCircle className="h-4 w-4 mr-1" />
+                      Decline
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Actions - Edit & Delete as secondary */}
               <div className="flex gap-2 pt-4 border-t">
                 <Button 
                   variant="outline" 
@@ -1226,9 +1346,8 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
                 </Button>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button variant="destructive" className="flex-1">
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Delete
+                    <Button variant="destructive" size="sm">
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
