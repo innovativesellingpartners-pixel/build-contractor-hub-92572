@@ -110,7 +110,7 @@ function getTierFeatures(tierId: string | null, hasFullAccess: boolean) {
       myAccount: true,
       home: true,
       leads: false,
-      aiAssistant: false,
+      aiAssistant: true,
       marketplace: true,
     };
   }
