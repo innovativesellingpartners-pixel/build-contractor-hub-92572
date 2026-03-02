@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Phone, Play, FileText, Clock, User, Search, PhoneIncoming } from "lucide-react";
+import { ArrowLeft, Phone, Play, FileText, Clock, User, Search, PhoneIncoming, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { Input } from "@/components/ui/input";
@@ -62,6 +62,86 @@ export function ForgeCallCenter({ onBack }: { onBack: () => void }) {
     !search || c.from_number.includes(search) || c.ai_summary?.toLowerCase().includes(search.toLowerCase())
   );
 
+  // Detail view for a selected call
+  if (selectedCall) {
+    return (
+      <div className="space-y-4 max-w-5xl mx-auto">
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="icon" onClick={() => setSelectedCall(null)} className="shrink-0">
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <img src={forgeLogoIcon} alt="Forge AI" className="h-8 w-8 object-contain" />
+          <div className="flex-1 min-w-0">
+            <h2 className="text-xl font-bold tracking-tight">Call Details</h2>
+            <p className="text-xs text-muted-foreground">{selectedCall.from_number} · {format(new Date(selectedCall.created_at), "MMM d, yyyy h:mm a")}</p>
+          </div>
+          {getOutcomeBadge(selectedCall.outcome)}
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[
+            { label: "From", value: selectedCall.from_number },
+            { label: "Date", value: format(new Date(selectedCall.created_at), "MMM d, yyyy") },
+            { label: "Duration", value: selectedCall.duration != null ? `${Math.floor(selectedCall.duration / 60)}m ${selectedCall.duration % 60}s` : "N/A" },
+            { label: "Status", value: selectedCall.call_status },
+          ].map((item) => (
+            <div key={item.label} className="bg-muted/40 rounded-xl p-3.5">
+              <p className="text-[11px] text-muted-foreground uppercase tracking-wide font-medium">{item.label}</p>
+              <p className="text-sm font-semibold mt-0.5 capitalize">{item.value}</p>
+            </div>
+          ))}
+        </div>
+
+        {selectedCall.ai_summary && (
+          <Card>
+            <CardContent className="p-5">
+              <p className="text-sm font-semibold mb-2">AI Summary</p>
+              <p className="text-sm leading-relaxed text-muted-foreground">{selectedCall.ai_summary}</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {selectedCall.transcript && (
+          <Card>
+            <CardContent className="p-5">
+              <p className="text-sm font-semibold mb-2 flex items-center gap-1.5">
+                <FileText className="h-4 w-4 text-muted-foreground" /> Transcript
+              </p>
+              <div className="bg-muted/40 rounded-xl p-4 text-sm max-h-64 overflow-y-auto whitespace-pre-wrap leading-relaxed">
+                {selectedCall.transcript}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {selectedCall.recording_url && (
+          <Card>
+            <CardContent className="p-5">
+              <p className="text-sm font-semibold mb-2 flex items-center gap-1.5">
+                <Play className="h-4 w-4 text-muted-foreground" /> Recording
+              </p>
+              <audio controls className="w-full" src={selectedCall.recording_url} />
+            </CardContent>
+          </Card>
+        )}
+
+        {selectedCall.customer_info && (
+          <Card>
+            <CardContent className="p-5">
+              <p className="text-sm font-semibold mb-2 flex items-center gap-1.5">
+                <User className="h-4 w-4 text-muted-foreground" /> Customer Info
+              </p>
+              <div className="bg-muted/40 rounded-xl p-4">
+                <pre className="text-xs font-mono">{JSON.stringify(selectedCall.customer_info, null, 2)}</pre>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    );
+  }
+
+  // List view
   return (
     <div className="space-y-4 max-w-5xl mx-auto">
       {/* Header */}
@@ -106,118 +186,47 @@ export function ForgeCallCenter({ onBack }: { onBack: () => void }) {
             />
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            {/* Call List */}
-            <div className="lg:col-span-1 space-y-2 max-h-[650px] overflow-y-auto pr-1">
-              {filteredCalls.map((call) => (
-                <button
-                  key={call.id}
-                  onClick={() => setSelectedCall(call)}
-                  className="w-full text-left"
-                >
-                  <Card className={`border cursor-pointer transition-all duration-150 ${
-                    selectedCall?.id === call.id
-                      ? "border-orange-500 bg-orange-50/50 dark:bg-orange-500/5 shadow-sm"
-                      : "hover:border-border/80 hover:shadow-sm"
-                  }`}>
-                    <CardContent className="p-3.5">
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-sm font-semibold">{call.from_number}</span>
-                        {getOutcomeBadge(call.outcome)}
-                      </div>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <Clock className="h-3 w-3 shrink-0" />
-                        {format(new Date(call.created_at), "MMM d, h:mm a")}
-                        {call.duration != null && (
-                          <span className="text-muted-foreground/70">• {Math.floor(call.duration / 60)}m {call.duration % 60}s</span>
+          {/* Full-width call list */}
+          <div className="space-y-2">
+            {filteredCalls.map((call) => (
+              <button
+                key={call.id}
+                onClick={() => setSelectedCall(call)}
+                className="w-full text-left group"
+              >
+                <Card className="border hover:border-orange-300/50 hover:shadow-sm transition-all duration-150">
+                  <CardContent className="p-4 flex items-center gap-4">
+                    <div className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center shrink-0">
+                      <Phone className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                    <div className="flex-1 min-w-0 grid grid-cols-1 sm:grid-cols-[1fr_auto_auto_auto] items-center gap-2 sm:gap-4">
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold truncate">{call.from_number}</p>
+                        {call.ai_summary && (
+                          <p className="text-xs text-muted-foreground truncate mt-0.5">{call.ai_summary}</p>
                         )}
                       </div>
-                      {call.ai_summary && (
-                        <p className="text-xs text-muted-foreground line-clamp-1 mt-1.5">{call.ai_summary}</p>
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0">
+                        <Clock className="h-3 w-3" />
+                        {format(new Date(call.created_at), "MMM d, h:mm a")}
+                      </div>
+                      {call.duration != null && (
+                        <span className="text-xs text-muted-foreground shrink-0">
+                          {Math.floor(call.duration / 60)}m {call.duration % 60}s
+                        </span>
                       )}
-                    </CardContent>
-                  </Card>
-                </button>
-              ))}
-              {filteredCalls.length === 0 && (
-                <p className="text-center text-sm text-muted-foreground py-8">No matching calls</p>
-              )}
-            </div>
-
-            {/* Call Detail */}
-            <div className="lg:col-span-2">
-              {selectedCall ? (
-                <Card className="shadow-sm">
-                  <CardHeader className="pb-4 border-b">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg font-semibold">Call Details</CardTitle>
-                      {getOutcomeBadge(selectedCall.outcome)}
+                      <div className="shrink-0">
+                        {getOutcomeBadge(call.outcome)}
+                      </div>
                     </div>
-                  </CardHeader>
-                  <CardContent className="p-5 space-y-5">
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                      {[
-                        { label: "From", value: selectedCall.from_number },
-                        { label: "Date", value: format(new Date(selectedCall.created_at), "MMM d, yyyy") },
-                        { label: "Duration", value: selectedCall.duration != null ? `${Math.floor(selectedCall.duration / 60)}m ${selectedCall.duration % 60}s` : "N/A" },
-                        { label: "Status", value: selectedCall.call_status },
-                      ].map((item) => (
-                        <div key={item.label} className="bg-muted/40 rounded-lg p-3">
-                          <p className="text-[11px] text-muted-foreground uppercase tracking-wide font-medium">{item.label}</p>
-                          <p className="text-sm font-semibold mt-0.5 capitalize">{item.value}</p>
-                        </div>
-                      ))}
-                    </div>
-
-                    {selectedCall.ai_summary && (
-                      <div>
-                        <p className="text-sm font-semibold mb-2">AI Summary</p>
-                        <div className="bg-muted/40 rounded-xl p-4 text-sm leading-relaxed">{selectedCall.ai_summary}</div>
-                      </div>
-                    )}
-
-                    {selectedCall.transcript && (
-                      <div>
-                        <p className="text-sm font-semibold mb-2 flex items-center gap-1.5">
-                          <FileText className="h-4 w-4 text-muted-foreground" /> Transcript
-                        </p>
-                        <div className="bg-muted/40 rounded-xl p-4 text-sm max-h-48 overflow-y-auto whitespace-pre-wrap leading-relaxed">
-                          {selectedCall.transcript}
-                        </div>
-                      </div>
-                    )}
-
-                    {selectedCall.recording_url && (
-                      <div>
-                        <p className="text-sm font-semibold mb-2 flex items-center gap-1.5">
-                          <Play className="h-4 w-4 text-muted-foreground" /> Recording
-                        </p>
-                        <audio controls className="w-full" src={selectedCall.recording_url} />
-                      </div>
-                    )}
-
-                    {selectedCall.customer_info && (
-                      <div>
-                        <p className="text-sm font-semibold mb-2 flex items-center gap-1.5">
-                          <User className="h-4 w-4 text-muted-foreground" /> Customer Info
-                        </p>
-                        <div className="bg-muted/40 rounded-xl p-4">
-                          <pre className="text-xs font-mono">{JSON.stringify(selectedCall.customer_info, null, 2)}</pre>
-                        </div>
-                      </div>
-                    )}
+                    <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-orange-500 transition-colors shrink-0" />
                   </CardContent>
                 </Card>
-              ) : (
-                <Card className="border-dashed">
-                  <CardContent className="py-20 text-center text-muted-foreground">
-                    <Phone className="h-8 w-8 mx-auto mb-3 opacity-40" />
-                    <p className="font-medium">Select a call to view details</p>
-                    <p className="text-xs mt-1">Click any call from the list on the left</p>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
+              </button>
+            ))}
+            {filteredCalls.length === 0 && (
+              <p className="text-center text-sm text-muted-foreground py-8">No matching calls</p>
+            )}
           </div>
         </>
       )}
