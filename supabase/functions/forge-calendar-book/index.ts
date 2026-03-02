@@ -58,6 +58,9 @@ serve(async (req) => {
       appointmentDurationMinutes = 60,
       callerName,
       callerPhone,
+      homeowner_name,
+      homeowner_email,
+      homeowner_phone,
       address,
       notes,
     } = await req.json();
