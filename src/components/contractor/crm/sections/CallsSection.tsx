@@ -214,7 +214,7 @@ export default function CallsSection({ onSectionChange }: CallsSectionProps) {
               
               <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
-                  <img src={forgeLogoIcon} alt="Forge AI" className="h-12 w-12 object-contain drop-shadow-lg ring-2 ring-white rounded-full" />
+                  <img src={forgeLogoIcon} alt="Forge AI" className="h-12 w-12 object-contain drop-shadow-lg ring-1 ring-white/80 rounded-full" />
                   <div>
                     <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
                       Forge<span className="text-orange-400">AI</span>

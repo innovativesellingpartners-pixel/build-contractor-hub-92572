@@ -234,7 +234,7 @@ export function ForgeCallCenter({ onBack }: { onBack: () => void }) {
           <Button variant="ghost" size="icon" onClick={() => setSelectedCall(null)} className="shrink-0">
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <img src={forgeLogoIcon} alt="Forge AI" className="h-8 w-8 object-contain ring-2 ring-white rounded-full" />
+          <img src={forgeLogoIcon} alt="Forge AI" className="h-8 w-8 object-contain ring-1 ring-white/80 rounded-full" />
           <div className="flex-1 min-w-0">
             <h2 className="text-xl font-bold tracking-tight">Call Details</h2>
             <p className="text-xs text-muted-foreground">
@@ -370,7 +370,7 @@ export function ForgeCallCenter({ onBack }: { onBack: () => void }) {
         <Button variant="ghost" size="icon" onClick={onBack} className="shrink-0">
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <img src={forgeLogoIcon} alt="Forge AI" className="h-8 w-8 object-contain ring-2 ring-white rounded-full" />
+        <img src={forgeLogoIcon} alt="Forge AI" className="h-8 w-8 object-contain ring-1 ring-white/80 rounded-full" />
         <div>
           <h2 className="text-xl font-bold tracking-tight">Call Center</h2>
           <p className="text-xs text-muted-foreground">Recordings, transcripts & booking status</p>
