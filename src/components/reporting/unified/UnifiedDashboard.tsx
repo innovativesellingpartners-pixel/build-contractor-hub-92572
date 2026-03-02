@@ -403,7 +403,7 @@ export function UnifiedDashboard() {
               ) : <p className="text-sm text-muted-foreground">No data</p>}
             </CardContent>
           </Card>
-          <Card className="border-border/60 cursor-pointer hover:shadow-md hover:border-border transition-all group" onClick={() => navigateToReport("ap")}>
+          <Card className="border-border cursor-pointer hover:shadow-md transition-all group" onClick={() => navigateToReport("ap")}>
             <CardHeader>
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
                 <Users className="h-4 w-4" /> QB Vendors
