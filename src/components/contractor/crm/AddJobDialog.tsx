@@ -76,6 +76,26 @@ export function AddJobDialog({ onAdd, onJobCreated }: AddJobDialogProps) {
         start_date: formData.start_date || undefined,
         end_date: formData.end_date || undefined,
       }, meetings);
+
+      // If a template was selected, create an estimate from it
+      if (selectedTemplate && newJob?.id) {
+        try {
+          await createEstimateAsync({
+            title: `${selectedTemplate.name} - ${newJob.name || 'New Estimate'}`,
+            status: 'draft',
+            total_amount: selectedTemplate.line_items?.reduce((s, i) => s + (i.totalPrice || 0), 0) || 0,
+            line_items: selectedTemplate.line_items,
+            job_id: newJob.id,
+            site_address: newJob.address || '',
+            project_address: [newJob.address, newJob.city, newJob.state, newJob.zip_code].filter(Boolean).join(', '),
+          });
+          toast.success('Job created with estimate from template');
+        } catch (err) {
+          console.error('Error creating estimate from template:', err);
+          toast.error('Job created but failed to create estimate from template');
+        }
+      }
+
       setOpen(false);
       setFormData({
         name: '',
@@ -91,7 +111,7 @@ export function AddJobDialog({ onAdd, onJobCreated }: AddJobDialogProps) {
         notes: '',
       });
       setMeetings([]);
-      // Navigate to the newly created job
+      setSelectedTemplate(null);
       if (newJob && onJobCreated) {
         onJobCreated(newJob);
       }
