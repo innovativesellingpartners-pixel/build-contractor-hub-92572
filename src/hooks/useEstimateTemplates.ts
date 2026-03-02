@@ -71,7 +71,8 @@ export function useEstimateTemplates() {
       const { data, error } = await supabase
         .from('estimate_templates')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .order('name', { ascending: true });
 
       if (error) throw error;
       
