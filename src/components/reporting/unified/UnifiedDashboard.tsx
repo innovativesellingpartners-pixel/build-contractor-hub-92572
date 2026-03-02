@@ -332,7 +332,7 @@ export function UnifiedDashboard() {
         </Card>
 
         {/* Top Customers — clickable rows */}
-        <Card className="border-border/60 cursor-pointer hover:shadow-md hover:border-border transition-all group" onClick={() => navigateToReport("customers")}>
+        <Card className="border-border cursor-pointer hover:shadow-md transition-all group" onClick={() => navigateToReport("customers")}>
           <CardHeader>
             <CardTitle className="text-sm font-semibold flex items-center justify-between">
               Top Customers
