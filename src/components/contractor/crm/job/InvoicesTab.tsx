@@ -206,6 +206,7 @@ export default function InvoicesTab({ jobId, customerId }: InvoicesTabProps) {
     setAmountDueInput('');
     setAmountPaidInput('');
     setEditingInvoice(null);
+    localStorage.removeItem(draftKey);
   };
 
   const handleEdit = (invoice: Invoice) => {
