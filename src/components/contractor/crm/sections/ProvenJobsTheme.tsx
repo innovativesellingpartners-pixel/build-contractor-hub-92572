@@ -203,7 +203,7 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
 // Action buttons row - grid on mobile, flex on desktop
 export function ActionButtonRow({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <div className={cn('grid grid-cols-2 sm:flex sm:flex-wrap gap-2 px-3 py-2.5 bg-card/80 border-b border-border/40', className)}>
+    <div className={cn('grid grid-cols-2 sm:flex sm:flex-wrap gap-2 px-3 py-2.5 bg-card/80 border-b border-border', className)}>
       {children}
     </div>
   );
