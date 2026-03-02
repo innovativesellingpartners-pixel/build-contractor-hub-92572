@@ -4,15 +4,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { LocationAutocomplete, AddressData } from '@/components/ui/location-autocomplete';
-import { Plus, Bot, FileText, MapPin, DollarSign } from 'lucide-react';
+import { Plus, Bot, FileText, MapPin, DollarSign, X, Layers } from 'lucide-react';
 import { Job } from '@/hooks/useJobs';
 import { JobAIAssistant } from './JobAIAssistant';
 import { JobMeetingsSection, MeetingFormData } from './JobMeetingsSection';
 import { AIScopeNotes } from './AIScopeNotes';
 import { VoiceInputField } from '@/components/ui/voice-input-field';
 import { VoiceTextareaField } from '@/components/ui/voice-textarea-field';
+import { useEstimateTemplates, EstimateTemplate } from '@/hooks/useEstimateTemplates';
+import { useEstimates } from '@/hooks/useEstimates';
+import { toast } from 'sonner';
 
 interface AddJobDialogProps {
   onAdd: (jobData: Omit<Job, 'id' | 'user_id' | 'job_number' | 'created_at' | 'updated_at'>, meetings?: MeetingFormData[]) => Promise<any>;
@@ -22,6 +26,9 @@ interface AddJobDialogProps {
 export function AddJobDialog({ onAdd, onJobCreated }: AddJobDialogProps) {
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('manual');
+  const { templates } = useEstimateTemplates();
+  const { createEstimateAsync } = useEstimates();
+  const [selectedTemplate, setSelectedTemplate] = useState<EstimateTemplate | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -69,6 +76,26 @@ export function AddJobDialog({ onAdd, onJobCreated }: AddJobDialogProps) {
         start_date: formData.start_date || undefined,
         end_date: formData.end_date || undefined,
       }, meetings);
+
+      // If a template was selected, create an estimate from it
+      if (selectedTemplate && newJob?.id) {
+        try {
+          await createEstimateAsync({
+            title: `${selectedTemplate.name} - ${newJob.name || 'New Estimate'}`,
+            status: 'draft',
+            total_amount: selectedTemplate.line_items?.reduce((s, i) => s + (i.totalPrice || 0), 0) || 0,
+            line_items: selectedTemplate.line_items,
+            job_id: newJob.id,
+            site_address: newJob.address || '',
+            project_address: [newJob.address, newJob.city, newJob.state, newJob.zip_code].filter(Boolean).join(', '),
+          });
+          toast.success('Job created with estimate from template');
+        } catch (err) {
+          console.error('Error creating estimate from template:', err);
+          toast.error('Job created but failed to create estimate from template');
+        }
+      }
+
       setOpen(false);
       setFormData({
         name: '',
@@ -84,7 +111,7 @@ export function AddJobDialog({ onAdd, onJobCreated }: AddJobDialogProps) {
         notes: '',
       });
       setMeetings([]);
-      // Navigate to the newly created job
+      setSelectedTemplate(null);
       if (newJob && onJobCreated) {
         onJobCreated(newJob);
       }
@@ -138,6 +165,49 @@ export function AddJobDialog({ onAdd, onJobCreated }: AddJobDialogProps) {
           
           <TabsContent value="manual" className="flex-1 overflow-y-auto mt-4 pb-20">
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Template Selector */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+                  <Layers className="h-4 w-4" />
+                  Start from Template (Optional)
+                </div>
+                {selectedTemplate ? (
+                  <div className="flex items-center gap-3 p-3 border rounded-lg bg-muted/50">
+                    <FileText className="h-5 w-5 text-primary flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm truncate">{selectedTemplate.name}</p>
+                      <p className="text-xs text-muted-foreground">{selectedTemplate.trade} · {selectedTemplate.line_items?.length || 0} line items</p>
+                    </div>
+                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0"
+                      onClick={() => setSelectedTemplate(null)}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <SearchableSelect
+                    value=""
+                    onValueChange={(value) => {
+                      const tmpl = templates?.find(t => t.id === value);
+                      if (tmpl) {
+                        setSelectedTemplate(tmpl);
+                        if (!formData.name && tmpl.name) {
+                          setFormData(prev => ({ ...prev, name: tmpl.name }));
+                        }
+                      }
+                    }}
+                    placeholder="Select a template to pre-fill estimate..."
+                    searchPlaceholder="Search templates..."
+                    options={(templates || []).map(t => ({
+                      value: t.id,
+                      label: `${t.name} (${t.trade} · ${t.line_items?.length || 0} items)`,
+                    }))}
+                  />
+                )}
+                <p className="text-xs text-muted-foreground">
+                  Selecting a template will automatically create an estimate with its line items when the job is created.
+                </p>
+              </div>
+
               {/* Basic Information */}
               <div className="space-y-4">
                 <div className="flex items-center gap-2 text-sm font-semibold text-primary">
