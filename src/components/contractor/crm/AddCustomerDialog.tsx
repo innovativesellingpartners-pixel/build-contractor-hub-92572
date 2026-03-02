@@ -116,7 +116,14 @@ export default function AddCustomerDialog({ open, onOpenChange, onCustomerCreate
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add New Customer</DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle>Add New Customer</DialogTitle>
+            {hasDraft && (
+              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                <Save className="h-3 w-3" /> Draft restored
+              </span>
+            )}
+          </div>
           <DialogDescription>
             Enter customer information to add them to your database
           </DialogDescription>
