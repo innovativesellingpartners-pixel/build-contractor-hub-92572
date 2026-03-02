@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { Input } from "@/components/ui/input";
 import forgeLogoIcon from "@/assets/forgeailogo2.png";
+import { WaveformPlayer } from "./WaveformPlayer";
 
 interface MergedCallRecord {
   id: string;
