@@ -61,6 +61,7 @@ export function TemplateSearchModal({ open, onOpenChange, onSelectTemplate }: Te
           <DialogHeader>
             <DialogTitle>{isSuperAdmin ? 'All Templates' : 'My Templates'}</DialogTitle>
             {isSuperAdmin && <p className="text-sm text-muted-foreground">Viewing all templates across all users</p>}
+          </DialogHeader>
 
           <div className="space-y-4">
             {/* Search and Filters */}
