@@ -564,7 +564,7 @@ export function UnifiedDashboard() {
 
       {/* Active Jobs Budget vs Spent */}
       {d && d.activeJobs > 0 && (
-        <Card className="p-6 border-border/60 cursor-pointer hover:shadow-md hover:border-border transition-all group" onClick={() => navigateToReport("jobs")}>
+        <Card className="p-6 border-border cursor-pointer hover:shadow-md transition-all group" onClick={() => navigateToReport("jobs")}>
           <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
             <TrendingUp className="h-4 w-4" /> Active Jobs Budget
             <span className="ml-auto text-[10px] text-primary opacity-0 group-hover:opacity-100 transition-opacity">View details →</span>

@@ -299,7 +299,7 @@ interface AddressRowProps {
 export function AddressRow({ address, onNavigate }: AddressRowProps) {
   return (
     <div 
-      className="flex justify-between items-center px-4 py-3 border-b border-border/40 cursor-pointer hover:bg-muted/50 active:bg-muted transition-colors"
+      className="flex justify-between items-center px-4 py-3 border-b border-border cursor-pointer hover:bg-muted/50 active:bg-muted transition-colors"
       onClick={onNavigate}
     >
       <span className="text-muted-foreground font-medium text-sm">Address</span>
