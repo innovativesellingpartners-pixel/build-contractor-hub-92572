@@ -110,14 +110,7 @@ serve(async (req) => {
     authUrl.searchParams.set('scope', scopes.join(' '));
     authUrl.searchParams.set('state', state);
     authUrl.searchParams.set('access_type', 'offline');
-    authUrl.searchParams.set('prompt', 'consent');
-    authUrl.searchParams.set('include_granted_scopes', 'false');
-    if (preferredGoogleEmail) {
-      authUrl.searchParams.set('login_hint', preferredGoogleEmail);
-    }
-    if (preferredGoogleDomain && preferredGoogleDomain !== 'gmail.com' && preferredGoogleDomain !== 'googlemail.com') {
-      authUrl.searchParams.set('hd', preferredGoogleDomain);
-    }
+    authUrl.searchParams.set('prompt', 'consent select_account');
 
     return new Response(
       JSON.stringify({ url: authUrl.toString() }),
