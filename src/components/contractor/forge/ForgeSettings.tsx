@@ -6,9 +6,20 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Save, Calendar, Clock, Phone, Globe } from "lucide-react";
+import { ArrowLeft, Save, Calendar, Clock, Phone, Globe, AlertTriangle, PhoneCall } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useUserTier } from "@/hooks/useUserTier";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface AIProfile {
   business_name: string;
@@ -54,6 +65,16 @@ export function ForgeSettings({ onBack }: { onBack: () => void }) {
   const [profile, setProfile] = useState<AIProfile>(defaultProfile);
   const [saving, setSaving] = useState(false);
   const [calendarConnected, setCalendarConnected] = useState(false);
+  const [showPaymentPrompt, setShowPaymentPrompt] = useState(false);
+  const [showContactSales, setShowContactSales] = useState(false);
+  const { userRole, hasFullAccess, subscription } = useUserTier();
+  
+  const isAdmin = hasFullAccess || userRole === 'super_admin' || userRole === 'admin';
+  // Check if user has Voice AI subscription (bot_user tier includes it, or growth/accel)
+  const hasVoiceAISubscription = subscription?.tier_id === 'bot_user' || 
+    subscription?.tier_id === 'growth' || 
+    subscription?.tier_id === 'accel' || 
+    subscription?.tier_id === 'full_access';
 
   useEffect(() => {
     loadProfile();
@@ -231,9 +252,35 @@ export function ForgeSettings({ onBack }: { onBack: () => void }) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium">Enable Voice AI</p>
-              <p className="text-xs text-muted-foreground">Toggle AI call handling on/off</p>
+              <p className="text-xs text-muted-foreground">
+                {!isAdmin && profile.ai_enabled 
+                  ? "Contact sales to disable Voice AI" 
+                  : "Toggle AI call handling on/off"}
+              </p>
+              {!isAdmin && profile.ai_enabled && (
+                <p className="text-xs text-orange-600 mt-1 flex items-center gap-1">
+                  <AlertTriangle className="h-3 w-3" />
+                  Once enabled, only a sales representative can disable this feature
+                </p>
+              )}
             </div>
-            <Switch checked={profile.ai_enabled ?? false} onCheckedChange={v => update("ai_enabled", v)} />
+            <Switch 
+              checked={profile.ai_enabled ?? false} 
+              disabled={!isAdmin && profile.ai_enabled === true}
+              onCheckedChange={v => {
+                if (!isAdmin && !v && profile.ai_enabled) {
+                  // User trying to disable — show contact sales dialog
+                  setShowContactSales(true);
+                  return;
+                }
+                if (!isAdmin && v && !hasVoiceAISubscription) {
+                  // User trying to enable without subscription — show payment prompt
+                  setShowPaymentPrompt(true);
+                  return;
+                }
+                update("ai_enabled", v);
+              }} 
+            />
           </div>
           <div className="space-y-1.5">
             <Label>Custom Greeting</Label>
@@ -319,6 +366,63 @@ export function ForgeSettings({ onBack }: { onBack: () => void }) {
           )}
         </CardContent>
       </Card>
+
+      {/* Payment Prompt Dialog */}
+      <AlertDialog open={showPaymentPrompt} onOpenChange={setShowPaymentPrompt}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <PhoneCall className="h-5 w-5 text-orange-500" />
+              Voice AI Subscription Required
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p>Voice AI is an add-on feature that costs <strong>$30/month</strong>.</p>
+              <p>This includes AI-powered call answering, appointment booking, lead capture, and more.</p>
+              <p>Please contact our sales team to add Voice AI to your subscription.</p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                window.location.href = "mailto:sales@myct1.com?subject=Voice AI Subscription&body=I'd like to add Voice AI to my account.";
+              }}
+              className="bg-orange-500 hover:bg-orange-600"
+            >
+              Contact Sales
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Contact Sales to Disable Dialog */}
+      <AlertDialog open={showContactSales} onOpenChange={setShowContactSales}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-orange-500" />
+              Contact Sales to Disable
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p>Voice AI cannot be disabled from your account settings.</p>
+              <p>To disable Voice AI, please contact our sales team and they will assist you with the process.</p>
+              <p className="font-medium">Email: sales@myct1.com</p>
+              <p className="font-medium">Phone: (555) 123-4567</p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Close</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                window.location.href = "mailto:sales@myct1.com?subject=Disable Voice AI&body=I'd like to disable Voice AI on my account.";
+              }}
+              className="bg-orange-500 hover:bg-orange-600"
+            >
+              Email Sales
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
