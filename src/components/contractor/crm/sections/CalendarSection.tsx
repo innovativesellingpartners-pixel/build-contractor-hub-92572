@@ -1483,7 +1483,7 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
             </DialogTitle>
             <DialogDescription>
               {selectedDay && (() => {
-                const dayEvents = getEventsForDay(selectedDay);
+                const dayEvents = getFilteredEventsForDay(selectedDay);
                 const dayTasks = getTasksForDay(selectedDay);
                 const parts = [];
                 if (dayEvents.length > 0) parts.push(`${dayEvents.length} event${dayEvents.length !== 1 ? 's' : ''}`);
