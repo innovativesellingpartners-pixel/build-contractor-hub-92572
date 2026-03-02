@@ -60,11 +60,8 @@ export function TemplatesSection({ onBack, onAddToEstimate }: TemplatesSectionPr
   const [searchQuery, setSearchQuery] = useState('');
   const [visibility, setVisibility] = useState<'all' | 'private' | 'account'>('all');
   
-  // For add to estimate dialog
-  const [addDialogOpen, setAddDialogOpen] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState<EstimateTemplate | null>(null);
-  const [selectedJobId, setSelectedJobId] = useState<string>('');
-  
+  // For template detail preview
+  const [previewTemplate, setPreviewTemplate] = useState<EstimateTemplate | null>(null);
   // For delete confirmation
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [templateToDelete, setTemplateToDelete] = useState<EstimateTemplate | null>(null);
