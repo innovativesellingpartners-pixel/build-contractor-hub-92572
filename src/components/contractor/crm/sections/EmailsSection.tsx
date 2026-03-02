@@ -614,6 +614,38 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
           </div>
         </div>
 
+        {/* Reconnect Banner */}
+        {reauthConnectionIds.length > 0 && (
+          <Card className="p-4 border-destructive/50 bg-destructive/5">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="h-5 w-5 text-destructive mt-0.5 shrink-0" />
+              <div className="flex-1">
+                <p className="font-medium text-sm">Email connection expired</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {connections
+                    .filter(c => reauthConnectionIds.includes(c.id))
+                    .map(c => `${c.provider === 'google' ? 'Gmail' : 'Outlook'} (${c.email_address})`)
+                    .join(', ')
+                  } needs to be reconnected for continued access.
+                </p>
+                <div className="flex gap-2 mt-3">
+                  {connections.filter(c => reauthConnectionIds.includes(c.id)).map(c => (
+                    <Button
+                      key={c.id}
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => handleConnect(c.provider as 'google' | 'outlook')}
+                    >
+                      <RefreshCw className="h-3 w-3 mr-1" />
+                      Reconnect {c.provider === 'google' ? 'Gmail' : 'Outlook'}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </Card>
+        )}
+
         {/* Search Bar */}
         {hasAnyConnection && (
           <div className="relative">
