@@ -199,7 +199,7 @@ serve(async (req) => {
           provider: 'google',
           email_address: userInfo.email,
           access_token_encrypted: tokens.access_token,
-          refresh_token_encrypted: tokens.refresh_token,
+          refresh_token_encrypted: tokens.refresh_token || 'pending',
           expires_at: expiresAt,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
