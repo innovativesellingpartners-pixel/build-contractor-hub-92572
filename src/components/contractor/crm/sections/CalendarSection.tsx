@@ -431,7 +431,7 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
 
   // Helper to get event at a specific time slot
   const getEventAtTimeSlot = (day: Date, timeSlot: string): CalendarEvent | null => {
-    const dayEvents = getEventsForDay(day);
+    const dayEvents = getFilteredEventsForDay(day);
     const [hours, minutes] = timeSlot.split(':').map(Number);
     const slotTime = new Date(day);
     slotTime.setHours(hours, minutes, 0, 0);
