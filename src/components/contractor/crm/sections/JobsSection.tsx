@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useJobs, Job } from '@/hooks/useJobs';
 import { useEstimates } from '@/hooks/useEstimates';
 import { useCustomers } from '@/hooks/useCustomers';
+import { useEstimateTemplates } from '@/hooks/useEstimateTemplates';
 import { MapPin, Home, Copy, Eye, Briefcase, ChevronRight, ArrowLeftRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -9,6 +10,7 @@ import { toast } from 'sonner';
 import JobDetailViewBlue from '../JobDetailViewBlue';
 import { AddJobDialog } from '../AddJobDialog';
 import { EditJobDialog } from '../EditJobDialog';
+import { ConvertToEstimateDialog } from '../job/ConvertToEstimateDialog';
 import { HorizontalRowCard, RowAvatar, RowContent, RowTitleLine, RowMetaLine, RowAmount, RowActions } from './HorizontalRowCard';
 import { PredictiveSearch } from '../PredictiveSearch';
 import { SwipeToArchive } from '@/components/ui/swipe-to-archive';
@@ -30,6 +32,8 @@ export default function JobsSection({ onSectionChange, initialJobId, onClearInit
   const [editOpen, setEditOpen] = useState(false);
   const [editingJob, setEditingJob] = useState<Job | null>(null);
   const [assignOpen, setAssignOpen] = useState(false);
+  const [convertDialogOpen, setConvertDialogOpen] = useState(false);
+  const { templates } = useEstimateTemplates();
 
   // Handle initial job ID to auto-open the detail view
   useEffect(() => {
@@ -90,9 +94,13 @@ export default function JobsSection({ onSectionChange, initialJobId, onClearInit
     return updatedJob;
   };
 
-  const handleCreateEstimateFromJob = async () => {
+  const handleCreateEstimateFromJob = () => {
     if (!selectedJob) return;
-    
+    setConvertDialogOpen(true);
+  };
+
+  const handleCreateBlankEstimate = async () => {
+    if (!selectedJob) return;
     try {
       const customer = selectedJob.customer_id ? customers?.find(c => c.id === selectedJob.customer_id) : null;
       const fullAddress = [selectedJob.address, selectedJob.city, selectedJob.state, selectedJob.zip_code].filter(Boolean).join(', ');
@@ -113,11 +121,46 @@ export default function JobsSection({ onSectionChange, initialJobId, onClearInit
 
       const newEstimate = await createEstimateAsync(estimateData);
       toast.success('Estimate created for job!');
-      
-      // Close the job detail view
       setDetailOpen(false);
-      
-      // Navigate to the specific estimate to open it directly
+      if (onSectionChange && newEstimate?.id) {
+        onSectionChange(`estimate:${newEstimate.id}`);
+      } else if (onSectionChange) {
+        onSectionChange('estimates');
+      }
+    } catch (error: any) {
+      toast.error('Failed to create estimate: ' + error.message);
+    }
+  };
+
+  const handleCreateEstimateFromTemplate = async (templateId: string) => {
+    if (!selectedJob) return;
+    const template = templates?.find(t => t.id === templateId);
+    if (!template) return;
+
+    try {
+      const customer = selectedJob.customer_id ? customers?.find(c => c.id === selectedJob.customer_id) : null;
+      const fullAddress = [selectedJob.address, selectedJob.city, selectedJob.state, selectedJob.zip_code].filter(Boolean).join(', ');
+      const totalAmount = template.line_items?.reduce((s, i) => s + (i.totalPrice || 0), 0) || 0;
+
+      const estimateData = {
+        title: `${template.name} - ${selectedJob.name}`,
+        job_id: selectedJob.id,
+        customer_id: selectedJob.customer_id || undefined,
+        client_name: customer?.name || selectedJob.name,
+        client_email: customer?.email || undefined,
+        client_phone: customer?.phone || undefined,
+        client_address: fullAddress || undefined,
+        site_address: fullAddress || undefined,
+        project_name: selectedJob.name,
+        status: 'draft' as const,
+        total_amount: totalAmount,
+        line_items: template.line_items,
+        trade_type: template.trade,
+      };
+
+      const newEstimate = await createEstimateAsync(estimateData);
+      toast.success(`Estimate created from "${template.name}"!`);
+      setDetailOpen(false);
       if (onSectionChange && newEstimate?.id) {
         onSectionChange(`estimate:${newEstimate.id}`);
       } else if (onSectionChange) {
@@ -325,6 +368,13 @@ export default function JobsSection({ onSectionChange, initialJobId, onClearInit
         />
 
         <ExpenseAssignmentDialog open={assignOpen} onOpenChange={setAssignOpen} />
+
+        <ConvertToEstimateDialog
+          open={convertDialogOpen}
+          onOpenChange={setConvertDialogOpen}
+          onCreateBlank={handleCreateBlankEstimate}
+          onCreateFromTemplate={handleCreateEstimateFromTemplate}
+        />
       </div>
     </div>
   );

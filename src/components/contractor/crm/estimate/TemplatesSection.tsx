@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Search, FileText, Tag, Trash2, Plus, Lock, Globe, FolderOpen, Receipt, Pencil, Eye } from 'lucide-react';
+import { Search, FileText, Tag, Trash2, Plus, Lock, Globe, FolderOpen, Receipt, Pencil, Eye, Briefcase } from 'lucide-react';
 import { useEstimateTemplates, TRADES, Trade, EstimateTemplate } from '@/hooks/useEstimateTemplates';
 import { MobileOptimizedWrapper, MobileStack } from '../sections/MobileOptimizedWrapper';
 import { HorizontalRowCard, RowAvatar, RowContent, RowTitleLine, RowMetaLine, RowActions } from '../sections/HorizontalRowCard';
@@ -54,6 +54,7 @@ export function TemplatesSection({ onBack, onAddToEstimate }: TemplatesSectionPr
   const { templates, isLoading, deleteTemplate, filterTemplates, updateTemplate, isSuperAdmin } = useEstimateTemplates();
   const { user } = useAuth();
   
+  const [activeTemplateTab, setActiveTemplateTab] = useState<'estimate' | 'job'>('estimate');
   const [selectedTrade, setSelectedTrade] = useState<Trade | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [visibility, setVisibility] = useState<'all' | 'private' | 'account'>('all');
@@ -167,11 +168,37 @@ export function TemplatesSection({ onBack, onAddToEstimate }: TemplatesSectionPr
     </HorizontalRowCard>
   );
 
+  // Job Templates placeholder tab
+  if (activeTemplateTab === 'job') {
+    return (
+      <MobileOptimizedWrapper
+        title="Templates"
+        onBackClick={onBack}
+      >
+        <div className="px-4 sm:px-0">
+          <div className="flex gap-2 mb-6">
+            <Button variant="outline" onClick={() => setActiveTemplateTab('estimate')}>Estimate Templates</Button>
+            <Button variant="default">Job Templates</Button>
+          </div>
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-16">
+              <Briefcase className="h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Job Templates</h3>
+              <p className="text-muted-foreground text-center max-w-md">
+                Job templates are coming soon. You'll be able to save and reuse job configurations to speed up your workflow.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </MobileOptimizedWrapper>
+    );
+  }
+
   // Trade cards dashboard with global search
   if (!selectedTrade) {
     return (
       <MobileOptimizedWrapper
-        title={isSuperAdmin ? 'All Templates' : 'Templates'}
+        title={isSuperAdmin ? 'All Estimate Templates' : 'Estimate Templates'}
         onBackClick={onBack}
         actions={
           <Button onClick={() => setCreateDialogOpen(true)}>
@@ -180,6 +207,10 @@ export function TemplatesSection({ onBack, onAddToEstimate }: TemplatesSectionPr
         }
       >
         <div className="px-4 sm:px-0">
+          <div className="flex gap-2 mb-6">
+            <Button variant="default">Estimate Templates</Button>
+            <Button variant="outline" onClick={() => setActiveTemplateTab('job')}>Job Templates</Button>
+          </div>
           {isSuperAdmin && <p className="text-sm text-muted-foreground mb-3">Viewing all templates across all users</p>}
 
           <div className="flex flex-col sm:flex-row gap-3 mb-6">

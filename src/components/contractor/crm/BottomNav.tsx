@@ -54,7 +54,7 @@ const allNavItems = [
   { id: 'calendar' as Section, label: 'Calendar', icon: Calendar },
   { id: 'invoices' as Section, label: 'Invoices', icon: Receipt },
   { id: 'accounting' as Section, label: 'Accounting', icon: DollarSign },
-  { id: 'templates' as Section, label: 'Templates', icon: LayoutTemplate },
+  { id: 'templates' as Section, label: 'Estimate Templates', icon: LayoutTemplate },
   { id: 'reporting' as Section, label: 'Reporting', icon: BarChart2 },
   { id: 'gc' as Section, label: 'General Contractors', icon: Building2 },
   { id: 'contacts' as Section, label: 'Contacts', icon: Contact },
