@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { Input } from "@/components/ui/input";
 import forgeLogoIcon from "@/assets/forgeailogo2.png";
+import { WaveformPlayer } from "./WaveformPlayer";
 
 interface MergedCallRecord {
   id: string;
@@ -289,10 +290,7 @@ export function ForgeCallCenter({ onBack }: { onBack: () => void }) {
               <p className="text-sm font-semibold mb-3 flex items-center gap-1.5">
                 <Volume2 className="h-4 w-4 text-orange-500" /> Call Recording
               </p>
-              <audio controls className="w-full rounded-lg" preload="metadata">
-                <source src={audioSrc!} type="audio/mpeg" />
-                Your browser does not support audio playback.
-              </audio>
+              <WaveformPlayer src={audioSrc!} />
             </CardContent>
           </Card>
         )}
