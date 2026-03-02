@@ -128,11 +128,37 @@ serve(async (req) => {
     console.log('Token exchange successful');
 
     // Get user info from Microsoft Graph
-    const userInfoResponse = await fetch('https://graph.microsoft.com/v1.0/me', {
-      headers: { Authorization: `Bearer ${tokens.access_token}` }
-    });
-    const userInfo = await userInfoResponse.json();
-    console.log('Got user info:', userInfo.mail || userInfo.userPrincipalName);
+    let userEmail = '';
+    try {
+      const userInfoResponse = await fetch('https://graph.microsoft.com/v1.0/me', {
+        headers: { Authorization: `Bearer ${tokens.access_token}` }
+      });
+      const userInfo = await userInfoResponse.json();
+      console.log('Graph API response:', JSON.stringify(userInfo));
+      userEmail = userInfo.mail || userInfo.userPrincipalName || '';
+    } catch (graphErr) {
+      console.error('Graph API error:', graphErr);
+    }
+
+    // Fallback: decode email from ID token if Graph API failed
+    if (!userEmail && tokens.id_token) {
+      try {
+        const payload = JSON.parse(atob(tokens.id_token.split('.')[1]));
+        userEmail = payload.email || payload.preferred_username || payload.upn || '';
+        console.log('Got email from id_token:', userEmail);
+      } catch (e) {
+        console.error('Failed to decode id_token:', e);
+      }
+    }
+
+    // Last resort: get email from the oauth state user
+    if (!userEmail) {
+      const { data: userData } = await supabase.auth.admin.getUserById(stateData.user_id);
+      userEmail = userData?.user?.email || 'unknown@outlook.com';
+      console.log('Using auth email as fallback:', userEmail);
+    }
+
+    console.log('Final user email:', userEmail);
 
     const expiresAt = new Date(Date.now() + tokens.expires_in * 1000).toISOString();
 
@@ -151,7 +177,7 @@ serve(async (req) => {
         .insert({
           user_id: stateData.user_id,
           provider: 'outlook',
-          calendar_email: userInfo.mail || userInfo.userPrincipalName,
+          calendar_email: userEmail,
           access_token_encrypted: tokens.access_token,
           refresh_token_encrypted: tokens.refresh_token,
           expires_at: expiresAt,
@@ -181,7 +207,7 @@ serve(async (req) => {
         .insert({
           user_id: stateData.user_id,
           provider: 'outlook',
-          email_address: userInfo.mail || userInfo.userPrincipalName,
+          email_address: userEmail,
           access_token_encrypted: tokens.access_token,
           refresh_token_encrypted: tokens.refresh_token,
           expires_at: expiresAt,
