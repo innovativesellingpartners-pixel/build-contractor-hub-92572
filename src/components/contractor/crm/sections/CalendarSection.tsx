@@ -1098,7 +1098,10 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
                                 >
                                   <div className="flex items-start justify-between gap-2">
                                     <div className="flex-1 min-w-0">
-                                      <div className="font-medium text-sm truncate">{eventAtSlot.summary || 'Untitled'}</div>
+                                      <div className="font-medium text-sm truncate flex items-center gap-1.5">
+                                        <div className={cn('w-2 h-2 rounded-full flex-shrink-0', eventColors.dot)} />
+                                        {eventAtSlot.summary || 'Untitled'}
+                                      </div>
                                       <div className="text-xs text-muted-foreground mt-0.5">
                                         {formatEventTimeShort(eventAtSlot)}
                                         {eventAtSlot.end?.dateTime && (
