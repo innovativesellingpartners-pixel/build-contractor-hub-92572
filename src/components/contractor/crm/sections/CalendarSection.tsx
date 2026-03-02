@@ -37,14 +37,13 @@ interface CalendarEvent {
   calendar_email?: string;
   calendarId?: string;
   calendarName?: string;
-  // For local meetings (user_meetings) that have been synced to an external calendar,
-  // store the provider event ID so EditEventDialog can update the original event.
   calendarEventId?: string;
-  // For local meetings, pass through job linkage so edit can preserve job-aware title formatting
   jobId?: string;
-  // Lead ID if meeting is linked to a lead
   leadId?: string;
   isLocal?: boolean;
+  attendees?: Array<{ email: string; responseStatus?: string; displayName?: string }>;
+  organizer?: { email?: string; displayName?: string };
+  htmlLink?: string;
 }
 
 interface UserMeeting {
