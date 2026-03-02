@@ -68,11 +68,12 @@ export function WaveformPlayer({ src }: WaveformPlayerProps) {
     const progress = duration > 0 ? currentTime / duration : 0;
 
     // If we have a live analyser, use live data
-    let liveData: Uint8Array | null = null;
+    let liveData: number[] | null = null;
     if (analyserRef.current && playing) {
       const bufferLength = analyserRef.current.frequencyBinCount;
-      liveData = new Uint8Array(bufferLength);
-      analyserRef.current.getByteFrequencyData(liveData);
+      const raw = new Uint8Array(bufferLength);
+      analyserRef.current.getByteFrequencyData(raw);
+      liveData = Array.from(raw);
     }
 
     for (let i = 0; i < barCount; i++) {
