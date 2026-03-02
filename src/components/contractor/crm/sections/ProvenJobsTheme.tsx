@@ -27,7 +27,7 @@ export function SectionHeader({ children, className }: { children: ReactNode; cl
 // White info card container
 export function InfoCard({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <div className={cn('bg-card border border-border/60 rounded-xl shadow-sm', className)}>
+    <div className={cn('bg-card border border-border rounded-xl shadow-sm', className)}>
       {children}
     </div>
   );
@@ -47,7 +47,7 @@ export function InfoRow({ label, value, className, valueClassName, isClickable, 
   return (
     <div 
       className={cn(
-        'flex justify-between items-center px-4 py-3 border-b border-border/40 last:border-b-0',
+        'flex justify-between items-center px-4 py-3 border-b border-border last:border-b-0',
         isClickable && 'cursor-pointer hover:bg-muted/50 active:bg-muted transition-colors',
         className
       )}
@@ -203,7 +203,7 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
 // Action buttons row - grid on mobile, flex on desktop
 export function ActionButtonRow({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <div className={cn('grid grid-cols-2 sm:flex sm:flex-wrap gap-2 px-3 py-2.5 bg-card/80 border-b border-border/40', className)}>
+    <div className={cn('grid grid-cols-2 sm:flex sm:flex-wrap gap-2 px-3 py-2.5 bg-card/80 border-b border-border', className)}>
       {children}
     </div>
   );
@@ -228,7 +228,7 @@ export function TabNav({ tabs, activeTab, onTabChange }: TabNavProps) {
   return (
     <>
       {/* Mobile: labeled dropdown */}
-      <div className="sm:hidden bg-card border-b border-border/40 px-3 py-2 flex items-center gap-3">
+      <div className="sm:hidden bg-card border-b border-border px-3 py-2 flex items-center gap-3">
         <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">Section</span>
         <select
           value={activeTab}
@@ -244,7 +244,7 @@ export function TabNav({ tabs, activeTab, onTabChange }: TabNavProps) {
       </div>
 
       {/* Desktop: icon + label tabs */}
-      <div className="hidden sm:flex overflow-x-auto bg-card border-b border-border/40 px-1 gap-0.5 scrollbar-hide">
+      <div className="hidden sm:flex overflow-x-auto bg-card border-b border-border px-1 gap-0.5 scrollbar-hide">
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -299,7 +299,7 @@ interface AddressRowProps {
 export function AddressRow({ address, onNavigate }: AddressRowProps) {
   return (
     <div 
-      className="flex justify-between items-center px-4 py-3 border-b border-border/40 cursor-pointer hover:bg-muted/50 active:bg-muted transition-colors"
+      className="flex justify-between items-center px-4 py-3 border-b border-border cursor-pointer hover:bg-muted/50 active:bg-muted transition-colors"
       onClick={onNavigate}
     >
       <span className="text-muted-foreground font-medium text-sm">Address</span>

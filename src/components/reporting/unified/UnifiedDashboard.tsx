@@ -301,7 +301,7 @@ export function UnifiedDashboard() {
 
       {/* Pipeline funnel — clickable stages */}
       <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
-        <Card className="border-border/60 cursor-pointer hover:shadow-md hover:border-border transition-all group" onClick={() => navigateToReport("sales")}>
+        <Card className="border-border cursor-pointer hover:shadow-md transition-all group" onClick={() => navigateToReport("sales")}>
           <CardHeader>
             <CardTitle className="text-sm font-semibold flex items-center justify-between">
               Sales Pipeline
@@ -332,7 +332,7 @@ export function UnifiedDashboard() {
         </Card>
 
         {/* Top Customers — clickable rows */}
-        <Card className="border-border/60 cursor-pointer hover:shadow-md hover:border-border transition-all group" onClick={() => navigateToReport("customers")}>
+        <Card className="border-border cursor-pointer hover:shadow-md transition-all group" onClick={() => navigateToReport("customers")}>
           <CardHeader>
             <CardTitle className="text-sm font-semibold flex items-center justify-between">
               Top Customers
@@ -371,7 +371,7 @@ export function UnifiedDashboard() {
       {/* QB Customers + Vendors — clickable rows */}
       {qbConnected && (
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-          <Card className="border-border/60 cursor-pointer hover:shadow-md hover:border-border transition-all group" onClick={() => navigateToReport("customers")}>
+          <Card className="border-border cursor-pointer hover:shadow-md transition-all group" onClick={() => navigateToReport("customers")}>
             <CardHeader>
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
                 <Users className="h-4 w-4" /> QB Customers
@@ -403,7 +403,7 @@ export function UnifiedDashboard() {
               ) : <p className="text-sm text-muted-foreground">No data</p>}
             </CardContent>
           </Card>
-          <Card className="border-border/60 cursor-pointer hover:shadow-md hover:border-border transition-all group" onClick={() => navigateToReport("ap")}>
+          <Card className="border-border cursor-pointer hover:shadow-md transition-all group" onClick={() => navigateToReport("ap")}>
             <CardHeader>
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
                 <Users className="h-4 w-4" /> QB Vendors
@@ -461,7 +461,7 @@ export function UnifiedDashboard() {
           </ChartCard>
 
           {/* Top Profitable */}
-          <Card className="border-border/60 cursor-pointer hover:shadow-md hover:border-border transition-all group" onClick={() => navigateToReport("jobs")}>
+          <Card className="border-border cursor-pointer hover:shadow-md transition-all group" onClick={() => navigateToReport("jobs")}>
             <CardHeader>
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
                 <Trophy className="h-4 w-4 text-emerald-600" /> Top 5 Profitable
@@ -485,7 +485,7 @@ export function UnifiedDashboard() {
           </Card>
 
           {/* Least Profitable */}
-          <Card className="border-border/60 cursor-pointer hover:shadow-md hover:border-border transition-all group" onClick={() => navigateToReport("jobs")}>
+          <Card className="border-border cursor-pointer hover:shadow-md transition-all group" onClick={() => navigateToReport("jobs")}>
             <CardHeader>
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
                 <AlertOctagon className="h-4 w-4 text-red-600" /> Bottom 5 Jobs
@@ -564,7 +564,7 @@ export function UnifiedDashboard() {
 
       {/* Active Jobs Budget vs Spent */}
       {d && d.activeJobs > 0 && (
-        <Card className="p-6 border-border/60 cursor-pointer hover:shadow-md hover:border-border transition-all group" onClick={() => navigateToReport("jobs")}>
+        <Card className="p-6 border-border cursor-pointer hover:shadow-md transition-all group" onClick={() => navigateToReport("jobs")}>
           <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
             <TrendingUp className="h-4 w-4" /> Active Jobs Budget
             <span className="ml-auto text-[10px] text-primary opacity-0 group-hover:opacity-100 transition-opacity">View details →</span>

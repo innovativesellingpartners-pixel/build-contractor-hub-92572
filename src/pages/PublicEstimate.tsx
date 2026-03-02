@@ -966,7 +966,7 @@ function PublicEstimateInner() {
         />
 
         {/* Footer Branding */}
-        <Card className="bg-gradient-to-br from-muted/50 to-background border border-border/50 shadow-sm">
+        <Card className="bg-gradient-to-br from-muted/50 to-background border border-border shadow-sm">
           <CardContent className="p-6 text-center space-y-3">
             <p className="text-sm text-muted-foreground">
               This estimate is confidential and prepared exclusively for <span className="font-bold text-foreground">{estimate.client_name}</span>

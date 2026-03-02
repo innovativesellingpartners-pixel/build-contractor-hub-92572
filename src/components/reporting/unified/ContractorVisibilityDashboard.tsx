@@ -216,7 +216,7 @@ export function ContractorVisibilityDashboard() {
           </h3>
           <div className="space-y-2">
             {data.top5.map((j, i) => (
-              <div key={j.id} className="flex items-center justify-between py-1.5 border-b border-border/50 last:border-0">
+              <div key={j.id} className="flex items-center justify-between py-1.5 border-b border-border last:border-0">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold text-muted-foreground w-5">{i + 1}.</span>
                   <span className="text-sm font-medium truncate max-w-[160px]">{j.name}</span>
@@ -235,7 +235,7 @@ export function ContractorVisibilityDashboard() {
           </h3>
           <div className="space-y-2">
             {data.bottom5.map((j, i) => (
-              <div key={j.id} className="flex items-center justify-between py-1.5 border-b border-border/50 last:border-0">
+              <div key={j.id} className="flex items-center justify-between py-1.5 border-b border-border last:border-0">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold text-muted-foreground w-5">{i + 1}.</span>
                   <span className="text-sm font-medium truncate max-w-[160px]">{j.name}</span>
