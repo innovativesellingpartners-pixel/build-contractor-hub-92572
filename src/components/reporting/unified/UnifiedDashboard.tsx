@@ -371,7 +371,7 @@ export function UnifiedDashboard() {
       {/* QB Customers + Vendors — clickable rows */}
       {qbConnected && (
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-          <Card className="border-border/60 cursor-pointer hover:shadow-md hover:border-border transition-all group" onClick={() => navigateToReport("customers")}>
+          <Card className="border-border cursor-pointer hover:shadow-md transition-all group" onClick={() => navigateToReport("customers")}>
             <CardHeader>
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
                 <Users className="h-4 w-4" /> QB Customers
