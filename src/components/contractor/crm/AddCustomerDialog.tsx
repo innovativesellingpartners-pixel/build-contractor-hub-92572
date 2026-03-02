@@ -97,9 +97,9 @@ export default function AddCustomerDialog({ open, onOpenChange, onCustomerCreate
         notes: data.notes || undefined,
       };
       const newCustomer = await addCustomer(customerData);
-      form.reset();
+      form.reset(CUSTOMER_DEFAULTS);
+      clearDraft();
       setShowOtherInput(false);
-      onOpenChange(false);
       
       // Navigate to the newly created customer
       if (newCustomer && onCustomerCreated) {
