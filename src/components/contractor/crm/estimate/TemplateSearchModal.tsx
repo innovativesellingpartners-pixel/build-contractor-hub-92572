@@ -27,7 +27,7 @@ interface TemplateSearchModalProps {
 }
 
 export function TemplateSearchModal({ open, onOpenChange, onSelectTemplate }: TemplateSearchModalProps) {
-  const { templates, isLoading, filterTemplates, updateTemplate, deleteTemplate } = useEstimateTemplates();
+  const { templates, isLoading, filterTemplates, updateTemplate, deleteTemplate, isSuperAdmin } = useEstimateTemplates();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTrade, setSelectedTrade] = useState<Trade | 'all'>('all');
   const [visibility, setVisibility] = useState<'all' | 'private' | 'account'>('all');
