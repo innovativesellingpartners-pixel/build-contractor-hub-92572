@@ -339,6 +339,7 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
   const googleConnected = connections.find(c => c.provider === 'google');
   const outlookConnected = connections.find(c => c.provider === 'outlook');
   const hasAnyConnection = connections.length > 0;
+  const hasBothProviders = !!googleConnected && !!outlookConnected;
   
   // Filter emails based on search query
   const filteredEmails = useMemo(() => {
@@ -350,6 +351,10 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
       email.snippet?.toLowerCase().includes(query)
     );
   }, [emails, searchQuery]);
+
+  // Split emails by provider
+  const gmailEmails = useMemo(() => filteredEmails.filter(e => e.provider === 'google'), [filteredEmails]);
+  const outlookEmails = useMemo(() => filteredEmails.filter(e => e.provider === 'outlook'), [filteredEmails]);
 
   // Navigation logic - must be after filteredEmails is defined
   const handleNavigateEmail = useCallback((direction: 'prev' | 'next') => {
