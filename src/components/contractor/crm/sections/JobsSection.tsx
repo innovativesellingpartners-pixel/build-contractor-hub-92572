@@ -32,6 +32,8 @@ export default function JobsSection({ onSectionChange, initialJobId, onClearInit
   const [editOpen, setEditOpen] = useState(false);
   const [editingJob, setEditingJob] = useState<Job | null>(null);
   const [assignOpen, setAssignOpen] = useState(false);
+  const [convertDialogOpen, setConvertDialogOpen] = useState(false);
+  const { templates } = useEstimateTemplates();
 
   // Handle initial job ID to auto-open the detail view
   useEffect(() => {
