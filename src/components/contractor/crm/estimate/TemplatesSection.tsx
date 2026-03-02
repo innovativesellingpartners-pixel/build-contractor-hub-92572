@@ -207,6 +207,10 @@ export function TemplatesSection({ onBack, onAddToEstimate }: TemplatesSectionPr
         }
       >
         <div className="px-4 sm:px-0">
+          <div className="flex gap-2 mb-6">
+            <Button variant="default">Estimate Templates</Button>
+            <Button variant="outline" onClick={() => setActiveTemplateTab('job')}>Job Templates</Button>
+          </div>
           {isSuperAdmin && <p className="text-sm text-muted-foreground mb-3">Viewing all templates across all users</p>}
 
           <div className="flex flex-col sm:flex-row gap-3 mb-6">
