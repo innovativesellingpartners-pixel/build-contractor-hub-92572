@@ -914,7 +914,7 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
                 {/* Calendar Grid */}
                 <div className="grid grid-cols-7 gap-1">
                   {daysToDisplay.map((day, idx) => {
-                    const dayEvents = getEventsForDay(day);
+                    const dayEvents = getFilteredEventsForDay(day);
                     const dayTasks = getTasksForDay(day);
                     const totalItems = dayEvents.length + dayTasks.length;
                     const isCurrentMonth = isSameMonth(day, currentDate);
