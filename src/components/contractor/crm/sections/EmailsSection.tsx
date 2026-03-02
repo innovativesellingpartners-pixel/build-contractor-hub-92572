@@ -339,6 +339,7 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
   const googleConnected = connections.find(c => c.provider === 'google');
   const outlookConnected = connections.find(c => c.provider === 'outlook');
   const hasAnyConnection = connections.length > 0;
+  const hasBothProviders = !!googleConnected && !!outlookConnected;
   
   // Filter emails based on search query
   const filteredEmails = useMemo(() => {
@@ -350,6 +351,10 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
       email.snippet?.toLowerCase().includes(query)
     );
   }, [emails, searchQuery]);
+
+  // Split emails by provider
+  const gmailEmails = useMemo(() => filteredEmails.filter(e => e.provider === 'google'), [filteredEmails]);
+  const outlookEmails = useMemo(() => filteredEmails.filter(e => e.provider === 'outlook'), [filteredEmails]);
 
   // Navigation logic - must be after filteredEmails is defined
   const handleNavigateEmail = useCallback((direction: 'prev' | 'next') => {
@@ -756,7 +761,139 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
         )}
 
         {/* Emails List */}
-        {hasAnyConnection && (
+        {hasAnyConnection && hasBothProviders ? (
+          /* Side-by-side layout when both providers connected */
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Gmail Column */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 pb-2 border-b">
+                <svg className="w-5 h-5" viewBox="0 0 24 24">
+                  <path fill="#EA4335" d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z"/>
+                </svg>
+                <h2 className="text-lg font-semibold">Gmail</h2>
+                <span className="text-xs text-muted-foreground ml-auto">{googleConnected?.email_address}</span>
+              </div>
+              {loadingEmails ? (
+                <Card className="p-6 text-center">
+                  <Loader2 className="h-6 w-6 mx-auto animate-spin text-primary" />
+                </Card>
+              ) : gmailEmails.length === 0 ? (
+                <Card className="p-6 text-center bg-muted/20">
+                  <Mail className="h-8 w-8 mx-auto mb-2 text-muted-foreground/40" />
+                  <p className="text-sm text-muted-foreground">No Gmail messages</p>
+                </Card>
+              ) : (
+                <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
+                  {gmailEmails.map((email, index) => {
+                    const globalIndex = filteredEmails.indexOf(email);
+                    return (
+                      <Card 
+                        key={email.id} 
+                        className={`p-3 hover:bg-muted/50 cursor-pointer transition-all hover:shadow-md ${
+                          email.isUnread 
+                            ? 'border-l-4 border-l-primary bg-primary/5' 
+                            : 'border-l-4 border-l-transparent'
+                        }`}
+                        onClick={() => handleOpenEmail(email, globalIndex)}
+                      >
+                        <div className="flex items-start gap-2">
+                          <div className="flex-shrink-0 w-4 flex items-center justify-center mt-1">
+                            {email.isUnread ? (
+                              <Circle className="h-2 w-2 fill-primary text-primary" />
+                            ) : (
+                              <MailOpen className="h-3.5 w-3.5 text-muted-foreground/50" />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between gap-2">
+                              <p className={`truncate text-sm ${email.isUnread ? 'font-bold text-foreground' : 'font-medium text-muted-foreground'}`}>
+                                {extractSenderName(email.from)}
+                              </p>
+                              <span className="text-xs text-muted-foreground flex-shrink-0">
+                                {formatEmailDate(email.date)}
+                              </span>
+                            </div>
+                            <p className={`text-sm truncate ${email.isUnread ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}>
+                              {email.subject || '(No subject)'}
+                            </p>
+                            <p className="text-xs text-muted-foreground truncate mt-0.5">
+                              {email.snippet}
+                            </p>
+                          </div>
+                        </div>
+                      </Card>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Outlook Column */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 pb-2 border-b">
+                <svg className="w-5 h-5" viewBox="0 0 24 24">
+                  <path fill="#0078D4" d="M7.88 12.04q0 .45-.11.87-.1.41-.33.74-.22.33-.58.52-.37.2-.87.2t-.85-.2q-.35-.21-.57-.55-.22-.33-.33-.75-.1-.42-.1-.86t.1-.87q.1-.43.34-.76.22-.34.59-.54.36-.2.87-.2t.86.2q.35.21.57.55.22.34.31.77.1.43.1.88zM24 12v9.38q0 .46-.33.8-.33.32-.8.32H7.13q-.46 0-.8-.33-.32-.33-.32-.8V18H1q-.41 0-.7-.3-.3-.29-.3-.7V7q0-.41.3-.7Q.58 6 1 6h6.5V2.55q0-.44.3-.75.3-.3.75-.3h12.9q.44 0 .75.3.3.3.3.75V12z"/>
+                </svg>
+                <h2 className="text-lg font-semibold">Outlook</h2>
+                <span className="text-xs text-muted-foreground ml-auto">{outlookConnected?.email_address}</span>
+              </div>
+              {loadingEmails ? (
+                <Card className="p-6 text-center">
+                  <Loader2 className="h-6 w-6 mx-auto animate-spin text-primary" />
+                </Card>
+              ) : outlookEmails.length === 0 ? (
+                <Card className="p-6 text-center bg-muted/20">
+                  <Mail className="h-8 w-8 mx-auto mb-2 text-muted-foreground/40" />
+                  <p className="text-sm text-muted-foreground">No Outlook messages</p>
+                </Card>
+              ) : (
+                <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
+                  {outlookEmails.map((email, index) => {
+                    const globalIndex = filteredEmails.indexOf(email);
+                    return (
+                      <Card 
+                        key={email.id} 
+                        className={`p-3 hover:bg-muted/50 cursor-pointer transition-all hover:shadow-md ${
+                          email.isUnread 
+                            ? 'border-l-4 border-l-primary bg-primary/5' 
+                            : 'border-l-4 border-l-transparent'
+                        }`}
+                        onClick={() => handleOpenEmail(email, globalIndex)}
+                      >
+                        <div className="flex items-start gap-2">
+                          <div className="flex-shrink-0 w-4 flex items-center justify-center mt-1">
+                            {email.isUnread ? (
+                              <Circle className="h-2 w-2 fill-primary text-primary" />
+                            ) : (
+                              <MailOpen className="h-3.5 w-3.5 text-muted-foreground/50" />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between gap-2">
+                              <p className={`truncate text-sm ${email.isUnread ? 'font-bold text-foreground' : 'font-medium text-muted-foreground'}`}>
+                                {extractSenderName(email.from)}
+                              </p>
+                              <span className="text-xs text-muted-foreground flex-shrink-0">
+                                {formatEmailDate(email.date)}
+                              </span>
+                            </div>
+                            <p className={`text-sm truncate ${email.isUnread ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}>
+                              {email.subject || '(No subject)'}
+                            </p>
+                            <p className="text-xs text-muted-foreground truncate mt-0.5">
+                              {email.snippet}
+                            </p>
+                          </div>
+                        </div>
+                      </Card>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        ) : hasAnyConnection ? (
+          /* Single column when only one provider connected */
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-semibold flex items-center gap-2">
@@ -806,7 +943,6 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
                     onClick={() => handleOpenEmail(email, index)}
                   >
                     <div className="flex items-start gap-3">
-                      {/* Read/Unread indicator */}
                       <div className="flex-shrink-0 w-5 flex items-center justify-center mt-1">
                         {email.isUnread ? (
                           <Circle className="h-2.5 w-2.5 fill-primary text-primary" />
@@ -841,7 +977,7 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
               </div>
             )}
           </div>
-        )}
+        ) : null}
 
         {/* Empty state when no connections */}
         {!hasAnyConnection && !loading && (
