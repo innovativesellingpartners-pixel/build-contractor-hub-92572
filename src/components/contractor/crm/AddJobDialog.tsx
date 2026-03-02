@@ -4,15 +4,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { LocationAutocomplete, AddressData } from '@/components/ui/location-autocomplete';
-import { Plus, Bot, FileText, MapPin, DollarSign } from 'lucide-react';
+import { Plus, Bot, FileText, MapPin, DollarSign, X, Layers } from 'lucide-react';
 import { Job } from '@/hooks/useJobs';
 import { JobAIAssistant } from './JobAIAssistant';
 import { JobMeetingsSection, MeetingFormData } from './JobMeetingsSection';
 import { AIScopeNotes } from './AIScopeNotes';
 import { VoiceInputField } from '@/components/ui/voice-input-field';
 import { VoiceTextareaField } from '@/components/ui/voice-textarea-field';
+import { useEstimateTemplates, EstimateTemplate } from '@/hooks/useEstimateTemplates';
 
 interface AddJobDialogProps {
   onAdd: (jobData: Omit<Job, 'id' | 'user_id' | 'job_number' | 'created_at' | 'updated_at'>, meetings?: MeetingFormData[]) => Promise<any>;
