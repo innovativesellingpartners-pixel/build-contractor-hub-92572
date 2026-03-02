@@ -39,6 +39,7 @@ serve(async (req) => {
     // Define scopes based on type
     const scopes = type === 'calendar' 
       ? [
+          'User.Read',
           'Calendars.ReadWrite',
           'offline_access',
           'openid',
@@ -46,6 +47,7 @@ serve(async (req) => {
           'profile'
         ]
       : [
+          'User.Read',
           'Mail.Read',
           'Mail.Send',
           'offline_access',
