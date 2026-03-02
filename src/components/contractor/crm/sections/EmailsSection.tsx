@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Mail, Plug, Check, Loader2, X, RefreshCw, Circle, ArrowLeft, Reply, Send, ChevronDown, ChevronUp, Search, PenSquare, Paperclip, ChevronLeft, ChevronRight, MailOpen } from 'lucide-react';
+import { Mail, Plug, Check, Loader2, X, RefreshCw, Circle, ArrowLeft, Reply, Send, ChevronDown, ChevronUp, Search, PenSquare, Paperclip, ChevronLeft, ChevronRight, MailOpen, Calendar as CalendarIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -541,6 +541,27 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
           onDashboard={() => onSectionChange?.('dashboard')}
           sectionLabel="Emails"
         />
+
+        {/* Calendar / Emails Tab Toggle */}
+        <div className="flex items-center gap-2 border-b pb-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-2"
+            onClick={() => onSectionChange?.('calendar')}
+          >
+            <CalendarIcon className="h-4 w-4" />
+            Calendar
+          </Button>
+          <Button
+            variant="default"
+            size="sm"
+            className="gap-2"
+          >
+            <Mail className="h-4 w-4" />
+            Emails
+          </Button>
+        </div>
         
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
