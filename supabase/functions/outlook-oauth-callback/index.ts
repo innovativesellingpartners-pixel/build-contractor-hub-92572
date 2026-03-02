@@ -207,7 +207,7 @@ serve(async (req) => {
         .insert({
           user_id: stateData.user_id,
           provider: 'outlook',
-          email_address: userInfo.mail || userInfo.userPrincipalName,
+          email_address: userEmail,
           access_token_encrypted: tokens.access_token,
           refresh_token_encrypted: tokens.refresh_token,
           expires_at: expiresAt,
