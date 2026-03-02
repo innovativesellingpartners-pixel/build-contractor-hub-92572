@@ -142,6 +142,49 @@ export function AddJobDialog({ onAdd, onJobCreated }: AddJobDialogProps) {
           
           <TabsContent value="manual" className="flex-1 overflow-y-auto mt-4 pb-20">
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Template Selector */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+                  <Layers className="h-4 w-4" />
+                  Start from Template (Optional)
+                </div>
+                {selectedTemplate ? (
+                  <div className="flex items-center gap-3 p-3 border rounded-lg bg-muted/50">
+                    <FileText className="h-5 w-5 text-primary flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm truncate">{selectedTemplate.name}</p>
+                      <p className="text-xs text-muted-foreground">{selectedTemplate.trade} · {selectedTemplate.line_items?.length || 0} line items</p>
+                    </div>
+                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0"
+                      onClick={() => setSelectedTemplate(null)}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <SearchableSelect
+                    value=""
+                    onValueChange={(value) => {
+                      const tmpl = templates?.find(t => t.id === value);
+                      if (tmpl) {
+                        setSelectedTemplate(tmpl);
+                        if (!formData.name && tmpl.name) {
+                          setFormData(prev => ({ ...prev, name: tmpl.name }));
+                        }
+                      }
+                    }}
+                    placeholder="Select a template to pre-fill estimate..."
+                    searchPlaceholder="Search templates..."
+                    options={(templates || []).map(t => ({
+                      value: t.id,
+                      label: `${t.name} (${t.trade} · ${t.line_items?.length || 0} items)`,
+                    }))}
+                  />
+                )}
+                <p className="text-xs text-muted-foreground">
+                  Selecting a template will automatically create an estimate with its line items when the job is created.
+                </p>
+              </div>
+
               {/* Basic Information */}
               <div className="space-y-4">
                 <div className="flex items-center gap-2 text-sm font-semibold text-primary">
