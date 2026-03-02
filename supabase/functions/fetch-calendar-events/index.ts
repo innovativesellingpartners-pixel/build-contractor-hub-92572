@@ -120,7 +120,7 @@ serve(async (req) => {
         }
         
         console.log('Fetching Google Calendar events with token length:', accessToken?.length);
-        const events = await fetchGoogleCalendarEvents(accessToken);
+        const events = await fetchGoogleCalendarEvents(accessToken, connection.calendar_email);
         console.log('Fetched', events.length, 'events');
         allEvents.push(...events.map((e: any) => ({
           ...e,
