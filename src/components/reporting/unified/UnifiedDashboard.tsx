@@ -301,7 +301,7 @@ export function UnifiedDashboard() {
 
       {/* Pipeline funnel — clickable stages */}
       <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
-        <Card className="border-border/60 cursor-pointer hover:shadow-md hover:border-border transition-all group" onClick={() => navigateToReport("sales")}>
+        <Card className="border-border cursor-pointer hover:shadow-md transition-all group" onClick={() => navigateToReport("sales")}>
           <CardHeader>
             <CardTitle className="text-sm font-semibold flex items-center justify-between">
               Sales Pipeline
