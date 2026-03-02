@@ -376,7 +376,7 @@ export default function CRMSearchBar({ onNavigate }: CRMSearchBarProps) {
             onKeyDown={handleKeyDown}
             onFocus={() => { if (searchResult) setShowResults(true); }}
             placeholder="Ask about jobs, estimates, invoices…"
-            className="pl-9 pr-20 h-10 bg-muted/50 border-border/50 focus:border-primary/50 text-sm"
+            className="pl-9 pr-20 h-10 bg-muted/50 border-border focus:border-primary/50 text-sm"
           />
           <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
             {query && (

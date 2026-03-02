@@ -17,7 +17,7 @@ const StatCard = ({ number, label }: { number: string; label: string }) => (
 );
 
 const CheckItem = ({ title, description }: { title: string; description: string }) => (
-  <li className="flex items-start gap-3 py-3 border-b border-border/50 last:border-b-0">
+  <li className="flex items-start gap-3 py-3 border-b border-border last:border-b-0">
     <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
     <span className="text-muted-foreground"><strong className="text-foreground">{title}</strong> {description}</span>
   </li>

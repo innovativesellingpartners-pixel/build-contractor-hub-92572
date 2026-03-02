@@ -130,7 +130,7 @@ export default function LineItemsSection({ lineItems, onChange, macroGroups = []
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <Card className="border-2 border-border/50">
+      <Card className="border-2 border-border">
         <CollapsibleTrigger className="w-full">
           <CardHeader className="flex flex-row items-center justify-between py-4">
             <CardTitle className="text-lg flex items-center gap-2">

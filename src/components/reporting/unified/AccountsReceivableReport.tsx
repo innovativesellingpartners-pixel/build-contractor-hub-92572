@@ -173,7 +173,7 @@ export function AccountsReceivableReport() {
 
       {/* Aging chart — clickable bars */}
       {arData?.agingChart && (
-        <Card className="p-6 border-border/60">
+        <Card className="p-6 border-border">
           <h3 className="text-sm font-semibold mb-1">Aging Summary</h3>
           <p className="text-[11px] text-muted-foreground mb-4">Click any bar to see invoices in that bucket</p>
           <ResponsiveContainer width="100%" height={250}>

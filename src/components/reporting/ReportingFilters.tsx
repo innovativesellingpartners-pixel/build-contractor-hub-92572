@@ -102,7 +102,7 @@ export function ReportingFilters({ filters, onFiltersChange }: ReportingFiltersP
   };
 
   return (
-    <div className="flex flex-wrap gap-3 items-center p-4 bg-muted/30 rounded-xl border border-border/40">
+    <div className="flex flex-wrap gap-3 items-center p-4 bg-muted/30 rounded-xl border border-border">
       <div className="flex-1 min-w-[180px]">
         <Select value={filters.dateRange} onValueChange={handleDateRangeChange}>
           <SelectTrigger className="h-9 text-sm">

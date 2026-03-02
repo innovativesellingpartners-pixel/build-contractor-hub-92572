@@ -98,7 +98,7 @@ export default function Reporting() {
               className={cn(
                 "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150",
                 activeSection === s.value
-                  ? "bg-background text-foreground shadow-sm border border-border/60"
+                  ? "bg-background text-foreground shadow-sm border border-border"
                   : "text-muted-foreground hover:text-foreground hover:bg-background/60"
               )}
             >
