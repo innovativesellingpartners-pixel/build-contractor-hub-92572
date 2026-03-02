@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { LocationAutocomplete, AddressData } from '@/components/ui/location-autocomplete';
-import { Plus, Bot, FileText, MapPin, DollarSign, X, Layers } from 'lucide-react';
+import { Plus, Bot, FileText, MapPin, DollarSign, X, Layers, Save } from 'lucide-react';
 import { Job } from '@/hooks/useJobs';
 import { JobAIAssistant } from './JobAIAssistant';
 import { JobMeetingsSection, MeetingFormData } from './JobMeetingsSection';
@@ -17,6 +17,21 @@ import { VoiceTextareaField } from '@/components/ui/voice-textarea-field';
 import { useEstimateTemplates, EstimateTemplate } from '@/hooks/useEstimateTemplates';
 import { useEstimates } from '@/hooks/useEstimates';
 import { toast } from 'sonner';
+import { useFormDraft } from '@/hooks/useFormDraft';
+
+const JOB_DEFAULTS = {
+  name: '',
+  description: '',
+  status: 'scheduled' as Job['status'],
+  start_date: '',
+  end_date: '',
+  address: '',
+  city: '',
+  state: '',
+  zip_code: '',
+  total_cost: '0',
+  notes: '',
+};
 
 interface AddJobDialogProps {
   onAdd: (jobData: Omit<Job, 'id' | 'user_id' | 'job_number' | 'created_at' | 'updated_at'>, meetings?: MeetingFormData[]) => Promise<any>;
@@ -29,19 +44,7 @@ export function AddJobDialog({ onAdd, onJobCreated }: AddJobDialogProps) {
   const { templates } = useEstimateTemplates();
   const { createEstimateAsync } = useEstimates();
   const [selectedTemplate, setSelectedTemplate] = useState<EstimateTemplate | null>(null);
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    status: 'scheduled' as Job['status'],
-    start_date: '',
-    end_date: '',
-    address: '',
-    city: '',
-    state: '',
-    zip_code: '',
-    total_cost: '0',
-    notes: '',
-  });
+  const [formData, setFormData, clearDraft, hasDraft] = useFormDraft('add-job', JOB_DEFAULTS);
   const [meetings, setMeetings] = useState<MeetingFormData[]>([]);
 
   const handleAddMeeting = (meeting: MeetingFormData) => {
