@@ -50,22 +50,7 @@ export function AddLeadDialog({ onAdd, sources, onLeadCreated }: AddLeadDialogPr
         source_other: isOtherSource ? formData.source_other : undefined,
       });
       setOpen(false);
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        company: '',
-        project_type: '',
-        value: '',
-        status: 'new',
-        source_id: '',
-        source_other: '',
-        address: '',
-        city: '',
-        state: '',
-        zip_code: '',
-        notes: '',
-      });
+      clearDraft();
       
       // Navigate to the newly created lead
       if (newLead && onLeadCreated) {
