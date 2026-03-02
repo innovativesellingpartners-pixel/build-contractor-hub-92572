@@ -58,6 +58,9 @@ serve(async (req) => {
       appointmentDurationMinutes = 60,
       callerName,
       callerPhone,
+      homeowner_name,
+      homeowner_email,
+      homeowner_phone,
       address,
       notes,
     } = await req.json();
@@ -127,16 +130,20 @@ serve(async (req) => {
     const startTime = new Date(selectedSlotISO);
     const endTime = new Date(startTime.getTime() + appointmentDurationMinutes * 60_000);
 
+    const displayName = homeowner_name || callerName || 'Customer';
+    const displayPhone = homeowner_phone || callerPhone;
+
     const descriptionParts = [
-      `Customer: ${callerName || 'Unknown'}`,
-      callerPhone ? `Phone: ${callerPhone}` : null,
+      `Customer: ${displayName}`,
+      displayPhone ? `Phone: ${displayPhone}` : null,
+      homeowner_email ? `Email: ${homeowner_email}` : null,
       address ? `Address: ${address}` : null,
       notes ? `\nNotes: ${notes}` : null,
       '\n— Booked via Forge AI',
     ].filter(Boolean).join('\n');
 
-    const eventPayload = {
-      summary: `Appointment – ${callerName || 'Customer'}`,
+    const eventPayload: Record<string, any> = {
+      summary: `Service Appointment – ${displayName}`,
       description: descriptionParts,
       location: address || undefined,
       start: { dateTime: startTime.toISOString(), timeZone: 'America/Detroit' },
@@ -148,10 +155,13 @@ serve(async (req) => {
           { method: 'email', minutes: 60 },
         ],
       },
+      ...(homeowner_email ? {
+        attendees: [{ email: homeowner_email, displayName }],
+      } : {}),
     };
 
     const gcalRes = await fetch(
-      'https://www.googleapis.com/calendar/v3/calendars/primary/events?sendUpdates=none',
+      'https://www.googleapis.com/calendar/v3/calendars/primary/events?sendUpdates=all',
       {
         method: 'POST',
         headers: {
