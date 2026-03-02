@@ -132,7 +132,7 @@ export function TemplatesSection({ onBack, onAddToEstimate }: TemplatesSectionPr
     setShowPlumbingInvoiceCreator(false);
   };
 
-  const activeJobs = jobs.filter(j => j.status !== 'completed' && j.status !== 'cancelled');
+  
 
   // Render a template row (shared between global search and trade view)
   const renderTemplateRow = (template: EstimateTemplate, showTrade = false) => (
