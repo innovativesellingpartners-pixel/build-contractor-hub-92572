@@ -53,23 +53,38 @@ export function VoiceAI() {
   const loadStats = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
+
+    // Get all call sessions (same source as Call Center)
+    const { data: allSessions } = await supabase
+      .from("call_sessions")
+      .select("id, outcome, action_taken, created_at")
+      .eq("contractor_id", user.id);
+
+    // Get today's sessions
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
-    const { data: calls } = await supabase
-      .from("calls")
-      .select("id, outcome, ai_handled")
-      .eq("contractor_id", user.id)
-      .gte("created_at", todayStart.toISOString());
-    if (calls) {
-      const booked = calls.filter(c => c.outcome === "booked" || c.outcome === "appointment_booked").length;
-      const leads = calls.filter(c => c.outcome === "lead_captured" || c.outcome === "booked").length;
-      setStats({
-        callsToday: calls.length,
-        appointmentsBooked: booked,
-        leadsCaptured: leads,
-        bookingRate: calls.length > 0 ? Math.round((booked / calls.length) * 100) : 0,
-      });
-    }
+    const todaySessions = allSessions?.filter(
+      (s) => new Date(s.created_at) >= todayStart
+    ) || [];
+
+    // Count booked meetings from calendar_events
+    const { count: bookedCount } = await supabase
+      .from("calendar_events")
+      .select("id", { count: "exact", head: true })
+      .eq("contractor_id", user.id);
+
+    const totalCalls = allSessions?.length || 0;
+    const booked = bookedCount || 0;
+    const leads = allSessions?.filter(
+      (s) => s.outcome === "lead_captured" || s.outcome === "message_taken" || s.action_taken === "take_message"
+    ).length || 0;
+
+    setStats({
+      callsToday: totalCalls,
+      appointmentsBooked: booked,
+      leadsCaptured: leads,
+      bookingRate: totalCalls > 0 ? Math.round((booked / totalCalls) * 100) : 0,
+    });
   };
 
   if (view === "call-center") {
@@ -140,7 +155,7 @@ export function VoiceAI() {
       {/* Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { icon: Phone, value: stats.callsToday, label: "Calls Today", color: "text-orange-500", bg: "bg-orange-500/10" },
+          { icon: Phone, value: stats.callsToday, label: "Total Calls", color: "text-orange-500", bg: "bg-orange-500/10" },
           { icon: Calendar, value: stats.appointmentsBooked, label: "Booked", color: "text-emerald-500", bg: "bg-emerald-500/10" },
           { icon: Users, value: stats.leadsCaptured, label: "Leads", color: "text-blue-500", bg: "bg-blue-500/10" },
           { icon: TrendingUp, value: `${stats.bookingRate}%`, label: "Booking Rate", color: "text-violet-500", bg: "bg-violet-500/10" },
