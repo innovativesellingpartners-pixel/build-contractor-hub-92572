@@ -443,8 +443,8 @@ export function ForgeCallCenter({ onBack }: { onBack: () => void }) {
                         </div>
                         {/* Feature icons */}
                         <div className="flex items-center gap-1.5 shrink-0">
-                          {hasAudio && <Volume2 className="h-3.5 w-3.5 text-orange-500" title="Recording available" />}
-                          {hasText && <FileText className="h-3.5 w-3.5 text-blue-500" title="Transcript available" />}
+                          {hasAudio && <span title="Recording available"><Volume2 className="h-3.5 w-3.5 text-orange-500" /></span>}
+                          {hasText && <span title="Transcript available"><FileText className="h-3.5 w-3.5 text-blue-500" /></span>}
                         </div>
                         <div className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0">
                           <Clock className="h-3 w-3" />
