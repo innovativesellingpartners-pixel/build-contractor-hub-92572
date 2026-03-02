@@ -27,6 +27,7 @@ export function AddJobDialog({ onAdd, onJobCreated }: AddJobDialogProps) {
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('manual');
   const { templates } = useEstimateTemplates();
+  const { createEstimateAsync } = useEstimates();
   const [selectedTemplate, setSelectedTemplate] = useState<EstimateTemplate | null>(null);
   const [formData, setFormData] = useState({
     name: '',
