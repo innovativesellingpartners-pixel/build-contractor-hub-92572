@@ -123,7 +123,14 @@ export function AddJobDialog({ onAdd, onJobCreated }: AddJobDialogProps) {
       </DialogTrigger>
       <DialogContent className="max-w-4xl h-[calc(100vh-5rem)] top-[45%] sm:top-[50%] overflow-hidden flex flex-col">
         <DialogHeader className="flex-shrink-0">
-          <DialogTitle>Add New Job</DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle>Add New Job</DialogTitle>
+            {hasDraft && (
+              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                <Save className="h-3 w-3" /> Draft restored
+              </span>
+            )}
+          </div>
           <DialogDescription>Use AI to quickly extract details or fill them in manually</DialogDescription>
         </DialogHeader>
         
