@@ -71,7 +71,14 @@ export function AddLeadDialog({ onAdd, sources, onLeadCreated }: AddLeadDialogPr
       </DialogTrigger>
       <DialogContent className="w-full h-full max-w-full max-h-full rounded-none border-0 overflow-hidden flex flex-col fixed inset-0 translate-x-0 translate-y-0 top-0 left-0">
         <DialogHeader className="flex-shrink-0">
-          <DialogTitle>Add New Lead</DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle>Add New Lead</DialogTitle>
+            {hasDraft && (
+              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                <Save className="h-3 w-3" /> Draft restored
+              </span>
+            )}
+          </div>
           <DialogDescription>Enter the details of your new lead</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto space-y-4 pb-20">
