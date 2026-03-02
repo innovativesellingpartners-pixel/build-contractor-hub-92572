@@ -43,6 +43,7 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
   const [connections, setConnections] = useState<EmailConnection[]>([]);
   const [emails, setEmails] = useState<Email[]>([]);
   const [loading, setLoading] = useState(true);
+  const [reauthConnectionIds, setReauthConnectionIds] = useState<string[]>([]);
   const [loadingEmails, setLoadingEmails] = useState(false);
   const [connecting, setConnecting] = useState<string | null>(null);
   const [connectionsExpanded, setConnectionsExpanded] = useState(false);
