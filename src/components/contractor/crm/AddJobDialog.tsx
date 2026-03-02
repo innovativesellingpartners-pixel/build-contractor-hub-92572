@@ -15,6 +15,8 @@ import { AIScopeNotes } from './AIScopeNotes';
 import { VoiceInputField } from '@/components/ui/voice-input-field';
 import { VoiceTextareaField } from '@/components/ui/voice-textarea-field';
 import { useEstimateTemplates, EstimateTemplate } from '@/hooks/useEstimateTemplates';
+import { useEstimates } from '@/hooks/useEstimates';
+import { toast } from 'sonner';
 
 interface AddJobDialogProps {
   onAdd: (jobData: Omit<Job, 'id' | 'user_id' | 'job_number' | 'created_at' | 'updated_at'>, meetings?: MeetingFormData[]) => Promise<any>;
