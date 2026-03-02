@@ -935,18 +935,25 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
                         </div>
                         <div className="space-y-0.5 overflow-hidden">
                           {/* Show events first */}
-                          {dayEvents.slice(0, 2).map((event) => (
-                            <div
-                              key={event.id}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedEvent(event);
-                              }}
-                              className="text-[10px] sm:text-xs p-0.5 sm:p-1 rounded bg-primary/10 text-primary truncate cursor-pointer hover:bg-primary/20 transition-colors"
-                            >
-                              {event.summary || 'Event'}
-                            </div>
-                          ))}
+                          {dayEvents.slice(0, 2).map((event) => {
+                            const colors = getEventColor(event);
+                            return (
+                              <div
+                                key={event.id}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedEvent(event);
+                                }}
+                                className={cn(
+                                  "text-[10px] sm:text-xs p-0.5 sm:p-1 rounded truncate cursor-pointer transition-colors flex items-center gap-1",
+                                  colors.bg, colors.text, `hover:opacity-80`
+                                )}
+                              >
+                                <div className={cn('w-1.5 h-1.5 rounded-full flex-shrink-0', colors.dot)} />
+                                {event.summary || 'Event'}
+                              </div>
+                            );
+                          })}
                           {/* Show tasks if space permits */}
                           {dayEvents.length < 2 && dayTasks.slice(0, 2 - dayEvents.length).map((task) => (
                             <div
