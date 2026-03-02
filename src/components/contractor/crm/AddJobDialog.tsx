@@ -100,19 +100,7 @@ export function AddJobDialog({ onAdd, onJobCreated }: AddJobDialogProps) {
       }
 
       setOpen(false);
-      setFormData({
-        name: '',
-        description: '',
-        status: 'scheduled',
-        start_date: '',
-        end_date: '',
-        address: '',
-        city: '',
-        state: '',
-        zip_code: '',
-        total_cost: '0',
-        notes: '',
-      });
+      clearDraft();
       setMeetings([]);
       setSelectedTemplate(null);
       if (newJob && onJobCreated) {
