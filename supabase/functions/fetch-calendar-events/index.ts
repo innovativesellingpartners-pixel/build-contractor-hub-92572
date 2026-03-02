@@ -94,6 +94,14 @@ serve(async (req) => {
       });
     }
 
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('business_email')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    const preferredBusinessCalendarEmail = String(profile?.business_email || '').trim().toLowerCase();
+
     const allEvents: any[] = [];
 
     for (const connection of connections) {
@@ -120,7 +128,8 @@ serve(async (req) => {
         }
         
         console.log('Fetching Google Calendar events with token length:', accessToken?.length);
-        const events = await fetchGoogleCalendarEvents(accessToken, connection.calendar_email);
+        const preferredCalendarEmail = preferredBusinessCalendarEmail || connection.calendar_email;
+        const events = await fetchGoogleCalendarEvents(accessToken, preferredCalendarEmail);
         console.log('Fetched', events.length, 'events');
         allEvents.push(...events.map((e: any) => ({
           ...e,
@@ -276,6 +285,11 @@ async function fetchGoogleCalendarEvents(accessToken: string, preferredCalendarE
       writableCalendars[0] ||
       calendars.find((calendar: any) => calendar.id === 'primary');
 
+    if (normalizedPreferred && !matchedCalendar) {
+      console.log('Preferred calendar not found for expected email, returning no events to avoid wrong-account fallback:', normalizedPreferred);
+      return [];
+    }
+
     const targetCalendar = matchedCalendar || fallbackCalendar;
 
     if (!targetCalendar) {
@@ -286,7 +300,7 @@ async function fetchGoogleCalendarEvents(accessToken: string, preferredCalendarE
     if (matchedCalendar) {
       console.log('Using matched calendar for connection:', targetCalendar.summary || targetCalendar.id);
     } else {
-      console.log('Preferred calendar not found, falling back to:', targetCalendar.summary || targetCalendar.id);
+      console.log('No preferred calendar provided, using fallback:', targetCalendar.summary || targetCalendar.id);
     }
 
     const events = await fetchEventsFromCalendar(accessToken, targetCalendar.id, timeMin, timeMax);

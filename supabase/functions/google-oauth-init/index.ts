@@ -47,6 +47,17 @@ serve(async (req) => {
     }
 
     const { type } = await req.json(); // 'calendar' or 'email'
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('business_email')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    const preferredGoogleEmail = (profile?.business_email || user.email || '').trim().toLowerCase();
+    const preferredGoogleDomain = preferredGoogleEmail.includes('@')
+      ? preferredGoogleEmail.split('@')[1]
+      : '';
     
     // Define scopes based on type
     const scopes = type === 'calendar' 
@@ -100,6 +111,12 @@ serve(async (req) => {
     authUrl.searchParams.set('state', state);
     authUrl.searchParams.set('access_type', 'offline');
     authUrl.searchParams.set('prompt', 'select_account consent');
+    if (preferredGoogleEmail) {
+      authUrl.searchParams.set('login_hint', preferredGoogleEmail);
+    }
+    if (preferredGoogleDomain && preferredGoogleDomain !== 'gmail.com' && preferredGoogleDomain !== 'googlemail.com') {
+      authUrl.searchParams.set('hd', preferredGoogleDomain);
+    }
 
     return new Response(
       JSON.stringify({ url: authUrl.toString() }),

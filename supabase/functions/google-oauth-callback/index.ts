@@ -135,6 +135,44 @@ serve(async (req) => {
     // Store connection based on type
     if (stateData.type === 'calendar') {
       console.log('Saving calendar connection for user:', stateData.contractor_id);
+
+      const normalizedGoogleEmail = String(userInfo.email || '').trim().toLowerCase();
+      let calendarEmailToStore = normalizedGoogleEmail;
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('business_email')
+        .eq('user_id', stateData.contractor_id)
+        .maybeSingle();
+
+      const expectedBusinessEmail = String(profile?.business_email || '').trim().toLowerCase();
+
+      if (expectedBusinessEmail && expectedBusinessEmail !== normalizedGoogleEmail) {
+        console.log('Google account does not match business email, validating calendar access for:', expectedBusinessEmail);
+
+        const calendarListResponse = await fetch('https://www.googleapis.com/calendar/v3/users/me/calendarList', {
+          headers: { Authorization: `Bearer ${tokens.access_token}` }
+        });
+
+        const calendarListData = calendarListResponse.ok ? await calendarListResponse.json() : { items: [] };
+        const calendars = Array.isArray(calendarListData.items) ? calendarListData.items : [];
+
+        const hasExpectedCalendar = calendars.some((calendar: any) => {
+          const id = String(calendar?.id || '').trim().toLowerCase();
+          const summary = String(calendar?.summary || '').trim().toLowerCase();
+          return id === expectedBusinessEmail || summary === expectedBusinessEmail || id.includes(expectedBusinessEmail);
+        });
+
+        if (!hasExpectedCalendar) {
+          console.error('Connected Google account cannot access expected calendar:', expectedBusinessEmail);
+          return createRedirectResponse(
+            `${APP_URL}/dashboard?oauth_error=google_account_mismatch&expected=${encodeURIComponent(expectedBusinessEmail)}&crm_section=calendar`,
+            'Connection Failed'
+          );
+        }
+
+        calendarEmailToStore = expectedBusinessEmail;
+      }
       
       // Resolve contractor_id: look up the contractor this user belongs to
       let resolvedContractorId: string | null = null;
@@ -162,7 +200,7 @@ serve(async (req) => {
           user_id: stateData.contractor_id,
           contractor_id: resolvedContractorId,
           provider: 'google',
-          calendar_email: userInfo.email,
+          calendar_email: calendarEmailToStore,
           access_token_encrypted: tokens.access_token,
           refresh_token_encrypted: tokens.refresh_token,
           expires_at: expiresAt,
