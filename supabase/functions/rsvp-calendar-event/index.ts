@@ -18,7 +18,7 @@ function decodeToken(token: any): string {
   if (typeof token === 'string' && /^[0-9a-fA-F]+$/.test(token) && token.length > 100) {
     let result = '';
     for (let i = 0; i < token.length; i += 2) {
-      result += String.fromCharCode(parseInt(token.substr(i, 2), 16));
+      result += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
     }
     return result;
   }
@@ -88,223 +88,147 @@ async function refreshOutlookToken(refreshToken: string, connection: any, supaba
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: 'No authorization header' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) throw new Error('Missing authorization');
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''));
-    if (authError || !user) throw new Error('Unauthorized');
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+    if (userError || !user) {
+      return new Response(JSON.stringify({ error: 'Invalid token' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     const { eventId, calendarId, provider, response: rsvpResponse } = await req.json();
 
     if (!eventId || !provider || !rsvpResponse) {
-      throw new Error('Missing required fields: eventId, provider, response');
+      return new Response(JSON.stringify({ error: 'Missing eventId, provider, or response' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
-    const encryptionKey = Deno.env.get('QUICKBOOKS_ENCRYPTION_KEY') || 'default-key';
+    console.log(`RSVP ${rsvpResponse} for ${provider} event ${eventId} by user ${user.id}`);
 
-    // Get calendar connection
+    // Get calendar connection (same pattern as update-calendar-event)
     const { data: connections, error: connError } = await supabase
       .from('calendar_connections')
-      .select(`*, 
-        access_token_decrypted:access_token_encrypted,
-        refresh_token_decrypted:refresh_token_encrypted`)
+      .select('*')
       .eq('user_id', user.id)
       .eq('provider', provider);
 
-    if (connError || !connections?.length) {
-      throw new Error(`No ${provider} calendar connection found`);
+    if (connError || !connections || connections.length === 0) {
+      return new Response(JSON.stringify({ error: 'No calendar connection found' }), {
+        status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const connection = connections[0];
-
-    // Decrypt tokens
-    const { data: tokenData } = await supabase.rpc('get_quickbooks_tokens', {
-      p_user_id: user.id,
-      p_encryption_key: encryptionKey,
-    });
-
-    // Get access token via direct SQL for calendar
-    const { data: calTokens } = await supabase
-      .from('calendar_connections')
-      .select('*')
-      .eq('user_id', user.id)
-      .eq('provider', provider)
-      .single();
-
-    // Decrypt access and refresh tokens
-    const { data: decryptedTokens } = await supabase.rpc('store_calendar_tokens', {
-      p_user_id: 'skip', // won't match
-    }).catch(() => ({ data: null }));
-
-    // Direct token decryption query
-    const { data: rawTokens, error: tokenError } = await supabase
-      .from('calendar_connections')
-      .select('access_token_encrypted, refresh_token_encrypted, expires_at, calendar_email')
-      .eq('user_id', user.id)
-      .eq('provider', provider)
-      .single();
-
-    if (tokenError || !rawTokens) throw new Error('Could not retrieve calendar tokens');
-
-    // Decrypt using pgp_sym_decrypt
-    const { data: decrypted, error: decryptError } = await supabase.rpc('get_calendar_tokens', {
-      p_user_id: user.id,
-      p_provider: provider,
-      p_encryption_key: encryptionKey,
-    }).catch(async () => {
-      // Fallback: direct SQL
-      const { data, error } = await supabase
-        .from('calendar_connections')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('provider', provider)
-        .single();
-      
-      // Try raw decryption
-      const { data: raw } = await supabase.rpc('pgp_sym_decrypt', {}).catch(() => ({ data: null }));
-      return { data: null, error: null };
-    });
-
-    // Use the same approach as other edge functions - raw SQL decryption
-    const { data: tokens, error: sqlError } = await supabase
-      .from('calendar_connections')
-      .select('id, provider, calendar_email, expires_at')
-      .eq('user_id', user.id)
-      .eq('provider', provider)
-      .single();
-
-    // Decrypt tokens via SQL
-    const { data: decTokens } = await supabase
-      .rpc('sql', { query: `SELECT pgp_sym_decrypt(access_token_encrypted, '${encryptionKey}') as access_token, pgp_sym_decrypt(refresh_token_encrypted, '${encryptionKey}') as refresh_token FROM calendar_connections WHERE user_id = '${user.id}' AND provider = '${provider}'` })
-      .catch(() => ({ data: null }));
-
-    // Simpler approach: use the same pattern as update-calendar-event
-    // Read raw encrypted columns and decrypt them
-    const { data: connRaw } = await supabase
-      .from('calendar_connections')
-      .select('*')
-      .eq('user_id', user.id)
-      .eq('provider', provider)
-      .single();
-
-    if (!connRaw) throw new Error('No connection found');
-
-    let accessToken = decodeToken(connRaw.access_token_encrypted);
-    const refreshToken = decodeToken(connRaw.refresh_token_encrypted);
-
-    // Check if token is expired and refresh
-    const expiresAt = new Date(connRaw.expires_at);
-    if (expiresAt < new Date()) {
-      console.log('Token expired, refreshing...');
-      if (provider === 'google') {
-        accessToken = await refreshGoogleToken(refreshToken, { ...connRaw, user_id: user.id }, supabase);
-      } else {
-        accessToken = await refreshOutlookToken(refreshToken, { ...connRaw, user_id: user.id }, supabase);
-      }
-    }
+    const refreshTokenDecoded = decodeToken(connection.refresh_token_encrypted);
+    const accessTokenDecoded = decodeToken(connection.access_token_encrypted);
 
     let result;
 
     if (provider === 'google') {
-      // Google Calendar: PATCH the event with attendee self response
-      const targetCalendarId = calendarId || 'primary';
-      
-      // First get the event to find our attendee entry
-      const getResponse = await fetch(
-        `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(targetCalendarId)}/events/${eventId}`,
-        {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        }
-      );
-
-      if (!getResponse.ok) {
-        const errText = await getResponse.text();
-        throw new Error(`Failed to get event: ${errText}`);
+      // Always refresh for fresh credentials
+      let accessToken = accessTokenDecoded;
+      try {
+        accessToken = await refreshGoogleToken(refreshTokenDecoded, connection, supabase);
+      } catch (e: any) {
+        console.warn('Token refresh failed, using existing:', e.message);
       }
 
-      const event = await getResponse.json();
-      
-      // Update attendee response status or set self as attendee
-      const userEmail = connRaw.calendar_email;
+      const targetCalendarId = calendarId || 'primary';
+
+      // Get current event to update attendee response
+      const getResp = await fetch(
+        `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(targetCalendarId)}/events/${eventId}`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+      if (!getResp.ok) throw new Error(`Failed to get event: ${await getResp.text()}`);
+
+      const event = await getResp.json();
       const attendees = event.attendees || [];
+      const userEmail = connection.calendar_email?.toLowerCase();
+
       let found = false;
       for (const att of attendees) {
-        if (att.email?.toLowerCase() === userEmail?.toLowerCase() || att.self) {
+        if (att.email?.toLowerCase() === userEmail || att.self) {
           att.responseStatus = rsvpResponse;
           found = true;
           break;
         }
       }
       if (!found) {
-        attendees.push({ email: userEmail, responseStatus: rsvpResponse, self: true });
+        attendees.push({ email: connection.calendar_email, responseStatus: rsvpResponse, self: true });
       }
 
-      const patchResponse = await fetch(
+      const patchResp = await fetch(
         `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(targetCalendarId)}/events/${eventId}?sendUpdates=all`,
         {
           method: 'PATCH',
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
-          },
+          headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({ attendees }),
         }
       );
-
-      if (!patchResponse.ok) {
-        const errText = await patchResponse.text();
-        throw new Error(`Failed to RSVP: ${errText}`);
-      }
-
-      result = await patchResponse.json();
+      if (!patchResp.ok) throw new Error(`Failed to RSVP: ${await patchResp.text()}`);
+      result = await patchResp.json();
 
     } else if (provider === 'outlook') {
-      // Outlook: Use accept/tentativelyAccept/decline endpoints
+      let accessToken = accessTokenDecoded;
+      try {
+        accessToken = await refreshOutlookToken(refreshTokenDecoded, connection, supabase);
+      } catch (e: any) {
+        console.warn('Token refresh failed, using existing:', e.message);
+      }
+
+      // Outlook uses specific endpoints for RSVP
       const actionMap: Record<string, string> = {
         accepted: 'accept',
         tentative: 'tentativelyAccept',
         declined: 'decline',
       };
       const action = actionMap[rsvpResponse];
-      if (!action) throw new Error(`Invalid RSVP response: ${rsvpResponse}`);
+      if (!action) throw new Error(`Invalid response: ${rsvpResponse}`);
 
-      const rsvpUrl = `https://graph.microsoft.com/v1.0/me/events/${eventId}/${action}`;
-      const rsvpResp = await fetch(rsvpUrl, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ sendResponse: true }),
-      });
-
-      if (!rsvpResp.ok) {
-        const errText = await rsvpResp.text();
-        throw new Error(`Failed to RSVP via Outlook: ${errText}`);
-      }
-
+      const rsvpResp = await fetch(
+        `https://graph.microsoft.com/v1.0/me/events/${eventId}/${action}`,
+        {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sendResponse: true }),
+        }
+      );
+      if (!rsvpResp.ok) throw new Error(`Outlook RSVP failed: ${await rsvpResp.text()}`);
       result = { success: true, action };
+
+    } else {
+      return new Response(JSON.stringify({ error: 'Unknown provider' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
+    console.log(`RSVP successful for event ${eventId}`);
     return new Response(JSON.stringify({ success: true, result }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
-  } catch (error: unknown) {
+  } catch (error: any) {
     console.error('RSVP error:', error);
-    const message = error instanceof Error ? error.message : 'Server error';
-    return new Response(JSON.stringify({ error: message }), {
-      status: 400,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 });
