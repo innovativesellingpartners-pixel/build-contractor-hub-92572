@@ -77,6 +77,9 @@ export function ForgeCallCenter({ onBack }: { onBack: () => void }) {
           .limit(500),
       ]);
 
+      if (callsRes.error) throw callsRes.error;
+      if (sessionsRes.error) throw sessionsRes.error;
+
       // Merge: build a map by call_sid, preferring whichever has more data
       const mergedMap = new Map<string, MergedCallRecord>();
 
