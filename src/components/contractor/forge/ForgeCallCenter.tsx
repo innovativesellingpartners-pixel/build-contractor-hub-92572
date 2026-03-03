@@ -110,7 +110,7 @@ export function ForgeCallCenter({ onBack }: { onBack: () => void }) {
         if (existing) {
           // Merge: prefer non-null values from calls table
           if (c.transcript) existing.transcript = c.transcript;
-          if (c.ai_summary) existing.ai_summary = c.ai_summary;
+          if (!existing.transcript) existing.transcript = toTranscriptText(existing.conversation_history);
           if (c.recording_url && !existing.recording_url) existing.recording_url = c.recording_url;
           if (c.recording_sid && !existing.recording_sid) existing.recording_sid = c.recording_sid;
           if (c.customer_info) existing.customer_info = c.customer_info;
