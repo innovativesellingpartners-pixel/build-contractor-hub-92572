@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ForgeCallCenter } from "./forge/ForgeCallCenter";
 import { ForgeSettings } from "./forge/ForgeSettings";
 import forgeLogoIcon from "@/assets/forgeailogo2.png";
+import { useAuth } from "@/contexts/AuthContext";
 
 type ForgeView = "dashboard" | "call-center" | "settings";
 
