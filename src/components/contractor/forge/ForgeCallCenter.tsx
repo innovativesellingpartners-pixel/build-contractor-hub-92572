@@ -68,13 +68,13 @@ export function ForgeCallCenter({ onBack }: { onBack: () => void }) {
           .select("*")
           .eq("contractor_id", user.id)
           .order("created_at", { ascending: false })
-          .limit(100),
+          .limit(500),
         supabase
           .from("call_sessions")
           .select("*")
           .eq("contractor_id", user.id)
           .order("created_at", { ascending: false })
-          .limit(100),
+          .limit(500),
       ]);
 
       // Merge: build a map by call_sid, preferring whichever has more data
