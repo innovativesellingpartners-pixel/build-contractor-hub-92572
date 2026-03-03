@@ -304,7 +304,7 @@ export default function CallsSection({ onSectionChange }: CallsSectionProps) {
                 {/* Stats Grid */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                   {[
-                    { icon: Phone, value: stats.callsToday, label: 'Calls Today', color: 'text-orange-500', bg: 'bg-orange-500/10' },
+                    { icon: Phone, value: stats.callsToday, label: 'Total Calls', color: 'text-orange-500', bg: 'bg-orange-500/10' },
                     { icon: Calendar, value: stats.appointmentsBooked, label: 'Booked', color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
                     { icon: Users, value: stats.leadsCaptured, label: 'Leads', color: 'text-blue-500', bg: 'bg-blue-500/10' },
                     { icon: TrendingUp, value: `${stats.bookingRate}%`, label: 'Booking Rate', color: 'text-violet-500', bg: 'bg-violet-500/10' },
