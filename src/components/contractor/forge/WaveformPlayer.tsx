@@ -95,9 +95,9 @@ export function WaveformPlayer({ src }: WaveformPlayerProps) {
       const fraction = i / barCount;
 
       if (fraction <= progress) {
-        ctx.fillStyle = "#f97316"; // orange-500
+        ctx.fillStyle = `hsl(${primaryHsl})`;
       } else {
-        ctx.fillStyle = "rgba(148,163,184,0.35)"; // slate-400/35
+        ctx.fillStyle = `hsl(${mutedForegroundHsl} / 0.35)`;
       }
 
       ctx.beginPath();

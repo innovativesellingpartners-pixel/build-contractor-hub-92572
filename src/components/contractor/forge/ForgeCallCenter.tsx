@@ -324,7 +324,7 @@ export function ForgeCallCenter({ onBack }: { onBack: () => void }) {
         )}
 
         {/* Conversation History (chat-style) */}
-        {selectedCall.conversation_history && Array.isArray(selectedCall.conversation_history) && selectedCall.conversation_history.length > 0 && (
+        {selectedCall.conversation_history && Array.isArray(selectedCall.conversation_history) && selectedCall.conversation_history.length > 0 && !selectedCall.transcript && (
           <Card>
             <CardContent className="p-5">
               <p className="text-sm font-semibold mb-3 flex items-center gap-1.5">
