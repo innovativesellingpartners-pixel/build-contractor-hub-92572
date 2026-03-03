@@ -301,13 +301,20 @@ export function ForgeCallCenter({ onBack }: { onBack: () => void }) {
         )}
 
         {/* Audio Playback */}
-        {hasRecording && (
+        {hasRecording ? (
           <Card>
             <CardContent className="p-5">
               <p className="text-sm font-semibold mb-3 flex items-center gap-1.5">
                 <Volume2 className="h-4 w-4 text-orange-500" /> Call Recording
               </p>
               <WaveformPlayer src={audioSrc!} />
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="border-dashed">
+            <CardContent className="p-5">
+              <p className="text-sm font-semibold mb-1">Call Recording</p>
+              <p className="text-sm text-muted-foreground">No recording is attached to this call yet.</p>
             </CardContent>
           </Card>
         )}
