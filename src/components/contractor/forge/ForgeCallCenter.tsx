@@ -37,6 +37,20 @@ export function ForgeCallCenter({ onBack }: { onBack: () => void }) {
   const [search, setSearch] = useState("");
   const [error, setError] = useState<string | null>(null);
 
+  const toTranscriptText = (history: any): string | null => {
+    if (!Array.isArray(history) || history.length === 0) return null;
+
+    const lines = history
+      .map((msg: any) => {
+        const role = msg?.role === 'assistant' || msg?.role === 'ai' ? 'AI' : 'Caller';
+        const content = typeof msg?.content === 'string' ? msg.content.trim() : '';
+        return content ? `${role}: ${content}` : null;
+      })
+      .filter(Boolean);
+
+    return lines.length > 0 ? lines.join('\n') : null;
+  };
+
   useEffect(() => {
     loadCalls();
   }, []);
@@ -54,14 +68,17 @@ export function ForgeCallCenter({ onBack }: { onBack: () => void }) {
           .select("*")
           .eq("contractor_id", user.id)
           .order("created_at", { ascending: false })
-          .limit(100),
+          .limit(500),
         supabase
           .from("call_sessions")
           .select("*")
           .eq("contractor_id", user.id)
           .order("created_at", { ascending: false })
-          .limit(100),
+          .limit(500),
       ]);
+
+      if (callsRes.error) throw callsRes.error;
+      if (sessionsRes.error) throw sessionsRes.error;
 
       // Merge: build a map by call_sid, preferring whichever has more data
       const mergedMap = new Map<string, MergedCallRecord>();
@@ -76,7 +93,7 @@ export function ForgeCallCenter({ onBack }: { onBack: () => void }) {
           status: s.status,
           outcome: s.outcome,
           ai_summary: s.ai_summary,
-          transcript: null, // call_sessions doesn't have transcript field directly
+          transcript: toTranscriptText(s.conversation_history),
           recording_url: s.recording_url,
           recording_sid: s.recording_sid,
           recording_status: s.recording_status,
@@ -96,8 +113,8 @@ export function ForgeCallCenter({ onBack }: { onBack: () => void }) {
         if (existing) {
           // Merge: prefer non-null values from calls table
           if (c.transcript) existing.transcript = c.transcript;
+          if (!existing.transcript) existing.transcript = toTranscriptText(existing.conversation_history);
           if (c.ai_summary) existing.ai_summary = c.ai_summary;
-          if (c.recording_url && !existing.recording_url) existing.recording_url = c.recording_url;
           if (c.recording_sid && !existing.recording_sid) existing.recording_sid = c.recording_sid;
           if (c.customer_info) existing.customer_info = c.customer_info;
           if (c.outcome && !existing.outcome) existing.outcome = c.outcome;
@@ -300,7 +317,7 @@ export function ForgeCallCenter({ onBack }: { onBack: () => void }) {
           <Card>
             <CardContent className="p-5">
               <p className="text-sm font-semibold mb-2 flex items-center gap-1.5">
-                <FileText className="h-4 w-4 text-muted-foreground" /> Transcript
+                <FileText className="h-4 w-4 text-muted-foreground" /> Transcripts
               </p>
               <div className="bg-muted/40 rounded-xl p-4 text-sm max-h-80 overflow-y-auto whitespace-pre-wrap leading-relaxed">
                 {selectedCall.transcript}
@@ -310,7 +327,7 @@ export function ForgeCallCenter({ onBack }: { onBack: () => void }) {
         )}
 
         {/* Conversation History (chat-style) */}
-        {selectedCall.conversation_history && Array.isArray(selectedCall.conversation_history) && selectedCall.conversation_history.length > 0 && (
+        {selectedCall.conversation_history && Array.isArray(selectedCall.conversation_history) && selectedCall.conversation_history.length > 0 && !selectedCall.transcript && (
           <Card>
             <CardContent className="p-5">
               <p className="text-sm font-semibold mb-3 flex items-center gap-1.5">
