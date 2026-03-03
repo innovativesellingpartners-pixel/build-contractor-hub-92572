@@ -37,6 +37,20 @@ export function ForgeCallCenter({ onBack }: { onBack: () => void }) {
   const [search, setSearch] = useState("");
   const [error, setError] = useState<string | null>(null);
 
+  const toTranscriptText = (history: any): string | null => {
+    if (!Array.isArray(history) || history.length === 0) return null;
+
+    const lines = history
+      .map((msg: any) => {
+        const role = msg?.role === 'assistant' || msg?.role === 'ai' ? 'AI' : 'Caller';
+        const content = typeof msg?.content === 'string' ? msg.content.trim() : '';
+        return content ? `${role}: ${content}` : null;
+      })
+      .filter(Boolean);
+
+    return lines.length > 0 ? lines.join('\n') : null;
+  };
+
   useEffect(() => {
     loadCalls();
   }, []);
