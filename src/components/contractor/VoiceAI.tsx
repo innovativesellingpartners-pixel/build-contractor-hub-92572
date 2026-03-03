@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ForgeCallCenter } from "./forge/ForgeCallCenter";
 import { ForgeSettings } from "./forge/ForgeSettings";
 import forgeLogoIcon from "@/assets/forgeailogo2.png";
+import { useAuth } from "@/contexts/AuthContext";
 
 type ForgeView = "dashboard" | "call-center" | "settings";
 
@@ -20,64 +21,76 @@ export function VoiceAI() {
     bookingRate: 0,
   });
 
+  const { user } = useAuth();
+
   useEffect(() => {
+    if (!user?.id) return;
     checkForgeStatus();
     loadStats();
-  }, []);
+  }, [user?.id]);
 
   const checkForgeStatus = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user?.id) return;
+
     const { data: membership } = await supabase
       .from("contractor_users")
       .select("contractor_id")
       .eq("user_id", user.id)
       .limit(1)
       .maybeSingle();
-    if (membership) {
-      const { data: contractor } = await supabase
+
+    const contractorId = membership?.contractor_id ?? user.id;
+
+    const [{ data: contractor }, { data: profile }] = await Promise.all([
+      supabase
         .from("contractors")
         .select("voice_ai_enabled")
-        .eq("id", membership.contractor_id)
-        .maybeSingle();
-      setIsActive(contractor?.voice_ai_enabled ?? false);
-    }
-    const { data: profile } = await supabase
-      .from("contractor_ai_profiles")
-      .select("ai_enabled")
-      .eq("contractor_id", user.id)
-      .maybeSingle();
-    if (profile?.ai_enabled) setIsActive(true);
+        .eq("id", contractorId)
+        .maybeSingle(),
+      supabase
+        .from("contractor_ai_profiles")
+        .select("ai_enabled")
+        .eq("contractor_id", contractorId)
+        .maybeSingle(),
+    ]);
+
+    setIsActive(Boolean(contractor?.voice_ai_enabled || profile?.ai_enabled));
   };
 
   const loadStats = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user?.id) return;
 
-    // Get all call sessions (same source as Call Center)
-    const { data: allSessions } = await supabase
-      .from("call_sessions")
-      .select("id, outcome, action_taken, created_at")
-      .eq("contractor_id", user.id);
+    const { data: membership } = await supabase
+      .from("contractor_users")
+      .select("contractor_id")
+      .eq("user_id", user.id)
+      .limit(1)
+      .maybeSingle();
 
-    // Get today's sessions
-    const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
-    const todaySessions = allSessions?.filter(
-      (s) => new Date(s.created_at) >= todayStart
-    ) || [];
+    const contractorId = membership?.contractor_id ?? user.id;
 
-    // Count booked meetings from calendar_events
-    const { count: bookedCount } = await supabase
-      .from("calendar_events")
-      .select("id", { count: "exact", head: true })
-      .eq("contractor_id", user.id);
+    const [sessionsCountRes, callsCountRes, bookedCountRes, leadsCountRes] = await Promise.all([
+      supabase
+        .from("call_sessions")
+        .select("id", { count: "exact", head: true })
+        .eq("contractor_id", contractorId),
+      supabase
+        .from("calls")
+        .select("id", { count: "exact", head: true })
+        .eq("contractor_id", contractorId),
+      supabase
+        .from("calendar_events")
+        .select("id", { count: "exact", head: true })
+        .eq("contractor_id", contractorId),
+      supabase
+        .from("leads")
+        .select("id", { count: "exact", head: true })
+        .in("user_id", contractorId === user.id ? [user.id] : [user.id, contractorId]),
+    ]);
 
-    const totalCalls = allSessions?.length || 0;
-    const booked = bookedCount || 0;
-    const leads = allSessions?.filter(
-      (s) => s.outcome === "lead_captured" || s.outcome === "message_taken" || s.action_taken === "take_message"
-    ).length || 0;
+    const totalCalls = Math.max(sessionsCountRes.count ?? 0, callsCountRes.count ?? 0);
+    const booked = bookedCountRes.count ?? 0;
+    const leads = leadsCountRes.count ?? 0;
 
     setStats({
       callsToday: totalCalls,
