@@ -59,49 +59,61 @@ export default function CallsSection({ onSectionChange }: CallsSectionProps) {
 
   useEffect(() => {
     if (!user?.id) return;
-    const checkStatus = async () => {
+
+    const loadDashboardData = async () => {
       const { data: membership } = await supabase
         .from('contractor_users')
         .select('contractor_id')
         .eq('user_id', user.id)
         .limit(1)
         .maybeSingle();
-      if (membership) {
-        const { data: contractor } = await supabase
+
+      const contractorId = membership?.contractor_id ?? user.id;
+
+      const [contractorRes, profileRes, sessionsCountRes, callsCountRes, bookedCountRes, leadsCountRes] = await Promise.all([
+        supabase
           .from('contractors')
           .select('voice_ai_enabled')
-          .eq('id', membership.contractor_id)
-          .maybeSingle();
-        if (contractor?.voice_ai_enabled) setIsAiActive(true);
-      }
-      const { data: profile } = await supabase
-        .from('contractor_ai_profiles')
-        .select('ai_enabled')
-        .eq('contractor_id', user.id)
-        .maybeSingle();
-      if (profile?.ai_enabled) setIsAiActive(true);
+          .eq('id', contractorId)
+          .maybeSingle(),
+        supabase
+          .from('contractor_ai_profiles')
+          .select('ai_enabled')
+          .eq('contractor_id', contractorId)
+          .maybeSingle(),
+        supabase
+          .from('call_sessions')
+          .select('id', { count: 'exact', head: true })
+          .eq('contractor_id', contractorId),
+        supabase
+          .from('calls')
+          .select('id', { count: 'exact', head: true })
+          .eq('contractor_id', contractorId),
+        supabase
+          .from('calendar_events')
+          .select('id', { count: 'exact', head: true })
+          .eq('contractor_id', contractorId),
+        supabase
+          .from('leads')
+          .select('id', { count: 'exact', head: true })
+          .in('user_id', contractorId === user.id ? [user.id] : [user.id, contractorId]),
+      ]);
+
+      setIsAiActive(Boolean(contractorRes.data?.voice_ai_enabled || profileRes.data?.ai_enabled));
+
+      const totalCalls = Math.max(sessionsCountRes.count ?? 0, callsCountRes.count ?? 0);
+      const booked = bookedCountRes.count ?? 0;
+      const leads = leadsCountRes.count ?? 0;
+
+      setStats({
+        callsToday: totalCalls,
+        appointmentsBooked: booked,
+        leadsCaptured: leads,
+        bookingRate: totalCalls > 0 ? Math.round((booked / totalCalls) * 100) : 0,
+      });
     };
-    const loadStats = async () => {
-      const todayStart = new Date();
-      todayStart.setHours(0, 0, 0, 0);
-      const { data: calls } = await supabase
-        .from('calls')
-        .select('id, outcome')
-        .eq('contractor_id', user.id)
-        .gte('created_at', todayStart.toISOString());
-      if (calls) {
-        const booked = calls.filter(c => c.outcome === 'booked' || c.outcome === 'appointment_booked').length;
-        const leads = calls.filter(c => c.outcome === 'lead_captured' || c.outcome === 'booked').length;
-        setStats({
-          callsToday: calls.length,
-          appointmentsBooked: booked,
-          leadsCaptured: leads,
-          bookingRate: calls.length > 0 ? Math.round((booked / calls.length) * 100) : 0,
-        });
-      }
-    };
-    checkStatus();
-    loadStats();
+
+    loadDashboardData();
   }, [user?.id]);
 
   const registerExistingNumber = useMutation({
