@@ -314,7 +314,7 @@ export function ForgeCallCenter({ onBack }: { onBack: () => void }) {
           <Card>
             <CardContent className="p-5">
               <p className="text-sm font-semibold mb-2 flex items-center gap-1.5">
-                <FileText className="h-4 w-4 text-muted-foreground" /> Transcript
+                <FileText className="h-4 w-4 text-muted-foreground" /> Transcripts
               </p>
               <div className="bg-muted/40 rounded-xl p-4 text-sm max-h-80 overflow-y-auto whitespace-pre-wrap leading-relaxed">
                 {selectedCall.transcript}
