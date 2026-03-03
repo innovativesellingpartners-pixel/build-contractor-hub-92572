@@ -90,7 +90,7 @@ export function ForgeCallCenter({ onBack }: { onBack: () => void }) {
           status: s.status,
           outcome: s.outcome,
           ai_summary: s.ai_summary,
-          transcript: null, // call_sessions doesn't have transcript field directly
+          transcript: toTranscriptText(s.conversation_history),
           recording_url: s.recording_url,
           recording_sid: s.recording_sid,
           recording_status: s.recording_status,
