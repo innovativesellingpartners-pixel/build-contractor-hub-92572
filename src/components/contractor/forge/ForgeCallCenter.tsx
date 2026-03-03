@@ -453,6 +453,16 @@ export function ForgeCallCenter({ onBack }: { onBack: () => void }) {
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold truncate">{call.from_number}</p>
                       <p className="text-xs text-muted-foreground">{format(new Date(call.created_at), "MMM d, h:mm a")}</p>
+                      <div className="flex gap-1 mt-1.5">
+                        {call.recording_url ? (
+                          <Badge variant="outline" className="text-[10px] h-5 px-1.5">Audio</Badge>
+                        ) : (
+                          <Badge variant="secondary" className="text-[10px] h-5 px-1.5">No audio</Badge>
+                        )}
+                        {(call.transcript || (Array.isArray(call.conversation_history) && call.conversation_history.length > 0)) && (
+                          <Badge variant="outline" className="text-[10px] h-5 px-1.5">Transcript</Badge>
+                        )}
+                      </div>
                     </div>
                     <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-orange-500 transition-colors shrink-0" />
                   </CardContent>
