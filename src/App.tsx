@@ -48,6 +48,7 @@ import { AdminGCContacts } from "@/components/admin/AdminGCContacts";
 import { AdminSettings } from "@/components/admin/AdminSettings";
 import { PocketAgentAccessManagement } from "@/components/admin/PocketbotAccessManagement";
 import { HelpAdmin } from "@/components/admin/HelpAdmin";
+import { ContractorOnboarding } from "@/components/admin/ContractorOnboarding";
 import ArchiveManagement from "@/components/admin/ArchiveManagement";
 import { BusinessSuite } from "@/pages/BusinessSuite";
 import { Training } from "@/pages/features/Training";
