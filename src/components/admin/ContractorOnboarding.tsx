@@ -20,7 +20,7 @@ const PAGES = [
       sections: [
         {
           title: 'Getting Started',
-          body: `Welcome to CT1 — your all-in-one contractor management platform. This guide will walk you through setting up your account and getting the most out of CT1 Hub & CRM.\n\nOnce your account has been provisioned by your CT1 administrator, you will receive an email with login credentials. Follow these steps:\n\n1. Open the email and click the login link\n2. Enter your temporary credentials\n3. You will be prompted to set a new password\n4. Complete your contractor profile (business name, phone, address, license #)\n5. Upload your company logo under Settings → Company Profile\n6. Review and accept the Terms of Service`,
+          body: `Welcome to CT1 - your all-in-one contractor management platform. This guide will walk you through setting up your account and getting the most out of CT1 Hub & CRM.\n\nOnce your account has been provisioned by your CT1 administrator, you will receive an email with login credentials. Follow these steps:\n\n1. Open the email and click the login link\n2. Enter your temporary credentials\n3. You will be prompted to set a new password\n4. Complete your contractor profile (business name, phone, address, license #)\n5. Upload your company logo under Settings → Company Profile\n6. Review and accept the Terms of Service`,
         },
         {
           title: 'Dashboard Overview',
@@ -78,7 +78,7 @@ const PAGES = [
     title: 'Voice AI (Coming Soon)',
     icon: Phone,
     content: {
-      heading: 'Voice AI — Intelligent Call Management',
+      heading: 'Voice AI - Intelligent Call Management',
       sections: [
         {
           title: 'Overview',
@@ -246,7 +246,7 @@ async function generatePDF() {
     doc.text('support@myct1.com  ·  www.myct1.com', pageWidth / 2, pageHeight - 7.5, { align: 'center' });
     doc.setFontSize(5.5);
     doc.setTextColor(100, 116, 139);
-    doc.text('© CT1 Technology Corp. — Confidential. For authorized CT1 contractors only.', pageWidth / 2, pageHeight - 3.5, { align: 'center' });
+    doc.text('© CT1 Technology Corp. Confidential - For authorized CT1 contractors only.', pageWidth / 2, pageHeight - 3.5, { align: 'center' });
   };
 
   // ═══════════════ COVER PAGE ═══════════════
@@ -477,7 +477,7 @@ export function ContractorOnboarding() {
             <Button
               onClick={() => {
                 generatePDF();
-                toast.info('PDF generated — attach to email to send to contractor');
+                toast.info('PDF generated - attach to email to send to contractor');
               }}
               className="bg-primary hover:bg-primary/90"
             >
