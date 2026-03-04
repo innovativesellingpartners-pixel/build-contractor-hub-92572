@@ -469,7 +469,7 @@ export function ContractorOnboarding() {
             <Button
               variant="outline"
               onClick={() => generatePDF()}
-              className="border-zinc-600 text-zinc-200 hover:bg-zinc-800 hover:text-white"
+              className="border-zinc-600 text-foreground bg-white hover:bg-zinc-100"
             >
               <Download className="h-4 w-4 mr-2" />
               Download PDF
