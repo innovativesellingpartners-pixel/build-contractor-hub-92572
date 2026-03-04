@@ -246,7 +246,7 @@ async function generatePDF() {
     doc.text('support@myct1.com  ·  www.myct1.com', pageWidth / 2, pageHeight - 7.5, { align: 'center' });
     doc.setFontSize(5.5);
     doc.setTextColor(100, 116, 139);
-    doc.text('© CT1 Technology Corp. — Confidential. For authorized CT1 contractors only.', pageWidth / 2, pageHeight - 3.5, { align: 'center' });
+    doc.text('© CT1 Technology Corp. Confidential - For authorized CT1 contractors only.', pageWidth / 2, pageHeight - 3.5, { align: 'center' });
   };
 
   // ═══════════════ COVER PAGE ═══════════════
