@@ -608,7 +608,7 @@ export function ContractorOnboarding() {
             <div>
               <p className="text-sm font-semibold text-white">CT1 Corporate Support</p>
               <p className="text-xs text-zinc-400">
-                📧 support@myct1.com  ·  📞 (855) CT1-HELP  ·  🌐 www.myct1.com
+                📧 support@myct1.com  ·  🌐 www.myct1.com
               </p>
             </div>
           </div>
