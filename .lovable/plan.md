@@ -1,28 +1,103 @@
 
 
-## Fix: Remove CT1 Logo from Customer-Facing Estimates and Invoices
+# Vapi Assistant Sync Controller — Full Implementation Plan
 
-### Problem
-When estimates are sent to customers, the public estimate page falls back to the CT1 logo when a contractor hasn't uploaded their own logo. Customers should only see their contractor's branding, not CT1 branding in the header.
+## Overview
 
-### What Changes
+Build a structured prompt builder that enforces the required Vapi-compatible template sections, and a Forge sync edge function that pushes updated prompts after save.
 
-**File: `src/pages/PublicEstimate.tsx`**
+## What Changes
 
-1. **Remove the CT1 logo import** (line 13) -- the `ct1PoweredLogo` import is used in two places: the header fallback and the "Powered by CT1" footer. The footer usage is intentional branding, so the import stays but the header fallback changes.
+### 1. Structured Prompt Generator Utility
 
-2. **Update the header logo fallback** (line 217) -- Instead of falling back to the CT1 logo when the contractor has no logo, use a `Building2` icon (same pattern as `PublicInvoice.tsx`):
-   - Change: `const displayLogo = contractor?.logo_url || ct1PoweredLogo;`
-   - To: `const displayLogo = contractor?.logo_url;`
+Create `src/lib/generateVapiPrompt.ts` — a pure function that takes contractor AI profile fields and assembles a Vapi-compatible system prompt with all required sections:
 
-3. **Update the header logo rendering** (around lines 231-240) -- Add a conditional: if `displayLogo` exists, show the contractor's logo image; otherwise show a generic `Building2` icon in a styled circle, matching the invoice page pattern.
+- **Identity** — "You are Sarah, the professional receptionist for {Business Name}, a {Trade} contractor."
+- **Business Context** — business description, services offered, service area
+- **Trade Context** — trade type, services not offered
+- **Call Handling Behavior** — gather caller info, qualify leads, book appointments, escalate emergencies
+- **Tone Rules** — warm, confident, professional, never robotic, never mention AI
+- **Qualification Logic** — pulled from `custom_instructions` field
+- **Transfer / Escalation Rules** — forward to contractor phone when requested
+- **Guardrails** — no legal advice, no price guessing, keep responses short
 
-### What Stays
-- The **"Powered by CT1"** footer branding at the bottom of estimates remains unchanged (this is the platform branding standard).
-- The **PublicInvoice.tsx** page already handles this correctly with the `Building2` fallback icon -- no changes needed there.
-- The **estimate PDF preview/download** components already use only the contractor's `logo_url` with no CT1 fallback -- no changes needed.
+This function will be called on save to generate the final `custom_instructions` value from the individual profile fields, replacing the raw freeform textarea approach.
 
-### Technical Details
-- Only 1 file modified: `src/pages/PublicEstimate.tsx`
-- ~10 lines changed total
-- Pattern mirrors the existing `PublicInvoice.tsx` implementation (lines 142-154)
+### 2. Update Admin VoiceAISettings.tsx
+
+Replace the raw "Assistant Prompt" textarea (lines 484-496) with:
+- A read-only preview of the generated prompt (collapsible)
+- The prompt auto-generates from the existing form fields (business name, trade, services, etc.)
+- An optional "Custom Qualification Instructions" textarea for the one customizable section
+- A "Regenerate Prompt" button that rebuilds from current field values
+- On save, the structured prompt is generated and stored in `custom_instructions`
+
+### 3. Update Contractor ForgeSettings.tsx
+
+Similarly replace the "Custom Instructions" textarea:
+- Show the auto-generated prompt as a read-only preview
+- Allow editing only the qualification/custom instructions section
+- On save, regenerate the full structured prompt
+
+### 4. New Edge Function: `forge-prompt-sync`
+
+Create `supabase/functions/forge-prompt-sync/index.ts`:
+- Accepts `{ contractor_id }` with auth (CT1_INTERNAL_API_KEY or user JWT)
+- Reads the contractor's AI profile from `contractor_ai_profiles`
+- Generates the structured prompt server-side
+- Calls Forge's sync endpoint to PATCH the Vapi assistant:
+  - Updates only `model.messages[0].content` 
+  - Updates `firstMessage` to `"Hi, this is Sarah with {Business Name}."`
+  - Preserves voice, tools, speaking plans
+- Returns success/failure status
+
+### 5. Trigger Sync on Save
+
+In both `VoiceAISettings.tsx` (admin) and `ForgeSettings.tsx` (contractor), after successful database save, invoke `forge-prompt-sync` edge function with the contractor ID.
+
+### 6. Database Column (Optional Addition)
+
+Add a `qualification_instructions` text column to `contractor_ai_profiles` to separately store the contractor's custom qualification logic (the only editable prompt section). This keeps it distinct from the auto-generated `custom_instructions`. Requires a migration.
+
+## Architecture Flow
+
+```text
+Contractor edits profile fields
+       ↓
+Save → generate structured prompt → store in DB
+       ↓
+Invoke forge-prompt-sync edge function
+       ↓
+Edge function reads profile → builds prompt
+       ↓
+POST to Forge sync endpoint
+       ↓
+Forge PATCHes Vapi assistant
+  (model.messages[0].content + firstMessage only)
+       ↓
+Assistant behavior updates live
+```
+
+## Files to Create/Modify
+
+| File | Action |
+|------|--------|
+| `src/lib/generateVapiPrompt.ts` | Create — prompt template builder |
+| `src/components/admin/VoiceAISettings.tsx` | Modify — structured prompt UI + sync call |
+| `src/components/contractor/forge/ForgeSettings.tsx` | Modify — structured prompt UI + sync call |
+| `supabase/functions/forge-prompt-sync/index.ts` | Create — Forge/Vapi sync endpoint |
+| DB migration | Add `qualification_instructions` column |
+
+## Sync Endpoint Details
+
+The edge function will need `CT1_INTERNAL_API_KEY` and `CT1_API_BASE_URL` secrets (both already configured) to authenticate with the Forge platform.
+
+## Guardrails Enforced
+
+- Contractors cannot remove required sections
+- Identity name ("Sarah") is fixed
+- Greeting format is fixed: `"Hi, this is Sarah with {Business Name}."`
+- No raw JSON injection
+- No tool instruction modification
+- Prompt is always regenerated from structured fields, never freeform edited
+
