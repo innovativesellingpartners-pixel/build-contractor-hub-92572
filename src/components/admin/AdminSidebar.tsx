@@ -40,7 +40,7 @@ interface AdminSidebarProps {
 
 export const AdminSidebar = ({ onNavigate }: AdminSidebarProps) => {
   return (
-    <aside className="w-full sm:w-48 md:w-64 bg-card border-r min-h-screen">
+    <aside className="w-full sm:w-48 md:w-64 bg-card border-r min-h-screen flex flex-col overflow-hidden">
       <div className="p-4 border-b">
         <div className="flex items-center gap-2">
           <img src={ct1Logo} alt="CT1 Logo" className="h-8 w-8" />
