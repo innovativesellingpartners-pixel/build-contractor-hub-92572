@@ -343,7 +343,7 @@ async function generatePDF() {
   // Cover footer
   doc.setFontSize(7);
   doc.setTextColor(100, 116, 139);
-  doc.text('support@myct1.com  ·  www.myct1.com', pageWidth / 2, pageHeight - 12, { align: 'center' });
+  doc.text('support@myct1.com  |  www.myct1.com', pageWidth / 2, pageHeight - 12, { align: 'center' });
 
   // ═══════════════ CONTENT PAGES ═══════════════
   PAGES.forEach((page) => {
