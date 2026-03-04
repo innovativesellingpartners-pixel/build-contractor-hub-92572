@@ -8,6 +8,8 @@ import { ForgeCallCenter } from "./forge/ForgeCallCenter";
 import { ForgeSettings } from "./forge/ForgeSettings";
 import forgeLogoIcon from "@/assets/forgeailogo2.png";
 import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
+import { useSearchParams } from "react-router-dom";
 
 type ForgeView = "dashboard" | "call-center" | "settings";
 
