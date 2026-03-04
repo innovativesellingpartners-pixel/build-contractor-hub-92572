@@ -97,6 +97,15 @@ export function Dashboard() {
   const dragStartPosition = useRef<{ x: number; y: number } | null>(null);
   const chatButtonRef = useRef<HTMLButtonElement | null>(null);
 
+  // Handle Voice AI post-payment redirect
+  const [searchParams, setSearchParams] = useSearchParams();
+  useEffect(() => {
+    if (searchParams.get("voice_ai_activated") === "true") {
+      setActiveSection("voiceai");
+      // VoiceAI component will handle the actual activation
+    }
+  }, []);
+
   useEffect(() => {
     if (!chatButtonRef.current || chatButtonPosition) return;
 
