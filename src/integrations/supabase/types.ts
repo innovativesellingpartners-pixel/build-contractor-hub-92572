@@ -656,6 +656,7 @@ export type Database = {
           license_number: string | null
           preferred_meeting_types: string[] | null
           pricing_rules: string | null
+          qualification_instructions: string | null
           service_area: string[] | null
           service_description: string | null
           services_not_offered: string[] | null
@@ -695,6 +696,7 @@ export type Database = {
           license_number?: string | null
           preferred_meeting_types?: string[] | null
           pricing_rules?: string | null
+          qualification_instructions?: string | null
           service_area?: string[] | null
           service_description?: string | null
           services_not_offered?: string[] | null
@@ -734,6 +736,7 @@ export type Database = {
           license_number?: string | null
           preferred_meeting_types?: string[] | null
           pricing_rules?: string | null
+          qualification_instructions?: string | null
           service_area?: string[] | null
           service_description?: string | null
           services_not_offered?: string[] | null
