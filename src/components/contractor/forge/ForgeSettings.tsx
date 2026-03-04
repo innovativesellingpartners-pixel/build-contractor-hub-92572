@@ -6,9 +6,11 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Save, Calendar, Clock, Phone, Globe, AlertTriangle, PhoneCall } from "lucide-react";
+import { ArrowLeft, Save, Calendar, Clock, Phone, Globe, AlertTriangle, PhoneCall, ChevronDown, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { generateVapiPrompt, generateFirstMessage } from "@/lib/generateVapiPrompt";
 import { useUserTier } from "@/hooks/useUserTier";
 import {
   AlertDialog,
