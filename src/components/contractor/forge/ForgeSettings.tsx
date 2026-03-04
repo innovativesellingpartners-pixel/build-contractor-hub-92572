@@ -440,30 +440,63 @@ export function ForgeSettings({ onBack }: { onBack: () => void }) {
         </CardContent>
       </Card>
 
-      {/* Payment Prompt Dialog */}
+      {/* Voice AI Payment Dialog */}
       <AlertDialog open={showPaymentPrompt} onOpenChange={setShowPaymentPrompt}>
-        <AlertDialogContent>
+        <AlertDialogContent className="max-w-lg">
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               <PhoneCall className="h-5 w-5 text-orange-500" />
-              Voice AI Subscription Required
+              Activate Voice AI
             </AlertDialogTitle>
-            <AlertDialogDescription className="space-y-2">
-              <p>Voice AI is an add-on feature that costs <strong>$30/month</strong>.</p>
-              <p>This includes AI-powered call answering, appointment booking, lead capture, and more.</p>
-              <p>Please contact our sales team to add Voice AI to your subscription.</p>
+            <AlertDialogDescription asChild>
+              <div className="space-y-4">
+                <p>Voice AI gives you an AI-powered receptionist that answers calls, books appointments, captures leads, and more.</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={async () => {
+                      setShowPaymentPrompt(false);
+                      toast.loading("Redirecting to checkout...");
+                      const { data: { session } } = await supabase.auth.getSession();
+                      if (!session) { toast.dismiss(); toast.error("Please log in"); return; }
+                      const { data, error } = await supabase.functions.invoke("voice-ai-checkout", {
+                        body: { billing_cycle: "monthly" },
+                      });
+                      toast.dismiss();
+                      if (error || !data?.url) { toast.error("Failed to start checkout"); return; }
+                      window.location.href = data.url;
+                    }}
+                    className="flex flex-col items-center gap-2 p-4 rounded-lg border-2 border-border hover:border-orange-500 transition-colors cursor-pointer bg-card"
+                  >
+                    <span className="text-2xl font-bold text-foreground">$40</span>
+                    <span className="text-sm text-muted-foreground">per month</span>
+                    <span className="text-xs text-muted-foreground">Billed monthly</span>
+                  </button>
+                  <button
+                    onClick={async () => {
+                      setShowPaymentPrompt(false);
+                      toast.loading("Redirecting to checkout...");
+                      const { data: { session } } = await supabase.auth.getSession();
+                      if (!session) { toast.dismiss(); toast.error("Please log in"); return; }
+                      const { data, error } = await supabase.functions.invoke("voice-ai-checkout", {
+                        body: { billing_cycle: "annual" },
+                      });
+                      toast.dismiss();
+                      if (error || !data?.url) { toast.error("Failed to start checkout"); return; }
+                      window.location.href = data.url;
+                    }}
+                    className="flex flex-col items-center gap-2 p-4 rounded-lg border-2 border-orange-500 bg-orange-50 dark:bg-orange-950/20 cursor-pointer relative"
+                  >
+                    <span className="absolute -top-2 right-2 bg-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">SAVE 25%</span>
+                    <span className="text-2xl font-bold text-foreground">$30</span>
+                    <span className="text-sm text-muted-foreground">per month</span>
+                    <span className="text-xs text-muted-foreground">$360 billed annually</span>
+                  </button>
+                </div>
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                window.location.href = "mailto:sales@myct1.com?subject=Voice AI Subscription&body=I'd like to add Voice AI to my account.";
-              }}
-              className="bg-orange-500 hover:bg-orange-600"
-            >
-              Contact Sales
-            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

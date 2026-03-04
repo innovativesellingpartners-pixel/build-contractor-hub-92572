@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -96,6 +96,15 @@ export function Dashboard() {
   const [chatButtonDragOffset, setChatButtonDragOffset] = useState({ x: 0, y: 0 });
   const dragStartPosition = useRef<{ x: number; y: number } | null>(null);
   const chatButtonRef = useRef<HTMLButtonElement | null>(null);
+
+  // Handle Voice AI post-payment redirect
+  const [searchParams, setSearchParams] = useSearchParams();
+  useEffect(() => {
+    if (searchParams.get("voice_ai_activated") === "true") {
+      setActiveSection("voiceai");
+      // VoiceAI component will handle the actual activation
+    }
+  }, []);
 
   useEffect(() => {
     if (!chatButtonRef.current || chatButtonPosition) return;

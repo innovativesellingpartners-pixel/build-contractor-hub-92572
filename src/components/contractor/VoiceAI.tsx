@@ -8,6 +8,8 @@ import { ForgeCallCenter } from "./forge/ForgeCallCenter";
 import { ForgeSettings } from "./forge/ForgeSettings";
 import forgeLogoIcon from "@/assets/forgeailogo2.png";
 import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
+import { useSearchParams } from "react-router-dom";
 
 type ForgeView = "dashboard" | "call-center" | "settings";
 
@@ -23,11 +25,45 @@ export function VoiceAI() {
 
   const { user } = useAuth();
 
+  const [searchParams, setSearchParams] = useSearchParams();
+
   useEffect(() => {
     if (!user?.id) return;
     checkForgeStatus();
     loadStats();
+
+    // Handle post-payment activation
+    if (searchParams.get("voice_ai_activated") === "true") {
+      handlePostPaymentActivation();
+      // Clean up URL params
+      searchParams.delete("voice_ai_activated");
+      searchParams.delete("session_id");
+      setSearchParams(searchParams, { replace: true });
+    }
   }, [user?.id]);
+
+  const handlePostPaymentActivation = async () => {
+    if (!user?.id) return;
+    toast.loading("Activating Voice AI...");
+    try {
+      const { error } = await supabase.functions.invoke("voice-ai-activate", {
+        body: { contractor_id: user.id, activated_by: "stripe_checkout" },
+      });
+      toast.dismiss();
+      if (error) {
+        toast.error("Activation failed. Please contact support.");
+        console.error("Voice AI activation error:", error);
+      } else {
+        toast.success("Voice AI activated! Your AI receptionist is being deployed.");
+        setIsActive(true);
+        checkForgeStatus();
+      }
+    } catch (err) {
+      toast.dismiss();
+      toast.error("Activation failed. Please contact support.");
+      console.error("Voice AI activation error:", err);
+    }
+  };
 
   const checkForgeStatus = async () => {
     if (!user?.id) return;
