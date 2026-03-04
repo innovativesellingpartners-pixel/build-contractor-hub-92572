@@ -144,9 +144,28 @@ export const VoiceAISettings = ({ contractorId }: VoiceAISettingsProps) => {
         if (error) throw error;
       }
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ['voiceAIProfile', contractorId] });
       toast.success('Voice AI settings saved successfully');
+      
+      // Trigger Forge sync
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          const { error: syncError } = await supabase.functions.invoke('forge-prompt-sync', {
+            body: { contractor_id: contractorId },
+          });
+          if (syncError) {
+            console.error('Forge sync error:', syncError);
+            toast.warning('Settings saved but Forge sync failed');
+          } else {
+            toast.success('Prompt synced to Forge');
+          }
+        }
+      } catch (syncErr) {
+        console.error('Forge sync error:', syncErr);
+      }
+      
       setIsSaving(false);
     },
     onError: (error) => {
