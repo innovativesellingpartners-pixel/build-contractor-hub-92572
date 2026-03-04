@@ -323,15 +323,16 @@ async function generatePDF() {
     doc.setTextColor(SLATE_200.r, SLATE_200.g, SLATE_200.b);
     doc.text(p.title, margin + 34, itemY);
 
-    // Dots
-    doc.setTextColor(100, 116, 139);
-    doc.setFontSize(6);
-    const dotsX = margin + 34 + doc.getTextWidth(p.title) + 3;
-    const endX = pageWidth - margin - 30;
-    if (dotsX < endX) {
-      const dots = '·'.repeat(Math.floor((endX - dotsX) / 1.5));
-      doc.text(dots, dotsX, itemY);
+    // Dot leader line
+    doc.setDrawColor(100, 116, 139);
+    doc.setLineWidth(0.2);
+    doc.setLineDashPattern([0.5, 1.5], 0);
+    const lineStartX = margin + 34 + doc.getTextWidth(p.title) + 3;
+    const lineEndX = pageWidth - margin - 30;
+    if (lineStartX < lineEndX) {
+      doc.line(lineStartX, itemY - 1, lineEndX, itemY - 1);
     }
+    doc.setLineDashPattern([], 0);
 
     // Page number
     doc.setTextColor(SLATE_400.r, SLATE_400.g, SLATE_400.b);
