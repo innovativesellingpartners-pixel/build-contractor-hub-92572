@@ -1,13 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Download, Send, FileText, ChevronLeft, ChevronRight, BookOpen, Calendar, Mail, CreditCard, Phone, BarChart2, Briefcase, Users, Receipt, PieChart } from 'lucide-react';
+import { Download, Send, FileText, ChevronLeft, ChevronRight, BookOpen, Calendar, Mail, CreditCard, Phone, BarChart2, Briefcase, Users, Receipt, PieChart, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 import jsPDF from 'jspdf';
 import ct1Logo from '@/assets/ct1-round-logo-new.png';
+import ct1OnboardingLogo from '@/assets/ct1-onboarding-logo.png';
 
 const PAGES = [
   {
@@ -154,7 +155,26 @@ const PAGES = [
   },
 ];
 
-function generatePDF() {
+// Convert image to base64 for PDF embedding
+function loadImageAsBase64(src: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return reject('No context');
+      ctx.drawImage(img, 0, 0);
+      resolve(canvas.toDataURL('image/png'));
+    };
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
+async function generatePDF() {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'letter' });
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
@@ -163,108 +183,166 @@ function generatePDF() {
 
   // Brand colors
   const CT1_RED = { r: 213, g: 10, b: 34 };
-  const CT1_DARK = { r: 15, g: 23, b: 42 };
+  const CT1_DARK = { r: 24, g: 24, b: 27 }; // zinc-900
+  const CT1_ZINC_800 = { r: 39, g: 39, b: 42 };
   const SLATE_700 = { r: 51, g: 65, b: 85 };
   const SLATE_400 = { r: 148, g: 163, b: 184 };
-  const SLATE_100 = { r: 241, g: 245, b: 249 };
+  const SLATE_200 = { r: 226, g: 232, b: 240 };
+  const SLATE_50 = { r: 248, g: 250, b: 252 };
   const WHITE = { r: 255, g: 255, b: 255 };
 
+  // Load logo
+  let logoBase64: string | null = null;
+  try {
+    logoBase64 = await loadImageAsBase64(ct1OnboardingLogo);
+  } catch {
+    console.warn('Could not load logo for PDF');
+  }
+
   const drawPageChrome = (pageNum: number) => {
-    // Top red accent bar
-    doc.setFillColor(CT1_RED.r, CT1_RED.g, CT1_RED.b);
-    doc.rect(0, 0, pageWidth, 4, 'F');
-
-    // Header area
+    // Top bar — zinc-900 with red accent stripe
     doc.setFillColor(CT1_DARK.r, CT1_DARK.g, CT1_DARK.b);
-    doc.rect(0, 4, pageWidth, 18, 'F');
+    doc.rect(0, 0, pageWidth, 22, 'F');
 
+    // Red accent line at bottom of header
+    doc.setFillColor(CT1_RED.r, CT1_RED.g, CT1_RED.b);
+    doc.rect(0, 22, pageWidth, 1.5, 'F');
+
+    // Logo in header
+    if (logoBase64) {
+      doc.addImage(logoBase64, 'PNG', margin - 2, 2.5, 17, 17);
+    }
+
+    // Header text
     doc.setTextColor(WHITE.r, WHITE.g, WHITE.b);
-    doc.setFontSize(11);
+    doc.setFontSize(13);
     doc.setFont('helvetica', 'bold');
-    doc.text('CT1', margin, 15);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
-    doc.text('  New Contractor Onboarding & Training', margin + 10, 15);
-
-    doc.setFontSize(8);
-    doc.text(`Page ${pageNum} of ${PAGES.length + 1}`, pageWidth - margin, 15, { align: 'right' });
-
-    // Footer
-    doc.setFillColor(CT1_DARK.r, CT1_DARK.g, CT1_DARK.b);
-    doc.rect(0, pageHeight - 16, pageWidth, 16, 'F');
-
-    // Footer red accent
-    doc.setFillColor(CT1_RED.r, CT1_RED.g, CT1_RED.b);
-    doc.rect(0, pageHeight - 16, pageWidth, 1.5, 'F');
-
-    doc.setTextColor(SLATE_400.r, SLATE_400.g, SLATE_400.b);
+    doc.text('MYCT1.COM', margin + 18, 10);
     doc.setFontSize(7);
-    doc.text('support@myct1.com  |  (855) CT1-HELP  |  www.myct1.com', pageWidth / 2, pageHeight - 8, { align: 'center' });
-    doc.setFontSize(6);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(SLATE_400.r, SLATE_400.g, SLATE_400.b);
+    doc.text('New Contractor Onboarding & Training Manual', margin + 18, 15);
+
+    // Page number in header
+    doc.setFontSize(8);
+    doc.setTextColor(SLATE_400.r, SLATE_400.g, SLATE_400.b);
+    doc.text(`${pageNum} / ${PAGES.length + 1}`, pageWidth - margin, 12, { align: 'right' });
+
+    // Footer bar
+    doc.setFillColor(CT1_DARK.r, CT1_DARK.g, CT1_DARK.b);
+    doc.rect(0, pageHeight - 18, pageWidth, 18, 'F');
+
+    // Red accent on footer top
+    doc.setFillColor(CT1_RED.r, CT1_RED.g, CT1_RED.b);
+    doc.rect(0, pageHeight - 18, pageWidth, 1, 'F');
+
+    // Footer content
+    doc.setTextColor(SLATE_400.r, SLATE_400.g, SLATE_400.b);
+    doc.setFontSize(7.5);
+    doc.setFont('helvetica', 'bold');
+    doc.text('CT1 CORPORATE SUPPORT', pageWidth / 2, pageHeight - 12, { align: 'center' });
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.text('support@myct1.com  ·  (855) CT1-HELP  ·  www.myct1.com', pageWidth / 2, pageHeight - 7.5, { align: 'center' });
+    doc.setFontSize(5.5);
     doc.setTextColor(100, 116, 139);
-    doc.text('CONFIDENTIAL — For authorized CT1 contractors only. © CT1 Technology Corp.', pageWidth / 2, pageHeight - 4, { align: 'center' });
+    doc.text('© CT1 Technology Corp. — Confidential. For authorized CT1 contractors only.', pageWidth / 2, pageHeight - 3.5, { align: 'center' });
   };
 
   // ═══════════════ COVER PAGE ═══════════════
-  // Full red background
-  doc.setFillColor(CT1_RED.r, CT1_RED.g, CT1_RED.b);
+  // Full dark background
+  doc.setFillColor(CT1_DARK.r, CT1_DARK.g, CT1_DARK.b);
   doc.rect(0, 0, pageWidth, pageHeight, 'F');
 
-  // Dark bottom section
-  doc.setFillColor(CT1_DARK.r, CT1_DARK.g, CT1_DARK.b);
-  doc.rect(0, pageHeight * 0.55, pageWidth, pageHeight * 0.45, 'F');
+  // Subtle diagonal red accent band
+  doc.setFillColor(CT1_RED.r, CT1_RED.g, CT1_RED.b);
+  doc.rect(0, 0, pageWidth, 5, 'F');
 
-  // Decorative diagonal
-  doc.setFillColor(CT1_DARK.r, CT1_DARK.g, CT1_DARK.b);
-  doc.triangle(0, pageHeight * 0.48, pageWidth, pageHeight * 0.55, pageWidth, pageHeight * 0.62, 'F');
+  // Bottom red accent
+  doc.setFillColor(CT1_RED.r, CT1_RED.g, CT1_RED.b);
+  doc.rect(0, pageHeight - 5, pageWidth, 5, 'F');
 
-  // CT1 title on red
+  // Logo centered
+  if (logoBase64) {
+    doc.addImage(logoBase64, 'PNG', pageWidth / 2 - 25, 35, 50, 50);
+  }
+
+  // Brand name
   doc.setTextColor(WHITE.r, WHITE.g, WHITE.b);
-  doc.setFontSize(52);
+  doc.setFontSize(28);
   doc.setFont('helvetica', 'bold');
-  doc.text('CT1', pageWidth / 2, 75, { align: 'center' });
+  doc.text('MYCT1.COM', pageWidth / 2, 102, { align: 'center' });
 
-  doc.setFontSize(14);
-  doc.setFont('helvetica', 'normal');
-  doc.text('T E C H N O L O G Y', pageWidth / 2, 88, { align: 'center' });
+  // Red line divider
+  doc.setDrawColor(CT1_RED.r, CT1_RED.g, CT1_RED.b);
+  doc.setLineWidth(1.2);
+  doc.line(pageWidth / 2 - 40, 110, pageWidth / 2 + 40, 110);
 
-  // Thin white line separator
-  doc.setDrawColor(WHITE.r, WHITE.g, WHITE.b);
-  doc.setLineWidth(0.5);
-  doc.line(pageWidth / 2 - 30, 96, pageWidth / 2 + 30, 96);
-
-  // Subtitle on dark section
+  // Main title
   doc.setTextColor(WHITE.r, WHITE.g, WHITE.b);
-  doc.setFontSize(22);
+  doc.setFontSize(24);
   doc.setFont('helvetica', 'bold');
-  doc.text('New Contractor', pageWidth / 2, pageHeight * 0.62, { align: 'center' });
-  doc.text('Onboarding & Training', pageWidth / 2, pageHeight * 0.62 + 10, { align: 'center' });
+  doc.text('NEW CONTRACTOR', pageWidth / 2, 128, { align: 'center' });
+  doc.text('ONBOARDING & TRAINING', pageWidth / 2, 138, { align: 'center' });
 
+  // Subtitle
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(SLATE_400.r, SLATE_400.g, SLATE_400.b);
-  doc.text('Your complete step-by-step guide to the CT1 Hub & CRM platform', pageWidth / 2, pageHeight * 0.62 + 24, { align: 'center' });
+  doc.text('Your complete step-by-step guide to the CT1 Hub & CRM platform', pageWidth / 2, 152, { align: 'center' });
 
-  // Table of contents on cover
-  doc.setTextColor(WHITE.r, WHITE.g, WHITE.b);
-  doc.setFontSize(8);
+  // Red horizontal rule
+  doc.setDrawColor(CT1_RED.r, CT1_RED.g, CT1_RED.b);
+  doc.setLineWidth(0.5);
+  doc.line(margin + 20, 162, pageWidth - margin - 20, 162);
+
+  // Table of Contents box
+  const tocY = 172;
+  doc.setFillColor(CT1_ZINC_800.r, CT1_ZINC_800.g, CT1_ZINC_800.b);
+  doc.roundedRect(margin + 15, tocY - 6, contentWidth - 30, PAGES.length * 8 + 18, 3, 3, 'F');
+
+  doc.setFontSize(9);
   doc.setFont('helvetica', 'bold');
-  doc.text('CONTENTS', margin + 10, pageHeight * 0.76);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8);
-  doc.setTextColor(SLATE_400.r, SLATE_400.g, SLATE_400.b);
+  doc.setTextColor(CT1_RED.r, CT1_RED.g, CT1_RED.b);
+  doc.text('TABLE OF CONTENTS', pageWidth / 2, tocY + 2, { align: 'center' });
+
+  doc.setFontSize(8.5);
   PAGES.forEach((p, i) => {
-    const tocY = pageHeight * 0.76 + 7 + i * 5.5;
-    doc.setTextColor(CT1_RED.r, CT1_RED.g, CT1_RED.b);
-    doc.text(`0${p.id}`, margin + 10, tocY);
+    const itemY = tocY + 12 + i * 8;
+    // Number badge
+    doc.setFillColor(CT1_RED.r, CT1_RED.g, CT1_RED.b);
+    doc.roundedRect(margin + 22, itemY - 4, 8, 6, 1.5, 1.5, 'F');
+    doc.setTextColor(WHITE.r, WHITE.g, WHITE.b);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7);
+    doc.text(`${p.id}`, margin + 26, itemY, { align: 'center' });
+
+    // Title
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(SLATE_200.r, SLATE_200.g, SLATE_200.b);
+    doc.text(p.title, margin + 34, itemY);
+
+    // Dots
+    doc.setTextColor(100, 116, 139);
+    doc.setFontSize(6);
+    const dotsX = margin + 34 + doc.getTextWidth(p.title) + 3;
+    const endX = pageWidth - margin - 30;
+    if (dotsX < endX) {
+      const dots = '·'.repeat(Math.floor((endX - dotsX) / 1.5));
+      doc.text(dots, dotsX, itemY);
+    }
+
+    // Page number
     doc.setTextColor(SLATE_400.r, SLATE_400.g, SLATE_400.b);
-    doc.text(p.title, margin + 20, tocY);
+    doc.setFontSize(8);
+    doc.text(`${p.id + 1}`, pageWidth - margin - 22, itemY, { align: 'right' });
   });
 
   // Cover footer
   doc.setFontSize(7);
   doc.setTextColor(100, 116, 139);
-  doc.text('support@myct1.com  |  (855) CT1-HELP  |  www.myct1.com', pageWidth / 2, pageHeight - 8, { align: 'center' });
+  doc.text('support@myct1.com  ·  (855) CT1-HELP  ·  www.myct1.com', pageWidth / 2, pageHeight - 12, { align: 'center' });
 
   // ═══════════════ CONTENT PAGES ═══════════════
   PAGES.forEach((page) => {
@@ -273,33 +351,38 @@ function generatePDF() {
 
     let y = 30;
 
-    // Section number + title bar
-    doc.setFillColor(SLATE_100.r, SLATE_100.g, SLATE_100.b);
-    doc.roundedRect(margin, y, contentWidth, 14, 2, 2, 'F');
+    // Section header card
+    doc.setFillColor(SLATE_50.r, SLATE_50.g, SLATE_50.b);
+    doc.roundedRect(margin, y, contentWidth, 16, 2, 2, 'F');
 
-    // Red accent on left of title bar
+    // Red left accent
     doc.setFillColor(CT1_RED.r, CT1_RED.g, CT1_RED.b);
-    doc.rect(margin, y, 3, 14, 'F');
+    doc.roundedRect(margin, y, 4, 16, 2, 0, 'F');
+    doc.rect(margin + 2, y, 2, 16, 'F');
 
-    doc.setFontSize(9);
+    // Section badge
+    doc.setFillColor(CT1_RED.r, CT1_RED.g, CT1_RED.b);
+    doc.roundedRect(margin + 8, y + 2, 20, 5.5, 1.5, 1.5, 'F');
+    doc.setFontSize(6.5);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(CT1_RED.r, CT1_RED.g, CT1_RED.b);
-    doc.text(`SECTION ${page.id}`, margin + 7, y + 5.5);
+    doc.setTextColor(WHITE.r, WHITE.g, WHITE.b);
+    doc.text(`SECTION ${page.id}`, margin + 18, y + 6, { align: 'center' });
 
-    doc.setFontSize(13);
+    // Section title
+    doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(CT1_DARK.r, CT1_DARK.g, CT1_DARK.b);
-    doc.text(page.content.heading, margin + 7, y + 11.5);
+    doc.text(page.content.heading, margin + 8, y + 13.5);
 
-    y += 20;
+    y += 22;
 
     // Red underline
     doc.setDrawColor(CT1_RED.r, CT1_RED.g, CT1_RED.b);
     doc.setLineWidth(0.8);
-    doc.line(margin, y, margin + 50, y);
+    doc.line(margin, y, margin + 55, y);
     y += 6;
 
-    const maxY = pageHeight - 22;
+    const maxY = pageHeight - 24;
 
     page.content.sections.forEach((section, sIdx) => {
       if (y > maxY - 20) {
@@ -308,33 +391,33 @@ function generatePDF() {
         y = 28;
       }
 
-      // Section subtitle with dot
+      // Section subtitle with red square bullet
       doc.setFillColor(CT1_RED.r, CT1_RED.g, CT1_RED.b);
-      doc.circle(margin + 1.5, y - 1, 1.5, 'F');
+      doc.roundedRect(margin, y - 2.5, 3, 3, 0.5, 0.5, 'F');
 
       doc.setFontSize(11);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(CT1_DARK.r, CT1_DARK.g, CT1_DARK.b);
       doc.text(section.title, margin + 6, y);
-      y += 5;
+      y += 2;
 
-      // Light separator line under subtitle
-      doc.setDrawColor(SLATE_400.r, SLATE_400.g, SLATE_400.b);
-      doc.setLineWidth(0.2);
-      doc.line(margin + 6, y - 1.5, margin + 90, y - 1.5);
+      // Subtle separator
+      doc.setDrawColor(SLATE_200.r, SLATE_200.g, SLATE_200.b);
+      doc.setLineWidth(0.3);
+      doc.line(margin + 6, y, margin + 100, y);
+      y += 4;
 
       doc.setFontSize(8.5);
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(SLATE_700.r, SLATE_700.g, SLATE_700.b);
 
-      const lines = doc.splitTextToSize(section.body, contentWidth - 6);
+      const lines = doc.splitTextToSize(section.body, contentWidth - 8);
       lines.forEach((line: string) => {
         if (y > maxY - 5) {
           doc.addPage();
           drawPageChrome(page.id + 1);
           y = 28;
         }
-        // Highlight numbered steps
         const trimmed = line.trim();
         if (/^\d+\./.test(trimmed)) {
           doc.setFont('helvetica', 'bold');
@@ -342,6 +425,9 @@ function generatePDF() {
         } else if (trimmed.startsWith('•')) {
           doc.setFont('helvetica', 'normal');
           doc.setTextColor(SLATE_700.r, SLATE_700.g, SLATE_700.b);
+        } else if (trimmed.startsWith('⚠️') || trimmed.startsWith('Tip:')) {
+          doc.setFont('helvetica', 'bolditalic');
+          doc.setTextColor(CT1_RED.r, CT1_RED.g, CT1_RED.b);
         } else {
           doc.setFont('helvetica', 'normal');
           doc.setTextColor(SLATE_700.r, SLATE_700.g, SLATE_700.b);
@@ -365,58 +451,77 @@ export function ContractorOnboarding() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <img src={ct1Logo} alt="CT1" className="h-10 w-10" />
-          <div>
-            <h1 className="text-2xl font-bold">New Contractor Onboarding & Training</h1>
-            <p className="text-sm text-muted-foreground">7-page setup guide for new CT1 contractors</p>
+      {/* Branded Header — mirrors website zinc-900 bar */}
+      <div className="bg-zinc-900 rounded-xl border border-zinc-800 shadow-lg shadow-black/20 p-5 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <img src={ct1OnboardingLogo} alt="CT1" className="h-14 w-14 sm:h-16 sm:w-16 drop-shadow-lg" />
+            <div>
+              <h1 className="text-xl sm:text-2xl font-bold text-white tracking-wide">
+                New Contractor Onboarding & Training
+              </h1>
+              <p className="text-sm text-zinc-400 mt-0.5">
+                7-page setup guide  ·  CT1 Hub & CRM Platform
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => generatePDF()}
+              className="border-zinc-600 text-zinc-200 hover:bg-zinc-800 hover:text-white"
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Download PDF
+            </Button>
+            <Button
+              onClick={() => {
+                generatePDF();
+                toast.info('PDF generated — attach to email to send to contractor');
+              }}
+              className="bg-primary hover:bg-primary/90"
+            >
+              <Send className="h-4 w-4 mr-2" />
+              Send to Contractor
+            </Button>
           </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={generatePDF}>
-            <Download className="h-4 w-4 mr-2" />
-            Download PDF
-          </Button>
-          <Button variant="default" onClick={() => {
-            generatePDF();
-            toast.info('PDF generated — attach to email to send to contractor');
-          }}>
-            <Send className="h-4 w-4 mr-2" />
-            Send to Contractor
-          </Button>
-        </div>
+        {/* Red accent bar at bottom */}
+        <div className="mt-4 h-1 w-full bg-gradient-to-r from-primary via-primary/80 to-transparent rounded-full" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Table of Contents */}
-        <Card className="lg:col-span-1">
+        {/* Table of Contents — dark sidebar style */}
+        <Card className="lg:col-span-1 bg-zinc-900 border-zinc-800 text-white">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-semibold flex items-center gap-2">
-              <FileText className="h-4 w-4" />
+            <CardTitle className="text-sm font-semibold flex items-center gap-2 text-zinc-300">
+              <FileText className="h-4 w-4 text-primary" />
               Table of Contents
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="space-y-0.5 px-2 pb-2">
+            <div className="space-y-0.5 px-2 pb-3">
               {PAGES.map((p, i) => {
                 const Icon = p.icon;
                 return (
                   <button
                     key={p.id}
                     onClick={() => setCurrentPage(i)}
-                    className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-left text-sm transition-colors ${
+                    className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-left text-sm transition-all ${
                       i === currentPage
-                        ? 'bg-primary text-primary-foreground'
-                        : 'hover:bg-accent text-muted-foreground hover:text-accent-foreground'
+                        ? 'bg-primary text-white shadow-md shadow-primary/30'
+                        : 'hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200'
                     }`}
                   >
                     <Icon className="h-4 w-4 flex-shrink-0" />
                     <span className="truncate">{p.title}</span>
-                    <Badge variant={i === currentPage ? 'secondary' : 'outline'} className="ml-auto text-[10px] px-1.5">
+                    <span className={`ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                      i === currentPage
+                        ? 'bg-white/20 text-white'
+                        : 'bg-zinc-800 text-zinc-500'
+                    }`}>
                       {p.id}
-                    </Badge>
+                    </span>
                   </button>
                 );
               })}
@@ -425,19 +530,21 @@ export function ContractorOnboarding() {
         </Card>
 
         {/* Page Content */}
-        <Card className="lg:col-span-3">
-          <CardHeader className="border-b">
+        <Card className="lg:col-span-3 border-border">
+          <CardHeader className="border-b bg-muted/30">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <div className="h-11 w-11 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
                   <PageIcon className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <CardTitle>{page.content.heading}</CardTitle>
-                  <p className="text-xs text-muted-foreground mt-0.5">Page {page.id} of {PAGES.length}</p>
+                  <CardTitle className="text-foreground">{page.content.heading}</CardTitle>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Section {page.id} of {PAGES.length}
+                  </p>
                 </div>
               </div>
-              <Badge variant="outline">{page.title}</Badge>
+              <Badge className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/15">{page.title}</Badge>
             </div>
           </CardHeader>
           <CardContent className="p-0">
@@ -445,8 +552,11 @@ export function ContractorOnboarding() {
               <div className="p-6 space-y-6">
                 {page.content.sections.map((section, idx) => (
                   <div key={idx}>
-                    <h3 className="text-lg font-semibold text-primary mb-2">{section.title}</h3>
-                    <div className="text-sm text-foreground whitespace-pre-line leading-relaxed">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                      <h3 className="text-lg font-semibold text-primary">{section.title}</h3>
+                    </div>
+                    <div className="text-sm text-foreground whitespace-pre-line leading-relaxed pl-4 border-l-2 border-primary/15">
                       {section.body}
                     </div>
                     {idx < page.content.sections.length - 1 && <Separator className="mt-6" />}
@@ -456,7 +566,7 @@ export function ContractorOnboarding() {
             </ScrollArea>
           </CardContent>
           {/* Navigation */}
-          <div className="border-t p-4 flex items-center justify-between">
+          <div className="border-t p-4 flex items-center justify-between bg-muted/20">
             <Button
               variant="outline"
               size="sm"
@@ -466,9 +576,17 @@ export function ContractorOnboarding() {
               <ChevronLeft className="h-4 w-4 mr-1" />
               Previous
             </Button>
-            <span className="text-xs text-muted-foreground">
-              {currentPage + 1} / {PAGES.length}
-            </span>
+            <div className="flex items-center gap-1.5">
+              {PAGES.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setCurrentPage(i)}
+                  className={`h-2 rounded-full transition-all ${
+                    i === currentPage ? 'w-6 bg-primary' : 'w-2 bg-muted-foreground/30 hover:bg-muted-foreground/50'
+                  }`}
+                />
+              ))}
+            </div>
             <Button
               variant="outline"
               size="sm"
@@ -482,14 +600,23 @@ export function ContractorOnboarding() {
         </Card>
       </div>
 
-      {/* Footer */}
-      <Card className="bg-muted/50">
-        <CardContent className="py-4 text-center text-xs text-muted-foreground space-y-1">
-          <p className="font-semibold">CT1 Corporate Support</p>
-          <p>📧 support@myct1.com  |  📞 (855) CT1-HELP  |  🌐 www.myct1.com</p>
-          <p>This document is also available in the Help Center accessible from any CT1 Hub or CRM page.</p>
-        </CardContent>
-      </Card>
+      {/* Footer — branded support bar */}
+      <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-4">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <img src={ct1Logo} alt="CT1" className="h-8 w-8" />
+            <div>
+              <p className="text-sm font-semibold text-white">CT1 Corporate Support</p>
+              <p className="text-xs text-zinc-400">
+                📧 support@myct1.com  ·  📞 (855) CT1-HELP  ·  🌐 www.myct1.com
+              </p>
+            </div>
+          </div>
+          <p className="text-xs text-zinc-500">
+            Also available in the Help Center on all CT1 Hub & CRM pages
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
