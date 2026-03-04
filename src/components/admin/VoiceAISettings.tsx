@@ -522,18 +522,83 @@ export const VoiceAISettings = ({ contractorId }: VoiceAISettingsProps) => {
           </div>
 
           <div className="space-y-2">
-            <Label>Assistant Prompt</Label>
+            <Label>Custom Qualification Instructions</Label>
             <Textarea
-              value={formData.custom_instructions || ''}
-              onChange={(e) => updateField('custom_instructions', e.target.value)}
-              placeholder="System instructions for the AI..."
-              rows={10}
-              className="font-mono text-sm"
+              value={formData.qualification_instructions || ''}
+              onChange={(e) => updateField('qualification_instructions', e.target.value)}
+              placeholder="Ask about project size, timeline, budget range, whether permits are needed..."
+              rows={4}
             />
             <p className="text-xs text-muted-foreground">
-              This prompt guides the AI assistant's behavior and responses
+              These instructions customize how the AI qualifies leads. All other prompt sections are auto-generated from the profile fields above.
             </p>
           </div>
+
+          <Collapsible>
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground">
+                <ChevronDown className="h-4 w-4" />
+                Preview Generated Prompt
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <div className="mt-2 p-4 bg-muted rounded-lg border">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <Zap className="h-4 w-4 text-primary" />
+                    <span className="text-xs font-medium text-muted-foreground">Auto-Generated System Prompt</span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      const prompt = generateVapiPrompt({
+                        business_name: formData.business_name,
+                        trade: formData.trade,
+                        service_description: formData.service_description,
+                        services_offered: formData.services_offered,
+                        services_not_offered: formData.services_not_offered,
+                        service_area: formData.service_area,
+                        business_hours: formData.business_hours,
+                        emergency_availability: formData.emergency_availability,
+                        allow_pricing: formData.allow_pricing,
+                        pricing_rules: formData.pricing_rules,
+                        calendar_email: formData.calendar_email,
+                        contractor_phone: formData.contractor_phone,
+                        qualification_instructions: formData.qualification_instructions,
+                      });
+                      updateField('custom_instructions', prompt);
+                      toast.info('Prompt regenerated from current fields');
+                    }}
+                    className="gap-1"
+                  >
+                    <RefreshCw className="h-3 w-3" />
+                    Regenerate
+                  </Button>
+                </div>
+                <pre className="whitespace-pre-wrap text-xs font-mono text-foreground/80 max-h-96 overflow-y-auto">
+                  {formData.custom_instructions || generateVapiPrompt({
+                    business_name: formData.business_name,
+                    trade: formData.trade,
+                    service_description: formData.service_description,
+                    services_offered: formData.services_offered,
+                    services_not_offered: formData.services_not_offered,
+                    service_area: formData.service_area,
+                    business_hours: formData.business_hours,
+                    emergency_availability: formData.emergency_availability,
+                    allow_pricing: formData.allow_pricing,
+                    pricing_rules: formData.pricing_rules,
+                    calendar_email: formData.calendar_email,
+                    contractor_phone: formData.contractor_phone,
+                    qualification_instructions: formData.qualification_instructions,
+                  })}
+                </pre>
+                <p className="text-xs text-muted-foreground mt-2">
+                  First message: <code>"{generateFirstMessage(formData.business_name)}"</code>
+                </p>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
 
           <div className="space-y-2">
             <Label>Confirmation Message Template</Label>

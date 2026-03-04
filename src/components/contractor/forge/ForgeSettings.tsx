@@ -329,14 +329,50 @@ export function ForgeSettings({ onBack }: { onBack: () => void }) {
             />
           </div>
           <div className="space-y-1.5">
-            <Label>Custom Instructions</Label>
+            <Label>Custom Qualification Instructions</Label>
             <Textarea
-              value={profile.custom_instructions || ""}
-              onChange={e => update("custom_instructions", e.target.value)}
+              value={profile.qualification_instructions || ""}
+              onChange={e => update("qualification_instructions", e.target.value)}
               rows={3}
-              placeholder="Special instructions for the AI (e.g., ask about project size, mention promotions)..."
+              placeholder="Special instructions for lead qualification (e.g., ask about project size, mention promotions)..."
             />
+            <p className="text-xs text-muted-foreground">
+              These instructions customize how Sarah qualifies leads. All other prompt sections are auto-generated from your profile.
+            </p>
           </div>
+
+          <Collapsible>
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground">
+                <ChevronDown className="h-4 w-4" />
+                Preview Generated Prompt
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <div className="mt-2 p-4 bg-muted rounded-lg border">
+                <div className="flex items-center gap-2 mb-2">
+                  <Zap className="h-4 w-4 text-primary" />
+                  <span className="text-xs font-medium text-muted-foreground">Auto-Generated System Prompt</span>
+                </div>
+                <pre className="whitespace-pre-wrap text-xs font-mono text-foreground/80 max-h-96 overflow-y-auto">
+                  {profile.custom_instructions || generateVapiPrompt({
+                    business_name: profile.business_name,
+                    trade: profile.trade,
+                    service_description: profile.service_description,
+                    services_offered: profile.services_offered,
+                    service_area: profile.service_area,
+                    business_hours: profile.business_hours,
+                    calendar_email: profile.calendar_email,
+                    contractor_phone: profile.contractor_phone,
+                    qualification_instructions: profile.qualification_instructions,
+                  })}
+                </pre>
+                <p className="text-xs text-muted-foreground mt-2">
+                  First message: <code>"{generateFirstMessage(profile.business_name)}"</code>
+                </p>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
         </CardContent>
       </Card>
 
