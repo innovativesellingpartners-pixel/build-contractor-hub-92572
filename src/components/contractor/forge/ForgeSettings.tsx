@@ -104,6 +104,7 @@ export function ForgeSettings({ onBack }: { onBack: () => void }) {
         service_description: data.service_description,
         custom_greeting: data.custom_greeting,
         custom_instructions: data.custom_instructions,
+        qualification_instructions: (data as any).qualification_instructions || null,
         business_hours: data.business_hours,
         ai_enabled: data.ai_enabled,
         inbound_call_mode: data.inbound_call_mode,
