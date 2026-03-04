@@ -176,7 +176,25 @@ export const VoiceAISettings = ({ contractorId }: VoiceAISettingsProps) => {
 
   const handleSave = () => {
     setIsSaving(true);
-    updateProfile.mutate(formData);
+    // Generate structured prompt before saving
+    const generatedPrompt = generateVapiPrompt({
+      business_name: formData.business_name,
+      trade: formData.trade,
+      service_description: formData.service_description,
+      services_offered: formData.services_offered,
+      services_not_offered: formData.services_not_offered,
+      service_area: formData.service_area,
+      business_hours: formData.business_hours,
+      emergency_availability: formData.emergency_availability,
+      allow_pricing: formData.allow_pricing,
+      pricing_rules: formData.pricing_rules,
+      calendar_email: formData.calendar_email,
+      contractor_phone: formData.contractor_phone,
+      qualification_instructions: formData.qualification_instructions,
+    });
+    const updatedFormData = { ...formData, custom_instructions: generatedPrompt };
+    setFormData(updatedFormData);
+    updateProfile.mutate(updatedFormData);
   };
 
   const handleCancel = () => {
