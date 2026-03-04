@@ -247,6 +247,7 @@ const App = () => (
               <Route path="customers" element={<AdminCustomers />} />
               <Route path="gc-contacts" element={<AdminGCContacts />} />
               <Route path="archive" element={<ArchiveManagement />} />
+              <Route path="onboarding" element={<ContractorOnboarding />} />
               <Route path="support" element={<SupportTickets />} />
               <Route path="marketplace" element={<MarketplaceManagement />} />
               <Route path="help" element={<HelpAdmin />} />
