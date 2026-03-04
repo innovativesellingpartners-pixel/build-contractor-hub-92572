@@ -185,7 +185,7 @@ async function generatePDF() {
   const CT1_RED = { r: 213, g: 10, b: 34 };
   const CT1_DARK = { r: 24, g: 24, b: 27 }; // zinc-900
   const CT1_ZINC_800 = { r: 39, g: 39, b: 42 };
-  const SLATE_700 = { r: 51, g: 65, b: 85 };
+  const SLATE_700 = { r: 0, g: 0, b: 0 };
   const SLATE_400 = { r: 148, g: 163, b: 184 };
   const SLATE_200 = { r: 226, g: 232, b: 240 };
   const SLATE_50 = { r: 248, g: 250, b: 252 };
