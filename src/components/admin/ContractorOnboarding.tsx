@@ -20,7 +20,7 @@ const PAGES = [
       sections: [
         {
           title: 'Getting Started',
-          body: `Welcome to CT1 — your all-in-one contractor management platform. This guide will walk you through setting up your account and getting the most out of CT1 Hub & CRM.\n\nOnce your account has been provisioned by your CT1 administrator, you will receive an email with login credentials. Follow these steps:\n\n1. Open the email and click the login link\n2. Enter your temporary credentials\n3. You will be prompted to set a new password\n4. Complete your contractor profile (business name, phone, address, license #)\n5. Upload your company logo under Settings → Company Profile\n6. Review and accept the Terms of Service`,
+          body: `Welcome to CT1 - your all-in-one contractor management platform. This guide will walk you through setting up your account and getting the most out of CT1 Hub & CRM.\n\nOnce your account has been provisioned by your CT1 administrator, you will receive an email with login credentials. Follow these steps:\n\n1. Open the email and click the login link\n2. Enter your temporary credentials\n3. You will be prompted to set a new password\n4. Complete your contractor profile (business name, phone, address, license #)\n5. Upload your company logo under Settings → Company Profile\n6. Review and accept the Terms of Service`,
         },
         {
           title: 'Dashboard Overview',
