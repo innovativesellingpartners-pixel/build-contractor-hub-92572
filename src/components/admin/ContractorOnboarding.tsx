@@ -148,7 +148,7 @@ const PAGES = [
         },
         {
           title: 'Need Help?',
-          body: `CT1 Support is available to assist you:\n\n📧 Email: support@myct1.com\n📞 Phone: (855) CT1-HELP\n💬 In-App: Use the Help Center or Pocket Agent chatbot\n🌐 Web: help.myct1.com\n\nAccess the Help Center anytime from the dashboard sidebar for articles, tutorials, and FAQs.`,
+          body: `CT1 Support is available to assist you:\n\n📧 Email: support@myct1.com\n💬 In-App: Use the Help Center or Pocket Agent chatbot\n🌐 Web: help.myct1.com\n\nAccess the Help Center anytime from the dashboard sidebar for articles, tutorials, and FAQs.`,
         },
       ],
     },
