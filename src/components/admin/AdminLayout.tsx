@@ -44,7 +44,7 @@ export const AdminLayout = () => {
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="left" className="w-64 p-0">
+                <SheetContent side="left" className="w-64 p-0 overflow-y-auto">
                   <AdminSidebar onNavigate={() => setMobileMenuOpen(false)} />
                 </SheetContent>
               </Sheet>
