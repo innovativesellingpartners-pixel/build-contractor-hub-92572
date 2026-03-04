@@ -200,7 +200,7 @@ async function generatePDF() {
   }
 
   const drawPageChrome = (pageNum: number) => {
-    // Top bar — zinc-900 with red accent stripe
+    // Top bar
     doc.setFillColor(CT1_DARK.r, CT1_DARK.g, CT1_DARK.b);
     doc.rect(0, 0, pageWidth, 22, 'F');
 
@@ -243,10 +243,10 @@ async function generatePDF() {
     doc.text('CT1 CORPORATE SUPPORT', pageWidth / 2, pageHeight - 12, { align: 'center' });
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7);
-    doc.text('support@myct1.com  ·  www.myct1.com', pageWidth / 2, pageHeight - 7.5, { align: 'center' });
+    doc.text('support@myct1.com  |  www.myct1.com', pageWidth / 2, pageHeight - 7.5, { align: 'center' });
     doc.setFontSize(5.5);
     doc.setTextColor(100, 116, 139);
-    doc.text('© CT1 Technology Corp. Confidential - For authorized CT1 contractors only.', pageWidth / 2, pageHeight - 3.5, { align: 'center' });
+    doc.text('CT1 Technology Corp. Confidential - For authorized CT1 contractors only.', pageWidth / 2, pageHeight - 3.5, { align: 'center' });
   };
 
   // ═══════════════ COVER PAGE ═══════════════
