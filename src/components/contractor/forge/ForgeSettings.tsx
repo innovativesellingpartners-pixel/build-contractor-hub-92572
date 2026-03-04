@@ -52,6 +52,7 @@ const defaultProfile: AIProfile = {
   service_description: null,
   custom_greeting: null,
   custom_instructions: null,
+  qualification_instructions: null,
   business_hours: null,
   ai_enabled: false,
   inbound_call_mode: "ai_only",
