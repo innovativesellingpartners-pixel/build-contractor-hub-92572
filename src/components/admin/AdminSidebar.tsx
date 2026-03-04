@@ -47,7 +47,7 @@ export const AdminSidebar = ({ onNavigate }: AdminSidebarProps) => {
           <span className="font-semibold text-sm">Admin Portal</span>
         </div>
       </div>
-      <nav className="p-4 space-y-2">
+      <nav className="flex-1 p-4 space-y-2 overflow-y-auto overscroll-contain -webkit-overflow-scrolling-touch">
         {navItems.map((item) => (
           <NavLink
             key={item.to}
