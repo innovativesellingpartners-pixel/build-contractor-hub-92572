@@ -256,7 +256,32 @@ export const VoiceAISettings = ({ contractorId }: VoiceAISettingsProps) => {
             </div>
             <Switch
               checked={formData.ai_enabled}
-              onCheckedChange={(checked) => updateField('ai_enabled', checked)}
+              onCheckedChange={async (checked) => {
+                updateField('ai_enabled', checked);
+                if (checked) {
+                  // Trigger full Forge deployment for free when admin enables
+                  try {
+                    toast.loading('Deploying Voice AI...');
+                    const { error } = await supabase.functions.invoke('voice-ai-activate', {
+                      body: { 
+                        contractor_id: contractorId, 
+                        activated_by: 'admin',
+                      },
+                    });
+                    toast.dismiss();
+                    if (error) {
+                      console.error('Forge deploy error:', error);
+                      toast.error('Voice AI enabled but deployment failed. Save settings to retry.');
+                    } else {
+                      toast.success('Voice AI deployed successfully for this contractor');
+                    }
+                  } catch (err) {
+                    toast.dismiss();
+                    console.error('Forge deploy error:', err);
+                    toast.warning('Voice AI enabled but deployment may not have completed');
+                  }
+                }
+              }}
             />
           </div>
 
