@@ -27,6 +27,7 @@ const navItems = [
   { to: '/admin/customers', icon: UserCheck, label: 'Customers' },
   { to: '/admin/gc-contacts', icon: Building2, label: 'GC Contacts' },
   { to: '/admin/archive', icon: Archive, label: 'Archive' },
+  { to: '/admin/onboarding', icon: GraduationCap, label: 'Onboarding' },
   { to: '/admin/support', icon: LifeBuoy, label: 'Support Tickets' },
   { to: '/admin/marketplace', icon: ShoppingCart, label: 'Marketplace' },
   { to: '/admin/help', icon: HelpCircle, label: 'Help Admin' },
