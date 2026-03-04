@@ -146,9 +146,9 @@ const PAGES = [
           title: 'Financial Data & Accounting',
           body: `The Accounting section provides a complete financial picture.\n\n• Track income, expenses, and profit in real-time\n• View connected bank transactions\n• Categorize expenses by job or category\n• Monitor payment collections vs. outstanding balances\n• QuickBooks sync ensures your books stay up to date\n\nUse the Financial Connections dropdown to check your Finix merchant status and bank account links.`,
         },
-        {
+         {
           title: 'Need Help?',
-          body: `CT1 Support is available to assist you:\n\n📧 Email: support@myct1.com\n💬 In-App: Use the Help Center or Pocket Agent chatbot\n🌐 Web: help.myct1.com\n\nAccess the Help Center anytime from the dashboard sidebar for articles, tutorials, and FAQs.`,
+          body: `CT1 Support is available to assist you:\n\nEmail: support@myct1.com\nIn-App: Use the Help Center or Pocket Agent chatbot\nWeb: help.myct1.com\n\nAccess the Help Center anytime from the dashboard sidebar for articles, tutorials, and FAQs.`,
         },
       ],
     },
