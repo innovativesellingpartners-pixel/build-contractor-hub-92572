@@ -148,7 +148,7 @@ const PAGES = [
         },
         {
           title: 'Need Help?',
-          body: `CT1 Support is available to assist you:\n\n📧 Email: support@myct1.com\n📞 Phone: (855) CT1-HELP\n💬 In-App: Use the Help Center or Pocket Agent chatbot\n🌐 Web: help.myct1.com\n\nAccess the Help Center anytime from the dashboard sidebar for articles, tutorials, and FAQs.`,
+          body: `CT1 Support is available to assist you:\n\n📧 Email: support@myct1.com\n💬 In-App: Use the Help Center or Pocket Agent chatbot\n🌐 Web: help.myct1.com\n\nAccess the Help Center anytime from the dashboard sidebar for articles, tutorials, and FAQs.`,
         },
       ],
     },
@@ -243,7 +243,7 @@ async function generatePDF() {
     doc.text('CT1 CORPORATE SUPPORT', pageWidth / 2, pageHeight - 12, { align: 'center' });
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7);
-    doc.text('support@myct1.com  ·  (855) CT1-HELP  ·  www.myct1.com', pageWidth / 2, pageHeight - 7.5, { align: 'center' });
+    doc.text('support@myct1.com  ·  www.myct1.com', pageWidth / 2, pageHeight - 7.5, { align: 'center' });
     doc.setFontSize(5.5);
     doc.setTextColor(100, 116, 139);
     doc.text('© CT1 Technology Corp. — Confidential. For authorized CT1 contractors only.', pageWidth / 2, pageHeight - 3.5, { align: 'center' });
@@ -342,7 +342,7 @@ async function generatePDF() {
   // Cover footer
   doc.setFontSize(7);
   doc.setTextColor(100, 116, 139);
-  doc.text('support@myct1.com  ·  (855) CT1-HELP  ·  www.myct1.com', pageWidth / 2, pageHeight - 12, { align: 'center' });
+  doc.text('support@myct1.com  ·  www.myct1.com', pageWidth / 2, pageHeight - 12, { align: 'center' });
 
   // ═══════════════ CONTENT PAGES ═══════════════
   PAGES.forEach((page) => {
@@ -608,7 +608,7 @@ export function ContractorOnboarding() {
             <div>
               <p className="text-sm font-semibold text-white">CT1 Corporate Support</p>
               <p className="text-xs text-zinc-400">
-                📧 support@myct1.com  ·  📞 (855) CT1-HELP  ·  🌐 www.myct1.com
+                📧 support@myct1.com  ·  🌐 www.myct1.com
               </p>
             </div>
           </div>
