@@ -78,7 +78,7 @@ const PAGES = [
     title: 'Voice AI (Coming Soon)',
     icon: Phone,
     content: {
-      heading: 'Voice AI — Intelligent Call Management',
+      heading: 'Voice AI - Intelligent Call Management',
       sections: [
         {
           title: 'Overview',
