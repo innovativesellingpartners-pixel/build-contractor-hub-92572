@@ -80,9 +80,9 @@ const PAGES = [
     content: {
       heading: 'Voice AI - Intelligent Call Management',
       sections: [
-        {
+         {
           title: 'Overview',
-          body: `CT1 Voice AI is an intelligent call answering and routing system designed to ensure you never miss a lead.\n\n⚠️ This feature is currently ON HOLD and will be available in a future release.\n\nWhen available, Voice AI will provide:\n\n• 24/7 automated call answering with AI\n• Lead capture from incoming calls\n• Intelligent call routing to your phone\n• AI-generated call summaries and transcriptions\n• Automatic booking of appointments\n• Custom greeting and business-hours configuration`,
+          body: `CT1 Voice AI is an intelligent call answering and routing system designed to ensure you never miss a lead.\n\nNOTE: This feature is currently ON HOLD and will be available in a future release.\n\nWhen available, Voice AI will provide:\n\n• 24/7 automated call answering with AI\n• Lead capture from incoming calls\n• Intelligent call routing to your phone\n• AI-generated call summaries and transcriptions\n• Automatic booking of appointments\n• Custom greeting and business-hours configuration`,
         },
         {
           title: 'How It Will Work',
