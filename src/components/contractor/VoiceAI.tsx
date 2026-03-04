@@ -42,6 +42,29 @@ export function VoiceAI() {
     }
   }, [user?.id]);
 
+  const handlePostPaymentActivation = async () => {
+    if (!user?.id) return;
+    toast.loading("Activating Voice AI...");
+    try {
+      const { error } = await supabase.functions.invoke("voice-ai-activate", {
+        body: { contractor_id: user.id, activated_by: "stripe_checkout" },
+      });
+      toast.dismiss();
+      if (error) {
+        toast.error("Activation failed. Please contact support.");
+        console.error("Voice AI activation error:", error);
+      } else {
+        toast.success("Voice AI activated! Your AI receptionist is being deployed.");
+        setIsActive(true);
+        checkForgeStatus();
+      }
+    } catch (err) {
+      toast.dismiss();
+      toast.error("Activation failed. Please contact support.");
+      console.error("Voice AI activation error:", err);
+    }
+  };
+
   const checkForgeStatus = async () => {
     if (!user?.id) return;
 
