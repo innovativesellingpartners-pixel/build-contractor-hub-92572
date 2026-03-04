@@ -80,9 +80,9 @@ const PAGES = [
     content: {
       heading: 'Voice AI - Intelligent Call Management',
       sections: [
-        {
+         {
           title: 'Overview',
-          body: `CT1 Voice AI is an intelligent call answering and routing system designed to ensure you never miss a lead.\n\n⚠️ This feature is currently ON HOLD and will be available in a future release.\n\nWhen available, Voice AI will provide:\n\n• 24/7 automated call answering with AI\n• Lead capture from incoming calls\n• Intelligent call routing to your phone\n• AI-generated call summaries and transcriptions\n• Automatic booking of appointments\n• Custom greeting and business-hours configuration`,
+          body: `CT1 Voice AI is an intelligent call answering and routing system designed to ensure you never miss a lead.\n\nNOTE: This feature is currently ON HOLD and will be available in a future release.\n\nWhen available, Voice AI will provide:\n\n• 24/7 automated call answering with AI\n• Lead capture from incoming calls\n• Intelligent call routing to your phone\n• AI-generated call summaries and transcriptions\n• Automatic booking of appointments\n• Custom greeting and business-hours configuration`,
         },
         {
           title: 'How It Will Work',
@@ -146,9 +146,9 @@ const PAGES = [
           title: 'Financial Data & Accounting',
           body: `The Accounting section provides a complete financial picture.\n\n• Track income, expenses, and profit in real-time\n• View connected bank transactions\n• Categorize expenses by job or category\n• Monitor payment collections vs. outstanding balances\n• QuickBooks sync ensures your books stay up to date\n\nUse the Financial Connections dropdown to check your Finix merchant status and bank account links.`,
         },
-        {
+         {
           title: 'Need Help?',
-          body: `CT1 Support is available to assist you:\n\n📧 Email: support@myct1.com\n💬 In-App: Use the Help Center or Pocket Agent chatbot\n🌐 Web: help.myct1.com\n\nAccess the Help Center anytime from the dashboard sidebar for articles, tutorials, and FAQs.`,
+          body: `CT1 Support is available to assist you:\n\nEmail: support@myct1.com\nIn-App: Use the Help Center or Pocket Agent chatbot\nWeb: help.myct1.com\n\nAccess the Help Center anytime from the dashboard sidebar for articles, tutorials, and FAQs.`,
         },
       ],
     },
@@ -200,7 +200,7 @@ async function generatePDF() {
   }
 
   const drawPageChrome = (pageNum: number) => {
-    // Top bar — zinc-900 with red accent stripe
+    // Top bar
     doc.setFillColor(CT1_DARK.r, CT1_DARK.g, CT1_DARK.b);
     doc.rect(0, 0, pageWidth, 22, 'F');
 
@@ -243,10 +243,10 @@ async function generatePDF() {
     doc.text('CT1 CORPORATE SUPPORT', pageWidth / 2, pageHeight - 12, { align: 'center' });
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7);
-    doc.text('support@myct1.com  ·  www.myct1.com', pageWidth / 2, pageHeight - 7.5, { align: 'center' });
+    doc.text('support@myct1.com  |  www.myct1.com', pageWidth / 2, pageHeight - 7.5, { align: 'center' });
     doc.setFontSize(5.5);
     doc.setTextColor(100, 116, 139);
-    doc.text('© CT1 Technology Corp. Confidential - For authorized CT1 contractors only.', pageWidth / 2, pageHeight - 3.5, { align: 'center' });
+    doc.text('CT1 Technology Corp. Confidential - For authorized CT1 contractors only.', pageWidth / 2, pageHeight - 3.5, { align: 'center' });
   };
 
   // ═══════════════ COVER PAGE ═══════════════
@@ -323,15 +323,16 @@ async function generatePDF() {
     doc.setTextColor(SLATE_200.r, SLATE_200.g, SLATE_200.b);
     doc.text(p.title, margin + 34, itemY);
 
-    // Dots
-    doc.setTextColor(100, 116, 139);
-    doc.setFontSize(6);
-    const dotsX = margin + 34 + doc.getTextWidth(p.title) + 3;
-    const endX = pageWidth - margin - 30;
-    if (dotsX < endX) {
-      const dots = '·'.repeat(Math.floor((endX - dotsX) / 1.5));
-      doc.text(dots, dotsX, itemY);
+    // Dot leader line
+    doc.setDrawColor(100, 116, 139);
+    doc.setLineWidth(0.2);
+    doc.setLineDashPattern([0.5, 1.5], 0);
+    const lineStartX = margin + 34 + doc.getTextWidth(p.title) + 3;
+    const lineEndX = pageWidth - margin - 30;
+    if (lineStartX < lineEndX) {
+      doc.line(lineStartX, itemY - 1, lineEndX, itemY - 1);
     }
+    doc.setLineDashPattern([], 0);
 
     // Page number
     doc.setTextColor(SLATE_400.r, SLATE_400.g, SLATE_400.b);
@@ -342,7 +343,7 @@ async function generatePDF() {
   // Cover footer
   doc.setFontSize(7);
   doc.setTextColor(100, 116, 139);
-  doc.text('support@myct1.com  ·  www.myct1.com', pageWidth / 2, pageHeight - 12, { align: 'center' });
+  doc.text('support@myct1.com  |  www.myct1.com', pageWidth / 2, pageHeight - 12, { align: 'center' });
 
   // ═══════════════ CONTENT PAGES ═══════════════
   PAGES.forEach((page) => {
@@ -411,7 +412,11 @@ async function generatePDF() {
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(SLATE_700.r, SLATE_700.g, SLATE_700.b);
 
-      const lines = doc.splitTextToSize(section.body, contentWidth - 8);
+      const textIndent = margin + 8;
+      const bulletIndent = margin + 12;
+      const bodyWidth = contentWidth - 14;
+
+      const lines = doc.splitTextToSize(section.body, bodyWidth);
       lines.forEach((line: string) => {
         if (y > maxY - 5) {
           doc.addPage();
@@ -419,24 +424,34 @@ async function generatePDF() {
           y = 28;
         }
         const trimmed = line.trim();
+        // Replace any remaining special chars that Helvetica can't render
+        const cleanLine = line.replace(/[·]/g, '-').replace(/[⚠️📧💬🌐©]/g, '');
+
         if (/^\d+\./.test(trimmed)) {
+          // Numbered steps - bold with slight indent
           doc.setFont('helvetica', 'bold');
           doc.setTextColor(CT1_DARK.r, CT1_DARK.g, CT1_DARK.b);
+          doc.text(cleanLine, bulletIndent, y);
         } else if (trimmed.startsWith('•')) {
+          // Bullet points - indented
           doc.setFont('helvetica', 'normal');
           doc.setTextColor(SLATE_700.r, SLATE_700.g, SLATE_700.b);
-        } else if (trimmed.startsWith('⚠️') || trimmed.startsWith('Tip:')) {
+          // Replace bullet with a dash for clean rendering
+          doc.text(cleanLine.replace(/•/g, '-'), bulletIndent, y);
+        } else if (trimmed.startsWith('NOTE:') || trimmed.startsWith('Tip:')) {
+          // Callout text
           doc.setFont('helvetica', 'bolditalic');
           doc.setTextColor(CT1_RED.r, CT1_RED.g, CT1_RED.b);
+          doc.text(cleanLine, textIndent, y);
         } else {
           doc.setFont('helvetica', 'normal');
           doc.setTextColor(SLATE_700.r, SLATE_700.g, SLATE_700.b);
+          doc.text(cleanLine, textIndent, y);
         }
-        doc.text(line, margin + 6, y);
-        y += 3.8;
+        y += 4.2;
       });
 
-      y += sIdx < page.content.sections.length - 1 ? 6 : 3;
+      y += sIdx < page.content.sections.length - 1 ? 8 : 4;
     });
   });
 
