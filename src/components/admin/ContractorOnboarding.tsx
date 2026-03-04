@@ -477,7 +477,7 @@ export function ContractorOnboarding() {
             <Button
               onClick={() => {
                 generatePDF();
-                toast.info('PDF generated — attach to email to send to contractor');
+                toast.info('PDF generated - attach to email to send to contractor');
               }}
               className="bg-primary hover:bg-primary/90"
             >
