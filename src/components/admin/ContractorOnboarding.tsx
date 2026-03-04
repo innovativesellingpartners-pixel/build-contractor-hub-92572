@@ -321,7 +321,7 @@ export function ContractorOnboarding() {
                 {page.content.sections.map((section, idx) => (
                   <div key={idx}>
                     <h3 className="text-lg font-semibold text-primary mb-2">{section.title}</h3>
-                    <div className="text-sm text-muted-foreground whitespace-pre-line leading-relaxed">
+                    <div className="text-sm text-foreground whitespace-pre-line leading-relaxed">
                       {section.body}
                     </div>
                     {idx < page.content.sections.length - 1 && <Separator className="mt-6" />}
