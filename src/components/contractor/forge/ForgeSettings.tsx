@@ -138,6 +138,19 @@ export function ForgeSettings({ onBack }: { onBack: () => void }) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
+    // Generate structured prompt from profile fields
+    const generatedPrompt = generateVapiPrompt({
+      business_name: profile.business_name,
+      trade: profile.trade,
+      service_description: profile.service_description,
+      services_offered: profile.services_offered,
+      service_area: profile.service_area,
+      business_hours: profile.business_hours,
+      calendar_email: profile.calendar_email,
+      contractor_phone: profile.contractor_phone,
+      qualification_instructions: profile.qualification_instructions,
+    });
+
     const { error } = await supabase
       .from("contractor_ai_profiles")
       .upsert({
@@ -148,7 +161,7 @@ export function ForgeSettings({ onBack }: { onBack: () => void }) {
         trade: profile.trade,
         service_description: profile.service_description,
         custom_greeting: profile.custom_greeting,
-        custom_instructions: profile.custom_instructions,
+        custom_instructions: generatedPrompt,
         business_hours: profile.business_hours,
         ai_enabled: profile.ai_enabled,
         inbound_call_mode: profile.inbound_call_mode,
@@ -157,13 +170,32 @@ export function ForgeSettings({ onBack }: { onBack: () => void }) {
         default_meeting_length: profile.default_meeting_length,
         services_offered: profile.services_offered,
         service_area: profile.service_area,
-      }, { onConflict: "contractor_id" });
+      } as any, { onConflict: "contractor_id" });
 
     setSaving(false);
     if (error) {
       toast.error("Failed to save settings");
     } else {
       toast.success("Settings saved");
+      setProfile(prev => ({ ...prev, custom_instructions: generatedPrompt }));
+      
+      // Trigger Forge sync
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          const { error: syncError } = await supabase.functions.invoke("forge-prompt-sync", {
+            body: { contractor_id: user.id },
+          });
+          if (syncError) {
+            console.error("Forge sync error:", syncError);
+            toast.warning("Settings saved but Forge sync failed");
+          } else {
+            toast.success("Prompt synced to Forge");
+          }
+        }
+      } catch (syncErr) {
+        console.error("Forge sync error:", syncErr);
+      }
     }
   };
 
