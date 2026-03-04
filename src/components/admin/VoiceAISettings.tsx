@@ -10,6 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Separator } from '@/components/ui/separator';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ChevronDown, RefreshCw, Zap } from 'lucide-react';
+import { generateVapiPrompt, generateFirstMessage } from '@/lib/generateVapiPrompt';
 
 interface VoiceAISettingsProps {
   contractorId: string;
