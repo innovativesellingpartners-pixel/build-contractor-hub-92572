@@ -6,9 +6,11 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Save, Calendar, Clock, Phone, Globe, AlertTriangle, PhoneCall } from "lucide-react";
+import { ArrowLeft, Save, Calendar, Clock, Phone, Globe, AlertTriangle, PhoneCall, ChevronDown, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { generateVapiPrompt, generateFirstMessage } from "@/lib/generateVapiPrompt";
 import { useUserTier } from "@/hooks/useUserTier";
 import {
   AlertDialog,
@@ -29,6 +31,7 @@ interface AIProfile {
   service_description: string | null;
   custom_greeting: string | null;
   custom_instructions: string | null;
+  qualification_instructions: string | null;
   business_hours: any;
   ai_enabled: boolean | null;
   inbound_call_mode: string | null;
@@ -49,6 +52,7 @@ const defaultProfile: AIProfile = {
   service_description: null,
   custom_greeting: null,
   custom_instructions: null,
+  qualification_instructions: null,
   business_hours: null,
   ai_enabled: false,
   inbound_call_mode: "ai_only",
@@ -100,6 +104,7 @@ export function ForgeSettings({ onBack }: { onBack: () => void }) {
         service_description: data.service_description,
         custom_greeting: data.custom_greeting,
         custom_instructions: data.custom_instructions,
+        qualification_instructions: (data as any).qualification_instructions || null,
         business_hours: data.business_hours,
         ai_enabled: data.ai_enabled,
         inbound_call_mode: data.inbound_call_mode,
@@ -133,6 +138,19 @@ export function ForgeSettings({ onBack }: { onBack: () => void }) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
+    // Generate structured prompt from profile fields
+    const generatedPrompt = generateVapiPrompt({
+      business_name: profile.business_name,
+      trade: profile.trade,
+      service_description: profile.service_description,
+      services_offered: profile.services_offered,
+      service_area: profile.service_area,
+      business_hours: profile.business_hours,
+      calendar_email: profile.calendar_email,
+      contractor_phone: profile.contractor_phone,
+      qualification_instructions: profile.qualification_instructions,
+    });
+
     const { error } = await supabase
       .from("contractor_ai_profiles")
       .upsert({
@@ -143,7 +161,7 @@ export function ForgeSettings({ onBack }: { onBack: () => void }) {
         trade: profile.trade,
         service_description: profile.service_description,
         custom_greeting: profile.custom_greeting,
-        custom_instructions: profile.custom_instructions,
+        custom_instructions: generatedPrompt,
         business_hours: profile.business_hours,
         ai_enabled: profile.ai_enabled,
         inbound_call_mode: profile.inbound_call_mode,
@@ -152,13 +170,32 @@ export function ForgeSettings({ onBack }: { onBack: () => void }) {
         default_meeting_length: profile.default_meeting_length,
         services_offered: profile.services_offered,
         service_area: profile.service_area,
-      }, { onConflict: "contractor_id" });
+      } as any, { onConflict: "contractor_id" });
 
     setSaving(false);
     if (error) {
       toast.error("Failed to save settings");
     } else {
       toast.success("Settings saved");
+      setProfile(prev => ({ ...prev, custom_instructions: generatedPrompt }));
+      
+      // Trigger Forge sync
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          const { error: syncError } = await supabase.functions.invoke("forge-prompt-sync", {
+            body: { contractor_id: user.id },
+          });
+          if (syncError) {
+            console.error("Forge sync error:", syncError);
+            toast.warning("Settings saved but Forge sync failed");
+          } else {
+            toast.success("Prompt synced to Forge");
+          }
+        }
+      } catch (syncErr) {
+        console.error("Forge sync error:", syncErr);
+      }
     }
   };
 
@@ -292,14 +329,50 @@ export function ForgeSettings({ onBack }: { onBack: () => void }) {
             />
           </div>
           <div className="space-y-1.5">
-            <Label>Custom Instructions</Label>
+            <Label>Custom Qualification Instructions</Label>
             <Textarea
-              value={profile.custom_instructions || ""}
-              onChange={e => update("custom_instructions", e.target.value)}
+              value={profile.qualification_instructions || ""}
+              onChange={e => update("qualification_instructions", e.target.value)}
               rows={3}
-              placeholder="Special instructions for the AI (e.g., ask about project size, mention promotions)..."
+              placeholder="Special instructions for lead qualification (e.g., ask about project size, mention promotions)..."
             />
+            <p className="text-xs text-muted-foreground">
+              These instructions customize how Sarah qualifies leads. All other prompt sections are auto-generated from your profile.
+            </p>
           </div>
+
+          <Collapsible>
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground">
+                <ChevronDown className="h-4 w-4" />
+                Preview Generated Prompt
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <div className="mt-2 p-4 bg-muted rounded-lg border">
+                <div className="flex items-center gap-2 mb-2">
+                  <Zap className="h-4 w-4 text-primary" />
+                  <span className="text-xs font-medium text-muted-foreground">Auto-Generated System Prompt</span>
+                </div>
+                <pre className="whitespace-pre-wrap text-xs font-mono text-foreground/80 max-h-96 overflow-y-auto">
+                  {profile.custom_instructions || generateVapiPrompt({
+                    business_name: profile.business_name,
+                    trade: profile.trade,
+                    service_description: profile.service_description,
+                    services_offered: profile.services_offered,
+                    service_area: profile.service_area,
+                    business_hours: profile.business_hours,
+                    calendar_email: profile.calendar_email,
+                    contractor_phone: profile.contractor_phone,
+                    qualification_instructions: profile.qualification_instructions,
+                  })}
+                </pre>
+                <p className="text-xs text-muted-foreground mt-2">
+                  First message: <code>"{generateFirstMessage(profile.business_name)}"</code>
+                </p>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
         </CardContent>
       </Card>
 

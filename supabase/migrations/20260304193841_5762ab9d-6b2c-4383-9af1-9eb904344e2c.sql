@@ -1,0 +1,1 @@
+ALTER TABLE public.contractor_ai_profiles ADD COLUMN IF NOT EXISTS qualification_instructions text;
