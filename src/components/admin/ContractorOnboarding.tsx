@@ -412,7 +412,11 @@ async function generatePDF() {
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(SLATE_700.r, SLATE_700.g, SLATE_700.b);
 
-      const lines = doc.splitTextToSize(section.body, contentWidth - 8);
+      const textIndent = margin + 8;
+      const bulletIndent = margin + 12;
+      const bodyWidth = contentWidth - 14;
+
+      const lines = doc.splitTextToSize(section.body, bodyWidth);
       lines.forEach((line: string) => {
         if (y > maxY - 5) {
           doc.addPage();
@@ -420,24 +424,34 @@ async function generatePDF() {
           y = 28;
         }
         const trimmed = line.trim();
+        // Replace any remaining special chars that Helvetica can't render
+        const cleanLine = line.replace(/[·]/g, '-').replace(/[⚠️📧💬🌐©]/g, '');
+
         if (/^\d+\./.test(trimmed)) {
+          // Numbered steps - bold with slight indent
           doc.setFont('helvetica', 'bold');
           doc.setTextColor(CT1_DARK.r, CT1_DARK.g, CT1_DARK.b);
+          doc.text(cleanLine, bulletIndent, y);
         } else if (trimmed.startsWith('•')) {
+          // Bullet points - indented
           doc.setFont('helvetica', 'normal');
           doc.setTextColor(SLATE_700.r, SLATE_700.g, SLATE_700.b);
-        } else if (trimmed.startsWith('⚠️') || trimmed.startsWith('Tip:')) {
+          // Replace bullet with a dash for clean rendering
+          doc.text(cleanLine.replace(/•/g, '-'), bulletIndent, y);
+        } else if (trimmed.startsWith('NOTE:') || trimmed.startsWith('Tip:')) {
+          // Callout text
           doc.setFont('helvetica', 'bolditalic');
           doc.setTextColor(CT1_RED.r, CT1_RED.g, CT1_RED.b);
+          doc.text(cleanLine, textIndent, y);
         } else {
           doc.setFont('helvetica', 'normal');
           doc.setTextColor(SLATE_700.r, SLATE_700.g, SLATE_700.b);
+          doc.text(cleanLine, textIndent, y);
         }
-        doc.text(line, margin + 6, y);
-        y += 3.8;
+        y += 4.2;
       });
 
-      y += sIdx < page.content.sections.length - 1 ? 6 : 3;
+      y += sIdx < page.content.sections.length - 1 ? 8 : 4;
     });
   });
 
