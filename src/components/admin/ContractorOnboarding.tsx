@@ -157,76 +157,201 @@ const PAGES = [
 function generatePDF() {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'letter' });
   const pageWidth = doc.internal.pageSize.getWidth();
-  const margin = 20;
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const margin = 18;
   const contentWidth = pageWidth - margin * 2;
 
-  PAGES.forEach((page, pageIndex) => {
-    if (pageIndex > 0) doc.addPage();
+  // Brand colors
+  const CT1_RED = { r: 213, g: 10, b: 34 };
+  const CT1_DARK = { r: 15, g: 23, b: 42 };
+  const SLATE_700 = { r: 51, g: 65, b: 85 };
+  const SLATE_400 = { r: 148, g: 163, b: 184 };
+  const SLATE_100 = { r: 241, g: 245, b: 249 };
+  const WHITE = { r: 255, g: 255, b: 255 };
 
-    // Header
-    doc.setFillColor(15, 23, 42); // slate-900
-    doc.rect(0, 0, pageWidth, 28, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(16);
+  const drawPageChrome = (pageNum: number) => {
+    // Top red accent bar
+    doc.setFillColor(CT1_RED.r, CT1_RED.g, CT1_RED.b);
+    doc.rect(0, 0, pageWidth, 4, 'F');
+
+    // Header area
+    doc.setFillColor(CT1_DARK.r, CT1_DARK.g, CT1_DARK.b);
+    doc.rect(0, 4, pageWidth, 18, 'F');
+
+    doc.setTextColor(WHITE.r, WHITE.g, WHITE.b);
+    doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
-    doc.text('CT1 — New Contractor Onboarding & Training', margin, 12);
-    doc.setFontSize(9);
+    doc.text('CT1', margin, 15);
     doc.setFont('helvetica', 'normal');
-    doc.text(`Page ${page.id} of ${PAGES.length}`, pageWidth - margin, 12, { align: 'right' });
-    doc.setFontSize(10);
-    doc.text(`Section ${page.id}: ${page.title}`, margin, 22);
+    doc.setFontSize(9);
+    doc.text('  New Contractor Onboarding & Training', margin + 10, 15);
 
-    // Content
-    let y = 36;
-    doc.setTextColor(15, 23, 42);
+    doc.setFontSize(8);
+    doc.text(`Page ${pageNum} of ${PAGES.length + 1}`, pageWidth - margin, 15, { align: 'right' });
 
-    // Section heading
-    doc.setFontSize(14);
+    // Footer
+    doc.setFillColor(CT1_DARK.r, CT1_DARK.g, CT1_DARK.b);
+    doc.rect(0, pageHeight - 16, pageWidth, 16, 'F');
+
+    // Footer red accent
+    doc.setFillColor(CT1_RED.r, CT1_RED.g, CT1_RED.b);
+    doc.rect(0, pageHeight - 16, pageWidth, 1.5, 'F');
+
+    doc.setTextColor(SLATE_400.r, SLATE_400.g, SLATE_400.b);
+    doc.setFontSize(7);
+    doc.text('support@myct1.com  |  (855) CT1-HELP  |  www.myct1.com', pageWidth / 2, pageHeight - 8, { align: 'center' });
+    doc.setFontSize(6);
+    doc.setTextColor(100, 116, 139);
+    doc.text('CONFIDENTIAL — For authorized CT1 contractors only. © CT1 Technology Corp.', pageWidth / 2, pageHeight - 4, { align: 'center' });
+  };
+
+  // ═══════════════ COVER PAGE ═══════════════
+  // Full red background
+  doc.setFillColor(CT1_RED.r, CT1_RED.g, CT1_RED.b);
+  doc.rect(0, 0, pageWidth, pageHeight, 'F');
+
+  // Dark bottom section
+  doc.setFillColor(CT1_DARK.r, CT1_DARK.g, CT1_DARK.b);
+  doc.rect(0, pageHeight * 0.55, pageWidth, pageHeight * 0.45, 'F');
+
+  // Decorative diagonal
+  doc.setFillColor(CT1_DARK.r, CT1_DARK.g, CT1_DARK.b);
+  doc.triangle(0, pageHeight * 0.48, pageWidth, pageHeight * 0.55, pageWidth, pageHeight * 0.62, 'F');
+
+  // CT1 title on red
+  doc.setTextColor(WHITE.r, WHITE.g, WHITE.b);
+  doc.setFontSize(52);
+  doc.setFont('helvetica', 'bold');
+  doc.text('CT1', pageWidth / 2, 75, { align: 'center' });
+
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'normal');
+  doc.text('T E C H N O L O G Y', pageWidth / 2, 88, { align: 'center' });
+
+  // Thin white line separator
+  doc.setDrawColor(WHITE.r, WHITE.g, WHITE.b);
+  doc.setLineWidth(0.5);
+  doc.line(pageWidth / 2 - 30, 96, pageWidth / 2 + 30, 96);
+
+  // Subtitle on dark section
+  doc.setTextColor(WHITE.r, WHITE.g, WHITE.b);
+  doc.setFontSize(22);
+  doc.setFont('helvetica', 'bold');
+  doc.text('New Contractor', pageWidth / 2, pageHeight * 0.62, { align: 'center' });
+  doc.text('Onboarding & Training', pageWidth / 2, pageHeight * 0.62 + 10, { align: 'center' });
+
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(SLATE_400.r, SLATE_400.g, SLATE_400.b);
+  doc.text('Your complete step-by-step guide to the CT1 Hub & CRM platform', pageWidth / 2, pageHeight * 0.62 + 24, { align: 'center' });
+
+  // Table of contents on cover
+  doc.setTextColor(WHITE.r, WHITE.g, WHITE.b);
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'bold');
+  doc.text('CONTENTS', margin + 10, pageHeight * 0.76);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.setTextColor(SLATE_400.r, SLATE_400.g, SLATE_400.b);
+  PAGES.forEach((p, i) => {
+    const tocY = pageHeight * 0.76 + 7 + i * 5.5;
+    doc.setTextColor(CT1_RED.r, CT1_RED.g, CT1_RED.b);
+    doc.text(`0${p.id}`, margin + 10, tocY);
+    doc.setTextColor(SLATE_400.r, SLATE_400.g, SLATE_400.b);
+    doc.text(p.title, margin + 20, tocY);
+  });
+
+  // Cover footer
+  doc.setFontSize(7);
+  doc.setTextColor(100, 116, 139);
+  doc.text('support@myct1.com  |  (855) CT1-HELP  |  www.myct1.com', pageWidth / 2, pageHeight - 8, { align: 'center' });
+
+  // ═══════════════ CONTENT PAGES ═══════════════
+  PAGES.forEach((page) => {
+    doc.addPage();
+    drawPageChrome(page.id + 1);
+
+    let y = 30;
+
+    // Section number + title bar
+    doc.setFillColor(SLATE_100.r, SLATE_100.g, SLATE_100.b);
+    doc.roundedRect(margin, y, contentWidth, 14, 2, 2, 'F');
+
+    // Red accent on left of title bar
+    doc.setFillColor(CT1_RED.r, CT1_RED.g, CT1_RED.b);
+    doc.rect(margin, y, 3, 14, 'F');
+
+    doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
-    doc.text(page.content.heading, margin, y);
-    y += 8;
+    doc.setTextColor(CT1_RED.r, CT1_RED.g, CT1_RED.b);
+    doc.text(`SECTION ${page.id}`, margin + 7, y + 5.5);
 
-    // Accent line
-    doc.setDrawColor(59, 130, 246); // blue-500
+    doc.setFontSize(13);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(CT1_DARK.r, CT1_DARK.g, CT1_DARK.b);
+    doc.text(page.content.heading, margin + 7, y + 11.5);
+
+    y += 20;
+
+    // Red underline
+    doc.setDrawColor(CT1_RED.r, CT1_RED.g, CT1_RED.b);
     doc.setLineWidth(0.8);
-    doc.line(margin, y, margin + 40, y);
+    doc.line(margin, y, margin + 50, y);
     y += 6;
 
-    page.content.sections.forEach((section) => {
-      if (y > 240) {
+    const maxY = pageHeight - 22;
+
+    page.content.sections.forEach((section, sIdx) => {
+      if (y > maxY - 20) {
         doc.addPage();
-        y = 20;
+        drawPageChrome(page.id + 1);
+        y = 28;
       }
+
+      // Section subtitle with dot
+      doc.setFillColor(CT1_RED.r, CT1_RED.g, CT1_RED.b);
+      doc.circle(margin + 1.5, y - 1, 1.5, 'F');
 
       doc.setFontSize(11);
       doc.setFont('helvetica', 'bold');
-      doc.setTextColor(30, 64, 175); // blue-800
-      doc.text(section.title, margin, y);
+      doc.setTextColor(CT1_DARK.r, CT1_DARK.g, CT1_DARK.b);
+      doc.text(section.title, margin + 6, y);
       y += 5;
 
-      doc.setFontSize(9);
+      // Light separator line under subtitle
+      doc.setDrawColor(SLATE_400.r, SLATE_400.g, SLATE_400.b);
+      doc.setLineWidth(0.2);
+      doc.line(margin + 6, y - 1.5, margin + 90, y - 1.5);
+
+      doc.setFontSize(8.5);
       doc.setFont('helvetica', 'normal');
-      doc.setTextColor(51, 65, 85); // slate-700
+      doc.setTextColor(SLATE_700.r, SLATE_700.g, SLATE_700.b);
 
-      const lines = doc.splitTextToSize(section.body, contentWidth);
+      const lines = doc.splitTextToSize(section.body, contentWidth - 6);
       lines.forEach((line: string) => {
-        if (y > 255) {
+        if (y > maxY - 5) {
           doc.addPage();
-          y = 20;
+          drawPageChrome(page.id + 1);
+          y = 28;
         }
-        doc.text(line, margin, y);
-        y += 4;
+        // Highlight numbered steps
+        const trimmed = line.trim();
+        if (/^\d+\./.test(trimmed)) {
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(CT1_DARK.r, CT1_DARK.g, CT1_DARK.b);
+        } else if (trimmed.startsWith('•')) {
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(SLATE_700.r, SLATE_700.g, SLATE_700.b);
+        } else {
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(SLATE_700.r, SLATE_700.g, SLATE_700.b);
+        }
+        doc.text(line, margin + 6, y);
+        y += 3.8;
       });
-      y += 4;
-    });
 
-    // Footer
-    doc.setFillColor(241, 245, 249); // slate-100
-    doc.rect(0, 260, pageWidth, 20, 'F');
-    doc.setFontSize(7);
-    doc.setTextColor(100, 116, 139);
-    doc.text('CT1 Corporate  |  support@myct1.com  |  (855) CT1-HELP  |  www.myct1.com', pageWidth / 2, 267, { align: 'center' });
-    doc.text('CONFIDENTIAL — For authorized CT1 contractors only', pageWidth / 2, 272, { align: 'center' });
+      y += sIdx < page.content.sections.length - 1 ? 6 : 3;
+    });
   });
 
   doc.save('CT1_Contractor_Onboarding_Manual.pdf');
