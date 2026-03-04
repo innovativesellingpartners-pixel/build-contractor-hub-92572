@@ -31,6 +31,7 @@ interface AIProfile {
   service_description: string | null;
   custom_greeting: string | null;
   custom_instructions: string | null;
+  qualification_instructions: string | null;
   business_hours: any;
   ai_enabled: boolean | null;
   inbound_call_mode: string | null;
