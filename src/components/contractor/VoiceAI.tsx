@@ -25,10 +25,21 @@ export function VoiceAI() {
 
   const { user } = useAuth();
 
+  const [searchParams, setSearchParams] = useSearchParams();
+
   useEffect(() => {
     if (!user?.id) return;
     checkForgeStatus();
     loadStats();
+
+    // Handle post-payment activation
+    if (searchParams.get("voice_ai_activated") === "true") {
+      handlePostPaymentActivation();
+      // Clean up URL params
+      searchParams.delete("voice_ai_activated");
+      searchParams.delete("session_id");
+      setSearchParams(searchParams, { replace: true });
+    }
   }, [user?.id]);
 
   const checkForgeStatus = async () => {
