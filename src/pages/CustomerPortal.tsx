@@ -14,8 +14,11 @@ import {
   Send, Upload, CheckCircle2, Clock, AlertCircle, Loader2,
   Building2, MapPin, Phone, Mail, Calendar, ChevronRight,
   CalendarDays, MapPinned, Wrench, Flag, CircleDot,
-  ArrowLeft, LayoutDashboard, Plus, Pencil
+  ArrowLeft, LayoutDashboard, Plus, Pencil, DollarSign
 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { FinixPaymentForm } from '@/components/payments/FinixPaymentForm';
 import { cn } from '@/lib/utils';
 import ct1Logo from '@/assets/ct1-powered-by-logo.png';
 import { AddEditEventDialog, DeleteEventButton, EmailScheduleDialog } from '@/components/portal/PortalScheduleManager';
@@ -76,7 +79,7 @@ export default function CustomerPortal() {
 
       const { data: profile } = await supabase
         .from('profiles')
-        .select('company_name, contact_name, phone, business_email, logo_url, brand_primary_color')
+        .select('company_name, contact_name, phone, business_email, logo_url, brand_primary_color, finix_merchant_id, zelle_email, zelle_phone, ach_instructions, accepted_payment_methods')
         .eq('id', portalToken.contractor_id)
         .single();
 
@@ -1121,9 +1124,44 @@ function MessagesTab({ portalTokenId, jobId, customerName, contractorName }: {
 
 // ==================== PAYMENTS TAB ====================
 function PaymentsTab({ jobId, job }: { jobId: string; job: any }) {
+  const [paymentMode, setPaymentMode] = useState<'menu' | 'deposit' | 'custom' | 'remaining' | null>('menu');
+  const [customAmount, setCustomAmount] = useState('');
+  const [showFinixForm, setShowFinixForm] = useState(false);
+  const [paymentNote, setPaymentNote] = useState('');
+  const queryClient = useQueryClient();
+
   const totalValue = job.total_contract_value || job.contract_value || 0;
   const paid = job.payments_collected || 0;
   const remaining = Math.max(0, totalValue - paid);
+
+  // Fetch the linked estimate for deposit info
+  const { data: estimate } = useQuery({
+    queryKey: ['portal-job-estimate', jobId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('estimates')
+        .select('id, public_token, required_deposit, required_deposit_percent, payment_amount, payment_status, estimate_number, total_amount, client_email')
+        .eq('job_id', jobId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      return data;
+    },
+  });
+
+  // Fetch contractor profile with Finix info
+  const { data: contractor } = useQuery({
+    queryKey: ['portal-contractor-payment', job.user_id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('finix_merchant_id, company_name, zelle_email, zelle_phone, ach_instructions, accepted_payment_methods, brand_primary_color')
+        .eq('id', job.user_id)
+        .single();
+      return data;
+    },
+    enabled: !!job.user_id,
+  });
 
   const { data: invoices } = useQuery({
     queryKey: ['portal-payment-invoices', jobId],
@@ -1152,39 +1190,257 @@ function PaymentsTab({ jobId, job }: { jobId: string; job: any }) {
 
   const unpaidInvoices = invoices?.filter(i => (i.balance_due || (i.amount_due || 0) - (i.amount_paid || 0)) > 0) || [];
 
+  // Calculate deposit info
+  const depositAmount = estimate?.required_deposit || 
+    (estimate?.required_deposit_percent && estimate?.total_amount 
+      ? (estimate.required_deposit_percent / 100) * estimate.total_amount 
+      : 0);
+  const depositPaid = estimate?.payment_amount || 0;
+  const depositRemaining = Math.max(0, depositAmount - depositPaid);
+  const depositFullyPaid = depositAmount > 0 && depositRemaining <= 0;
+
+  const hasFinix = !!contractor?.finix_merchant_id;
+  const customerEmail = estimate?.client_email || '';
+
+  const getPaymentAmount = (): number => {
+    if (paymentMode === 'deposit') return depositRemaining;
+    if (paymentMode === 'remaining') return remaining;
+    if (paymentMode === 'custom') return parseFloat(customAmount) || 0;
+    return 0;
+  };
+
+  const getPaymentIntent = (): 'deposit' | 'full' | 'remaining' => {
+    if (paymentMode === 'deposit') return 'deposit';
+    if (paymentMode === 'remaining') return 'remaining';
+    return 'full';
+  };
+
+  const handlePaymentSuccess = () => {
+    setShowFinixForm(false);
+    setPaymentMode('menu');
+    setCustomAmount('');
+    queryClient.invalidateQueries({ queryKey: ['portal-payments', jobId] });
+    queryClient.invalidateQueries({ queryKey: ['portal-job-estimate', jobId] });
+    queryClient.invalidateQueries({ queryKey: ['portal', undefined] });
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="pt-4">
-            <p className="text-xs text-muted-foreground">Contract Total</p>
-            <p className="text-xl font-bold">${totalValue.toLocaleString()}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-4">
-            <p className="text-xs text-muted-foreground">Paid</p>
-            <p className="text-xl font-bold text-primary">${paid.toLocaleString()}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-4">
-            <p className="text-xs text-muted-foreground">Remaining</p>
-            <p className="text-xl font-bold text-destructive">${remaining.toLocaleString()}</p>
-          </CardContent>
-        </Card>
+    <div className="space-y-5">
+      {/* Financial Summary */}
+      <div className="grid grid-cols-3 gap-3">
+        <div className="rounded-xl border bg-card shadow-sm p-4 text-center">
+          <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Contract</p>
+          <p className="text-lg sm:text-xl font-bold mt-1">${totalValue.toLocaleString()}</p>
+        </div>
+        <div className="rounded-xl border bg-card shadow-sm p-4 text-center">
+          <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Paid</p>
+          <p className="text-lg sm:text-xl font-bold text-emerald-600 mt-1">${paid.toLocaleString()}</p>
+        </div>
+        <div className="rounded-xl border bg-card shadow-sm p-4 text-center">
+          <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Balance</p>
+          <p className="text-lg sm:text-xl font-bold text-destructive mt-1">${remaining.toLocaleString()}</p>
+        </div>
       </div>
 
+      {/* Make a Payment Section */}
+      {remaining > 0 && (
+        <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+          <div className="px-4 py-3 bg-muted/40 border-b flex items-center gap-2">
+            <CreditCard className="h-4 w-4 text-primary" />
+            <span className="text-sm font-semibold">Make a Payment</span>
+          </div>
+
+          {paymentMode === 'menu' && !showFinixForm && (
+            <div className="p-4 space-y-2">
+              {/* Deposit option */}
+              {depositAmount > 0 && !depositFullyPaid && (
+                <button
+                  onClick={() => setPaymentMode('deposit')}
+                  className="w-full flex items-center justify-between p-3.5 rounded-lg border hover:bg-muted/50 transition-colors text-left group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                      <DollarSign className="h-4 w-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">Pay Deposit</p>
+                      <p className="text-xs text-muted-foreground">
+                        ${depositRemaining.toLocaleString()} required deposit
+                      </p>
+                    </div>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                </button>
+              )}
+
+              {depositFullyPaid && depositAmount > 0 && (
+                <div className="flex items-center gap-3 p-3.5 rounded-lg border bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium text-emerald-800 dark:text-emerald-200">Deposit Paid</p>
+                    <p className="text-xs text-emerald-600 dark:text-emerald-400">${depositAmount.toLocaleString()} received</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Custom Amount */}
+              <button
+                onClick={() => setPaymentMode('custom')}
+                className="w-full flex items-center justify-between p-3.5 rounded-lg border hover:bg-muted/50 transition-colors text-left group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="h-9 w-9 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0">
+                    <Pencil className="h-4 w-4 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">Custom Payment</p>
+                    <p className="text-xs text-muted-foreground">Enter a specific amount</p>
+                  </div>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+              </button>
+
+              {/* Pay Remainder */}
+              <button
+                onClick={() => setPaymentMode('remaining')}
+                className="w-full flex items-center justify-between p-3.5 rounded-lg border hover:bg-muted/50 transition-colors text-left group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="h-9 w-9 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">Pay Remaining Balance</p>
+                    <p className="text-xs text-muted-foreground">${remaining.toLocaleString()} outstanding</p>
+                  </div>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+              </button>
+            </div>
+          )}
+
+          {/* Payment confirmation before card form */}
+          {paymentMode && paymentMode !== 'menu' && !showFinixForm && (
+            <div className="p-4 space-y-4">
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="sm" onClick={() => { setPaymentMode('menu'); setCustomAmount(''); }} className="gap-1 h-8">
+                  <ArrowLeft className="h-3.5 w-3.5" /> Back
+                </Button>
+              </div>
+
+              <div className="rounded-lg border p-4 bg-muted/20 space-y-3">
+                <h3 className="font-semibold text-sm">
+                  {paymentMode === 'deposit' && 'Pay Deposit'}
+                  {paymentMode === 'custom' && 'Custom Payment'}
+                  {paymentMode === 'remaining' && 'Pay Remaining Balance'}
+                </h3>
+
+                {paymentMode === 'custom' ? (
+                  <div className="space-y-2">
+                    <Label className="text-xs text-muted-foreground">Amount</Label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">$</span>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min="1"
+                        max={remaining}
+                        value={customAmount}
+                        onChange={(e) => setCustomAmount(e.target.value)}
+                        placeholder="0.00"
+                        className="pl-7 h-10 text-lg font-semibold"
+                        autoFocus
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground">Max: ${remaining.toLocaleString()}</p>
+                  </div>
+                ) : (
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-2xl font-bold">${getPaymentAmount().toLocaleString()}</span>
+                  </div>
+                )}
+
+                {/* Note field */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Note (optional)</Label>
+                  <Input
+                    value={paymentNote}
+                    onChange={(e) => setPaymentNote(e.target.value)}
+                    placeholder="e.g., Final payment for phase 1"
+                    className="h-9"
+                  />
+                </div>
+              </div>
+
+              {hasFinix && estimate?.public_token ? (
+                <Button
+                  className="w-full gap-2"
+                  size="lg"
+                  disabled={paymentMode === 'custom' && (!customAmount || parseFloat(customAmount) <= 0 || parseFloat(customAmount) > remaining)}
+                  onClick={() => setShowFinixForm(true)}
+                >
+                  <CreditCard className="h-4 w-4" />
+                  Continue to Payment — ${getPaymentAmount().toLocaleString()}
+                </Button>
+              ) : (
+                <div className="text-center p-4 rounded-lg bg-muted/30 border">
+                  <p className="text-sm text-muted-foreground">
+                    Online payments are not enabled for this job. Please contact your contractor to arrange payment.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Finix Card Form */}
+          {showFinixForm && estimate?.public_token && (
+            <div className="p-4">
+              <div className="flex items-center gap-2 mb-4">
+                <Button variant="ghost" size="sm" onClick={() => setShowFinixForm(false)} className="gap-1 h-8">
+                  <ArrowLeft className="h-3.5 w-3.5" /> Back
+                </Button>
+                <span className="text-sm font-medium">
+                  Paying ${getPaymentAmount().toLocaleString()}
+                </span>
+              </div>
+              <FinixPaymentForm
+                entityType="estimate"
+                entityId={estimate.id}
+                publicToken={estimate.public_token}
+                paymentIntent={getPaymentIntent()}
+                customerEmail={customerEmail}
+                amount={getPaymentAmount()}
+                onSuccess={handlePaymentSuccess}
+                onCancel={() => setShowFinixForm(false)}
+                primaryColor={contractor?.brand_primary_color || undefined}
+              />
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Remaining is 0 - fully paid */}
+      {remaining <= 0 && totalValue > 0 && (
+        <div className="rounded-xl border bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800 p-5 flex items-center gap-3">
+          <CheckCircle2 className="h-6 w-6 text-emerald-600 shrink-0" />
+          <div>
+            <p className="font-semibold text-emerald-800 dark:text-emerald-200">Fully Paid</p>
+            <p className="text-sm text-emerald-600 dark:text-emerald-400">All payments have been received. Thank you!</p>
+          </div>
+        </div>
+      )}
+
+      {/* Outstanding Invoices */}
       {unpaidInvoices.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">Outstanding Invoices</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
+        <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+          <div className="px-4 py-3 bg-muted/40 border-b">
+            <p className="text-sm font-semibold">Outstanding Invoices</p>
+          </div>
+          <div className="divide-y">
             {unpaidInvoices.map((inv) => {
               const balance = inv.balance_due || (inv.amount_due || 0) - (inv.amount_paid || 0);
               return (
-                <div key={inv.id} className="flex items-center justify-between p-3 rounded-lg border">
+                <div key={inv.id} className="flex items-center justify-between px-4 py-3">
                   <div>
                     <p className="text-sm font-medium">{inv.invoice_number}</p>
                     {inv.due_date && (
@@ -1195,42 +1451,43 @@ function PaymentsTab({ jobId, job }: { jobId: string; job: any }) {
                     <span className="text-sm font-semibold">${balance.toLocaleString()}</span>
                     {inv.public_token && (
                       <Button size="sm" asChild>
-                        <a href={`/invoice/${inv.public_token}`} target="_blank" rel="noopener noreferrer">Pay Now</a>
+                        <a href={`/invoice/${inv.public_token}`} target="_blank" rel="noopener noreferrer">Pay</a>
                       </Button>
                     )}
                   </div>
                 </div>
               );
             })}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm font-medium">Payment History</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {payments && payments.length > 0 ? (
-            <div className="space-y-2">
-              {payments.map((pmt) => (
-                <div key={pmt.id} className="flex items-center justify-between py-2 border-b last:border-0 text-sm">
-                  <div>
-                    <p className="font-medium">{pmt.notes || 'Payment'}</p>
-                    <p className="text-xs text-muted-foreground">{format(new Date(pmt.created_at), 'MMM d, yyyy')}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-primary">${(pmt.amount || 0).toLocaleString()}</span>
-                    <CheckCircle2 className="h-4 w-4 text-primary" />
-                  </div>
+      {/* Payment History */}
+      <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+        <div className="px-4 py-3 bg-muted/40 border-b">
+          <p className="text-sm font-semibold">Payment History</p>
+        </div>
+        {payments && payments.length > 0 ? (
+          <div className="divide-y">
+            {payments.map((pmt) => (
+              <div key={pmt.id} className="flex items-center justify-between px-4 py-3">
+                <div>
+                  <p className="text-sm font-medium">{pmt.notes || 'Payment'}</p>
+                  <p className="text-xs text-muted-foreground">{format(new Date(pmt.created_at), 'MMM d, yyyy')}</p>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">No payments recorded yet.</p>
-          )}
-        </CardContent>
-      </Card>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-emerald-600">${(pmt.amount || 0).toLocaleString()}</span>
+                  <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="p-4">
+            <p className="text-sm text-muted-foreground text-center">No payments recorded yet.</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
