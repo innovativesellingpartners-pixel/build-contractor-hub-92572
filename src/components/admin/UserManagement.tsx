@@ -10,7 +10,8 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from '@/components/ui/dialog';
-import { Search, UserPlus, Edit, Trash2, Mail, Phone, Building2, User, Key, Upload, X, Bot, Eye } from 'lucide-react';
+import { Search, UserPlus, Edit, Trash2, Mail, Phone, Building2, User, Key, Upload, X, Bot, Eye, MoreVertical } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
@@ -523,7 +524,45 @@ export const UserManagement = () => {
                   {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString() : 'Never'}
                 </span>
 
-                <Eye className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                    <DropdownMenuItem onClick={() => navigate(`/admin/users/${user.id}`)}>
+                      <Eye className="h-4 w-4 mr-2" />
+                      View Details
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => { setEditingUser(user); setIsEditDialogOpen(true); }}>
+                      <Edit className="h-4 w-4 mr-2" />
+                      Edit Profile
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => { setPasswordResetUser(user); setIsPasswordDialogOpen(true); }}>
+                      <Key className="h-4 w-4 mr-2" />
+                      Reset Password
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => { 
+                      updateRoleMutation.mutate({ 
+                        userId: user.id, 
+                        newRole: user.role === 'admin' ? 'user' : 'admin' 
+                      }); 
+                    }}>
+                      <User className="h-4 w-4 mr-2" />
+                      {user.role === 'admin' ? 'Demote to User' : 'Promote to Admin'}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                      className="text-destructive focus:text-destructive"
+                      onClick={() => { setDeletingUser(user); setIsDeleteDialogOpen(true); }}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete User
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             ))}
             {filteredUsers?.length === 0 && (
