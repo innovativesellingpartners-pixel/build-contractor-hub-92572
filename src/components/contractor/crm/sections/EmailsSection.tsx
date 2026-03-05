@@ -53,12 +53,7 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
   const emailsFetchedRef = useRef(false);
   // Track emails that have been marked as read locally - persisted in localStorage
   const STORAGE_KEY = `ct1-read-emails-${user?.id || 'anon'}`;
-  const readEmailIdsRef = useRef<Set<string>>(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      return stored ? new Set(JSON.parse(stored)) : new Set();
-    } catch { return new Set(); }
-  });
+  const readEmailIdsRef = useRef<Set<string>>(new Set<string>());
 
   // Initialize ref from localStorage on mount
   useEffect(() => {
