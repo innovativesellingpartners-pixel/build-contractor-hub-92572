@@ -1,8 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
 serve(async (req) => {
@@ -11,20 +12,39 @@ serve(async (req) => {
   }
 
   try {
-    const { message, context, userName, companyName, conversationHistory } = await req.json();
+    const { message, userName, companyName, conversationHistory } = await req.json();
     
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY is not configured');
-    }
+    if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY is not configured');
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Use unified knowledge search
+    const { data: searchResults } = await supabase.rpc('search_knowledge', {
+      search_query: message,
+    });
+
+    const articlesContext = searchResults && searchResults.length > 0
+      ? `\n\nRelevant knowledge base results (use these to answer the question):\n${searchResults.map((r: any) => `- [${r.source}] "${r.title}": ${r.excerpt || r.content?.substring(0, 300)}...`).join('\n')}`
+      : '\n\nNo directly matching articles found in the knowledge base. Answer based on your knowledge of the CT1 platform.';
 
     const systemPrompt = `You are the CT1 Help Bot, a friendly and knowledgeable assistant for the CT1 Contractor Hub - a CRM and business management platform for contractors.
+
+STRICT GUARDRAILS:
+- ONLY answer questions about the CT1 platform, contractor business practices, sales techniques, and the contracting industry.
+- Do NOT discuss politics, religion, medical advice, legal advice, or any topics unrelated to contracting and CT1.
+- If asked about unrelated topics, politely redirect: "I'm here to help with CT1 and your contracting business. What can I help you with on the platform?"
+- Ground your answers in the knowledge base content when available.
+- If no matching content exists and you're unsure, suggest contacting support.
 
 Your role is to:
 1. Answer questions about using the CT1 Contractor Hub
 2. Guide users through common workflows and features
-3. Troubleshoot technical issues
-4. Direct users to relevant help articles when available
+3. Help with sales techniques and objection handling for contractors
+4. Troubleshoot technical issues
+5. Direct users to relevant help articles when available
 
 Key features in CT1 Contractor Hub:
 - Dashboard: Overview of leads, jobs, estimates, and key metrics
@@ -35,16 +55,17 @@ Key features in CT1 Contractor Hub:
 - Invoices: Generate and send invoices, track payments
 - Phone/Voice AI: Business phone number with AI-powered call handling
 - QuickBooks: Sync accounting data with QuickBooks
-- Bank Connection: Connect bank accounts via Plaid for payments
 - Calendar: Schedule meetings and appointments
 - Reports: View business analytics and performance metrics
+- Crew Management: Manage crews, assign members to jobs
+- Documents: Upload and manage contractor documents
 
 Navigation in the app:
 - The main dashboard has a sidebar with sections: Dashboard, CRM (Leads, Customers, Jobs, Estimates, Invoices), Calls, Calendar, Reports, and More
 - The "More" section contains: Profile Settings, Phone Setup, Bank Connection, QuickBooks, Insurance, Help Center
 
 Guidelines:
-- Be concise but thorough - aim for 2-3 sentences per response
+- Be concise but thorough
 - Use the user's name (${userName || 'there'}) when appropriate
 - Reference specific UI elements and buttons by name
 - If you find relevant articles in the context, mention them
@@ -53,7 +74,7 @@ Guidelines:
 
 ${companyName ? `The user's company is: ${companyName}` : ''}
 
-${context}`;
+${articlesContext}`;
 
     const messages = [
       { role: 'system', content: systemPrompt },
@@ -73,7 +94,7 @@ ${context}`;
       body: JSON.stringify({
         model: 'google/gemini-3-flash-preview',
         messages,
-        max_tokens: 500,
+        max_tokens: 800,
         temperature: 0.7,
       }),
     });
@@ -105,7 +126,6 @@ ${context}`;
     const data = await response.json();
     const aiMessage = data.choices?.[0]?.message?.content || "I apologize, I couldn't process your request.";
     
-    // Determine if we should suggest support based on the response
     const lowerMessage = message.toLowerCase();
     const suggestSupport = 
       lowerMessage.includes('not working') ||
@@ -120,7 +140,8 @@ ${context}`;
 
     return new Response(JSON.stringify({ 
       message: aiMessage,
-      suggestSupport 
+      suggestSupport,
+      searchResults: searchResults?.slice(0, 5) || [],
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
@@ -131,7 +152,7 @@ ${context}`;
       suggestSupport: true,
       error: error instanceof Error ? error.message : 'Unknown error' 
     }), {
-      status: 200, // Return 200 so the frontend can show the fallback message
+      status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }

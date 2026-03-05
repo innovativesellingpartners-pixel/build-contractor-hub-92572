@@ -14,8 +14,9 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, Eye, EyeOff, Search, TrendingUp, MessageSquare, AlertCircle, FileText, BarChart3 } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, EyeOff, Search, TrendingUp, MessageSquare, AlertCircle, FileText, BarChart3, BookOpen } from 'lucide-react';
 import type { HelpArticle, HelpCategory, HelpFeedback, HelpSupportRequest, HelpSearchLog } from '@/hooks/useHelpCenter';
+import { KnowledgeBaseManager } from './KnowledgeBaseManager';
 
 export function HelpAdmin() {
   const { toast } = useToast();
@@ -285,10 +286,14 @@ export function HelpAdmin() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="articles" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
             Articles
+          </TabsTrigger>
+          <TabsTrigger value="knowledge-base" className="flex items-center gap-2">
+            <BookOpen className="h-4 w-4" />
+            Knowledge Base
           </TabsTrigger>
           <TabsTrigger value="categories" className="flex items-center gap-2">
             <Search className="h-4 w-4" />
@@ -307,6 +312,11 @@ export function HelpAdmin() {
             Support
           </TabsTrigger>
         </TabsList>
+
+        {/* Knowledge Base Tab */}
+        <TabsContent value="knowledge-base">
+          <KnowledgeBaseManager />
+        </TabsContent>
 
         {/* Articles Tab */}
         <TabsContent value="articles" className="space-y-4">

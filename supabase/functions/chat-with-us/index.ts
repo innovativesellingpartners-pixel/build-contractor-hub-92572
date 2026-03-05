@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -13,7 +14,31 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const systemPrompt = `You are a friendly and knowledgeable customer service representative for CT1 (Constructeam One), also known as MyCT1.com. You help potential customers, contractors, and tradespeople learn about the CT1 platform and its services.
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Extract the latest user message for knowledge search
+    const lastUserMessage = [...messages].reverse().find((m: any) => m.role === "user");
+    let knowledgeContext = "";
+
+    if (lastUserMessage) {
+      const { data: searchResults } = await supabase.rpc("search_knowledge", {
+        search_query: lastUserMessage.content,
+      });
+
+      if (searchResults && searchResults.length > 0) {
+        knowledgeContext = `\n\nRelevant CT1 knowledge base content (use this to give accurate answers):\n${searchResults.slice(0, 5).map((r: any) => `- "${r.title}": ${r.excerpt || r.content?.substring(0, 300)}`).join("\n")}`;
+      }
+    }
+
+    const systemPrompt = `You are Sarah, a friendly and knowledgeable customer service representative for CT1 (Constructeam One), also known as MyCT1.com. You help potential customers, contractors, and tradespeople learn about the CT1 platform and its services.
+
+STRICT GUARDRAILS:
+- ONLY discuss CT1 platform features, contractor business topics, sales techniques, and the contracting industry.
+- Do NOT discuss politics, religion, medical advice, legal advice, or unrelated topics.
+- If asked about unrelated topics, politely redirect: "I'm here to help with CT1 and contracting! What would you like to know about our platform?"
+- Ground your answers in the knowledge base content below when available.
 
 About CT1:
 - CT1 is an all-in-one business management platform built specifically for contractors and tradespeople
@@ -34,7 +59,8 @@ Important guidelines:
 - Be enthusiastic about helping contractors succeed
 - If you don't know a specific detail, say you'll have the team follow up
 - Never make up pricing or features that aren't mentioned above
-- Always offer to schedule a call or demo if the person seems interested`;
+- Always offer to schedule a call or demo if the person seems interested
+${knowledgeContext}`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
