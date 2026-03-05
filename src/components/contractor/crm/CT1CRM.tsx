@@ -60,6 +60,7 @@ import DocumentsSection from './sections/DocumentsSection';
 import CRMSearchBar from './CRMSearchBar';
 import AIReportView from './sections/AIReportView';
 import ct1Logo from '@/assets/ct1-round-logo-new.png';
+import { Link } from 'react-router-dom';
 import Reporting from '@/pages/Reporting';
 import Accounting from '@/pages/Accounting';
 import { MobileLandingPage } from './MobileLandingPage';
