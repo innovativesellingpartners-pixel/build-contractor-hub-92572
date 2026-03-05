@@ -643,7 +643,35 @@ export function FloatingPocketAgent({ onClose, onPositionChange, initialPosition
         </div>
       </div>
 
-      {(!hasFullAccess && showPaywall) ? (
+      {/* Tab Toggle */}
+      <div className="flex border-b border-border/50 flex-shrink-0">
+        <button
+          onClick={() => setActiveTab('chat')}
+          className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium transition-colors ${
+            activeTab === 'chat'
+              ? 'text-primary border-b-2 border-primary bg-primary/5'
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          <MessageCircle className="h-3.5 w-3.5" />
+          Chat
+        </button>
+        <button
+          onClick={() => setActiveTab('sales-coach')}
+          className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium transition-colors ${
+            activeTab === 'sales-coach'
+              ? 'text-primary border-b-2 border-primary bg-primary/5'
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          <Headphones className="h-3.5 w-3.5" />
+          Sales Coach
+        </button>
+      </div>
+
+      {activeTab === 'sales-coach' ? (
+        <SalesCoachMode />
+      ) : (!hasFullAccess && showPaywall) ? (
         <CardContent className="flex-1 flex items-center justify-center p-4 overflow-y-auto">
           <div className="text-center space-y-4 max-w-sm w-full">
             <div className="mx-auto w-16 h-16 bg-gradient-to-br from-primary/20 to-primary/10 rounded-full flex items-center justify-center border-2 border-primary/30">
