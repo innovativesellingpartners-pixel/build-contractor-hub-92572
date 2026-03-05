@@ -545,6 +545,20 @@ function ScheduleTab({ jobId, isContractor = false, contractorId }: { jobId: str
           </div>
         </div>
       )}
+
+      {/* Controlled Add Event Dialog for clicking on calendar days */}
+      {isContractor && contractorId && clickedDate && (
+        <AddEditEventDialog
+          jobId={jobId}
+          contractorId={contractorId}
+          defaultDate={clickedDate}
+          open={showAddDialog}
+          onOpenChange={(v) => {
+            setShowAddDialog(v);
+            if (!v) setClickedDate(null);
+          }}
+        />
+      )}
     </div>
   );
 }
