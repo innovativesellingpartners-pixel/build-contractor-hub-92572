@@ -1,27 +1,28 @@
 
 
-## Plan: Add AI Help (Pocket Agent) to All CRM & Dashboard Pages
+## Fix: Remove CT1 Logo from Customer-Facing Estimates and Invoices
 
 ### Problem
-The Pocket Agent AI assistant is currently excluded from dashboard and CRM routes (`/dashboard`, `/crm`, `/reporting`, `/accounting`) in the `PocketAgentWrapper`. While the main Dashboard component has its own Pocket Agent button, standalone pages like `/crm`, `/reporting`, and `/accounting` don't have easy AI help access.
+When estimates are sent to customers, the public estimate page falls back to the CT1 logo when a contractor hasn't uploaded their own logo. Customers should only see their contractor's branding, not CT1 branding in the header.
 
-### Solution
-Create a **`DashboardPocketAgent`** component — a lightweight floating AI help button specifically for authenticated/dashboard pages — and add it to all CRM and dashboard routes.
+### What Changes
 
-### Changes
+**File: `src/pages/PublicEstimate.tsx`**
 
-**1. Create `src/components/DashboardPocketAgent.tsx`**
-A simple floating button (bottom-right) that opens the existing `FloatingPocketAgent` modal. Similar to `GlobalPocketAgent` but without the "Chat With Us" bubble (that's for public pages). Includes:
-- A fixed-position AI help button with the CT1 logo
-- Opens the existing `FloatingPocketAgent` on click
-- Positioned to not conflict with existing dashboard UI
+1. **Remove the CT1 logo import** (line 13) -- the `ct1PoweredLogo` import is used in two places: the header fallback and the "Powered by CT1" footer. The footer usage is intentional branding, so the import stays but the header fallback changes.
 
-**2. Update `src/App.tsx`**
-Modify the `PocketAgentWrapper` logic to render the new `DashboardPocketAgent` on authenticated routes (`/dashboard`, `/crm`, `/reporting`, `/accounting`) instead of returning `null`. This way every page gets AI help — public pages get the full `GlobalPocketAgent`, dashboard pages get the streamlined `DashboardPocketAgent`.
+2. **Update the header logo fallback** (line 217) -- Instead of falling back to the CT1 logo when the contractor has no logo, use a `Building2` icon (same pattern as `PublicInvoice.tsx`):
+   - Change: `const displayLogo = contractor?.logo_url || ct1PoweredLogo;`
+   - To: `const displayLogo = contractor?.logo_url;`
 
-**3. Remove duplicate Pocket Agent button from `src/components/Dashboard.tsx`**
-Since the wrapper now handles showing the AI button globally on dashboard pages, remove the dashboard's own floating Pocket Agent button to avoid duplication. Keep the `onOpenPocketAgent` prop passing into CT1CRM for any inline CRM buttons that trigger it.
+3. **Update the header logo rendering** (around lines 231-240) -- Add a conditional: if `displayLogo` exists, show the contractor's logo image; otherwise show a generic `Building2` icon in a styled circle, matching the invoice page pattern.
 
-### Result
-Every page in the app — leads, jobs, estimating, customers, invoicing, reporting, accounting, and all other CRM sections — will have a consistent floating AI help button in the bottom-right corner that opens the Pocket Agent.
+### What Stays
+- The **"Powered by CT1"** footer branding at the bottom of estimates remains unchanged (this is the platform branding standard).
+- The **PublicInvoice.tsx** page already handles this correctly with the `Building2` fallback icon -- no changes needed there.
+- The **estimate PDF preview/download** components already use only the contractor's `logo_url` with no CT1 fallback -- no changes needed.
 
+### Technical Details
+- Only 1 file modified: `src/pages/PublicEstimate.tsx`
+- ~10 lines changed total
+- Pattern mirrors the existing `PublicInvoice.tsx` implementation (lines 142-154)
