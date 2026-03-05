@@ -441,7 +441,7 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
     const emailPosition = `${selectedEmailIndex + 1} of ${currentList.length}`;
     
     return (
-      <div className="w-full h-full overflow-y-auto overflow-x-hidden pb-20 bg-background">
+      <div className="w-full pb-20 bg-background">
         <div className="p-4 sm:p-6 space-y-4 w-full sm:max-w-4xl sm:mx-auto">
           {/* Header with navigation */}
           <div className="flex items-center justify-between">
