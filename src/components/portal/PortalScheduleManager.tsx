@@ -22,6 +22,7 @@ interface CalendarEvent {
   title: string;
   description: string | null;
   event_date: string;
+  event_end_date: string | null;
   event_type: string;
   status: string;
   is_all_day: boolean;
@@ -34,6 +35,7 @@ interface EventFormData {
   title: string;
   description: string;
   event_date: string;
+  event_end_date: string;
   event_type: string;
   status: string;
   is_all_day: boolean;
@@ -45,6 +47,7 @@ const defaultFormData: EventFormData = {
   title: '',
   description: '',
   event_date: format(new Date(), 'yyyy-MM-dd'),
+  event_end_date: '',
   event_type: 'work',
   status: 'scheduled',
   is_all_day: true,
@@ -78,6 +81,7 @@ export function AddEditEventDialog({
           title: event.title,
           description: event.description || '',
           event_date: event.event_date,
+          event_end_date: event.event_end_date || '',
           event_type: event.event_type,
           status: event.status,
           is_all_day: event.is_all_day,
@@ -96,6 +100,7 @@ export function AddEditEventDialog({
         title: data.title,
         description: data.description || null,
         event_date: data.event_date,
+        event_end_date: data.event_end_date || null,
         event_type: data.event_type,
         status: data.status,
         is_all_day: data.is_all_day,
@@ -133,6 +138,7 @@ export function AddEditEventDialog({
           title: event.title,
           description: event.description || '',
           event_date: event.event_date,
+          event_end_date: event.event_end_date || '',
           event_type: event.event_type,
           status: event.status,
           is_all_day: event.is_all_day,
@@ -159,9 +165,15 @@ export function AddEditEventDialog({
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label>Date *</Label>
+              <Label>Start Date *</Label>
               <Input type="date" value={form.event_date} onChange={(e) => setForm({ ...form, event_date: e.target.value })} />
             </div>
+            <div>
+              <Label>End Date</Label>
+              <Input type="date" value={form.event_end_date} onChange={(e) => setForm({ ...form, event_end_date: e.target.value })} min={form.event_date} />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
             <div>
               <Label>Type</Label>
               <Select value={form.event_type} onValueChange={(v) => setForm({ ...form, event_type: v })}>

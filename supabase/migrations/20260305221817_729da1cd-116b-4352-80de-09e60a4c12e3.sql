@@ -1,0 +1,1 @@
+ALTER TABLE public.portal_calendar_events ADD COLUMN event_end_date text NULL;
