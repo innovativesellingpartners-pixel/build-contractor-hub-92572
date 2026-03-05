@@ -137,22 +137,20 @@ export default function CustomerPortal() {
   ];
 
   return (
-    <div className="min-h-screen bg-muted/30">
+    <div className="min-h-screen bg-muted/20">
       {/* Contractor-only navigation bar */}
       {isContractor && (
         <div className="bg-primary text-primary-foreground sticky top-0 z-[60]">
-          <div className="max-w-5xl mx-auto px-4 py-2 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 gap-1.5 text-primary-foreground hover:bg-primary-foreground/20 hover:text-primary-foreground"
-                onClick={() => navigate('/')}
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Back to Job
-              </Button>
-            </div>
+          <div className="max-w-4xl mx-auto px-4 py-2 flex items-center justify-between">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 gap-1.5 text-primary-foreground hover:bg-primary-foreground/20 hover:text-primary-foreground"
+              onClick={() => navigate('/')}
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Job
+            </Button>
             <span className="text-xs font-medium opacity-75 hidden sm:inline">Contractor Preview</span>
             <Button
               variant="ghost"
@@ -167,47 +165,51 @@ export default function CustomerPortal() {
         </div>
       )}
 
-      <header className={cn("bg-background border-b sticky z-50", isContractor ? "top-[40px]" : "top-0")}>
-        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center gap-3">
-          {contractor.logo_url ? (
-            <img src={contractor.logo_url} alt="" className="h-10 w-10 rounded-lg object-cover" />
-          ) : (
-            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Building2 className="h-5 w-5 text-primary" />
+      {/* Header with branding */}
+      <header className={cn("bg-card border-b sticky z-50 shadow-sm", isContractor ? "top-[40px]" : "top-0")}>
+        <div className="max-w-4xl mx-auto px-4 py-4">
+          <div className="flex items-center gap-3">
+            {contractor.logo_url ? (
+              <img src={contractor.logo_url} alt="" className="h-11 w-11 rounded-xl object-cover border shadow-sm" />
+            ) : (
+              <div className="h-11 w-11 rounded-xl bg-primary/10 border flex items-center justify-center shadow-sm">
+                <Building2 className="h-5 w-5 text-primary" />
+              </div>
+            )}
+            <div className="min-w-0 flex-1">
+              <h1 className="font-bold text-base sm:text-lg truncate">
+                {contractor.company_name || 'Your Contractor'}
+              </h1>
+              <p className="text-xs text-muted-foreground truncate">
+                {job.name || job.description || `Job ${job.job_number || ''}`}
+              </p>
             </div>
-          )}
-          <div className="min-w-0 flex-1">
-            <h1 className="font-semibold text-sm sm:text-base truncate">
-              {contractor.company_name || 'Your Contractor'}
-            </h1>
-            <p className="text-xs text-muted-foreground truncate">
-              {job.description || job.name || `Job ${job.job_number || ''}`}
-            </p>
           </div>
         </div>
 
-        <div className="max-w-5xl mx-auto px-4">
-          <nav className="flex gap-1 overflow-x-auto pb-1 -mb-px scrollbar-hide">
+        {/* Tab navigation */}
+        <div className="max-w-4xl mx-auto px-4">
+          <nav className="flex gap-0.5 overflow-x-auto pb-0 -mb-px scrollbar-hide">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={cn(
-                  'flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-medium rounded-t-lg transition-colors whitespace-nowrap border-b-2',
+                  'flex items-center gap-1.5 px-3 py-2.5 text-xs sm:text-sm font-medium transition-all whitespace-nowrap border-b-2',
                   activeTab === tab.id
-                    ? 'border-primary text-primary bg-primary/5'
-                    : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-muted-foreground hover:text-foreground'
                 )}
               >
                 <tab.icon className="h-4 w-4" />
-                <span className="hidden sm:inline">{tab.label}</span>
+                <span>{tab.label}</span>
               </button>
             ))}
           </nav>
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 py-6 space-y-6">
+      <main className="max-w-4xl mx-auto px-4 py-5 space-y-5">
         {activeTab === 'overview' && <OverviewTab job={job} contractor={contractor} />}
         {activeTab === 'schedule' && <ScheduleTab jobId={job.id} isContractor={isContractor} contractorId={portalToken.contractor_id} />}
         {activeTab === 'documents' && <DocumentsTab jobId={job.id} />}
@@ -223,18 +225,18 @@ export default function CustomerPortal() {
         {activeTab === 'payments' && <PaymentsTab jobId={job.id} job={job} />}
       </main>
 
-      <footer className="border-t bg-background mt-12">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex flex-col items-center gap-3 text-xs text-muted-foreground">
+      <footer className="border-t bg-card mt-8">
+        <div className="max-w-4xl mx-auto px-4 py-4 flex flex-col items-center gap-3 text-xs text-muted-foreground">
           <div className="flex flex-col sm:flex-row items-center justify-between w-full gap-2">
-            <span>Customer Portal • {contractor.company_name}</span>
+            <span>Customer Portal - {contractor.company_name}</span>
             <div className="flex gap-4">
               {contractor.phone && (
-                <a href={`tel:${contractor.phone}`} className="flex items-center gap-1 hover:text-foreground">
+                <a href={`tel:${contractor.phone}`} className="flex items-center gap-1 hover:text-foreground transition-colors">
                   <Phone className="h-3 w-3" /> {contractor.phone}
                 </a>
               )}
               {contractor.business_email && (
-                <a href={`mailto:${contractor.business_email}`} className="flex items-center gap-1 hover:text-foreground">
+                <a href={`mailto:${contractor.business_email}`} className="flex items-center gap-1 hover:text-foreground transition-colors">
                   <Mail className="h-3 w-3" /> Email
                 </a>
               )}
