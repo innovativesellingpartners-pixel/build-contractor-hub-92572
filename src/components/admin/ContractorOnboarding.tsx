@@ -70,6 +70,10 @@ const PAGES = [
           title: 'Bank Account Connection',
           body: `Link your bank account for expense tracking and financial reporting.\n\n1. Go to Accounting → Banking\n2. Click "Connect Bank Account"\n3. Search for your bank and sign in securely\n4. Select the account(s) to link\n5. Transactions will sync for categorization and reporting`,
         },
+        {
+          title: 'Connections Hub - Connect Everything in One Place',
+          body: `CT1 provides a centralized Connections Hub in your Account settings where you can view and manage all integrations at a glance.\n\nTo access it:\n\n1. Click "Acct" in the top navigation bar\n2. Scroll to the "Connections" section\n3. You will see every available integration with its current status\n4. Click "Connect" on any service to set it up, or "Manage" to adjust existing connections\n\nAvailable connections include:\n\n• Bank Account (Teller / Plaid) - expense tracking\n• QuickBooks Online - accounting sync\n• Google Calendar - appointment sync\n• Outlook Calendar - appointment sync\n• Google Email - send communications\n• Outlook Email - send communications\n• Insurance Portal - document management\n• Voice AI (CT1 Forge) - AI call answering\n• Payment Processing (Finix) - accept payments\n\nWe recommend connecting all relevant services during onboarding to get the full benefit of the platform.`,
+        },
       ],
     },
   },
