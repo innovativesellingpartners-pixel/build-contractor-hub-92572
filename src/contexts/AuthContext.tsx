@@ -46,6 +46,7 @@ interface AuthContextType {
   profile: Profile | null;
   loading: boolean;
   signIn: (email: string, password: string, rememberMe?: boolean) => Promise<{ error: any }>;
+  refreshProfile: () => Promise<void>;
   signUp: (email: string, password: string, companyName?: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: any }>;
