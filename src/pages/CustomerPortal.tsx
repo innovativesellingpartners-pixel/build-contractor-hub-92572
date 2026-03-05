@@ -223,6 +223,7 @@ export default function CustomerPortal() {
             jobId={job.id}
             customerName={customer?.name || 'Customer'}
             contractorName={contractor.company_name || 'Contractor'}
+            isContractor={isContractor}
           />
         )}
         {activeTab === 'payments' && <PaymentsTab jobId={job.id} job={job} />}
@@ -1012,16 +1013,56 @@ function PhotosTab({ jobId, portalTokenId, customerName }: { jobId: string; port
 }
 
 // ==================== MESSAGES TAB ====================
-function MessagesTab({ portalTokenId, jobId, customerName, contractorName }: {
+
+// Consistent color palette for participant bubbles (light, pastel HSL)
+const PARTICIPANT_COLORS = [
+  { bg: 'hsl(220 80% 92%)', text: 'hsl(220 50% 25%)', name: 'hsl(220 50% 40%)', time: 'hsl(220 30% 55%)' },  // blue
+  { bg: 'hsl(264 60% 92%)', text: 'hsl(264 40% 25%)', name: 'hsl(264 40% 40%)', time: 'hsl(264 30% 55%)' },  // purple
+  { bg: 'hsl(150 50% 90%)', text: 'hsl(150 40% 20%)', name: 'hsl(150 40% 35%)', time: 'hsl(150 30% 50%)' },  // green
+  { bg: 'hsl(30 70% 90%)',  text: 'hsl(30 50% 22%)',  name: 'hsl(30 50% 38%)',  time: 'hsl(30 30% 50%)' },   // orange
+  { bg: 'hsl(340 60% 92%)', text: 'hsl(340 40% 25%)', name: 'hsl(340 40% 40%)', time: 'hsl(340 30% 55%)' },  // pink
+  { bg: 'hsl(190 60% 90%)', text: 'hsl(190 40% 20%)', name: 'hsl(190 40% 35%)', time: 'hsl(190 30% 50%)' },  // teal
+];
+
+function getParticipantColor(senderName: string, senderType: string, participantMap: Map<string, number>) {
+  const key = `${senderType}:${senderName}`;
+  if (!participantMap.has(key)) {
+    // Contractor always gets index 0 (blue), others get sequential
+    if (senderType === 'contractor') {
+      participantMap.set(key, 0);
+    } else {
+      const usedIndices = new Set(participantMap.values());
+      let idx = 1; // start customers at 1
+      while (usedIndices.has(idx) && idx < PARTICIPANT_COLORS.length) idx++;
+      participantMap.set(key, idx % PARTICIPANT_COLORS.length);
+    }
+  }
+  return PARTICIPANT_COLORS[participantMap.get(key)! % PARTICIPANT_COLORS.length];
+}
+
+function MessagesTab({ portalTokenId, jobId, customerName, contractorName, isContractor }: {
   portalTokenId: string;
   jobId: string;
   customerName: string;
   contractorName: string;
+  isContractor: boolean;
 }) {
   const queryClient = useQueryClient();
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // For non-contractors, allow setting display name
+  const storageKey = `portal-display-name-${portalTokenId}`;
+  const [displayName, setDisplayName] = useState(() => {
+    if (isContractor) return contractorName;
+    return localStorage.getItem(storageKey) || customerName;
+  });
+  const [editingName, setEditingName] = useState(false);
+  const [nameInput, setNameInput] = useState(displayName);
+
+  // Stable map for color assignment
+  const participantMapRef = useRef(new Map<string, number>());
 
   const { data: messages } = useQuery({
     queryKey: ['portal-messages', portalTokenId],
@@ -1060,11 +1101,14 @@ function MessagesTab({ portalTokenId, jobId, customerName, contractorName }: {
     if (!newMessage.trim()) return;
     setSending(true);
     try {
+      const senderType = isContractor ? 'contractor' : 'customer';
+      const senderName = isContractor ? contractorName : displayName;
+
       const { error } = await supabase.from('portal_messages').insert({
         portal_token_id: portalTokenId,
         job_id: jobId,
-        sender_type: 'customer',
-        sender_name: customerName,
+        sender_type: senderType,
+        sender_name: senderName,
         message: newMessage.trim(),
       });
       if (error) throw error;
@@ -1073,13 +1117,15 @@ function MessagesTab({ portalTokenId, jobId, customerName, contractorName }: {
       queryClient.invalidateQueries({ queryKey: ['portal-messages', portalTokenId] });
 
       // Notify contractor via SMS (fire-and-forget, don't block UI)
-      supabase.functions.invoke('notify-portal-message', {
-        body: {
-          portal_token_id: portalTokenId,
-          message: sentMessage,
-          sender_name: customerName,
-        },
-      }).catch((err) => console.error('Failed to notify contractor:', err));
+      if (!isContractor) {
+        supabase.functions.invoke('notify-portal-message', {
+          body: {
+            portal_token_id: portalTokenId,
+            message: sentMessage,
+            sender_name: senderName,
+          },
+        }).catch((err) => console.error('Failed to notify contractor:', err));
+      }
     } catch {
       toast.error('Failed to send message');
     } finally {
@@ -1087,34 +1133,74 @@ function MessagesTab({ portalTokenId, jobId, customerName, contractorName }: {
     }
   };
 
+  const handleSaveName = () => {
+    const trimmed = nameInput.trim();
+    if (trimmed) {
+      setDisplayName(trimmed);
+      localStorage.setItem(storageKey, trimmed);
+    }
+    setEditingName(false);
+  };
+
+  // Determine if this message is "mine"
+  const isMyMessage = (msg: { sender_type: string; sender_name: string | null }) => {
+    if (isContractor) return msg.sender_type === 'contractor';
+    return msg.sender_type === 'customer' && msg.sender_name === displayName;
+  };
+
   return (
     <div className="flex flex-col h-[calc(100vh-220px)] min-h-[400px]">
+      {/* Display name bar for non-contractors */}
+      {!isContractor && (
+        <div className="flex items-center gap-2 mb-3 px-1">
+          <span className="text-xs text-muted-foreground">Sending as:</span>
+          {editingName ? (
+            <div className="flex items-center gap-1.5">
+              <Input
+                value={nameInput}
+                onChange={(e) => setNameInput(e.target.value)}
+                className="h-7 text-xs w-40"
+                autoFocus
+                onKeyDown={(e) => { if (e.key === 'Enter') handleSaveName(); }}
+              />
+              <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={handleSaveName}>Save</Button>
+            </div>
+          ) : (
+            <button
+              onClick={() => { setNameInput(displayName); setEditingName(true); }}
+              className="text-xs font-medium text-primary hover:underline flex items-center gap-1"
+            >
+              {displayName} <Pencil className="h-3 w-3" />
+            </button>
+          )}
+        </div>
+      )}
+
       <div className="flex-1 overflow-y-auto space-y-3 mb-4">
         {messages && messages.length > 0 ? (
-          messages.map((msg) => (
-            <div key={msg.id} className={cn('flex', msg.sender_type === 'customer' ? 'justify-end' : 'justify-start')}>
-              <div className={cn(
-                'max-w-[80%] rounded-2xl px-4 py-2.5 text-sm shadow-sm',
-                msg.sender_type === 'customer'
-                  ? 'bg-[hsl(264,60%,50%)] text-white rounded-br-md'
-                  : 'bg-[hsl(220,14%,92%)] text-[hsl(220,10%,20%)] rounded-bl-md'
-              )}>
-                <p className={cn(
-                  'text-[10px] font-semibold mb-1',
-                  msg.sender_type === 'customer' ? 'text-white/80' : 'text-[hsl(220,10%,40%)]'
-                )}>
-                  {msg.sender_type === 'customer' ? customerName : contractorName}
-                </p>
-                <p className="whitespace-pre-wrap">{msg.message}</p>
-                <p className={cn(
-                  'text-[10px] mt-1',
-                  msg.sender_type === 'customer' ? 'text-white/50' : 'text-[hsl(220,10%,55%)]'
-                )}>
-                  {format(new Date(msg.created_at), 'MMM d, h:mm a')}
-                </p>
+          messages.map((msg) => {
+            const mine = isMyMessage(msg);
+            const colors = getParticipantColor(msg.sender_name || 'Unknown', msg.sender_type, participantMapRef.current);
+            return (
+              <div key={msg.id} className={cn('flex', mine ? 'justify-end' : 'justify-start')}>
+                <div
+                  className={cn(
+                    'max-w-[80%] rounded-2xl px-4 py-2.5 text-sm shadow-sm',
+                    mine ? 'rounded-br-md' : 'rounded-bl-md'
+                  )}
+                  style={{ backgroundColor: colors.bg, color: colors.text }}
+                >
+                  <p className="text-[10px] font-semibold mb-1" style={{ color: colors.name }}>
+                    {msg.sender_name || (msg.sender_type === 'contractor' ? contractorName : 'Customer')}
+                  </p>
+                  <p className="whitespace-pre-wrap">{msg.message}</p>
+                  <p className="text-[10px] mt-1" style={{ color: colors.time }}>
+                    {format(new Date(msg.created_at), 'MMM d, h:mm a')}
+                  </p>
+                </div>
               </div>
-            </div>
-          ))
+            );
+          })
         ) : (
           <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground">
             <div className="text-center">
