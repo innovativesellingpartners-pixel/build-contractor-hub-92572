@@ -126,7 +126,7 @@ export function NewLandingPage() {
       </Dialog>
 
       {/* SECTION 1: Hero */}
-
+      <section
         className="relative min-h-screen flex items-center overflow-hidden"
         style={{
           backgroundImage: `url(${heroImage})`,
