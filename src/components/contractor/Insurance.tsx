@@ -380,112 +380,75 @@ export function Insurance() {
         </DialogContent>
       </Dialog>
 
-      {/* Embedded Provider Portal Dialog */}
+      {/* Provider Portal Dialog — always shows guided external login */}
       <Dialog open={portalOpen} onOpenChange={setPortalOpen}>
-        <DialogContent className="max-w-5xl w-[95vw] h-[85vh] p-0 gap-0">
+        <DialogContent className="max-w-xl w-[95vw] p-0 gap-0">
           <DialogHeader className="p-4 pb-2 border-b">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Shield className="h-5 w-5 text-primary" />
-                <div>
-                  <DialogTitle className="text-lg">{selectedProvider?.name} Portal</DialogTitle>
-                  <DialogDescription className="text-xs">
-                    {iframeError 
-                      ? "Access your provider externally and upload documents here" 
-                      : "Logged into your insurance provider within CT1"
-                    }
-                  </DialogDescription>
-                </div>
+            <div className="flex items-center gap-3">
+              <Shield className="h-5 w-5 text-primary" />
+              <div>
+                <DialogTitle className="text-lg">{selectedProvider?.name} Portal</DialogTitle>
+                <DialogDescription className="text-xs">
+                  Access your provider externally and upload documents here
+                </DialogDescription>
               </div>
-              {!iframeError && (
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" onClick={handleOpenInNewTab}>
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    Open in New Tab
-                  </Button>
-                </div>
-              )}
             </div>
           </DialogHeader>
-          <div className="flex-1 relative overflow-hidden" style={{ height: 'calc(85vh - 80px)' }}>
-            {iframeError ? (
-              <div className="flex flex-col items-center justify-center h-full p-6 md:p-8">
-                <div className="w-full max-w-lg space-y-6">
-                  {/* Header */}
-                  <div className="text-center space-y-2">
-                    <div className="mx-auto w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-3">
-                      <ExternalLink className="h-7 w-7 text-primary" />
-                    </div>
-                    <h3 className="text-xl font-semibold">Log In Externally</h3>
-                    <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                      {selectedProvider?.name} requires you to log in directly on their website. Follow the steps below to access your policy and upload documents back into CT1.
-                    </p>
-                  </div>
+          <div className="p-6 md:p-8">
+            <div className="w-full max-w-lg mx-auto space-y-6">
+              {/* Header */}
+              <div className="text-center space-y-2">
+                <div className="mx-auto w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-3">
+                  <ExternalLink className="h-7 w-7 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold">Log In Externally</h3>
+                <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                  {selectedProvider?.name} requires you to log in directly on their website. Follow the steps below to access your policy and upload documents back into CT1.
+                </p>
+              </div>
 
-                  {/* Steps */}
-                  <div className="space-y-3">
-                    <div className="flex items-start gap-3 p-3 rounded-lg border bg-card">
-                      <div className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold shrink-0 mt-0.5">1</div>
-                      <div>
-                        <p className="font-medium text-sm">Open your provider's portal</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">Log in to {selectedProvider?.name} in a new tab to access your policies and documents.</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3 p-3 rounded-lg border bg-card">
-                      <div className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold shrink-0 mt-0.5">2</div>
-                      <div>
-                        <p className="font-medium text-sm">Download your documents</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">Download your Certificate of Insurance, policy declarations, or any other compliance documents you need.</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3 p-3 rounded-lg border bg-card">
-                      <div className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold shrink-0 mt-0.5">3</div>
-                      <div>
-                        <p className="font-medium text-sm">Upload to CT1</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">Come back here and upload your documents so they're stored and accessible from your CT1 dashboard.</p>
-                      </div>
-                    </div>
+              {/* Steps */}
+              <div className="space-y-3">
+                <div className="flex items-start gap-3 p-3 rounded-lg border bg-card">
+                  <div className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold shrink-0 mt-0.5">1</div>
+                  <div>
+                    <p className="font-medium text-sm">Open your provider's portal</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">Log in to {selectedProvider?.name} in a new tab to access your policies and documents.</p>
                   </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <Button onClick={handleOpenInNewTab} size="lg" className="flex-1">
-                      <ExternalLink className="h-5 w-5 mr-2" />
-                      Open {selectedProvider?.name}
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="lg" 
-                      className="flex-1"
-                      onClick={() => { setPortalOpen(false); setUploadDialogOpen(true); }}
-                    >
-                      <Upload className="h-5 w-5 mr-2" />
-                      Upload Documents
-                    </Button>
+                </div>
+                <div className="flex items-start gap-3 p-3 rounded-lg border bg-card">
+                  <div className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold shrink-0 mt-0.5">2</div>
+                  <div>
+                    <p className="font-medium text-sm">Download your documents</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">Download your Certificate of Insurance, policy declarations, or any other compliance documents you need.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 p-3 rounded-lg border bg-card">
+                  <div className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold shrink-0 mt-0.5">3</div>
+                  <div>
+                    <p className="font-medium text-sm">Upload to CT1</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">Come back here and upload your documents so they're stored and accessible from your CT1 dashboard.</p>
                   </div>
                 </div>
               </div>
-            ) : (
-              <iframe
-                src={selectedProvider?.portalUrl || ''}
-                className="w-full h-full border-0"
-                title={`${selectedProvider?.name} Portal`}
-                sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
-                onError={() => setIframeError(true)}
-                onLoad={(e) => {
-                  // Try to detect if the iframe was blocked
-                  try {
-                    const iframe = e.target as HTMLIFrameElement;
-                    // If we can't access contentDocument, it might be blocked
-                    if (iframe.contentDocument === null && iframe.contentWindow === null) {
-                      setIframeError(true);
-                    }
-                  } catch {
-                    // Cross-origin - this is expected, iframe loaded successfully
-                  }
-                }}
-              />
-            )}
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button onClick={handleOpenInNewTab} size="lg" className="flex-1">
+                  <ExternalLink className="h-5 w-5 mr-2" />
+                  Open {selectedProvider?.name}
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="lg" 
+                  className="flex-1"
+                  onClick={() => { setPortalOpen(false); setUploadDialogOpen(true); }}
+                >
+                  <Upload className="h-5 w-5 mr-2" />
+                  Upload Documents
+                </Button>
+              </div>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
