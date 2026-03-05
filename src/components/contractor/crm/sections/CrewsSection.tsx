@@ -476,10 +476,16 @@ export default function CrewsSection({ onSectionChange }: CrewsProps) {
                 />
               </div>
               {tab === 'crews' ? (
-                <Button size="sm" className="gap-1.5" onClick={() => { setEditingCrew(null); setCrewDialogOpen(true); }}>
-                  <Plus className="h-4 w-4" />
-                  New Crew
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button size="sm" variant="outline" className="gap-1.5" onClick={() => { setEditingMember(null); setMemberDialogOpen(true); }}>
+                    <UserPlus className="h-4 w-4" />
+                    Add Member
+                  </Button>
+                  <Button size="sm" className="gap-1.5" onClick={() => { setEditingCrew(null); setCrewDialogOpen(true); }}>
+                    <Plus className="h-4 w-4" />
+                    New Crew
+                  </Button>
+                </div>
               ) : (
                 <Button size="sm" className="gap-1.5" onClick={() => { setEditingMember(null); setMemberDialogOpen(true); }}>
                   <UserPlus className="h-4 w-4" />
@@ -496,11 +502,17 @@ export default function CrewsSection({ onSectionChange }: CrewsProps) {
                 <CardContent className="py-12 text-center">
                   <Shield className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
                   <h3 className="font-semibold mb-1">No crews yet</h3>
-                  <p className="text-sm text-muted-foreground mb-4">Create your first crew to organize your team</p>
-                  <Button onClick={() => { setEditingCrew(null); setCrewDialogOpen(true); }} className="gap-1.5">
-                    <Plus className="h-4 w-4" />
-                    Create Crew
-                  </Button>
+                  <p className="text-sm text-muted-foreground mb-4">Create a crew to organize your team, or add individual members</p>
+                  <div className="flex items-center justify-center gap-2">
+                    <Button variant="outline" onClick={() => { setEditingMember(null); setMemberDialogOpen(true); }} className="gap-1.5">
+                      <UserPlus className="h-4 w-4" />
+                      Add Individual Member
+                    </Button>
+                    <Button onClick={() => { setEditingCrew(null); setCrewDialogOpen(true); }} className="gap-1.5">
+                      <Plus className="h-4 w-4" />
+                      Create Crew
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             ) : (
