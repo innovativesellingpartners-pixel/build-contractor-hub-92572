@@ -51,8 +51,33 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
   
   // Track if emails have been fetched to prevent re-fetching on tab switches
   const emailsFetchedRef = useRef(false);
-  // Track emails that have been marked as read locally (for optimistic updates)
-  const readEmailIdsRef = useRef<Set<string>>(new Set());
+  // Track emails that have been marked as read locally - persisted in localStorage
+  const STORAGE_KEY = `ct1-read-emails-${user?.id || 'anon'}`;
+  const readEmailIdsRef = useRef<Set<string>>(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      return stored ? new Set(JSON.parse(stored)) : new Set();
+    } catch { return new Set(); }
+  });
+
+  // Initialize ref from localStorage on mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const ids: string[] = JSON.parse(stored);
+        ids.forEach(id => readEmailIdsRef.current.add(id));
+      }
+    } catch { /* ignore */ }
+  }, [STORAGE_KEY]);
+
+  const persistReadIds = useCallback(() => {
+    try {
+      // Keep only last 500 to avoid unbounded growth
+      const arr = Array.from(readEmailIdsRef.current).slice(-500);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+    } catch { /* ignore */ }
+  }, [STORAGE_KEY]);
   
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
