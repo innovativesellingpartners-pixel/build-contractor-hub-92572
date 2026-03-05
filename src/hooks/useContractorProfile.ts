@@ -25,6 +25,9 @@ export interface ContractorProfile {
   brand_primary_color: string | null;
   brand_secondary_color: string | null;
   brand_accent_color: string | null;
+  brand_footer_color: string | null;
+  brand_accent_bg_color: string | null;
+  watermark_logo_url: string | null;
   // Payment settings
   zelle_email: string | null;
   zelle_phone: string | null;
