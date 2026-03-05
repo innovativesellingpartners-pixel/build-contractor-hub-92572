@@ -555,6 +555,77 @@ function ScheduleTab({ jobId, isContractor = false, contractorId, portalTokenId 
           }}
         />
       )}
+
+      {/* Event Detail/Edit Popup */}
+      {selectedEvent && (
+        <Dialog open={showEventDialog} onOpenChange={(v) => { setShowEventDialog(v); if (!v) setSelectedEvent(null); }}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                {(() => {
+                  const conf = eventTypeConfig[selectedEvent.event_type] || eventTypeConfig.other;
+                  const Icon = conf.icon;
+                  return <Icon className="h-5 w-5 text-primary" />;
+                })()}
+                Event Details
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3">
+              <div>
+                <p className="font-semibold text-foreground">{selectedEvent.title}</p>
+                <p className="text-sm text-muted-foreground">
+                  {format(new Date(selectedEvent.event_date + 'T00:00:00'), 'EEEE, MMMM d, yyyy')}
+                </p>
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <Badge className={cn('text-xs', (eventTypeConfig[selectedEvent.event_type] || eventTypeConfig.other).color)}>
+                  {(eventTypeConfig[selectedEvent.event_type] || eventTypeConfig.other).label}
+                </Badge>
+                <Badge className={cn('text-xs', (statusConfig[selectedEvent.status] || statusConfig.scheduled).color)}>
+                  {(statusConfig[selectedEvent.status] || statusConfig.scheduled).label}
+                </Badge>
+              </div>
+              {(!selectedEvent.is_all_day && selectedEvent.start_time) ? (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Clock className="h-4 w-4" />
+                  {formatTime(selectedEvent.start_time)}{selectedEvent.end_time ? ` – ${formatTime(selectedEvent.end_time)}` : ''}
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Clock className="h-4 w-4" />
+                  All Day
+                </div>
+              )}
+              {selectedEvent.description && (
+                <div className="rounded-lg bg-muted/50 p-3">
+                  <p className="text-sm text-foreground">{selectedEvent.description}</p>
+                </div>
+              )}
+            </div>
+            <DialogFooter className="gap-2">
+              <DialogClose asChild>
+                <Button variant="outline">Close</Button>
+              </DialogClose>
+              {isContractor && contractorId && (
+                <>
+                  <DeleteEventButton eventId={selectedEvent.id} jobId={jobId} />
+                  <AddEditEventDialog
+                    jobId={jobId}
+                    contractorId={contractorId}
+                    event={selectedEvent}
+                    trigger={
+                      <Button className="gap-1.5">
+                        <Pencil className="h-4 w-4" />
+                        Edit
+                      </Button>
+                    }
+                  />
+                </>
+              )}
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
