@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { GlobalPocketAgent } from "@/components/GlobalPocketbot";
+import { DashboardPocketAgent } from "@/components/DashboardPocketAgent";
 import { usePWABackNavigation } from "@/hooks/usePWABackNavigation";
 import { HomeRedirect } from "@/components/HomeRedirect";
 import { NewLandingPage } from "@/components/NewLandingPage";
