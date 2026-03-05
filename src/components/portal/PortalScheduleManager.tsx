@@ -8,8 +8,10 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, Send, Mail, Users } from 'lucide-react';
+import { Plus, Pencil, Trash2, Send, Mail, Users, Phone, UserPlus, MessageSquare, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 
@@ -256,35 +258,51 @@ export function EmailScheduleDialog({
   contractorId,
   events,
   selectedDate,
+  portalTokenId,
 }: {
   jobId: string;
   contractorId: string;
   events: CalendarEvent[];
   selectedDate?: string | null;
+  portalTokenId?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [emailMode, setEmailMode] = useState<'day' | 'all'>(selectedDate ? 'day' : 'all');
   const [selectedDay, setSelectedDay] = useState(selectedDate || format(new Date(), 'yyyy-MM-dd'));
   const [selectedCrewIds, setSelectedCrewIds] = useState<string[]>([]);
+  const [selectedParticipantIds, setSelectedParticipantIds] = useState<string[]>([]);
   const [customEmails, setCustomEmails] = useState('');
-  const [sending, setSending] = useState(false);
+  const [customPhones, setCustomPhones] = useState('');
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [sendingSms, setSendingSms] = useState(false);
+  const [activeTab, setActiveTab] = useState('email');
 
+  // Fetch crew members
   const { data: crewMembers } = useQuery({
     queryKey: ['crew-members-for-email'],
     queryFn: async () => {
       const { data } = await supabase
         .from('crew_members')
-        .select('id, name, contact_info, role')
+        .select('id, name, email, phone, role')
         .order('name');
       return data || [];
     },
   });
 
-  const getCrewEmail = (member: any): string | null => {
-    if (!member.contact_info) return null;
-    const info = typeof member.contact_info === 'string' ? JSON.parse(member.contact_info) : member.contact_info;
-    return info?.email || null;
-  };
+  // Fetch portal participants
+  const { data: participants } = useQuery({
+    queryKey: ['portal-participants-schedule', portalTokenId],
+    queryFn: async () => {
+      if (!portalTokenId) return [];
+      const { data } = await (supabase as any)
+        .from('portal_participants')
+        .select('*')
+        .eq('portal_token_id', portalTokenId)
+        .order('created_at', { ascending: true });
+      return data || [];
+    },
+    enabled: !!portalTokenId,
+  });
 
   const toggleCrew = (id: string) => {
     setSelectedCrewIds((prev) =>
@@ -292,40 +310,113 @@ export function EmailScheduleDialog({
     );
   };
 
-  const selectAll = () => {
+  const toggleParticipant = (id: string) => {
+    setSelectedParticipantIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+
+  const selectAllCrew = () => {
     if (!crewMembers) return;
-    const withEmail = crewMembers.filter((m) => getCrewEmail(m)).map((m) => m.id);
+    const withEmail = crewMembers.filter((m) => m.email).map((m) => m.id);
     setSelectedCrewIds(withEmail);
+  };
+
+  const selectAllParticipants = () => {
+    if (!participants) return;
+    const withContact = participants.filter((p: any) => p.email || p.phone).map((p: any) => p.id);
+    setSelectedParticipantIds(withContact);
   };
 
   const filteredEvents = emailMode === 'day'
     ? events.filter((e) => e.event_date === selectedDay)
     : events;
 
-  const handleSend = async () => {
-    const crewEmails = (crewMembers || [])
-      .filter((m) => selectedCrewIds.includes(m.id))
-      .map((m) => getCrewEmail(m))
-      .filter(Boolean) as string[];
+  const formatTime = (time: string | null) => {
+    if (!time) return '';
+    const [h, m] = time.split(':');
+    const hour = parseInt(h);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const h12 = hour % 12 || 12;
+    return `${h12}:${m} ${ampm}`;
+  };
 
-    const extraEmails = customEmails
+  const formatDateStr = (dateStr: string) => {
+    const d = new Date(dateStr + 'T00:00:00');
+    return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  };
+
+  const buildScheduleText = () => {
+    const sorted = [...filteredEvents].sort((a, b) => a.event_date.localeCompare(b.event_date));
+    let text = emailMode === 'day' ? `Schedule for ${formatDateStr(selectedDay)}:\n` : `Project Schedule:\n`;
+    sorted.forEach((evt) => {
+      const timeStr = evt.is_all_day ? 'All Day' : `${formatTime(evt.start_time)}${evt.end_time ? ' - ' + formatTime(evt.end_time) : ''}`;
+      text += `\n📅 ${formatDateStr(evt.event_date)} (${timeStr})\n   ${evt.title}`;
+      if (evt.description) text += `\n   ${evt.description}`;
+    });
+    return text;
+  };
+
+  // Gather all email recipients
+  const gatherEmailRecipients = () => {
+    const emails: string[] = [];
+
+    // From crew members
+    (crewMembers || [])
+      .filter((m) => selectedCrewIds.includes(m.id) && m.email)
+      .forEach((m) => emails.push(m.email!));
+
+    // From portal participants
+    (participants || [])
+      .filter((p: any) => selectedParticipantIds.includes(p.id) && p.email)
+      .forEach((p: any) => emails.push(p.email));
+
+    // Custom emails
+    customEmails
       .split(/[,;\n]/)
       .map((e) => e.trim())
-      .filter((e) => e.includes('@'));
+      .filter((e) => e.includes('@'))
+      .forEach((e) => emails.push(e));
 
-    const allEmails = [...new Set([...crewEmails, ...extraEmails])];
+    return [...new Set(emails)];
+  };
 
+  // Gather all SMS recipients
+  const gatherSmsRecipients = () => {
+    const phones: string[] = [];
+
+    // From crew members
+    (crewMembers || [])
+      .filter((m) => selectedCrewIds.includes(m.id) && m.phone)
+      .forEach((m) => phones.push(m.phone!));
+
+    // From portal participants
+    (participants || [])
+      .filter((p: any) => selectedParticipantIds.includes(p.id) && p.phone)
+      .forEach((p: any) => phones.push(p.phone));
+
+    // Custom phones
+    customPhones
+      .split(/[,;\n]/)
+      .map((p) => p.trim().replace(/[^\d+]/g, ''))
+      .filter((p) => p.length >= 10)
+      .forEach((p) => phones.push(p));
+
+    return [...new Set(phones)];
+  };
+
+  const handleSendEmail = async () => {
+    const allEmails = gatherEmailRecipients();
     if (allEmails.length === 0) {
-      toast.error('Please select crew members or enter email addresses');
+      toast.error('No email recipients selected');
       return;
     }
-
     if (filteredEvents.length === 0) {
       toast.error('No events to send for the selected period');
       return;
     }
 
-    setSending(true);
+    setSendingEmail(true);
     try {
       const { error } = await supabase.functions.invoke('send-schedule-email', {
         body: {
@@ -337,115 +428,243 @@ export function EmailScheduleDialog({
         },
       });
       if (error) throw error;
-      toast.success(`Schedule sent to ${allEmails.length} recipient(s)`);
+      toast.success(`Schedule emailed to ${allEmails.length} recipient(s)`);
       setOpen(false);
     } catch (err: any) {
-      toast.error(err.message || 'Failed to send schedule');
+      toast.error(err.message || 'Failed to send email');
     } finally {
-      setSending(false);
+      setSendingEmail(false);
     }
   };
+
+  const handleSendSms = async () => {
+    const allPhones = gatherSmsRecipients();
+    if (allPhones.length === 0) {
+      toast.error('No SMS recipients selected');
+      return;
+    }
+    if (filteredEvents.length === 0) {
+      toast.error('No events to send');
+      return;
+    }
+
+    setSendingSms(true);
+    const scheduleText = buildScheduleText();
+    let sentCount = 0;
+
+    try {
+      for (const phone of allPhones) {
+        const { error } = await supabase.functions.invoke('send-portal-sms', {
+          body: { to: phone, message: scheduleText },
+        });
+        if (error) {
+          console.error(`SMS failed for ${phone}:`, error);
+        } else {
+          sentCount++;
+        }
+      }
+      if (sentCount > 0) {
+        toast.success(`Schedule texted to ${sentCount} recipient(s)`);
+        setOpen(false);
+      } else {
+        toast.error('Failed to send any SMS');
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to send SMS');
+    } finally {
+      setSendingSms(false);
+    }
+  };
+
+  const emailCount = gatherEmailRecipients().length;
+  const smsCount = gatherSmsRecipients().length;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="gap-1.5">
-          <Mail className="h-4 w-4" />
-          Email Schedule
+          <Send className="h-4 w-4" />
+          Send Schedule
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Send className="h-5 w-5 text-primary" />
-            Email Schedule to Crew
+            Send Schedule
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
-          {/* Mode selection */}
-          <div>
-            <Label>What to send</Label>
-            <Select value={emailMode} onValueChange={(v: 'day' | 'all') => setEmailMode(v)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Entire Calendar ({events.length} events)</SelectItem>
-                <SelectItem value="day">Specific Day</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {emailMode === 'day' && (
+          {/* What to send */}
+          <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label>Select Date</Label>
-              <Input type="date" value={selectedDay} onChange={(e) => setSelectedDay(e.target.value)} />
-              <p className="text-xs text-muted-foreground mt-1">
-                {filteredEvents.length} event(s) on this day
-              </p>
+              <Label>What to send</Label>
+              <Select value={emailMode} onValueChange={(v: 'day' | 'all') => setEmailMode(v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Full Calendar ({events.length} events)</SelectItem>
+                  <SelectItem value="day">Specific Day</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-          )}
-
-          {/* Crew members */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <Label className="flex items-center gap-1.5">
-                <Users className="h-4 w-4" />
-                Select Crew Members
-              </Label>
-              <Button variant="ghost" size="sm" className="text-xs h-7" onClick={selectAll}>
-                Select All
-              </Button>
-            </div>
-            <div className="max-h-40 overflow-y-auto border rounded-md divide-y">
-              {crewMembers && crewMembers.length > 0 ? (
-                crewMembers.map((member) => {
-                  const email = getCrewEmail(member);
-                  return (
-                    <label
-                      key={member.id}
-                      className={cn(
-                        'flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-muted/50',
-                        !email && 'opacity-50 cursor-not-allowed'
-                      )}
-                    >
-                      <Checkbox
-                        checked={selectedCrewIds.includes(member.id)}
-                        onCheckedChange={() => email && toggleCrew(member.id)}
-                        disabled={!email}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <span className="text-sm font-medium">{member.name}</span>
-                        {email ? (
-                          <span className="text-xs text-muted-foreground ml-2">{email}</span>
-                        ) : (
-                          <span className="text-xs text-destructive ml-2">No email</span>
-                        )}
-                      </div>
-                    </label>
-                  );
-                })
-              ) : (
-                <p className="text-sm text-muted-foreground p-3">No crew members found</p>
-              )}
-            </div>
+            {emailMode === 'day' && (
+              <div>
+                <Label>Select Date</Label>
+                <Input type="date" value={selectedDay} onChange={(e) => setSelectedDay(e.target.value)} />
+                <p className="text-[10px] text-muted-foreground mt-0.5">
+                  {filteredEvents.length} event(s)
+                </p>
+              </div>
+            )}
           </div>
 
-          {/* Additional emails */}
-          <div>
-            <Label>Additional Email Addresses</Label>
-            <Textarea
-              value={customEmails}
-              onChange={(e) => setCustomEmails(e.target.value)}
-              placeholder="Enter emails separated by commas or new lines"
-              rows={2}
-            />
+          {/* Recipients */}
+          <div className="space-y-3">
+            <Label className="text-sm font-semibold">Recipients</Label>
+
+            {/* Portal Participants */}
+            {participants && participants.length > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <Label className="text-xs flex items-center gap-1.5">
+                    <UserPlus className="h-3.5 w-3.5" />
+                    Portal Participants
+                  </Label>
+                  <Button variant="ghost" size="sm" className="text-[10px] h-6 px-2" onClick={selectAllParticipants}>
+                    Select All
+                  </Button>
+                </div>
+                <div className="max-h-32 overflow-y-auto border rounded-md divide-y">
+                  {participants.map((p: any) => {
+                    const hasContact = p.email || p.phone;
+                    return (
+                      <label
+                        key={p.id}
+                        className={cn(
+                          'flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-muted/50',
+                          !hasContact && 'opacity-50 cursor-not-allowed'
+                        )}
+                      >
+                        <Checkbox
+                          checked={selectedParticipantIds.includes(p.id)}
+                          onCheckedChange={() => hasContact && toggleParticipant(p.id)}
+                          disabled={!hasContact}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-sm font-medium">{p.name}</span>
+                            <Badge variant="outline" className="text-[9px] h-4">
+                              {p.role === 'contractor' ? 'Team' : 'Customer'}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                            {p.email && <span className="flex items-center gap-0.5"><Mail className="h-2.5 w-2.5" />{p.email}</span>}
+                            {p.phone && <span className="flex items-center gap-0.5"><Phone className="h-2.5 w-2.5" />{p.phone}</span>}
+                            {!hasContact && <span className="text-destructive">No contact info</span>}
+                          </div>
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Crew Members */}
+            {crewMembers && crewMembers.length > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <Label className="text-xs flex items-center gap-1.5">
+                    <Users className="h-3.5 w-3.5" />
+                    Crew Members
+                  </Label>
+                  <Button variant="ghost" size="sm" className="text-[10px] h-6 px-2" onClick={selectAllCrew}>
+                    Select All
+                  </Button>
+                </div>
+                <div className="max-h-32 overflow-y-auto border rounded-md divide-y">
+                  {crewMembers.map((member) => {
+                    const hasContact = member.email || member.phone;
+                    return (
+                      <label
+                        key={member.id}
+                        className={cn(
+                          'flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-muted/50',
+                          !hasContact && 'opacity-50 cursor-not-allowed'
+                        )}
+                      >
+                        <Checkbox
+                          checked={selectedCrewIds.includes(member.id)}
+                          onCheckedChange={() => hasContact && toggleCrew(member.id)}
+                          disabled={!hasContact}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <span className="text-sm font-medium">{member.name}</span>
+                          <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                            {member.email && <span className="flex items-center gap-0.5"><Mail className="h-2.5 w-2.5" />{member.email}</span>}
+                            {member.phone && <span className="flex items-center gap-0.5"><Phone className="h-2.5 w-2.5" />{member.phone}</span>}
+                            {!hasContact && <span className="text-destructive">No contact info</span>}
+                          </div>
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Custom recipients */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs flex items-center gap-1">
+                  <Mail className="h-3 w-3" />
+                  Additional Emails
+                </Label>
+                <Textarea
+                  value={customEmails}
+                  onChange={(e) => setCustomEmails(e.target.value)}
+                  placeholder="Comma-separated emails"
+                  rows={2}
+                  className="text-xs"
+                />
+              </div>
+              <div>
+                <Label className="text-xs flex items-center gap-1">
+                  <Phone className="h-3 w-3" />
+                  Additional Phone Numbers
+                </Label>
+                <Textarea
+                  value={customPhones}
+                  onChange={(e) => setCustomPhones(e.target.value)}
+                  placeholder="Comma-separated phone numbers"
+                  rows={2}
+                  className="text-xs"
+                />
+              </div>
+            </div>
           </div>
         </div>
-        <DialogFooter>
+
+        <DialogFooter className="flex-col sm:flex-row gap-2">
           <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
+            <Button variant="outline" className="flex-1">Cancel</Button>
           </DialogClose>
-          <Button onClick={handleSend} disabled={sending}>
-            {sending ? 'Sending...' : `Send Schedule`}
+          <Button
+            onClick={handleSendSms}
+            disabled={sendingSms || smsCount === 0}
+            variant="outline"
+            className="flex-1 gap-1.5"
+          >
+            {sendingSms ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageSquare className="h-4 w-4" />}
+            Text {smsCount > 0 ? `(${smsCount})` : ''}
+          </Button>
+          <Button
+            onClick={handleSendEmail}
+            disabled={sendingEmail || emailCount === 0}
+            className="flex-1 gap-1.5"
+          >
+            {sendingEmail ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
+            Email {emailCount > 0 ? `(${emailCount})` : ''}
           </Button>
         </DialogFooter>
       </DialogContent>
