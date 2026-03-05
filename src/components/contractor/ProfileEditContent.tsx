@@ -7,7 +7,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
-import { Upload, Loader2, Building2, Globe, DollarSign, Shield, Percent, Palette, Save } from "lucide-react";
+import { Upload, Loader2, Building2, Globe, DollarSign, Shield, Percent, Palette, Save, ImageIcon } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
 import { WarrantyManagement } from "./WarrantyManagement";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -22,6 +23,7 @@ export function ProfileEditContent() {
   const { isSuperAdmin } = useAdminAuth();
   const [savingSection, setSavingSection] = useState<SectionKey | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadingWatermark, setUploadingWatermark] = useState(false);
   const [activeTab, setActiveTab] = useState("business");
   const [formData, setFormData] = useState({
     company_name: '',
@@ -44,6 +46,7 @@ export function ProfileEditContent() {
     brand_footer_color: '#333333',
     brand_accent_bg_color: '#f5f5f5',
     watermark_logo_url: '',
+    watermark_opacity: 15,
     default_sales_tax_rate: '',
     default_deposit_percent: '',
     default_warranty_years: '',
@@ -76,6 +79,7 @@ export function ProfileEditContent() {
         brand_footer_color: (profile as any).brand_footer_color || '#333333',
         brand_accent_bg_color: (profile as any).brand_accent_bg_color || '#f5f5f5',
         watermark_logo_url: (profile as any).watermark_logo_url || '',
+        watermark_opacity: ((profile as any).watermark_opacity ?? 0.15) * 100,
         default_sales_tax_rate: profile.default_sales_tax_rate?.toString() || '6.00',
         default_deposit_percent: profile.default_deposit_percent?.toString() || '30.00',
         default_warranty_years: profile.default_warranty_years?.toString() || '2',
@@ -136,6 +140,30 @@ export function ProfileEditContent() {
     }
   };
 
+  const handleWatermarkUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    setUploadingWatermark(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/watermark-${Date.now()}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage
+        .from('company-logos')
+        .upload(fileName, file, { upsert: true });
+      if (uploadError) throw uploadError;
+      const { data: { publicUrl } } = supabase.storage
+        .from('company-logos')
+        .getPublicUrl(fileName);
+      setFormData(prev => ({ ...prev, watermark_logo_url: publicUrl }));
+      toast({ title: "Watermark uploaded", description: "Your watermark logo has been uploaded." });
+    } catch (error) {
+      console.error('Error uploading watermark:', error);
+      toast({ title: "Upload failed", description: "Failed to upload watermark.", variant: "destructive" });
+    } finally {
+      setUploadingWatermark(false);
+    }
+  };
+
   const handleSaveSection = async (section: SectionKey) => {
     if (!user) return;
 
@@ -176,6 +204,7 @@ export function ProfileEditContent() {
             brand_footer_color: formData.brand_footer_color,
             brand_accent_bg_color: formData.brand_accent_bg_color,
             watermark_logo_url: formData.watermark_logo_url,
+            watermark_opacity: formData.watermark_opacity / 100,
           };
           break;
         case 'defaults':
@@ -620,13 +649,23 @@ export function ProfileEditContent() {
 
                   {/* Watermark Logo */}
                   <Separator />
-                  <div className="space-y-2">
-                    <Label>Watermark Logo</Label>
-                    <p className="text-xs text-muted-foreground">Upload a faded logo to appear as a watermark on document backgrounds</p>
-                    <div className="flex items-center gap-4">
+                  <div className="space-y-4">
+                    <div>
+                      <Label className="flex items-center gap-2">
+                        <ImageIcon className="h-4 w-4" />
+                        Watermark Logo
+                      </Label>
+                      <p className="text-xs text-muted-foreground mt-1">Upload a logo to appear as a faded watermark on document backgrounds</p>
+                    </div>
+                    <div className="flex items-start gap-4">
                       {formData.watermark_logo_url ? (
-                        <div className="relative w-20 h-20 rounded-lg border bg-muted/30 flex items-center justify-center overflow-hidden">
-                          <img src={formData.watermark_logo_url} alt="Watermark" className="max-w-full max-h-full object-contain opacity-40" />
+                        <div className="relative w-24 h-24 rounded-lg border bg-muted/30 flex items-center justify-center overflow-hidden flex-shrink-0">
+                          <img 
+                            src={formData.watermark_logo_url} 
+                            alt="Watermark" 
+                            className="max-w-full max-h-full object-contain" 
+                            style={{ opacity: formData.watermark_opacity / 100 }}
+                          />
                           <button
                             type="button"
                             onClick={() => setFormData(prev => ({ ...prev, watermark_logo_url: '' }))}
@@ -636,19 +675,48 @@ export function ProfileEditContent() {
                           </button>
                         </div>
                       ) : (
-                        <div className="w-20 h-20 rounded-lg border-2 border-dashed border-muted-foreground/30 flex items-center justify-center text-muted-foreground text-xs text-center p-1">
+                        <div className="w-24 h-24 rounded-lg border-2 border-dashed border-muted-foreground/30 flex items-center justify-center text-muted-foreground text-xs text-center p-2 flex-shrink-0">
                           No watermark
                         </div>
                       )}
-                      <div>
-                        <Input
-                          type="url"
-                          value={formData.watermark_logo_url}
-                          onChange={handleChange}
-                          name="watermark_logo_url"
-                          placeholder="https://... or upload via Logo section"
-                          className="text-sm"
-                        />
+                      <div className="flex-1 space-y-3">
+                        <div>
+                          <Label htmlFor="watermark-upload" className="cursor-pointer">
+                            <div className="flex items-center gap-2 text-sm text-primary hover:underline">
+                              {uploadingWatermark ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                              {uploadingWatermark ? 'Uploading...' : 'Upload watermark image'}
+                            </div>
+                          </Label>
+                          <input
+                            id="watermark-upload"
+                            type="file"
+                            accept="image/*"
+                            onChange={handleWatermarkUpload}
+                            className="hidden"
+                            disabled={uploadingWatermark}
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">PNG with transparent background works best</p>
+                        </div>
+                        
+                        {/* Opacity / Transparency Slider */}
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-xs">Transparency</Label>
+                            <span className="text-xs text-muted-foreground font-mono">{formData.watermark_opacity}%</span>
+                          </div>
+                          <Slider
+                            value={[formData.watermark_opacity]}
+                            onValueChange={([val]) => setFormData(prev => ({ ...prev, watermark_opacity: val }))}
+                            min={5}
+                            max={100}
+                            step={5}
+                            className="w-full"
+                          />
+                          <div className="flex justify-between text-[10px] text-muted-foreground">
+                            <span>Very faded</span>
+                            <span>Full opacity</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -665,13 +733,19 @@ export function ProfileEditContent() {
                         Header
                       </div>
                       <div 
-                        className="px-4 py-3 text-xs"
+                        className="px-4 py-6 text-xs relative overflow-hidden"
                         style={{ backgroundColor: formData.brand_accent_bg_color, color: formData.brand_secondary_color }}
                       >
-                        <span className="font-semibold">Body Content</span> — with accent background
                         {formData.watermark_logo_url && (
-                          <img src={formData.watermark_logo_url} alt="" className="inline-block ml-2 h-6 opacity-20" />
+                          <img 
+                            src={formData.watermark_logo_url} 
+                            alt="" 
+                            className="absolute inset-0 m-auto h-16 object-contain pointer-events-none"
+                            style={{ opacity: formData.watermark_opacity / 100 }}
+                          />
                         )}
+                        <span className="font-semibold relative z-10">Body Content</span>
+                        <span className="relative z-10"> — with accent background & watermark</span>
                       </div>
                       <div 
                         className="px-4 py-2 text-white text-xs"

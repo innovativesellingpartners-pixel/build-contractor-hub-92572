@@ -4862,6 +4862,7 @@ export type Database = {
           user_id: string
           username: string | null
           watermark_logo_url: string | null
+          watermark_opacity: number | null
           website_url: string | null
           zelle_email: string | null
           zelle_phone: string | null
@@ -4911,6 +4912,7 @@ export type Database = {
           user_id: string
           username?: string | null
           watermark_logo_url?: string | null
+          watermark_opacity?: number | null
           website_url?: string | null
           zelle_email?: string | null
           zelle_phone?: string | null
@@ -4960,6 +4962,7 @@ export type Database = {
           user_id?: string
           username?: string | null
           watermark_logo_url?: string | null
+          watermark_opacity?: number | null
           website_url?: string | null
           zelle_email?: string | null
           zelle_phone?: string | null

@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS watermark_opacity numeric DEFAULT 0.15;
