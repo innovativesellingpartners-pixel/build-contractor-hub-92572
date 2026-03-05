@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
@@ -261,6 +262,8 @@ function ScheduleTab({ jobId, isContractor = false, contractorId, portalTokenId 
   const [selectedMonth, setSelectedMonth] = useState(() => new Date());
   const [clickedDate, setClickedDate] = useState<string | null>(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
+  const [showEventDialog, setShowEventDialog] = useState(false);
   const { data: events, isLoading } = useQuery({
     queryKey: ['portal-calendar-events', jobId],
     queryFn: async () => {
@@ -333,7 +336,11 @@ function ScheduleTab({ jobId, isContractor = false, contractorId, portalTokenId 
     const TypeIcon = typeConf.icon;
 
     return (
-      <div key={event.id} className={cn('rounded-xl border p-4 space-y-2 transition-colors', typeConf.color)}>
+      <div
+        key={event.id}
+        className={cn('rounded-xl border p-4 space-y-2 transition-colors cursor-pointer hover:shadow-md', typeConf.color)}
+        onClick={() => { setSelectedEvent(event); setShowEventDialog(true); }}
+      >
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2.5">
             <div className="h-9 w-9 rounded-lg bg-background/80 border flex items-center justify-center shrink-0">
@@ -358,21 +365,6 @@ function ScheduleTab({ jobId, isContractor = false, contractorId, portalTokenId 
           </div>
           <div className="flex items-center gap-1 shrink-0">
             <Badge className={cn('text-[10px]', statConf.color)}>{statConf.label}</Badge>
-            {isContractor && contractorId && (
-              <>
-                <AddEditEventDialog
-                  jobId={jobId}
-                  contractorId={contractorId}
-                  event={event}
-                  trigger={
-                    <Button variant="ghost" size="icon" className="h-7 w-7">
-                      <Pencil className="h-3.5 w-3.5" />
-                    </Button>
-                  }
-                />
-                <DeleteEventButton eventId={event.id} jobId={jobId} />
-              </>
-            )}
           </div>
         </div>
         {event.description && (
@@ -401,20 +393,18 @@ function ScheduleTab({ jobId, isContractor = false, contractorId, portalTokenId 
               Project Calendar
             </CardTitle>
             <div className="flex items-center gap-2">
+              <EmailScheduleDialog jobId={jobId} contractorId={contractorId || ''} events={events || []} portalTokenId={portalTokenId} />
               {isContractor && contractorId && (
-                <>
-                  <EmailScheduleDialog jobId={jobId} contractorId={contractorId} events={events || []} portalTokenId={portalTokenId} />
-                  <AddEditEventDialog
-                    jobId={jobId}
-                    contractorId={contractorId}
-                    trigger={
-                      <Button size="sm" className="gap-1.5">
-                        <Plus className="h-4 w-4" />
-                        Add Event
-                      </Button>
-                    }
-                  />
-                </>
+                <AddEditEventDialog
+                  jobId={jobId}
+                  contractorId={contractorId}
+                  trigger={
+                    <Button size="sm" className="gap-1.5">
+                      <Plus className="h-4 w-4" />
+                      Add Event
+                    </Button>
+                  }
+                />
               )}
               <Button variant="ghost" size="icon" className="h-8 w-8" onClick={prevMonth}>
                 <ChevronRight className="h-4 w-4 rotate-180" />
@@ -468,8 +458,13 @@ function ScheduleTab({ jobId, isContractor = false, contractorId, portalTokenId 
                     {dayEvents.slice(0, 3).map((e, idx) => (
                       <div
                         key={idx}
+                        onClick={(ev) => {
+                          ev.stopPropagation();
+                          setSelectedEvent(e);
+                          setShowEventDialog(true);
+                        }}
                         className={cn(
-                          'text-[9px] sm:text-[10px] leading-tight px-1 py-0.5 rounded truncate font-medium',
+                          'text-[9px] sm:text-[10px] leading-tight px-1 py-0.5 rounded truncate font-medium cursor-pointer hover:opacity-80 transition-opacity',
                           e.event_type === 'milestone' ? 'bg-primary/15 text-primary' :
                           e.event_type === 'inspection' ? 'bg-amber-500/15 text-amber-600' :
                           e.event_type === 'delivery' ? 'bg-emerald-500/15 text-emerald-600' :
@@ -559,6 +554,77 @@ function ScheduleTab({ jobId, isContractor = false, contractorId, portalTokenId 
             if (!v) setClickedDate(null);
           }}
         />
+      )}
+
+      {/* Event Detail/Edit Popup */}
+      {selectedEvent && (
+        <Dialog open={showEventDialog} onOpenChange={(v) => { setShowEventDialog(v); if (!v) setSelectedEvent(null); }}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                {(() => {
+                  const conf = eventTypeConfig[selectedEvent.event_type] || eventTypeConfig.other;
+                  const Icon = conf.icon;
+                  return <Icon className="h-5 w-5 text-primary" />;
+                })()}
+                Event Details
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3">
+              <div>
+                <p className="font-semibold text-foreground">{selectedEvent.title}</p>
+                <p className="text-sm text-muted-foreground">
+                  {format(new Date(selectedEvent.event_date + 'T00:00:00'), 'EEEE, MMMM d, yyyy')}
+                </p>
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <Badge className={cn('text-xs', (eventTypeConfig[selectedEvent.event_type] || eventTypeConfig.other).color)}>
+                  {(eventTypeConfig[selectedEvent.event_type] || eventTypeConfig.other).label}
+                </Badge>
+                <Badge className={cn('text-xs', (statusConfig[selectedEvent.status] || statusConfig.scheduled).color)}>
+                  {(statusConfig[selectedEvent.status] || statusConfig.scheduled).label}
+                </Badge>
+              </div>
+              {(!selectedEvent.is_all_day && selectedEvent.start_time) ? (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Clock className="h-4 w-4" />
+                  {formatTime(selectedEvent.start_time)}{selectedEvent.end_time ? ` – ${formatTime(selectedEvent.end_time)}` : ''}
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Clock className="h-4 w-4" />
+                  All Day
+                </div>
+              )}
+              {selectedEvent.description && (
+                <div className="rounded-lg bg-muted/50 p-3">
+                  <p className="text-sm text-foreground">{selectedEvent.description}</p>
+                </div>
+              )}
+            </div>
+            <DialogFooter className="gap-2">
+              <DialogClose asChild>
+                <Button variant="outline">Close</Button>
+              </DialogClose>
+              {isContractor && contractorId && (
+                <>
+                  <DeleteEventButton eventId={selectedEvent.id} jobId={jobId} />
+                  <AddEditEventDialog
+                    jobId={jobId}
+                    contractorId={contractorId}
+                    event={selectedEvent}
+                    trigger={
+                      <Button className="gap-1.5">
+                        <Pencil className="h-4 w-4" />
+                        Edit
+                      </Button>
+                    }
+                  />
+                </>
+              )}
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );
