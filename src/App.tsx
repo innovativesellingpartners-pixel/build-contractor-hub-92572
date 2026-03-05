@@ -210,6 +210,11 @@ const App = () => (
                 <DashboardHelpCenter />
               </ProtectedRoute>
             } />
+            <Route path="/dashboard/profile" element={
+              <ProtectedRoute>
+                <ProfileEdit />
+              </ProtectedRoute>
+            } />
             <Route path="/app-install" element={<AppInstall />} />
             <Route path="/crm" element={
               <ProtectedRoute>
