@@ -561,8 +561,30 @@ export function Dashboard() {
                           </div>
                         </div>
                         
-                        {/* Connections Hub */}
-                        <ConnectionsHub onNavigate={handleSectionChange} />
+                        {/* Connections Card */}
+                        <div 
+                          className="group bg-gradient-to-br from-muted/30 to-muted/50 border-2 border-border rounded-xl p-6 space-y-4 hover:shadow-lg hover:border-primary/30 transition-all cursor-pointer"
+                          onClick={() => handleSectionChange('connections')}
+                        >
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                              <Globe className="h-6 w-6 text-primary" />
+                            </div>
+                            <h3 className="text-xl font-semibold">Connections</h3>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            Manage your banking, calendar, email, and other integrations.
+                          </p>
+                          <Button 
+                            variant="outline" 
+                            className="w-full hover:bg-primary/10 transition-colors" 
+                            size="lg"
+                            onClick={(e) => { e.stopPropagation(); handleSectionChange('connections'); }}
+                          >
+                            <Globe className="h-4 w-4 mr-2" />
+                            Manage Connections
+                          </Button>
+                        </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                           {/* Account Information Card */}
