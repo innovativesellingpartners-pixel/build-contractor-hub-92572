@@ -110,8 +110,8 @@ function PocketAgentWrapper() {
     return <DashboardPocketAgent />;
   }
   
-  // Don't show on auth, dashboard main, admin, or estimate pages
-  const excludedPaths = ['/auth', '/dashboard', '/admin', '/crm', '/estimate/', '/p/estimate/', '/app-install'];
+  // Don't show on auth, admin, or estimate pages
+  const excludedPaths = ['/auth', '/admin', '/crm', '/estimate/', '/p/estimate/', '/app-install'];
   const isExcluded = excludedPaths.some(path => location.pathname.startsWith(path));
   
   if (isPublicPage && !isExcluded) {
