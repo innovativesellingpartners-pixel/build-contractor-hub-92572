@@ -109,6 +109,50 @@ export type Database = {
           },
         ]
       }
+      ai_topic_rules: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string | null
+          custom_instructions: string | null
+          description: string | null
+          id: string
+          is_enabled: boolean
+          topic_name: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          custom_instructions?: string | null
+          description?: string | null
+          id?: string
+          is_enabled?: boolean
+          topic_name: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          custom_instructions?: string | null
+          description?: string | null
+          id?: string
+          is_enabled?: boolean
+          topic_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_topic_rules_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assumption_templates: {
         Row: {
           body: string
