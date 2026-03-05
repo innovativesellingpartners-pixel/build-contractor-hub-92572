@@ -88,7 +88,7 @@ import DashboardHelpCenter from "./pages/DashboardHelpCenter";
 
 const queryClient = new QueryClient();
 
-// Wrapper to conditionally show Pocket Agent on public pages only
+// Wrapper to conditionally show Pocket Agent on public pages or Dashboard AI help on authenticated pages
 function PocketAgentWrapper() {
   const location = useLocation();
   const publicPaths = [
@@ -102,8 +102,16 @@ function PocketAgentWrapper() {
     location.pathname === path || location.pathname.startsWith(path)
   );
   
-  // Don't show on auth, dashboard, admin, or estimate pages
-  const excludedPaths = ['/auth', '/dashboard', '/admin', '/crm', '/reporting', '/accounting', '/estimate/', '/p/estimate/', '/app-install'];
+  // Dashboard routes that get the DashboardPocketAgent (excluding /dashboard which has its own)
+  const dashboardAIPaths = ['/reporting', '/accounting', '/dashboard/helpcenter', '/dashboard/marketplace', '/dashboard/training'];
+  const isDashboardAIPage = dashboardAIPaths.some(path => location.pathname.startsWith(path));
+  
+  if (isDashboardAIPage) {
+    return <DashboardPocketAgent />;
+  }
+  
+  // Don't show on auth, dashboard main, admin, or estimate pages
+  const excludedPaths = ['/auth', '/dashboard', '/admin', '/crm', '/estimate/', '/p/estimate/', '/app-install'];
   const isExcluded = excludedPaths.some(path => location.pathname.startsWith(path));
   
   if (isPublicPage && !isExcluded) {
