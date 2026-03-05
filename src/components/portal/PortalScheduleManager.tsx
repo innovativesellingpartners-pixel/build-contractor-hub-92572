@@ -55,13 +55,21 @@ export function AddEditEventDialog({
   contractorId,
   event,
   trigger,
+  defaultDate,
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange,
 }: {
   jobId: string;
   contractorId: string;
   event?: CalendarEvent | null;
-  trigger: React.ReactNode;
+  trigger?: React.ReactNode;
+  defaultDate?: string;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }) {
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
+  const setOpen = controlledOnOpenChange || setInternalOpen;
   const [form, setForm] = useState<EventFormData>(
     event
       ? {
@@ -74,7 +82,7 @@ export function AddEditEventDialog({
           start_time: event.start_time || '08:00',
           end_time: event.end_time || '17:00',
         }
-      : defaultFormData
+      : { ...defaultFormData, event_date: defaultDate || defaultFormData.event_date }
   );
   const queryClient = useQueryClient();
 
