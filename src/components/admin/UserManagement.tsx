@@ -520,9 +520,16 @@ export const UserManagement = () => {
                   </Badge>
                 </div>
 
-                <span className="hidden md:block text-xs text-muted-foreground flex-shrink-0 w-20 text-right">
-                  {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString() : 'Never'}
-                </span>
+                <div className="hidden md:flex flex-col items-end flex-shrink-0 w-28 text-right">
+                  <span className="text-xs text-muted-foreground">
+                    {user.last_sign_in_at ? `Login: ${new Date(user.last_sign_in_at).toLocaleDateString()}` : 'Never logged in'}
+                  </span>
+                  {(user.profile as any)?.updated_at && (
+                    <span className="text-[10px] text-muted-foreground/70">
+                      Edited: {new Date((user.profile as any).updated_at).toLocaleDateString()}
+                    </span>
+                  )}
+                </div>
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>

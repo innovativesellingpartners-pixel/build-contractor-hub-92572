@@ -113,6 +113,20 @@ export const UserDetailPage = () => {
                     {new Date(user.created_at).toLocaleDateString()}
                   </p>
                 </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Last Edited</p>
+                  <p className="text-base">
+                    {user.profile?.updated_at 
+                      ? new Date(user.profile.updated_at).toLocaleDateString() + ' ' + new Date(user.profile.updated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                      : 'Never'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Last Login</p>
+                  <p className="text-base">
+                    {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString() : 'Never'}
+                  </p>
+                </div>
               </div>
             </TabsContent>
 
