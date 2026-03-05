@@ -137,9 +137,11 @@ export function AddEditEventDialog({
           start_time: event.start_time || '08:00',
           end_time: event.end_time || '17:00',
         });
+      } else if (v && !event) {
+        setForm({ ...defaultFormData, event_date: defaultDate || defaultFormData.event_date });
       }
     }}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>{event ? 'Edit Event' : 'Add Event'}</DialogTitle>
