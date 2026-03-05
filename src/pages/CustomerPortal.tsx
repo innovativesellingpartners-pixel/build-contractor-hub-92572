@@ -1176,27 +1176,50 @@ function MessagesTab({ portalTokenId, jobId, customerName, contractorName, isCon
         </div>
       )}
 
-      <div className="flex-1 overflow-y-auto space-y-3 mb-4">
+      <div className="flex-1 overflow-y-auto space-y-1 mb-4 px-1">
         {messages && messages.length > 0 ? (
-          messages.map((msg) => {
+          messages.map((msg, idx) => {
             const mine = isMyMessage(msg);
             const colors = getParticipantColor(msg.sender_name || 'Unknown', msg.sender_type, participantMapRef.current);
+            const senderLabel = msg.sender_name || (msg.sender_type === 'contractor' ? contractorName : 'Customer');
+            const initials = senderLabel.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+
+            // Show sender name if different from previous message's sender
+            const prevMsg = messages[idx - 1];
+            const showName = !prevMsg || prevMsg.sender_name !== msg.sender_name || prevMsg.sender_type !== msg.sender_type;
+
             return (
-              <div key={msg.id} className={cn('flex', mine ? 'justify-end' : 'justify-start')}>
-                <div
-                  className={cn(
-                    'max-w-[80%] rounded-2xl px-4 py-2.5 text-sm shadow-sm',
-                    mine ? 'rounded-br-md' : 'rounded-bl-md'
+              <div key={msg.id}>
+                {/* Sender name label for group chat clarity */}
+                {showName && !mine && (
+                  <p className="text-[10px] font-semibold ml-10 mt-2 mb-0.5" style={{ color: colors.name }}>
+                    {senderLabel}
+                  </p>
+                )}
+                <div className={cn('flex items-end gap-2', mine ? 'justify-end' : 'justify-start')}>
+                  {/* Avatar for others (left side) */}
+                  {!mine && showName && (
+                    <div
+                      className="h-7 w-7 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0"
+                      style={{ backgroundColor: colors.bg, color: colors.name, border: `1.5px solid ${colors.name}` }}
+                    >
+                      {initials}
+                    </div>
                   )}
-                  style={{ backgroundColor: colors.bg, color: colors.text }}
-                >
-                  <p className="text-[10px] font-semibold mb-1" style={{ color: colors.name }}>
-                    {msg.sender_name || (msg.sender_type === 'contractor' ? contractorName : 'Customer')}
-                  </p>
-                  <p className="whitespace-pre-wrap">{msg.message}</p>
-                  <p className="text-[10px] mt-1" style={{ color: colors.time }}>
-                    {format(new Date(msg.created_at), 'MMM d, h:mm a')}
-                  </p>
+                  {!mine && !showName && <div className="w-7 shrink-0" />}
+
+                  <div
+                    className={cn(
+                      'max-w-[75%] rounded-2xl px-3.5 py-2 text-sm',
+                      mine ? 'rounded-br-sm' : 'rounded-bl-sm'
+                    )}
+                    style={{ backgroundColor: colors.bg, color: colors.text }}
+                  >
+                    <p className="whitespace-pre-wrap">{msg.message}</p>
+                    <p className="text-[10px] mt-0.5 text-right" style={{ color: colors.time }}>
+                      {format(new Date(msg.created_at), 'h:mm a')}
+                    </p>
+                  </div>
                 </div>
               </div>
             );
