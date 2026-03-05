@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft, Mail, Lock, User, Phone, ChevronDown, ChevronUp } from "lucide-react";
+import { Home, Mail, Lock, User, Phone, ChevronDown, ChevronUp } from "lucide-react";
 import ct1Logo from "@/assets/ct1-round-logo-new.png";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect } from "react";
@@ -197,15 +197,16 @@ export function Auth() {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => window.history.back()}
-            className="gap-2 text-muted-foreground hover:text-foreground mb-8"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back
-          </Button>
+          <Link to="/">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="gap-2 text-muted-foreground hover:text-foreground mb-8"
+            >
+              <Home className="h-4 w-4" />
+              Home
+            </Button>
+          </Link>
           <img src={ct1Logo} alt="CT1 Logo" className="h-16 w-16 mx-auto mb-4" />
           <h2 className="text-3xl font-bold text-foreground">Contractor Portal</h2>
           <p className="text-muted-foreground mt-2">Access your CT1 business tools</p>
