@@ -140,16 +140,6 @@ export default function HelpCenter({ onBack, onNavigateToSection, showChatbot = 
       {/* Footer */}
       <PublicFooter />
 
-      {/* Floating Chat Button */}
-      {showChatbot && !chatbotOpen && (
-        <Button
-          onClick={handleOpenChat}
-          className="fixed bottom-20 right-4 z-40 h-14 w-14 rounded-full shadow-lg bg-primary hover:bg-primary/90"
-          size="icon"
-        >
-          <MessageCircle className="h-6 w-6" />
-        </Button>
-      )}
 
       {/* Chatbot */}
       {showChatbot && (
