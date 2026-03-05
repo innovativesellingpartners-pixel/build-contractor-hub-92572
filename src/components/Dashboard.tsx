@@ -271,7 +271,7 @@ export function Dashboard() {
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="left" className="w-72 p-0 overflow-y-auto">
+                <SheetContent side="left" className="w-72 p-0 overflow-y-auto overscroll-contain" style={{ WebkitOverflowScrolling: 'touch' as any }}>
                   <div className="py-4">
                     {activeSection === 'leads' ? (
                       <CRMSidebarNav 
@@ -889,7 +889,7 @@ function UnifiedHubSidebar({ activeHubSection, onHubSectionChange, onCrmSectionC
   ];
 
   return (
-    <aside className="w-56 flex-shrink-0 flex flex-col bg-card border-r overflow-y-auto">
+    <aside className="w-56 flex-shrink-0 flex flex-col bg-card border-r overflow-y-auto overscroll-contain" style={{ WebkitOverflowScrolling: 'touch' as any }}>
       <div className="flex items-center gap-2 p-4 border-b">
         <img src={ct1Logo} alt="CT1" className="h-8 w-8" />
         <span className="font-semibold">CT1 CRM</span>

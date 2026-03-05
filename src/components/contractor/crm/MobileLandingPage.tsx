@@ -197,7 +197,7 @@ export function MobileLandingPage({
   };
 
   return (
-    <div className="w-full h-full overflow-y-auto overflow-x-hidden pb-20 bg-gradient-to-br from-background via-muted/30 to-background">
+    <div className="w-full pb-20 bg-gradient-to-br from-background via-muted/30 to-background">
       <div className="p-4 sm:p-6 pt-4 w-full max-w-lg mx-auto">
         {/* Header */}
         <div className="mb-4 flex items-center justify-between">

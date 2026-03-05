@@ -354,7 +354,7 @@ const navItems = [
 
   const NavigationContent = () => (
     <TooltipProvider>
-      <nav className={cn("flex-1 overflow-y-auto", sidebarOpen ? "p-4" : "p-2")}>
+      <nav className={cn("flex-1 overflow-y-auto overscroll-contain", sidebarOpen ? "p-4" : "p-2")} style={{ WebkitOverflowScrolling: 'touch' }}>
         <ul className="space-y-1">
           {navItems.map((item) => (
             <li key={item.id}>
@@ -423,8 +423,8 @@ const navItems = [
 
           {/* Main Content with bottom padding for nav - overflow protected */}
           <main className="flex-1 overflow-hidden w-full max-w-full pb-28 bg-background">
-            <div className="h-full overflow-y-auto overflow-x-hidden max-w-full">
-              <div className="min-h-full w-full max-w-full pb-6 overflow-hidden">
+            <div className="h-full overflow-y-auto overflow-x-hidden max-w-full overscroll-contain" style={{ WebkitOverflowScrolling: 'touch' }}>
+              <div className="min-h-full w-full max-w-full pb-6">
                 {renderSection()}
               </div>
             </div>
