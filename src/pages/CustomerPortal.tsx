@@ -214,7 +214,7 @@ export default function CustomerPortal() {
 
       <main className="max-w-4xl mx-auto px-4 py-5 space-y-5">
         {activeTab === 'overview' && <OverviewTab job={job} contractor={contractor} />}
-        {activeTab === 'schedule' && <ScheduleTab jobId={job.id} isContractor={isContractor} contractorId={portalToken.contractor_id} />}
+        {activeTab === 'schedule' && <ScheduleTab jobId={job.id} isContractor={isContractor} contractorId={portalToken.contractor_id} portalTokenId={portalToken.id} />}
         {activeTab === 'documents' && <DocumentsTab jobId={job.id} />}
         {activeTab === 'photos' && <PhotosTab jobId={job.id} portalTokenId={portalToken.id} customerName={customer?.name} />}
         {activeTab === 'messages' && (
@@ -257,7 +257,7 @@ export default function CustomerPortal() {
 }
 
 // ==================== SCHEDULE TAB ====================
-function ScheduleTab({ jobId, isContractor = false, contractorId }: { jobId: string; isContractor?: boolean; contractorId?: string }) {
+function ScheduleTab({ jobId, isContractor = false, contractorId, portalTokenId }: { jobId: string; isContractor?: boolean; contractorId?: string; portalTokenId?: string }) {
   const [selectedMonth, setSelectedMonth] = useState(() => new Date());
   const [clickedDate, setClickedDate] = useState<string | null>(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -403,7 +403,7 @@ function ScheduleTab({ jobId, isContractor = false, contractorId }: { jobId: str
             <div className="flex items-center gap-2">
               {isContractor && contractorId && (
                 <>
-                  <EmailScheduleDialog jobId={jobId} contractorId={contractorId} events={events || []} />
+                  <EmailScheduleDialog jobId={jobId} contractorId={contractorId} events={events || []} portalTokenId={portalTokenId} />
                   <AddEditEventDialog
                     jobId={jobId}
                     contractorId={contractorId}
