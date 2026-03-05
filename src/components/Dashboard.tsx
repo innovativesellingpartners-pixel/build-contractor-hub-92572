@@ -33,7 +33,8 @@ import {
   DollarSign,
   Receipt,
   Globe,
-  Percent
+  Percent,
+  Home
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
@@ -313,6 +314,19 @@ export function Dashboard() {
                 <span className="font-medium text-sm">{profile?.company_name || 'Your Company'}</span>
               </div>
               
+              {/* Home Button */}
+              <Button 
+                variant="outline" 
+                size="sm"
+                asChild
+                className="flex items-center gap-1 px-2 hover:bg-primary/10 transition-colors"
+              >
+                <Link to="/">
+                  <Home className="h-4 w-4" />
+                  <span className="text-xs">Home</span>
+                </Link>
+              </Button>
+
               {/* Account Button */}
               <Button 
                 variant="outline" 
