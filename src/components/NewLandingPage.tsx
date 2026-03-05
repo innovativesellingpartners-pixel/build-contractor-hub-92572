@@ -409,6 +409,90 @@ export function NewLandingPage() {
         </div>
       </section>
 
+      {/* SECTION: Technology Solutions */}
+      <section className="py-16 bg-background relative overflow-hidden">
+        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, hsl(var(--foreground)) 1px, transparent 0)', backgroundSize: '40px 40px' }} />
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 bg-primary/10 px-4 py-2 rounded-full mb-6">
+              <Wifi className="h-4 w-4 text-primary" />
+              <span className="text-sm font-semibold text-primary">Technology Solutions</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
+              We Also Deliver the <span className="text-primary">Technology</span> Your Business Needs
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+              From mobile devices and fleet tracking to internet and connectivity, CT1 partners with industry-leading brands to equip your crew with the tools that keep you competitive, connected, and in control.
+            </p>
+          </div>
+
+          {/* Partner Logos Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6 mb-10">
+            {[
+              { src: verizonLogo, name: "Verizon" },
+              { src: appleLogo, name: "Apple" },
+              { src: comcastLogo, name: "Comcast Business" },
+              { src: tmobileLogo, name: "T-Mobile" },
+              { src: geotabLogo, name: "Geotab" },
+              { src: spireonLogo, name: "Spireon" },
+            ].map((partner) => (
+              <Dialog key={partner.name} open={activeContactForm === `tech-${partner.name}`} onOpenChange={(open) => setActiveContactForm(open ? `tech-${partner.name}` : null)}>
+                <DialogTrigger asChild>
+                  <button className="bg-card border border-border rounded-xl p-6 flex items-center justify-center hover:shadow-lg hover:border-primary/40 hover:-translate-y-1 transition-all duration-300 cursor-pointer group aspect-square">
+                    <img
+                      src={partner.src}
+                      alt={partner.name}
+                      className="max-h-16 max-w-[80%] object-contain opacity-70 group-hover:opacity-100 transition-opacity duration-300 dark:brightness-0 dark:invert"
+                    />
+                  </button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                  <ContactForm
+                    title={`Learn More About ${partner.name} Solutions`}
+                    description={`Tell us about your business and we'll show you how ${partner.name} solutions can help your contracting operation.`}
+                    ctaText="Contact Sales"
+                    formType="tech-partner"
+                    onClose={() => setActiveContactForm(null)}
+                  />
+                </DialogContent>
+              </Dialog>
+            ))}
+          </div>
+
+          {/* "And More" + CTA */}
+          <div className="bg-gradient-to-br from-card via-card to-primary/5 border border-border rounded-2xl p-8 sm:p-10 text-center shadow-sm">
+            <p className="text-muted-foreground text-sm font-medium uppercase tracking-wider mb-3">
+              ...and many more technology partners
+            </p>
+            <h3 className="text-2xl sm:text-3xl font-bold text-foreground mb-4">
+              Learn how we can help you <span className="text-primary">build, scale, and sustain</span> your contracting business today.
+            </h3>
+            <p className="text-muted-foreground max-w-2xl mx-auto mb-8 leading-relaxed">
+              Whether you need phones, tablets, fleet GPS, internet, or any other technology to power your operation, our team will find the right solution at the right price for your trade.
+            </p>
+            <Dialog open={activeContactForm === "tech-solutions"} onOpenChange={(open) => setActiveContactForm(open ? "tech-solutions" : null)}>
+              <DialogTrigger asChild>
+                <Button className="btn-ct1 text-lg px-8 py-6 h-auto">
+                  <Rocket className="mr-2 h-5 w-5" />
+                  Learn More
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl">
+                <ContactForm
+                  title="Technology Solutions for Contractors"
+                  description="Tell us about your business needs and our team will connect you with the right technology solutions to help you build, scale, and sustain your operation."
+                  ctaText="Get Started"
+                  formType="tech-partner"
+                  onClose={() => setActiveContactForm(null)}
+                />
+              </DialogContent>
+            </Dialog>
+          </div>
+        </div>
+      </section>
+
       {/* SECTION 4: Testimonials */}
       <section className="py-12 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
