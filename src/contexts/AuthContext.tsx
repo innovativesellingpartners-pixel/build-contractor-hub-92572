@@ -190,20 +190,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signOut = async () => {
     console.log('Signing out...');
     
-    // Redirect FIRST to prevent flash of unauthenticated routes (e.g. pricing page)
-    // Using replace so the user can't navigate back to the dashboard
-    window.location.replace('https://myct1.com/auth');
+    // Set loading to true FIRST to prevent any flash of unauthenticated UI
+    setLoading(true);
     
-    // Then clean up state (page is already navigating away)
+    // Clear all state immediately
+    setUser(null);
+    setSession(null);
+    setProfile(null);
+    localStorage.removeItem('ct1-auth-token');
+    localStorage.removeItem('rememberMe');
+    
+    // Sign out from Supabase
     try {
       await supabase.auth.signOut({ scope: 'local' });
     } catch (err) {
       console.warn('Sign out API call failed (session may already be expired):', err);
     }
-    localStorage.removeItem('ct1-auth-token');
-    setProfile(null);
-    localStorage.removeItem('rememberMe');
-    console.log('Sign out complete');
+    
+    console.log('Sign out complete, redirecting...');
+    
+    // Now redirect - loading=true keeps spinner showing until navigation completes
+    window.location.replace('https://myct1.com/auth');
     
     try {
       await checkForUpdates();
