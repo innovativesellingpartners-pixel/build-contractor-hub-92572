@@ -1,28 +1,28 @@
 
 
-## Fix: Remove CT1 Logo from Customer-Facing Estimates and Invoices
+## Problem Analysis
 
-### Problem
-When estimates are sent to customers, the public estimate page falls back to the CT1 logo when a contractor hasn't uploaded their own logo. Customers should only see their contractor's branding, not CT1 branding in the header.
+The logout flow has a race condition causing users to briefly see the pricing/subscribe page before reaching the login page:
 
-### What Changes
+1. **`signOut()` in `AuthContext.tsx`** sets `loading=true` and clears user state, then calls `supabase.auth.signOut()`.
+2. The `onAuthStateChange` listener fires from the Supabase sign-out event and **sets `loading=false`**.
+3. Now `ProtectedRoute` sees `loading=false` + `user=null` → redirects to **`/subscribe`** (the pricing page).
+4. Only after that does `window.location.replace('https://myct1.com/auth')` attempt to navigate away — but the subscribe page already flashed.
 
-**File: `src/pages/PublicEstimate.tsx`**
+Additionally, the redirect URL is hardcoded to `https://myct1.com/auth`, which doesn't work in preview environments.
 
-1. **Remove the CT1 logo import** (line 13) -- the `ct1PoweredLogo` import is used in two places: the header fallback and the "Powered by CT1" footer. The footer usage is intentional branding, so the import stays but the header fallback changes.
+## Plan
 
-2. **Update the header logo fallback** (line 217) -- Instead of falling back to the CT1 logo when the contractor has no logo, use a `Building2` icon (same pattern as `PublicInvoice.tsx`):
-   - Change: `const displayLogo = contractor?.logo_url || ct1PoweredLogo;`
-   - To: `const displayLogo = contractor?.logo_url;`
+### 1. Fix `ProtectedRoute.tsx` — redirect to `/auth` instead of `/subscribe`
+Change `<Navigate to="/subscribe" replace />` → `<Navigate to="/auth" replace />`. This way, even if the race condition occurs, users see the login page (not pricing).
 
-3. **Update the header logo rendering** (around lines 231-240) -- Add a conditional: if `displayLogo` exists, show the contractor's logo image; otherwise show a generic `Building2` icon in a styled circle, matching the invoice page pattern.
+### 2. Fix `signOut()` in `AuthContext.tsx` — use relative redirect and prevent race condition
+- Replace `window.location.replace('https://myct1.com/auth')` with `window.location.replace('/auth')` so it works in all environments.
+- Move the redirect **before** `supabase.auth.signOut()` to prevent the `onAuthStateChange` callback from triggering the ProtectedRoute redirect. Or alternatively, keep `loading=true` by not letting `onAuthStateChange` override it during sign-out (add a sign-out flag).
 
-### What Stays
-- The **"Powered by CT1"** footer branding at the bottom of estimates remains unchanged (this is the platform branding standard).
-- The **PublicInvoice.tsx** page already handles this correctly with the `Building2` fallback icon -- no changes needed there.
-- The **estimate PDF preview/download** components already use only the contractor's `logo_url` with no CT1 fallback -- no changes needed.
+The simplest approach: add a `signingOut` ref that prevents `onAuthStateChange` from setting `loading=false`, and use a relative `/auth` URL.
 
-### Technical Details
-- Only 1 file modified: `src/pages/PublicEstimate.tsx`
-- ~10 lines changed total
-- Pattern mirrors the existing `PublicInvoice.tsx` implementation (lines 142-154)
+### Files to modify
+- `src/contexts/AuthContext.tsx` — add signing-out guard + fix redirect URL
+- `src/components/ProtectedRoute.tsx` — redirect to `/auth` instead of `/subscribe`
+
