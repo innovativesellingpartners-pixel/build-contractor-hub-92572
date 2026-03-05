@@ -184,6 +184,9 @@ export function ProfileEditDialog() {
             brand_primary_color: formData.brand_primary_color,
             brand_secondary_color: formData.brand_secondary_color,
             brand_accent_color: formData.brand_accent_color,
+            brand_footer_color: formData.brand_footer_color,
+            brand_accent_bg_color: formData.brand_accent_bg_color,
+            watermark_logo_url: formData.watermark_logo_url,
           };
           break;
         case 'defaults':
