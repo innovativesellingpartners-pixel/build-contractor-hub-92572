@@ -102,16 +102,16 @@ function PocketAgentWrapper() {
     location.pathname === path || location.pathname.startsWith(path)
   );
   
-  // Dashboard routes that get the DashboardPocketAgent (excluding /dashboard which has its own)
-  const dashboardAIPaths = ['/reporting', '/accounting', '/dashboard/helpcenter', '/dashboard/marketplace', '/dashboard/training'];
+  // Dashboard routes that get the DashboardPocketAgent
+  const dashboardAIPaths = ['/dashboard', '/reporting', '/accounting'];
   const isDashboardAIPage = dashboardAIPaths.some(path => location.pathname.startsWith(path));
   
   if (isDashboardAIPage) {
     return <DashboardPocketAgent />;
   }
   
-  // Don't show on auth, dashboard main, admin, or estimate pages
-  const excludedPaths = ['/auth', '/dashboard', '/admin', '/crm', '/estimate/', '/p/estimate/', '/app-install'];
+  // Don't show on auth, admin, or estimate pages
+  const excludedPaths = ['/auth', '/admin', '/crm', '/estimate/', '/p/estimate/', '/app-install'];
   const isExcluded = excludedPaths.some(path => location.pathname.startsWith(path));
   
   if (isPublicPage && !isExcluded) {
