@@ -287,7 +287,7 @@ export function HelpAdmin() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="articles" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
             Articles
@@ -295,6 +295,10 @@ export function HelpAdmin() {
           <TabsTrigger value="knowledge-base" className="flex items-center gap-2">
             <BookOpen className="h-4 w-4" />
             Knowledge Base
+          </TabsTrigger>
+          <TabsTrigger value="ai-topics" className="flex items-center gap-2">
+            <Brain className="h-4 w-4" />
+            AI Topics
           </TabsTrigger>
           <TabsTrigger value="categories" className="flex items-center gap-2">
             <Search className="h-4 w-4" />
