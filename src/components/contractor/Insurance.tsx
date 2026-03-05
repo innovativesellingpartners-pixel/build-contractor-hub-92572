@@ -149,7 +149,7 @@ export function Insurance() {
   const [quoteDialogOpen, setQuoteDialogOpen] = useState(false);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [portalOpen, setPortalOpen] = useState(false);
-  const [iframeError, setIframeError] = useState(false);
+  
   const { toast } = useToast();
   const { documents, isLoading: documentsLoading, uploadDocument, deleteDocument, downloadDocument, isUploading, isDeleting } = useInsuranceDocuments();
   const fileInputRef = useRef<HTMLInputElement>(null);
