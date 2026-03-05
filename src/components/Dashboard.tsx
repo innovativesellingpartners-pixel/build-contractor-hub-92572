@@ -46,6 +46,7 @@ import CT1CRM from "@/components/contractor/crm/CT1CRM";
 import { Insurance } from "@/components/contractor/Insurance";
 import { ProfileEditDialog } from "@/components/contractor/ProfileEditDialog";
 import { StarRating } from "@/components/contractor/StarRating";
+import { AccountDocuments } from "@/components/contractor/AccountDocuments";
 import { FloatingPocketAgent } from "@/components/contractor/FloatingPocketbot";
 import { ContactSupport } from "@/components/ContactSupport";
 
