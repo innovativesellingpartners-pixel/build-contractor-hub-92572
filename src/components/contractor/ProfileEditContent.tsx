@@ -23,6 +23,7 @@ export function ProfileEditContent() {
   const { isSuperAdmin } = useAdminAuth();
   const [savingSection, setSavingSection] = useState<SectionKey | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadingWatermark, setUploadingWatermark] = useState(false);
   const [activeTab, setActiveTab] = useState("business");
   const [formData, setFormData] = useState({
     company_name: '',
