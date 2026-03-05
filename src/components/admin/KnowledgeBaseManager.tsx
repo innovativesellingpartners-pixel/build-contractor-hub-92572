@@ -271,9 +271,32 @@ export function KnowledgeBaseManager() {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editing ? 'Edit Entry' : 'New Knowledge Base Entry'}</DialogTitle>
+            <DialogTitle>{editing ? `Edit: ${editing.title}` : 'New Knowledge Base Entry'}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
+            {/* Document Upload */}
+            <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4">
+              <Label className="flex items-center gap-2 cursor-pointer justify-center text-muted-foreground hover:text-foreground transition-colors">
+                <Upload className="h-4 w-4" />
+                <span>Upload a document (.txt, .md, .csv) to import content</span>
+                <input type="file" accept=".txt,.md,.csv,text/plain,text/markdown,text/csv" className="hidden" onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  if (file.type === 'text/plain' || file.type === 'text/markdown' || file.name.endsWith('.md') || file.name.endsWith('.txt') || file.type === 'text/csv' || file.name.endsWith('.csv')) {
+                    const text = await file.text();
+                    setFormData(prev => ({
+                      ...prev,
+                      content: prev.content ? prev.content + '\n\n' + text : text,
+                      title: prev.title || file.name.replace(/\.(md|txt|csv)$/, '').replace(/[-_]/g, ' '),
+                    }));
+                    toast({ title: 'Document content imported' });
+                  } else {
+                    toast({ title: 'Unsupported file type', description: 'Please upload .txt, .md, or .csv files', variant: 'destructive' });
+                  }
+                  e.target.value = '';
+                }} />
+              </Label>
+            </div>
             <div>
               <Label>Title</Label>
               <Input
