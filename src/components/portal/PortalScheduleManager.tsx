@@ -35,6 +35,7 @@ interface EventFormData {
   title: string;
   description: string;
   event_date: string;
+  event_end_date: string;
   event_type: string;
   status: string;
   is_all_day: boolean;
@@ -46,6 +47,7 @@ const defaultFormData: EventFormData = {
   title: '',
   description: '',
   event_date: format(new Date(), 'yyyy-MM-dd'),
+  event_end_date: '',
   event_type: 'work',
   status: 'scheduled',
   is_all_day: true,
