@@ -18,7 +18,7 @@ import { Badge } from "@/components/ui/badge";
 type SectionKey = 'logo' | 'business' | 'branding' | 'licensing' | 'colors' | 'defaults' | 'payments';
 
 export function ProfileEditDialog() {
-  const { profile, user } = useAuth();
+  const { profile, user, refreshProfile } = useAuth();
   const { toast } = useToast();
   const { isSuperAdmin } = useAdminAuth();
   const [open, setOpen] = useState(false);
