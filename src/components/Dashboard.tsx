@@ -321,7 +321,7 @@ export function Dashboard() {
                 asChild
                 className="flex items-center gap-1 px-2 hover:bg-primary/10 transition-colors"
               >
-                <Link to="/">
+                <Link to="/home">
                   <Home className="h-4 w-4" />
                   <span className="text-xs">Home</span>
                 </Link>
