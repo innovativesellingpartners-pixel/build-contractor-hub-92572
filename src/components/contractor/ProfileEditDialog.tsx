@@ -568,9 +568,10 @@ export function ProfileEditDialog() {
                   <CardDescription>These colors will be used on estimates, invoices, and proposals sent to customers</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Header Color */}
                     <div className="space-y-2">
-                      <Label htmlFor="brand_primary_color">Primary Color</Label>
+                      <Label htmlFor="brand_primary_color">Header Color</Label>
                       <div className="flex items-center gap-2">
                         <input
                           type="color"
@@ -588,10 +589,12 @@ export function ProfileEditDialog() {
                           className="flex-1 font-mono text-sm"
                         />
                       </div>
-                      <p className="text-xs text-muted-foreground">Main brand color for headers & buttons</p>
+                      <p className="text-xs text-muted-foreground">Top header bar on estimates & invoices</p>
                     </div>
+
+                    {/* Body Color */}
                     <div className="space-y-2">
-                      <Label htmlFor="brand_secondary_color">Secondary Color</Label>
+                      <Label htmlFor="brand_secondary_color">Body Color</Label>
                       <div className="flex items-center gap-2">
                         <input
                           type="color"
@@ -609,28 +612,88 @@ export function ProfileEditDialog() {
                           className="flex-1 font-mono text-sm"
                         />
                       </div>
-                      <p className="text-xs text-muted-foreground">Background & section headers</p>
+                      <p className="text-xs text-muted-foreground">Section headers & body text areas</p>
                     </div>
+
+                    {/* Footer Color */}
                     <div className="space-y-2">
-                      <Label htmlFor="brand_accent_color">Accent Color</Label>
+                      <Label htmlFor="brand_footer_color">Footer Color</Label>
                       <div className="flex items-center gap-2">
                         <input
                           type="color"
-                          id="brand_accent_color"
-                          name="brand_accent_color"
-                          value={formData.brand_accent_color}
+                          id="brand_footer_color"
+                          name="brand_footer_color"
+                          value={formData.brand_footer_color}
                           onChange={handleChange}
                           className="w-12 h-10 rounded border cursor-pointer"
                         />
                         <Input
-                          value={formData.brand_accent_color}
+                          value={formData.brand_footer_color}
                           onChange={handleChange}
-                          name="brand_accent_color"
-                          placeholder="#c9a227"
+                          name="brand_footer_color"
+                          placeholder="#333333"
                           className="flex-1 font-mono text-sm"
                         />
                       </div>
-                      <p className="text-xs text-muted-foreground">Highlights & accents</p>
+                      <p className="text-xs text-muted-foreground">Footer bar on documents</p>
+                    </div>
+
+                    {/* Accent Background Color */}
+                    <div className="space-y-2">
+                      <Label htmlFor="brand_accent_bg_color">Accent Background</Label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          id="brand_accent_bg_color"
+                          name="brand_accent_bg_color"
+                          value={formData.brand_accent_bg_color}
+                          onChange={handleChange}
+                          className="w-12 h-10 rounded border cursor-pointer"
+                        />
+                        <Input
+                          value={formData.brand_accent_bg_color}
+                          onChange={handleChange}
+                          name="brand_accent_bg_color"
+                          placeholder="#f5f5f5"
+                          className="flex-1 font-mono text-sm"
+                        />
+                      </div>
+                      <p className="text-xs text-muted-foreground">Highlighted sections & callout backgrounds</p>
+                    </div>
+                  </div>
+
+                  {/* Watermark Logo */}
+                  <Separator />
+                  <div className="space-y-2">
+                    <Label>Watermark Logo</Label>
+                    <p className="text-xs text-muted-foreground">Upload a faded logo to appear as a watermark on document backgrounds</p>
+                    <div className="flex items-center gap-4">
+                      {formData.watermark_logo_url ? (
+                        <div className="relative w-20 h-20 rounded-lg border bg-muted/30 flex items-center justify-center overflow-hidden">
+                          <img src={formData.watermark_logo_url} alt="Watermark" className="max-w-full max-h-full object-contain opacity-40" />
+                          <button
+                            type="button"
+                            onClick={() => setFormData(prev => ({ ...prev, watermark_logo_url: '' }))}
+                            className="absolute top-0.5 right-0.5 bg-destructive text-destructive-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="w-20 h-20 rounded-lg border-2 border-dashed border-muted-foreground/30 flex items-center justify-center text-muted-foreground text-xs text-center p-1">
+                          No watermark
+                        </div>
+                      )}
+                      <div>
+                        <Input
+                          type="url"
+                          value={formData.watermark_logo_url}
+                          onChange={handleChange}
+                          name="watermark_logo_url"
+                          placeholder="https://... or upload via Logo section"
+                          className="text-sm"
+                        />
+                      </div>
                     </div>
                   </div>
                   
@@ -638,27 +701,30 @@ export function ProfileEditDialog() {
                   <Separator />
                   <div className="space-y-2">
                     <Label className="text-xs text-muted-foreground">Preview</Label>
-                    <div className="flex flex-wrap items-center gap-4 p-4 border rounded-lg bg-muted/30">
+                    <div className="rounded-lg border overflow-hidden shadow-sm">
+                      {/* Header preview */}
                       <div 
-                        className="w-16 h-16 rounded-lg shadow-sm flex items-center justify-center text-white text-xs font-bold"
+                        className="px-4 py-2 text-white text-xs font-bold"
                         style={{ backgroundColor: formData.brand_primary_color }}
                       >
-                        Primary
+                        Header
                       </div>
+                      {/* Body preview */}
                       <div 
-                        className="w-16 h-16 rounded-lg shadow-sm flex items-center justify-center text-white text-xs font-bold"
-                        style={{ backgroundColor: formData.brand_secondary_color }}
+                        className="px-4 py-3 text-xs"
+                        style={{ backgroundColor: formData.brand_accent_bg_color, color: formData.brand_secondary_color }}
                       >
-                        Secondary
+                        <span className="font-semibold">Body Content</span> — with accent background
+                        {formData.watermark_logo_url && (
+                          <img src={formData.watermark_logo_url} alt="" className="inline-block ml-2 h-6 opacity-20" />
+                        )}
                       </div>
+                      {/* Footer preview */}
                       <div 
-                        className="w-16 h-16 rounded-lg shadow-sm flex items-center justify-center text-white text-xs font-bold"
-                        style={{ backgroundColor: formData.brand_accent_color }}
+                        className="px-4 py-2 text-white text-xs"
+                        style={{ backgroundColor: formData.brand_footer_color }}
                       >
-                        Accent
-                      </div>
-                      <div className="flex-1 min-w-[150px] text-sm text-muted-foreground">
-                        These colors will appear on your estimates, invoices, and customer-facing documents.
+                        Footer
                       </div>
                     </div>
                   </div>
