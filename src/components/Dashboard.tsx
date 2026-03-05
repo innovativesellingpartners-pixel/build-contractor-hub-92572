@@ -317,11 +317,13 @@ export function Dashboard() {
               <Button 
                 variant="outline" 
                 size="sm"
-                onClick={() => handleSectionChange('dashboard')}
+                asChild
                 className="flex items-center gap-1 px-2 hover:bg-primary/10 transition-colors"
               >
-                <Home className="h-4 w-4" />
-                <span className="text-xs">Home</span>
+                <Link to="/">
+                  <Home className="h-4 w-4" />
+                  <span className="text-xs">Home</span>
+                </Link>
               </Button>
 
               {/* Account Button */}
