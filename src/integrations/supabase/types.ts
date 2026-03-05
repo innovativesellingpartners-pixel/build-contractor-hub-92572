@@ -4821,7 +4821,9 @@ export type Database = {
         Row: {
           accepted_payment_methods: string[] | null
           ach_instructions: string | null
+          brand_accent_bg_color: string | null
           brand_accent_color: string | null
+          brand_footer_color: string | null
           brand_primary_color: string | null
           brand_secondary_color: string | null
           business_address: string | null
@@ -4859,6 +4861,7 @@ export type Database = {
           updated_at: string
           user_id: string
           username: string | null
+          watermark_logo_url: string | null
           website_url: string | null
           zelle_email: string | null
           zelle_phone: string | null
@@ -4867,7 +4870,9 @@ export type Database = {
         Insert: {
           accepted_payment_methods?: string[] | null
           ach_instructions?: string | null
+          brand_accent_bg_color?: string | null
           brand_accent_color?: string | null
+          brand_footer_color?: string | null
           brand_primary_color?: string | null
           brand_secondary_color?: string | null
           business_address?: string | null
@@ -4905,6 +4910,7 @@ export type Database = {
           updated_at?: string
           user_id: string
           username?: string | null
+          watermark_logo_url?: string | null
           website_url?: string | null
           zelle_email?: string | null
           zelle_phone?: string | null
@@ -4913,7 +4919,9 @@ export type Database = {
         Update: {
           accepted_payment_methods?: string[] | null
           ach_instructions?: string | null
+          brand_accent_bg_color?: string | null
           brand_accent_color?: string | null
+          brand_footer_color?: string | null
           brand_primary_color?: string | null
           brand_secondary_color?: string | null
           business_address?: string | null
@@ -4951,6 +4959,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
           username?: string | null
+          watermark_logo_url?: string | null
           website_url?: string | null
           zelle_email?: string | null
           zelle_phone?: string | null
