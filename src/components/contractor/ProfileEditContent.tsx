@@ -140,6 +140,30 @@ export function ProfileEditContent() {
     }
   };
 
+  const handleWatermarkUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    setUploadingWatermark(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/watermark-${Date.now()}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage
+        .from('company-logos')
+        .upload(fileName, file, { upsert: true });
+      if (uploadError) throw uploadError;
+      const { data: { publicUrl } } = supabase.storage
+        .from('company-logos')
+        .getPublicUrl(fileName);
+      setFormData(prev => ({ ...prev, watermark_logo_url: publicUrl }));
+      toast({ title: "Watermark uploaded", description: "Your watermark logo has been uploaded." });
+    } catch (error) {
+      console.error('Error uploading watermark:', error);
+      toast({ title: "Upload failed", description: "Failed to upload watermark.", variant: "destructive" });
+    } finally {
+      setUploadingWatermark(false);
+    }
+  };
+
   const handleSaveSection = async (section: SectionKey) => {
     if (!user) return;
 
