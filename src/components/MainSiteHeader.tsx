@@ -31,7 +31,7 @@ export function MainSiteHeader({ onContactClick }: MainSiteHeaderProps) {
   };
 
   return (
-    <header className="sticky top-0 bg-zinc-900 z-50 border-b border-zinc-800 shadow-lg shadow-black/20" style={{ paddingTop: "env(safe-area-inset-top)" }}>
+    <header className="bg-zinc-900 z-50 border-b border-zinc-800 shadow-lg shadow-black/20" style={{ paddingTop: "env(safe-area-inset-top)" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-24">
           <Link to="/" className="flex items-center hover:opacity-90 transition-opacity group gap-3">

@@ -108,7 +108,7 @@ interface DetailHeaderProps {
 
 export function DetailHeader({ title, subtitle, onBack, onDashboard, rightContent }: DetailHeaderProps) {
   return (
-    <div className="sticky top-0 z-50 bg-foreground/95 backdrop-blur-sm text-background pt-[calc(1rem+env(safe-area-inset-top))] sm:pt-[max(0.5rem,env(safe-area-inset-top))]">
+    <div className="z-50 bg-foreground/95 backdrop-blur-sm text-background pt-[calc(1rem+env(safe-area-inset-top))] sm:pt-[max(0.5rem,env(safe-area-inset-top))]">
       {/* Compact header with logo, nav, and actions in one row */}
       <div className="flex items-center justify-between gap-2 px-3 py-2">
         {/* Left: Logo + Nav buttons */}
