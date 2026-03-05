@@ -576,6 +576,7 @@ function ScheduleTab({ jobId, isContractor = false, contractorId, portalTokenId 
                 <p className="font-semibold text-foreground">{selectedEvent.title}</p>
                 <p className="text-sm text-muted-foreground">
                   {format(new Date(selectedEvent.event_date + 'T00:00:00'), 'EEEE, MMMM d, yyyy')}
+                  {selectedEvent.event_end_date && selectedEvent.event_end_date !== selectedEvent.event_date && ` – ${format(new Date(selectedEvent.event_end_date + 'T00:00:00'), 'EEEE, MMMM d, yyyy')}`}
                 </p>
               </div>
               <div className="flex items-center gap-2 flex-wrap">
