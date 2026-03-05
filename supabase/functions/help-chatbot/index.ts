@@ -26,9 +26,35 @@ serve(async (req) => {
       search_query: message,
     });
 
+    // Fetch enabled AI topic rules
+    const { data: topicRules } = await supabase
+      .from('ai_topic_rules')
+      .select('topic_name, category, description, custom_instructions')
+      .eq('is_enabled', true);
+
+    const hasStrongKBMatch = searchResults && searchResults.length > 0 && searchResults[0].relevance >= 50;
+
     const articlesContext = searchResults && searchResults.length > 0
       ? `\n\nRelevant knowledge base results (use these to answer the question):\n${searchResults.map((r: any) => `- [${r.source}] "${r.title}": ${r.excerpt || r.content?.substring(0, 300)}...`).join('\n')}`
-      : '\n\nNo directly matching articles found in the knowledge base. Answer based on your knowledge of the CT1 platform.';
+      : '\n\nNo directly matching articles found in the knowledge base.';
+
+    // Build AI topic augmentation context
+    let aiTopicContext = '';
+    if (topicRules && topicRules.length > 0) {
+      const topicList = topicRules.map((r: any) => r.topic_name).join(', ');
+      const restrictions = topicRules
+        .filter((r: any) => r.custom_instructions)
+        .map((r: any) => `- ${r.topic_name}: ${r.custom_instructions}`)
+        .join('\n');
+
+      aiTopicContext = `\n\nAI-AUGMENTED KNOWLEDGE TOPICS:
+When the knowledge base does not have a strong match, you may also answer questions on these admin-approved contractor topics using your general knowledge: ${topicList}.
+
+Topic-specific restrictions:
+${restrictions}
+
+IMPORTANT: For these topics, provide practical, actionable answers. Do NOT mention specific training brands, methodologies by name, or proprietary systems. Keep advice generic and universally applicable. If a question falls outside BOTH the knowledge base AND these approved topics, politely decline.`;
+    }
 
     const systemPrompt = `You are the CT1 Help Bot, a friendly and knowledgeable assistant for the CT1 Contractor Hub - a CRM and business management platform for contractors.
 
@@ -36,8 +62,8 @@ STRICT GUARDRAILS:
 - ONLY answer questions about the CT1 platform, contractor business practices, sales techniques, and the contracting industry.
 - Do NOT discuss politics, religion, medical advice, legal advice, or any topics unrelated to contracting and CT1.
 - If asked about unrelated topics, politely redirect: "I'm here to help with CT1 and your contracting business. What can I help you with on the platform?"
-- Ground your answers in the knowledge base content when available.
-- If no matching content exists and you're unsure, suggest contacting support.
+- Ground your answers in the knowledge base content when available. If the knowledge base has a strong match, prioritize that content.
+- ${hasStrongKBMatch ? 'Strong knowledge base matches found — prioritize these in your answer.' : 'No strong knowledge base match — you may use your general knowledge on approved topics.'}
 
 Your role is to:
 1. Answer questions about using the CT1 Contractor Hub
@@ -45,6 +71,7 @@ Your role is to:
 3. Help with sales techniques and objection handling for contractors
 4. Troubleshoot technical issues
 5. Direct users to relevant help articles when available
+6. Provide expert contractor knowledge on approved topics
 
 Key features in CT1 Contractor Hub:
 - Dashboard: Overview of leads, jobs, estimates, and key metrics
@@ -74,7 +101,7 @@ Guidelines:
 
 ${companyName ? `The user's company is: ${companyName}` : ''}
 
-${articlesContext}`;
+${articlesContext}${aiTopicContext}`;
 
     const messages = [
       { role: 'system', content: systemPrompt },

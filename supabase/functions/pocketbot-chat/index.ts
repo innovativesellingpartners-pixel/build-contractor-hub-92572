@@ -265,6 +265,30 @@ serve(async (req) => {
       }
     ];
 
+    // Fetch enabled AI topic rules for dynamic scoping
+    const { data: topicRules } = await supabase
+      .from('ai_topic_rules')
+      .select('topic_name, category, description, custom_instructions')
+      .eq('is_enabled', true);
+
+    let dynamicTopicScope = '';
+    if (topicRules && topicRules.length > 0) {
+      const grouped: Record<string, string[]> = {};
+      for (const rule of topicRules) {
+        if (!grouped[rule.category]) grouped[rule.category] = [];
+        grouped[rule.category].push(rule.topic_name);
+      }
+      const topicList = Object.entries(grouped)
+        .map(([cat, topics]) => `  ${cat}: ${topics.join(', ')}`)
+        .join('\n');
+      const restrictions = topicRules
+        .filter((r: any) => r.custom_instructions)
+        .map((r: any) => `- ${r.topic_name}: ${r.custom_instructions}`)
+        .join('\n');
+
+      dynamicTopicScope = `\n\nAPPROVED KNOWLEDGE TOPICS (admin-configured):\n${topicList}\n\nTopic-specific restrictions:\n${restrictions}\n\nYou may answer in depth on any of the above approved topics. Do NOT mention specific training brands, methodologies by name, or proprietary systems. Keep advice generic and universally applicable.`;
+    }
+
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -286,6 +310,7 @@ IMPORTANT: You ONLY provide guidance on these specific topics:
 - Customer relationship management
 - Construction industry best practices
 - Task management (adding tasks to the user's task list)
+${dynamicTopicScope}
 
 TASK MANAGEMENT:
 You can add tasks to the user's personal task list. When users say things like:
