@@ -250,7 +250,7 @@ export function NewLandingPage() {
                   "Real-time financial reporting across every job - revenue, expenses, margins, and profitability, always current.",
                   "Warm, qualified leads delivered directly to your dashboard.",
                   "Expert training from people who've actually been in your boots - included with every subscription.",
-                  "Access to 400+ technology partners through our marketplace to keep your operation connected and growing.",
+                  "Technology solutions from trusted brands to keep your operation connected, mobile, and running efficiently.",
                   "An AI Phone Assistant that never misses a call, so every lead is captured even when you're on the job site."
                 ].map((item, index) => (
                   <li key={index} className="flex items-start gap-3">
