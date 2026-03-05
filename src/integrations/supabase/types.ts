@@ -4668,6 +4668,47 @@ export type Database = {
           },
         ]
       }
+      portal_participants: {
+        Row: {
+          added_by: string | null
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          phone: string | null
+          portal_token_id: string
+          role: string
+        }
+        Insert: {
+          added_by?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          phone?: string | null
+          portal_token_id: string
+          role?: string
+        }
+        Update: {
+          added_by?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          phone?: string | null
+          portal_token_id?: string
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portal_participants_portal_token_id_fkey"
+            columns: ["portal_token_id"]
+            isOneToOne: false
+            referencedRelation: "customer_portal_tokens"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       portal_photo_uploads: {
         Row: {
           caption: string | null
