@@ -33,7 +33,8 @@ import {
   DollarSign,
   Receipt,
   Globe,
-  Percent
+  Percent,
+  Home
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
