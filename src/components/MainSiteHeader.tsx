@@ -12,7 +12,7 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
-import { Bot, Mic, Rocket, TrendingUp, Crown } from "lucide-react";
+import { Bot, Mic, Rocket, TrendingUp, Crown, Home } from "lucide-react";
 import ct1Logo from "@/assets/ct1-main-logo.png";
 
 interface MainSiteHeaderProps {
@@ -43,6 +43,10 @@ export function MainSiteHeader({ onContactClick }: MainSiteHeaderProps) {
           </Link>
           
           <nav className="hidden lg:flex items-center space-x-3 xl:space-x-5">
+            <Link to="/" className="text-zinc-300 hover:text-white transition-colors font-medium text-sm flex items-center gap-1.5">
+              <Home className="h-4 w-4" />
+              Home
+            </Link>
             <Link to="/what-we-do" className="text-zinc-300 hover:text-white transition-colors font-medium text-sm">About Us</Link>
             
             {/* Products Dropdown */}
