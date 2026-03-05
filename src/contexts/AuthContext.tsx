@@ -189,25 +189,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = async () => {
     console.log('Signing out...');
+    
+    // Redirect FIRST to prevent flash of unauthenticated routes (e.g. pricing page)
+    // Using replace so the user can't navigate back to the dashboard
+    window.location.replace('https://myct1.com/auth');
+    
+    // Then clean up state (page is already navigating away)
     try {
       await supabase.auth.signOut({ scope: 'local' });
     } catch (err) {
       console.warn('Sign out API call failed (session may already be expired):', err);
     }
-    // Force-clear the Supabase session from localStorage in case signOut didn't
     localStorage.removeItem('ct1-auth-token');
-    // Always clear local state regardless of server response
     setProfile(null);
     localStorage.removeItem('rememberMe');
     console.log('Sign out complete');
     
-    // Check for PWA updates after logout
     try {
       await checkForUpdates();
     } catch {}
-    
-    // Redirect to primary domain login page
-    window.location.href = 'https://myct1.com/auth';
   };
 
   const resetPassword = async (email: string) => {
