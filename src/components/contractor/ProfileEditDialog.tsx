@@ -122,6 +122,7 @@ export function ProfileEditDialog() {
       if (updateError) throw updateError;
 
       setFormData({ ...formData, logo_url: publicUrl });
+      await refreshProfile();
       
       toast({
         title: "Logo uploaded",
