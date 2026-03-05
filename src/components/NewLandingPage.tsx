@@ -422,9 +422,29 @@ export function NewLandingPage() {
             <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
               We Also Deliver the <span className="text-primary">Technology</span> Your Business Needs
             </h2>
-            <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+            <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed mb-6">
               From mobile devices and fleet tracking to internet and connectivity, CT1 partners with industry-leading brands to equip your crew with the tools that keep you competitive, connected, and in control.
             </p>
+            <p className="text-base text-muted-foreground max-w-2xl mx-auto mb-4">
+              Find out more about our technology marketplace built for contractors.
+            </p>
+            <Dialog open={activeContactForm === "tech-section-cta"} onOpenChange={(open) => setActiveContactForm(open ? "tech-section-cta" : null)}>
+              <DialogTrigger asChild>
+                <Button className="btn-ct1 px-6 py-3 h-auto">
+                  Contact Us Today
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl">
+                <ContactForm
+                  title="Technology Solutions for Contractors"
+                  description="Tell us about your business needs and our team will connect you with the right technology solutions."
+                  ctaText="Get Started"
+                  formType="tech-partner"
+                  onClose={() => setActiveContactForm(null)}
+                />
+              </DialogContent>
+            </Dialog>
           </div>
 
           {/* Partner Logos Grid */}
@@ -439,11 +459,11 @@ export function NewLandingPage() {
             ].map((partner) => (
               <Dialog key={partner.name} open={activeContactForm === `tech-${partner.name}`} onOpenChange={(open) => setActiveContactForm(open ? `tech-${partner.name}` : null)}>
                 <DialogTrigger asChild>
-                  <button className="bg-card border-2 border-border rounded-2xl p-8 sm:p-10 flex items-center justify-center hover:shadow-xl hover:border-primary/50 hover:-translate-y-2 transition-all duration-300 cursor-pointer group aspect-[4/3]">
+                  <button className="bg-card border-2 border-border rounded-2xl p-8 sm:p-10 flex items-center justify-center hover:shadow-xl hover:border-primary/50 hover:-translate-y-2 transition-all duration-300 cursor-pointer group aspect-[4/3] overflow-hidden">
                     <img
                       src={partner.src}
                       alt={partner.name}
-                      className="max-h-24 sm:max-h-28 max-w-[90%] object-contain opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300 dark:brightness-0 dark:invert"
+                      className="h-12 sm:h-14 w-auto max-w-[85%] object-contain opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300 dark:brightness-0 dark:invert"
                     />
                   </button>
                 </DialogTrigger>
