@@ -46,6 +46,7 @@ export function FloatingPocketAgent({ onClose, onPositionChange, initialPosition
   const [isMinimized, setIsMinimized] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
+  const [activeTab, setActiveTab] = useState<'chat' | 'sales-coach'>('chat');
   const [position, setPosition] = useState(() => {
     // If initialPosition provided (from button location), position dialog near the button
     if (initialPosition) {
