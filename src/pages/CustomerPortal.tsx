@@ -403,7 +403,7 @@ function ScheduleTab({ jobId, isContractor = false, contractorId, portalTokenId 
             <div className="flex items-center gap-2">
               {isContractor && contractorId && (
                 <>
-                  <EmailScheduleDialog jobId={jobId} contractorId={contractorId} events={events || []} />
+                  <EmailScheduleDialog jobId={jobId} contractorId={contractorId} events={events || []} portalTokenId={portalTokenId} />
                   <AddEditEventDialog
                     jobId={jobId}
                     contractorId={contractorId}
