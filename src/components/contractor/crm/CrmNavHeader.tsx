@@ -49,11 +49,13 @@ export function CrmNavHeader({
       className
     )}>
       <div className="flex items-center gap-2 min-w-0 flex-shrink-0">
-        <img 
-          src={ct1Logo} 
-          alt="CT1" 
-          className="h-8 w-8 rounded-full flex-shrink-0"
-        />
+        <Link to="/home" className="flex-shrink-0">
+          <img 
+            src={ct1Logo} 
+            alt="CT1" 
+            className="h-8 w-8 rounded-full flex-shrink-0 hover:opacity-80 transition-opacity"
+          />
+        </Link>
         
         {back && (
           <Button
