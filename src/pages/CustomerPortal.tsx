@@ -258,7 +258,8 @@ export default function CustomerPortal() {
 // ==================== SCHEDULE TAB ====================
 function ScheduleTab({ jobId, isContractor = false, contractorId }: { jobId: string; isContractor?: boolean; contractorId?: string }) {
   const [selectedMonth, setSelectedMonth] = useState(() => new Date());
-
+  const [clickedDate, setClickedDate] = useState<string | null>(null);
+  const [showAddDialog, setShowAddDialog] = useState(false);
   const { data: events, isLoading } = useQuery({
     queryKey: ['portal-calendar-events', jobId],
     queryFn: async () => {
