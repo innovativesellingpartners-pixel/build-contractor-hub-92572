@@ -437,44 +437,54 @@ function ScheduleTab({ jobId, isContractor = false, contractorId }: { jobId: str
           {/* Calendar grid */}
           <div className="grid grid-cols-7 gap-px bg-border rounded-lg overflow-hidden">
             {Array.from({ length: startPad }).map((_, i) => (
-              <div key={`pad-${i}`} className="bg-background aspect-square" />
+              <div key={`pad-${i}`} className="bg-background min-h-[80px] sm:min-h-[100px]" />
             ))}
             {Array.from({ length: daysInMonth }).map((_, i) => {
               const day = i + 1;
               const isToday = day === now.getDate() && month === now.getMonth() && year === now.getFullYear();
               const dayEvents = eventsByDay[day] || [];
+              const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
               return (
                 <div
                   key={day}
+                  onClick={() => {
+                    if (isContractor && contractorId) {
+                      setClickedDate(dateStr);
+                      setShowAddDialog(true);
+                    }
+                  }}
                   className={cn(
-                    'bg-background aspect-square flex flex-col items-center justify-center relative p-0.5',
-                    isToday && 'ring-2 ring-primary ring-inset'
+                    'bg-background min-h-[80px] sm:min-h-[100px] flex flex-col p-1 relative transition-colors',
+                    isToday && 'ring-2 ring-primary ring-inset',
+                    isContractor && contractorId && 'cursor-pointer hover:bg-muted/50'
                   )}
                 >
                   <span className={cn(
-                    'text-xs font-medium',
+                    'text-xs font-medium mb-0.5',
                     isToday ? 'text-primary font-bold' : 'text-foreground'
                   )}>{day}</span>
-                  {dayEvents.length > 0 && (
-                    <div className="flex gap-0.5 mt-0.5">
-                      {dayEvents.slice(0, 3).map((e, idx) => {
-                        const conf = eventTypeConfig[e.event_type] || eventTypeConfig.other;
-                        return (
-                          <div
-                            key={idx}
-                            className={cn('h-1.5 w-1.5 rounded-full', 
-                              e.event_type === 'milestone' ? 'bg-primary' :
-                              e.event_type === 'inspection' ? 'bg-amber-500' :
-                              e.event_type === 'delivery' ? 'bg-emerald-500' :
-                              e.event_type === 'work' ? 'bg-blue-500' :
-                              e.event_type === 'meeting' ? 'bg-violet-500' :
-                              'bg-muted-foreground'
-                            )}
-                          />
-                        );
-                      })}
-                    </div>
-                  )}
+                  <div className="flex flex-col gap-0.5 overflow-hidden flex-1">
+                    {dayEvents.slice(0, 3).map((e, idx) => (
+                      <div
+                        key={idx}
+                        className={cn(
+                          'text-[9px] sm:text-[10px] leading-tight px-1 py-0.5 rounded truncate font-medium',
+                          e.event_type === 'milestone' ? 'bg-primary/15 text-primary' :
+                          e.event_type === 'inspection' ? 'bg-amber-500/15 text-amber-600' :
+                          e.event_type === 'delivery' ? 'bg-emerald-500/15 text-emerald-600' :
+                          e.event_type === 'work' ? 'bg-blue-500/15 text-blue-600' :
+                          e.event_type === 'meeting' ? 'bg-violet-500/15 text-violet-600' :
+                          'bg-muted text-muted-foreground'
+                        )}
+                        title={e.title}
+                      >
+                        {e.title}
+                      </div>
+                    ))}
+                    {dayEvents.length > 3 && (
+                      <span className="text-[9px] text-muted-foreground px-1">+{dayEvents.length - 3} more</span>
+                    )}
+                  </div>
                 </div>
               );
             })}
