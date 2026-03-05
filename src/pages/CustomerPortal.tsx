@@ -137,22 +137,20 @@ export default function CustomerPortal() {
   ];
 
   return (
-    <div className="min-h-screen bg-muted/30">
+    <div className="min-h-screen bg-muted/20">
       {/* Contractor-only navigation bar */}
       {isContractor && (
         <div className="bg-primary text-primary-foreground sticky top-0 z-[60]">
-          <div className="max-w-5xl mx-auto px-4 py-2 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 gap-1.5 text-primary-foreground hover:bg-primary-foreground/20 hover:text-primary-foreground"
-                onClick={() => navigate('/')}
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Back to Job
-              </Button>
-            </div>
+          <div className="max-w-4xl mx-auto px-4 py-2 flex items-center justify-between">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 gap-1.5 text-primary-foreground hover:bg-primary-foreground/20 hover:text-primary-foreground"
+              onClick={() => navigate('/')}
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Job
+            </Button>
             <span className="text-xs font-medium opacity-75 hidden sm:inline">Contractor Preview</span>
             <Button
               variant="ghost"
@@ -167,47 +165,51 @@ export default function CustomerPortal() {
         </div>
       )}
 
-      <header className={cn("bg-background border-b sticky z-50", isContractor ? "top-[40px]" : "top-0")}>
-        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center gap-3">
-          {contractor.logo_url ? (
-            <img src={contractor.logo_url} alt="" className="h-10 w-10 rounded-lg object-cover" />
-          ) : (
-            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Building2 className="h-5 w-5 text-primary" />
+      {/* Header with branding */}
+      <header className={cn("bg-card border-b sticky z-50 shadow-sm", isContractor ? "top-[40px]" : "top-0")}>
+        <div className="max-w-4xl mx-auto px-4 py-4">
+          <div className="flex items-center gap-3">
+            {contractor.logo_url ? (
+              <img src={contractor.logo_url} alt="" className="h-11 w-11 rounded-xl object-cover border shadow-sm" />
+            ) : (
+              <div className="h-11 w-11 rounded-xl bg-primary/10 border flex items-center justify-center shadow-sm">
+                <Building2 className="h-5 w-5 text-primary" />
+              </div>
+            )}
+            <div className="min-w-0 flex-1">
+              <h1 className="font-bold text-base sm:text-lg truncate">
+                {contractor.company_name || 'Your Contractor'}
+              </h1>
+              <p className="text-xs text-muted-foreground truncate">
+                {job.name || job.description || `Job ${job.job_number || ''}`}
+              </p>
             </div>
-          )}
-          <div className="min-w-0 flex-1">
-            <h1 className="font-semibold text-sm sm:text-base truncate">
-              {contractor.company_name || 'Your Contractor'}
-            </h1>
-            <p className="text-xs text-muted-foreground truncate">
-              {job.description || job.name || `Job ${job.job_number || ''}`}
-            </p>
           </div>
         </div>
 
-        <div className="max-w-5xl mx-auto px-4">
-          <nav className="flex gap-1 overflow-x-auto pb-1 -mb-px scrollbar-hide">
+        {/* Tab navigation */}
+        <div className="max-w-4xl mx-auto px-4">
+          <nav className="flex gap-0.5 overflow-x-auto pb-0 -mb-px scrollbar-hide">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={cn(
-                  'flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-medium rounded-t-lg transition-colors whitespace-nowrap border-b-2',
+                  'flex items-center gap-1.5 px-3 py-2.5 text-xs sm:text-sm font-medium transition-all whitespace-nowrap border-b-2',
                   activeTab === tab.id
-                    ? 'border-primary text-primary bg-primary/5'
-                    : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-muted-foreground hover:text-foreground'
                 )}
               >
                 <tab.icon className="h-4 w-4" />
-                <span className="hidden sm:inline">{tab.label}</span>
+                <span>{tab.label}</span>
               </button>
             ))}
           </nav>
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 py-6 space-y-6">
+      <main className="max-w-4xl mx-auto px-4 py-5 space-y-5">
         {activeTab === 'overview' && <OverviewTab job={job} contractor={contractor} />}
         {activeTab === 'schedule' && <ScheduleTab jobId={job.id} isContractor={isContractor} contractorId={portalToken.contractor_id} />}
         {activeTab === 'documents' && <DocumentsTab jobId={job.id} />}
@@ -223,18 +225,18 @@ export default function CustomerPortal() {
         {activeTab === 'payments' && <PaymentsTab jobId={job.id} job={job} />}
       </main>
 
-      <footer className="border-t bg-background mt-12">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex flex-col items-center gap-3 text-xs text-muted-foreground">
+      <footer className="border-t bg-card mt-8">
+        <div className="max-w-4xl mx-auto px-4 py-4 flex flex-col items-center gap-3 text-xs text-muted-foreground">
           <div className="flex flex-col sm:flex-row items-center justify-between w-full gap-2">
-            <span>Customer Portal • {contractor.company_name}</span>
+            <span>Customer Portal - {contractor.company_name}</span>
             <div className="flex gap-4">
               {contractor.phone && (
-                <a href={`tel:${contractor.phone}`} className="flex items-center gap-1 hover:text-foreground">
+                <a href={`tel:${contractor.phone}`} className="flex items-center gap-1 hover:text-foreground transition-colors">
                   <Phone className="h-3 w-3" /> {contractor.phone}
                 </a>
               )}
               {contractor.business_email && (
-                <a href={`mailto:${contractor.business_email}`} className="flex items-center gap-1 hover:text-foreground">
+                <a href={`mailto:${contractor.business_email}`} className="flex items-center gap-1 hover:text-foreground transition-colors">
                   <Mail className="h-3 w-3" /> Email
                 </a>
               )}
@@ -535,15 +537,17 @@ function ScheduleTab({ jobId, isContractor = false, contractorId }: { jobId: str
 
 
 function OverviewTab({ job, contractor }: { job: any; contractor: any }) {
-  const statusConfig: Record<string, { color: string; label: string }> = {
-    not_started: { color: 'bg-muted text-muted-foreground', label: 'Not Started' },
-    in_progress: { color: 'bg-primary/10 text-primary', label: 'In Progress' },
-    on_hold: { color: 'bg-accent text-accent-foreground', label: 'On Hold' },
-    completed: { color: 'bg-primary/20 text-primary', label: 'Completed' },
-    cancelled: { color: 'bg-destructive/10 text-destructive', label: 'Cancelled' },
+  const statusConfig: Record<string, { color: string; label: string; icon: typeof CheckCircle2 }> = {
+    not_started: { color: 'bg-muted text-muted-foreground', label: 'Not Started', icon: Clock },
+    scheduled: { color: 'bg-blue-500/10 text-blue-600', label: 'Scheduled', icon: Calendar },
+    in_progress: { color: 'bg-amber-500/10 text-amber-600', label: 'In Progress', icon: Clock },
+    on_hold: { color: 'bg-muted text-muted-foreground', label: 'On Hold', icon: AlertCircle },
+    completed: { color: 'bg-emerald-500/10 text-emerald-600', label: 'Completed', icon: CheckCircle2 },
+    cancelled: { color: 'bg-destructive/10 text-destructive', label: 'Cancelled', icon: AlertCircle },
   };
 
   const status = statusConfig[job.job_status || 'not_started'] || statusConfig.not_started;
+  const StatusIcon = status.icon;
   const totalValue = job.total_contract_value || job.contract_value || 0;
   const paid = job.payments_collected || 0;
   const remaining = Math.max(0, totalValue - paid);
@@ -566,100 +570,135 @@ function OverviewTab({ job, contractor }: { job: any; contractor: any }) {
   const taskProgress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="space-y-1">
-              <h2 className="text-lg font-semibold">{job.description || job.name || `Job ${job.job_number}`}</h2>
+    <div className="space-y-5">
+      {/* Hero project card */}
+      <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+        <div className="p-5">
+          <div className="flex items-start justify-between gap-3">
+            <div className="space-y-1 min-w-0">
+              <h2 className="text-lg md:text-xl font-bold truncate">{job.name || job.description || `Job ${job.job_number}`}</h2>
               {job.address && (
-                <p className="text-sm text-muted-foreground flex items-center gap-1">
-                  <MapPin className="h-3.5 w-3.5" />
-                  {job.address}{job.city ? `, ${job.city}` : ''}{job.state ? `, ${job.state}` : ''}
+                <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+                  <MapPin className="h-3.5 w-3.5 shrink-0" />
+                  <span className="truncate">{job.address}{job.city ? `, ${job.city}` : ''}{job.state ? `, ${job.state}` : ''}</span>
                 </p>
               )}
             </div>
-            <Badge className={cn('text-xs', status.color)}>{status.label}</Badge>
+            <Badge className={cn('text-xs shrink-0 gap-1', status.color)}>
+              <StatusIcon className="h-3 w-3" />
+              {status.label}
+            </Badge>
           </div>
-        </CardContent>
-      </Card>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Job Progress</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>{completedTasks} of {totalTasks} tasks complete</span>
-                <span className="font-medium">{Math.round(taskProgress)}%</span>
-              </div>
-              <Progress value={taskProgress} className="h-2" />
+          {/* Key dates inline */}
+          {(job.start_date || job.end_date) && (
+            <div className="flex flex-wrap gap-4 mt-4 pt-4 border-t">
+              {job.start_date && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Calendar className="h-4 w-4 text-primary" />
+                  <span className="text-muted-foreground">Start:</span>
+                  <span className="font-medium">{format(new Date(job.start_date), 'MMM d, yyyy')}</span>
+                </div>
+              )}
+              {job.end_date && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Calendar className="h-4 w-4 text-primary" />
+                  <span className="text-muted-foreground">Est. Completion:</span>
+                  <span className="font-medium">{format(new Date(job.end_date), 'MMM d, yyyy')}</span>
+                </div>
+              )}
             </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Payment Progress</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>${paid.toLocaleString()} paid</span>
-                <span className="font-medium">${remaining.toLocaleString()} remaining</span>
-              </div>
-              <Progress value={paymentProgress} className="h-2" />
-            </div>
-          </CardContent>
-        </Card>
+          )}
+        </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm font-medium">Key Dates</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {job.start_date && (
-            <div className="flex items-center gap-3 text-sm">
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-              <span className="text-muted-foreground">Start:</span>
-              <span className="font-medium">{format(new Date(job.start_date), 'MMM d, yyyy')}</span>
-            </div>
-          )}
-          {job.end_date && (
-            <div className="flex items-center gap-3 text-sm">
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-              <span className="text-muted-foreground">Est. Completion:</span>
-              <span className="font-medium">{format(new Date(job.end_date), 'MMM d, yyyy')}</span>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {/* Progress cards - side by side */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="rounded-xl border bg-card shadow-sm p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Job Progress</p>
+            <span className="text-lg font-bold">{Math.round(taskProgress)}%</span>
+          </div>
+          <Progress value={taskProgress} className="h-2.5" />
+          <p className="text-xs text-muted-foreground">{completedTasks} of {totalTasks} tasks complete</p>
+        </div>
 
+        <div className="rounded-xl border bg-card shadow-sm p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Payments</p>
+            <span className="text-lg font-bold">{Math.round(paymentProgress)}%</span>
+          </div>
+          <Progress value={paymentProgress} className="h-2.5" />
+          <div className="flex justify-between text-xs text-muted-foreground">
+            <span>${paid.toLocaleString()} paid</span>
+            <span>${remaining.toLocaleString()} remaining</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Contractor contact card */}
+      <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+        <div className="px-4 py-3 bg-muted/40 border-b">
+          <p className="text-sm font-semibold flex items-center gap-2">
+            <Building2 className="h-4 w-4 text-primary" />
+            Your Contractor
+          </p>
+        </div>
+        <div className="p-4">
+          <div className="flex items-center gap-3 mb-3">
+            {contractor.logo_url ? (
+              <img src={contractor.logo_url} alt="" className="h-10 w-10 rounded-lg object-cover border" />
+            ) : (
+              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Building2 className="h-5 w-5 text-primary" />
+              </div>
+            )}
+            <div>
+              <p className="font-semibold text-sm">{contractor.company_name}</p>
+              {contractor.contact_name && <p className="text-xs text-muted-foreground">{contractor.contact_name}</p>}
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {contractor.phone && (
+              <a href={`tel:${contractor.phone}`} className="flex items-center gap-2 text-sm p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                <Phone className="h-4 w-4 text-primary" />
+                <span>{contractor.phone}</span>
+              </a>
+            )}
+            {contractor.business_email && (
+              <a href={`mailto:${contractor.business_email}`} className="flex items-center gap-2 text-sm p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                <Mail className="h-4 w-4 text-primary" />
+                <span className="truncate">{contractor.business_email}</span>
+              </a>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Task checklist */}
       {tasks && tasks.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">Task Progress</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
+        <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+          <div className="px-4 py-3 bg-muted/40 border-b flex items-center justify-between">
+            <p className="text-sm font-semibold">Task Progress</p>
+            <Badge variant="outline" className="text-xs">{completedTasks}/{totalTasks}</Badge>
+          </div>
+          <div className="divide-y">
             {tasks.slice(0, 8).map((task) => (
-              <div key={task.id} className="flex items-center gap-3 text-sm py-1.5 border-b last:border-0">
+              <div key={task.id} className="flex items-center gap-3 px-4 py-3">
                 {task.status === 'completed' ? (
-                  <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+                  <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
                 ) : task.status === 'in_progress' ? (
-                  <Clock className="h-4 w-4 text-primary/70 shrink-0" />
+                  <Clock className="h-4 w-4 text-amber-500 shrink-0" />
                 ) : (
                   <div className="h-4 w-4 rounded-full border-2 border-muted-foreground/30 shrink-0" />
                 )}
-                <span className={cn('flex-1 truncate', task.status === 'completed' && 'line-through text-muted-foreground')}>
+                <span className={cn('text-sm flex-1', task.status === 'completed' && 'line-through text-muted-foreground')}>
                   {task.description}
                 </span>
               </div>
             ))}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
     </div>
   );
