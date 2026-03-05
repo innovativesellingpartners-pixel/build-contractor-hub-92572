@@ -323,6 +323,11 @@ export function HelpAdmin() {
           <KnowledgeBaseManager />
         </TabsContent>
 
+        {/* AI Topics Tab */}
+        <TabsContent value="ai-topics">
+          <AITopicRulesManager />
+        </TabsContent>
+
         {/* Articles Tab */}
         <TabsContent value="articles" className="space-y-4">
           <div className="flex justify-end">
