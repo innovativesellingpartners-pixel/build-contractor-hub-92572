@@ -78,6 +78,7 @@ export function ProfileEditContent() {
         brand_footer_color: (profile as any).brand_footer_color || '#333333',
         brand_accent_bg_color: (profile as any).brand_accent_bg_color || '#f5f5f5',
         watermark_logo_url: (profile as any).watermark_logo_url || '',
+        watermark_opacity: ((profile as any).watermark_opacity ?? 0.15) * 100,
         default_sales_tax_rate: profile.default_sales_tax_rate?.toString() || '6.00',
         default_deposit_percent: profile.default_deposit_percent?.toString() || '30.00',
         default_warranty_years: profile.default_warranty_years?.toString() || '2',
