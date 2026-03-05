@@ -4559,6 +4559,7 @@ export type Database = {
           description: string | null
           end_time: string | null
           event_date: string
+          event_end_date: string | null
           event_type: string
           id: string
           is_all_day: boolean
@@ -4575,6 +4576,7 @@ export type Database = {
           description?: string | null
           end_time?: string | null
           event_date: string
+          event_end_date?: string | null
           event_type?: string
           id?: string
           is_all_day?: boolean
@@ -4591,6 +4593,7 @@ export type Database = {
           description?: string | null
           end_time?: string | null
           event_date?: string
+          event_end_date?: string | null
           event_type?: string
           id?: string
           is_all_day?: boolean
