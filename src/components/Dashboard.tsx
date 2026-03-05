@@ -271,7 +271,7 @@ export function Dashboard() {
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="left" className="w-72 p-0 overflow-y-auto">
+                <SheetContent side="left" className="w-72 p-0 overflow-y-auto overscroll-contain" style={{ WebkitOverflowScrolling: 'touch' as any }}>
                   <div className="py-4">
                     {activeSection === 'leads' ? (
                       <CRMSidebarNav 
