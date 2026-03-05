@@ -70,14 +70,22 @@ export function HelpChatbot({
   const generateId = () => Math.random().toString(36).substring(7);
 
   const searchKnowledgeBase = async (query: string) => {
-    const { data, error } = await supabase
-      .from('help_articles')
-      .select('id, title, slug, excerpt, content, related_route')
-      .eq('is_published', true)
-      .or(`title.ilike.%${query}%,content.ilike.%${query}%,excerpt.ilike.%${query}%`)
-      .limit(5);
+    // Use unified search_knowledge function for better results
+    const { data, error } = await supabase.rpc('search_knowledge', {
+      search_query: query,
+    });
 
-    if (error) throw error;
+    if (error) {
+      console.error('Knowledge search error:', error);
+      // Fallback to basic search
+      const { data: fallback } = await supabase
+        .from('help_articles')
+        .select('id, title, slug, excerpt, content, related_route')
+        .eq('is_published', true)
+        .or(`title.ilike.%${query}%,content.ilike.%${query}%`)
+        .limit(5);
+      return (fallback || []).map(a => ({ ...a, source: 'help_article' }));
+    }
     return data || [];
   };
 
