@@ -71,6 +71,7 @@ export function useContractorProfile() {
           brand_footer_color,
           brand_accent_bg_color,
           watermark_logo_url,
+          watermark_opacity,
           zelle_email,
           zelle_phone,
           ach_instructions,
