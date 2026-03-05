@@ -396,16 +396,17 @@ export function ProfileEditContent() {
               <div className="space-y-4">
                 <Label className="text-sm font-medium">Business Address</Label>
                 <LocationAutocomplete
+                  value={formData.business_address}
+                  onChange={(val) => setFormData(prev => ({ ...prev, business_address: val }))}
                   onAddressSelect={(address: AddressData) => {
                     setFormData(prev => ({
                       ...prev,
-                      business_address: address.street,
+                      business_address: address.address1,
                       city: address.city,
                       state: address.state,
-                      zip_code: address.zipCode,
+                      zip_code: address.postalCode,
                     }));
                   }}
-                  defaultValue={formData.business_address}
                   placeholder="Start typing your address..."
                 />
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
