@@ -470,8 +470,13 @@ function ScheduleTab({ jobId, isContractor = false, contractorId, portalTokenId 
                     {dayEvents.slice(0, 3).map((e, idx) => (
                       <div
                         key={idx}
+                        onClick={(ev) => {
+                          ev.stopPropagation();
+                          setSelectedEvent(e);
+                          setShowEventDialog(true);
+                        }}
                         className={cn(
-                          'text-[9px] sm:text-[10px] leading-tight px-1 py-0.5 rounded truncate font-medium',
+                          'text-[9px] sm:text-[10px] leading-tight px-1 py-0.5 rounded truncate font-medium cursor-pointer hover:opacity-80 transition-opacity',
                           e.event_type === 'milestone' ? 'bg-primary/15 text-primary' :
                           e.event_type === 'inspection' ? 'bg-amber-500/15 text-amber-600' :
                           e.event_type === 'delivery' ? 'bg-emerald-500/15 text-emerald-600' :
