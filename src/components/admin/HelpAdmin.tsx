@@ -14,9 +14,10 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, Eye, EyeOff, Search, TrendingUp, MessageSquare, AlertCircle, FileText, BarChart3, BookOpen, Upload } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, EyeOff, Search, TrendingUp, MessageSquare, AlertCircle, FileText, BarChart3, BookOpen, Upload, Brain } from 'lucide-react';
 import type { HelpArticle, HelpCategory, HelpFeedback, HelpSupportRequest, HelpSearchLog } from '@/hooks/useHelpCenter';
 import { KnowledgeBaseManager } from './KnowledgeBaseManager';
+import { AITopicRulesManager } from './AITopicRulesManager';
 
 export function HelpAdmin() {
   const { toast } = useToast();
