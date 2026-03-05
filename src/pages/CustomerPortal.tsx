@@ -335,7 +335,11 @@ function ScheduleTab({ jobId, isContractor = false, contractorId, portalTokenId 
     const TypeIcon = typeConf.icon;
 
     return (
-      <div key={event.id} className={cn('rounded-xl border p-4 space-y-2 transition-colors', typeConf.color)}>
+      <div
+        key={event.id}
+        className={cn('rounded-xl border p-4 space-y-2 transition-colors cursor-pointer hover:shadow-md', typeConf.color)}
+        onClick={() => { setSelectedEvent(event); setShowEventDialog(true); }}
+      >
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2.5">
             <div className="h-9 w-9 rounded-lg bg-background/80 border flex items-center justify-center shrink-0">
@@ -360,21 +364,6 @@ function ScheduleTab({ jobId, isContractor = false, contractorId, portalTokenId 
           </div>
           <div className="flex items-center gap-1 shrink-0">
             <Badge className={cn('text-[10px]', statConf.color)}>{statConf.label}</Badge>
-            {isContractor && contractorId && (
-              <>
-                <AddEditEventDialog
-                  jobId={jobId}
-                  contractorId={contractorId}
-                  event={event}
-                  trigger={
-                    <Button variant="ghost" size="icon" className="h-7 w-7">
-                      <Pencil className="h-3.5 w-3.5" />
-                    </Button>
-                  }
-                />
-                <DeleteEventButton eventId={event.id} jobId={jobId} />
-              </>
-            )}
           </div>
         </div>
         {event.description && (
