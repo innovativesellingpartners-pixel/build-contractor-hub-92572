@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Download, Send, FileText, ChevronLeft, ChevronRight, BookOpen, Calendar, Mail, CreditCard, Phone, BarChart2, Briefcase, Users, Receipt, PieChart, ExternalLink } from 'lucide-react';
+import { Download, Send, FileText, ChevronLeft, ChevronRight, BookOpen, Calendar, Mail, CreditCard, Phone, BarChart2, Briefcase, Users, Receipt, PieChart, ExternalLink, Link2 } from 'lucide-react';
 import { toast } from 'sonner';
 import jsPDF from 'jspdf';
 import ct1Logo from '@/assets/ct1-round-logo-new.png';
