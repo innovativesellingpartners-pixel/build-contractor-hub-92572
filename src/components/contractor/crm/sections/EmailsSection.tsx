@@ -1132,26 +1132,24 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
-              {connections.length > 1 && (
-                <div className="space-y-2">
-                  <Label>From</Label>
-                  <Select
-                    value={composeData.fromAccount}
-                    onValueChange={(value) => setComposeData(prev => ({ ...prev, fromAccount: value }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select account" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {connections.map((conn) => (
-                        <SelectItem key={conn.id} value={conn.id}>
-                          {conn.email_address} ({conn.provider === 'google' ? 'Gmail' : 'Outlook'})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
+              <div className="space-y-2">
+                <Label>From</Label>
+                <Select
+                  value={composeData.fromAccount}
+                  onValueChange={(value) => setComposeData(prev => ({ ...prev, fromAccount: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select account" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {connections.map((conn) => (
+                      <SelectItem key={conn.id} value={conn.id}>
+                        {conn.email_address} ({conn.provider === 'google' ? 'Gmail' : 'Outlook'})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               
               <div className="space-y-2">
                 <Label htmlFor="compose-to">To</Label>
