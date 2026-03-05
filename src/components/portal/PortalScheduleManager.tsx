@@ -165,9 +165,15 @@ export function AddEditEventDialog({
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label>Date *</Label>
+              <Label>Start Date *</Label>
               <Input type="date" value={form.event_date} onChange={(e) => setForm({ ...form, event_date: e.target.value })} />
             </div>
+            <div>
+              <Label>End Date</Label>
+              <Input type="date" value={form.event_end_date} onChange={(e) => setForm({ ...form, event_end_date: e.target.value })} min={form.event_date} />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
             <div>
               <Label>Type</Label>
               <Select value={form.event_type} onValueChange={(v) => setForm({ ...form, event_type: v })}>
