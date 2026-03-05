@@ -138,6 +138,7 @@ export function AddEditEventDialog({
           title: event.title,
           description: event.description || '',
           event_date: event.event_date,
+          event_end_date: event.event_end_date || '',
           event_type: event.event_type,
           status: event.status,
           is_all_day: event.is_all_day,
