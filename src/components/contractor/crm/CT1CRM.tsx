@@ -451,10 +451,10 @@ const navItems = [
               sidebarOpen ? "justify-between p-4" : "justify-center p-3"
             )}>
               {sidebarOpen && (
-                <div className="flex items-center gap-2">
+                <Link to="/home" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                   <img src={ct1Logo} alt="CT1" className="h-8 w-8" />
                   <span className="font-semibold">CT1 CRM</span>
-                </div>
+                </Link>
               )}
               <Button
                 variant="ghost"
