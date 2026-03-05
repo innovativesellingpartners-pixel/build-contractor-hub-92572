@@ -313,6 +313,17 @@ export function Dashboard() {
                 <span className="font-medium text-sm">{profile?.company_name || 'Your Company'}</span>
               </div>
               
+              {/* Home Button */}
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => handleSectionChange('dashboard')}
+                className="flex items-center gap-1 px-2 hover:bg-primary/10 transition-colors"
+              >
+                <Home className="h-4 w-4" />
+                <span className="text-xs">Home</span>
+              </Button>
+
               {/* Account Button */}
               <Button 
                 variant="outline" 
