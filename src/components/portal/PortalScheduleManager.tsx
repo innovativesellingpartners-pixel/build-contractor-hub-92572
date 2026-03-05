@@ -22,6 +22,7 @@ interface CalendarEvent {
   title: string;
   description: string | null;
   event_date: string;
+  event_end_date: string | null;
   event_type: string;
   status: string;
   is_all_day: boolean;
