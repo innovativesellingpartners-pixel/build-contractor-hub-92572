@@ -129,6 +129,7 @@ const App = () => (
           <PocketAgentWrapper />
           <Routes>
             <Route path="/" element={<HomeRedirect />} />
+            <Route path="/home" element={<NewLandingPage />} />
             <Route path="/savings" element={<Savings />} />
             <Route path="/platform" element={<Platform />} />
             <Route path="/for-consumers" element={<ForConsumers />} />

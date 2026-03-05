@@ -1,6 +1,7 @@
 import { ArrowLeft, LayoutDashboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { Link } from 'react-router-dom';
 import ct1Logo from '@/assets/ct1-round-logo-new.png';
 
 interface CrmNavHeaderProps {
@@ -48,11 +49,13 @@ export function CrmNavHeader({
       className
     )}>
       <div className="flex items-center gap-2 min-w-0 flex-shrink-0">
-        <img 
-          src={ct1Logo} 
-          alt="CT1" 
-          className="h-8 w-8 rounded-full flex-shrink-0"
-        />
+        <Link to="/home" className="flex-shrink-0">
+          <img 
+            src={ct1Logo} 
+            alt="CT1" 
+            className="h-8 w-8 rounded-full flex-shrink-0 hover:opacity-80 transition-opacity"
+          />
+        </Link>
         
         {back && (
           <Button
