@@ -14,8 +14,11 @@ import {
   Send, Upload, CheckCircle2, Clock, AlertCircle, Loader2,
   Building2, MapPin, Phone, Mail, Calendar, ChevronRight,
   CalendarDays, MapPinned, Wrench, Flag, CircleDot,
-  ArrowLeft, LayoutDashboard, Plus, Pencil
+  ArrowLeft, LayoutDashboard, Plus, Pencil, DollarSign
 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { FinixPaymentForm } from '@/components/payments/FinixPaymentForm';
 import { cn } from '@/lib/utils';
 import ct1Logo from '@/assets/ct1-powered-by-logo.png';
 import { AddEditEventDialog, DeleteEventButton, EmailScheduleDialog } from '@/components/portal/PortalScheduleManager';
