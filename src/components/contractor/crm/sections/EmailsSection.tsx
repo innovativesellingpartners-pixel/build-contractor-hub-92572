@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Mail, Plug, Check, Loader2, X, RefreshCw, Circle, ArrowLeft, Reply, Send, ChevronDown, ChevronUp, Search, PenSquare, Paperclip, ChevronLeft, ChevronRight, MailOpen, Calendar as CalendarIcon, AlertTriangle } from 'lucide-react';
+import { Mail, Plug, Check, Loader2, X, RefreshCw, Circle, ArrowLeft, Reply, Send, ChevronDown, ChevronUp, Search, PenSquare, Paperclip, ChevronLeft, ChevronRight, MailOpen, Calendar as CalendarIcon, AlertTriangle, Plus } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -589,16 +590,32 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
           <div className="flex items-center gap-2">
             {hasAnyConnection && (
               <>
-                <Button
-                  onClick={() => {
-                    setComposeData({ to: '', subject: '', body: '', fromAccount: connections[0]?.id || '' });
-                    setShowComposeDialog(true);
-                  }}
-                  className="gap-2"
-                >
-                  <PenSquare className="h-4 w-4" />
-                  Compose
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button className="gap-2">
+                      <PenSquare className="h-4 w-4" />
+                      Compose
+                      <ChevronDown className="h-3 w-3" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {connections.map((conn) => (
+                      <DropdownMenuItem
+                        key={conn.id}
+                        onClick={() => {
+                          setComposeData({ to: '', subject: '', body: '', fromAccount: conn.id });
+                          setShowComposeDialog(true);
+                        }}
+                      >
+                        <Mail className="h-4 w-4 mr-2" />
+                        {conn.email_address}
+                        <span className="text-xs text-muted-foreground ml-2">
+                          ({conn.provider === 'google' ? 'Gmail' : 'Outlook'})
+                        </span>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 <Button
                   variant="outline"
                   size="sm"
@@ -825,6 +842,53 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
                 </div>
               </div>
             </Card>
+          </div>
+        )}
+
+        {/* Action Bar above email list */}
+        {hasAnyConnection && !loadingEmails && filteredEmails.length > 0 && (
+          <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/30 border">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm" className="gap-2">
+                  <PenSquare className="h-4 w-4" />
+                  Compose
+                  <ChevronDown className="h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                {connections.map((conn) => (
+                  <DropdownMenuItem
+                    key={conn.id}
+                    onClick={() => {
+                      setComposeData({ to: '', subject: '', body: '', fromAccount: conn.id });
+                      setShowComposeDialog(true);
+                    }}
+                  >
+                    <Mail className="h-4 w-4 mr-2" />
+                    {conn.email_address}
+                    <span className="text-xs text-muted-foreground ml-2">
+                      ({conn.provider === 'google' ? 'Gmail' : 'Outlook'})
+                    </span>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-2"
+              disabled={!selectedEmail}
+              onClick={() => {
+                if (selectedEmail) handleReply();
+              }}
+            >
+              <Reply className="h-4 w-4" />
+              Reply
+            </Button>
+            <span className="text-xs text-muted-foreground ml-auto">
+              {filteredEmails.length} email{filteredEmails.length !== 1 ? 's' : ''}
+            </span>
           </div>
         )}
 
@@ -1068,26 +1132,24 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
-              {connections.length > 1 && (
-                <div className="space-y-2">
-                  <Label>From</Label>
-                  <Select
-                    value={composeData.fromAccount}
-                    onValueChange={(value) => setComposeData(prev => ({ ...prev, fromAccount: value }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select account" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {connections.map((conn) => (
-                        <SelectItem key={conn.id} value={conn.id}>
-                          {conn.email_address} ({conn.provider === 'google' ? 'Gmail' : 'Outlook'})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
+              <div className="space-y-2">
+                <Label>From</Label>
+                <Select
+                  value={composeData.fromAccount}
+                  onValueChange={(value) => setComposeData(prev => ({ ...prev, fromAccount: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select account" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {connections.map((conn) => (
+                      <SelectItem key={conn.id} value={conn.id}>
+                        {conn.email_address} ({conn.provider === 'google' ? 'Gmail' : 'Outlook'})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               
               <div className="space-y-2">
                 <Label htmlFor="compose-to">To</Label>
