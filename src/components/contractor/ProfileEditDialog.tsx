@@ -18,7 +18,7 @@ import { Badge } from "@/components/ui/badge";
 type SectionKey = 'logo' | 'business' | 'branding' | 'licensing' | 'colors' | 'defaults' | 'payments';
 
 export function ProfileEditDialog() {
-  const { profile, user } = useAuth();
+  const { profile, user, refreshProfile } = useAuth();
   const { toast } = useToast();
   const { isSuperAdmin } = useAdminAuth();
   const [open, setOpen] = useState(false);
@@ -122,6 +122,7 @@ export function ProfileEditDialog() {
       if (updateError) throw updateError;
 
       setFormData({ ...formData, logo_url: publicUrl });
+      await refreshProfile();
       
       toast({
         title: "Logo uploaded",
@@ -202,6 +203,9 @@ export function ProfileEditDialog() {
         .eq('user_id', user.id);
 
       if (error) throw error;
+
+      // Refresh the profile in auth context so UI updates immediately
+      await refreshProfile();
 
       toast({
         title: "Saved",
