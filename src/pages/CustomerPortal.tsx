@@ -1155,7 +1155,7 @@ function PaymentsTab({ jobId, job }: { jobId: string; job: any }) {
     queryFn: async () => {
       const { data } = await supabase
         .from('profiles')
-        .select('finix_merchant_id, finix_environment, company_name, zelle_email, zelle_phone, ach_instructions, accepted_payment_methods, brand_primary_color')
+        .select('finix_merchant_id, company_name, zelle_email, zelle_phone, ach_instructions, accepted_payment_methods, brand_primary_color')
         .eq('id', job.user_id)
         .single();
       return data;
