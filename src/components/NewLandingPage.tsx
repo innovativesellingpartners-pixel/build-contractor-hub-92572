@@ -37,7 +37,14 @@ import {
   Wind,
   MessageCircle,
   Rocket,
+  Wifi,
 } from "lucide-react";
+import verizonLogo from "@/assets/partners/verizon-logo.png";
+import appleLogo from "@/assets/partners/apple-logo.png";
+import comcastLogo from "@/assets/partners/comcast-logo.png";
+import tmobileLogo from "@/assets/partners/tmobile-logo.png";
+import geotabLogo from "@/assets/partners/geotab-logo.png";
+import spireonLogo from "@/assets/partners/spireon-logo.png";
 
 export function NewLandingPage() {
   const navigate = useNavigate();
