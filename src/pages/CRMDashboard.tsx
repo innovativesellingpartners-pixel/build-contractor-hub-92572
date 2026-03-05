@@ -715,8 +715,13 @@ export function CRMDashboard() {
       <main className="flex-1 overflow-auto">
         {/* Desktop Header */}
         <header className="hidden lg:flex border-b border-border bg-card px-4 lg:px-6 py-4 items-center justify-between">
-          <div className="flex items-center gap-2">
-            <User className="h-5 w-5 text-muted-foreground" />
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => handleSectionChange('dashboard')}>
+              <Home className="h-4 w-4" />
+              Home
+            </Button>
+            <span className="text-muted-foreground/40">|</span>
+            <User className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm text-muted-foreground">{user?.email}</span>
           </div>
           <div className="flex items-center gap-2">
