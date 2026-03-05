@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import ct1Logo from "@/assets/ct1-round-logo-new.png";
+import { SalesCoachMode } from "./SalesCoachMode";
 
 interface Message {
   role: "user" | "assistant";
