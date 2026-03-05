@@ -45,6 +45,7 @@ export function ProfileEditContent() {
     brand_footer_color: '#333333',
     brand_accent_bg_color: '#f5f5f5',
     watermark_logo_url: '',
+    watermark_opacity: 15,
     default_sales_tax_rate: '',
     default_deposit_percent: '',
     default_warranty_years: '',
