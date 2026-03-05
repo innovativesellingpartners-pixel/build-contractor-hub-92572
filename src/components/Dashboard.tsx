@@ -62,7 +62,7 @@ import HelpCenter from "@/components/help/HelpCenter";
 import { PersonalTasks } from "@/components/contractor/PersonalTasks";
 import { ConnectionsHub } from "@/components/contractor/ConnectionsHub";
 
-type ActiveSection = 'training' | 'crm' | 'marketplace' | 'leads' | 'insurance' | 'account' | 'voiceai' | 'reporting' | 'tasks' | 'help';
+type ActiveSection = 'training' | 'crm' | 'marketplace' | 'leads' | 'insurance' | 'account' | 'voiceai' | 'reporting' | 'tasks' | 'help' | 'connections';
 
 export function Dashboard() {
   const navigate = useNavigate();
