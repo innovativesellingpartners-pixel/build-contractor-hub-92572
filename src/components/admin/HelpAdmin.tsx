@@ -716,52 +716,38 @@ function ArticleDialog({
   onSave: (article: Partial<HelpArticle>) => void;
   isSaving: boolean;
 }) {
-  const [formData, setFormData] = useState<Partial<HelpArticle>>({});
-
-  useState(() => {
-    if (article) {
-      setFormData(article);
-    } else {
-      setFormData({
-        title: '',
-        slug: '',
-        content: '',
-        excerpt: '',
-        category_id: undefined,
-        goal: '',
-        target_role: 'all',
-        expected_result: '',
-        common_errors: '',
-        escalation_path: '',
-        related_route: '',
-        is_published: false,
-        is_featured: false,
-      });
-    }
-  });
-
-  // Reset form when article changes
-  const handleOpen = () => {
-    if (article) {
-      setFormData(article);
-    } else {
-      setFormData({
-        title: '',
-        slug: '',
-        content: '',
-        excerpt: '',
-        category_id: undefined,
-        goal: '',
-        target_role: 'all',
-        expected_result: '',
-        common_errors: '',
-        escalation_path: '',
-        related_route: '',
-        is_published: false,
-        is_featured: false,
-      });
-    }
+  const { toast } = useToast();
+  const emptyForm: Partial<HelpArticle> = {
+    title: '',
+    slug: '',
+    content: '',
+    excerpt: '',
+    category_id: undefined,
+    goal: '',
+    target_role: 'all',
+    expected_result: '',
+    common_errors: '',
+    escalation_path: '',
+    related_route: '',
+    is_published: false,
+    is_featured: false,
   };
+
+  const [formData, setFormData] = useState<Partial<HelpArticle>>(emptyForm);
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
+
+  // Populate form whenever article prop changes or dialog opens
+  React.useEffect(() => {
+    if (isOpen) {
+      if (article) {
+        setFormData({ ...article });
+        setSlugManuallyEdited(true); // existing article already has slug
+      } else {
+        setFormData({ ...emptyForm });
+        setSlugManuallyEdited(false);
+      }
+    }
+  }, [isOpen, article]);
 
   const generateSlug = (title: string) => {
     return title
@@ -770,37 +756,81 @@ function ArticleDialog({
       .replace(/(^-|-$)/g, '');
   };
 
+  const handleTitleChange = (title: string) => {
+    const updates: Partial<HelpArticle> = { ...formData, title };
+    if (!slugManuallyEdited) {
+      updates.slug = generateSlug(title);
+    }
+    setFormData(updates);
+  };
+
+  const handleSlugChange = (slug: string) => {
+    setSlugManuallyEdited(true);
+    setFormData({ ...formData, slug });
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.type === 'text/plain' || file.type === 'text/markdown' || file.name.endsWith('.md') || file.name.endsWith('.txt')) {
+      const text = await file.text();
+      setFormData(prev => ({
+        ...prev,
+        content: prev.content ? prev.content + '\n\n' + text : text,
+        title: prev.title || file.name.replace(/\.(md|txt)$/, '').replace(/[-_]/g, ' '),
+        slug: prev.slug || generateSlug(file.name.replace(/\.(md|txt)$/, '')),
+      }));
+      toast({ title: 'Document content imported' });
+    } else if (file.type === 'text/csv' || file.name.endsWith('.csv')) {
+      const text = await file.text();
+      setFormData(prev => ({
+        ...prev,
+        content: prev.content ? prev.content + '\n\n' + text : text,
+      }));
+      toast({ title: 'CSV content imported' });
+    } else {
+      toast({ title: 'Unsupported file type', description: 'Please upload .txt, .md, or .csv files', variant: 'destructive' });
+    }
+    e.target.value = '';
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); else handleOpen(); }}>
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
       <DialogContent className="max-w-3xl max-h-[90vh]">
         <DialogHeader>
-          <DialogTitle>{article ? 'Edit Article' : 'New Article'}</DialogTitle>
+          <DialogTitle>{article ? `Edit: ${article.title}` : 'New Article'}</DialogTitle>
           <DialogDescription>
-            Fill in the article details. Use the template fields for structured content.
+            {article ? 'Edit this article\'s details below.' : 'Fill in the article details. Use the template fields for structured content.'}
           </DialogDescription>
         </DialogHeader>
         <ScrollArea className="max-h-[60vh] pr-4">
           <div className="space-y-4">
+            {/* Document Upload */}
+            <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4">
+              <Label className="flex items-center gap-2 cursor-pointer justify-center text-muted-foreground hover:text-foreground transition-colors">
+                <Upload className="h-4 w-4" />
+                <span>Upload a document (.txt, .md, .csv) to import content</span>
+                <input type="file" accept=".txt,.md,.csv,text/plain,text/markdown,text/csv" className="hidden" onChange={handleFileUpload} />
+              </Label>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="title">Title</Label>
                 <Input
                   id="title"
                   value={formData.title || ''}
-                  onChange={(e) => setFormData({ 
-                    ...formData, 
-                    title: e.target.value,
-                    slug: formData.slug || generateSlug(e.target.value)
-                  })}
+                  onChange={(e) => handleTitleChange(e.target.value)}
                   placeholder="How to create an estimate"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="slug">URL Slug</Label>
+                <Label htmlFor="slug">URL Slug (auto-generated, editable)</Label>
                 <Input
                   id="slug"
                   value={formData.slug || ''}
-                  onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                  onChange={(e) => handleSlugChange(e.target.value)}
                   placeholder="create-estimate"
                 />
               </div>
