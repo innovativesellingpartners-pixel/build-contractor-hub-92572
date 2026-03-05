@@ -1,23 +1,28 @@
 
 
-## Plan: Replace inline Connections Hub with a clickable card that opens a dedicated Connections page
+## Fix: Remove CT1 Logo from Customer-Facing Estimates and Invoices
 
-### What changes
+### Problem
+When estimates are sent to customers, the public estimate page falls back to the CT1 logo when a contractor hasn't uploaded their own logo. Customers should only see their contractor's branding, not CT1 branding in the header.
 
-**1. Add `'connections'` as a new `ActiveSection` in `src/components/Dashboard.tsx`**
-- Update the `ActiveSection` type to include `'connections'`
-- Add a new section render block (`activeSection === 'connections'`) that renders the full `<ConnectionsHub>` component
+### What Changes
 
-**2. Replace the inline `<ConnectionsHub>` in the account section with a simple card/button**
-- Remove the full `<ConnectionsHub>` component from the account page (line 565)
-- Replace it with a styled card matching the account page's design (similar to the "Upgrade Plan" card) that shows:
-  - A Link2 icon + "Connections" title
-  - Brief description ("Manage your banking, calendar, email, and other integrations")
-  - A "Manage Connections" button that calls `handleSectionChange('connections')`
+**File: `src/pages/PublicEstimate.tsx`**
 
-**3. Add Connections to the sidebar navigation** (optional but recommended)
-- Add a sidebar nav item for "Connections" so users can return to it easily
+1. **Remove the CT1 logo import** (line 13) -- the `ct1PoweredLogo` import is used in two places: the header fallback and the "Powered by CT1" footer. The footer usage is intentional branding, so the import stays but the header fallback changes.
 
-### Files to modify
-- `src/components/Dashboard.tsx` — all changes are in this single file
+2. **Update the header logo fallback** (line 217) -- Instead of falling back to the CT1 logo when the contractor has no logo, use a `Building2` icon (same pattern as `PublicInvoice.tsx`):
+   - Change: `const displayLogo = contractor?.logo_url || ct1PoweredLogo;`
+   - To: `const displayLogo = contractor?.logo_url;`
 
+3. **Update the header logo rendering** (around lines 231-240) -- Add a conditional: if `displayLogo` exists, show the contractor's logo image; otherwise show a generic `Building2` icon in a styled circle, matching the invoice page pattern.
+
+### What Stays
+- The **"Powered by CT1"** footer branding at the bottom of estimates remains unchanged (this is the platform branding standard).
+- The **PublicInvoice.tsx** page already handles this correctly with the `Building2` fallback icon -- no changes needed there.
+- The **estimate PDF preview/download** components already use only the contractor's `logo_url` with no CT1 fallback -- no changes needed.
+
+### Technical Details
+- Only 1 file modified: `src/pages/PublicEstimate.tsx`
+- ~10 lines changed total
+- Pattern mirrors the existing `PublicInvoice.tsx` implementation (lines 142-154)
