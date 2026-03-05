@@ -261,6 +261,8 @@ function ScheduleTab({ jobId, isContractor = false, contractorId, portalTokenId 
   const [selectedMonth, setSelectedMonth] = useState(() => new Date());
   const [clickedDate, setClickedDate] = useState<string | null>(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
+  const [showEventDialog, setShowEventDialog] = useState(false);
   const { data: events, isLoading } = useQuery({
     queryKey: ['portal-calendar-events', jobId],
     queryFn: async () => {
