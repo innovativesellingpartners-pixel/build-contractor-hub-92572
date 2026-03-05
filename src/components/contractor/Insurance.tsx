@@ -173,7 +173,6 @@ export function Insurance() {
 
   const handleOpenPortal = useCallback(() => {
     if (!selectedProvider) return;
-    setIframeError(false);
     setPortalOpen(true);
   }, [selectedProvider]);
 
