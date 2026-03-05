@@ -354,7 +354,7 @@ const navItems = [
 
   const NavigationContent = () => (
     <TooltipProvider>
-      <nav className={cn("flex-1 overflow-y-auto", sidebarOpen ? "p-4" : "p-2")}>
+      <nav className={cn("flex-1 overflow-y-auto overscroll-contain", sidebarOpen ? "p-4" : "p-2")} style={{ WebkitOverflowScrolling: 'touch' }}>
         <ul className="space-y-1">
           {navItems.map((item) => (
             <li key={item.id}>
