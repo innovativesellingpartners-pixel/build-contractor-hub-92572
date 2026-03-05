@@ -198,6 +198,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signOut = async () => {
     console.log('Signing out...');
     
+    // Set guard to prevent onAuthStateChange from updating state during sign-out
+    signingOutRef.current = true;
+    
     // Set loading to true FIRST to prevent any flash of unauthenticated UI
     setLoading(true);
     
@@ -208,17 +211,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('ct1-auth-token');
     localStorage.removeItem('rememberMe');
     
-    // Sign out from Supabase
+    // Redirect BEFORE calling signOut to prevent race condition flash
+    console.log('Sign out complete, redirecting to /auth...');
+    window.location.replace('/auth');
+    
+    // Sign out from Supabase after redirect is initiated
     try {
       await supabase.auth.signOut({ scope: 'local' });
     } catch (err) {
       console.warn('Sign out API call failed (session may already be expired):', err);
     }
-    
-    console.log('Sign out complete, redirecting...');
-    
-    // Now redirect - loading=true keeps spinner showing until navigation completes
-    window.location.replace('https://myct1.com/auth');
     
     try {
       await checkForUpdates();
