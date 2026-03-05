@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, ChevronDown, Bot, Mic, Rocket, TrendingUp, Crown } from "lucide-react";
+import { Menu, ChevronDown, Bot, Mic, Rocket, TrendingUp, Crown, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -30,6 +30,15 @@ export function MobileNav({ onContactClick }: MobileNavProps) {
           </Link>
           
           <div className="border-t border-border my-2" />
+          
+          <Link 
+            to="/" 
+            className="text-lg font-medium text-foreground hover:text-primary transition-colors py-2 flex items-center gap-2"
+            onClick={() => setOpen(false)}
+          >
+            <Home className="h-5 w-5" />
+            Home
+          </Link>
           
           <Link 
             to="/what-we-do" 
