@@ -677,6 +677,14 @@ export function Dashboard() {
                           </div>
                         </div>
 
+                        {/* Documents Section */}
+                        <AccountDocuments
+                          onNavigateToDocuments={() => {
+                            handleSectionChange('leads');
+                            sessionStorage.setItem('ct1CrmActiveSection', 'documents');
+                          }}
+                        />
+
                         {/* Subscription Card */}
                         <div className="bg-gradient-to-br from-card to-muted/20 border border-border/50 rounded-xl shadow-md overflow-hidden">
                           <div className="bg-primary/5 px-6 py-4 border-b border-border/50">
