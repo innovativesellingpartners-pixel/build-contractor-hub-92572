@@ -203,7 +203,7 @@ export default function CallsSection({ onSectionChange }: CallsSectionProps) {
   ];
 
   return (
-    <div className="w-full h-full overflow-y-auto overflow-x-hidden pb-20 bg-background">
+    <div className="w-full pb-20 bg-background">
       <div className="p-4 sm:p-6 w-full sm:max-w-6xl sm:mx-auto space-y-6">
         {/* Back Nav */}
         <CrmNavHeader

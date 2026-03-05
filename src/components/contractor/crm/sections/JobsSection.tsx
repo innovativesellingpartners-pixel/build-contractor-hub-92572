@@ -193,7 +193,7 @@ export default function JobsSection({ onSectionChange, initialJobId, onClearInit
   }
 
   return (
-    <div className="w-full h-full overflow-y-auto overflow-x-hidden pb-24 sm:pb-20 bg-background">
+    <div className="w-full pb-24 sm:pb-20 bg-background">
       <div className="p-4 sm:p-6 space-y-5 sm:space-y-6 w-full max-w-full sm:max-w-7xl sm:mx-auto">
         {/* Navigation Header */}
         <CrmNavHeader

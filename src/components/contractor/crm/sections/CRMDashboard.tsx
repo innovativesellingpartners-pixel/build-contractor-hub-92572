@@ -169,7 +169,7 @@ export default function CRMDashboard({ onSectionChange }: CRMDashboardProps) {
   };
 
   return (
-    <div className="w-full h-full overflow-y-auto overflow-x-hidden pb-20 bg-background pt-safe pt-16 sm:pt-6">
+    <div className="w-full pb-20 bg-background pt-safe pt-16 sm:pt-6">
       <div className="p-4 sm:p-6 space-y-6 sm:space-y-8 w-full sm:max-w-7xl sm:mx-auto">
         <div className="flex items-center justify-between">
           <div>
