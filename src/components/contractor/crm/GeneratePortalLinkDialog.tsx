@@ -4,11 +4,14 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { Copy, ExternalLink, Loader2, Link2, Send, Trash2, MessageCircle, CheckCircle2, Eye, Mail } from 'lucide-react';
+import { Copy, ExternalLink, Loader2, Link2, Send, Trash2, MessageCircle, CheckCircle2, Eye, Mail, UserPlus, Users, X } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import ct1Logo from '@/assets/ct1-round-logo-new.png';
 import { HelpChatbot } from '@/components/help/HelpChatbot';
 
