@@ -4,11 +4,14 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { Copy, ExternalLink, Loader2, Link2, Send, Trash2, MessageCircle, CheckCircle2, Eye, Mail } from 'lucide-react';
+import { Copy, ExternalLink, Loader2, Link2, Send, Trash2, MessageCircle, CheckCircle2, Eye, Mail, UserPlus, Users, X } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import ct1Logo from '@/assets/ct1-round-logo-new.png';
 import { HelpChatbot } from '@/components/help/HelpChatbot';
 
@@ -312,6 +315,14 @@ export default function GeneratePortalLinkDialog({
 
           <Separator />
 
+          {/* Participants Section - only show when portal exists */}
+          {hasActivePortal && existingTokens && existingTokens[0] && (
+            <>
+              <Separator />
+              <PortalParticipantsManager portalTokenId={existingTokens[0].id} />
+            </>
+          )}
+
           {/* Footer with support */}
           <div className="px-6 py-3 flex items-center justify-between bg-muted/30">
             <p className="text-[11px] text-muted-foreground">
@@ -338,5 +349,165 @@ export default function GeneratePortalLinkDialog({
         onNavigateToSupport={() => {}}
       />
     </>
+  );
+}
+
+// ==================== PORTAL PARTICIPANTS MANAGER ====================
+function PortalParticipantsManager({ portalTokenId }: { portalTokenId: string }) {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [role, setRole] = useState<string>('customer');
+
+  const { data: participants, isLoading } = useQuery({
+    queryKey: ['portal-participants', portalTokenId],
+    queryFn: async () => {
+      const { data } = await (supabase as any)
+        .from('portal_participants')
+        .select('*')
+        .eq('portal_token_id', portalTokenId)
+        .order('created_at', { ascending: true });
+      return data || [];
+    },
+  });
+
+  const addMutation = useMutation({
+    mutationFn: async () => {
+      if (!name.trim()) throw new Error('Name is required');
+      const { error } = await (supabase as any)
+        .from('portal_participants')
+        .insert({
+          portal_token_id: portalTokenId,
+          name: name.trim(),
+          email: email.trim() || null,
+          phone: phone.trim() || null,
+          role,
+          added_by: user?.id,
+        });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['portal-participants', portalTokenId] });
+      setName('');
+      setEmail('');
+      setPhone('');
+      setRole('customer');
+      setShowAddForm(false);
+      toast.success('Participant added');
+    },
+    onError: () => toast.error('Failed to add participant'),
+  });
+
+  const removeMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await (supabase as any)
+        .from('portal_participants')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['portal-participants', portalTokenId] });
+      toast.success('Participant removed');
+    },
+  });
+
+  return (
+    <div className="px-6 py-4 space-y-3">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Users className="h-4 w-4 text-muted-foreground" />
+          <p className="text-sm font-medium">Portal Participants</p>
+        </div>
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-7 text-xs gap-1"
+          onClick={() => setShowAddForm(!showAddForm)}
+        >
+          <UserPlus className="h-3.5 w-3.5" />
+          Add Person
+        </Button>
+      </div>
+
+      {/* Add form */}
+      {showAddForm && (
+        <div className="rounded-lg border p-3 space-y-2.5 bg-muted/30">
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <Label className="text-xs">Name *</Label>
+              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="John Smith" className="h-8 text-xs" />
+            </div>
+            <div>
+              <Label className="text-xs">Role</Label>
+              <Select value={role} onValueChange={setRole}>
+                <SelectTrigger className="h-8 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="customer">Customer</SelectItem>
+                  <SelectItem value="contractor">Contractor Team</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <Label className="text-xs">Email</Label>
+              <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email@example.com" className="h-8 text-xs" type="email" />
+            </div>
+            <div>
+              <Label className="text-xs">Phone</Label>
+              <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="(555) 123-4567" className="h-8 text-xs" />
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => setShowAddForm(false)}>Cancel</Button>
+            <Button size="sm" className="h-7 text-xs" onClick={() => addMutation.mutate()} disabled={!name.trim() || addMutation.isPending}>
+              {addMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Add'}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Participants list */}
+      {isLoading ? (
+        <div className="text-xs text-muted-foreground text-center py-2">Loading...</div>
+      ) : participants && participants.length > 0 ? (
+        <div className="space-y-1.5">
+          {participants.map((p: any) => (
+            <div key={p.id} className="flex items-center justify-between rounded-lg border px-3 py-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className={`h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold ${p.role === 'contractor' ? 'bg-primary/15 text-primary' : 'bg-accent text-accent-foreground'}`}>
+                  {p.name.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase()}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-medium truncate">{p.name}</p>
+                  <p className="text-[10px] text-muted-foreground truncate">
+                    {p.role === 'contractor' ? 'Contractor Team' : 'Customer Side'}
+                    {p.email ? ` · ${p.email}` : ''}
+                  </p>
+                </div>
+              </div>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-6 w-6 text-muted-foreground hover:text-destructive shrink-0"
+                onClick={() => removeMutation.mutate(p.id)}
+              >
+                <X className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-xs text-muted-foreground text-center py-1">
+          No additional participants added yet
+        </p>
+      )}
+    </div>
   );
 }

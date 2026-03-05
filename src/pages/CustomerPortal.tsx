@@ -1148,8 +1148,34 @@ function MessagesTab({ portalTokenId, jobId, customerName, contractorName, isCon
     return msg.sender_type === 'customer' && msg.sender_name === displayName;
   };
 
+  // Fetch participants
+  const { data: participants } = useQuery({
+    queryKey: ['portal-participants', portalTokenId],
+    queryFn: async () => {
+      const { data } = await (supabase as any)
+        .from('portal_participants')
+        .select('*')
+        .eq('portal_token_id', portalTokenId)
+        .order('created_at', { ascending: true });
+      return data || [];
+    },
+  });
+
   return (
     <div className="flex flex-col h-[calc(100vh-220px)] min-h-[400px]">
+      {/* Participants bar */}
+      {participants && participants.length > 0 && (
+        <div className="flex items-center gap-1.5 mb-2 px-1 overflow-x-auto pb-1">
+          <span className="text-[10px] text-muted-foreground shrink-0">In chat:</span>
+          {participants.map((p: any) => (
+            <Badge key={p.id} variant="secondary" className="text-[10px] shrink-0 gap-1">
+              <div className={`h-2 w-2 rounded-full ${p.role === 'contractor' ? 'bg-primary' : 'bg-emerald-500'}`} />
+              {p.name}
+            </Badge>
+          ))}
+        </div>
+      )}
+
       {/* Display name bar for non-contractors */}
       {!isContractor && (
         <div className="flex items-center gap-2 mb-3 px-1">
