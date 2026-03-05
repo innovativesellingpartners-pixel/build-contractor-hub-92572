@@ -307,15 +307,25 @@ function ScheduleTab({ jobId, isContractor = false, contractorId, portalTokenId 
   const daysInMonth = lastDay.getDate();
 
   const eventsThisMonth = events?.filter(e => {
-    const d = new Date(e.event_date);
-    return d.getMonth() === month && d.getFullYear() === year;
+    const startDate = new Date(e.event_date);
+    const endDate = e.event_end_date ? new Date(e.event_end_date) : startDate;
+    const monthStart = new Date(year, month, 1);
+    const monthEnd = new Date(year, month + 1, 0);
+    return startDate <= monthEnd && endDate >= monthStart;
   }) || [];
 
   const eventsByDay: Record<number, typeof eventsThisMonth> = {};
   eventsThisMonth.forEach(e => {
-    const day = new Date(e.event_date).getDate();
-    if (!eventsByDay[day]) eventsByDay[day] = [];
-    eventsByDay[day].push(e);
+    const startDate = new Date(e.event_date);
+    const endDate = e.event_end_date ? new Date(e.event_end_date) : startDate;
+    const monthStart = new Date(year, month, 1);
+    const monthEnd = new Date(year, month + 1, 0);
+    const loopStart = startDate < monthStart ? 1 : startDate.getDate();
+    const loopEnd = endDate > monthEnd ? monthEnd.getDate() : endDate.getDate();
+    for (let d = loopStart; d <= loopEnd; d++) {
+      if (!eventsByDay[d]) eventsByDay[d] = [];
+      eventsByDay[d].push(e);
+    }
   });
 
   const prevMonth = () => setSelectedMonth(new Date(year, month - 1, 1));
