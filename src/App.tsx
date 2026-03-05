@@ -31,6 +31,7 @@ import NetworkMap from "./pages/NetworkMap";
 import NationwideNetwork from "./pages/NationwideNetwork";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import PayBill from "./pages/PayBill";
+import ProfileEdit from "./pages/ProfileEdit";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminLayout } from "@/components/admin/AdminLayout";
@@ -207,6 +208,11 @@ const App = () => (
             <Route path="/dashboard/helpcenter" element={
               <ProtectedRoute>
                 <DashboardHelpCenter />
+              </ProtectedRoute>
+            } />
+            <Route path="/dashboard/profile" element={
+              <ProtectedRoute>
+                <ProfileEdit />
               </ProtectedRoute>
             } />
             <Route path="/app-install" element={<AppInstall />} />
