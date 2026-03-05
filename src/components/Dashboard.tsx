@@ -889,7 +889,7 @@ function UnifiedHubSidebar({ activeHubSection, onHubSectionChange, onCrmSectionC
   ];
 
   return (
-    <aside className="w-56 flex-shrink-0 flex flex-col bg-card border-r overflow-y-auto">
+    <aside className="w-56 flex-shrink-0 flex flex-col bg-card border-r overflow-y-auto overscroll-contain" style={{ WebkitOverflowScrolling: 'touch' as any }}>
       <div className="flex items-center gap-2 p-4 border-b">
         <img src={ct1Logo} alt="CT1" className="h-8 w-8" />
         <span className="font-semibold">CT1 CRM</span>
