@@ -315,6 +315,14 @@ export default function GeneratePortalLinkDialog({
 
           <Separator />
 
+          {/* Participants Section - only show when portal exists */}
+          {hasActivePortal && existingTokens && existingTokens[0] && (
+            <>
+              <Separator />
+              <PortalParticipantsManager portalTokenId={existingTokens[0].id} />
+            </>
+          )}
+
           {/* Footer with support */}
           <div className="px-6 py-3 flex items-center justify-between bg-muted/30">
             <p className="text-[11px] text-muted-foreground">
