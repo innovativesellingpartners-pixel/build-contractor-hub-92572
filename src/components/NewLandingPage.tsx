@@ -422,9 +422,29 @@ export function NewLandingPage() {
             <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
               We Also Deliver the <span className="text-primary">Technology</span> Your Business Needs
             </h2>
-            <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+            <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed mb-6">
               From mobile devices and fleet tracking to internet and connectivity, CT1 partners with industry-leading brands to equip your crew with the tools that keep you competitive, connected, and in control.
             </p>
+            <p className="text-base text-muted-foreground max-w-2xl mx-auto mb-4">
+              Find out more about our technology marketplace built for contractors.
+            </p>
+            <Dialog open={activeContactForm === "tech-section-cta"} onOpenChange={(open) => setActiveContactForm(open ? "tech-section-cta" : null)}>
+              <DialogTrigger asChild>
+                <Button className="btn-ct1 px-6 py-3 h-auto">
+                  Contact Us Today
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl">
+                <ContactForm
+                  title="Technology Solutions for Contractors"
+                  description="Tell us about your business needs and our team will connect you with the right technology solutions."
+                  ctaText="Get Started"
+                  formType="tech-partner"
+                  onClose={() => setActiveContactForm(null)}
+                />
+              </DialogContent>
+            </Dialog>
           </div>
 
           {/* Partner Logos Grid */}
