@@ -246,8 +246,9 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
       setEmails(prev => prev.map(e => 
         e.id === email.id ? { ...e, isUnread: false } : e
       ));
-      // Track this email as read locally
+      // Track this email as read locally and persist
       readEmailIdsRef.current.add(email.id);
+      persistReadIds();
       // Also update the selected email reference
       setSelectedEmail({ ...email, isUnread: false });
       
