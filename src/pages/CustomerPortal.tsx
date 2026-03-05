@@ -351,6 +351,7 @@ function ScheduleTab({ jobId, isContractor = false, contractorId, portalTokenId 
               <div className="flex items-center gap-2 mt-0.5">
                 <span className="text-xs text-muted-foreground">
                   {format(new Date(event.event_date + 'T00:00:00'), 'EEE, MMM d, yyyy')}
+                  {event.event_end_date && event.event_end_date !== event.event_date && ` – ${format(new Date(event.event_end_date + 'T00:00:00'), 'EEE, MMM d, yyyy')}`}
                 </span>
                 {!event.is_all_day && event.start_time && (
                   <span className="text-xs text-muted-foreground">
