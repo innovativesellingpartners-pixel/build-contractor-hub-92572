@@ -164,7 +164,7 @@ serve(async (req: Request) => {
         Authorization: `Bearer ${resendApiKey}`,
       },
       body: JSON.stringify({
-        from: `${businessName} <onboarding@resend.dev>`,
+        from: Deno.env.get("EMAIL_FROM") || `${businessName} <onboarding@resend.dev>`,
         to,
         subject,
         html: emailHtml,
