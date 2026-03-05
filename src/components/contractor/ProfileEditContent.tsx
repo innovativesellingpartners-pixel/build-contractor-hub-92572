@@ -179,6 +179,7 @@ export function ProfileEditContent() {
             brand_footer_color: formData.brand_footer_color,
             brand_accent_bg_color: formData.brand_accent_bg_color,
             watermark_logo_url: formData.watermark_logo_url,
+            watermark_opacity: formData.watermark_opacity / 100,
           };
           break;
         case 'defaults':
