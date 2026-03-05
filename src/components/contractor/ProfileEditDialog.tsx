@@ -203,6 +203,9 @@ export function ProfileEditDialog() {
 
       if (error) throw error;
 
+      // Refresh the profile in auth context so UI updates immediately
+      await refreshProfile();
+
       toast({
         title: "Saved",
         description: "Section updated successfully.",
