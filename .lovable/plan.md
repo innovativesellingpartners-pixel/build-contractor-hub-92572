@@ -1,52 +1,28 @@
 
 
-## Plan: Add Sales Coach Mode to Pocket Agent
+## Fix: Remove CT1 Logo from Customer-Facing Estimates and Invoices
 
-### Overview
-Add a "Sales Coach" tab to the existing FloatingPocketAgent chat window. The current chat functionality remains completely untouched — Sales Coach is a separate tab that users can switch to when they want live conversation coaching.
+### Problem
+When estimates are sent to customers, the public estimate page falls back to the CT1 logo when a contractor hasn't uploaded their own logo. Customers should only see their contractor's branding, not CT1 branding in the header.
 
-### Architecture
+### What Changes
 
-```text
-┌─ FloatingPocketAgent (existing) ──────────┐
-│  [Header - unchanged]                      │
-│  [Chat | Sales Coach]  ← new tab toggle    │
-│                                            │
-│  Chat tab: existing chat (no changes)      │
-│  Sales Coach tab: SalesCoachMode component │
-│    ├─ Scrolling transcript panel            │
-│    ├─ AI suggestion cards                  │
-│    └─ Mic start/stop controls              │
-└────────────────────────────────────────────┘
-```
+**File: `src/pages/PublicEstimate.tsx`**
 
-### Changes
+1. **Remove the CT1 logo import** (line 13) -- the `ct1PoweredLogo` import is used in two places: the header fallback and the "Powered by CT1" footer. The footer usage is intentional branding, so the import stays but the header fallback changes.
 
-**1. New: `src/components/contractor/SalesCoachMode.tsx`**
-- Uses `useScribe` from `@elevenlabs/react` for real-time mic transcription (VAD commit strategy)
-- On each committed transcript segment, calls the new `sales-coach` edge function with rolling context (~2000 chars)
-- Displays scrolling transcript and 2-3 AI suggestion cards that update after each segment
-- Start/Stop listening button with active mic indicator
+2. **Update the header logo fallback** (line 217) -- Instead of falling back to the CT1 logo when the contractor has no logo, use a `Building2` icon (same pattern as `PublicInvoice.tsx`):
+   - Change: `const displayLogo = contractor?.logo_url || ct1PoweredLogo;`
+   - To: `const displayLogo = contractor?.logo_url;`
 
-**2. New: `supabase/functions/elevenlabs-scribe-token/index.ts`**
-- Generates single-use token for ElevenLabs realtime transcription using existing `ELEVENLABS_API_KEY` secret
-- Endpoint: `POST /v1/single-use-token/realtime_scribe`
+3. **Update the header logo rendering** (around lines 231-240) -- Add a conditional: if `displayLogo` exists, show the contractor's logo image; otherwise show a generic `Building2` icon in a styled circle, matching the invoice page pattern.
 
-**3. New: `supabase/functions/sales-coach/index.ts`**
-- Accepts `{ transcript, latestSegment }` 
-- Uses Lovable AI (`google/gemini-3-flash-preview`) with a contractor sales coaching prompt
-- Returns 2-3 short, actionable dialogue suggestions (non-streaming JSON response)
-- Prompt focuses on objection handling, value framing, closing techniques for trades/construction
+### What Stays
+- The **"Powered by CT1"** footer branding at the bottom of estimates remains unchanged (this is the platform branding standard).
+- The **PublicInvoice.tsx** page already handles this correctly with the `Building2` fallback icon -- no changes needed there.
+- The **estimate PDF preview/download** components already use only the contractor's `logo_url` with no CT1 fallback -- no changes needed.
 
-**4. Modify: `src/components/contractor/FloatingPocketbot.tsx`**
-- Add a simple two-tab toggle ("Chat" | "Sales Coach") below the header
-- When "Sales Coach" is selected, render `SalesCoachMode` instead of the chat messages/input area
-- Paywall and header logic unchanged — Sales Coach respects same `hasFullAccess` check
-- All existing chat state, streaming, voice-to-text, drag behavior remain untouched
-
-### What stays the same
-- All existing chat functionality (messages, streaming, voice input, PDF downloads)
-- Drag/position behavior
-- Paywall/subscription logic
-- Header design and minimize/close controls
-
+### Technical Details
+- Only 1 file modified: `src/pages/PublicEstimate.tsx`
+- ~10 lines changed total
+- Pattern mirrors the existing `PublicInvoice.tsx` implementation (lines 142-154)

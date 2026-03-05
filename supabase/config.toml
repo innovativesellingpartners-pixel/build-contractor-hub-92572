@@ -170,3 +170,9 @@ verify_jwt = false
 
 [functions.forge-entitlement-sync]
 verify_jwt = false
+
+[functions.elevenlabs-scribe-token]
+verify_jwt = true
+
+[functions.sales-coach]
+verify_jwt = true

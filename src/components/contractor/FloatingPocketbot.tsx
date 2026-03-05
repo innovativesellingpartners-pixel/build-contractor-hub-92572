@@ -3,12 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bot, Send, Loader2, Lock, Sparkles, X, Minimize2, Download, GripVertical, Mic, MicOff } from "lucide-react";
+import { Bot, Send, Loader2, Lock, Sparkles, X, Minimize2, Download, GripVertical, Mic, MicOff, MessageCircle, Headphones } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import ct1Logo from "@/assets/ct1-round-logo-new.png";
+import { SalesCoachMode } from "./SalesCoachMode";
 
 interface Message {
   role: "user" | "assistant";
@@ -45,6 +46,7 @@ export function FloatingPocketAgent({ onClose, onPositionChange, initialPosition
   const [isMinimized, setIsMinimized] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
+  const [activeTab, setActiveTab] = useState<'chat' | 'sales-coach'>('chat');
   const [position, setPosition] = useState(() => {
     // If initialPosition provided (from button location), position dialog near the button
     if (initialPosition) {
@@ -641,7 +643,35 @@ export function FloatingPocketAgent({ onClose, onPositionChange, initialPosition
         </div>
       </div>
 
-      {(!hasFullAccess && showPaywall) ? (
+      {/* Tab Toggle */}
+      <div className="flex border-b border-border/50 flex-shrink-0">
+        <button
+          onClick={() => setActiveTab('chat')}
+          className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium transition-colors ${
+            activeTab === 'chat'
+              ? 'text-primary border-b-2 border-primary bg-primary/5'
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          <MessageCircle className="h-3.5 w-3.5" />
+          Chat
+        </button>
+        <button
+          onClick={() => setActiveTab('sales-coach')}
+          className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium transition-colors ${
+            activeTab === 'sales-coach'
+              ? 'text-primary border-b-2 border-primary bg-primary/5'
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          <Headphones className="h-3.5 w-3.5" />
+          Sales Coach
+        </button>
+      </div>
+
+      {activeTab === 'sales-coach' ? (
+        <SalesCoachMode />
+      ) : (!hasFullAccess && showPaywall) ? (
         <CardContent className="flex-1 flex items-center justify-center p-4 overflow-y-auto">
           <div className="text-center space-y-4 max-w-sm w-full">
             <div className="mx-auto w-16 h-16 bg-gradient-to-br from-primary/20 to-primary/10 rounded-full flex items-center justify-center border-2 border-primary/30">
