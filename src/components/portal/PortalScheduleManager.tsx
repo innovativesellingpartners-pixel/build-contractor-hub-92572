@@ -100,6 +100,7 @@ export function AddEditEventDialog({
         title: data.title,
         description: data.description || null,
         event_date: data.event_date,
+        event_end_date: data.event_end_date || null,
         event_type: data.event_type,
         status: data.status,
         is_all_day: data.is_all_day,
