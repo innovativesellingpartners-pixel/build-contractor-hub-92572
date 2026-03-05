@@ -46,6 +46,9 @@ export function ProfileEditDialog() {
     brand_primary_color: '#D50A22',
     brand_secondary_color: '#1e3a5f',
     brand_accent_color: '#c9a227',
+    brand_footer_color: '#333333',
+    brand_accent_bg_color: '#f5f5f5',
+    watermark_logo_url: '',
     // Estimate Defaults
     default_sales_tax_rate: '',
     default_deposit_percent: '',
