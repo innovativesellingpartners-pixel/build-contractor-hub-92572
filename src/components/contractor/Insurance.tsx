@@ -4,8 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Shield, FileText, AlertCircle, CheckCircle, Check, ChevronsUpDown, Upload, Download, Trash2, Loader2 } from "lucide-react";
-import { useState, useRef } from "react";
+import { Shield, FileText, AlertCircle, CheckCircle, Check, ChevronsUpDown, Upload, Download, Trash2, Loader2, ExternalLink, LogIn, X } from "lucide-react";
+import { useState, useRef, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import ct1Logo from "@/assets/ct1-round-logo-new.png";
@@ -17,116 +17,139 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
 
-const insuranceProviders = [
-  "State Farm",
-  "Allstate",
-  "Progressive",
-  "Liberty Mutual",
-  "Nationwide",
-  "Travelers",
-  "Hartford",
-  "Chubb",
-  "CNA",
-  "Zurich",
-  "NEXT Insurance",
-  "Hiscox",
-  "BiBerk",
-  "Pie Insurance",
-  "AP Intego",
-  "Coterie Insurance",
-  "Thimble",
-  "Simply Business",
-  "Insureon",
-  "CoverWallet",
-  "Workmen's Circle",
-  "The Hartford AARP",
-  "AmTrust Financial",
-  "Markel",
-  "Berkshire Hathaway GUARD",
-  "Philadelphia Insurance Companies",
-  "Acuity Insurance",
-  "Auto-Owners Insurance",
-  "EMC Insurance",
-  "Great American Insurance",
-  "World Insurance",
-  "Farmers Insurance",
-  "GEICO Commercial",
-  "MetLife",
-  "AIG",
-  "Cincinnati Insurance",
-  "Westfield Insurance",
-  "Selective Insurance",
-  "Hanover Insurance",
-  "Society Insurance",
-  "Guard Insurance",
-  "Main Street America",
-  "Safeco Insurance",
-  "Foremost Insurance",
-  "Allied Insurance",
-  "Munich Re",
-  "QBE North America",
-  "Encompass Insurance",
-  "Grange Insurance",
-  "California Casualty",
-  "Mercury Insurance",
-  "Kemper Insurance",
-  "Peerless Insurance",
-  "Plymouth Rock",
-  "Rockhill Insurance",
-  "State Auto Insurance",
-  "COUNTRY Financial",
-  "Erie Insurance",
-  "Frankenmuth Insurance",
-  "Horace Mann",
-  "IMT Insurance",
-  "National General Insurance",
-  "PEMCO Insurance",
-  "Tower Group",
-  "United Fire Group",
-  "Utica National",
-  "W.R. Berkley Corporation",
-  "West Bend Mutual Insurance",
-  "Western National Insurance",
-  "Brotherhood Mutual",
-  "Church Mutual",
-  "GuideOne Insurance",
-  "OneBeacon Insurance",
-  "RLI Corp",
-  "Sompo International",
-  "StarStone Insurance",
-  "Arch Insurance",
-  "Assurant",
-  "Argo Group",
-  "Tokio Marine",
-  "XL Catlin",
-  "Pacific Specialty Insurance",
-  "Nationwide E&S/Specialty",
-  "Admiral Insurance",
-  "AmWINS",
-  "Applied Underwriters",
-  "Builders Mutual",
-  "Capitol Specialty Insurance",
-  "Crum & Forster",
-  "Falls Lake National Insurance",
-  "Global Liberty Insurance",
-  "James River Insurance",
-  "Kinsale Insurance",
-  "Nautilus Insurance",
-  "ProSight Specialty Insurance",
-  "Risk Strategies",
-  "Safety National",
-  "Sentry Insurance",
-  "Stillwater Insurance",
-  "StoneRiver",
-  "Wright Insurance",
-].sort();
+interface InsuranceProvider {
+  name: string;
+  portalUrl: string;
+}
+
+const insuranceProviders: InsuranceProvider[] = [
+  // Major National Carriers
+  { name: "Acuity Insurance", portalUrl: "https://www.acuity.com/my-account" },
+  { name: "Admiral Insurance", portalUrl: "https://www.admiralins.com" },
+  { name: "AIG", portalUrl: "https://www.aig.com/individual/account" },
+  { name: "Allstate", portalUrl: "https://myaccount.allstate.com" },
+  { name: "Allied Insurance", portalUrl: "https://www.nationwide.com/personal/login" },
+  { name: "American Family Insurance", portalUrl: "https://www.amfam.com/myaccount" },
+  { name: "AmTrust Financial", portalUrl: "https://amtrustfinancial.com/login" },
+  { name: "AmWINS", portalUrl: "https://www.amwins.com" },
+  { name: "AP Intego", portalUrl: "https://www.apintego.com/login" },
+  { name: "Applied Underwriters", portalUrl: "https://www.appliedunderwriters.com" },
+  { name: "Arch Insurance", portalUrl: "https://www.archinsurance.com" },
+  { name: "Argo Group", portalUrl: "https://www.argolimited.com" },
+  { name: "Assurant", portalUrl: "https://myassurant.com" },
+  { name: "Auto-Owners Insurance", portalUrl: "https://www.auto-owners.com/policyholder" },
+  { name: "Berkshire Hathaway GUARD", portalUrl: "https://www.guard.com/policyholder-login" },
+  { name: "BiBerk", portalUrl: "https://www.biberk.com/account/login" },
+  { name: "Brotherhood Mutual", portalUrl: "https://www.brotherhoodmutual.com/login" },
+  { name: "Builders Mutual", portalUrl: "https://www.buildersmutual.com/login" },
+  { name: "California Casualty", portalUrl: "https://www.calcas.com/my-account" },
+  { name: "Capitol Specialty Insurance", portalUrl: "https://www.capitolspecialty.com" },
+  { name: "Church Mutual", portalUrl: "https://www.churchmutual.com/login" },
+  { name: "Chubb", portalUrl: "https://my.chubb.com" },
+  { name: "Cincinnati Insurance", portalUrl: "https://www.cinfin.com/policyholders" },
+  { name: "CNA", portalUrl: "https://www.cna.com/web/guest/cna/login" },
+  { name: "COUNTRY Financial", portalUrl: "https://www.countryfinancial.com/en/login.html" },
+  { name: "Coterie Insurance", portalUrl: "https://app.coterieinsurance.com/login" },
+  { name: "CoverWallet", portalUrl: "https://www.coverwallet.com/login" },
+  { name: "Crum & Forster", portalUrl: "https://www.cfins.com" },
+  { name: "Donegal Insurance", portalUrl: "https://www.donegalgroup.com/policyholder" },
+  { name: "EMC Insurance", portalUrl: "https://www.emcins.com/losscontrol/login" },
+  { name: "Encompass Insurance", portalUrl: "https://www.encompassinsurance.com/login" },
+  { name: "Erie Insurance", portalUrl: "https://www.erieinsurance.com/login" },
+  { name: "Falls Lake National Insurance", portalUrl: "https://www.fallslakeins.com" },
+  { name: "Farmers Insurance", portalUrl: "https://www.farmers.com/login" },
+  { name: "Foremost Insurance", portalUrl: "https://www.foremost.com/login" },
+  { name: "Frankenmuth Insurance", portalUrl: "https://www.ffrankenmuth.com/login" },
+  { name: "GAINSCO", portalUrl: "https://www.gainsco.com" },
+  { name: "GEICO Commercial", portalUrl: "https://www.geico.com/login" },
+  { name: "Global Liberty Insurance", portalUrl: "https://www.globallibertyinsurance.com" },
+  { name: "Grange Insurance", portalUrl: "https://www.grangeinsurance.com/login" },
+  { name: "Great American Insurance", portalUrl: "https://www.greatamericaninsurancegroup.com" },
+  { name: "Guard Insurance", portalUrl: "https://www.guard.com/policyholder-login" },
+  { name: "GuideOne Insurance", portalUrl: "https://www.guideone.com/login" },
+  { name: "Hanover Insurance", portalUrl: "https://www.hanover.com/policyholder" },
+  { name: "Hartford (The Hartford)", portalUrl: "https://www.thehartford.com/login" },
+  { name: "Hiscox", portalUrl: "https://www.hiscox.com/login" },
+  { name: "Horace Mann", portalUrl: "https://www.horacemann.com/login" },
+  { name: "ICW Group", portalUrl: "https://www.icwgroup.com/login" },
+  { name: "IMT Insurance", portalUrl: "https://www.imtins.com/login" },
+  { name: "Insureon", portalUrl: "https://www.insureon.com/login" },
+  { name: "James River Insurance", portalUrl: "https://www.jamesriverins.com" },
+  { name: "Kemper Insurance", portalUrl: "https://www.kemper.com/login" },
+  { name: "Kinsale Insurance", portalUrl: "https://www.kinsalecapitalgroup.com" },
+  { name: "Liberty Mutual", portalUrl: "https://business.libertymutual.com/login" },
+  { name: "Main Street America", portalUrl: "https://www.msagroup.com" },
+  { name: "Markel", portalUrl: "https://www.markel.com/login" },
+  { name: "Merchants Insurance Group", portalUrl: "https://www.merchantsgroup.com" },
+  { name: "Mercury Insurance", portalUrl: "https://www.mercuryinsurance.com/login" },
+  { name: "MetLife", portalUrl: "https://online.metlife.com/edge/web/public/login" },
+  { name: "Munich Re", portalUrl: "https://www.munichre.com" },
+  { name: "National General Insurance", portalUrl: "https://www.nationalgeneral.com/login" },
+  { name: "Nationwide", portalUrl: "https://www.nationwide.com/personal/login" },
+  { name: "Nautilus Insurance", portalUrl: "https://www.nautilusinsgroup.com" },
+  { name: "NEXT Insurance", portalUrl: "https://app.nextinsurance.com/login" },
+  { name: "OneBeacon Insurance", portalUrl: "https://www.onebeacon.com" },
+  { name: "Pacific Specialty Insurance", portalUrl: "https://www.pacificspecialty.com/policyholder" },
+  { name: "Peerless Insurance", portalUrl: "https://www.libertymutual.com/login" },
+  { name: "PEMCO Insurance", portalUrl: "https://www.pemco.com/login" },
+  { name: "Philadelphia Insurance", portalUrl: "https://www.phly.com/login" },
+  { name: "Pie Insurance", portalUrl: "https://app.pieinsurance.com/login" },
+  { name: "Plymouth Rock", portalUrl: "https://www.plymouthrock.com/login" },
+  { name: "Progressive", portalUrl: "https://www.progressive.com/login" },
+  { name: "ProSight Specialty Insurance", portalUrl: "https://www.prosightspecialty.com" },
+  { name: "QBE North America", portalUrl: "https://www.qbe.com/us/login" },
+  { name: "Risk Strategies", portalUrl: "https://www.risk-strategies.com" },
+  { name: "RLI Corp", portalUrl: "https://www.rlicorp.com" },
+  { name: "Rockhill Insurance", portalUrl: "https://www.rockhillinsurance.com" },
+  { name: "Safeco Insurance", portalUrl: "https://www.safeco.com/login" },
+  { name: "Safety National", portalUrl: "https://www.safetynational.com" },
+  { name: "Selective Insurance", portalUrl: "https://www.selective.com/policyholder" },
+  { name: "Sentry Insurance", portalUrl: "https://www.sentry.com/login" },
+  { name: "Simply Business", portalUrl: "https://www.simplybusiness.com/login" },
+  { name: "Society Insurance", portalUrl: "https://www.societyinsurance.com/login" },
+  { name: "Sompo International", portalUrl: "https://www.sompo-intl.com" },
+  { name: "StarStone Insurance", portalUrl: "https://www.starstone.com" },
+  { name: "State Auto Insurance", portalUrl: "https://www.stateauto.com/login" },
+  { name: "State Farm", portalUrl: "https://www.statefarm.com/login" },
+  { name: "Stillwater Insurance", portalUrl: "https://www.stillwaterinsurance.com/login" },
+  { name: "Thimble", portalUrl: "https://www.thimble.com/login" },
+  { name: "Tokio Marine", portalUrl: "https://www.tokiomarinehcc.com" },
+  { name: "Tower Group", portalUrl: "https://www.twrgrp.com" },
+  { name: "Travelers", portalUrl: "https://www.travelers.com/login" },
+  { name: "United Fire Group", portalUrl: "https://www.ufginsurance.com/login" },
+  { name: "Utica National", portalUrl: "https://www.uticanational.com/login" },
+  { name: "W.R. Berkley Corporation", portalUrl: "https://www.wrberkley.com" },
+  { name: "West Bend Mutual Insurance", portalUrl: "https://www.thesilverlining.com/login" },
+  { name: "Western National Insurance", portalUrl: "https://www.wnins.com/login" },
+  { name: "Westfield Insurance", portalUrl: "https://www.westfieldinsurance.com/login" },
+  { name: "World Insurance", portalUrl: "https://www.worldinsurance.com" },
+  { name: "Wright Insurance", portalUrl: "https://www.jmwilson.com" },
+  { name: "XL Catlin", portalUrl: "https://axaxl.com" },
+  { name: "Zenith National Insurance", portalUrl: "https://www.thezenith.com/login" },
+  { name: "Zurich", portalUrl: "https://www.zurichna.com/login" },
+  // Small contractor favorites
+  { name: "biBERK (Berkshire Hathaway)", portalUrl: "https://www.biberk.com/account/login" },
+  { name: "Contractors Insurance Group", portalUrl: "https://www.ciginsurance.com" },
+  { name: "Cover Genius", portalUrl: "https://www.covergenius.com" },
+  { name: "Footprint Insurance", portalUrl: "https://www.footprintinsurance.com" },
+  { name: "Openly", portalUrl: "https://www.openly.com" },
+  { name: "Pogo Insurance", portalUrl: "https://www.pogoinsurance.com" },
+  { name: "Tivly (formerly Commercialinsurance.net)", portalUrl: "https://www.tivly.com" },
+  { name: "Cerity", portalUrl: "https://www.cerity.com/login" },
+  { name: "Bold Penguin", portalUrl: "https://www.boldpenguin.com" },
+  { name: "Cake Insurance", portalUrl: "https://www.cake.insure" },
+  { name: "Embroker", portalUrl: "https://app.embroker.com/login" },
+  { name: "Vouch Insurance", portalUrl: "https://www.vouch.us/login" },
+].sort((a, b) => a.name.localeCompare(b.name));
 
 export function Insurance() {
   const [open, setOpen] = useState(true);
   const [comboboxOpen, setComboboxOpen] = useState(false);
-  const [selectedProvider, setSelectedProvider] = useState("");
+  const [selectedProvider, setSelectedProvider] = useState<InsuranceProvider | null>(null);
   const [quoteDialogOpen, setQuoteDialogOpen] = useState(false);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [portalOpen, setPortalOpen] = useState(false);
+  const [iframeError, setIframeError] = useState(false);
   const { toast } = useToast();
   const { documents, isLoading: documentsLoading, uploadDocument, deleteDocument, downloadDocument, isUploading, isDeleting } = useInsuranceDocuments();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -135,19 +158,33 @@ export function Insurance() {
   const [expiresAt, setExpiresAt] = useState<string>("");
   const [notes, setNotes] = useState<string>("");
 
-  const handleProviderSelect = (provider: string) => {
+  const handleProviderSelect = (provider: InsuranceProvider) => {
     setSelectedProvider(provider);
     setComboboxOpen(false);
     toast({
       title: "Insurance Provider Selected",
-      description: `You selected ${provider}. Contact your provider to manage your policy.`,
+      description: `You selected ${provider.name}.`,
     });
   };
+
+  const handleClearProvider = () => {
+    setSelectedProvider(null);
+  };
+
+  const handleOpenPortal = useCallback(() => {
+    if (!selectedProvider) return;
+    setIframeError(false);
+    setPortalOpen(true);
+  }, [selectedProvider]);
+
+  const handleOpenInNewTab = useCallback(() => {
+    if (!selectedProvider) return;
+    window.open(selectedProvider.portalUrl, '_blank', 'noopener,noreferrer');
+  }, [selectedProvider]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Check file size (10MB limit)
       if (file.size > 10485760) {
         toast({
           title: "File too large",
@@ -177,7 +214,6 @@ export function Insurance() {
       notes: notes || undefined,
     });
 
-    // Reset form
     setSelectedFile(null);
     setDocumentType("");
     setExpiresAt("");
@@ -248,7 +284,7 @@ export function Insurance() {
               <DialogTitle className="text-2xl">Select Your Insurance Provider</DialogTitle>
             </div>
             <DialogDescription>
-              Choose your current insurance provider from the list below to manage your policy.
+              Choose your current insurance provider from the list below to access your portal and manage your policy.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 mt-4">
@@ -260,30 +296,47 @@ export function Insurance() {
                   aria-expanded={comboboxOpen}
                   className="w-full justify-between h-12"
                 >
-                  {selectedProvider || "Select insurance provider..."}
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  <span className="truncate">
+                    {selectedProvider?.name || "Search insurance providers..."}
+                  </span>
+                  <div className="flex items-center gap-1 shrink-0">
+                    {selectedProvider && (
+                      <span 
+                        role="button"
+                        className="p-1 hover:bg-accent rounded"
+                        onClick={(e) => { e.stopPropagation(); handleClearProvider(); }}
+                      >
+                        <X className="h-3 w-3" />
+                      </span>
+                    )}
+                    <ChevronsUpDown className="h-4 w-4 opacity-50" />
+                  </div>
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-full p-0 bg-card z-50" align="start">
                 <Command className="bg-card">
                   <CommandInput placeholder="Search insurance providers..." className="h-12" />
                   <CommandList>
-                    <CommandEmpty>No insurance provider found.</CommandEmpty>
+                    <CommandEmpty>
+                      <div className="p-2 text-sm text-muted-foreground">
+                        Provider not listed? Contact us and we'll add them.
+                      </div>
+                    </CommandEmpty>
                     <CommandGroup>
                       {insuranceProviders.map((provider) => (
                         <CommandItem
-                          key={provider}
-                          value={provider}
+                          key={provider.name}
+                          value={provider.name}
                           onSelect={() => handleProviderSelect(provider)}
                           className="cursor-pointer"
                         >
                           <Check
                             className={cn(
                               "mr-2 h-4 w-4",
-                              selectedProvider === provider ? "opacity-100" : "opacity-0"
+                              selectedProvider?.name === provider.name ? "opacity-100" : "opacity-0"
                             )}
                           />
-                          {provider}
+                          {provider.name}
                         </CommandItem>
                       ))}
                     </CommandGroup>
@@ -293,11 +346,27 @@ export function Insurance() {
             </Popover>
             
             {selectedProvider && (
-              <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
-                <p className="text-sm font-medium mb-2">Selected Provider: {selectedProvider}</p>
-                <p className="text-xs text-muted-foreground">
-                  Contact your insurance provider directly to manage your policy, file claims, or update coverage.
-                </p>
+              <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg space-y-3">
+                <p className="text-sm font-medium">Selected Provider: {selectedProvider.name}</p>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Button 
+                    onClick={() => { setOpen(false); handleOpenPortal(); }}
+                    className="flex-1"
+                    size="sm"
+                  >
+                    <LogIn className="h-4 w-4 mr-2" />
+                    Log In to {selectedProvider.name}
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    onClick={handleOpenInNewTab}
+                    className="flex-1"
+                    size="sm"
+                  >
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    Open in New Tab
+                  </Button>
+                </div>
               </div>
             )}
             
@@ -306,11 +375,101 @@ export function Insurance() {
               className="w-full h-11"
               disabled={!selectedProvider}
             >
-              Continue with {selectedProvider || "Selected Provider"}
+              Continue with {selectedProvider?.name || "Selected Provider"}
             </Button>
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Embedded Provider Portal Dialog */}
+      <Dialog open={portalOpen} onOpenChange={setPortalOpen}>
+        <DialogContent className="max-w-5xl w-[95vw] h-[85vh] p-0 gap-0">
+          <DialogHeader className="p-4 pb-2 border-b">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Shield className="h-5 w-5 text-primary" />
+                <div>
+                  <DialogTitle className="text-lg">{selectedProvider?.name} Portal</DialogTitle>
+                  <DialogDescription className="text-xs">
+                    Logged into your insurance provider within CT1
+                  </DialogDescription>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" onClick={handleOpenInNewTab}>
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Open in New Tab
+                </Button>
+              </div>
+            </div>
+          </DialogHeader>
+          <div className="flex-1 relative overflow-hidden" style={{ height: 'calc(85vh - 80px)' }}>
+            {iframeError ? (
+              <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+                <Shield className="h-16 w-16 text-muted-foreground/50 mb-4" />
+                <h3 className="text-lg font-semibold mb-2">Provider Portal Cannot Be Embedded</h3>
+                <p className="text-muted-foreground mb-4 max-w-md">
+                  {selectedProvider?.name}'s website has security settings that prevent it from loading inside CT1. 
+                  Please use the button below to access your portal directly.
+                </p>
+                <Button onClick={handleOpenInNewTab} size="lg">
+                  <ExternalLink className="h-5 w-5 mr-2" />
+                  Open {selectedProvider?.name} Portal
+                </Button>
+              </div>
+            ) : (
+              <iframe
+                src={selectedProvider?.portalUrl || ''}
+                className="w-full h-full border-0"
+                title={`${selectedProvider?.name} Portal`}
+                sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
+                onError={() => setIframeError(true)}
+                onLoad={(e) => {
+                  // Try to detect if the iframe was blocked
+                  try {
+                    const iframe = e.target as HTMLIFrameElement;
+                    // If we can't access contentDocument, it might be blocked
+                    if (iframe.contentDocument === null && iframe.contentWindow === null) {
+                      setIframeError(true);
+                    }
+                  } catch {
+                    // Cross-origin - this is expected, iframe loaded successfully
+                  }
+                }}
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Selected Provider Quick Access Bar */}
+      {selectedProvider && !open && (
+        <Card className="border-primary/30 bg-primary/5">
+          <CardContent className="p-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <Shield className="h-6 w-6 text-primary" />
+                <div>
+                  <p className="font-semibold">{selectedProvider.name}</p>
+                  <p className="text-xs text-muted-foreground">Your current insurance provider</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <Button size="sm" onClick={handleOpenPortal} className="flex-1 sm:flex-auto">
+                  <LogIn className="h-4 w-4 mr-2" />
+                  Log In to Portal
+                </Button>
+                <Button size="sm" variant="outline" onClick={handleOpenInNewTab}>
+                  <ExternalLink className="h-4 w-4" />
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => setOpen(true)}>
+                  Change
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Insurance Status Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
