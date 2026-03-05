@@ -590,16 +590,32 @@ export default function EmailsSection({ onSectionChange }: EmailsSectionProps) {
           <div className="flex items-center gap-2">
             {hasAnyConnection && (
               <>
-                <Button
-                  onClick={() => {
-                    setComposeData({ to: '', subject: '', body: '', fromAccount: connections[0]?.id || '' });
-                    setShowComposeDialog(true);
-                  }}
-                  className="gap-2"
-                >
-                  <PenSquare className="h-4 w-4" />
-                  Compose
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button className="gap-2">
+                      <PenSquare className="h-4 w-4" />
+                      Compose
+                      <ChevronDown className="h-3 w-3" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {connections.map((conn) => (
+                      <DropdownMenuItem
+                        key={conn.id}
+                        onClick={() => {
+                          setComposeData({ to: '', subject: '', body: '', fromAccount: conn.id });
+                          setShowComposeDialog(true);
+                        }}
+                      >
+                        <Mail className="h-4 w-4 mr-2" />
+                        {conn.email_address}
+                        <span className="text-xs text-muted-foreground ml-2">
+                          ({conn.provider === 'google' ? 'Gmail' : 'Outlook'})
+                        </span>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 <Button
                   variant="outline"
                   size="sm"
