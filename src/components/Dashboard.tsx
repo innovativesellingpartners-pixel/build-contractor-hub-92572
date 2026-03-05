@@ -832,7 +832,7 @@ export function Dashboard() {
         />
       )}
       
-      {/* Floating Chat Button - Only show on CRM dashboard section */}
+      {/* Floating Chat Button - Disabled for now, using DashboardPocketAgent instead
       {(activeSection !== 'leads' || crmActiveSection === 'dashboard') && (
         <button
           ref={chatButtonRef}
@@ -850,6 +850,7 @@ export function Dashboard() {
           <img src={ct1Logo} alt="CT1" className="h-7 w-7" />
         </button>
       )}
+      */}
     </div>
   );
 }
