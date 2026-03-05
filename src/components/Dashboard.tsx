@@ -495,6 +495,15 @@ export function Dashboard() {
                       />
                     </div>
                   )}
+                  {activeSection === 'connections' && (
+                    <div className="p-3 md:p-4 lg:p-6 min-h-[400px] md:min-h-[600px] pb-20">
+                      <BackNavigation 
+                        onBackToDashboard={() => handleSectionChange('account')}
+                        className="mb-4"
+                      />
+                      <ConnectionsHub onNavigate={handleSectionChange} />
+                    </div>
+                  )}
                   {activeSection === 'account' && (
                     <div className="p-3 md:p-4 lg:p-6 min-h-[400px] md:min-h-[600px] pb-20">
                       <div className="max-w-5xl mx-auto space-y-4 md:space-y-6">
