@@ -33,6 +33,7 @@ const navItems = [
   { to: '/admin/marketplace', icon: ShoppingCart, label: 'Marketplace' },
   { to: '/admin/help', icon: HelpCircle, label: 'Help Admin' },
   { to: '/admin/settings', icon: Settings, label: 'Settings' },
+  { to: '/admin/catalog-import', icon: Package, label: 'Catalog Import' },
 ];
 
 interface AdminSidebarProps {
