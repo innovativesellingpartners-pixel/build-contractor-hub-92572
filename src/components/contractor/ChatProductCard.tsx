@@ -64,7 +64,7 @@ function SingleProductCard({ product }: { product: ProductResult }) {
   const [dialogOpen, setDialogOpen] = useState(false);
 
   return (
-    <div className="bg-card border border-border rounded-lg p-2.5 space-y-1.5 shadow-sm">
+    <div className="bg-card border border-border rounded-lg p-2.5 space-y-1.5 shadow-sm overflow-hidden">
       {/* Row 1: Brand + Retailer + Price */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
@@ -72,14 +72,14 @@ function SingleProductCard({ product }: { product: ProductResult }) {
             {product.retailer && (
               <Badge
                 variant="outline"
-                className="text-[9px] px-1.5 py-0 border-primary/30 text-primary"
+                className="text-[9px] px-1.5 py-0 border-primary/30 text-primary shrink-0"
               >
                 <Store className="h-2.5 w-2.5 mr-0.5" />
                 {getRetailerLabel(product.retailer)}
               </Badge>
             )}
             {product.brand && (
-              <span className="text-[10px] font-bold text-foreground uppercase tracking-wide">
+              <span className="text-[10px] font-bold text-foreground uppercase tracking-wide truncate">
                 {product.brand}
               </span>
             )}
@@ -128,61 +128,63 @@ function SingleProductCard({ product }: { product: ProductResult }) {
       {/* Row 3: Sync time */}
       {product.last_synced_at && (
         <p className="text-[9px] text-muted-foreground flex items-center gap-1">
-          <Clock className="h-2 w-2" />
+          <Clock className="h-2 w-2 shrink-0" />
           Last synced {formatSyncTime(product.last_synced_at)}
         </p>
       )}
 
       {/* Row 4: Quantity + Add to Job/Estimate */}
-      <div className="flex items-center gap-1.5 mt-1">
-        <div className="flex items-center border border-border rounded-md h-6">
+      <div className="flex flex-col gap-1.5 mt-1">
+        <div className="flex items-center gap-1.5">
+          <div className="flex items-center border border-border rounded-md h-7 shrink-0">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 p-0"
+              onClick={() => setQty((q) => Math.max(1, q - 1))}
+            >
+              <Minus className="h-3 w-3" />
+            </Button>
+            <Input
+              type="number"
+              min={1}
+              value={qty}
+              onChange={(e) => setQty(Math.max(1, parseInt(e.target.value) || 1))}
+              className="h-7 w-9 text-center text-xs border-0 p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 p-0"
+              onClick={() => setQty((q) => q + 1)}
+            >
+              <Plus className="h-3 w-3" />
+            </Button>
+          </div>
           <Button
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6 p-0"
-            onClick={() => setQty((q) => Math.max(1, q - 1))}
+            variant="default"
+            size="sm"
+            className="flex-1 h-7 text-[11px] min-w-0"
+            onClick={() => setDialogOpen(true)}
           >
-            <Minus className="h-3 w-3" />
-          </Button>
-          <Input
-            type="number"
-            min={1}
-            value={qty}
-            onChange={(e) => setQty(Math.max(1, parseInt(e.target.value) || 1))}
-            className="h-6 w-8 text-center text-[10px] border-0 p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-          />
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6 p-0"
-            onClick={() => setQty((q) => q + 1)}
-          >
-            <Plus className="h-3 w-3" />
+            <Plus className="h-3 w-3 mr-1 shrink-0" />
+            <span className="truncate">Add to Job / Estimate</span>
           </Button>
         </div>
-        <Button
-          variant="default"
-          size="sm"
-          className="flex-1 h-6 text-[10px]"
-          onClick={() => setDialogOpen(true)}
-        >
-          <Plus className="h-3 w-3 mr-1" />
-          Add to Job / Estimate
-        </Button>
-      </div>
 
-      {/* Row 5: Retailer link */}
-      {product.product_url && (
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full h-6 text-[10px] mt-0.5"
-          onClick={() => window.open(product.product_url!, "_blank")}
-        >
-          <ExternalLink className="h-3 w-3 mr-1" />
-          View on {getRetailerLabel(product.retailer)}
-        </Button>
-      )}
+        {/* Row 5: Retailer link */}
+        {product.product_url && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full h-7 text-[11px]"
+            onClick={() => window.open(product.product_url!, "_blank")}
+          >
+            <ExternalLink className="h-3 w-3 mr-1 shrink-0" />
+            <span className="truncate">View on {getRetailerLabel(product.retailer)}</span>
+          </Button>
+        )}
+      </div>
 
       <AddProductToRecordDialog
         open={dialogOpen}
