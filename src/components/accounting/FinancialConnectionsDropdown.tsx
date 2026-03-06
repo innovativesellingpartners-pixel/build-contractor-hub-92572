@@ -176,9 +176,21 @@ export function FinancialConnectionsDropdown({
 
         {/* Finix status */}
         {!finixConnected && (
-          <DropdownMenuItem disabled className="text-muted-foreground">
-            <CreditCard className="h-4 w-4 mr-2" />
-            Finix — Contact admin to provision
+          <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
+            <div className="w-full">
+              <SelfServiceFinixSetup
+                onComplete={() => {
+                  setFinixConnected(true);
+                  onConnectionChange?.();
+                }}
+                triggerButton={
+                  <button className="flex items-center gap-2 w-full text-left text-sm px-0 py-0">
+                    <CreditCard className="h-4 w-4" />
+                    Set Up Payments (Finix)
+                  </button>
+                }
+              />
+            </div>
           </DropdownMenuItem>
         )}
         {finixConnected && finixMerchantId && (
