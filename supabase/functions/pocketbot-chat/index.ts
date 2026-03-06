@@ -741,19 +741,48 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
               );
             }
 
-            // Build summary
-            let summaryMsg = `Here are ${products.length} product${products.length !== 1 ? 's' : ''}`;
+            // Build headline and smart summary
+            const retailerNames: Record<string, string> = { lowes: "Lowe's", home_depot: "Home Depot" };
             const retailers = [...new Set(products.map((p: any) => p.retailer))];
-            if (retailers.length === 1) {
-              const rName = retailers[0] === 'lowes' ? "Lowe's" : retailers[0] === 'home_depot' ? 'Home Depot' : retailers[0];
-              summaryMsg += ` from ${rName}`;
-            } else if (retailers.length > 1) {
-              summaryMsg += ` from multiple retailers`;
+            const categories = [...new Set(products.map((p: any) => p.category).filter(Boolean))];
+            
+            // Headline
+            let headline = '## ';
+            if (categories.length === 1) {
+              headline += categories[0].charAt(0).toUpperCase() + categories[0].slice(1);
+            } else {
+              headline += 'Products';
             }
-            if (args.category) summaryMsg += ` in ${args.category}`;
-            if (args.brand) summaryMsg += ` by ${args.brand}`;
-            if (args.max_price) summaryMsg += ` under $${args.max_price.toLocaleString()}`;
-            summaryMsg += ':';
+            if (retailers.length === 1) {
+              headline += ` from ${retailerNames[retailers[0]] || retailers[0]}`;
+            } else if (retailers.length > 1) {
+              headline += ` from ${retailers.map(r => retailerNames[r] || r).join(' and ')}`;
+            }
+            if (args.brand) headline += ` by ${args.brand}`;
+            
+            // Summary sentence
+            let summary = `Found ${products.length} result${products.length !== 1 ? 's' : ''}`;
+            if (args.max_price) summary += ` under $${Number(args.max_price).toLocaleString()}`;
+            if (args.search_term) summary += ` matching "${args.search_term}"`;
+            summary += '.';
+            
+            // Comparison insights
+            const priced = products.filter((p: any) => p.price != null);
+            const comparisons: string[] = [];
+            if (priced.length > 1) {
+              const lowest = priced[0];
+              const lowestRetailer = retailerNames[lowest.retailer] || lowest.retailer;
+              comparisons.push(`Lowest price: **$${Number(lowest.price).toFixed(2)}** at ${lowestRetailer} (${lowest.brand || ''} ${lowest.size_text || ''})`.trim());
+            }
+            if (retailers.length > 1) {
+              comparisons.push(`Available from both ${retailers.map(r => retailerNames[r] || r).join(' and ')}`);
+            }
+            const inStock = products.filter((p: any) => p.inventory_status?.toLowerCase().includes('in_stock') || p.inventory_status?.toLowerCase().includes('in stock'));
+            if (inStock.length > 0 && inStock.length < products.length) {
+              comparisons.push(`${inStock.length} of ${products.length} currently in stock`);
+            }
+            
+            const summaryMsg = headline + '\n\n' + summary + (comparisons.length > 0 ? '\n\n' + comparisons.join(' | ') : '');
 
             return new Response(
               JSON.stringify({ 
