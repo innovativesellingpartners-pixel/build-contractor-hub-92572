@@ -282,6 +282,11 @@ serve(async (req) => {
               max_price: { type: "number", description: "Maximum price filter" },
               min_price: { type: "number", description: "Minimum price filter" },
               search_term: { type: "string", description: "Free text search for product title e.g. '2x4', 'Romex', 'OSB'" },
+              size_text: { type: "string", description: "Size filter e.g. '2x4', '3/4\"', '80 lb'" },
+              thickness: { type: "string", description: "Thickness filter e.g. '5/8\"', '7/16\"'" },
+              dimensions: { type: "string", description: "Dimensions filter e.g. '4x8'" },
+              material: { type: "string", description: "Material filter e.g. 'copper', 'PVC', 'galvanized steel'" },
+              color: { type: "string", description: "Color filter e.g. 'charcoal', 'white'" },
               limit: { type: "number", description: "Max results to return, default 10, max 50" }
             },
             required: []
@@ -702,9 +707,16 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
             if (args.trade) query = query.ilike('trade', `%${args.trade}%`);
             if (args.brand) query = query.ilike('brand', `%${args.brand}%`);
             if (args.material_type) query = query.ilike('material', `%${args.material_type}%`);
+            if (args.material) query = query.ilike('material', `%${args.material}%`);
+            if (args.size_text) query = query.ilike('size_text', `%${args.size_text}%`);
+            if (args.thickness) query = query.ilike('size_text', `%${args.thickness}%`);
+            if (args.dimensions) query = query.ilike('dimensions', `%${args.dimensions}%`);
+            if (args.color) query = query.ilike('color', `%${args.color}%`);
             if (args.max_price) query = query.lte('price', args.max_price);
             if (args.min_price) query = query.gte('price', args.min_price);
-            if (args.search_term) query = query.ilike('title', `%${args.search_term}%`);
+            if (args.search_term) query = query.or(
+              `title.ilike.%${args.search_term}%,description.ilike.%${args.search_term}%,category.ilike.%${args.search_term}%,subcategory.ilike.%${args.search_term}%,brand.ilike.%${args.search_term}%`
+            );
 
             const { data: products, error: queryError } = await query;
             
