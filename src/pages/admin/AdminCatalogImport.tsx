@@ -409,6 +409,34 @@ export default function AdminCatalogImport() {
         </Button>
       </div>
 
+      {/* Quick Sample Data Insert */}
+      <Card className="border-primary/30 bg-primary/5">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Package className="h-4 w-4 text-primary" />
+            Quick Start: Sample Product Data
+          </CardTitle>
+          <CardDescription>
+            Insert {SAMPLE_PRODUCTS.length} realistic sample products across Lowe's and Home Depot covering drywall, lumber, plywood, OSB, electrical, plumbing, roofing, concrete, paint, fasteners, HVAC, and more. Perfect for testing the AI chat before live imports are ready.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button onClick={handleInsertSamples} disabled={insertingSamples}>
+            {insertingSamples ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Inserting…
+              </>
+            ) : (
+              <>
+                <Package className="h-4 w-4 mr-2" />
+                Insert Sample Product Data
+              </>
+            )}
+          </Button>
+        </CardContent>
+      </Card>
+
       {/* Step 1: Upload */}
       <Card>
         <CardHeader className="pb-3">
