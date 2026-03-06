@@ -15,6 +15,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { createCsvAdapter, createSampleDataAdapter, type CatalogProduct } from "@/lib/catalog/sourceAdapters";
+import { SAMPLE_PRODUCTS } from "@/lib/catalog/sampleProducts";
 
 const PRODUCT_FIELDS: { key: string; label: string; required?: boolean }[] = [
   { key: "retailer", label: "Retailer", required: true },
