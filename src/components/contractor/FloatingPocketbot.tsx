@@ -11,6 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import ct1Logo from "@/assets/ct1-round-logo-new.png";
 import { SalesCoachMode } from "./SalesCoachMode";
 import { ChatJobDataCard, type ExtractedJobData } from "./ChatJobDataCard";
+import { ChatProductCard, type ProductResult } from "./ChatProductCard";
 
 interface Message {
   role: "user" | "assistant";
@@ -18,6 +19,7 @@ interface Message {
   pdfData?: string;
   fileName?: string;
   jobData?: ExtractedJobData;
+  products?: ProductResult[];
 }
 
 const MAX_FREE_PROMPTS = 3;
@@ -469,6 +471,15 @@ export function FloatingPocketAgent({ onClose, onPositionChange, initialPosition
           setIsLoading(false);
           return;
         }
+        if (jsonResponse.type === "product_search") {
+          setMessages([...newMessages, {
+            role: "assistant",
+            content: jsonResponse.content,
+            products: jsonResponse.products || []
+          }]);
+          setIsLoading(false);
+          return;
+        }
         // Handle task_added and other JSON types
         if (jsonResponse.content) {
           setMessages([...newMessages, {
@@ -807,6 +818,9 @@ export function FloatingPocketAgent({ onClose, onPositionChange, initialPosition
                           setMessages(prev => [...prev, { role: "assistant", content: msg }]);
                         }}
                       />
+                    )}
+                    {message.products && message.products.length > 0 && (
+                      <ChatProductCard products={message.products} />
                     )}
                   </div>
                 </div>

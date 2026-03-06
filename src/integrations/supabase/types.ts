@@ -5042,6 +5042,87 @@ export type Database = {
         }
         Relationships: []
       }
+      retailer_products: {
+        Row: {
+          brand: string | null
+          btu_input: number | null
+          category: string
+          created_at: string
+          currency: string | null
+          efficiency_afue: number | null
+          fuel_type: string | null
+          id: string
+          image_url: string | null
+          inventory_status: string | null
+          last_price_check_at: string | null
+          last_synced_at: string | null
+          model: string | null
+          price: number | null
+          product_url: string | null
+          raw_json: Json | null
+          retailer: string
+          sku: string | null
+          source_product_id: string | null
+          store_id: string | null
+          subcategory: string | null
+          title: string
+          updated_at: string
+          zip_code: string | null
+        }
+        Insert: {
+          brand?: string | null
+          btu_input?: number | null
+          category?: string
+          created_at?: string
+          currency?: string | null
+          efficiency_afue?: number | null
+          fuel_type?: string | null
+          id?: string
+          image_url?: string | null
+          inventory_status?: string | null
+          last_price_check_at?: string | null
+          last_synced_at?: string | null
+          model?: string | null
+          price?: number | null
+          product_url?: string | null
+          raw_json?: Json | null
+          retailer?: string
+          sku?: string | null
+          source_product_id?: string | null
+          store_id?: string | null
+          subcategory?: string | null
+          title: string
+          updated_at?: string
+          zip_code?: string | null
+        }
+        Update: {
+          brand?: string | null
+          btu_input?: number | null
+          category?: string
+          created_at?: string
+          currency?: string | null
+          efficiency_afue?: number | null
+          fuel_type?: string | null
+          id?: string
+          image_url?: string | null
+          inventory_status?: string | null
+          last_price_check_at?: string | null
+          last_synced_at?: string | null
+          model?: string | null
+          price?: number | null
+          product_url?: string | null
+          raw_json?: Json | null
+          retailer?: string
+          sku?: string | null
+          source_product_id?: string | null
+          store_id?: string | null
+          subcategory?: string | null
+          title?: string
+          updated_at?: string
+          zip_code?: string | null
+        }
+        Relationships: []
+      }
       scheduled_sms_reminders: {
         Row: {
           contractor_twilio_number: string | null

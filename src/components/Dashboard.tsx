@@ -62,6 +62,7 @@ import HelpCenter from "@/components/help/HelpCenter";
 
 import { PersonalTasks } from "@/components/contractor/PersonalTasks";
 import { ConnectionsHub } from "@/components/contractor/ConnectionsHub";
+import { LowesAdminPanel } from "@/components/contractor/LowesAdminPanel";
 
 type ActiveSection = 'training' | 'crm' | 'marketplace' | 'leads' | 'insurance' | 'account' | 'voiceai' | 'reporting' | 'tasks' | 'help' | 'connections';
 
@@ -540,6 +541,11 @@ export function Dashboard() {
                         className="mb-4"
                       />
                       <ConnectionsHub onNavigate={handleSectionChange} />
+                      {(user?.email?.endsWith('@myct1.com')) && (
+                        <div className="mt-6">
+                          <LowesAdminPanel />
+                        </div>
+                      )}
                     </div>
                   )}
                   {activeSection === 'account' && (
