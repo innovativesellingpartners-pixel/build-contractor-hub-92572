@@ -112,6 +112,7 @@ export const UserManagement = () => {
         subscription_tier?: string;
         logo_url?: string;
         pocketbot_full_access?: boolean;
+        pocketbot_access_type?: string;
       };
     }) => {
       const {
