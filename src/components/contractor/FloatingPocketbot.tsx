@@ -557,11 +557,10 @@ export function FloatingPocketAgent({ onClose, onPositionChange, initialPosition
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
+  const handleChatSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    handleSend();
   };
 
   if (isMinimized) {
