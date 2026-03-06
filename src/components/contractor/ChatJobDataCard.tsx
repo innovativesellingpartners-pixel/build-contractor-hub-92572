@@ -104,8 +104,8 @@ export function ChatJobDataCard({ data, onActionComplete }: ChatJobDataCardProps
           description: data.project_description || '',
           address: data.project_address || data.customer_address || '',
           contract_value: grandTotal,
-          job_status: 'not_started',
-        })
+          job_status: 'scheduled' as const,
+        } as any)
         .select('id, job_number')
         .single();
 
