@@ -761,37 +761,162 @@ export function ProfileEditContent({ targetUserId }: ProfileEditContentProps = {
                     </div>
                   </div>
                   
-                  {/* Preview */}
+                  {/* Sample Estimate Preview */}
                   <Separator />
                   <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground">Preview</Label>
-                    <div className="rounded-lg border overflow-hidden shadow-sm">
+                    <Label className="text-sm font-medium flex items-center gap-2">
+                      <ImageIcon className="h-4 w-4" />
+                      Sample Estimate Preview
+                    </Label>
+                    <p className="text-xs text-muted-foreground">This is how your branded estimate will look to customers</p>
+                    <div className="rounded-lg border overflow-hidden shadow-lg bg-white max-w-2xl mx-auto">
+                      {/* Header */}
                       <div 
-                        className="px-4 py-2 text-white text-xs font-bold"
+                        className="px-6 py-4 flex items-center justify-between"
                         style={{ backgroundColor: formData.brand_primary_color }}
                       >
-                        Header
+                        <div className="flex items-center gap-3">
+                          {formData.logo_url ? (
+                            <img src={formData.logo_url} alt="Logo" className="h-10 w-10 rounded object-contain bg-white/90 p-0.5" />
+                          ) : (
+                            <div className="h-10 w-10 rounded bg-white/20 flex items-center justify-center">
+                              <Building2 className="h-5 w-5 text-white/80" />
+                            </div>
+                          )}
+                          <div>
+                            <p className="text-white font-bold text-sm">{formData.company_name || 'Your Company Name'}</p>
+                            <p className="text-white/70 text-[10px]">{formData.business_address ? `${formData.business_address}, ${formData.city || ''} ${formData.state || ''} ${formData.zip_code || ''}` : '123 Main St, City, ST 12345'}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-white font-bold text-sm">ESTIMATE</p>
+                          <p className="text-white/70 text-[10px]">EST-00001</p>
+                        </div>
                       </div>
-                      <div 
-                        className="px-4 py-6 text-xs relative overflow-hidden"
-                        style={{ backgroundColor: formData.brand_accent_bg_color, color: formData.brand_secondary_color }}
-                      >
+
+                      {/* Body */}
+                      <div className="relative overflow-hidden">
+                        {/* Watermark */}
                         {formData.watermark_logo_url && (
                           <img 
                             src={formData.watermark_logo_url} 
                             alt="" 
-                            className="absolute inset-0 m-auto h-16 object-contain pointer-events-none"
+                            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-32 object-contain pointer-events-none"
                             style={{ opacity: formData.watermark_opacity / 100 }}
                           />
                         )}
-                        <span className="font-semibold relative z-10">Body Content</span>
-                        <span className="relative z-10"> — with accent background & watermark</span>
+
+                        {/* Client Info */}
+                        <div className="px-6 py-3 border-b relative z-10">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Prepared For</p>
+                              <p className="text-xs font-semibold mt-0.5" style={{ color: formData.brand_secondary_color }}>John Smith</p>
+                              <p className="text-[10px] text-muted-foreground">john@example.com</p>
+                              <p className="text-[10px] text-muted-foreground">456 Oak Ave, Miami, FL 33101</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Date</p>
+                              <p className="text-xs mt-0.5">{new Date().toLocaleDateString()}</p>
+                              <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium mt-2">Valid Until</p>
+                              <p className="text-xs mt-0.5">{new Date(Date.now() + 30*24*60*60*1000).toLocaleDateString()}</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Scope */}
+                        <div 
+                          className="px-6 py-2 relative z-10"
+                          style={{ backgroundColor: formData.brand_accent_bg_color }}
+                        >
+                          <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: formData.brand_secondary_color }}>
+                            Scope of Work
+                          </p>
+                        </div>
+                        <div className="px-6 py-2 relative z-10">
+                          <p className="text-[10px] text-muted-foreground">Complete kitchen renovation including cabinets, countertops, plumbing, and electrical.</p>
+                        </div>
+
+                        {/* Line Items Table */}
+                        <div className="px-6 py-2 relative z-10">
+                          <table className="w-full text-[10px]">
+                            <thead>
+                              <tr style={{ backgroundColor: formData.brand_accent_bg_color }}>
+                                <th className="text-left py-1.5 px-2 font-semibold" style={{ color: formData.brand_secondary_color }}>Description</th>
+                                <th className="text-center py-1.5 px-2 font-semibold" style={{ color: formData.brand_secondary_color }}>Qty</th>
+                                <th className="text-right py-1.5 px-2 font-semibold" style={{ color: formData.brand_secondary_color }}>Rate</th>
+                                <th className="text-right py-1.5 px-2 font-semibold" style={{ color: formData.brand_secondary_color }}>Total</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-border/50">
+                              <tr>
+                                <td className="py-1.5 px-2">Cabinet Installation — Shaker Style</td>
+                                <td className="text-center py-1.5 px-2">1</td>
+                                <td className="text-right py-1.5 px-2">$8,500.00</td>
+                                <td className="text-right py-1.5 px-2 font-medium">$8,500.00</td>
+                              </tr>
+                              <tr>
+                                <td className="py-1.5 px-2">Granite Countertop — 45 sqft</td>
+                                <td className="text-center py-1.5 px-2">45</td>
+                                <td className="text-right py-1.5 px-2">$75.00</td>
+                                <td className="text-right py-1.5 px-2 font-medium">$3,375.00</td>
+                              </tr>
+                              <tr>
+                                <td className="py-1.5 px-2">Plumbing — Sink & Disposal</td>
+                                <td className="text-center py-1.5 px-2">1</td>
+                                <td className="text-right py-1.5 px-2">$1,200.00</td>
+                                <td className="text-right py-1.5 px-2 font-medium">$1,200.00</td>
+                              </tr>
+                              <tr>
+                                <td className="py-1.5 px-2">Electrical — Outlets & Lighting</td>
+                                <td className="text-center py-1.5 px-2">1</td>
+                                <td className="text-right py-1.5 px-2">$950.00</td>
+                                <td className="text-right py-1.5 px-2 font-medium">$950.00</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+
+                        {/* Totals */}
+                        <div className="px-6 py-3 border-t relative z-10">
+                          <div className="flex justify-end">
+                            <div className="w-48 space-y-1 text-[10px]">
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">Subtotal</span>
+                                <span>$14,025.00</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">Tax ({formData.default_sales_tax_rate || '6.00'}%)</span>
+                                <span>$841.50</span>
+                              </div>
+                              <Separator className="my-1" />
+                              <div className="flex justify-between font-bold text-xs" style={{ color: formData.brand_secondary_color }}>
+                                <span>Total</span>
+                                <span>$14,866.50</span>
+                              </div>
+                              {formData.default_deposit_percent && (
+                                <div className="flex justify-between text-muted-foreground">
+                                  <span>Deposit ({formData.default_deposit_percent}%)</span>
+                                  <span>${(14866.50 * parseFloat(formData.default_deposit_percent || '0') / 100).toFixed(2)}</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
                       </div>
+
+                      {/* Footer */}
                       <div 
-                        className="px-4 py-2 text-white text-xs"
+                        className="px-6 py-3 flex items-center justify-between"
                         style={{ backgroundColor: formData.brand_footer_color }}
                       >
-                        Footer
+                        <div className="text-white/80 text-[10px]">
+                          <p>{formData.phone || '(555) 123-4567'} • {formData.business_email || 'info@company.com'}</p>
+                          {formData.license_number && <p>License: {formData.license_number}</p>}
+                        </div>
+                        <div className="text-white/60 text-[9px]">
+                          Powered by CT1
+                        </div>
                       </div>
                     </div>
                   </div>
