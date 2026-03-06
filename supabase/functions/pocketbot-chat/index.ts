@@ -269,17 +269,20 @@ serve(async (req) => {
         type: "function",
         function: {
           name: "search_products",
-          description: "Search the product catalog for equipment and materials from retailers like Lowe's. Use this when the user asks for product listings, pricing, or comparisons from specific retailers. Currently supports furnaces from Lowe's. Parse filters like brand, max price, fuel type, minimum AFUE efficiency from the user's message.",
+          description: "Search the contractor materials catalog for products, equipment, tools, and supplies from retailers like Lowe's and Home Depot. Use this when users ask for product listings, pricing, material comparisons, or availability from retailers. Supports ALL construction trades and categories: lumber, drywall, plumbing, electrical, HVAC, insulation, concrete, roofing, paint, flooring, masonry, finish carpentry, tools, fasteners, and more. Parse filters like retailer, category, brand, max/min price, trade, material type, and search terms from the user's message.",
           parameters: {
             type: "object",
             properties: {
-              retailer: { type: "string", description: "Retailer name, e.g. 'lowes'. Default: 'lowes'", enum: ["lowes"] },
-              category: { type: "string", description: "Product category, e.g. 'furnaces'. Default: 'furnaces'", enum: ["furnaces"] },
+              retailer: { type: "string", description: "Retailer name: 'lowes' or 'home_depot'. Omit to search all retailers." },
+              category: { type: "string", description: "Product category e.g. 'lumber', 'drywall', 'plumbing', 'electrical', 'hvac', 'insulation', 'concrete', 'roofing', 'paint', 'flooring', 'tools', 'fasteners'" },
+              subcategory: { type: "string", description: "More specific category e.g. 'dimensional lumber', 'sheet goods', 'copper pipe', 'wire', 'furnaces', 'shingles', 'batt insulation'" },
+              trade: { type: "string", description: "Construction trade e.g. 'framing', 'plumbing', 'electrical', 'hvac', 'drywall', 'roofing', 'painting', 'concrete', 'insulation'" },
+              brand: { type: "string", description: "Brand name filter e.g. 'Goodman', 'USG', 'Owens Corning', 'GAF', 'Southwire'" },
+              material_type: { type: "string", description: "Material type e.g. 'copper', 'PVC', 'fiberglass', 'gypsum', 'asphalt'" },
               max_price: { type: "number", description: "Maximum price filter" },
-              brand: { type: "string", description: "Brand name filter e.g. 'Goodman', 'Winchester'" },
-              fuel_type: { type: "string", description: "Fuel type filter e.g. 'natural_gas', 'propane', 'electric'" },
-              min_afue: { type: "number", description: "Minimum AFUE efficiency rating filter e.g. 90, 95" },
-              limit: { type: "number", description: "Max results to return, default 10" }
+              min_price: { type: "number", description: "Minimum price filter" },
+              search_term: { type: "string", description: "Free text search for product title e.g. '2x4', 'Romex', 'OSB'" },
+              limit: { type: "number", description: "Max results to return, default 10, max 50" }
             },
             required: []
           }
