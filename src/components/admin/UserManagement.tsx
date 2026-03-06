@@ -235,7 +235,7 @@ export const UserManagement = () => {
       password: formData.get('password') as string,
       company_name: formData.get('company_name') as string,
       phone: formData.get('phone') as string,
-      contact_name: formData.get('contact_name') as string,
+      contact_name: [formData.get('first_name'), formData.get('last_name')].filter(Boolean).join(' '),
       role: formData.get('role') as 'user' | 'admin' | 'super_admin',
       tier_id: formData.get('tier_id') as string,
       billing_cycle: formData.get('billing_cycle') as string
@@ -294,7 +294,7 @@ export const UserManagement = () => {
       profileData: {
         company_name: formData.get('company_name') as string,
         phone: formData.get('phone') as string,
-        contact_name: formData.get('contact_name') as string,
+        contact_name: [formData.get('first_name'), formData.get('last_name')].filter(Boolean).join(' '),
         ct1_contractor_number: formData.get('ct1_contractor_number') as string,
         subscription_tier: formData.get('subscription_tier') as string,
         logo_url: logoPreview || undefined,
@@ -390,9 +390,15 @@ export const UserManagement = () => {
                 <Label htmlFor="create-company">Company Name</Label>
                 <Input id="create-company" name="company_name" type="text" />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="create-contact">Contact Name</Label>
-                <Input id="create-contact" name="contact_name" type="text" />
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="create-first-name">First Name</Label>
+                  <Input id="create-first-name" name="first_name" type="text" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="create-last-name">Last Name</Label>
+                  <Input id="create-last-name" name="last_name" type="text" />
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="create-phone">Phone</Label>
@@ -620,9 +626,15 @@ export const UserManagement = () => {
                 <Label htmlFor="edit-company">Company Name</Label>
                 <Input id="edit-company" name="company_name" defaultValue={editingUser.profile?.company_name || ''} />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-contact">Contact Name</Label>
-                <Input id="edit-contact" name="contact_name" defaultValue={editingUser.profile?.contact_name || ''} />
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-first-name">First Name</Label>
+                  <Input id="edit-first-name" name="first_name" defaultValue={editingUser.profile?.contact_name?.split(' ')[0] || ''} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-last-name">Last Name</Label>
+                  <Input id="edit-last-name" name="last_name" defaultValue={editingUser.profile?.contact_name?.split(' ').slice(1).join(' ') || ''} />
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="edit-phone">Phone</Label>
