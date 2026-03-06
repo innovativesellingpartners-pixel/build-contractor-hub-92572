@@ -303,6 +303,14 @@ export function ProfileEditContent({ targetUserId }: ProfileEditContentProps = {
     </Button>
   );
 
+  if (loadingTarget) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
       <TabsList className="grid w-full grid-cols-5">
