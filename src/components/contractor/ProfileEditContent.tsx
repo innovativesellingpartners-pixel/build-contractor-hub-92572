@@ -174,7 +174,7 @@ export function ProfileEditContent({ targetUserId }: ProfileEditContentProps = {
 
   const handleWatermarkUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !user) return;
+    if (!file || !effectiveUserId) return;
     setUploadingWatermark(true);
     try {
       const fileExt = file.name.split('.').pop();
