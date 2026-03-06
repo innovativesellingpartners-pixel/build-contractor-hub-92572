@@ -471,6 +471,15 @@ export function FloatingPocketAgent({ onClose, onPositionChange, initialPosition
           setIsLoading(false);
           return;
         }
+        if (jsonResponse.type === "product_search") {
+          setMessages([...newMessages, {
+            role: "assistant",
+            content: jsonResponse.content,
+            products: jsonResponse.products || []
+          }]);
+          setIsLoading(false);
+          return;
+        }
         // Handle task_added and other JSON types
         if (jsonResponse.content) {
           setMessages([...newMessages, {
