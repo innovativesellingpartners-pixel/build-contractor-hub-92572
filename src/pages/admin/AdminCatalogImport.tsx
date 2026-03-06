@@ -15,7 +15,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
-const PRODUCT_FIELDS = [
+const PRODUCT_FIELDS: { key: string; label: string; required?: boolean }[] = [
   { key: "retailer", label: "Retailer", required: true },
   { key: "source_product_id", label: "Source Product ID" },
   { key: "sku", label: "SKU" },
@@ -44,7 +44,7 @@ const PRODUCT_FIELDS = [
   { key: "inventory_status", label: "Inventory Status" },
   { key: "product_url", label: "Product URL" },
   { key: "image_url", label: "Image URL" },
-] as const;
+];
 
 const SAMPLE_CSV_HEADER = "retailer,source_product_id,sku,upc,brand,model,title,description,category,subcategory,material_type,trade,unit_of_measure,package_size,dimensions,thickness,length_value,width_value,height_value,size_text,color,finish,material,price,currency,inventory_status,product_url,image_url";
 const SAMPLE_CSV_ROW1 = 'lowes,lowes-lumber-001,1234567,012345678901,Top Choice,2x4-8-PT,"Top Choice 2x4x8 Pressure Treated Lumber","#2 Prime pressure treated dimensional lumber",lumber,dimensional lumber,wood,framing,piece,,2x4x8,,8,4,2,2" x 4" x 8\',,pressure treated,pressure treated pine,5.98,USD,in_stock,https://www.lowes.com/pd/example,https://images.lowes.com/example.jpg';
