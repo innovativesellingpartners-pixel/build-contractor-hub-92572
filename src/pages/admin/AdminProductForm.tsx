@@ -10,10 +10,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Loader2, Save, PackagePlus, RotateCcw } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { createManualEntryAdapter, type CatalogProduct } from "@/lib/catalog/sourceAdapters";
-import { useToast } from "@/hooks/use-toast";
 
 const productSchema = z.object({
   retailer: z.string().min(1, "Retailer is required"),
