@@ -178,7 +178,7 @@ export function ProfileEditContent({ targetUserId }: ProfileEditContentProps = {
     setUploadingWatermark(true);
     try {
       const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}/watermark-${Date.now()}.${fileExt}`;
+      const fileName = `${effectiveUserId}/watermark-${Date.now()}.${fileExt}`;
       const { error: uploadError } = await supabase.storage
         .from('company-logos')
         .upload(fileName, file, { upsert: true });
