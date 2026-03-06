@@ -14,7 +14,8 @@ import {
   HelpCircle,
   Archive,
   GraduationCap,
-  Package
+  Package,
+  PackagePlus
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ct1Logo from '@/assets/ct1-round-logo-new.png';
