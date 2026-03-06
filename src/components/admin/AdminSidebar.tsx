@@ -34,6 +34,7 @@ const navItems = [
   { to: '/admin/help', icon: HelpCircle, label: 'Help Admin' },
   { to: '/admin/settings', icon: Settings, label: 'Settings' },
   { to: '/admin/catalog-import', icon: Package, label: 'Catalog Import' },
+  { to: '/admin/product-form', icon: PackagePlus, label: 'Add Product' },
 ];
 
 interface AdminSidebarProps {
