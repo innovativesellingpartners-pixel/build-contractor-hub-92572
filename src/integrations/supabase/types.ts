@@ -4551,6 +4551,36 @@ export type Database = {
           },
         ]
       }
+      pocketbot_payment_sessions: {
+        Row: {
+          activated_at: string | null
+          amount: number
+          clover_session_id: string
+          created_at: string
+          id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          activated_at?: string | null
+          amount: number
+          clover_session_id: string
+          created_at?: string
+          id?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          activated_at?: string | null
+          amount?: number
+          clover_session_id?: string
+          created_at?: string
+          id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       portal_calendar_events: {
         Row: {
           color: string | null
