@@ -657,6 +657,45 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
             }
           );
         }
+
+        if (toolCall.name === "extract_job_data") {
+          try {
+            const args = JSON.parse(toolCall.arguments);
+            console.log("Extracted job data:", args);
+            
+            // Calculate totals for display
+            const lineItems = args.line_items || [];
+            const grandTotal = lineItems.reduce((sum: number, item: any) => sum + (item.quantity * item.unit_price), 0);
+            
+            let summaryMsg = `I've extracted the following data from your message:\n\n`;
+            if (args.customer_name) summaryMsg += `**Customer:** ${args.customer_name}\n`;
+            if (args.project_name) summaryMsg += `**Project:** ${args.project_name}\n`;
+            summaryMsg += `**${lineItems.length} line item(s)** totaling **$${grandTotal.toFixed(2)}**\n\n`;
+            summaryMsg += `Use the buttons below to create an estimate, create a job, or add these items to an existing record.`;
+            
+            return new Response(
+              JSON.stringify({ 
+                type: "job_data_extracted",
+                content: summaryMsg,
+                jobData: args
+              }),
+              {
+                headers: { ...corsHeaders, "Content-Type": "application/json" },
+              }
+            );
+          } catch (parseError) {
+            console.error("Error parsing extract_job_data arguments:", parseError);
+            return new Response(
+              JSON.stringify({ 
+                type: "error",
+                content: "I had trouble parsing the job data. Could you please try again with more detail?"
+              }),
+              {
+                headers: { ...corsHeaders, "Content-Type": "application/json" },
+              }
+            );
+          }
+        }
         
         if (toolCall.name === "add_task") {
           try {
