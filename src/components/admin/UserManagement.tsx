@@ -290,6 +290,7 @@ export const UserManagement = () => {
     e.preventDefault();
     if (!editingUser) return;
     const formData = new FormData(e.currentTarget);
+    const accessType = formData.get('pocketbot_access_type') as string || 'none';
     updateProfileMutation.mutate({
       userId: editingUser.id,
       profileData: {
@@ -299,7 +300,8 @@ export const UserManagement = () => {
         ct1_contractor_number: formData.get('ct1_contractor_number') as string,
         subscription_tier: formData.get('subscription_tier') as string,
         logo_url: logoPreview || undefined,
-        pocketbot_full_access: formData.get('pocketbot_full_access') === 'on'
+        pocketbot_full_access: accessType !== 'none',
+        pocketbot_access_type: accessType,
       }
     });
   };
