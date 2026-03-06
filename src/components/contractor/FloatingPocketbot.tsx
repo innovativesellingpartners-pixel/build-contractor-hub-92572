@@ -11,6 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import ct1Logo from "@/assets/ct1-round-logo-new.png";
 import { SalesCoachMode } from "./SalesCoachMode";
 import { ChatJobDataCard, type ExtractedJobData } from "./ChatJobDataCard";
+import { ChatProductCard, type ProductResult } from "./ChatProductCard";
 
 interface Message {
   role: "user" | "assistant";
@@ -18,6 +19,7 @@ interface Message {
   pdfData?: string;
   fileName?: string;
   jobData?: ExtractedJobData;
+  products?: ProductResult[];
 }
 
 const MAX_FREE_PROMPTS = 3;
