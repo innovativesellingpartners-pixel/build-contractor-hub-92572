@@ -17,14 +17,26 @@ import { Badge } from "@/components/ui/badge";
 
 type SectionKey = 'logo' | 'business' | 'branding' | 'licensing' | 'colors' | 'defaults' | 'payments';
 
-export function ProfileEditContent() {
-  const { profile, user, refreshProfile } = useAuth();
+interface ProfileEditContentProps {
+  targetUserId?: string; // When set, admin is editing another user's profile
+}
+
+export function ProfileEditContent({ targetUserId }: ProfileEditContentProps = {}) {
+  const { profile: authProfile, user: authUser, refreshProfile } = useAuth();
   const { toast } = useToast();
   const { isSuperAdmin } = useAdminAuth();
   const [savingSection, setSavingSection] = useState<SectionKey | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadingWatermark, setUploadingWatermark] = useState(false);
   const [activeTab, setActiveTab] = useState("business");
+  const [targetProfile, setTargetProfile] = useState<any>(null);
+  const [loadingTarget, setLoadingTarget] = useState(false);
+
+  // Determine which user/profile to operate on
+  const isAdminEditing = !!targetUserId;
+  const effectiveUserId = targetUserId || authUser?.id;
+  const profile = isAdminEditing ? targetProfile : authProfile;
+
   const [formData, setFormData] = useState({
     company_name: '',
     contact_name: '',
@@ -55,6 +67,26 @@ export function ProfileEditContent() {
     ach_instructions: '',
     accepted_payment_methods: ['card'] as string[],
   });
+
+  // Fetch target user's profile when admin editing
+  useEffect(() => {
+    if (!targetUserId) return;
+    setLoadingTarget(true);
+    supabase
+      .from('profiles')
+      .select('*')
+      .eq('user_id', targetUserId)
+      .single()
+      .then(({ data, error }) => {
+        if (error) {
+          console.error('Error fetching target profile:', error);
+          toast({ title: "Error", description: "Failed to load user profile.", variant: "destructive" });
+        } else {
+          setTargetProfile(data);
+        }
+        setLoadingTarget(false);
+      });
+  }, [targetUserId]);
 
   useEffect(() => {
     if (profile) {
