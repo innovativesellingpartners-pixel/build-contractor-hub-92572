@@ -1,6 +1,9 @@
-import { ExternalLink, Package, Store, Clock } from "lucide-react";
+import { useState } from "react";
+import { ExternalLink, Package, Store, Clock, Plus, Minus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { AddProductToRecordDialog } from "./AddProductToRecordDialog";
 
 export interface ProductResult {
   retailer?: string;
