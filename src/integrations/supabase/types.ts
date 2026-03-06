@@ -5042,83 +5042,128 @@ export type Database = {
         }
         Relationships: []
       }
-      retailer_products: {
+      retailer_catalog: {
         Row: {
           brand: string | null
-          btu_input: number | null
           category: string
+          color: string | null
           created_at: string
           currency: string | null
-          efficiency_afue: number | null
-          fuel_type: string | null
+          description: string | null
+          dimensions: string | null
+          finish: string | null
+          height_value: number | null
           id: string
           image_url: string | null
           inventory_status: string | null
           last_price_check_at: string | null
           last_synced_at: string | null
+          length_value: number | null
+          material: string | null
+          material_type: string | null
           model: string | null
+          package_size: string | null
           price: number | null
           product_url: string | null
           raw_json: Json | null
           retailer: string
+          size_text: string | null
           sku: string | null
+          source_name: string | null
           source_product_id: string | null
+          source_type: string | null
+          spec_attributes: Json | null
           store_id: string | null
           subcategory: string | null
+          thickness: string | null
           title: string
+          trade: string | null
+          unit_of_measure: string | null
+          upc: string | null
           updated_at: string
+          width_value: number | null
           zip_code: string | null
         }
         Insert: {
           brand?: string | null
-          btu_input?: number | null
           category?: string
+          color?: string | null
           created_at?: string
           currency?: string | null
-          efficiency_afue?: number | null
-          fuel_type?: string | null
+          description?: string | null
+          dimensions?: string | null
+          finish?: string | null
+          height_value?: number | null
           id?: string
           image_url?: string | null
           inventory_status?: string | null
           last_price_check_at?: string | null
           last_synced_at?: string | null
+          length_value?: number | null
+          material?: string | null
+          material_type?: string | null
           model?: string | null
+          package_size?: string | null
           price?: number | null
           product_url?: string | null
           raw_json?: Json | null
           retailer?: string
+          size_text?: string | null
           sku?: string | null
+          source_name?: string | null
           source_product_id?: string | null
+          source_type?: string | null
+          spec_attributes?: Json | null
           store_id?: string | null
           subcategory?: string | null
+          thickness?: string | null
           title: string
+          trade?: string | null
+          unit_of_measure?: string | null
+          upc?: string | null
           updated_at?: string
+          width_value?: number | null
           zip_code?: string | null
         }
         Update: {
           brand?: string | null
-          btu_input?: number | null
           category?: string
+          color?: string | null
           created_at?: string
           currency?: string | null
-          efficiency_afue?: number | null
-          fuel_type?: string | null
+          description?: string | null
+          dimensions?: string | null
+          finish?: string | null
+          height_value?: number | null
           id?: string
           image_url?: string | null
           inventory_status?: string | null
           last_price_check_at?: string | null
           last_synced_at?: string | null
+          length_value?: number | null
+          material?: string | null
+          material_type?: string | null
           model?: string | null
+          package_size?: string | null
           price?: number | null
           product_url?: string | null
           raw_json?: Json | null
           retailer?: string
+          size_text?: string | null
           sku?: string | null
+          source_name?: string | null
           source_product_id?: string | null
+          source_type?: string | null
+          spec_attributes?: Json | null
           store_id?: string | null
           subcategory?: string | null
+          thickness?: string | null
           title?: string
+          trade?: string | null
+          unit_of_measure?: string | null
+          upc?: string | null
           updated_at?: string
+          width_value?: number | null
           zip_code?: string | null
         }
         Relationships: []

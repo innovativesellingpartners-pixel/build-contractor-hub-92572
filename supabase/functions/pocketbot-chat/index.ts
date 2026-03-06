@@ -269,17 +269,20 @@ serve(async (req) => {
         type: "function",
         function: {
           name: "search_products",
-          description: "Search the product catalog for equipment and materials from retailers like Lowe's. Use this when the user asks for product listings, pricing, or comparisons from specific retailers. Currently supports furnaces from Lowe's. Parse filters like brand, max price, fuel type, minimum AFUE efficiency from the user's message.",
+          description: "Search the contractor materials catalog for products, equipment, tools, and supplies from retailers like Lowe's and Home Depot. Use this when users ask for product listings, pricing, material comparisons, or availability from retailers. Supports ALL construction trades and categories: lumber, drywall, plumbing, electrical, HVAC, insulation, concrete, roofing, paint, flooring, masonry, finish carpentry, tools, fasteners, and more. Parse filters like retailer, category, brand, max/min price, trade, material type, and search terms from the user's message.",
           parameters: {
             type: "object",
             properties: {
-              retailer: { type: "string", description: "Retailer name, e.g. 'lowes'. Default: 'lowes'", enum: ["lowes"] },
-              category: { type: "string", description: "Product category, e.g. 'furnaces'. Default: 'furnaces'", enum: ["furnaces"] },
+              retailer: { type: "string", description: "Retailer name: 'lowes' or 'home_depot'. Omit to search all retailers." },
+              category: { type: "string", description: "Product category e.g. 'lumber', 'drywall', 'plumbing', 'electrical', 'hvac', 'insulation', 'concrete', 'roofing', 'paint', 'flooring', 'tools', 'fasteners'" },
+              subcategory: { type: "string", description: "More specific category e.g. 'dimensional lumber', 'sheet goods', 'copper pipe', 'wire', 'furnaces', 'shingles', 'batt insulation'" },
+              trade: { type: "string", description: "Construction trade e.g. 'framing', 'plumbing', 'electrical', 'hvac', 'drywall', 'roofing', 'painting', 'concrete', 'insulation'" },
+              brand: { type: "string", description: "Brand name filter e.g. 'Goodman', 'USG', 'Owens Corning', 'GAF', 'Southwire'" },
+              material_type: { type: "string", description: "Material type e.g. 'copper', 'PVC', 'fiberglass', 'gypsum', 'asphalt'" },
               max_price: { type: "number", description: "Maximum price filter" },
-              brand: { type: "string", description: "Brand name filter e.g. 'Goodman', 'Winchester'" },
-              fuel_type: { type: "string", description: "Fuel type filter e.g. 'natural_gas', 'propane', 'electric'" },
-              min_afue: { type: "number", description: "Minimum AFUE efficiency rating filter e.g. 90, 95" },
-              limit: { type: "number", description: "Max results to return, default 10" }
+              min_price: { type: "number", description: "Minimum price filter" },
+              search_term: { type: "string", description: "Free text search for product title e.g. '2x4', 'Romex', 'OSB'" },
+              limit: { type: "number", description: "Max results to return, default 10, max 50" }
             },
             required: []
           }
@@ -686,19 +689,22 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
             const args = JSON.parse(argsStr);
             console.log("Searching products:", args);
             
-            // Query retailer_products directly
+            // Query retailer_catalog
             let query = supabase
-              .from('retailer_products')
-              .select('brand, model, title, price, inventory_status, product_url, image_url, efficiency_afue, btu_input, fuel_type, last_synced_at')
-              .eq('retailer', args.retailer || 'lowes')
-              .eq('category', args.category || 'furnaces')
+              .from('retailer_catalog')
+              .select('retailer, brand, model, title, description, category, subcategory, trade, price, unit_of_measure, size_text, material, inventory_status, product_url, image_url, last_synced_at, spec_attributes')
               .order('price', { ascending: true })
               .limit(Math.min(args.limit || 10, 50));
 
-            if (args.max_price) query = query.lte('price', args.max_price);
+            if (args.retailer) query = query.eq('retailer', args.retailer);
+            if (args.category) query = query.ilike('category', `%${args.category}%`);
+            if (args.subcategory) query = query.ilike('subcategory', `%${args.subcategory}%`);
+            if (args.trade) query = query.ilike('trade', `%${args.trade}%`);
             if (args.brand) query = query.ilike('brand', `%${args.brand}%`);
-            if (args.fuel_type) query = query.ilike('fuel_type', `%${args.fuel_type}%`);
-            if (args.min_afue) query = query.gte('efficiency_afue', args.min_afue);
+            if (args.material_type) query = query.ilike('material', `%${args.material_type}%`);
+            if (args.max_price) query = query.lte('price', args.max_price);
+            if (args.min_price) query = query.gte('price', args.min_price);
+            if (args.search_term) query = query.ilike('title', `%${args.search_term}%`);
 
             const { data: products, error: queryError } = await query;
             
@@ -715,11 +721,15 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
             }
 
             if (!products || products.length === 0) {
-              let noResultsMsg = "I searched the Lowe's product catalog but didn't find any matching furnaces";
-              if (args.brand) noResultsMsg += ` from ${args.brand}`;
+              let noResultsMsg = "I searched the contractor materials catalog but didn't find any matching products";
+              if (args.retailer) {
+                const retailerName = args.retailer === 'lowes' ? "Lowe's" : args.retailer === 'home_depot' ? 'Home Depot' : args.retailer;
+                noResultsMsg += ` from ${retailerName}`;
+              }
+              if (args.category) noResultsMsg += ` in ${args.category}`;
+              if (args.brand) noResultsMsg += ` by ${args.brand}`;
               if (args.max_price) noResultsMsg += ` under $${args.max_price}`;
-              if (args.min_afue) noResultsMsg += ` with ${args.min_afue}%+ AFUE`;
-              noResultsMsg += ". This could mean our catalog hasn't been synced yet, or no products match those filters. Try broadening your search or ask an admin to sync the latest data.";
+              noResultsMsg += ". The catalog may not have been loaded yet, or no products match those filters. Try broadening your search or ask an admin to load sample catalog data.";
               
               return new Response(
                 JSON.stringify({ 
@@ -731,10 +741,18 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
               );
             }
 
-            let summaryMsg = `Here are ${products.length} furnace${products.length !== 1 ? 's' : ''} from Lowe's`;
+            // Build summary
+            let summaryMsg = `Here are ${products.length} product${products.length !== 1 ? 's' : ''}`;
+            const retailers = [...new Set(products.map((p: any) => p.retailer))];
+            if (retailers.length === 1) {
+              const rName = retailers[0] === 'lowes' ? "Lowe's" : retailers[0] === 'home_depot' ? 'Home Depot' : retailers[0];
+              summaryMsg += ` from ${rName}`;
+            } else if (retailers.length > 1) {
+              summaryMsg += ` from multiple retailers`;
+            }
+            if (args.category) summaryMsg += ` in ${args.category}`;
             if (args.brand) summaryMsg += ` by ${args.brand}`;
             if (args.max_price) summaryMsg += ` under $${args.max_price.toLocaleString()}`;
-            if (args.min_afue) summaryMsg += ` with ${args.min_afue}%+ AFUE efficiency`;
             summaryMsg += ':';
 
             return new Response(
