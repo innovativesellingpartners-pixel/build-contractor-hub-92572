@@ -10,8 +10,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Loader2, Save, PackagePlus, RotateCcw } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { createManualEntryAdapter, type CatalogProduct } from "@/lib/catalog/sourceAdapters";
 
 const productSchema = z.object({
   retailer: z.string().min(1, "Retailer is required"),
@@ -169,17 +169,11 @@ export default function AdminProductForm() {
       if (values.width_value) row.width_value = parseFloat(values.width_value);
       if (values.height_value) row.height_value = parseFloat(values.height_value);
 
-      // Upsert if source_product_id provided
-      if (row.source_product_id) {
-        const { error } = await supabase
-          .from("retailer_catalog")
-          .upsert(row as any, { onConflict: "retailer,source_product_id" });
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from("retailer_catalog")
-          .insert(row as any);
-        if (error) throw error;
+      const adapter = createManualEntryAdapter();
+      const result = await adapter.ingest([row as CatalogProduct]);
+
+      if (result.errors.length > 0) {
+        throw new Error(result.errors[0].message);
       }
 
       toast({ title: "Product saved", description: `"${row.title}" has been added to the catalog.` });
