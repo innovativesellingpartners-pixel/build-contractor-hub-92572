@@ -819,6 +819,9 @@ export function FloatingPocketAgent({ onClose, onPositionChange, initialPosition
                         }}
                       />
                     )}
+                    {message.products && message.products.length > 0 && (
+                      <ChatProductCard products={message.products} />
+                    )}
                   </div>
                 </div>
               ))}
