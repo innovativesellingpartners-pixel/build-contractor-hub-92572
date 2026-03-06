@@ -660,19 +660,28 @@ export const UserManagement = () => {
                 </Select>
               </div>
               <div className="space-y-2">
-                <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/50">
+                <div className="p-4 border rounded-lg bg-muted/50 space-y-3">
                   <div className="flex items-center gap-3">
                     <Bot className="h-5 w-5 text-primary" />
                     <div>
-                      <Label htmlFor="pocketbot-access" className="text-sm font-medium">
-                        Full Pocket Agent Access
+                      <Label htmlFor="pocketbot-access-type" className="text-sm font-medium">
+                        Pocket Agent Access
                       </Label>
                       <p className="text-xs text-muted-foreground">
-                        Grant unlimited AI assistant access without subscription
+                        Set the AI chat assistant access level for this user
                       </p>
                     </div>
                   </div>
-                  <Switch id="pocketbot-access" name="pocketbot_full_access" defaultChecked={(editingUser.profile as any)?.pocketbot_full_access || false} />
+                  <Select name="pocketbot_access_type" defaultValue={(editingUser.profile as any)?.pocketbot_access_type || ((editingUser.profile as any)?.pocketbot_full_access ? 'free_full' : 'none')}>
+                    <SelectTrigger id="pocketbot-access-type">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">No Access (Limited Free Prompts)</SelectItem>
+                      <SelectItem value="free_full">Free Full Access</SelectItem>
+                      <SelectItem value="paid">Paid Full Access ($20/mo)</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
               <DialogFooter>
