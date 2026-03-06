@@ -541,6 +541,11 @@ export function Dashboard() {
                         className="mb-4"
                       />
                       <ConnectionsHub onNavigate={handleSectionChange} />
+                      {(user?.email?.endsWith('@myct1.com')) && (
+                        <div className="mt-6">
+                          <LowesAdminPanel />
+                        </div>
+                      )}
                     </div>
                   )}
                   {activeSection === 'account' && (
