@@ -257,6 +257,7 @@ const App = () => (
               <Route index element={<AdminDashboard />} />
               <Route path="users" element={<UserManagement />} />
               <Route path="users/:userId" element={<UserDetailPage />} />
+              <Route path="users/:userId/edit" element={<AdminUserProfileEdit />} />
               <Route path="leads" element={<AdminLeads />} />
               <Route path="estimates" element={<AdminEstimates />} />
               <Route path="invoices" element={<AdminInvoices />} />

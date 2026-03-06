@@ -550,7 +550,7 @@ export const UserManagement = () => {
                       <Eye className="h-4 w-4 mr-2" />
                       View Details
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => { setEditingUser(user); setIsEditDialogOpen(true); }}>
+                    <DropdownMenuItem onClick={() => navigate(`/admin/users/${user.id}/edit`)}>
                       <Edit className="h-4 w-4 mr-2" />
                       Edit Profile
                     </DropdownMenuItem>
