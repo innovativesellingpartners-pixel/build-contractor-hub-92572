@@ -345,7 +345,7 @@ export function ProfileEditContent({ targetUserId }: ProfileEditContentProps = {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label className="text-muted-foreground text-xs">User ID</Label>
-                  <Input value={user?.id || ''} readOnly className="bg-muted/50 text-xs font-mono" />
+                  <Input value={effectiveUserId || ''} readOnly className="bg-muted/50 text-xs font-mono" />
                 </div>
                 <div className="space-y-2">
                   <Label className="text-muted-foreground text-xs">CT1 Contractor #</Label>
