@@ -125,8 +125,7 @@ export function ChatJobDataCard({ data, onActionComplete }: ChatJobDataCardProps
       });
 
       toast({ title: "Job Created", description: `${job.job_number} created with linked estimate` });
-      onActionComplete?.(`✅ Job ${job.job_number} created with estimate from chat data.`);
-      navigate(`/job/${job.id}`);
+      onActionComplete?.(`✅ Job **${job.job_number}** created with estimate from chat data. You can find it in your Jobs list.`);
     } catch (e: any) {
       toast({ title: "Error", description: e.message, variant: "destructive" });
     } finally {
