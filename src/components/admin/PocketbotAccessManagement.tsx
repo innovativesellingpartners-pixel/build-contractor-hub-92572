@@ -58,7 +58,7 @@ export const PocketAgentAccessManagement = () => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, user_id, company_name, contact_name, subscription_tier, pocketbot_full_access')
+        .select('id, user_id, company_name, contact_name, subscription_tier, pocketbot_full_access, pocketbot_access_type')
         .order('company_name');
 
       if (error) throw error;
