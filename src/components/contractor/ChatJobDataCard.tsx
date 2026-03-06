@@ -34,7 +34,7 @@ interface ChatJobDataCardProps {
 export function ChatJobDataCard({ data, onActionComplete }: ChatJobDataCardProps) {
   const { user } = useAuth();
   const { toast } = useToast();
-  const navigate = useNavigate();
+  
   const [loading, setLoading] = useState<string | null>(null);
   const [showAddTo, setShowAddTo] = useState(false);
   const [addToType, setAddToType] = useState<'estimate' | 'job' | null>(null);
