@@ -295,45 +295,49 @@ export function ChatJobDataCard({ data, onActionComplete }: ChatJobDataCardProps
 
           {/* Action Buttons */}
           {!showAddTo ? (
-            <div className="grid grid-cols-2 gap-1.5">
-              <Button
-                size="sm"
-                className="h-8 text-xs"
-                onClick={handleCreateEstimate}
-                disabled={!!loading}
-              >
-                {loading === 'estimate' ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <FileText className="h-3 w-3 mr-1" />}
-                Create Estimate
-              </Button>
-              <Button
-                size="sm"
-                className="h-8 text-xs"
-                onClick={handleCreateJob}
-                disabled={!!loading}
-              >
-                {loading === 'job' ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Briefcase className="h-3 w-3 mr-1" />}
-                Create Job
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                className="h-8 text-xs"
-                onClick={() => handleShowAddTo('estimate')}
-                disabled={!!loading}
-              >
-                <Plus className="h-3 w-3 mr-1" />
-                Add to Estimate
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                className="h-8 text-xs"
-                onClick={() => handleShowAddTo('job')}
-                disabled={!!loading}
-              >
-                <Plus className="h-3 w-3 mr-1" />
-                Add to Job
-              </Button>
+            <div className="flex flex-col gap-1.5">
+              <div className="grid grid-cols-2 gap-1.5">
+                <Button
+                  size="sm"
+                  className="h-8 text-[11px] px-2 min-w-0"
+                  onClick={handleCreateEstimate}
+                  disabled={!!loading}
+                >
+                  {loading === 'estimate' ? <Loader2 className="h-3 w-3 animate-spin mr-1 flex-shrink-0" /> : <FileText className="h-3 w-3 mr-1 flex-shrink-0" />}
+                  <span className="truncate">Create Estimate</span>
+                </Button>
+                <Button
+                  size="sm"
+                  className="h-8 text-[11px] px-2 min-w-0"
+                  onClick={handleCreateJob}
+                  disabled={!!loading}
+                >
+                  {loading === 'job' ? <Loader2 className="h-3 w-3 animate-spin mr-1 flex-shrink-0" /> : <Briefcase className="h-3 w-3 mr-1 flex-shrink-0" />}
+                  <span className="truncate">Create Job</span>
+                </Button>
+              </div>
+              <div className="grid grid-cols-2 gap-1.5">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 text-[11px] px-2 min-w-0"
+                  onClick={() => handleShowAddTo('estimate')}
+                  disabled={!!loading}
+                >
+                  <Plus className="h-3 w-3 mr-1 flex-shrink-0" />
+                  <span className="truncate">Add to Estimate</span>
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 text-[11px] px-2 min-w-0"
+                  onClick={() => handleShowAddTo('job')}
+                  disabled={!!loading}
+                >
+                  <Plus className="h-3 w-3 mr-1 flex-shrink-0" />
+                  <span className="truncate">Add to Job</span>
+                </Button>
+              </div>
             </div>
           ) : (
             <div className="space-y-2">
