@@ -548,7 +548,7 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
         ],
         max_tokens: hasPaidBot ? undefined : 200,
         tools: tools,
-        stream: true,
+        stream: false,
       }),
     });
 
@@ -582,70 +582,22 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
       );
     }
 
-    // Check if response contains tool calls
-    const reader = response.body?.getReader();
-    const decoder = new TextDecoder();
-    let buffer = "";
-    let toolCalls: any[] = [];
-    let accumulatedContent = "";
-
-    if (reader) {
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || "";
-
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const data = line.slice(6);
-            if (data === '[DONE]') continue;
-            
-            try {
-              const parsed = JSON.parse(data);
-              const delta = parsed.choices?.[0]?.delta;
-              
-              if (delta?.tool_calls) {
-                toolCalls.push(...delta.tool_calls);
-              }
-              if (delta?.content) {
-                accumulatedContent += delta.content;
-              }
-            } catch (e) {
-              // Ignore parse errors for partial chunks
-            }
-          }
-        }
-      }
-    }
+    // Parse the non-streamed response to check for tool calls
+    const responseData = await response.json();
+    const choice = responseData.choices?.[0];
+    const toolCalls = choice?.message?.tool_calls || [];
+    const accumulatedContent = choice?.message?.content || "";
 
     // If tool calls detected, handle them
     if (toolCalls.length > 0) {
       console.log("Tool calls detected:", toolCalls);
       
-      // Accumulate arguments from streamed tool calls
-      const toolCallMap: Record<number, { name: string; arguments: string }> = {};
-      
-      for (const tc of toolCalls) {
-        const idx = tc.index ?? 0;
-        if (!toolCallMap[idx]) {
-          toolCallMap[idx] = { name: '', arguments: '' };
-        }
-        if (tc.function?.name) {
-          toolCallMap[idx].name = tc.function.name;
-        }
-        if (tc.function?.arguments) {
-          toolCallMap[idx].arguments += tc.function.arguments;
-        }
-      }
-      
-      for (const idx in toolCallMap) {
-        const toolCall = toolCallMap[idx];
+      for (const toolCall of toolCalls) {
+        const name = toolCall.function?.name;
+        const argsStr = toolCall.function?.arguments || '{}';
         
-        if (toolCall.name === "generate_pdf") {
-          const args = JSON.parse(toolCall.arguments);
+        if (name === "generate_pdf") {
+          const args = JSON.parse(argsStr);
           const pdfDataUrl = generatePDF(args);
           
           return new Response(
@@ -661,12 +613,11 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
           );
         }
 
-        if (toolCall.name === "extract_job_data") {
+        if (name === "extract_job_data") {
           try {
-            const args = JSON.parse(toolCall.arguments);
+            const args = JSON.parse(argsStr);
             console.log("Extracted job data:", args);
             
-            // Calculate totals for display
             const lineItems = args.line_items || [];
             const grandTotal = lineItems.reduce((sum: number, item: any) => sum + (item.quantity * item.unit_price), 0);
             
@@ -700,12 +651,11 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
           }
         }
         
-        if (toolCall.name === "add_task") {
+        if (name === "add_task") {
           try {
-            const args = JSON.parse(toolCall.arguments);
+            const args = JSON.parse(argsStr);
             console.log("Adding task:", args);
             
-            // Insert task into personal_tasks table
             const { data: taskData, error: taskError } = await supabase
               .from('personal_tasks')
               .insert({
@@ -734,7 +684,6 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
               );
             }
             
-            // Build confirmation message
             let confirmationMsg = `✅ I've added "${args.title}" to your task list`;
             if (args.priority && args.priority !== 'medium') {
               confirmationMsg += ` with ${args.priority} priority`;
@@ -773,7 +722,17 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
       }
     }
 
-    // If no tool calls, stream the response normally
+    // If no tool calls but we got content from the non-streamed response, return it as JSON
+    if (accumulatedContent) {
+      return new Response(
+        JSON.stringify({ content: accumulatedContent }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Fallback: stream a fresh response without tools
     const streamResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -785,41 +744,7 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
         messages: [
           {
             role: "system",
-            content: `You are CT1 Pocket Agent (Sarah), an elite AI business assistant built exclusively for contractors, tradespeople, and construction professionals. You are the most comprehensive construction business intelligence tool available.
-
-=== CORE IDENTITY ===
-You help contractors sell more, estimate better, manage projects efficiently, and grow profitable businesses. You combine deep trade knowledge with business acumen.
-
-=== CT1 PLATFORM KNOWLEDGE ===
-You are the authoritative source for ALL CT1 platform guidance including: Dashboard & CRM, Leads Management, Estimates/Proposals (line items, e-signatures, tracking), Jobs/Projects (full lifecycle), Customers (portal, lifetime value), Invoicing (Stripe/Clover), Change Orders, Daily Logs, Crew Management, Documents, GC Contacts, Expenses (manual + Plaid bank sync), Reporting & Analytics (AI-powered), Training Hub, Marketplace, and all Settings (profile, templates, integrations, calendar, email, QuickBooks).
-
-=== CONSTRUCTION TRADES EXPERTISE ===
-Master-level expert across ALL trades: HVAC (Manual J/D/S, system sizing, equipment selection, refrigerants, SEER ratings), Plumbing (rough-in, finish, water heaters, DWV, water treatment), Electrical (service upgrades, EV chargers, solar, NEC compliance), Roofing (all materials, tear-off vs overlay, ventilation), Concrete & Masonry (foundations, flatwork, stamped, retaining walls), Framing (wood, steel, engineered lumber), Drywall & Painting (levels 1-5, texturing), Flooring (hardwood, LVP, tile, epoxy), Landscaping & Hardscaping, Insulation (spray foam, fiberglass, cellulose, R-values by zone), Windows & Doors, Siding & Exterior, Demolition & Excavation, and specialties (fire protection, solar, EV infrastructure, ADA).
-
-=== MATERIAL PRICING & SUPPLIER KNOWLEDGE ===
-Comprehensive pricing from Home Depot, Lowe's, Ace Hardware, Menards, and wholesale suppliers (Ferguson, Johnstone Supply, Graybar, ABC Supply, 84 Lumber, Builders FirstSource, Beacon, SRS, HD Supply, Grainger). Cover lumber, electrical, plumbing, HVAC, concrete, paint, roofing, flooring, fasteners, and tools. Provide ranges with regional/seasonal caveats.
-
-=== ESTIMATING, SALES, PROJECT MANAGEMENT & BUSINESS BUILDING ===
-Cost estimation methods, labor rates by trade, overhead/profit markup (10-20% OH, 10-15% profit), competitive pricing, scope writing, payment terms, bid prep, waste factors. Sales process, lead gen, objection handling, closing techniques, follow-up cadence. Scheduling, resource allocation, change orders, RFIs, punch lists, QC, OSHA safety, permits, inspections, closeout. Business entity setup, licensing, insurance, bonding, financial management, hiring, scaling, marketing, branding.
-
-=== BUILDING CODES ===
-IRC, IBC, NEC, UPC/IPC, IMC, IECC, ADA, fire code fundamentals.
-
-${dynamicTopicScope}
-
-TASK MANAGEMENT:
-Add tasks when users say "Add a task", "Remind me to", "I need to", "Create a task for", "Make a note to". Parse dates, infer priority/category.
-
-JOB/ESTIMATE DATA EXTRACTION:
-When a user mentions specific pricing, materials with quantities, labor hours/rates, customer details (name, phone, email, address), or asks you to help build an estimate or job — use the extract_job_data tool to parse their input into structured line items. This lets them instantly create an estimate, create a job, or add items to an existing record. Always use this tool when the user provides concrete numbers like "20 sheets of drywall at $14 each" or "10 hours at $80/hr". Also use it when they say things like "add this to my estimate" or "create a job from this".
-
-You can generate PDF documents for guides, checklists, reports, or business documents.
-
-OFF-TOPIC: Only refuse questions with absolutely NO connection to construction, trades, business, home improvement, or project management.
-
-${!hasPaidBot ? `\nCRITICAL: This is a FREE TIER user. Limit response to ${FREE_USER_MAX_CHARS} characters max. Encourage upgrade.\n` : ''}
-
-You are knowledgeable, professional, friendly. Provide specific, detailed answers with real numbers and actionable steps. Suggest CT1 platform features when relevant.`
+            content: `You are CT1 Pocket Agent (Sarah), an elite AI business assistant for contractors. Provide helpful, specific answers about construction trades, estimating, sales, project management, and business growth. ${!hasPaidBot ? `Limit response to ${FREE_USER_MAX_CHARS} characters.` : ''}`
           },
           ...messages,
         ],
