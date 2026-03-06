@@ -345,11 +345,10 @@ export function PocketAgent() {
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
+  const handleChatSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    handleSend();
   };
 
   return (
@@ -471,16 +470,23 @@ export function PocketAgent() {
         </ScrollArea>
 
         <div className="border-t border-primary/10 p-4 bg-gradient-to-r from-background via-primary/5 to-background backdrop-blur-sm">
-          <div className="flex gap-3 max-w-4xl mx-auto">
+          <form className="flex gap-3 max-w-4xl mx-auto" onSubmit={handleChatSubmit}>
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyPress={handleKeyPress}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleSend();
+                }
+              }}
               placeholder="Ask me anything about your contracting business..."
-              disabled={isLoading || isTranscribing}
+              disabled={isTranscribing}
               className="flex-1 text-base py-6 rounded-xl border-primary/20 focus:border-primary/40"
             />
-            <Button 
+            <Button
+              type="button"
               onClick={isRecording ? stopRecording : startRecording}
               disabled={isLoading || isTranscribing}
               size="lg"
@@ -496,8 +502,8 @@ export function PocketAgent() {
                 <Mic className="h-5 w-5" />
               )}
             </Button>
-            <Button 
-              onClick={handleSend} 
+            <Button
+              type="submit"
               disabled={isLoading || !input.trim() || isTranscribing}
               size="lg"
               className="px-6 rounded-xl"
@@ -508,7 +514,7 @@ export function PocketAgent() {
                 <Send className="h-5 w-5" />
               )}
             </Button>
-          </div>
+          </form>
         </div>
       </Card>
     </div>
