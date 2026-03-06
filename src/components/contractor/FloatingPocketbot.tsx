@@ -10,12 +10,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import ct1Logo from "@/assets/ct1-round-logo-new.png";
 import { SalesCoachMode } from "./SalesCoachMode";
+import { ChatJobDataCard, type ExtractedJobData } from "./ChatJobDataCard";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
   pdfData?: string;
   fileName?: string;
+  jobData?: ExtractedJobData;
 }
 
 const MAX_FREE_PROMPTS = 3;
@@ -444,16 +446,34 @@ export function FloatingPocketAgent({ onClose, onPositionChange, initialPosition
         throw new Error("Failed to get response from AI");
       }
 
-      // Check if response is JSON (PDF response) or streaming
+      // Check if response is JSON (PDF/task/job_data response) or streaming
       const contentType = response.headers.get("content-type");
       if (contentType?.includes("application/json")) {
-        const pdfResponse = await response.json();
-        if (pdfResponse.type === "pdf") {
+        const jsonResponse = await response.json();
+        if (jsonResponse.type === "pdf") {
           setMessages([...newMessages, {
             role: "assistant",
-            content: pdfResponse.content,
-            pdfData: pdfResponse.pdfData,
-            fileName: pdfResponse.fileName
+            content: jsonResponse.content,
+            pdfData: jsonResponse.pdfData,
+            fileName: jsonResponse.fileName
+          }]);
+          setIsLoading(false);
+          return;
+        }
+        if (jsonResponse.type === "job_data_extracted") {
+          setMessages([...newMessages, {
+            role: "assistant",
+            content: jsonResponse.content,
+            jobData: jsonResponse.jobData
+          }]);
+          setIsLoading(false);
+          return;
+        }
+        // Handle task_added and other JSON types
+        if (jsonResponse.content) {
+          setMessages([...newMessages, {
+            role: "assistant",
+            content: jsonResponse.content
           }]);
           setIsLoading(false);
           return;
@@ -780,6 +800,14 @@ export function FloatingPocketAgent({ onClose, onPositionChange, initialPosition
                         <Download className="h-3 w-3 mr-1" />
                         Download PDF
                       </Button>
+                    )}
+                    {message.jobData && (
+                      <ChatJobDataCard
+                        data={message.jobData}
+                        onActionComplete={(msg) => {
+                          setMessages(prev => [...prev, { role: "assistant", content: msg }]);
+                        }}
+                      />
                     )}
                   </div>
                 </div>

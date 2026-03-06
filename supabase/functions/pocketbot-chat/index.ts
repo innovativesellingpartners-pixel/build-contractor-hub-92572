@@ -232,6 +232,42 @@ serve(async (req) => {
       {
         type: "function",
         function: {
+          name: "extract_job_data",
+          description: "Extract structured job/estimate data from the user's message. Use this whenever the user mentions specific pricing, materials with quantities, labor hours/rates, customer details (name, phone, email, address), or asks to build/create an estimate or job from the conversation. Return ALL parsed data so the user can choose to create an estimate, create a job, or add to an existing one.",
+          parameters: {
+            type: "object",
+            properties: {
+              line_items: {
+                type: "array",
+                description: "Parsed line items from the conversation",
+                items: {
+                  type: "object",
+                  properties: {
+                    description: { type: "string", description: "Item description e.g. '4x8 drywall sheets'" },
+                    quantity: { type: "number", description: "Quantity" },
+                    unit: { type: "string", description: "Unit of measure e.g. 'ea', 'hr', 'sq ft', 'lf'" },
+                    unit_price: { type: "number", description: "Price per unit in dollars" },
+                    category: { type: "string", enum: ["labor", "material", "subcontractor", "equipment", "other"], description: "Item category" }
+                  },
+                  required: ["description", "quantity", "unit", "unit_price", "category"]
+                }
+              },
+              customer_name: { type: "string", description: "Customer name if mentioned" },
+              customer_email: { type: "string", description: "Customer email if mentioned" },
+              customer_phone: { type: "string", description: "Customer phone if mentioned" },
+              customer_address: { type: "string", description: "Customer address if mentioned" },
+              project_name: { type: "string", description: "Project name if mentioned" },
+              project_description: { type: "string", description: "Project description if mentioned" },
+              project_address: { type: "string", description: "Project/job site address if mentioned" },
+              notes: { type: "string", description: "Any additional notes or context" }
+            },
+            required: ["line_items"]
+          }
+        }
+      },
+      {
+        type: "function",
+        function: {
           name: "add_task",
           description: "Add a task to the user's personal task list. Use this when the user says things like 'add a task', 'remind me to', 'I need to', 'create a task for', 'add to my tasks', 'make a note to', etc.",
           parameters: {
@@ -494,6 +530,9 @@ You can add tasks to the user's personal task list. When users say things like:
 - "Add a task to..." / "Remind me to..." / "I need to..." / "Create a task for..." / "Make a note to..."
 Use the add_task tool to create the task. Parse natural language dates into actual dates. Infer priority and category from context.
 
+JOB/ESTIMATE DATA EXTRACTION:
+When a user mentions specific pricing, materials with quantities, labor hours/rates, customer details, or asks to build an estimate or job — use the extract_job_data tool to parse their input into structured line items. Always use this tool when the user provides concrete numbers. Also use it when they say "add this to my estimate" or "create a job from this".
+
 You can generate PDF documents for users when they request guides, checklists, reports, or any business documents.
 
 OFF-TOPIC ENFORCEMENT:
@@ -621,6 +660,45 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
             }
           );
         }
+
+        if (toolCall.name === "extract_job_data") {
+          try {
+            const args = JSON.parse(toolCall.arguments);
+            console.log("Extracted job data:", args);
+            
+            // Calculate totals for display
+            const lineItems = args.line_items || [];
+            const grandTotal = lineItems.reduce((sum: number, item: any) => sum + (item.quantity * item.unit_price), 0);
+            
+            let summaryMsg = `I've extracted the following data from your message:\n\n`;
+            if (args.customer_name) summaryMsg += `**Customer:** ${args.customer_name}\n`;
+            if (args.project_name) summaryMsg += `**Project:** ${args.project_name}\n`;
+            summaryMsg += `**${lineItems.length} line item(s)** totaling **$${grandTotal.toFixed(2)}**\n\n`;
+            summaryMsg += `Use the buttons below to create an estimate, create a job, or add these items to an existing record.`;
+            
+            return new Response(
+              JSON.stringify({ 
+                type: "job_data_extracted",
+                content: summaryMsg,
+                jobData: args
+              }),
+              {
+                headers: { ...corsHeaders, "Content-Type": "application/json" },
+              }
+            );
+          } catch (parseError) {
+            console.error("Error parsing extract_job_data arguments:", parseError);
+            return new Response(
+              JSON.stringify({ 
+                type: "error",
+                content: "I had trouble parsing the job data. Could you please try again with more detail?"
+              }),
+              {
+                headers: { ...corsHeaders, "Content-Type": "application/json" },
+              }
+            );
+          }
+        }
         
         if (toolCall.name === "add_task") {
           try {
@@ -731,6 +809,9 @@ ${dynamicTopicScope}
 
 TASK MANAGEMENT:
 Add tasks when users say "Add a task", "Remind me to", "I need to", "Create a task for", "Make a note to". Parse dates, infer priority/category.
+
+JOB/ESTIMATE DATA EXTRACTION:
+When a user mentions specific pricing, materials with quantities, labor hours/rates, customer details (name, phone, email, address), or asks you to help build an estimate or job — use the extract_job_data tool to parse their input into structured line items. This lets them instantly create an estimate, create a job, or add items to an existing record. Always use this tool when the user provides concrete numbers like "20 sheets of drywall at $14 each" or "10 hours at $80/hr". Also use it when they say things like "add this to my estimate" or "create a job from this".
 
 You can generate PDF documents for guides, checklists, reports, or business documents.
 
