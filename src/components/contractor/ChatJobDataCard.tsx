@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, FileText, Briefcase, Plus, ChevronDown, ChevronUp } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+
 
 export interface ExtractedJobData {
   line_items: Array<{
