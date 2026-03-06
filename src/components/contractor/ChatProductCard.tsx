@@ -1,19 +1,25 @@
-import { ExternalLink, Package } from "lucide-react";
+import { ExternalLink, Package, Store } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 export interface ProductResult {
+  retailer?: string;
   brand: string | null;
   model: string | null;
   title: string;
+  description?: string | null;
+  category?: string | null;
+  subcategory?: string | null;
+  trade?: string | null;
   price: number | null;
+  unit_of_measure?: string | null;
+  size_text?: string | null;
+  material?: string | null;
   inventory_status: string | null;
   product_url: string | null;
   image_url: string | null;
-  efficiency_afue: number | null;
-  btu_input: number | null;
-  fuel_type: string | null;
   last_synced_at: string | null;
+  spec_attributes?: Record<string, any> | null;
 }
 
 interface ChatProductCardProps {
@@ -31,6 +37,12 @@ export function ChatProductCard({ products, filtersApplied }: ChatProductCardPro
     if (s.includes('limited')) return <Badge className="text-[10px] bg-yellow-600">Limited</Badge>;
     if (s.includes('out')) return <Badge variant="destructive" className="text-[10px]">Out of Stock</Badge>;
     return <Badge variant="secondary" className="text-[10px]">{status}</Badge>;
+  };
+
+  const getRetailerLabel = (retailer?: string) => {
+    if (!retailer) return 'Retailer';
+    const map: Record<string, string> = { lowes: "Lowe's", home_depot: "Home Depot", homedepot: "Home Depot" };
+    return map[retailer.toLowerCase()] || retailer;
   };
 
   const lastSync = products[0]?.last_synced_at 
@@ -57,31 +69,47 @@ export function ChatProductCard({ products, filtersApplied }: ChatProductCardPro
         <div key={idx} className="bg-background/50 border border-border/50 rounded-lg p-2 space-y-1">
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
-              {product.brand && (
-                <span className="text-[10px] font-bold text-primary uppercase">{product.brand}</span>
-              )}
+              <div className="flex items-center gap-1 flex-wrap">
+                {product.brand && (
+                  <span className="text-[10px] font-bold text-primary uppercase">{product.brand}</span>
+                )}
+                {product.retailer && (
+                  <Badge variant="outline" className="text-[9px] px-1 py-0">
+                    <Store className="h-2 w-2 mr-0.5" />
+                    {getRetailerLabel(product.retailer)}
+                  </Badge>
+                )}
+              </div>
               <p className="text-xs font-medium leading-tight line-clamp-2">{product.title}</p>
               {product.model && (
                 <p className="text-[10px] text-muted-foreground">Model: {product.model}</p>
               )}
             </div>
             {product.price != null && (
-              <span className="text-sm font-bold text-primary whitespace-nowrap">
-                ${product.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-              </span>
+              <div className="text-right shrink-0">
+                <span className="text-sm font-bold text-primary whitespace-nowrap">
+                  ${product.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                </span>
+                {product.unit_of_measure && (
+                  <p className="text-[9px] text-muted-foreground">/{product.unit_of_measure}</p>
+                )}
+              </div>
             )}
           </div>
 
           <div className="flex flex-wrap items-center gap-1">
             {getStockBadge(product.inventory_status)}
-            {product.efficiency_afue && (
-              <Badge variant="outline" className="text-[10px]">{product.efficiency_afue}% AFUE</Badge>
+            {product.category && (
+              <Badge variant="outline" className="text-[10px] capitalize">{product.category}</Badge>
             )}
-            {product.btu_input && (
-              <Badge variant="outline" className="text-[10px]">{(product.btu_input / 1000).toFixed(0)}K BTU</Badge>
+            {product.size_text && (
+              <Badge variant="outline" className="text-[10px]">{product.size_text}</Badge>
             )}
-            {product.fuel_type && (
-              <Badge variant="outline" className="text-[10px] capitalize">{product.fuel_type.replace('_', ' ')}</Badge>
+            {product.material && (
+              <Badge variant="outline" className="text-[10px] capitalize">{product.material}</Badge>
+            )}
+            {product.trade && (
+              <Badge variant="outline" className="text-[10px] capitalize">{product.trade}</Badge>
             )}
           </div>
 
@@ -93,7 +121,7 @@ export function ChatProductCard({ products, filtersApplied }: ChatProductCardPro
               onClick={() => window.open(product.product_url!, '_blank')}
             >
               <ExternalLink className="h-3 w-3 mr-1" />
-              View on Lowe's
+              View on {getRetailerLabel(product.retailer)}
             </Button>
           )}
         </div>
