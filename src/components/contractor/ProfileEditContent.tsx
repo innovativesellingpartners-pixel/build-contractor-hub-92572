@@ -259,7 +259,7 @@ export function ProfileEditContent({ targetUserId }: ProfileEditContentProps = {
       const { error } = await supabase
         .from('profiles')
         .update(updateData)
-        .eq('user_id', user.id);
+        .eq('user_id', effectiveUserId);
 
       if (error) throw error;
 
