@@ -235,7 +235,7 @@ export const UserManagement = () => {
       password: formData.get('password') as string,
       company_name: formData.get('company_name') as string,
       phone: formData.get('phone') as string,
-      contact_name: formData.get('contact_name') as string,
+      contact_name: [formData.get('first_name'), formData.get('last_name')].filter(Boolean).join(' '),
       role: formData.get('role') as 'user' | 'admin' | 'super_admin',
       tier_id: formData.get('tier_id') as string,
       billing_cycle: formData.get('billing_cycle') as string
