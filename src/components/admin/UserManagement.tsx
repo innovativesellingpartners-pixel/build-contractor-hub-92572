@@ -626,9 +626,15 @@ export const UserManagement = () => {
                 <Label htmlFor="edit-company">Company Name</Label>
                 <Input id="edit-company" name="company_name" defaultValue={editingUser.profile?.company_name || ''} />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-contact">Contact Name</Label>
-                <Input id="edit-contact" name="contact_name" defaultValue={editingUser.profile?.contact_name || ''} />
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-first-name">First Name</Label>
+                  <Input id="edit-first-name" name="first_name" defaultValue={editingUser.profile?.contact_name?.split(' ')[0] || ''} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-last-name">Last Name</Label>
+                  <Input id="edit-last-name" name="last_name" defaultValue={editingUser.profile?.contact_name?.split(' ').slice(1).join(' ') || ''} />
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="edit-phone">Phone</Label>
