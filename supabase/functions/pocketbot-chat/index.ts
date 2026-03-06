@@ -282,6 +282,11 @@ serve(async (req) => {
               max_price: { type: "number", description: "Maximum price filter" },
               min_price: { type: "number", description: "Minimum price filter" },
               search_term: { type: "string", description: "Free text search for product title e.g. '2x4', 'Romex', 'OSB'" },
+              size_text: { type: "string", description: "Size filter e.g. '2x4', '3/4\"', '80 lb'" },
+              thickness: { type: "string", description: "Thickness filter e.g. '5/8\"', '7/16\"'" },
+              dimensions: { type: "string", description: "Dimensions filter e.g. '4x8'" },
+              material: { type: "string", description: "Material filter e.g. 'copper', 'PVC', 'galvanized steel'" },
+              color: { type: "string", description: "Color filter e.g. 'charcoal', 'white'" },
               limit: { type: "number", description: "Max results to return, default 10, max 50" }
             },
             required: []
