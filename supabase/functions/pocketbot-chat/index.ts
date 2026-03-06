@@ -694,31 +694,53 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
             const args = JSON.parse(argsStr);
             console.log("Searching products:", args);
             
-            // Query retailer_catalog
-            let query = supabase
-              .from('retailer_catalog')
-              .select('retailer, brand, model, title, description, category, subcategory, trade, price, unit_of_measure, size_text, material, inventory_status, product_url, image_url, last_synced_at, spec_attributes')
-              .order('price', { ascending: true })
-              .limit(Math.min(args.limit || 10, 50));
+            const selectCols = 'retailer, brand, model, title, description, category, subcategory, trade, price, unit_of_measure, size_text, material, inventory_status, product_url, image_url, last_synced_at, spec_attributes';
+            const queryLimit = Math.min(args.limit || 10, 50);
 
-            if (args.retailer) query = query.eq('retailer', args.retailer);
-            if (args.category) query = query.ilike('category', `%${args.category}%`);
-            if (args.subcategory) query = query.ilike('subcategory', `%${args.subcategory}%`);
-            if (args.trade) query = query.ilike('trade', `%${args.trade}%`);
-            if (args.brand) query = query.ilike('brand', `%${args.brand}%`);
-            if (args.material_type) query = query.ilike('material', `%${args.material_type}%`);
-            if (args.material) query = query.ilike('material', `%${args.material}%`);
-            if (args.size_text) query = query.ilike('size_text', `%${args.size_text}%`);
-            if (args.thickness) query = query.ilike('size_text', `%${args.thickness}%`);
-            if (args.dimensions) query = query.ilike('dimensions', `%${args.dimensions}%`);
-            if (args.color) query = query.ilike('color', `%${args.color}%`);
-            if (args.max_price) query = query.lte('price', args.max_price);
-            if (args.min_price) query = query.gte('price', args.min_price);
-            if (args.search_term) query = query.or(
-              `title.ilike.%${args.search_term}%,description.ilike.%${args.search_term}%,category.ilike.%${args.search_term}%,subcategory.ilike.%${args.search_term}%,brand.ilike.%${args.search_term}%`
-            );
+            // Build strict query with all filters
+            const buildQuery = (broad = false) => {
+              let q = supabase
+                .from('retailer_catalog')
+                .select(selectCols)
+                .order('price', { ascending: true })
+                .limit(queryLimit);
 
-            const { data: products, error: queryError } = await query;
+              if (args.retailer) q = q.eq('retailer', args.retailer);
+              
+              if (!broad) {
+                if (args.category) q = q.ilike('category', `%${args.category}%`);
+                if (args.subcategory) q = q.ilike('subcategory', `%${args.subcategory}%`);
+                if (args.trade) q = q.ilike('trade', `%${args.trade}%`);
+                if (args.brand) q = q.ilike('brand', `%${args.brand}%`);
+                if (args.material_type) q = q.ilike('material', `%${args.material_type}%`);
+                if (args.material) q = q.ilike('material', `%${args.material}%`);
+                if (args.size_text) q = q.ilike('size_text', `%${args.size_text}%`);
+                if (args.thickness) q = q.ilike('size_text', `%${args.thickness}%`);
+                if (args.dimensions) q = q.ilike('dimensions', `%${args.dimensions}%`);
+                if (args.color) q = q.ilike('color', `%${args.color}%`);
+                if (args.max_price) q = q.lte('price', args.max_price);
+                if (args.min_price) q = q.gte('price', args.min_price);
+                if (args.search_term) q = q.or(
+                  `title.ilike.%${args.search_term}%,description.ilike.%${args.search_term}%,category.ilike.%${args.search_term}%,subcategory.ilike.%${args.search_term}%,brand.ilike.%${args.search_term}%`
+                );
+              } else {
+                // Broad fallback: combine all filter terms into a single text search
+                const searchTerms = [args.search_term, args.category, args.subcategory, args.trade, args.brand, args.material_type].filter(Boolean);
+                const broadTerm = searchTerms.join(' ').split(/\s+/).filter(Boolean);
+                // Use the most specific term (longest) for broad matching
+                const bestTerm = broadTerm.sort((a: string, b: string) => b.length - a.length)[0] || '';
+                if (bestTerm) {
+                  q = q.or(
+                    `title.ilike.%${bestTerm}%,category.ilike.%${bestTerm}%,subcategory.ilike.%${bestTerm}%,trade.ilike.%${bestTerm}%,brand.ilike.%${bestTerm}%,description.ilike.%${bestTerm}%`
+                  );
+                }
+                if (args.max_price) q = q.lte('price', args.max_price);
+                if (args.min_price) q = q.gte('price', args.min_price);
+              }
+              return q;
+            };
+
+            let { data: products, error: queryError } = await buildQuery(false);
             
             if (queryError) {
               console.error("Product search error:", queryError);
@@ -730,6 +752,15 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
                 }),
                 { headers: { ...corsHeaders, "Content-Type": "application/json" } }
               );
+            }
+
+            // Fallback: if strict filters returned nothing, retry with broad search
+            if ((!products || products.length === 0)) {
+              console.log("Strict search returned 0 results, retrying with broad fallback");
+              const fallback = await buildQuery(true);
+              if (!fallback.error && fallback.data && fallback.data.length > 0) {
+                products = fallback.data;
+              }
             }
 
             if (!products || products.length === 0) {
