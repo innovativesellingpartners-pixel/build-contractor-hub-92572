@@ -801,6 +801,14 @@ export function FloatingPocketAgent({ onClose, onPositionChange, initialPosition
                         Download PDF
                       </Button>
                     )}
+                    {message.jobData && (
+                      <ChatJobDataCard
+                        data={message.jobData}
+                        onActionComplete={(msg) => {
+                          setMessages(prev => [...prev, { role: "assistant", content: msg }]);
+                        }}
+                      />
+                    )}
                   </div>
                 </div>
               ))}
