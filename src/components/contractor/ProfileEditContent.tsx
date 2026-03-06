@@ -129,7 +129,7 @@ export function ProfileEditContent({ targetUserId }: ProfileEditContentProps = {
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !user) return;
+    if (!file || !effectiveUserId) return;
 
     setUploading(true);
     try {
