@@ -5251,11 +5251,18 @@ export type Database = {
       }
       subscriptions: {
         Row: {
+          addon_type: string | null
           billing_cycle: string
+          cancelled_at: string | null
+          clover_customer_id: string | null
           clover_payment_id: string | null
+          clover_plan_id: string | null
+          clover_subscription_id: string | null
           created_at: string
           expires_at: string | null
           id: string
+          is_free: boolean | null
+          price_cents: number | null
           started_at: string
           status: string
           tier_id: string
@@ -5264,11 +5271,18 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          addon_type?: string | null
           billing_cycle: string
+          cancelled_at?: string | null
+          clover_customer_id?: string | null
           clover_payment_id?: string | null
+          clover_plan_id?: string | null
+          clover_subscription_id?: string | null
           created_at?: string
           expires_at?: string | null
           id?: string
+          is_free?: boolean | null
+          price_cents?: number | null
           started_at?: string
           status?: string
           tier_id: string
@@ -5277,11 +5291,18 @@ export type Database = {
           user_id: string
         }
         Update: {
+          addon_type?: string | null
           billing_cycle?: string
+          cancelled_at?: string | null
+          clover_customer_id?: string | null
           clover_payment_id?: string | null
+          clover_plan_id?: string | null
+          clover_subscription_id?: string | null
           created_at?: string
           expires_at?: string | null
           id?: string
+          is_free?: boolean | null
+          price_cents?: number | null
           started_at?: string
           status?: string
           tier_id?: string
