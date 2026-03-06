@@ -639,6 +639,7 @@ export const UserManagement = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="free">Free (Full Access)</SelectItem>
                     <SelectItem value="launch">Launch</SelectItem>
                     <SelectItem value="growth">Growth</SelectItem>
                     <SelectItem value="accel">Accel</SelectItem>
