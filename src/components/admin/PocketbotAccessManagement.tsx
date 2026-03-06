@@ -23,6 +23,7 @@ interface UserAccess {
   contact_name: string | null;
   subscription_tier: string | null;
   pocketbot_full_access: boolean;
+  pocketbot_access_type: string | null;
 }
 
 export const PocketAgentAccessManagement = () => {
