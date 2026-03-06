@@ -121,11 +121,11 @@ export function FloatingPocketAgent({ onClose, onPositionChange, initialPosition
       
       const { data } = await supabase
         .from('profiles')
-        .select('pocketbot_full_access')
+        .select('pocketbot_full_access, pocketbot_access_type')
         .eq('user_id', user.id)
         .single();
       
-      setHasFullAccess(data?.pocketbot_full_access || false);
+      setHasFullAccess(data?.pocketbot_full_access || data?.pocketbot_access_type === 'free_full' || data?.pocketbot_access_type === 'paid' || false);
     };
     
     checkFullAccess();
