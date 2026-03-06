@@ -176,3 +176,12 @@ verify_jwt = true
 
 [functions.sales-coach]
 verify_jwt = true
+
+[functions.lowes-auth]
+verify_jwt = true
+
+[functions.lowes-sync]
+verify_jwt = true
+
+[functions.search-products]
+verify_jwt = true
