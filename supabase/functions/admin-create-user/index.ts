@@ -6,6 +6,115 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+async function sendWelcomeEmail(email: string, password: string, companyName: string | null, contactName: string | null) {
+  const resendApiKey = Deno.env.get("RESEND_API_KEY");
+  const emailFrom = Deno.env.get("EMAIL_FROM") || "CT1 <noreply@myct1.com>";
+  const appUrl = Deno.env.get("APP_URL") || "https://myct1.com";
+
+  if (!resendApiKey) {
+    console.error("RESEND_API_KEY not configured, skipping welcome email");
+    return;
+  }
+
+  const displayName = contactName || companyName || "Contractor";
+
+  const htmlBody = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin:0;padding:0;background-color:#f5f5f5;font-family:Arial,Helvetica,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f5f5f5;padding:40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+          <!-- Header -->
+          <tr>
+            <td style="background-color:#15172A;padding:32px 40px;text-align:center;">
+              <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:700;">Welcome to CT1</h1>
+            </td>
+          </tr>
+          <!-- Body -->
+          <tr>
+            <td style="padding:40px;">
+              <p style="margin:0 0 20px;color:#333333;font-size:16px;line-height:1.6;">
+                Hi ${displayName},
+              </p>
+              <p style="margin:0 0 20px;color:#333333;font-size:16px;line-height:1.6;">
+                Your CT1 contractor account has been created. Here are your login details:
+              </p>
+              <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f8f9fa;border-radius:8px;margin:0 0 24px;border:1px solid #e9ecef;">
+                <tr>
+                  <td style="padding:20px;">
+                    <p style="margin:0 0 8px;color:#6c757d;font-size:13px;text-transform:uppercase;letter-spacing:0.5px;">Email</p>
+                    <p style="margin:0 0 16px;color:#15172A;font-size:16px;font-weight:600;">${email}</p>
+                    <p style="margin:0 0 8px;color:#6c757d;font-size:13px;text-transform:uppercase;letter-spacing:0.5px;">Temporary Password</p>
+                    <p style="margin:0;color:#15172A;font-size:16px;font-weight:600;font-family:monospace;background:#e9ecef;display:inline-block;padding:4px 12px;border-radius:4px;">${password}</p>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin:0 0 24px;color:#333333;font-size:16px;line-height:1.6;">
+                For your security, please change your password immediately after logging in.
+              </p>
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center">
+                    <a href="${appUrl}/auth" style="display:inline-block;background-color:#D50A22;color:#ffffff;text-decoration:none;padding:14px 32px;border-radius:6px;font-size:16px;font-weight:600;">
+                      Log In & Change Password
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin:24px 0 0;color:#6c757d;font-size:14px;line-height:1.6;text-align:center;">
+                If the button doesn't work, copy and paste this URL into your browser:<br>
+                <a href="${appUrl}/auth" style="color:#D50A22;">${appUrl}/auth</a>
+              </p>
+            </td>
+          </tr>
+          <!-- Footer -->
+          <tr>
+            <td style="background-color:#f8f9fa;padding:24px 40px;border-top:1px solid #e9ecef;">
+              <p style="margin:0;color:#999999;font-size:12px;text-align:center;line-height:1.5;">
+                This is an automated message from CT1. Please do not reply to this email.<br>
+                &copy; ${new Date().getFullYear()} CT1. All rights reserved.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${resendApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: emailFrom,
+        to: [email],
+        subject: "Welcome to CT1 — Your Account Details",
+        html: htmlBody,
+      }),
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error("Resend API error:", errText);
+    } else {
+      console.log("Welcome email sent successfully to:", email);
+    }
+  } catch (err) {
+    console.error("Failed to send welcome email:", err);
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -98,7 +207,7 @@ serve(async (req) => {
     }
 
     // Create subscription if tier_id and billing_cycle are provided
-    if (tier_id && billing_cycle && ['launch', 'growth', 'accel'].includes(tier_id) && ['monthly', 'quarterly', 'yearly'].includes(billing_cycle)) {
+    if (tier_id && billing_cycle && ['launch', 'growth', 'accel', 'free'].includes(tier_id) && ['monthly', 'quarterly', 'yearly'].includes(billing_cycle)) {
       const { error: subscriptionError } = await supabaseClient
         .from("subscriptions")
         .insert({
@@ -113,6 +222,9 @@ serve(async (req) => {
         console.error("Subscription creation error:", subscriptionError);
       }
     }
+
+    // Send welcome email with login details (non-blocking)
+    await sendWelcomeEmail(email, password, company_name, contact_name);
 
     return new Response(
       JSON.stringify({ 
