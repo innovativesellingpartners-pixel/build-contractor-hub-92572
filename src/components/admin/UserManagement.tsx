@@ -384,7 +384,7 @@ export const UserManagement = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="create-password">Password *</Label>
-                <Input id="create-password" name="password" type="password" required minLength={6} />
+                <Input id="create-password" name="password" type="password" required minLength={8} placeholder="Minimum 8 characters" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="create-company">Company Name</Label>
