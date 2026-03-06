@@ -825,16 +825,23 @@ export function FloatingPocketAgent({ onClose, onPositionChange, initialPosition
           </ScrollArea>
 
           <div className="border-t border-primary/10 p-3 flex-shrink-0">
-            <div className="flex gap-2">
+            <form className="flex gap-2" onSubmit={handleChatSubmit}>
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                onKeyPress={handleKeyPress}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleSend();
+                  }
+                }}
                 placeholder="Ask me anything..."
-                disabled={isLoading || isTranscribing}
+                disabled={isTranscribing}
                 className="flex-1 text-sm"
               />
-              <Button 
+              <Button
+                type="button"
                 onClick={isRecording ? stopRecording : startRecording}
                 disabled={isLoading || isTranscribing}
                 size="icon"
@@ -850,8 +857,8 @@ export function FloatingPocketAgent({ onClose, onPositionChange, initialPosition
                   <Mic className="h-4 w-4" />
                 )}
               </Button>
-              <Button 
-                onClick={handleSend} 
+              <Button
+                type="submit"
                 disabled={isLoading || !input.trim() || isTranscribing}
                 size="icon"
               >
@@ -861,7 +868,7 @@ export function FloatingPocketAgent({ onClose, onPositionChange, initialPosition
                   <Send className="h-4 w-4" />
                 )}
               </Button>
-            </div>
+            </form>
           </div>
         </>
       )}
