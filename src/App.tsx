@@ -52,6 +52,7 @@ import { PocketAgentAccessManagement } from "@/components/admin/PocketbotAccessM
 import { HelpAdmin } from "@/components/admin/HelpAdmin";
 import { ContractorOnboarding } from "@/components/admin/ContractorOnboarding";
 import ArchiveManagement from "@/components/admin/ArchiveManagement";
+import AdminUserProfileEdit from "@/pages/AdminUserProfileEdit";
 import { BusinessSuite } from "@/pages/BusinessSuite";
 import { Training } from "@/pages/features/Training";
 import { CRM } from "@/pages/features/CRM";
@@ -256,6 +257,7 @@ const App = () => (
               <Route index element={<AdminDashboard />} />
               <Route path="users" element={<UserManagement />} />
               <Route path="users/:userId" element={<UserDetailPage />} />
+              <Route path="users/:userId/edit" element={<AdminUserProfileEdit />} />
               <Route path="leads" element={<AdminLeads />} />
               <Route path="estimates" element={<AdminEstimates />} />
               <Route path="invoices" element={<AdminInvoices />} />

@@ -17,14 +17,26 @@ import { Badge } from "@/components/ui/badge";
 
 type SectionKey = 'logo' | 'business' | 'branding' | 'licensing' | 'colors' | 'defaults' | 'payments';
 
-export function ProfileEditContent() {
-  const { profile, user, refreshProfile } = useAuth();
+interface ProfileEditContentProps {
+  targetUserId?: string; // When set, admin is editing another user's profile
+}
+
+export function ProfileEditContent({ targetUserId }: ProfileEditContentProps = {}) {
+  const { profile: authProfile, user: authUser, refreshProfile } = useAuth();
   const { toast } = useToast();
   const { isSuperAdmin } = useAdminAuth();
   const [savingSection, setSavingSection] = useState<SectionKey | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadingWatermark, setUploadingWatermark] = useState(false);
   const [activeTab, setActiveTab] = useState("business");
+  const [targetProfile, setTargetProfile] = useState<any>(null);
+  const [loadingTarget, setLoadingTarget] = useState(false);
+
+  // Determine which user/profile to operate on
+  const isAdminEditing = !!targetUserId;
+  const effectiveUserId = targetUserId || authUser?.id;
+  const profile = isAdminEditing ? targetProfile : authProfile;
+
   const [formData, setFormData] = useState({
     company_name: '',
     contact_name: '',
@@ -55,6 +67,26 @@ export function ProfileEditContent() {
     ach_instructions: '',
     accepted_payment_methods: ['card'] as string[],
   });
+
+  // Fetch target user's profile when admin editing
+  useEffect(() => {
+    if (!targetUserId) return;
+    setLoadingTarget(true);
+    supabase
+      .from('profiles')
+      .select('*')
+      .eq('user_id', targetUserId)
+      .single()
+      .then(({ data, error }) => {
+        if (error) {
+          console.error('Error fetching target profile:', error);
+          toast({ title: "Error", description: "Failed to load user profile.", variant: "destructive" });
+        } else {
+          setTargetProfile(data);
+        }
+        setLoadingTarget(false);
+      });
+  }, [targetUserId]);
 
   useEffect(() => {
     if (profile) {
@@ -97,12 +129,12 @@ export function ProfileEditContent() {
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !user) return;
+    if (!file || !effectiveUserId) return;
 
     setUploading(true);
     try {
       const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+      const fileName = `${effectiveUserId}/${Date.now()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from('company-logos')
@@ -117,12 +149,12 @@ export function ProfileEditContent() {
       const { error: updateError } = await supabase
         .from('profiles')
         .update({ logo_url: publicUrl })
-        .eq('user_id', user.id);
+        .eq('user_id', effectiveUserId);
 
       if (updateError) throw updateError;
 
       setFormData({ ...formData, logo_url: publicUrl });
-      await refreshProfile();
+      if (!isAdminEditing) await refreshProfile();
       
       toast({
         title: "Logo uploaded",
@@ -142,11 +174,11 @@ export function ProfileEditContent() {
 
   const handleWatermarkUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !user) return;
+    if (!file || !effectiveUserId) return;
     setUploadingWatermark(true);
     try {
       const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}/watermark-${Date.now()}.${fileExt}`;
+      const fileName = `${effectiveUserId}/watermark-${Date.now()}.${fileExt}`;
       const { error: uploadError } = await supabase.storage
         .from('company-logos')
         .upload(fileName, file, { upsert: true });
@@ -165,7 +197,7 @@ export function ProfileEditContent() {
   };
 
   const handleSaveSection = async (section: SectionKey) => {
-    if (!user) return;
+    if (!effectiveUserId) return;
 
     setSavingSection(section);
     try {
@@ -227,11 +259,11 @@ export function ProfileEditContent() {
       const { error } = await supabase
         .from('profiles')
         .update(updateData)
-        .eq('user_id', user.id);
+        .eq('user_id', effectiveUserId);
 
       if (error) throw error;
 
-      await refreshProfile();
+      if (!isAdminEditing) await refreshProfile();
 
       toast({
         title: "Saved",
@@ -270,6 +302,14 @@ export function ProfileEditContent() {
       )}
     </Button>
   );
+
+  if (loadingTarget) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -313,7 +353,7 @@ export function ProfileEditContent() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label className="text-muted-foreground text-xs">User ID</Label>
-                  <Input value={user?.id || ''} readOnly className="bg-muted/50 text-xs font-mono" />
+                  <Input value={effectiveUserId || ''} readOnly className="bg-muted/50 text-xs font-mono" />
                 </div>
                 <div className="space-y-2">
                   <Label className="text-muted-foreground text-xs">CT1 Contractor #</Label>
