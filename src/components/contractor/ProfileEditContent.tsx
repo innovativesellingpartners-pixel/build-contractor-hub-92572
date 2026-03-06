@@ -154,7 +154,7 @@ export function ProfileEditContent({ targetUserId }: ProfileEditContentProps = {
       if (updateError) throw updateError;
 
       setFormData({ ...formData, logo_url: publicUrl });
-      await refreshProfile();
+      if (!isAdminEditing) await refreshProfile();
       
       toast({
         title: "Logo uploaded",
