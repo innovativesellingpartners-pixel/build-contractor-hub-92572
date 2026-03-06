@@ -164,6 +164,7 @@ export default function AdminCatalogImport() {
     }
   }, [toast]);
 
+  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (!f) return;
     if (!f.name.endsWith(".csv")) {
