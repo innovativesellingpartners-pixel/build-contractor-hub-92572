@@ -543,7 +543,7 @@ export function Dashboard() {
                       <ConnectionsHub onNavigate={handleSectionChange} />
                       {(user?.email?.endsWith('@myct1.com')) && (
                         <div className="mt-6">
-                          <LowesAdminPanel />
+                          <CatalogAdminPanel />
                         </div>
                       )}
                     </div>
