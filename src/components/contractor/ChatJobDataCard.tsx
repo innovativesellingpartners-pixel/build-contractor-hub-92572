@@ -83,8 +83,7 @@ export function ChatJobDataCard({ data, onActionComplete }: ChatJobDataCardProps
 
       if (error) throw error;
       toast({ title: "Estimate Created", description: `${est.estimate_number} created successfully` });
-      onActionComplete?.(`✅ Estimate ${est.estimate_number} created from chat data.`);
-      navigate(`/estimate/${est.id}`);
+      onActionComplete?.(`✅ Estimate **${est.estimate_number}** created from chat data. You can find it in your Estimates list.`);
     } catch (e: any) {
       toast({ title: "Error", description: e.message, variant: "destructive" });
     } finally {
