@@ -680,6 +680,83 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
             );
           }
         }
+
+        if (name === "search_products") {
+          try {
+            const args = JSON.parse(argsStr);
+            console.log("Searching products:", args);
+            
+            // Query retailer_products directly
+            let query = supabase
+              .from('retailer_products')
+              .select('brand, model, title, price, inventory_status, product_url, image_url, efficiency_afue, btu_input, fuel_type, last_synced_at')
+              .eq('retailer', args.retailer || 'lowes')
+              .eq('category', args.category || 'furnaces')
+              .order('price', { ascending: true })
+              .limit(Math.min(args.limit || 10, 50));
+
+            if (args.max_price) query = query.lte('price', args.max_price);
+            if (args.brand) query = query.ilike('brand', `%${args.brand}%`);
+            if (args.fuel_type) query = query.ilike('fuel_type', `%${args.fuel_type}%`);
+            if (args.min_afue) query = query.gte('efficiency_afue', args.min_afue);
+
+            const { data: products, error: queryError } = await query;
+            
+            if (queryError) {
+              console.error("Product search error:", queryError);
+              return new Response(
+                JSON.stringify({ 
+                  type: "product_search",
+                  content: "I had trouble searching the product catalog. Please try again.",
+                  products: []
+                }),
+                { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+              );
+            }
+
+            if (!products || products.length === 0) {
+              let noResultsMsg = "I searched the Lowe's product catalog but didn't find any matching furnaces";
+              if (args.brand) noResultsMsg += ` from ${args.brand}`;
+              if (args.max_price) noResultsMsg += ` under $${args.max_price}`;
+              if (args.min_afue) noResultsMsg += ` with ${args.min_afue}%+ AFUE`;
+              noResultsMsg += ". This could mean our catalog hasn't been synced yet, or no products match those filters. Try broadening your search or ask an admin to sync the latest data.";
+              
+              return new Response(
+                JSON.stringify({ 
+                  type: "product_search",
+                  content: noResultsMsg,
+                  products: []
+                }),
+                { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+              );
+            }
+
+            let summaryMsg = `Here are ${products.length} furnace${products.length !== 1 ? 's' : ''} from Lowe's`;
+            if (args.brand) summaryMsg += ` by ${args.brand}`;
+            if (args.max_price) summaryMsg += ` under $${args.max_price.toLocaleString()}`;
+            if (args.min_afue) summaryMsg += ` with ${args.min_afue}%+ AFUE efficiency`;
+            summaryMsg += ':';
+
+            return new Response(
+              JSON.stringify({ 
+                type: "product_search",
+                content: summaryMsg,
+                products: products
+              }),
+              { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+          } catch (parseError) {
+            console.error("Error in search_products:", parseError);
+            return new Response(
+              JSON.stringify({ 
+                type: "product_search",
+                content: "I had trouble searching for products. Please try again.",
+                products: []
+              }),
+              { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+          }
+        }
         
         if (name === "add_task") {
           try {
