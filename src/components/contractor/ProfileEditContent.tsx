@@ -197,7 +197,7 @@ export function ProfileEditContent({ targetUserId }: ProfileEditContentProps = {
   };
 
   const handleSaveSection = async (section: SectionKey) => {
-    if (!user) return;
+    if (!effectiveUserId) return;
 
     setSavingSection(section);
     try {
