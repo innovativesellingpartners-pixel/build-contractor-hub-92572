@@ -52,6 +52,7 @@ import { PocketAgentAccessManagement } from "@/components/admin/PocketbotAccessM
 import { HelpAdmin } from "@/components/admin/HelpAdmin";
 import { ContractorOnboarding } from "@/components/admin/ContractorOnboarding";
 import ArchiveManagement from "@/components/admin/ArchiveManagement";
+import AdminCatalogImport from "@/pages/admin/AdminCatalogImport";
 import AdminUserProfileEdit from "@/pages/AdminUserProfileEdit";
 import { BusinessSuite } from "@/pages/BusinessSuite";
 import { Training } from "@/pages/features/Training";
@@ -270,6 +271,7 @@ const App = () => (
               <Route path="marketplace" element={<MarketplaceManagement />} />
               <Route path="help" element={<HelpAdmin />} />
               <Route path="settings" element={<AdminSettings />} />
+              <Route path="catalog-import" element={<AdminCatalogImport />} />
             </Route>
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
