@@ -135,7 +135,35 @@ export default function AdminCatalogImport() {
     }
   }, [toast]);
 
-  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleReseedSamples = useCallback(async () => {
+    setReseedingSamples(true);
+    try {
+      // Delete existing sample data first
+      const { error: deleteError } = await supabase
+        .from("retailer_catalog")
+        .delete()
+        .eq("source_type", "sample_data") as any;
+
+      if (deleteError) {
+        console.error("Delete old samples failed:", deleteError);
+      }
+
+      // Re-insert fresh dataset
+      const adapter = createSampleDataAdapter();
+      const result = await adapter.ingest(SAMPLE_PRODUCTS as CatalogProduct[]);
+
+      toast({
+        title: "Sample data refreshed",
+        description: `Old sample data cleared and ${result.inserted} products reseeded. ${result.errors.length > 0 ? `${result.errors.length} errors.` : "Ready to test!"}`,
+      });
+    } catch (err) {
+      console.error("Reseed failed:", err);
+      toast({ title: "Error", description: "Failed to reseed sample data", variant: "destructive" });
+    } finally {
+      setReseedingSamples(false);
+    }
+  }, [toast]);
+
     const f = e.target.files?.[0];
     if (!f) return;
     if (!f.name.endsWith(".csv")) {
