@@ -182,7 +182,7 @@ export function ConnectionsHub({ onNavigate }: ConnectionsHubProps) {
         outlookEmail: emailConnections.some((c: any) => c.provider === "outlook"),
         insurance: (insuranceRes.data?.length || 0) > 0,
         voiceAi: voiceRes.data?.[0]?.ai_enabled === true,
-        payments: false, // Admin-provisioned, checked separately
+        payments: !!finixRes.data?.finix_merchant_id,
       });
     } catch (err) {
       console.error("Error checking connections:", err);
