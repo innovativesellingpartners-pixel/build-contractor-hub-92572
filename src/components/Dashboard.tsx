@@ -62,6 +62,7 @@ import HelpCenter from "@/components/help/HelpCenter";
 
 import { PersonalTasks } from "@/components/contractor/PersonalTasks";
 import { ConnectionsHub } from "@/components/contractor/ConnectionsHub";
+import { LowesAdminPanel } from "@/components/contractor/LowesAdminPanel";
 
 type ActiveSection = 'training' | 'crm' | 'marketplace' | 'leads' | 'insurance' | 'account' | 'voiceai' | 'reporting' | 'tasks' | 'help' | 'connections';
 
