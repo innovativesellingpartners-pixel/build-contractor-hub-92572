@@ -592,21 +592,9 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
     if (toolCalls.length > 0) {
       console.log("Tool calls detected:", toolCalls);
       
-      // Accumulate arguments from streamed tool calls
-      const toolCallMap: Record<number, { name: string; arguments: string }> = {};
-      
-      for (const tc of toolCalls) {
-        const idx = tc.index ?? 0;
-        if (!toolCallMap[idx]) {
-          toolCallMap[idx] = { name: '', arguments: '' };
-        }
-        if (tc.function?.name) {
-          toolCallMap[idx].name = tc.function.name;
-        }
-        if (tc.function?.arguments) {
-          toolCallMap[idx].arguments += tc.function.arguments;
-        }
-      }
+      for (const toolCall of toolCalls) {
+        const toolName = toolCall.function?.name;
+        const toolArgs = toolCall.function?.arguments;
       
       for (const idx in toolCallMap) {
         const toolCall = toolCallMap[idx];
