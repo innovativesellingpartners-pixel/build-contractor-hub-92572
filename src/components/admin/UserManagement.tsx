@@ -418,6 +418,7 @@ export const UserManagement = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="free">Free (Full Access)</SelectItem>
                     <SelectItem value="launch">Launch ($500/mo)</SelectItem>
                     <SelectItem value="growth">Growth ($1000/mo)</SelectItem>
                     <SelectItem value="accel">Accel ($1500/mo)</SelectItem>
