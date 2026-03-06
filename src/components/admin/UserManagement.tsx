@@ -390,9 +390,15 @@ export const UserManagement = () => {
                 <Label htmlFor="create-company">Company Name</Label>
                 <Input id="create-company" name="company_name" type="text" />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="create-contact">Contact Name</Label>
-                <Input id="create-contact" name="contact_name" type="text" />
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="create-first-name">First Name</Label>
+                  <Input id="create-first-name" name="first_name" type="text" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="create-last-name">Last Name</Label>
+                  <Input id="create-last-name" name="last_name" type="text" />
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="create-phone">Phone</Label>
