@@ -103,9 +103,6 @@ export function ChatJobDataCard({ data, onActionComplete }: ChatJobDataCardProps
           name: data.project_name || 'New Job from Chat',
           description: data.project_description || '',
           address: data.project_address || data.customer_address || '',
-          client_name: data.customer_name || null,
-          client_email: data.customer_email || null,
-          client_phone: data.customer_phone || null,
           contract_value: grandTotal,
           job_status: 'not_started',
         })
