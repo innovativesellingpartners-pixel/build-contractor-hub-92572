@@ -264,14 +264,10 @@ export default function AdminCatalogImport() {
     const result: ImportSummary = { total: csvRows.length, inserted: 0, updated: 0, skipped: 0, errors: [] };
 
     // Build mapped rows
-    const mappedRows: Record<string, any>[] = [];
+    const mappedRows: CatalogProduct[] = [];
     for (let i = 0; i < csvRows.length; i++) {
       const row = csvRows[i];
-      const obj: Record<string, any> = {
-        source_type: "csv_import",
-        source_name: file?.name || "unknown.csv",
-        last_synced_at: new Date().toISOString(),
-      };
+      const obj: Record<string, any> = {};
 
       let valid = true;
       for (let j = 0; j < csvHeaders.length; j++) {
@@ -302,46 +298,17 @@ export default function AdminCatalogImport() {
         result.skipped++;
         continue;
       }
-      mappedRows.push(obj);
+      mappedRows.push(obj as CatalogProduct);
     }
 
-    // Batch upsert in chunks of 100
-    const BATCH = 100;
-    for (let i = 0; i < mappedRows.length; i += BATCH) {
-      const batch = mappedRows.slice(i, i + BATCH);
-      try {
-        if (upsertMode) {
-          // Need source_product_id for upsert
-          const withId = batch.filter((r) => r.source_product_id);
-          const withoutId = batch.filter((r) => !r.source_product_id);
-
-          if (withId.length > 0) {
-            const { error } = await supabase
-              .from("retailer_catalog" as any)
-              .upsert(withId as any, { onConflict: "retailer,source_product_id" });
-            if (error) throw error;
-            result.updated += withId.length;
-          }
-          if (withoutId.length > 0) {
-            const { error } = await supabase
-              .from("retailer_catalog" as any)
-              .insert(withoutId as any);
-            if (error) throw error;
-            result.inserted += withoutId.length;
-          }
-        } else {
-          const { error } = await supabase
-            .from("retailer_catalog" as any)
-            .insert(batch as any);
-          if (error) throw error;
-          result.inserted += batch.length;
-        }
-      } catch (err: any) {
-        const startRow = i + 2;
-        const endRow = Math.min(i + BATCH, mappedRows.length) + 1;
-        result.errors.push({ row: startRow, message: `Batch ${startRow}-${endRow}: ${err.message}` });
-        result.skipped += batch.length;
-      }
+    // Use the CSV adapter for ingestion
+    try {
+      const adapter = createCsvAdapter(file?.name || "unknown.csv");
+      const adapterResult = await adapter.ingest(mappedRows);
+      result.inserted = adapterResult.inserted;
+      result.errors.push(...adapterResult.errors);
+    } catch (err: any) {
+      result.errors.push({ row: 0, message: err.message });
     }
 
     setSummary(result);
