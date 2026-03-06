@@ -294,7 +294,7 @@ export const UserManagement = () => {
       profileData: {
         company_name: formData.get('company_name') as string,
         phone: formData.get('phone') as string,
-        contact_name: formData.get('contact_name') as string,
+        contact_name: [formData.get('first_name'), formData.get('last_name')].filter(Boolean).join(' '),
         ct1_contractor_number: formData.get('ct1_contractor_number') as string,
         subscription_tier: formData.get('subscription_tier') as string,
         logo_url: logoPreview || undefined,
