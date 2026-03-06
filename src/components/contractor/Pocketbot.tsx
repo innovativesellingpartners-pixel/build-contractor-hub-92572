@@ -220,7 +220,7 @@ export function PocketAgent() {
               <Button 
                 size="sm" 
                 variant="default"
-                onClick={() => window.location.href = '/bot-signup'}
+                onClick={() => window.location.href = '/dashboard?activate_pocketbot=true'}
               >
                 Upgrade Now
               </Button>
