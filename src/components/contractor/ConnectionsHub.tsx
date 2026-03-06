@@ -159,6 +159,7 @@ export function ConnectionsHub({ onNavigate }: ConnectionsHubProps) {
         emailRes,
         insuranceRes,
         voiceRes,
+        finixRes,
       ] = await Promise.all([
         supabase.from("bank_account_links").select("id").eq("user_id", user.id).limit(1),
         supabase.from("teller_connections").select("id").eq("user_id", user.id).eq("status", "active").limit(1),
@@ -167,6 +168,7 @@ export function ConnectionsHub({ onNavigate }: ConnectionsHubProps) {
         supabase.from("email_connections").select("id, provider").eq("user_id", user.id),
         supabase.from("contractor_documents").select("id").eq("user_id", user.id).eq("document_category", "insurance").limit(1),
         supabase.from("contractor_ai_profiles").select("ai_enabled").eq("contractor_id", user.id).limit(1),
+        supabase.from("profiles").select("finix_merchant_id").eq("id", user.id).single(),
       ]);
 
       const calConnections = calRes.data || [];
@@ -181,7 +183,7 @@ export function ConnectionsHub({ onNavigate }: ConnectionsHubProps) {
         outlookEmail: emailConnections.some((c: any) => c.provider === "outlook"),
         insurance: (insuranceRes.data?.length || 0) > 0,
         voiceAi: voiceRes.data?.[0]?.ai_enabled === true,
-        payments: false, // Admin-provisioned, checked separately
+        payments: !!finixRes.data?.finix_merchant_id,
       });
     } catch (err) {
       console.error("Error checking connections:", err);

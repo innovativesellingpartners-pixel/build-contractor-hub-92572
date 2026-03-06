@@ -231,7 +231,7 @@ export function ChatJobDataCard({ data, onActionComplete }: ChatJobDataCardProps
   };
 
   return (
-    <div className="mt-2 rounded-lg border border-border bg-card p-2.5 space-y-2 text-xs overflow-hidden max-w-full">
+    <div className="mt-2 rounded-lg border border-border bg-card p-2 space-y-2 text-xs overflow-hidden w-full box-border">
       {/* Header */}
       <button
         onClick={() => setExpanded(!expanded)}
@@ -257,33 +257,32 @@ export function ChatJobDataCard({ data, onActionComplete }: ChatJobDataCardProps
           )}
 
           {/* Line Items */}
-          <div className="border rounded border-border overflow-hidden">
-            <table className="w-full text-xs">
+          <div className="border rounded border-border overflow-x-auto">
+            <table className="w-full text-[11px] table-fixed">
               <thead className="bg-muted/50">
                 <tr>
-                  <th className="text-left p-1.5 font-medium">Description</th>
-                  <th className="text-right p-1.5 font-medium w-12">Qty</th>
-                  <th className="text-right p-1.5 font-medium w-16">Price</th>
-                  <th className="text-right p-1.5 font-medium w-16">Total</th>
+                  <th className="text-left p-1 font-medium truncate">Item</th>
+                  <th className="text-right p-1 font-medium w-10">Qty</th>
+                  <th className="text-right p-1 font-medium w-14">Price</th>
+                  <th className="text-right p-1 font-medium w-14">Total</th>
                 </tr>
               </thead>
               <tbody>
                 {data.line_items.map((item, idx) => (
                   <tr key={idx} className="border-t border-border/50">
-                    <td className="p-1.5">
-                      <span className="block">{item.description}</span>
-                      <span className="text-muted-foreground text-[10px]">{item.category}</span>
+                    <td className="p-1 truncate" title={item.description}>
+                      {item.description}
                     </td>
-                    <td className="text-right p-1.5">{item.quantity} {item.unit}</td>
-                    <td className="text-right p-1.5">${item.unit_price.toFixed(2)}</td>
-                    <td className="text-right p-1.5 font-medium">${(item.quantity * item.unit_price).toFixed(2)}</td>
+                    <td className="text-right p-1 whitespace-nowrap">{item.quantity}</td>
+                    <td className="text-right p-1 whitespace-nowrap">${item.unit_price.toFixed(0)}</td>
+                    <td className="text-right p-1 font-medium whitespace-nowrap">${(item.quantity * item.unit_price).toFixed(0)}</td>
                   </tr>
                 ))}
               </tbody>
               <tfoot className="bg-muted/30">
                 <tr className="border-t border-border">
-                  <td colSpan={3} className="p-1.5 text-right font-semibold">Total:</td>
-                  <td className="p-1.5 text-right font-bold text-primary">${grandTotal.toFixed(2)}</td>
+                  <td colSpan={3} className="p-1 text-right font-semibold">Total:</td>
+                  <td className="p-1 text-right font-bold text-primary whitespace-nowrap">${grandTotal.toFixed(2)}</td>
                 </tr>
               </tfoot>
             </table>
@@ -295,47 +294,47 @@ export function ChatJobDataCard({ data, onActionComplete }: ChatJobDataCardProps
 
           {/* Action Buttons */}
           {!showAddTo ? (
-            <div className="flex flex-col gap-1.5">
-              <div className="grid grid-cols-2 gap-1.5">
+            <div className="flex flex-col gap-1">
+              <div className="grid grid-cols-2 gap-1">
                 <Button
                   size="sm"
-                  className="h-8 text-[11px] px-2 min-w-0"
+                  className="h-7 text-[10px] px-1.5 min-w-0 gap-1"
                   onClick={handleCreateEstimate}
                   disabled={!!loading}
                 >
-                  {loading === 'estimate' ? <Loader2 className="h-3 w-3 animate-spin mr-1 flex-shrink-0" /> : <FileText className="h-3 w-3 mr-1 flex-shrink-0" />}
-                  <span className="truncate">Create Estimate</span>
+                  {loading === 'estimate' ? <Loader2 className="h-3 w-3 animate-spin flex-shrink-0" /> : <FileText className="h-3 w-3 flex-shrink-0" />}
+                  <span className="truncate">Estimate</span>
                 </Button>
                 <Button
                   size="sm"
-                  className="h-8 text-[11px] px-2 min-w-0"
+                  className="h-7 text-[10px] px-1.5 min-w-0 gap-1"
                   onClick={handleCreateJob}
                   disabled={!!loading}
                 >
-                  {loading === 'job' ? <Loader2 className="h-3 w-3 animate-spin mr-1 flex-shrink-0" /> : <Briefcase className="h-3 w-3 mr-1 flex-shrink-0" />}
-                  <span className="truncate">Create Job</span>
+                  {loading === 'job' ? <Loader2 className="h-3 w-3 animate-spin flex-shrink-0" /> : <Briefcase className="h-3 w-3 flex-shrink-0" />}
+                  <span className="truncate">Job</span>
                 </Button>
               </div>
-              <div className="grid grid-cols-2 gap-1.5">
+              <div className="grid grid-cols-2 gap-1">
                 <Button
                   size="sm"
                   variant="outline"
-                  className="h-7 text-[11px] px-2 min-w-0"
+                  className="h-6 text-[10px] px-1.5 min-w-0 gap-1"
                   onClick={() => handleShowAddTo('estimate')}
                   disabled={!!loading}
                 >
-                  <Plus className="h-3 w-3 mr-1 flex-shrink-0" />
-                  <span className="truncate">Add to Estimate</span>
+                  <Plus className="h-2.5 w-2.5 flex-shrink-0" />
+                  <span className="truncate">+ Estimate</span>
                 </Button>
                 <Button
                   size="sm"
                   variant="outline"
-                  className="h-7 text-[11px] px-2 min-w-0"
+                  className="h-6 text-[10px] px-1.5 min-w-0 gap-1"
                   onClick={() => handleShowAddTo('job')}
                   disabled={!!loading}
                 >
-                  <Plus className="h-3 w-3 mr-1 flex-shrink-0" />
-                  <span className="truncate">Add to Job</span>
+                  <Plus className="h-2.5 w-2.5 flex-shrink-0" />
+                  <span className="truncate">+ Job</span>
                 </Button>
               </div>
             </div>
