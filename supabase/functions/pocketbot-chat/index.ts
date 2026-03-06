@@ -548,7 +548,7 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
         ],
         max_tokens: hasPaidBot ? undefined : 200,
         tools: tools,
-        stream: true,
+        stream: false,
       }),
     });
 
@@ -582,44 +582,11 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
       );
     }
 
-    // Check if response contains tool calls
-    const reader = response.body?.getReader();
-    const decoder = new TextDecoder();
-    let buffer = "";
-    let toolCalls: any[] = [];
-    let accumulatedContent = "";
-
-    if (reader) {
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || "";
-
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const data = line.slice(6);
-            if (data === '[DONE]') continue;
-            
-            try {
-              const parsed = JSON.parse(data);
-              const delta = parsed.choices?.[0]?.delta;
-              
-              if (delta?.tool_calls) {
-                toolCalls.push(...delta.tool_calls);
-              }
-              if (delta?.content) {
-                accumulatedContent += delta.content;
-              }
-            } catch (e) {
-              // Ignore parse errors for partial chunks
-            }
-          }
-        }
-      }
-    }
+    // Parse the non-streamed response to check for tool calls
+    const responseData = await response.json();
+    const choice = responseData.choices?.[0];
+    const toolCalls = choice?.message?.tool_calls || [];
+    const accumulatedContent = choice?.message?.content || "";
 
     // If tool calls detected, handle them
     if (toolCalls.length > 0) {
