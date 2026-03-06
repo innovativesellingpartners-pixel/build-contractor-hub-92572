@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -105,7 +106,44 @@ export function Dashboard() {
   useEffect(() => {
     if (searchParams.get("voice_ai_activated") === "true") {
       setActiveSection("voiceai");
-      // VoiceAI component will handle the actual activation
+    }
+
+    // Handle Pocket Agent checkout trigger
+    if (searchParams.get("activate_pocketbot") === "true") {
+      searchParams.delete("activate_pocketbot");
+      setSearchParams(searchParams, { replace: true });
+      // Trigger Clover checkout
+      (async () => {
+        try {
+          const { data, error } = await supabase.functions.invoke('pocketbot-checkout');
+          if (error) throw error;
+          if (data?.checkout_url) {
+            window.location.href = data.checkout_url;
+          }
+        } catch (err) {
+          console.error('Pocketbot checkout error:', err);
+        }
+      })();
+    }
+
+    // Handle Pocket Agent post-payment activation
+    if (searchParams.get("pocketbot_activated") === "true") {
+      searchParams.delete("pocketbot_activated");
+      setSearchParams(searchParams, { replace: true });
+      // Activate pocketbot access
+      (async () => {
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            await supabase.from('profiles').update({
+              pocketbot_access_type: 'paid',
+              pocketbot_full_access: true,
+            }).eq('user_id', user.id);
+          }
+        } catch (err) {
+          console.error('Pocketbot activation error:', err);
+        }
+      })();
     }
   }, []);
 

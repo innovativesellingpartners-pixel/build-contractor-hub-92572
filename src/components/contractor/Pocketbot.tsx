@@ -220,7 +220,7 @@ export function PocketAgent() {
               <Button 
                 size="sm" 
                 variant="default"
-                onClick={() => window.location.href = '/bot-signup'}
+                onClick={() => window.location.href = '/dashboard?activate_pocketbot=true'}
               >
                 Upgrade Now
               </Button>
@@ -386,9 +386,9 @@ export function PocketAgent() {
               size="sm" 
               variant="secondary" 
               className="rounded-full"
-              onClick={() => window.location.href = '/bot-signup'}
+              onClick={() => window.location.href = '/dashboard?activate_pocketbot=true'}
             >
-              Sign up today
+              Add Pocket Agent — $20/mo
             </Button>
           </div>
         </div>
