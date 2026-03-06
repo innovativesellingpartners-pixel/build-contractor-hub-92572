@@ -257,33 +257,32 @@ export function ChatJobDataCard({ data, onActionComplete }: ChatJobDataCardProps
           )}
 
           {/* Line Items */}
-          <div className="border rounded border-border overflow-hidden">
-            <table className="w-full text-xs">
+          <div className="border rounded border-border overflow-x-auto">
+            <table className="w-full text-[11px] table-fixed">
               <thead className="bg-muted/50">
                 <tr>
-                  <th className="text-left p-1.5 font-medium">Description</th>
-                  <th className="text-right p-1.5 font-medium w-12">Qty</th>
-                  <th className="text-right p-1.5 font-medium w-16">Price</th>
-                  <th className="text-right p-1.5 font-medium w-16">Total</th>
+                  <th className="text-left p-1 font-medium truncate">Item</th>
+                  <th className="text-right p-1 font-medium w-10">Qty</th>
+                  <th className="text-right p-1 font-medium w-14">Price</th>
+                  <th className="text-right p-1 font-medium w-14">Total</th>
                 </tr>
               </thead>
               <tbody>
                 {data.line_items.map((item, idx) => (
                   <tr key={idx} className="border-t border-border/50">
-                    <td className="p-1.5">
-                      <span className="block">{item.description}</span>
-                      <span className="text-muted-foreground text-[10px]">{item.category}</span>
+                    <td className="p-1 truncate" title={item.description}>
+                      {item.description}
                     </td>
-                    <td className="text-right p-1.5">{item.quantity} {item.unit}</td>
-                    <td className="text-right p-1.5">${item.unit_price.toFixed(2)}</td>
-                    <td className="text-right p-1.5 font-medium">${(item.quantity * item.unit_price).toFixed(2)}</td>
+                    <td className="text-right p-1 whitespace-nowrap">{item.quantity}</td>
+                    <td className="text-right p-1 whitespace-nowrap">${item.unit_price.toFixed(0)}</td>
+                    <td className="text-right p-1 font-medium whitespace-nowrap">${(item.quantity * item.unit_price).toFixed(0)}</td>
                   </tr>
                 ))}
               </tbody>
               <tfoot className="bg-muted/30">
                 <tr className="border-t border-border">
-                  <td colSpan={3} className="p-1.5 text-right font-semibold">Total:</td>
-                  <td className="p-1.5 text-right font-bold text-primary">${grandTotal.toFixed(2)}</td>
+                  <td colSpan={3} className="p-1 text-right font-semibold">Total:</td>
+                  <td className="p-1 text-right font-bold text-primary whitespace-nowrap">${grandTotal.toFixed(2)}</td>
                 </tr>
               </tfoot>
             </table>
