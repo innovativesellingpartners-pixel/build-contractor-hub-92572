@@ -604,14 +604,30 @@ export function FloatingPocketAgent({ onClose, onPositionChange, initialPosition
         {/* Signup Banner - only show for non-full-access users */}
         {!hasFullAccess && (
           <div className="mb-3 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-lg p-2 text-center">
-            <p className="text-xs font-semibold mb-1">Want unlimited access?</p>
+            <p className="text-xs font-semibold mb-1">Upgrade for $20/mo — Unlimited access!</p>
             <Button 
               variant="secondary" 
               size="sm" 
               className="h-7 text-xs px-3 w-full"
-              onClick={() => window.location.href = '/bot-signup'}
+              disabled={isLoading}
+              onClick={async () => {
+                try {
+                  setIsLoading(true);
+                  const { data, error } = await supabase.functions.invoke('pocketbot-checkout');
+                  if (error) throw error;
+                  if (data?.checkout_url) {
+                    window.location.href = data.checkout_url;
+                  } else {
+                    toast({ title: "Error", description: data?.message || "Could not start checkout", variant: "destructive" });
+                  }
+                } catch (err: any) {
+                  toast({ title: "Error", description: err.message || "Checkout failed", variant: "destructive" });
+                } finally {
+                  setIsLoading(false);
+                }
+              }}
             >
-              Sign up today
+              {isLoading ? "Processing..." : "Add Pocket Agent — $20/mo"}
             </Button>
           </div>
         )}
