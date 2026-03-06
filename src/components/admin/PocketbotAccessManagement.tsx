@@ -71,28 +71,27 @@ export const PocketAgentAccessManagement = () => {
     }
   };
 
-  const toggleAccess = async (userId: string, currentAccess: boolean) => {
+  const setAccessType = async (userId: string, accessType: string) => {
     setUpdating(userId);
     try {
+      const isFull = accessType !== 'none';
       const { error } = await supabase
         .from('profiles')
-        .update({ pocketbot_full_access: !currentAccess })
+        .update({ pocketbot_access_type: accessType, pocketbot_full_access: isFull })
         .eq('user_id', userId);
 
       if (error) throw error;
 
-      // Update local state
       setUsers(
         users.map((user) =>
           user.user_id === userId
-            ? { ...user, pocketbot_full_access: !currentAccess }
+            ? { ...user, pocketbot_access_type: accessType, pocketbot_full_access: isFull }
             : user
         )
       );
 
-      toast.success(
-        `Pocket Agent access ${!currentAccess ? 'granted' : 'revoked'} successfully`
-      );
+      const labels: Record<string, string> = { none: 'revoked', free_full: 'granted (free)', paid: 'granted (paid $20/mo)' };
+      toast.success(`Pocket Agent access ${labels[accessType] || 'updated'} successfully`);
     } catch (error: any) {
       toast.error('Failed to update access: ' + error.message);
     } finally {
