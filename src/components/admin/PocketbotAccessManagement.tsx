@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -23,6 +23,7 @@ interface UserAccess {
   contact_name: string | null;
   subscription_tier: string | null;
   pocketbot_full_access: boolean;
+  pocketbot_access_type: string | null;
 }
 
 export const PocketAgentAccessManagement = () => {
@@ -57,7 +58,7 @@ export const PocketAgentAccessManagement = () => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, user_id, company_name, contact_name, subscription_tier, pocketbot_full_access')
+        .select('id, user_id, company_name, contact_name, subscription_tier, pocketbot_full_access, pocketbot_access_type')
         .order('company_name');
 
       if (error) throw error;
@@ -70,28 +71,27 @@ export const PocketAgentAccessManagement = () => {
     }
   };
 
-  const toggleAccess = async (userId: string, currentAccess: boolean) => {
+  const setAccessType = async (userId: string, accessType: string) => {
     setUpdating(userId);
     try {
+      const isFull = accessType !== 'none';
       const { error } = await supabase
         .from('profiles')
-        .update({ pocketbot_full_access: !currentAccess })
+        .update({ pocketbot_access_type: accessType, pocketbot_full_access: isFull })
         .eq('user_id', userId);
 
       if (error) throw error;
 
-      // Update local state
       setUsers(
         users.map((user) =>
           user.user_id === userId
-            ? { ...user, pocketbot_full_access: !currentAccess }
+            ? { ...user, pocketbot_access_type: accessType, pocketbot_full_access: isFull }
             : user
         )
       );
 
-      toast.success(
-        `Pocket Agent access ${!currentAccess ? 'granted' : 'revoked'} successfully`
-      );
+      const labels: Record<string, string> = { none: 'revoked', free_full: 'granted (free)', paid: 'granted (paid $20/mo)' };
+      toast.success(`Pocket Agent access ${labels[accessType] || 'updated'} successfully`);
     } catch (error: any) {
       toast.error('Failed to update access: ' + error.message);
     } finally {
@@ -207,18 +207,25 @@ export const PocketAgentAccessManagement = () => {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          {user.pocketbot_full_access ? (
+                          {user.pocketbot_access_type === 'paid' ? (
                             <>
                               <CheckCircle className="h-4 w-4 text-green-500" />
                               <span className="text-sm font-medium text-green-600 dark:text-green-400">
-                                Full Access
+                                Paid ($20/mo)
+                              </span>
+                            </>
+                          ) : user.pocketbot_access_type === 'free_full' || user.pocketbot_full_access ? (
+                            <>
+                              <CheckCircle className="h-4 w-4 text-blue-500" />
+                              <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                                Free Full Access
                               </span>
                             </>
                           ) : (
                             <>
                               <XCircle className="h-4 w-4 text-muted-foreground" />
                               <span className="text-sm text-muted-foreground">
-                                Limited Access
+                                Limited
                               </span>
                             </>
                           )}
@@ -226,13 +233,20 @@ export const PocketAgentAccessManagement = () => {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <Switch
-                            checked={user.pocketbot_full_access}
-                            onCheckedChange={() =>
-                              toggleAccess(user.user_id, user.pocketbot_full_access)
-                            }
+                          <Select
+                            value={user.pocketbot_access_type || (user.pocketbot_full_access ? 'free_full' : 'none')}
+                            onValueChange={(val) => setAccessType(user.user_id, val)}
                             disabled={updating === user.user_id}
-                          />
+                          >
+                            <SelectTrigger className="w-[160px] h-8 text-xs">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">No Access</SelectItem>
+                              <SelectItem value="free_full">Free Full</SelectItem>
+                              <SelectItem value="paid">Paid ($20/mo)</SelectItem>
+                            </SelectContent>
+                          </Select>
                           {updating === user.user_id && (
                             <Loader2 className="h-4 w-4 animate-spin" />
                           )}

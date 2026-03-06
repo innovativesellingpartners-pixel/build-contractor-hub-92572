@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS pocketbot_access_type text NOT NULL DEFAULT 'none';
