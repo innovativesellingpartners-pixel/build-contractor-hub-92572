@@ -191,33 +191,12 @@ export default function AdminCatalogImport() {
   const handleInsertSamples = useCallback(async () => {
     setInsertingSamples(true);
     try {
-      const now = new Date().toISOString();
-      const rows = SAMPLE_PRODUCTS.map((p) => ({
-        ...p,
-        source_type: "sample_data",
-        source_name: "admin_sample_insert",
-        last_synced_at: now,
-      }));
-
-      const BATCH = 20;
-      let inserted = 0;
-      let errors = 0;
-      for (let i = 0; i < rows.length; i += BATCH) {
-        const batch = rows.slice(i, i + BATCH);
-        const { error } = await supabase
-          .from("retailer_catalog")
-          .upsert(batch as any, { onConflict: "retailer,source_product_id" });
-        if (error) {
-          console.error("Sample insert error:", error);
-          errors += batch.length;
-        } else {
-          inserted += batch.length;
-        }
-      }
+      const adapter = createSampleDataAdapter();
+      const result = await adapter.ingest(SAMPLE_PRODUCTS as CatalogProduct[]);
 
       toast({
         title: "Sample data inserted",
-        description: `${inserted} products added across Lowe's and Home Depot. ${errors > 0 ? `${errors} errors.` : "Ready to test in AI chat!"}`,
+        description: `${result.inserted} products added across Lowe's and Home Depot. ${result.errors.length > 0 ? `${result.errors.length} errors.` : "Ready to test in AI chat!"}`,
       });
     } catch (err) {
       console.error("Sample insert failed:", err);
