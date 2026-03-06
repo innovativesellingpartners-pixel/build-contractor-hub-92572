@@ -4844,6 +4844,7 @@ export type Database = {
           logo_url: string | null
           online_payments_enabled: boolean | null
           phone: string | null
+          pocketbot_access_type: string
           pocketbot_full_access: boolean
           preferred_payment_provider: string | null
           qb_access_token: string | null
@@ -4894,6 +4895,7 @@ export type Database = {
           logo_url?: string | null
           online_payments_enabled?: boolean | null
           phone?: string | null
+          pocketbot_access_type?: string
           pocketbot_full_access?: boolean
           preferred_payment_provider?: string | null
           qb_access_token?: string | null
@@ -4944,6 +4946,7 @@ export type Database = {
           logo_url?: string | null
           online_payments_enabled?: boolean | null
           phone?: string | null
+          pocketbot_access_type?: string
           pocketbot_full_access?: boolean
           preferred_payment_provider?: string | null
           qb_access_token?: string | null
