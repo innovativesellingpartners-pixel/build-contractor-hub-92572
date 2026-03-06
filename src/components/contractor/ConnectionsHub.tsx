@@ -159,6 +159,7 @@ export function ConnectionsHub({ onNavigate }: ConnectionsHubProps) {
         emailRes,
         insuranceRes,
         voiceRes,
+        finixRes,
       ] = await Promise.all([
         supabase.from("bank_account_links").select("id").eq("user_id", user.id).limit(1),
         supabase.from("teller_connections").select("id").eq("user_id", user.id).eq("status", "active").limit(1),
