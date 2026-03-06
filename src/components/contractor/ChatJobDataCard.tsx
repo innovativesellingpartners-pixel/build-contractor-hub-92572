@@ -294,47 +294,47 @@ export function ChatJobDataCard({ data, onActionComplete }: ChatJobDataCardProps
 
           {/* Action Buttons */}
           {!showAddTo ? (
-            <div className="flex flex-col gap-1.5">
-              <div className="grid grid-cols-2 gap-1.5">
+            <div className="flex flex-col gap-1">
+              <div className="grid grid-cols-2 gap-1">
                 <Button
                   size="sm"
-                  className="h-8 text-[11px] px-2 min-w-0"
+                  className="h-7 text-[10px] px-1.5 min-w-0 gap-1"
                   onClick={handleCreateEstimate}
                   disabled={!!loading}
                 >
-                  {loading === 'estimate' ? <Loader2 className="h-3 w-3 animate-spin mr-1 flex-shrink-0" /> : <FileText className="h-3 w-3 mr-1 flex-shrink-0" />}
-                  <span className="truncate">Create Estimate</span>
+                  {loading === 'estimate' ? <Loader2 className="h-3 w-3 animate-spin flex-shrink-0" /> : <FileText className="h-3 w-3 flex-shrink-0" />}
+                  <span className="truncate">Estimate</span>
                 </Button>
                 <Button
                   size="sm"
-                  className="h-8 text-[11px] px-2 min-w-0"
+                  className="h-7 text-[10px] px-1.5 min-w-0 gap-1"
                   onClick={handleCreateJob}
                   disabled={!!loading}
                 >
-                  {loading === 'job' ? <Loader2 className="h-3 w-3 animate-spin mr-1 flex-shrink-0" /> : <Briefcase className="h-3 w-3 mr-1 flex-shrink-0" />}
-                  <span className="truncate">Create Job</span>
+                  {loading === 'job' ? <Loader2 className="h-3 w-3 animate-spin flex-shrink-0" /> : <Briefcase className="h-3 w-3 flex-shrink-0" />}
+                  <span className="truncate">Job</span>
                 </Button>
               </div>
-              <div className="grid grid-cols-2 gap-1.5">
+              <div className="grid grid-cols-2 gap-1">
                 <Button
                   size="sm"
                   variant="outline"
-                  className="h-7 text-[11px] px-2 min-w-0"
+                  className="h-6 text-[10px] px-1.5 min-w-0 gap-1"
                   onClick={() => handleShowAddTo('estimate')}
                   disabled={!!loading}
                 >
-                  <Plus className="h-3 w-3 mr-1 flex-shrink-0" />
-                  <span className="truncate">Add to Estimate</span>
+                  <Plus className="h-2.5 w-2.5 flex-shrink-0" />
+                  <span className="truncate">+ Estimate</span>
                 </Button>
                 <Button
                   size="sm"
                   variant="outline"
-                  className="h-7 text-[11px] px-2 min-w-0"
+                  className="h-6 text-[10px] px-1.5 min-w-0 gap-1"
                   onClick={() => handleShowAddTo('job')}
                   disabled={!!loading}
                 >
-                  <Plus className="h-3 w-3 mr-1 flex-shrink-0" />
-                  <span className="truncate">Add to Job</span>
+                  <Plus className="h-2.5 w-2.5 flex-shrink-0" />
+                  <span className="truncate">+ Job</span>
                 </Button>
               </div>
             </div>
