@@ -231,7 +231,7 @@ export function ChatJobDataCard({ data, onActionComplete }: ChatJobDataCardProps
   };
 
   return (
-    <div className="mt-2 rounded-lg border border-border bg-card p-2.5 space-y-2 text-xs overflow-hidden max-w-full">
+    <div className="mt-2 rounded-lg border border-border bg-card p-2 space-y-2 text-xs overflow-hidden w-full box-border">
       {/* Header */}
       <button
         onClick={() => setExpanded(!expanded)}
