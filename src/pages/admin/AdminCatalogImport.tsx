@@ -107,6 +107,7 @@ export default function AdminCatalogImport() {
   const [importing, setImporting] = useState(false);
   const [summary, setSummary] = useState<ImportSummary | null>(null);
   const [insertingSamples, setInsertingSamples] = useState(false);
+  const [reseedingSamples, setReseedingSamples] = useState(false);
 
   // Step tracking
   const step = useMemo(() => {
