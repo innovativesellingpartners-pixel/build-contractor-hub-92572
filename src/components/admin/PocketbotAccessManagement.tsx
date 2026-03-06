@@ -207,18 +207,25 @@ export const PocketAgentAccessManagement = () => {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          {user.pocketbot_full_access ? (
+                          {user.pocketbot_access_type === 'paid' ? (
                             <>
                               <CheckCircle className="h-4 w-4 text-green-500" />
                               <span className="text-sm font-medium text-green-600 dark:text-green-400">
-                                Full Access
+                                Paid ($20/mo)
+                              </span>
+                            </>
+                          ) : user.pocketbot_access_type === 'free_full' || user.pocketbot_full_access ? (
+                            <>
+                              <CheckCircle className="h-4 w-4 text-blue-500" />
+                              <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                                Free Full Access
                               </span>
                             </>
                           ) : (
                             <>
                               <XCircle className="h-4 w-4 text-muted-foreground" />
                               <span className="text-sm text-muted-foreground">
-                                Limited Access
+                                Limited
                               </span>
                             </>
                           )}
@@ -226,13 +233,20 @@ export const PocketAgentAccessManagement = () => {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <Switch
-                            checked={user.pocketbot_full_access}
-                            onCheckedChange={() =>
-                              toggleAccess(user.user_id, user.pocketbot_full_access)
-                            }
+                          <Select
+                            value={user.pocketbot_access_type || (user.pocketbot_full_access ? 'free_full' : 'none')}
+                            onValueChange={(val) => setAccessType(user.user_id, val)}
                             disabled={updating === user.user_id}
-                          />
+                          >
+                            <SelectTrigger className="w-[160px] h-8 text-xs">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">No Access</SelectItem>
+                              <SelectItem value="free_full">Free Full</SelectItem>
+                              <SelectItem value="paid">Paid ($20/mo)</SelectItem>
+                            </SelectContent>
+                          </Select>
                           {updating === user.user_id && (
                             <Loader2 className="h-4 w-4 animate-spin" />
                           )}
