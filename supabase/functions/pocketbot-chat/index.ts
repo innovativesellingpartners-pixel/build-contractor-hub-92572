@@ -689,19 +689,22 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
             const args = JSON.parse(argsStr);
             console.log("Searching products:", args);
             
-            // Query retailer_products directly
+            // Query retailer_catalog
             let query = supabase
-              .from('retailer_products')
-              .select('brand, model, title, price, inventory_status, product_url, image_url, efficiency_afue, btu_input, fuel_type, last_synced_at')
-              .eq('retailer', args.retailer || 'lowes')
-              .eq('category', args.category || 'furnaces')
+              .from('retailer_catalog')
+              .select('retailer, brand, model, title, description, category, subcategory, trade, price, unit_of_measure, size_text, material, inventory_status, product_url, image_url, last_synced_at, spec_attributes')
               .order('price', { ascending: true })
               .limit(Math.min(args.limit || 10, 50));
 
-            if (args.max_price) query = query.lte('price', args.max_price);
+            if (args.retailer) query = query.eq('retailer', args.retailer);
+            if (args.category) query = query.ilike('category', `%${args.category}%`);
+            if (args.subcategory) query = query.ilike('subcategory', `%${args.subcategory}%`);
+            if (args.trade) query = query.ilike('trade', `%${args.trade}%`);
             if (args.brand) query = query.ilike('brand', `%${args.brand}%`);
-            if (args.fuel_type) query = query.ilike('fuel_type', `%${args.fuel_type}%`);
-            if (args.min_afue) query = query.gte('efficiency_afue', args.min_afue);
+            if (args.material_type) query = query.ilike('material', `%${args.material_type}%`);
+            if (args.max_price) query = query.lte('price', args.max_price);
+            if (args.min_price) query = query.gte('price', args.min_price);
+            if (args.search_term) query = query.ilike('title', `%${args.search_term}%`);
 
             const { data: products, error: queryError } = await query;
             
@@ -718,11 +721,15 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
             }
 
             if (!products || products.length === 0) {
-              let noResultsMsg = "I searched the Lowe's product catalog but didn't find any matching furnaces";
-              if (args.brand) noResultsMsg += ` from ${args.brand}`;
+              let noResultsMsg = "I searched the contractor materials catalog but didn't find any matching products";
+              if (args.retailer) {
+                const retailerName = args.retailer === 'lowes' ? "Lowe's" : args.retailer === 'home_depot' ? 'Home Depot' : args.retailer;
+                noResultsMsg += ` from ${retailerName}`;
+              }
+              if (args.category) noResultsMsg += ` in ${args.category}`;
+              if (args.brand) noResultsMsg += ` by ${args.brand}`;
               if (args.max_price) noResultsMsg += ` under $${args.max_price}`;
-              if (args.min_afue) noResultsMsg += ` with ${args.min_afue}%+ AFUE`;
-              noResultsMsg += ". This could mean our catalog hasn't been synced yet, or no products match those filters. Try broadening your search or ask an admin to sync the latest data.";
+              noResultsMsg += ". The catalog may not have been loaded yet, or no products match those filters. Try broadening your search or ask an admin to load sample catalog data.";
               
               return new Response(
                 JSON.stringify({ 
@@ -734,10 +741,18 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
               );
             }
 
-            let summaryMsg = `Here are ${products.length} furnace${products.length !== 1 ? 's' : ''} from Lowe's`;
+            // Build summary
+            let summaryMsg = `Here are ${products.length} product${products.length !== 1 ? 's' : ''}`;
+            const retailers = [...new Set(products.map((p: any) => p.retailer))];
+            if (retailers.length === 1) {
+              const rName = retailers[0] === 'lowes' ? "Lowe's" : retailers[0] === 'home_depot' ? 'Home Depot' : retailers[0];
+              summaryMsg += ` from ${rName}`;
+            } else if (retailers.length > 1) {
+              summaryMsg += ` from multiple retailers`;
+            }
+            if (args.category) summaryMsg += ` in ${args.category}`;
             if (args.brand) summaryMsg += ` by ${args.brand}`;
             if (args.max_price) summaryMsg += ` under $${args.max_price.toLocaleString()}`;
-            if (args.min_afue) summaryMsg += ` with ${args.min_afue}%+ AFUE efficiency`;
             summaryMsg += ':';
 
             return new Response(
