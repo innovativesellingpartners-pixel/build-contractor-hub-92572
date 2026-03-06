@@ -268,6 +268,26 @@ serve(async (req) => {
       {
         type: "function",
         function: {
+          name: "search_products",
+          description: "Search the product catalog for equipment and materials from retailers like Lowe's. Use this when the user asks for product listings, pricing, or comparisons from specific retailers. Currently supports furnaces from Lowe's. Parse filters like brand, max price, fuel type, minimum AFUE efficiency from the user's message.",
+          parameters: {
+            type: "object",
+            properties: {
+              retailer: { type: "string", description: "Retailer name, e.g. 'lowes'. Default: 'lowes'", enum: ["lowes"] },
+              category: { type: "string", description: "Product category, e.g. 'furnaces'. Default: 'furnaces'", enum: ["furnaces"] },
+              max_price: { type: "number", description: "Maximum price filter" },
+              brand: { type: "string", description: "Brand name filter e.g. 'Goodman', 'Winchester'" },
+              fuel_type: { type: "string", description: "Fuel type filter e.g. 'natural_gas', 'propane', 'electric'" },
+              min_afue: { type: "number", description: "Minimum AFUE efficiency rating filter e.g. 90, 95" },
+              limit: { type: "number", description: "Max results to return, default 10" }
+            },
+            required: []
+          }
+        }
+      },
+      {
+        type: "function",
+        function: {
           name: "add_task",
           description: "Add a task to the user's personal task list. Use this when the user says things like 'add a task', 'remind me to', 'I need to', 'create a task for', 'add to my tasks', 'make a note to', etc.",
           parameters: {
