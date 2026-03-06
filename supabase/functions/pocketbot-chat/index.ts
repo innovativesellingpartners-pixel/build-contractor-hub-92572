@@ -232,6 +232,42 @@ serve(async (req) => {
       {
         type: "function",
         function: {
+          name: "extract_job_data",
+          description: "Extract structured job/estimate data from the user's message. Use this whenever the user mentions specific pricing, materials with quantities, labor hours/rates, customer details (name, phone, email, address), or asks to build/create an estimate or job from the conversation. Return ALL parsed data so the user can choose to create an estimate, create a job, or add to an existing one.",
+          parameters: {
+            type: "object",
+            properties: {
+              line_items: {
+                type: "array",
+                description: "Parsed line items from the conversation",
+                items: {
+                  type: "object",
+                  properties: {
+                    description: { type: "string", description: "Item description e.g. '4x8 drywall sheets'" },
+                    quantity: { type: "number", description: "Quantity" },
+                    unit: { type: "string", description: "Unit of measure e.g. 'ea', 'hr', 'sq ft', 'lf'" },
+                    unit_price: { type: "number", description: "Price per unit in dollars" },
+                    category: { type: "string", enum: ["labor", "material", "subcontractor", "equipment", "other"], description: "Item category" }
+                  },
+                  required: ["description", "quantity", "unit", "unit_price", "category"]
+                }
+              },
+              customer_name: { type: "string", description: "Customer name if mentioned" },
+              customer_email: { type: "string", description: "Customer email if mentioned" },
+              customer_phone: { type: "string", description: "Customer phone if mentioned" },
+              customer_address: { type: "string", description: "Customer address if mentioned" },
+              project_name: { type: "string", description: "Project name if mentioned" },
+              project_description: { type: "string", description: "Project description if mentioned" },
+              project_address: { type: "string", description: "Project/job site address if mentioned" },
+              notes: { type: "string", description: "Any additional notes or context" }
+            },
+            required: ["line_items"]
+          }
+        }
+      },
+      {
+        type: "function",
+        function: {
           name: "add_task",
           description: "Add a task to the user's personal task list. Use this when the user says things like 'add a task', 'remind me to', 'I need to', 'create a task for', 'add to my tasks', 'make a note to', etc.",
           parameters: {
