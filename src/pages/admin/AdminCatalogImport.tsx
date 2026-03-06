@@ -296,8 +296,8 @@ export default function AdminCatalogImport() {
             Insert {SAMPLE_PRODUCTS.length} realistic sample products across Lowe's and Home Depot covering drywall, lumber, plywood, OSB, electrical, plumbing, roofing, concrete, paint, fasteners, HVAC, and more. Perfect for testing the AI chat before live imports are ready.
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <Button onClick={handleInsertSamples} disabled={insertingSamples}>
+        <CardContent className="flex gap-3 flex-wrap">
+          <Button onClick={handleInsertSamples} disabled={insertingSamples || reseedingSamples}>
             {insertingSamples ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -307,6 +307,19 @@ export default function AdminCatalogImport() {
               <>
                 <Package className="h-4 w-4 mr-2" />
                 Insert Sample Product Data
+              </>
+            )}
+          </Button>
+          <Button variant="outline" onClick={handleReseedSamples} disabled={insertingSamples || reseedingSamples}>
+            {reseedingSamples ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Reseeding…
+              </>
+            ) : (
+              <>
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Refresh / Reseed Sample Data
               </>
             )}
           </Button>
