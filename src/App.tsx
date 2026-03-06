@@ -52,6 +52,7 @@ import { PocketAgentAccessManagement } from "@/components/admin/PocketbotAccessM
 import { HelpAdmin } from "@/components/admin/HelpAdmin";
 import { ContractorOnboarding } from "@/components/admin/ContractorOnboarding";
 import ArchiveManagement from "@/components/admin/ArchiveManagement";
+import AdminCatalogImport from "@/pages/admin/AdminCatalogImport";
 import AdminUserProfileEdit from "@/pages/AdminUserProfileEdit";
 import { BusinessSuite } from "@/pages/BusinessSuite";
 import { Training } from "@/pages/features/Training";
