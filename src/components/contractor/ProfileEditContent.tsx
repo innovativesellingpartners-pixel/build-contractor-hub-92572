@@ -263,7 +263,7 @@ export function ProfileEditContent({ targetUserId }: ProfileEditContentProps = {
 
       if (error) throw error;
 
-      await refreshProfile();
+      if (!isAdminEditing) await refreshProfile();
 
       toast({
         title: "Saved",
