@@ -148,6 +148,23 @@ function getTierFeatures(tierId: string | null, hasFullAccess: boolean) {
     };
   }
 
+  // Free tier - full platform access (no billing, no admin)
+  if (tierId === 'free') {
+    return {
+      trainingHub: true,
+      crm: true,
+      monthlyCall: true,
+      insurance: true,
+      podcast: true,
+      standards: true,
+      myAccount: true,
+      home: true,
+      leads: true,
+      aiAssistant: true,
+      marketplace: true,
+    };
+  }
+
   if (tierId === 'growth' || tierId === 'accel') {
     return {
       trainingHub: true,
