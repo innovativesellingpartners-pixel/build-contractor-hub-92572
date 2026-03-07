@@ -51,6 +51,7 @@ import { StarRating } from "@/components/contractor/StarRating";
 import { AccountDocuments } from "@/components/contractor/AccountDocuments";
 import { FloatingPocketAgent } from "@/components/contractor/FloatingPocketbot";
 import { ContactSupport } from "@/components/ContactSupport";
+import { ChangePasswordCard } from "@/components/contractor/ChangePasswordCard";
 
 import { BottomNav } from "@/components/contractor/crm/BottomNav";
 import { BackNavigation } from "@/components/contractor/crm/BackNavigation";
@@ -636,6 +637,9 @@ export function Dashboard() {
                             Manage
                           </Button>
                         </div>
+
+                        {/* Change Password */}
+                        <ChangePasswordCard />
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                           {/* Account Information Card */}
