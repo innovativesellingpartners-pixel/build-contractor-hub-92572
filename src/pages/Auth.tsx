@@ -61,32 +61,41 @@ export function Auth() {
         if (sub) {
           // For paying Google users, check if they have Gmail/Calendar connections
           const isOAuthUser = user.app_metadata?.provider === "google" || user.app_metadata?.providers?.includes("google");
+          console.log('[Auth] Paying user detected. isOAuthUser:', isOAuthUser, 'provider:', user.app_metadata?.provider, 'providers:', user.app_metadata?.providers);
+          
           if (isOAuthUser) {
-            const [{ data: emailConn }, { data: calConn }] = await Promise.all([
-              supabase.from("email_connections").select("id").eq("user_id", user.id).eq("provider", "google").maybeSingle(),
-              supabase.from("calendar_connections").select("id").eq("user_id", user.id).eq("provider", "google").maybeSingle(),
-            ]);
-            
-            if (!emailConn || !calConn) {
-              try {
-                const { data: sessionData } = await supabase.auth.getSession();
-                const accessToken = sessionData?.session?.access_token;
-                if (accessToken) {
+            // Check if already prompted this session to avoid infinite redirect loops
+            const alreadyPrompted = sessionStorage.getItem('ct1_oauth_connect_prompted');
+            if (!alreadyPrompted) {
+              const [{ data: emailConn }, { data: calConn }] = await Promise.all([
+                supabase.from("email_connections").select("id").eq("user_id", user.id).eq("provider", "google").maybeSingle(),
+                supabase.from("calendar_connections").select("id").eq("user_id", user.id).eq("provider", "google").maybeSingle(),
+              ]);
+              
+              console.log('[Auth] Connection check — email:', !!emailConn, 'calendar:', !!calConn);
+              
+              if (!emailConn || !calConn) {
+                try {
+                  console.log('[Auth] Missing connections, invoking google-oauth-init-combined...');
+                  sessionStorage.setItem('ct1_oauth_connect_prompted', 'true');
+                  
                   const { data: oauthData, error: oauthError } = await supabase.functions.invoke(
                     'google-oauth-init-combined',
-                    {
-                      body: {},
-                      headers: { Authorization: `Bearer ${accessToken}` },
-                    }
+                    { body: {} }
                   );
+                  
+                  console.log('[Auth] Combined OAuth response:', { oauthData, oauthError });
+                  
                   if (!oauthError && oauthData?.url) {
                     sessionStorage.setItem('ct1_post_oauth_redirect', '/dashboard');
                     window.location.href = oauthData.url;
                     return;
+                  } else {
+                    console.warn('[Auth] Combined OAuth init failed:', oauthError);
                   }
+                } catch (err) {
+                  console.error('[Auth] Auto-connect error:', err);
                 }
-              } catch {
-                // Silently fail — user can connect later from Connections Hub
               }
             }
           }
