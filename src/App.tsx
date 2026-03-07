@@ -21,6 +21,7 @@ import { ContractorCRMGuide } from "@/pages/blog/ContractorCRMGuide";
 import { ContractorCrmSoftware } from "@/pages/ContractorCrmSoftware";
 import { ContractorEstimatingSoftware } from "@/pages/ContractorEstimatingSoftware";
 import { AiAnsweringServiceForContractors } from "@/pages/AiAnsweringServiceForContractors";
+import { ForgeAiInvoiceAssistant } from "@/pages/ForgeAiInvoiceAssistant";
 import { Privacy } from "@/pages/Privacy";
 import { Terms } from "@/pages/Terms";
 import { Dashboard } from "@/components/Dashboard";
@@ -200,6 +201,7 @@ const App = () => (
             <Route path="/contractor-crm-software" element={<ContractorCrmSoftware />} />
             <Route path="/contractor-estimating-software" element={<ContractorEstimatingSoftware />} />
             <Route path="/ai-answering-service-for-contractors" element={<AiAnsweringServiceForContractors />} />
+            <Route path="/forge-ai-invoice-assistant" element={<ForgeAiInvoiceAssistant />} />
             <Route path="/trial-signup" element={<TrialSignup />} />
             <Route path="/bot-signup" element={<BotSignup />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
