@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Home, Mail, Lock, User, Phone, ChevronDown, ChevronUp } from "lucide-react";
+import { Home, Mail, Lock, User, Phone, ChevronDown, ChevronUp, Chrome } from "lucide-react";
 import ct1Logo from "@/assets/ct1-round-logo-new.png";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect } from "react";
