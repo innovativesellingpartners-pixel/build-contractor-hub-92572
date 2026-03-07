@@ -299,20 +299,28 @@ export function Auth() {
                         setError("");
                         try {
                           if (isCustomDomain) {
+                            // On custom domains, bypass the auth-bridge to avoid redirect to preview URL
                             const { data, error } = await supabase.auth.signInWithOAuth({
                               provider: "google",
                               options: {
-                                redirectTo: window.location.origin + "/auth",
+                                redirectTo: window.location.origin + "/dashboard",
                                 skipBrowserRedirect: true,
                               },
                             });
                             if (error) {
                               setError(error.message || "Google sign-in failed");
                             } else if (data?.url) {
+                              // Validate the OAuth URL before redirecting
+                              const oauthUrl = new URL(data.url);
+                              const allowedHosts = ["accounts.google.com", `${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co`];
+                              if (!allowedHosts.some((host) => oauthUrl.hostname.includes(host))) {
+                                throw new Error("Invalid OAuth redirect URL");
+                              }
                               window.location.href = data.url;
                               return;
                             }
                           } else {
+                            // On Lovable preview domains, use the managed auth bridge
                             const { error } = await lovable.auth.signInWithOAuth("google", {
                               redirect_uri: window.location.origin + "/auth",
                             });
@@ -320,8 +328,8 @@ export function Auth() {
                               setError(error.message || "Google sign-in failed");
                             }
                           }
-                        } catch (err) {
-                          setError("Google sign-in failed");
+                        } catch (err: any) {
+                          setError(err?.message || "Google sign-in failed");
                         } finally {
                           setGoogleLoading(false);
                         }
