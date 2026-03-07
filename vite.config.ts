@@ -34,6 +34,7 @@ function generateSitemapPlugin(): Plugin {
     { loc: "/legal/terms", changefreq: "yearly", priority: "0.3" },
     { loc: "/auth", changefreq: "monthly", priority: "0.6" },
     { loc: "/trial-signup", changefreq: "monthly", priority: "0.8" },
+    { loc: "/contractor-crm-software", changefreq: "monthly", priority: "0.8" },
   ];
 
   return {
