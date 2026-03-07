@@ -35,6 +35,43 @@ export function Auth() {
     }
   }, [user, navigate]);
 
+  // On mount: complete any pending OAuth callback (user returning from Google)
+  useEffect(() => {
+    const completeOAuthCallback = async () => {
+      // Check if URL has OAuth callback indicators (code, state params, or hash tokens)
+      const params = new URLSearchParams(window.location.search);
+      const hash = window.location.hash;
+      const hasCallbackParams = params.has('code') || params.has('state') || hash.includes('access_token');
+      
+      if (!hasCallbackParams) return;
+      
+      console.log('OAuth callback detected, completing sign-in...');
+      setGoogleLoading(true);
+      
+      try {
+        const { error } = await lovable.auth.signInWithOAuth("google", {
+          redirect_uri: window.location.origin + "/auth",
+        });
+        
+        if (error) {
+          console.error('OAuth callback completion error:', error);
+          setError(error.message || "Google sign-in failed to complete");
+        } else {
+          console.log('OAuth callback completed successfully');
+          // Clean up URL params
+          window.history.replaceState({}, '', '/auth');
+        }
+      } catch (err) {
+        console.error('OAuth callback exception:', err);
+        setError("Google sign-in failed to complete");
+      } finally {
+        setGoogleLoading(false);
+      }
+    };
+    
+    completeOAuthCallback();
+  }, []);
+
   // Listen for password recovery event to show new password form
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
