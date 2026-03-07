@@ -195,6 +195,7 @@ const App = () => (
           <Route path="/review/:jobId" element={<PublicReview />} />
           <Route path="/portal/:token" element={<CustomerPortal />} />
             <Route path="/pricing" element={<Pricing />} />
+            <Route path="/contractor-crm-software" element={<ContractorCrmSoftware />} />
             <Route path="/trial-signup" element={<TrialSignup />} />
             <Route path="/bot-signup" element={<BotSignup />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
