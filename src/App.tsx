@@ -20,6 +20,7 @@ import { BlogPodcast } from "@/pages/BlogPodcast";
 import { ContractorCRMGuide } from "@/pages/blog/ContractorCRMGuide";
 import { ContractorCrmSoftware } from "@/pages/ContractorCrmSoftware";
 import { ContractorEstimatingSoftware } from "@/pages/ContractorEstimatingSoftware";
+import { AiAnsweringServiceForContractors } from "@/pages/AiAnsweringServiceForContractors";
 import { Privacy } from "@/pages/Privacy";
 import { Terms } from "@/pages/Terms";
 import { Dashboard } from "@/components/Dashboard";
@@ -198,6 +199,7 @@ const App = () => (
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/contractor-crm-software" element={<ContractorCrmSoftware />} />
             <Route path="/contractor-estimating-software" element={<ContractorEstimatingSoftware />} />
+            <Route path="/ai-answering-service-for-contractors" element={<AiAnsweringServiceForContractors />} />
             <Route path="/trial-signup" element={<TrialSignup />} />
             <Route path="/bot-signup" element={<BotSignup />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
