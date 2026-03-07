@@ -28,8 +28,23 @@ export function Auth() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const { signIn, signUp, user, resetPassword } = useAuth();
 
+  // Detect custom domain (not lovable preview/localhost)
+  const isCustomDomain =
+    !window.location.hostname.includes("lovable.app") &&
+    !window.location.hostname.includes("lovableproject.com") &&
+    !window.location.hostname.includes("localhost");
 
-  // Redirect if already logged in — check subscription status first
+  // On mount: detect OAuth error params in URL and display them
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const oauthError = params.get("error_description") || params.get("error");
+    if (oauthError) {
+      setError(decodeURIComponent(oauthError));
+      // Clean up URL
+      window.history.replaceState({}, "", "/auth");
+    }
+  }, []);
+
   useEffect(() => {
     if (!user) return;
 
