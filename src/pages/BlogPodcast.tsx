@@ -94,116 +94,121 @@ export const BlogPodcast = () => {
         </div>
       </section>
 
-      {/* Featured Podcast Video — Compact */}
+      {/* Podcast + Featured Newsletter - Side by Side */}
       <section className="py-10 bg-muted/30">
         <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                <Play className="h-4 w-4 text-primary" />
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Left - Podcast */}
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Play className="h-4 w-4 text-primary" />
+                </div>
+                <h2 className="text-lg font-semibold">Featured Episode</h2>
               </div>
-              <h2 className="text-lg font-semibold">Featured Episode</h2>
-            </div>
-            <Card className="overflow-hidden border-border">
-              <div className="aspect-video max-h-[380px] relative">
-                {isVideoPlaying ? (
-                  <iframe
-                    src="https://drive.google.com/file/d/1YIwwe3zaeu9Mcj4ftMuw3Kwu6PGdov2M/preview?t=784s"
-                    className="w-full h-full"
-                    allow="autoplay"
-                    title="CT1 Featured Episode"
-                  />
-                ) : (
-                  <button
-                    onClick={() => setIsVideoPlaying(true)}
-                    className="w-full h-full relative group cursor-pointer"
-                  >
-                    <img
-                      src={podcastThumbnail}
-                      alt="CT1 Podcast - Click to play"
-                      className="w-full h-full object-cover"
+              <Card className="overflow-hidden border-border h-[calc(100%-44px)]">
+                <div className="aspect-video relative">
+                  {isVideoPlaying ? (
+                    <iframe
+                      src="https://drive.google.com/file/d/1YIwwe3zaeu9Mcj4ftMuw3Kwu6PGdov2M/preview?t=784s"
+                      className="w-full h-full"
+                      allow="autoplay"
+                      title="CT1 Featured Episode"
                     />
-                    <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors flex items-center justify-center">
-                      <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center group-hover:scale-110 transition-transform shadow-xl">
-                        <Play className="h-7 w-7 text-primary-foreground ml-0.5" />
+                  ) : (
+                    <button
+                      onClick={() => setIsVideoPlaying(true)}
+                      className="w-full h-full relative group cursor-pointer"
+                    >
+                      <img
+                        src={podcastThumbnail}
+                        alt="CT1 Podcast - Click to play"
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors flex items-center justify-center">
+                        <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center group-hover:scale-110 transition-transform shadow-xl">
+                          <Play className="h-7 w-7 text-primary-foreground ml-0.5" />
+                        </div>
+                      </div>
+                    </button>
+                  )}
+                </div>
+                {/* Upcoming Episodes */}
+                <div className="p-4 space-y-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Mic className="h-4 w-4 text-primary" />
+                    <p className="text-sm font-semibold">Upcoming Episodes</p>
+                  </div>
+                  {podcastEpisodes.map((episode, index) => (
+                    <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 border border-border">
+                      <div className="h-8 w-8 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
+                        <Youtube className="h-4 w-4 text-primary" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-medium leading-snug line-clamp-1">{episode.title}</p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">{episode.date}</p>
                       </div>
                     </div>
-                  </button>
-                )}
-              </div>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Upcoming Episodes — Horizontal */}
-      <section className="py-8 border-b border-border">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center gap-2 mb-5">
-            <Mic className="h-5 w-5 text-primary" />
-            <h2 className="text-base font-semibold">Upcoming Episodes</h2>
-          </div>
-          <div className="grid sm:grid-cols-3 gap-4">
-            {podcastEpisodes.map((episode, index) => (
-              <div key={index} className="flex items-start gap-3 p-4 rounded-xl bg-muted/50 border border-border">
-                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                  <Youtube className="h-5 w-5 text-primary" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-sm font-medium leading-snug line-clamp-2">{episode.title}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{episode.date}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Featured Newsletter */}
-      <section className="py-10">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <div className="flex items-center gap-2 mb-5">
-              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                <FileText className="h-4 w-4 text-primary" />
-              </div>
-              <h2 className="text-lg font-semibold">Featured Newsletter</h2>
-            </div>
-            <Link to="/blog/contractor-crm-guide" className="no-underline group block">
-              <Card className="overflow-hidden border-border hover:border-primary/30 hover:shadow-xl transition-all duration-300">
-                <div className="md:flex">
-                  <div className="md:w-2/5 relative bg-gradient-to-br from-[hsl(0,0%,8%)] via-[hsl(0,72%,12%)] to-[hsl(0,0%,10%)] flex items-center justify-center p-8 md:p-10">
-                    <div className="text-center">
-                      <img src={ct1Logo} alt="CT1" className="h-14 w-14 mx-auto mb-4 drop-shadow-xl" />
-                      <span className="text-[10px] uppercase tracking-[0.2em] text-primary font-semibold">Business Tools</span>
-                      <p className="text-white/40 text-xs mt-2">By Patrick Montgomery · 12 min read</p>
-                    </div>
-                  </div>
-                  <div className="md:w-3/5 p-6 md:p-8 flex flex-col justify-center">
-                    <h3 className="text-xl md:text-2xl font-bold group-hover:text-primary transition-colors leading-tight mb-3">
-                      Running a Modern Contractor Business — The Complete Guide
-                    </h3>
-                    <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
-                      Why every growing contractor needs a single platform, and how choosing the right one can put more money in your bank, more time with your family, and more strength back into your community.
-                    </p>
-                    <div className="flex flex-wrap gap-4 text-xs text-muted-foreground mb-4">
-                      <span className="flex items-center gap-1"><span className="text-primary font-bold text-base">68%</span> lost revenue from disconnected tools</span>
-                      <span className="flex items-center gap-1"><span className="text-primary font-bold text-base">11hrs</span> wasted weekly on admin</span>
-                      <span className="flex items-center gap-1"><span className="text-primary font-bold text-base">3×</span> faster growth with integrated platforms</span>
-                    </div>
-                    <span className="inline-flex items-center gap-1.5 text-sm text-primary font-semibold group-hover:gap-2.5 transition-all">
-                      Read the Full Newsletter <ArrowRight className="h-4 w-4" />
-                    </span>
-                  </div>
+                  ))}
                 </div>
               </Card>
-            </Link>
+            </div>
+
+            {/* Right - Featured Newsletter */}
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                  <FileText className="h-4 w-4 text-primary" />
+                </div>
+                <h2 className="text-lg font-semibold">Featured Newsletter</h2>
+              </div>
+              <Link to="/blog/contractor-crm-guide" className="no-underline group block h-[calc(100%-44px)]">
+                <Card className="overflow-hidden border-border hover:border-primary/30 hover:shadow-xl transition-all duration-300 h-full flex flex-col">
+                  <div className="relative bg-gradient-to-br from-[hsl(0,0%,8%)] via-[hsl(0,72%,12%)] to-[hsl(0,0%,10%)] flex items-center justify-center p-8">
+                    <div className="text-center">
+                      <img src={ct1Logo} alt="CT1" className="h-12 w-12 mx-auto mb-3 drop-shadow-xl" />
+                      <span className="text-[10px] uppercase tracking-[0.2em] text-primary font-semibold">Business Tools</span>
+                    </div>
+                  </div>
+                  <div className="p-6 flex flex-col justify-between flex-1">
+                    <div>
+                      <h3 className="text-xl font-bold group-hover:text-primary transition-colors leading-tight mb-3">
+                        Running a Modern Contractor Business: The Complete Guide
+                      </h3>
+                      <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
+                        Why every growing contractor needs a single platform, and how choosing the right one can put more money in your bank, more time with your family, and more strength back into your community.
+                      </p>
+                      <div className="grid grid-cols-3 gap-3 mb-4">
+                        <div className="text-center p-2 rounded-lg bg-muted/50 border border-border">
+                          <span className="text-primary font-bold text-lg block">68%</span>
+                          <span className="text-[10px] text-muted-foreground">lost revenue</span>
+                        </div>
+                        <div className="text-center p-2 rounded-lg bg-muted/50 border border-border">
+                          <span className="text-primary font-bold text-lg block">11hrs</span>
+                          <span className="text-[10px] text-muted-foreground">wasted weekly</span>
+                        </div>
+                        <div className="text-center p-2 rounded-lg bg-muted/50 border border-border">
+                          <span className="text-primary font-bold text-lg block">3×</span>
+                          <span className="text-[10px] text-muted-foreground">faster growth</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs text-muted-foreground">By Patrick Montgomery · 12 min read</p>
+                      <span className="inline-flex items-center gap-1.5 text-sm text-primary font-semibold group-hover:gap-2.5 transition-all">
+                        Read <ArrowRight className="h-4 w-4" />
+                      </span>
+                    </div>
+                  </div>
+                </Card>
+              </Link>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Blog Articles */}
-      <section className="py-12 border-t border-border">
+      <section className="py-12">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
             <div>
