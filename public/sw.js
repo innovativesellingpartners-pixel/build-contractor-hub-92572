@@ -7,7 +7,8 @@ const EXCLUDED_URLS = [
   '/auth/',
   '/rest/v1/',
   '/storage/v1/',
-  '/functions/v1/'
+  '/functions/v1/',
+  '/~oauth'
 ];
 
 function shouldBypassCache(url) {
