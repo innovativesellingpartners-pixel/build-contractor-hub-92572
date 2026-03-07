@@ -18,6 +18,7 @@ import { CoreValues } from "@/pages/CoreValues";
 import { TradesWeServe } from "@/pages/TradesWeServe";
 import { BlogPodcast } from "@/pages/BlogPodcast";
 import { ContractorCRMGuide } from "@/pages/blog/ContractorCRMGuide";
+import { ContractorCrmSoftware } from "@/pages/ContractorCrmSoftware";
 import { Privacy } from "@/pages/Privacy";
 import { Terms } from "@/pages/Terms";
 import { Dashboard } from "@/components/Dashboard";
