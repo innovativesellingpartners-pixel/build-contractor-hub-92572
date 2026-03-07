@@ -151,6 +151,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setTimeout(() => {
             fetchProfile(session.user.id);
           }, 0);
+          // Auto-connect Google services on OAuth sign-in
+          if (event === 'SIGNED_IN') {
+            setTimeout(() => attemptGoogleAutoConnect(session), 500);
+          }
         } else {
           setProfile(null);
         }
