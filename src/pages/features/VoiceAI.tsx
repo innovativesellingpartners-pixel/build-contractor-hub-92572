@@ -211,6 +211,9 @@ export default function VoiceAI() {
               </Button>
             </Link>
           </div>
+          <p className="mt-6 text-sm opacity-80">
+            Learn more: <Link to="/ai-answering-service-for-contractors" className="underline hover:opacity-100">AI Answering Service for Contractors</Link> · <Link to="/contractor-crm-software" className="underline hover:opacity-100">CRM Software</Link> · <Link to="/forge-ai-invoice-assistant" className="underline hover:opacity-100">AI Invoice Assistant</Link>
+          </p>
         </div>
       </section>
 

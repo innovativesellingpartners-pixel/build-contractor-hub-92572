@@ -6,7 +6,7 @@ export function PublicFooter() {
   return (
     <footer className="bg-foreground text-background py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
             <div className="flex items-center space-x-3 mb-4">
@@ -30,6 +30,17 @@ export function PublicFooter() {
               <li><Link to="/products/pocket-agent" className="hover:text-primary transition-colors">Pocket Agent</Link></li>
               <li><Link to="/products/voice-ai" className="hover:text-primary transition-colors">Voice AI</Link></li>
               <li><Link to="/savings" className="hover:text-primary transition-colors">Savings</Link></li>
+            </ul>
+          </div>
+
+          {/* Resources */}
+          <div>
+            <h4 className="font-semibold text-background mb-4">Resources</h4>
+            <ul className="space-y-2 text-sm text-background/70">
+              <li><Link to="/contractor-crm-software" className="hover:text-primary transition-colors">Contractor CRM</Link></li>
+              <li><Link to="/contractor-estimating-software" className="hover:text-primary transition-colors">Estimating Software</Link></li>
+              <li><Link to="/ai-answering-service-for-contractors" className="hover:text-primary transition-colors">AI Answering Service</Link></li>
+              <li><Link to="/forge-ai-invoice-assistant" className="hover:text-primary transition-colors">AI Invoice Assistant</Link></li>
             </ul>
           </div>
 
