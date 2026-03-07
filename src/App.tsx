@@ -22,6 +22,7 @@ import { ContractorCrmSoftware } from "@/pages/ContractorCrmSoftware";
 import { ContractorEstimatingSoftware } from "@/pages/ContractorEstimatingSoftware";
 import { AiAnsweringServiceForContractors } from "@/pages/AiAnsweringServiceForContractors";
 import { ForgeAiInvoiceAssistant } from "@/pages/ForgeAiInvoiceAssistant";
+import CrmForTrade from "@/pages/CrmForTrade";
 import { Privacy } from "@/pages/Privacy";
 import { Terms } from "@/pages/Terms";
 import { Dashboard } from "@/components/Dashboard";
