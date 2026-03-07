@@ -124,12 +124,39 @@ export function TrialSignup() {
 
       toast({
         title: "Welcome to CT1!",
-        description: "Your 30-day free trial has started. Enjoy full access to Training, CRM, and Marketplace!",
+        description: "Your 30-day free trial has started. Connecting your Gmail & Calendar...",
       });
 
       // Show contractor account setup
       setNewUserId(currentUserId);
       setShowContractorSetup(true);
+
+      // Auto-trigger combined Google OAuth for Gmail + Calendar
+      if (isGoogleUser) {
+        try {
+          const { data: sessionData } = await supabase.auth.getSession();
+          const accessToken = sessionData?.session?.access_token;
+          if (accessToken) {
+            const { data: oauthData, error: oauthError } = await supabase.functions.invoke(
+              'google-oauth-init-combined',
+              {
+                body: {},
+                headers: { Authorization: `Bearer ${accessToken}` },
+              }
+            );
+            if (!oauthError && oauthData?.url) {
+              // Store that we need to come back to contractor setup after OAuth
+              sessionStorage.setItem('ct1_post_oauth_setup', currentUserId);
+              window.location.href = oauthData.url;
+              return;
+            } else {
+              console.warn('Combined OAuth init failed, user can connect later:', oauthError);
+            }
+          }
+        } catch (oauthErr) {
+          console.warn('Auto-connect failed, user can connect later from Connections Hub:', oauthErr);
+        }
+      }
     } catch (error: any) {
       console.error("Trial signup error:", error);
       toast({

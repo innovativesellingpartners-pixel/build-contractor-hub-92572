@@ -104,21 +104,19 @@ serve(async (req) => {
     const expiresAt = new Date(Date.now() + tokens.expires_in * 1000).toISOString();
     const now = new Date().toISOString();
 
-    if (stateData.type === 'calendar') {
-      console.log('Saving calendar connection for user:', stateData.contractor_id);
+    const normalizedEmail = String(userInfo.email || '').trim().toLowerCase();
+    
+    // Resolve contractor_id for calendar_connections FK
+    let resolvedContractorId: string | null = null;
+    const { data: membership } = await supabase
+      .from('contractor_users')
+      .select('contractor_id')
+      .eq('user_id', stateData.contractor_id)
+      .limit(1)
+      .maybeSingle();
+    if (membership) resolvedContractorId = membership.contractor_id;
 
-      const normalizedEmail = String(userInfo.email || '').trim().toLowerCase();
-      
-      let resolvedContractorId: string | null = null;
-      const { data: membership } = await supabase
-        .from('contractor_users')
-        .select('contractor_id')
-        .eq('user_id', stateData.contractor_id)
-        .limit(1)
-        .maybeSingle();
-      if (membership) resolvedContractorId = membership.contractor_id;
-      
-      // Use upsert to prevent data loss from delete+insert race condition
+    const saveCalendar = async () => {
       const { error: upsertError } = await supabase
         .from('calendar_connections')
         .upsert({
@@ -130,17 +128,12 @@ serve(async (req) => {
           refresh_token_encrypted: tokens.refresh_token,
           expires_at: expiresAt,
           updated_at: now,
-        }, {
-          onConflict: 'user_id,provider',
-          ignoreDuplicates: false,
-        });
+        }, { onConflict: 'user_id,provider', ignoreDuplicates: false });
 
       if (upsertError) {
-        // Fallback: try delete then insert
-        console.warn('Upsert failed, trying delete+insert:', upsertError);
+        console.warn('Calendar upsert failed, trying delete+insert:', upsertError);
         await supabase.from('calendar_connections').delete()
           .eq('user_id', stateData.contractor_id).eq('provider', 'google');
-        
         const { error: insertError } = await supabase.from('calendar_connections').insert({
           user_id: stateData.contractor_id,
           contractor_id: resolvedContractorId,
@@ -152,59 +145,60 @@ serve(async (req) => {
           created_at: now,
           updated_at: now,
         });
-
-        if (insertError) {
-          console.error('Failed to save calendar connection:', insertError);
-          return createRedirectResponse(`${APP_URL}/dashboard?oauth_error=save_failed`);
-        }
+        if (insertError) throw insertError;
       }
-
       console.log('Calendar connection saved successfully');
-      return createRedirectResponse(`${APP_URL}/dashboard?oauth_success=calendar&provider=google&crm_section=calendar`);
-    } else {
-      console.log('Saving email connection for user:', stateData.contractor_id);
-      
-      // Use upsert to prevent data loss
+    };
+
+    const saveEmail = async () => {
       const { error: upsertError } = await supabase
         .from('email_connections')
         .upsert({
           user_id: stateData.contractor_id,
           provider: 'google',
-          email_address: userInfo.email,
+          email_address: normalizedEmail,
           access_token_encrypted: tokens.access_token,
           refresh_token_encrypted: tokens.refresh_token,
           expires_at: expiresAt,
           updated_at: now,
-        }, {
-          onConflict: 'user_id,provider',
-          ignoreDuplicates: false,
-        });
+        }, { onConflict: 'user_id,provider', ignoreDuplicates: false });
 
       if (upsertError) {
-        // Fallback: try delete then insert
-        console.warn('Upsert failed, trying delete+insert:', upsertError);
+        console.warn('Email upsert failed, trying delete+insert:', upsertError);
         await supabase.from('email_connections').delete()
           .eq('user_id', stateData.contractor_id).eq('provider', 'google');
-        
         const { error: insertError } = await supabase.from('email_connections').insert({
           user_id: stateData.contractor_id,
           provider: 'google',
-          email_address: userInfo.email,
+          email_address: normalizedEmail,
           access_token_encrypted: tokens.access_token,
           refresh_token_encrypted: tokens.refresh_token,
           expires_at: expiresAt,
           created_at: now,
           updated_at: now,
         });
-
-        if (insertError) {
-          console.error('Failed to save email connection:', insertError);
-          return createRedirectResponse(`${APP_URL}/dashboard?oauth_error=save_failed`);
-        }
+        if (insertError) throw insertError;
       }
-
       console.log('Email connection saved successfully');
-      return createRedirectResponse(`${APP_URL}/dashboard?oauth_success=email&provider=google&crm_section=emails`);
+    };
+
+    try {
+      if (stateData.type === 'both') {
+        console.log('Saving both calendar and email connections for user:', stateData.contractor_id);
+        await Promise.all([saveCalendar(), saveEmail()]);
+        return createRedirectResponse(`${APP_URL}/dashboard?oauth_success=both&provider=google`);
+      } else if (stateData.type === 'calendar') {
+        console.log('Saving calendar connection for user:', stateData.contractor_id);
+        await saveCalendar();
+        return createRedirectResponse(`${APP_URL}/dashboard?oauth_success=calendar&provider=google&crm_section=calendar`);
+      } else {
+        console.log('Saving email connection for user:', stateData.contractor_id);
+        await saveEmail();
+        return createRedirectResponse(`${APP_URL}/dashboard?oauth_success=email&provider=google&crm_section=emails`);
+      }
+    } catch (saveError) {
+      console.error('Failed to save connection:', saveError);
+      return createRedirectResponse(`${APP_URL}/dashboard?oauth_error=save_failed`);
     }
   } catch (error) {
     console.error('Google OAuth callback error:', error);
