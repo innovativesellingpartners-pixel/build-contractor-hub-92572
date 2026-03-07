@@ -28,49 +28,41 @@ export function Auth() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const { signIn, signUp, user, resetPassword } = useAuth();
 
-  // Redirect if already logged in
-  useEffect(() => {
-    if (user) {
-      navigate("/dashboard");
-    }
-  }, [user, navigate]);
+  // Detect custom domain (not lovable preview/localhost)
+  const isCustomDomain =
+    !window.location.hostname.includes("lovable.app") &&
+    !window.location.hostname.includes("lovableproject.com") &&
+    !window.location.hostname.includes("localhost");
 
-  // On mount: complete any pending OAuth callback (user returning from Google)
+  // Redirect if already logged in — check subscription status first
   useEffect(() => {
-    const completeOAuthCallback = async () => {
-      // Check if URL has OAuth callback indicators (code, state params, or hash tokens)
-      const params = new URLSearchParams(window.location.search);
-      const hash = window.location.hash;
-      const hasCallbackParams = params.has('code') || params.has('state') || hash.includes('access_token');
-      
-      if (!hasCallbackParams) return;
-      
-      console.log('OAuth callback detected, completing sign-in...');
-      setGoogleLoading(true);
-      
+    if (!user) return;
+
+    const checkSubscriptionAndRedirect = async () => {
       try {
-        const { error } = await lovable.auth.signInWithOAuth("google", {
-          redirect_uri: window.location.origin + "/auth",
-        });
-        
-        if (error) {
-          console.error('OAuth callback completion error:', error);
-          setError(error.message || "Google sign-in failed to complete");
+        const { data: sub } = await supabase
+          .from("subscriptions")
+          .select("id")
+          .eq("user_id", user.id)
+          .eq("status", "active")
+          .maybeSingle();
+
+        if (sub) {
+          navigate("/dashboard");
         } else {
-          console.log('OAuth callback completed successfully');
-          // Clean up URL params
-          window.history.replaceState({}, '', '/auth');
+          // New Google user without subscription — send to trial signup
+          const email = user.email || "";
+          const name = user.user_metadata?.full_name || user.user_metadata?.name || "";
+          navigate(`/trial-signup?email=${encodeURIComponent(email)}&name=${encodeURIComponent(name)}&from=google`);
         }
-      } catch (err) {
-        console.error('OAuth callback exception:', err);
-        setError("Google sign-in failed to complete");
-      } finally {
-        setGoogleLoading(false);
+      } catch {
+        // Fallback: just go to dashboard
+        navigate("/dashboard");
       }
     };
-    
-    completeOAuthCallback();
-  }, []);
+
+    checkSubscriptionAndRedirect();
+  }, [user, navigate]);
 
   // Listen for password recovery event to show new password form
   useEffect(() => {
@@ -275,11 +267,29 @@ export function Auth() {
                         setGoogleLoading(true);
                         setError("");
                         try {
-                          const { error } = await lovable.auth.signInWithOAuth("google", {
-                            redirect_uri: window.location.origin + "/auth",
-                          });
-                          if (error) {
-                            setError(error.message || "Google sign-in failed");
+                          if (isCustomDomain) {
+                            // On custom domain: bypass Lovable auth bridge, use Supabase directly
+                            const { data, error } = await supabase.auth.signInWithOAuth({
+                              provider: "google",
+                              options: {
+                                redirectTo: window.location.origin + "/auth",
+                                skipBrowserRedirect: true,
+                              },
+                            });
+                            if (error) {
+                              setError(error.message || "Google sign-in failed");
+                            } else if (data?.url) {
+                              window.location.href = data.url;
+                              return; // Don't setGoogleLoading(false) — we're navigating away
+                            }
+                          } else {
+                            // On Lovable domain: use managed OAuth
+                            const { error } = await lovable.auth.signInWithOAuth("google", {
+                              redirect_uri: window.location.origin + "/auth",
+                            });
+                            if (error) {
+                              setError(error.message || "Google sign-in failed");
+                            }
                           }
                         } catch (err) {
                           setError("Google sign-in failed");
