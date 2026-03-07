@@ -59,6 +59,37 @@ export function Auth() {
           .maybeSingle();
 
         if (sub) {
+          // For paying Google users, check if they have Gmail/Calendar connections
+          const isOAuthUser = user.app_metadata?.provider === "google" || user.app_metadata?.providers?.includes("google");
+          if (isOAuthUser) {
+            const [{ data: emailConn }, { data: calConn }] = await Promise.all([
+              supabase.from("email_connections").select("id").eq("user_id", user.id).eq("provider", "google").maybeSingle(),
+              supabase.from("calendar_connections").select("id").eq("user_id", user.id).eq("provider", "google").maybeSingle(),
+            ]);
+            
+            if (!emailConn || !calConn) {
+              try {
+                const { data: sessionData } = await supabase.auth.getSession();
+                const accessToken = sessionData?.session?.access_token;
+                if (accessToken) {
+                  const { data: oauthData, error: oauthError } = await supabase.functions.invoke(
+                    'google-oauth-init-combined',
+                    {
+                      body: {},
+                      headers: { Authorization: `Bearer ${accessToken}` },
+                    }
+                  );
+                  if (!oauthError && oauthData?.url) {
+                    sessionStorage.setItem('ct1_post_oauth_redirect', '/dashboard');
+                    window.location.href = oauthData.url;
+                    return;
+                  }
+                }
+              } catch {
+                // Silently fail — user can connect later from Connections Hub
+              }
+            }
+          }
           navigate("/dashboard");
           return;
         }
