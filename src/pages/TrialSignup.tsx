@@ -51,30 +51,36 @@ export function TrialSignup() {
     setLoading(true);
 
     try {
-      // Sign up the user
-      const { error: signUpError } = await signUp(formData.email, formData.password);
-      
-      if (signUpError) {
-        throw signUpError;
-      }
+      let currentUserId: string;
 
-      // Get the newly created user
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        throw new Error("User not found after signup");
+      if (isGoogleUser && user) {
+        // Google user already authenticated — skip signUp
+        currentUserId = user.id;
+      } else {
+        // Standard email signup
+        const { error: signUpError } = await signUp(formData.email, formData.password);
+        
+        if (signUpError) {
+          throw signUpError;
+        }
+
+        // Get the newly created user
+        const { data: { user: newUser } } = await supabase.auth.getUser();
+        
+        if (!newUser) {
+          throw new Error("User not found after signup");
+        }
+        currentUserId = newUser.id;
       }
 
       // Calculate trial end date (30 days from now)
       const trialEndDate = new Date();
       trialEndDate.setDate(trialEndDate.getDate() + 30);
 
-      // Create profile with trial info
+      // Update profile with trial info (profile already exists from handle_new_user trigger)
       const { error: profileError } = await supabase
         .from('profiles')
-        .insert({
-          id: user.id,
-          user_id: user.id,
+        .update({
           contact_name: `${formData.firstName} ${formData.lastName}`,
           company_name: formData.businessName,
           business_address: formData.address,
@@ -82,7 +88,8 @@ export function TrialSignup() {
           state: formData.state,
           zip_code: formData.zipCode,
           subscription_tier: 'trial',
-        });
+        })
+        .eq('id', currentUserId);
 
       if (profileError) throw profileError;
 
@@ -90,7 +97,7 @@ export function TrialSignup() {
       const { error: subError } = await supabase
         .from('subscriptions')
         .insert({
-          user_id: user.id,
+          user_id: currentUserId,
           tier_id: 'trial',
           billing_cycle: 'monthly',
           status: 'active',
@@ -104,13 +111,13 @@ export function TrialSignup() {
         body: {
           firstName: formData.firstName,
           lastName: formData.lastName,
-          email: formData.email,
+          email: formData.email || user?.email,
           businessName: formData.businessName,
           address: formData.address,
           city: formData.city,
           state: formData.state,
           zipCode: formData.zipCode,
-          cardNumber: formData.cardNumber.slice(-4), // Only send last 4 digits
+          cardNumber: formData.cardNumber.slice(-4),
           trialEndDate: trialEndDate.toISOString(),
         },
       });
@@ -121,7 +128,7 @@ export function TrialSignup() {
       });
 
       // Show contractor account setup
-      setNewUserId(user.id);
+      setNewUserId(currentUserId);
       setShowContractorSetup(true);
     } catch (error: any) {
       console.error("Trial signup error:", error);
