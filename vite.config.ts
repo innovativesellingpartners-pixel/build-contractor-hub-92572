@@ -36,6 +36,7 @@ function generateSitemapPlugin(): Plugin {
     { loc: "/trial-signup", changefreq: "monthly", priority: "0.8" },
     { loc: "/contractor-crm-software", changefreq: "monthly", priority: "0.8" },
     { loc: "/contractor-estimating-software", changefreq: "monthly", priority: "0.8" },
+    { loc: "/ai-answering-service-for-contractors", changefreq: "monthly", priority: "0.8" },
   ];
 
   return {
