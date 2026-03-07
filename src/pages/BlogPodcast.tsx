@@ -47,20 +47,20 @@ export const BlogPodcast = () => {
       <FloatingTrialButton />
       <MainSiteHeader />
 
-      {/* Hero with Logo + Branding */}
-      <section className="relative bg-gradient-to-br from-[hsl(0,0%,5%)] via-[hsl(0,72%,15%)] to-[hsl(0,0%,8%)] py-14 md:py-20 overflow-hidden">
+      {/* Hero - Compact with logo left, text right */}
+      <section className="relative bg-gradient-to-br from-[hsl(0,0%,5%)] via-[hsl(0,72%,15%)] to-[hsl(0,0%,8%)] py-8 md:py-10 overflow-hidden">
         <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '40px 40px' }} />
         <div className="relative container mx-auto px-4">
-          <div className="flex flex-col items-center text-center gap-5">
-            <img src={ct1Logo} alt="myCT1" className="h-16 w-16 md:h-20 md:w-20 drop-shadow-2xl" />
+          <div className="flex items-center gap-5">
+            <img src={ct1Logo} alt="myCT1" className="h-14 w-14 md:h-16 md:w-16 drop-shadow-2xl shrink-0" />
             <div>
-              <p className="text-xs uppercase tracking-[0.25em] text-primary font-semibold mb-3">myCT1 Contractor Hub</p>
-              <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Blog & Podcast</h1>
-              <p className="text-base md:text-lg text-white/60 max-w-xl mx-auto">
+              <p className="text-[10px] uppercase tracking-[0.25em] text-primary font-semibold mb-1">myCT1 Contractor Hub</p>
+              <h1 className="text-2xl md:text-3xl font-bold text-white mb-1">Blog & Podcast</h1>
+              <p className="text-sm text-white/50">
                 Real strategies for real contractors. Grow smarter, not harder.
               </p>
             </div>
-            <div className="flex items-center gap-4 mt-2">
+            <div className="hidden md:flex items-center gap-3 ml-auto">
               <span className="flex items-center gap-1.5 text-xs text-white/50">
                 <FileText className="h-3.5 w-3.5" />
                 {allBlogPosts.length} Articles
