@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
 import { ArrowRight, CheckCircle2, Users, ClipboardList, Zap, BarChart3, Clock, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
