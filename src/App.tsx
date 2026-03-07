@@ -203,7 +203,36 @@ const App = () => (
             <Route path="/contractor-estimating-software" element={<ContractorEstimatingSoftware />} />
             <Route path="/ai-answering-service-for-contractors" element={<AiAnsweringServiceForContractors />} />
             <Route path="/forge-ai-invoice-assistant" element={<ForgeAiInvoiceAssistant />} />
-            <Route path="/crm-for-:tradeSlug" element={<CrmForTrade />} />
+            <Route path="/crm-for-plumbers" element={<CrmForTrade />} />
+            <Route path="/crm-for-electricians" element={<CrmForTrade />} />
+            <Route path="/crm-for-hvac-contractors" element={<CrmForTrade />} />
+            <Route path="/crm-for-roofing-contractors" element={<CrmForTrade />} />
+            <Route path="/crm-for-general-contractors" element={<CrmForTrade />} />
+            <Route path="/crm-for-remodeling-contractors" element={<CrmForTrade />} />
+            <Route path="/crm-for-painting-contractors" element={<CrmForTrade />} />
+            <Route path="/crm-for-landscaping-contractors" element={<CrmForTrade />} />
+            <Route path="/crm-for-flooring-contractors" element={<CrmForTrade />} />
+            <Route path="/crm-for-pest-control-companies" element={<CrmForTrade />} />
+            <Route path="/crm-for-cleaning-companies" element={<CrmForTrade />} />
+            <Route path="/crm-for-window-installers" element={<CrmForTrade />} />
+            <Route path="/crm-for-fence-contractors" element={<CrmForTrade />} />
+            <Route path="/crm-for-pool-builders" element={<CrmForTrade />} />
+            <Route path="/crm-for-concrete-contractors" element={<CrmForTrade />} />
+            <Route path="/crm-for-drywall-contractors" element={<CrmForTrade />} />
+            <Route path="/crm-for-insulation-contractors" element={<CrmForTrade />} />
+            <Route path="/crm-for-solar-installers" element={<CrmForTrade />} />
+            <Route path="/crm-for-garage-door-contractors" element={<CrmForTrade />} />
+            <Route path="/crm-for-home-security-installers" element={<CrmForTrade />} />
+            <Route path="/crm-for-deck-builders" element={<CrmForTrade />} />
+            <Route path="/crm-for-siding-contractors" element={<CrmForTrade />} />
+            <Route path="/crm-for-septic-service-companies" element={<CrmForTrade />} />
+            <Route path="/crm-for-water-damage-restoration-companies" element={<CrmForTrade />} />
+            <Route path="/crm-for-tree-service-companies" element={<CrmForTrade />} />
+            <Route path="/crm-for-moving-companies" element={<CrmForTrade />} />
+            <Route path="/crm-for-junk-removal-companies" element={<CrmForTrade />} />
+            <Route path="/crm-for-handyman-businesses" element={<CrmForTrade />} />
+            <Route path="/crm-for-tile-installers" element={<CrmForTrade />} />
+            <Route path="/crm-for-kitchen-and-bath-remodelers" element={<CrmForTrade />} />
             <Route path="/trial-signup" element={<TrialSignup />} />
             <Route path="/bot-signup" element={<BotSignup />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
