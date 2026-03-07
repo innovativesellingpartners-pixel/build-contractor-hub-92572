@@ -144,27 +144,23 @@ export function TrialSignup() {
       // Auto-trigger combined Google OAuth for Gmail + Calendar
       if (isGoogleUser) {
         try {
-          const { data: sessionData } = await supabase.auth.getSession();
-          const accessToken = sessionData?.session?.access_token;
-          if (accessToken) {
-            const { data: oauthData, error: oauthError } = await supabase.functions.invoke(
-              'google-oauth-init-combined',
-              {
-                body: {},
-                headers: { Authorization: `Bearer ${accessToken}` },
-              }
-            );
-            if (!oauthError && oauthData?.url) {
-              // Store that we need to come back to contractor setup after OAuth
-              sessionStorage.setItem('ct1_post_oauth_setup', currentUserId);
-              window.location.href = oauthData.url;
-              return;
-            } else {
-              console.warn('Combined OAuth init failed, user can connect later:', oauthError);
-            }
+          console.log('[TrialSignup] Triggering combined OAuth for Gmail + Calendar...');
+          const { data: oauthData, error: oauthError } = await supabase.functions.invoke(
+            'google-oauth-init-combined',
+            { body: {} }
+          );
+          
+          console.log('[TrialSignup] Combined OAuth response:', { oauthData, oauthError });
+          
+          if (!oauthError && oauthData?.url) {
+            sessionStorage.setItem('ct1_post_oauth_setup', currentUserId);
+            window.location.href = oauthData.url;
+            return;
+          } else {
+            console.warn('[TrialSignup] Combined OAuth init failed:', oauthError);
           }
         } catch (oauthErr) {
-          console.warn('Auto-connect failed, user can connect later from Connections Hub:', oauthErr);
+          console.error('[TrialSignup] Auto-connect failed:', oauthErr);
         }
       }
     } catch (error: any) {
