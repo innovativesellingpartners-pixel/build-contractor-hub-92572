@@ -20,6 +20,16 @@ export function TrialSignup() {
   const [showContractorSetup, setShowContractorSetup] = useState(false);
   const [newUserId, setNewUserId] = useState<string>("");
 
+  // Check if returning from OAuth flow after trial signup
+  useEffect(() => {
+    const postOAuthUserId = sessionStorage.getItem('ct1_post_oauth_setup');
+    if (postOAuthUserId && user) {
+      sessionStorage.removeItem('ct1_post_oauth_setup');
+      setNewUserId(postOAuthUserId);
+      setShowContractorSetup(true);
+    }
+  }, [user]);
+
   // Detect if user arrived from Google OAuth
   const isGoogleUser = searchParams.get("from") === "google";
   const prefillEmail = searchParams.get("email") || "";
