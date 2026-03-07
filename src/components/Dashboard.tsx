@@ -51,6 +51,7 @@ import { StarRating } from "@/components/contractor/StarRating";
 import { AccountDocuments } from "@/components/contractor/AccountDocuments";
 import { FloatingPocketAgent } from "@/components/contractor/FloatingPocketbot";
 import { ContactSupport } from "@/components/ContactSupport";
+import { ChangePasswordCard } from "@/components/contractor/ChangePasswordCard";
 
 import { BottomNav } from "@/components/contractor/crm/BottomNav";
 import { BackNavigation } from "@/components/contractor/crm/BackNavigation";
