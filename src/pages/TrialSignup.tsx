@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,15 +13,23 @@ import { FormNavigation } from "@/components/FormNavigation";
 
 export function TrialSignup() {
   const navigate = useNavigate();
-  const { signUp } = useAuth();
+  const { signUp, user } = useAuth();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [showContractorSetup, setShowContractorSetup] = useState(false);
   const [newUserId, setNewUserId] = useState<string>("");
+
+  // Detect if user arrived from Google OAuth
+  const isGoogleUser = searchParams.get("from") === "google";
+  const prefillEmail = searchParams.get("email") || "";
+  const prefillName = searchParams.get("name") || "";
+  const nameParts = prefillName.split(" ");
+
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
+    firstName: nameParts[0] || "",
+    lastName: nameParts.slice(1).join(" ") || "",
+    email: prefillEmail,
     password: "",
     businessName: "",
     cardNumber: "",
