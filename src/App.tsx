@@ -23,6 +23,7 @@ import { ContractorEstimatingSoftware } from "@/pages/ContractorEstimatingSoftwa
 import { AiAnsweringServiceForContractors } from "@/pages/AiAnsweringServiceForContractors";
 import { ForgeAiInvoiceAssistant } from "@/pages/ForgeAiInvoiceAssistant";
 import CrmForTrade from "@/pages/CrmForTrade";
+import BlogPost from "@/pages/BlogPost";
 import { Privacy } from "@/pages/Privacy";
 import { Terms } from "@/pages/Terms";
 import { Dashboard } from "@/components/Dashboard";
@@ -178,6 +179,7 @@ const App = () => (
             <Route path="/trades-we-serve" element={<TradesWeServe />} />
             <Route path="/blog-podcast" element={<BlogPodcast />} />
             <Route path="/blog/contractor-crm-guide" element={<ContractorCRMGuide />} />
+            <Route path="/blog/:slug" element={<BlogPost />} />
             <Route path="/products/pocket-agent" element={<PocketAgentProduct />} />
             <Route path="/products/pocketbot" element={<Navigate to="/products/pocket-agent" replace />} />
             <Route path="/products/voice-ai" element={<VoiceAIProduct />} />

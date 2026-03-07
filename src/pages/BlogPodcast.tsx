@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { PublicFooter } from "@/components/PublicFooter";
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -6,59 +6,52 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FloatingTrialButton } from '@/components/FloatingTrialButton';
 import { MainSiteHeader } from '@/components/MainSiteHeader';
 import { SEOHead } from '@/components/SEOHead';
-import { Youtube, FileText, Mic, Play } from 'lucide-react';
+import { Youtube, FileText, Mic, Play, Search } from 'lucide-react';
+import { allBlogPosts } from '@/data/blogPosts';
 import podcastThumbnail from '@/assets/podcast-thumbnail.png';
 import heroBg from '@/assets/hero-tech-dashboard.jpg';
 
 export const BlogPodcast = () => {
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const [activeCategory, setActiveCategory] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const categories = useMemo(() => {
+    const cats = Array.from(new Set(allBlogPosts.map(p => p.category)));
+    return ["All", ...cats.sort()];
+  }, []);
+
+  const filteredPosts = useMemo(() => {
+    let posts = allBlogPosts;
+    if (activeCategory !== "All") {
+      posts = posts.filter(p => p.category === activeCategory);
+    }
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      posts = posts.filter(p =>
+        p.title.toLowerCase().includes(q) ||
+        p.metaDescription.toLowerCase().includes(q) ||
+        p.category.toLowerCase().includes(q)
+      );
+    }
+    return posts;
+  }, [activeCategory, searchQuery]);
 
   const podcastEpisodes = [
     {
       title: 'Episode 1: Building Your First 5-Star Contractor Business',
       description: 'Learn the fundamentals of creating a professional contracting business from the ground up.',
       date: 'Coming Soon',
-      thumbnail: 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=400&h=225&fit=crop'
     },
     {
       title: 'Episode 2: Mastering Sales Conversations',
       description: 'Discover proven techniques to close more deals and handle objections with confidence.',
       date: 'Coming Soon',
-      thumbnail: 'https://images.unsplash.com/photo-1556761175-4b46a572b786?w=400&h=225&fit=crop'
     },
     {
       title: 'Episode 3: Scaling with AI Tools',
       description: 'How to leverage AI assistants and automation to grow your business faster.',
       date: 'Coming Soon',
-      thumbnail: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=400&h=225&fit=crop'
-    }
-  ];
-
-  const blogPosts = [
-    {
-      title: '5 Ways to Generate More Qualified Leads',
-      excerpt: 'Stop chasing every lead. Learn how to attract customers who are ready to buy.',
-      date: 'Coming Soon',
-      category: 'Lead Generation'
-    },
-    {
-      title: 'The Complete Guide to Contractor CRM Systems',
-      excerpt: 'Why every growing contractor needs a CRM and how to choose the right one.',
-      date: 'Read Now',
-      category: 'Business Tools',
-      link: '/blog/contractor-crm-guide'
-    },
-    {
-      title: 'Pricing Strategies That Maximize Profit',
-      excerpt: 'How to price your services competitively while maintaining healthy margins.',
-      date: 'Coming Soon',
-      category: 'Pricing & Estimates'
-    },
-    {
-      title: 'Building a Team That Doesn\'t Need You',
-      excerpt: 'Scale your business by hiring, training, and empowering the right people.',
-      date: 'Coming Soon',
-      category: 'Team Management'
     }
   ];
 
@@ -80,49 +73,77 @@ export const BlogPodcast = () => {
         </div>
         <div className="relative container mx-auto px-4 text-center">
           <h1 className="text-5xl md:text-6xl font-bold mb-6">Blog & Podcast</h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
             Insights, strategies, and success stories to help you build a better contracting business.
           </p>
+          <p className="text-sm text-muted-foreground">{allBlogPosts.length} articles and growing</p>
         </div>
       </section>
 
-      {/* Blog Section - Articles First */}
+      {/* Blog Section */}
       <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="flex items-center gap-3 mb-8">
             <FileText className="h-8 w-8 text-primary" />
             <h2 className="text-4xl font-bold">Latest Articles</h2>
           </div>
-          <p className="text-muted-foreground mb-8 text-lg">
-            Practical advice and actionable strategies you can implement in your business today.
-          </p>
-          <div className="grid md:grid-cols-2 gap-6 mb-8">
-            {blogPosts.map((post, index) => {
-              const card = (
-                <Card className={`hover:shadow-lg transition-shadow h-full ${post.link ? 'ring-2 ring-primary/20' : ''}`}>
-                  <CardHeader>
-                    <div className="flex items-start justify-between gap-4">
-                      <CardTitle className="text-xl">{post.title}</CardTitle>
-                      <span className="text-xs bg-primary/10 text-primary px-3 py-1 rounded-full whitespace-nowrap">
+
+          {/* Search and Filter */}
+          <div className="mb-8 space-y-4">
+            <div className="relative max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Search articles..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-border rounded-lg bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+              />
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setActiveCategory(cat)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                    activeCategory === cat
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Article Grid */}
+          {filteredPosts.length === 0 ? (
+            <p className="text-muted-foreground text-center py-12">No articles found matching your search.</p>
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+              {filteredPosts.map((post) => (
+                <Link key={post.slug} to={`/blog/${post.slug}`} className="no-underline group">
+                  <Card className="hover:shadow-lg transition-shadow h-full border-border hover:border-primary/30">
+                    <CardHeader>
+                      <div className="flex items-start justify-between gap-3">
+                        <CardTitle className="text-lg group-hover:text-primary transition-colors leading-snug">
+                          {post.title}
+                        </CardTitle>
+                      </div>
+                      <span className="text-xs bg-primary/10 text-primary px-3 py-1 rounded-full w-fit">
                         {post.category}
                       </span>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground mb-4">{post.excerpt}</p>
-                    <p className="text-xs text-primary font-semibold">{post.link ? 'Read Now →' : post.date}</p>
-                  </CardContent>
-                </Card>
-              );
-              return post.link ? (
-                <Link key={index} to={post.link} className="no-underline">
-                  {card}
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground line-clamp-3">{post.metaDescription}</p>
+                      <p className="text-xs text-primary font-semibold mt-4">Read Article →</p>
+                    </CardContent>
+                  </Card>
                 </Link>
-              ) : (
-                <div key={index}>{card}</div>
-              );
-            })}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -134,7 +155,7 @@ export const BlogPodcast = () => {
             <h2 className="text-4xl font-bold">CT1 Podcast</h2>
           </div>
           <p className="text-muted-foreground mb-8 text-lg">
-            Listen to in-depth conversations with successful contractors, industry experts, and the CT1 team. 
+            Listen to in-depth conversations with successful contractors, industry experts, and the CT1 team.
             Episodes will be linked from our YouTube channel.
           </p>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
@@ -152,8 +173,8 @@ export const BlogPodcast = () => {
                     onClick={() => setIsVideoPlaying(true)}
                     className="w-full h-full relative group cursor-pointer"
                   >
-                    <img 
-                      src={podcastThumbnail} 
+                    <img
+                      src={podcastThumbnail}
                       alt="CT1 Podcast - Click to play"
                       className="w-full h-full object-cover"
                     />
@@ -169,7 +190,7 @@ export const BlogPodcast = () => {
                 <CardTitle className="text-lg">Featured Episode</CardTitle>
               </CardHeader>
             </Card>
-            
+
             {podcastEpisodes.map((episode, index) => (
               <Card key={index} className="overflow-hidden hover:shadow-lg transition-shadow">
                 <div className="aspect-video bg-muted flex items-center justify-center">
@@ -206,9 +227,9 @@ export const BlogPodcast = () => {
                 Get the latest podcast episodes, blog posts, and contractor tips delivered to your inbox.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-                <input 
-                  type="email" 
-                  placeholder="Enter your email" 
+                <input
+                  type="email"
+                  placeholder="Enter your email"
                   className="flex-1 px-4 py-2 border rounded-md"
                   disabled
                 />
@@ -224,7 +245,7 @@ export const BlogPodcast = () => {
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-4xl font-bold mb-6">Ready to Take Action?</h2>
           <p className="text-xl text-muted-foreground mb-8">
-            Don't just consume content—join CT1 and get hands-on tools, training, and leads to grow your business.
+            Don't just consume content - join CT1 and get hands-on tools, training, and leads to grow your business.
           </p>
           <div className="flex gap-4 justify-center">
             <Link to="/auth">
