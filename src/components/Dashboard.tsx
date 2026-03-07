@@ -638,6 +638,9 @@ export function Dashboard() {
                           </Button>
                         </div>
 
+                        {/* Change Password */}
+                        <ChangePasswordCard />
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                           {/* Account Information Card */}
                           <div className="bg-gradient-to-br from-card to-muted/20 border border-border/50 rounded-xl shadow-md overflow-hidden">
