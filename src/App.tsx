@@ -203,6 +203,7 @@ const App = () => (
             <Route path="/contractor-estimating-software" element={<ContractorEstimatingSoftware />} />
             <Route path="/ai-answering-service-for-contractors" element={<AiAnsweringServiceForContractors />} />
             <Route path="/forge-ai-invoice-assistant" element={<ForgeAiInvoiceAssistant />} />
+            <Route path="/crm-for-:tradeSlug" element={<CrmForTrade />} />
             <Route path="/trial-signup" element={<TrialSignup />} />
             <Route path="/bot-signup" element={<BotSignup />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />

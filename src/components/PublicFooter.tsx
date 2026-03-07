@@ -41,6 +41,11 @@ export function PublicFooter() {
               <li><Link to="/contractor-estimating-software" className="hover:text-primary transition-colors">Estimating Software</Link></li>
               <li><Link to="/ai-answering-service-for-contractors" className="hover:text-primary transition-colors">AI Answering Service</Link></li>
               <li><Link to="/forge-ai-invoice-assistant" className="hover:text-primary transition-colors">AI Invoice Assistant</Link></li>
+              <li><Link to="/crm-for-plumbers" className="hover:text-primary transition-colors">CRM for Plumbers</Link></li>
+              <li><Link to="/crm-for-electricians" className="hover:text-primary transition-colors">CRM for Electricians</Link></li>
+              <li><Link to="/crm-for-hvac-contractors" className="hover:text-primary transition-colors">CRM for HVAC</Link></li>
+              <li><Link to="/crm-for-roofing-contractors" className="hover:text-primary transition-colors">CRM for Roofers</Link></li>
+              <li><Link to="/crm-for-general-contractors" className="hover:text-primary transition-colors">CRM for GCs</Link></li>
             </ul>
           </div>
 
