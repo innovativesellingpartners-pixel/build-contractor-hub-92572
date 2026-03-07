@@ -69,6 +69,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const signingOutRef = useRef(false);
+  const autoConnectAttemptedRef = useRef(false);
+
+  const attemptGoogleAutoConnect = async (currentSession: Session) => {
+    // Only run once per app load and only for Google OAuth users
+    if (autoConnectAttemptedRef.current) return;
+    const provider = currentSession.user?.app_metadata?.provider;
+    if (provider !== 'google') return;
+
+    const providerToken = currentSession.provider_token;
+    const providerRefreshToken = currentSession.provider_refresh_token;
+    if (!providerToken || !providerRefreshToken) return;
+
+    autoConnectAttemptedRef.current = true;
+
+    try {
+      const { data, error } = await supabase.functions.invoke('google-auto-connect', {
+        body: {
+          provider_token: providerToken,
+          provider_refresh_token: providerRefreshToken,
+        },
+      });
+
+      if (error) {
+        console.warn('Google auto-connect failed:', error);
+        return;
+      }
+
+      if (data?.success) {
+        toast.success('Google Calendar & Gmail connected automatically');
+      } else if (data?.skipped) {
+        console.log('Google auto-connect skipped:', data.reason);
+      }
+    } catch (err) {
+      console.warn('Google auto-connect error:', err);
+    }
+  };
 
   const fetchProfile = async (userId: string) => {
     try {
