@@ -41,18 +41,27 @@ export function ContractorCrmSoftware() {
 
   return (
     <>
-      <Helmet>
-        <title>Contractor CRM Software | myCT1</title>
-        <meta
-          name="description"
-          content="Contractor CRM software built for home service businesses. Track leads, manage jobs, send estimates, and close more work with myCT1."
-        />
-        <link rel="canonical" href="https://myct1.com/contractor-crm-software" />
-        <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
-      </Helmet>
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    document.title = "Contractor CRM Software | myCT1";
 
-      <div className="min-h-screen bg-background text-foreground">
-        {/* Hero */}
+    const setMeta = (name: string, content: string) => {
+      let el = document.querySelector(`meta[name="${name}"]`) as HTMLMetaElement | null;
+      if (!el) { el = document.createElement("meta"); el.name = name; document.head.appendChild(el); }
+      el.content = content;
+    };
+    setMeta("description", "Contractor CRM software built for home service businesses. Track leads, manage jobs, send estimates, and close more work with myCT1.");
+
+    let canon = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+    if (!canon) { canon = document.createElement("link"); canon.rel = "canonical"; document.head.appendChild(canon); }
+    canon.href = "https://myct1.com/contractor-crm-software";
+
+    let script = document.getElementById("faq-schema") as HTMLScriptElement | null;
+    if (!script) { script = document.createElement("script"); script.id = "faq-schema"; script.type = "application/ld+json"; document.head.appendChild(script); }
+    script.textContent = JSON.stringify(faqSchema);
+
+    return () => { script?.remove(); };
+  }, []);
         <section className="relative overflow-hidden bg-ct1-black py-24 sm:py-32">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent" />
           <div className="relative mx-auto max-w-5xl px-6 text-center">
