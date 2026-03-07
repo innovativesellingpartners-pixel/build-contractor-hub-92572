@@ -37,23 +37,6 @@ export const BlogPodcast = () => {
     return posts;
   }, [activeCategory, searchQuery]);
 
-  const podcastEpisodes = [
-    {
-      title: 'Episode 1: Building Your First 5-Star Contractor Business',
-      description: 'Learn the fundamentals of creating a professional contracting business from the ground up.',
-      date: 'Coming Soon',
-    },
-    {
-      title: 'Episode 2: Mastering Sales Conversations',
-      description: 'Discover proven techniques to close more deals and handle objections with confidence.',
-      date: 'Coming Soon',
-    },
-    {
-      title: 'Episode 3: Scaling with AI Tools',
-      description: 'How to leverage AI assistants and automation to grow your business faster.',
-      date: 'Coming Soon',
-    }
-  ];
 
   return (
     <div className="min-h-screen bg-background">
