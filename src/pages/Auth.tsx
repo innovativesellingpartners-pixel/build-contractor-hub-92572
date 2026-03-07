@@ -40,6 +40,7 @@ export function Auth() {
 
     const checkSubscriptionAndRedirect = async () => {
       try {
+        // Check if user has an active subscription
         const { data: sub } = await supabase
           .from("subscriptions")
           .select("id")
@@ -49,14 +50,34 @@ export function Auth() {
 
         if (sub) {
           navigate("/dashboard");
-        } else {
-          // New Google user without subscription — send to trial signup
+          return;
+        }
+
+        // Check if user has a profile with a subscription tier (manually provisioned accounts)
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("subscription_tier")
+          .eq("id", user.id)
+          .maybeSingle();
+
+        if (profile?.subscription_tier && profile.subscription_tier !== 'none') {
+          // Existing user with a tier but missing subscription row — let them in
+          navigate("/dashboard");
+          return;
+        }
+
+        // Check how the user signed in — only redirect Google users to trial
+        const isOAuthUser = user.app_metadata?.provider === "google" || user.app_metadata?.providers?.includes("google");
+        
+        if (isOAuthUser) {
           const email = user.email || "";
           const name = user.user_metadata?.full_name || user.user_metadata?.name || "";
           navigate(`/trial-signup?email=${encodeURIComponent(email)}&name=${encodeURIComponent(name)}&from=google`);
+        } else {
+          // Email/password user — just go to dashboard
+          navigate("/dashboard");
         }
       } catch {
-        // Fallback: just go to dashboard
         navigate("/dashboard");
       }
     };
