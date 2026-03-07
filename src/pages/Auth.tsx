@@ -28,11 +28,6 @@ export function Auth() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const { signIn, signUp, user, resetPassword } = useAuth();
 
-  // Detect custom domain (not lovable preview/localhost)
-  const isCustomDomain =
-    !window.location.hostname.includes("lovable.app") &&
-    !window.location.hostname.includes("lovableproject.com") &&
-    !window.location.hostname.includes("localhost");
 
   // Redirect if already logged in — check subscription status first
   useEffect(() => {
