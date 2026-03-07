@@ -1,28 +1,52 @@
 
 
-## Fix: Remove CT1 Logo from Customer-Facing Estimates and Invoices
+## Google Sign-In + Auto-Connect Calendar & Gmail
 
-### Problem
-When estimates are sent to customers, the public estimate page falls back to the CT1 logo when a contractor hasn't uploaded their own logo. Customers should only see their contractor's branding, not CT1 branding in the header.
+### What we're building
+Two authentication paths on the login page:
+1. **"Sign in with Google"** button — uses Lovable Cloud managed Google OAuth to authenticate the user into the platform, then automatically saves their Google tokens to both `calendar_connections` and `email_connections` tables so Calendar and Gmail work immediately.
+2. **Existing email/password** — unchanged; users connect Google Calendar/Gmail manually from within the platform as they do today.
 
-### What Changes
+### How it works
 
-**File: `src/pages/PublicEstimate.tsx`**
+**Auth page (`src/pages/Auth.tsx`)**
+- Add a "Sign in with Google" button (with Google icon) above the email/password form, separated by an "or" divider.
+- Uses `lovable.auth.signInWithOAuth("google", ...)` with additional scopes for Calendar and Gmail access via `extraParams`.
+- On return, the `AuthContext` picks up the session automatically.
 
-1. **Remove the CT1 logo import** (line 13) -- the `ct1PoweredLogo` import is used in two places: the header fallback and the "Powered by CT1" footer. The footer usage is intentional branding, so the import stays but the header fallback changes.
+**Post-login auto-connect (`src/contexts/AuthContext.tsx`)**
+- After detecting a Google OAuth sign-in (check `session.user.app_metadata.provider === 'google'`), call a new edge function `google-auto-connect` passing the provider token from the session.
+- This only runs once per login (guard with a ref or sessionStorage flag).
 
-2. **Update the header logo fallback** (line 217) -- Instead of falling back to the CT1 logo when the contractor has no logo, use a `Building2` icon (same pattern as `PublicInvoice.tsx`):
-   - Change: `const displayLogo = contractor?.logo_url || ct1PoweredLogo;`
-   - To: `const displayLogo = contractor?.logo_url;`
+**New edge function: `supabase/functions/google-auto-connect/index.ts`**
+- Receives the user's `provider_token` and `provider_refresh_token` from the session.
+- Fetches Google user info to get email.
+- Upserts into both `calendar_connections` and `email_connections` with the tokens, same pattern as the existing `google-oauth-callback`.
+- Returns success/failure JSON.
 
-3. **Update the header logo rendering** (around lines 231-240) -- Add a conditional: if `displayLogo` exists, show the contractor's logo image; otherwise show a generic `Building2` icon in a styled circle, matching the invoice page pattern.
+**Edge function updates**
+- `google-oauth-init` and `google-oauth-callback` remain unchanged — they continue to serve manual connect flows for email/password users.
 
-### What Stays
-- The **"Powered by CT1"** footer branding at the bottom of estimates remains unchanged (this is the platform branding standard).
-- The **PublicInvoice.tsx** page already handles this correctly with the `Building2` fallback icon -- no changes needed there.
-- The **estimate PDF preview/download** components already use only the contractor's `logo_url` with no CT1 fallback -- no changes needed.
+### Files to create/modify
 
-### Technical Details
-- Only 1 file modified: `src/pages/PublicEstimate.tsx`
-- ~10 lines changed total
-- Pattern mirrors the existing `PublicInvoice.tsx` implementation (lines 142-154)
+| File | Change |
+|------|--------|
+| `src/pages/Auth.tsx` | Add "Sign in with Google" button using `lovable.auth.signInWithOAuth("google")` |
+| `src/contexts/AuthContext.tsx` | After Google OAuth login, invoke `google-auto-connect` edge function with provider tokens |
+| `supabase/functions/google-auto-connect/index.ts` | **New** — accepts provider tokens, upserts both calendar and email connections |
+| `supabase/config.toml` | Add `[functions.google-auto-connect]` with `verify_jwt = false` |
+
+### Important details
+- The Lovable Cloud managed Google OAuth handles the sign-in identity. The `provider_token` and `provider_refresh_token` on the session carry the Google access/refresh tokens which we reuse for Calendar/Gmail.
+- We need to request extra scopes (`calendar.readonly`, `calendar.events`, `gmail.readonly`, `gmail.send`, `gmail.compose`) via the `scopes` parameter in `signInWithOAuth`.
+- If `provider_refresh_token` is null (re-login without consent), we skip auto-connect and let the user connect manually from the platform — avoids broken connections.
+
+### Flow
+1. User clicks "Sign in with Google" on login page
+2. Google consent screen shows Calendar + Gmail scopes
+3. User grants access → redirected back → Lovable Cloud creates/logs in the user
+4. `AuthContext` detects Google provider → calls `google-auto-connect` edge function
+5. Edge function saves tokens to both connection tables
+6. User lands on dashboard with Calendar and Gmail already connected
+7. Toast: "Google Calendar & Gmail connected automatically"
+
