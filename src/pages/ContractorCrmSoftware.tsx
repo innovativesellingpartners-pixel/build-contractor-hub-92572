@@ -37,12 +37,6 @@ const faqSchema = {
 export function ContractorCrmSoftware() {
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, []);
-
-  return (
-    <>
-  useEffect(() => {
-    window.scrollTo(0, 0);
     document.title = "Contractor CRM Software | myCT1";
 
     const setMeta = (name: string, content: string) => {
@@ -62,6 +56,11 @@ export function ContractorCrmSoftware() {
 
     return () => { script?.remove(); };
   }, []);
+
+  return (
+    <>
+      <div className="min-h-screen bg-background text-foreground">
+        {/* Hero */}
         <section className="relative overflow-hidden bg-ct1-black py-24 sm:py-32">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent" />
           <div className="relative mx-auto max-w-5xl px-6 text-center">
