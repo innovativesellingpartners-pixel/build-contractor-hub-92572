@@ -20,6 +20,7 @@ import { BlogPodcast } from "@/pages/BlogPodcast";
 import { ContractorCRMGuide } from "@/pages/blog/ContractorCRMGuide";
 import { ContractorCrmSoftware } from "@/pages/ContractorCrmSoftware";
 import { ContractorEstimatingSoftware } from "@/pages/ContractorEstimatingSoftware";
+import { AiAnsweringServiceForContractors } from "@/pages/AiAnsweringServiceForContractors";
 import { Privacy } from "@/pages/Privacy";
 import { Terms } from "@/pages/Terms";
 import { Dashboard } from "@/components/Dashboard";
