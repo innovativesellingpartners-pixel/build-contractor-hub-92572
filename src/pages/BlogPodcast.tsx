@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FloatingTrialButton } from '@/components/FloatingTrialButton';
 import { MainSiteHeader } from '@/components/MainSiteHeader';
 import { SEOHead } from '@/components/SEOHead';
-import { Youtube, FileText, Mic, Play, Search, Mail, ArrowRight, Sparkles } from 'lucide-react';
+import { FileText, Mic, Play, Search, Mail, ArrowRight, Sparkles } from 'lucide-react';
 import { allBlogPosts } from '@/data/blogPosts';
 import podcastThumbnail from '@/assets/podcast-thumbnail.png';
 import ct1Logo from '@/assets/ct1-round-logo-new.png';
@@ -37,7 +37,6 @@ export const BlogPodcast = () => {
     return posts;
   }, [activeCategory, searchQuery]);
 
-
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
@@ -50,7 +49,6 @@ export const BlogPodcast = () => {
 
       {/* Hero with Logo + Branding */}
       <section className="relative bg-gradient-to-br from-[hsl(0,0%,5%)] via-[hsl(0,72%,15%)] to-[hsl(0,0%,8%)] py-14 md:py-20 overflow-hidden">
-        {/* Subtle pattern overlay */}
         <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '40px 40px' }} />
         <div className="relative container mx-auto px-4">
           <div className="flex flex-col items-center text-center gap-5">
@@ -77,36 +75,36 @@ export const BlogPodcast = () => {
         </div>
       </section>
 
-      {/* Podcast + Featured Newsletter - Side by Side */}
+      {/* Podcast + Featured Newsletter - Side by Side, Equal Height */}
       <section className="py-10 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-2 gap-6">
             {/* Left - Podcast */}
-            <div>
+            <div className="flex flex-col">
               <div className="flex items-center gap-2 mb-4">
                 <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
                   <Play className="h-4 w-4 text-primary" />
                 </div>
                 <h2 className="text-lg font-semibold">Featured Episode</h2>
               </div>
-              <Card className="overflow-hidden border-border h-[calc(100%-44px)]">
-                <div className="aspect-video relative">
+              <Card className="overflow-hidden border-border flex-1">
+                <div className="relative w-full h-full">
                   {isVideoPlaying ? (
                     <iframe
                       src="https://drive.google.com/file/d/1YIwwe3zaeu9Mcj4ftMuw3Kwu6PGdov2M/preview?t=784s"
-                      className="w-full h-full"
+                      className="absolute inset-0 w-full h-full"
                       allow="autoplay"
                       title="CT1 Featured Episode"
                     />
                   ) : (
                     <button
                       onClick={() => setIsVideoPlaying(true)}
-                      className="w-full h-full relative group cursor-pointer"
+                      className="w-full h-full min-h-[320px] relative group cursor-pointer"
                     >
                       <img
                         src={podcastThumbnail}
                         alt="CT1 Podcast - Click to play"
-                        className="w-full h-full object-cover"
+                        className="absolute inset-0 w-full h-full object-cover"
                       />
                       <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors flex items-center justify-center">
                         <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center group-hover:scale-110 transition-transform shadow-xl">
@@ -116,62 +114,44 @@ export const BlogPodcast = () => {
                     </button>
                   )}
                 </div>
-                {/* Upcoming Episodes */}
-                <div className="p-4 space-y-3">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Mic className="h-4 w-4 text-primary" />
-                    <p className="text-sm font-semibold">Upcoming Episodes</p>
-                  </div>
-                  {podcastEpisodes.map((episode, index) => (
-                    <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 border border-border">
-                      <div className="h-8 w-8 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
-                        <Youtube className="h-4 w-4 text-primary" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-xs font-medium leading-snug line-clamp-1">{episode.title}</p>
-                        <p className="text-[10px] text-muted-foreground mt-0.5">{episode.date}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
               </Card>
             </div>
 
             {/* Right - Featured Newsletter */}
-            <div>
+            <div className="flex flex-col">
               <div className="flex items-center gap-2 mb-4">
                 <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
                   <FileText className="h-4 w-4 text-primary" />
                 </div>
                 <h2 className="text-lg font-semibold">Featured Newsletter</h2>
               </div>
-              <Link to="/blog/contractor-crm-guide" className="no-underline group block h-[calc(100%-44px)]">
+              <Link to="/blog/contractor-crm-guide" className="no-underline group block flex-1">
                 <Card className="overflow-hidden border-border hover:border-primary/30 hover:shadow-xl transition-all duration-300 h-full flex flex-col">
-                  <div className="relative bg-gradient-to-br from-[hsl(0,0%,8%)] via-[hsl(0,72%,12%)] to-[hsl(0,0%,10%)] flex items-center justify-center p-8">
+                  <div className="relative bg-gradient-to-br from-[hsl(0,0%,8%)] via-[hsl(0,72%,12%)] to-[hsl(0,0%,10%)] flex items-center justify-center p-6">
                     <div className="text-center">
-                      <img src={ct1Logo} alt="CT1" className="h-12 w-12 mx-auto mb-3 drop-shadow-xl" />
+                      <img src={ct1Logo} alt="CT1" className="h-12 w-12 mx-auto mb-2 drop-shadow-xl" />
                       <span className="text-[10px] uppercase tracking-[0.2em] text-primary font-semibold">Business Tools</span>
                     </div>
                   </div>
-                  <div className="p-6 flex flex-col justify-between flex-1">
+                  <div className="p-5 flex flex-col justify-between flex-1">
                     <div>
-                      <h3 className="text-xl font-bold group-hover:text-primary transition-colors leading-tight mb-3">
+                      <h3 className="text-lg font-bold group-hover:text-primary transition-colors leading-tight mb-2">
                         Running a Modern Contractor Business: The Complete Guide
                       </h3>
-                      <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
+                      <p className="text-sm text-muted-foreground mb-3 line-clamp-3">
                         Why every growing contractor needs a single platform, and how choosing the right one can put more money in your bank, more time with your family, and more strength back into your community.
                       </p>
-                      <div className="grid grid-cols-3 gap-3 mb-4">
+                      <div className="grid grid-cols-3 gap-2 mb-3">
                         <div className="text-center p-2 rounded-lg bg-muted/50 border border-border">
-                          <span className="text-primary font-bold text-lg block">68%</span>
+                          <span className="text-primary font-bold text-base block">68%</span>
                           <span className="text-[10px] text-muted-foreground">lost revenue</span>
                         </div>
                         <div className="text-center p-2 rounded-lg bg-muted/50 border border-border">
-                          <span className="text-primary font-bold text-lg block">11hrs</span>
+                          <span className="text-primary font-bold text-base block">11hrs</span>
                           <span className="text-[10px] text-muted-foreground">wasted weekly</span>
                         </div>
                         <div className="text-center p-2 rounded-lg bg-muted/50 border border-border">
-                          <span className="text-primary font-bold text-lg block">3×</span>
+                          <span className="text-primary font-bold text-base block">3×</span>
                           <span className="text-[10px] text-muted-foreground">faster growth</span>
                         </div>
                       </div>
