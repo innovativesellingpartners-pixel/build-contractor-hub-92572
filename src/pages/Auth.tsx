@@ -240,20 +240,6 @@ export function Auth() {
                         try {
                           const { error } = await lovable.auth.signInWithOAuth("google", {
                             redirect_uri: window.location.origin,
-                            extraParams: {
-                              prompt: "consent",
-                              access_type: "offline",
-                              scope: [
-                                "openid",
-                                "email",
-                                "profile",
-                                "https://www.googleapis.com/auth/calendar.readonly",
-                                "https://www.googleapis.com/auth/calendar.events",
-                                "https://www.googleapis.com/auth/gmail.readonly",
-                                "https://www.googleapis.com/auth/gmail.send",
-                                "https://www.googleapis.com/auth/gmail.compose",
-                              ].join(" "),
-                            },
                           });
                           if (error) {
                             setError(error.message || "Google sign-in failed");
