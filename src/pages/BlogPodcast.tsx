@@ -159,8 +159,51 @@ export const BlogPodcast = () => {
         </div>
       </section>
 
+      {/* Featured Newsletter */}
+      <section className="py-10">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="flex items-center gap-2 mb-5">
+              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                <FileText className="h-4 w-4 text-primary" />
+              </div>
+              <h2 className="text-lg font-semibold">Featured Newsletter</h2>
+            </div>
+            <Link to="/blog/contractor-crm-guide" className="no-underline group block">
+              <Card className="overflow-hidden border-border hover:border-primary/30 hover:shadow-xl transition-all duration-300">
+                <div className="md:flex">
+                  <div className="md:w-2/5 relative bg-gradient-to-br from-[hsl(0,0%,8%)] via-[hsl(0,72%,12%)] to-[hsl(0,0%,10%)] flex items-center justify-center p-8 md:p-10">
+                    <div className="text-center">
+                      <img src={ct1Logo} alt="CT1" className="h-14 w-14 mx-auto mb-4 drop-shadow-xl" />
+                      <span className="text-[10px] uppercase tracking-[0.2em] text-primary font-semibold">Business Tools</span>
+                      <p className="text-white/40 text-xs mt-2">By Patrick Montgomery · 12 min read</p>
+                    </div>
+                  </div>
+                  <div className="md:w-3/5 p-6 md:p-8 flex flex-col justify-center">
+                    <h3 className="text-xl md:text-2xl font-bold group-hover:text-primary transition-colors leading-tight mb-3">
+                      Running a Modern Contractor Business — The Complete Guide
+                    </h3>
+                    <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
+                      Why every growing contractor needs a single platform, and how choosing the right one can put more money in your bank, more time with your family, and more strength back into your community.
+                    </p>
+                    <div className="flex flex-wrap gap-4 text-xs text-muted-foreground mb-4">
+                      <span className="flex items-center gap-1"><span className="text-primary font-bold text-base">68%</span> lost revenue from disconnected tools</span>
+                      <span className="flex items-center gap-1"><span className="text-primary font-bold text-base">11hrs</span> wasted weekly on admin</span>
+                      <span className="flex items-center gap-1"><span className="text-primary font-bold text-base">3×</span> faster growth with integrated platforms</span>
+                    </div>
+                    <span className="inline-flex items-center gap-1.5 text-sm text-primary font-semibold group-hover:gap-2.5 transition-all">
+                      Read the Full Newsletter <ArrowRight className="h-4 w-4" />
+                    </span>
+                  </div>
+                </div>
+              </Card>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Blog Articles */}
-      <section className="py-12">
+      <section className="py-12 border-t border-border">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
             <div>
