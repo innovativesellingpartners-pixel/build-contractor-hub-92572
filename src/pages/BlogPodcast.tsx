@@ -197,62 +197,114 @@ export const BlogPodcast = () => {
               </div>
               <p className="text-sm text-muted-foreground">Practical advice for running and growing your contracting business.</p>
             </div>
-            <div className="relative w-full md:w-72">
+            <div className="relative w-full md:w-80">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="Search articles..."
+                placeholder="Search our library by topic..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-border rounded-lg bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                className="w-full pl-10 pr-4 py-2.5 border border-border rounded-lg bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
               />
             </div>
           </div>
 
-          {/* Category Pills */}
-          <div className="flex flex-wrap gap-2 mb-8">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
-                  activeCategory === cat
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "bg-muted text-muted-foreground hover:bg-muted/80 border border-border"
-                }`}
-              >
-                {cat}
-                {cat === "All" && ` (${allBlogPosts.length})`}
-              </button>
-            ))}
-          </div>
-
-          {/* Article Grid */}
-          {filteredPosts.length === 0 ? (
-            <p className="text-muted-foreground text-center py-12">No articles found matching your search.</p>
-          ) : (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {filteredPosts.map((post) => (
-                <Link key={post.slug} to={`/blog/${post.slug}`} className="no-underline group">
-                  <Card className="hover:shadow-lg transition-all h-full border-border hover:border-primary/30 hover:-translate-y-0.5 duration-200">
-                    <CardHeader className="pb-3">
-                      <span className="text-[10px] uppercase tracking-wider text-primary font-semibold mb-1">
-                        {post.category}
-                      </span>
-                      <CardTitle className="text-base group-hover:text-primary transition-colors leading-snug">
-                        {post.title}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-0">
-                      <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{post.metaDescription}</p>
-                      <span className="inline-flex items-center gap-1 text-xs text-primary font-semibold">
-                        Read Article <ArrowRight className="h-3 w-3" />
-                      </span>
-                    </CardContent>
-                  </Card>
-                </Link>
+          {/* Default: 3 months × 3 articles */}
+          {!isSearching ? (
+            <div className="space-y-10">
+              {recentMonths.map((month) => (
+                <div key={month.label}>
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="h-0.5 w-6 bg-primary rounded-full" />
+                    <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">{month.label}</h3>
+                    <div className="h-px flex-1 bg-border" />
+                  </div>
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                    {month.posts.map((post) => (
+                      <Link key={post.slug} to={`/blog/${post.slug}`} className="no-underline group">
+                        <Card className="hover:shadow-lg transition-all h-full border-border hover:border-primary/30 hover:-translate-y-0.5 duration-200">
+                          <CardHeader className="pb-3">
+                            <span className="text-[10px] uppercase tracking-wider text-primary font-semibold mb-1">
+                              {post.category}
+                            </span>
+                            <CardTitle className="text-base group-hover:text-primary transition-colors leading-snug">
+                              {post.title}
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent className="pt-0">
+                            <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{post.metaDescription}</p>
+                            <span className="inline-flex items-center gap-1 text-xs text-primary font-semibold">
+                              Read Article <ArrowRight className="h-3 w-3" />
+                            </span>
+                          </CardContent>
+                        </Card>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
               ))}
+              <div className="text-center pt-4">
+                <Button variant="outline" onClick={() => setShowAll(true)} className="gap-2">
+                  <Search className="h-4 w-4" />
+                  Browse All {allBlogPosts.length} Articles
+                </Button>
+              </div>
             </div>
+          ) : (
+            <>
+              {/* Category Pills + Full results */}
+              <div className="flex flex-wrap gap-2 mb-8">
+                {categories.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setActiveCategory(cat)}
+                    className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
+                      activeCategory === cat
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "bg-muted text-muted-foreground hover:bg-muted/80 border border-border"
+                    }`}
+                  >
+                    {cat}
+                    {cat === "All" && ` (${allBlogPosts.length})`}
+                  </button>
+                ))}
+              </div>
+
+              {filteredPosts.length === 0 ? (
+                <p className="text-muted-foreground text-center py-12">No articles found matching your search.</p>
+              ) : (
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {filteredPosts.map((post) => (
+                    <Link key={post.slug} to={`/blog/${post.slug}`} className="no-underline group">
+                      <Card className="hover:shadow-lg transition-all h-full border-border hover:border-primary/30 hover:-translate-y-0.5 duration-200">
+                        <CardHeader className="pb-3">
+                          <span className="text-[10px] uppercase tracking-wider text-primary font-semibold mb-1">
+                            {post.category}
+                          </span>
+                          <CardTitle className="text-base group-hover:text-primary transition-colors leading-snug">
+                            {post.title}
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-0">
+                          <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{post.metaDescription}</p>
+                          <span className="inline-flex items-center gap-1 text-xs text-primary font-semibold">
+                            Read Article <ArrowRight className="h-3 w-3" />
+                          </span>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  ))}
+                </div>
+              )}
+
+              {showAll && !searchQuery.trim() && activeCategory === "All" && (
+                <div className="text-center pt-6">
+                  <Button variant="ghost" onClick={() => { setShowAll(false); setSearchQuery(""); setActiveCategory("All"); }} className="text-muted-foreground">
+                    ← Back to Recent Articles
+                  </Button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </section>
