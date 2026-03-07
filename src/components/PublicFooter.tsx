@@ -33,6 +33,17 @@ export function PublicFooter() {
             </ul>
           </div>
 
+          {/* Resources */}
+          <div>
+            <h4 className="font-semibold text-background mb-4">Resources</h4>
+            <ul className="space-y-2 text-sm text-background/70">
+              <li><Link to="/contractor-crm-software" className="hover:text-primary transition-colors">Contractor CRM</Link></li>
+              <li><Link to="/contractor-estimating-software" className="hover:text-primary transition-colors">Estimating Software</Link></li>
+              <li><Link to="/ai-answering-service-for-contractors" className="hover:text-primary transition-colors">AI Answering Service</Link></li>
+              <li><Link to="/forge-ai-invoice-assistant" className="hover:text-primary transition-colors">AI Invoice Assistant</Link></li>
+            </ul>
+          </div>
+
           {/* Company */}
           <div>
             <h4 className="font-semibold text-background mb-4">Company</h4>

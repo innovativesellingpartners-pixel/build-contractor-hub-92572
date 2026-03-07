@@ -372,6 +372,24 @@ export function NewLandingPage() {
               </Link>
             ))}
           </div>
+
+          {/* SEO Resource Links */}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
+            {[
+              { title: "Contractor CRM Software", desc: "Track leads, manage jobs, and close more work.", link: "/contractor-crm-software" },
+              { title: "Contractor Estimating Software", desc: "Build professional estimates and win more jobs.", link: "/contractor-estimating-software" },
+              { title: "AI Answering Service", desc: "Never miss a call with 24/7 AI phone handling.", link: "/ai-answering-service-for-contractors" },
+              { title: "AI Invoice Assistant", desc: "Automate billing and get paid faster.", link: "/forge-ai-invoice-assistant" },
+            ].map((item) => (
+              <Link key={item.link} to={item.link} className="group">
+                <div className="rounded-lg border border-border bg-card p-4 hover:border-primary/50 hover:shadow-md transition-all">
+                  <h4 className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors">{item.title}</h4>
+                  <p className="text-xs text-muted-foreground mt-1">{item.desc}</p>
+                  <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary mt-2 transition-colors" />
+                </div>
+              </Link>
+            ))}
+          </div>
           
           {/* Trades Badge Strip */}
           <div className="flex flex-wrap justify-center gap-3 mb-12 py-6 border-y border-border">
