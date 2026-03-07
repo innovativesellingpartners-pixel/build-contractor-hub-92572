@@ -25,6 +25,7 @@ export function Auth() {
   const [showNewPasswordForm, setShowNewPasswordForm] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
+  const [googleLoading, setGoogleLoading] = useState(false);
   const { signIn, signUp, user, resetPassword } = useAuth();
 
   // Redirect if already logged in
