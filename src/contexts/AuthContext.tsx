@@ -96,9 +96,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     console.log('Auth initialization:', { isPWA, hasLocalStorage: !!window.localStorage });
 
+    let authStateInitialized = false;
+
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        authStateInitialized = true;
         console.log('Auth state changed:', event, { hasSession: !!session, hasUser: !!session?.user });
         
         // During sign-out, don't update state — let signOut() handle the redirect
@@ -123,11 +126,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     );
 
-    // THEN check for existing session
+    // Fallback check: only apply if listener hasn't already initialized state.
+    // This prevents a stale/null getSession result from overwriting a fresh SIGNED_IN session.
     supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (error) {
         console.error('Error getting session:', error);
       }
+
+      if (authStateInitialized) {
+        console.log('Initial session check skipped (already initialized by auth event)');
+        return;
+      }
+
       console.log('Initial session check:', { hasSession: !!session, hasUser: !!session?.user });
       
       setSession(session);
@@ -137,6 +147,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setTimeout(() => {
           fetchProfile(session.user.id);
         }, 0);
+      } else {
+        setProfile(null);
       }
       
       setLoading(false);
