@@ -1,28 +1,49 @@
 
 
-## Fix: Remove CT1 Logo from Customer-Facing Estimates and Invoices
+## Fix: Google Sign-In `redirect_uri_mismatch` Error
 
-### Problem
-When estimates are sent to customers, the public estimate page falls back to the CT1 logo when a contractor hasn't uploaded their own logo. Customers should only see their contractor's branding, not CT1 branding in the header.
+### Root Cause
+There are two issues:
 
-### What Changes
+1. **Build error** (`TS2307: Cannot find module '@lovable.dev/cloud-auth-js'`): The package `@lovable.dev/cloud-auth-js@^0.0.3` is listed in `package.json` but may not be resolving. This is an auto-generated file we cannot modify. We need to ensure the package installs correctly.
 
-**File: `src/pages/PublicEstimate.tsx`**
+2. **`redirect_uri_mismatch`**: The Google OAuth flow is failing because the `scope` parameter is being passed via `extraParams`, which likely overrides or conflicts with the managed Lovable Cloud OAuth redirect configuration. The Lovable managed Google OAuth has specific redirect URIs configured, and passing custom scopes through `extraParams` can cause Google to reject the request.
 
-1. **Remove the CT1 logo import** (line 13) -- the `ct1PoweredLogo` import is used in two places: the header fallback and the "Powered by CT1" footer. The footer usage is intentional branding, so the import stays but the header fallback changes.
+### Important Limitation
+Lovable Cloud's managed Google OAuth (`lovable.auth.signInWithOAuth`) handles standard sign-in scopes (openid, email, profile) automatically. However, **it does not support requesting additional API scopes** (like Calendar and Gmail) during the sign-in flow — those are custom API permissions beyond authentication.
 
-2. **Update the header logo fallback** (line 217) -- Instead of falling back to the CT1 logo when the contractor has no logo, use a `Building2` icon (same pattern as `PublicInvoice.tsx`):
-   - Change: `const displayLogo = contractor?.logo_url || ct1PoweredLogo;`
-   - To: `const displayLogo = contractor?.logo_url;`
+### Revised Plan
 
-3. **Update the header logo rendering** (around lines 231-240) -- Add a conditional: if `displayLogo` exists, show the contractor's logo image; otherwise show a generic `Building2` icon in a styled circle, matching the invoice page pattern.
+**Step 1: Fix the Google Sign-In button to use standard scopes only**
+- Remove the `extraParams.scope` and `access_type` parameters from the `lovable.auth.signInWithOAuth` call in `Auth.tsx`
+- Keep it simple: just `lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin })`
+- This will fix the `redirect_uri_mismatch` error
 
-### What Stays
-- The **"Powered by CT1"** footer branding at the bottom of estimates remains unchanged (this is the platform branding standard).
-- The **PublicInvoice.tsx** page already handles this correctly with the `Building2` fallback icon -- no changes needed there.
-- The **estimate PDF preview/download** components already use only the contractor's `logo_url` with no CT1 fallback -- no changes needed.
+**Step 2: Auto-connect Calendar & Gmail after sign-in using the existing manual flow**
+- After a Google OAuth sign-in is detected in `AuthContext.tsx`, automatically trigger the existing `google-oauth-init` edge function with `type: 'both'` to request Calendar + Gmail scopes
+- This uses the **existing** OAuth flow (which already has its own client ID/secret and redirect URIs configured) as a second step
+- The user signs in once via Lovable managed OAuth, then gets silently redirected to grant Calendar/Gmail access
 
-### Technical Details
-- Only 1 file modified: `src/pages/PublicEstimate.tsx`
-- ~10 lines changed total
-- Pattern mirrors the existing `PublicInvoice.tsx` implementation (lines 142-154)
+**Step 3: Alternative simpler approach — prompt user to connect after sign-in**
+- After Google sign-in, show a one-time prompt: "Connect your Google Calendar & Gmail for full functionality"
+- Clicking it triggers the existing manual connect flow with `type: 'both'`
+- This avoids a double-redirect and keeps the UX clear
+
+### Recommended Approach: Step 1 + Step 3
+This is the most reliable approach:
+1. Fix the sign-in button (remove extra scopes) → fixes the error
+2. After first Google sign-in, show a banner/prompt to connect Calendar & Gmail in one click
+3. The connect flow uses the existing `google-oauth-init`/`google-oauth-callback` edge functions which already have proper redirect URIs configured
+
+### Files to modify
+| File | Change |
+|------|--------|
+| `src/pages/Auth.tsx` | Remove `extraParams` with scope/access_type from Google sign-in call |
+| `src/contexts/AuthContext.tsx` | Remove the auto-connect logic that calls `google-auto-connect` (it won't have Calendar/Gmail tokens from managed OAuth) |
+| `supabase/functions/google-auto-connect/index.ts` | **Delete** — not needed since managed OAuth won't provide Calendar/Gmail tokens |
+
+### What stays the same
+- Existing email/password login
+- Existing manual "Connect Google Calendar" and "Connect Gmail" flows
+- The `google-oauth-init` and `google-oauth-callback` edge functions (these work and have proper redirect URIs)
+
