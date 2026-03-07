@@ -28,11 +28,6 @@ export function Auth() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const { signIn, signUp, user, resetPassword } = useAuth();
 
-  // Detect custom domain (not lovable preview/localhost)
-  const isCustomDomain =
-    !window.location.hostname.includes("lovable.app") &&
-    !window.location.hostname.includes("lovableproject.com") &&
-    !window.location.hostname.includes("localhost");
 
   // Redirect if already logged in — check subscription status first
   useEffect(() => {
@@ -288,29 +283,11 @@ export function Auth() {
                         setGoogleLoading(true);
                         setError("");
                         try {
-                          if (isCustomDomain) {
-                            // On custom domain: bypass Lovable auth bridge, use Supabase directly
-                            const { data, error } = await supabase.auth.signInWithOAuth({
-                              provider: "google",
-                              options: {
-                                redirectTo: window.location.origin + "/auth",
-                                skipBrowserRedirect: true,
-                              },
-                            });
-                            if (error) {
-                              setError(error.message || "Google sign-in failed");
-                            } else if (data?.url) {
-                              window.location.href = data.url;
-                              return; // Don't setGoogleLoading(false) — we're navigating away
-                            }
-                          } else {
-                            // On Lovable domain: use managed OAuth
-                            const { error } = await lovable.auth.signInWithOAuth("google", {
-                              redirect_uri: window.location.origin + "/auth",
-                            });
-                            if (error) {
-                              setError(error.message || "Google sign-in failed");
-                            }
+                          const { error } = await lovable.auth.signInWithOAuth("google", {
+                            redirect_uri: window.location.origin + "/auth",
+                          });
+                          if (error) {
+                            setError(error.message || "Google sign-in failed");
                           }
                         } catch (err) {
                           setError("Google sign-in failed");
