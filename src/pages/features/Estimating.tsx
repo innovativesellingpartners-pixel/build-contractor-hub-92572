@@ -210,6 +210,9 @@ export default function Estimating() {
               </Button>
             </Link>
           </div>
+          <p className="mt-6 text-sm opacity-80">
+            Learn more: <Link to="/contractor-estimating-software" className="underline hover:opacity-100">Contractor Estimating Software</Link> · <Link to="/contractor-crm-software" className="underline hover:opacity-100">CRM Software</Link> · <Link to="/forge-ai-invoice-assistant" className="underline hover:opacity-100">AI Invoice Assistant</Link>
+          </p>
         </div>
       </section>
 
