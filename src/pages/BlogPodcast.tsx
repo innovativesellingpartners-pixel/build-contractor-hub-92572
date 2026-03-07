@@ -21,6 +21,22 @@ export const BlogPodcast = () => {
     return ["All", ...cats.sort()];
   }, []);
 
+  const [showAll, setShowAll] = useState(false);
+
+  // Distribute posts across 3 "months" — 3 per month = 9 featured
+  const recentMonths = useMemo(() => {
+    const now = new Date();
+    return [0, 1, 2].map(offset => {
+      const d = new Date(now.getFullYear(), now.getMonth() - offset, 1);
+      return {
+        label: d.toLocaleString('default', { month: 'long', year: 'numeric' }),
+        posts: allBlogPosts.slice(offset * 3, offset * 3 + 3),
+      };
+    });
+  }, []);
+
+  const isSearching = searchQuery.trim().length > 0 || activeCategory !== "All" || showAll;
+
   const filteredPosts = useMemo(() => {
     let posts = allBlogPosts;
     if (activeCategory !== "All") {
