@@ -249,24 +249,30 @@ export function TrialSignup() {
                       value={formData.email}
                       onChange={handleInputChange}
                       placeholder="john@example.com"
-                      className="border-2 border-border focus:border-primary transition-colors"
+                      readOnly={isGoogleUser}
+                      className={`border-2 border-border focus:border-primary transition-colors ${isGoogleUser ? "bg-muted cursor-not-allowed" : ""}`}
                     />
+                    {isGoogleUser && (
+                      <p className="text-xs text-muted-foreground">Signed in with Google</p>
+                    )}
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="password">Password *</Label>
-                    <Input
-                      id="password"
-                      name="password"
-                      type="password"
-                      required
-                      value={formData.password}
-                      onChange={handleInputChange}
-                      placeholder="••••••••"
-                      minLength={6}
-                      className="border-2 border-border focus:border-primary transition-colors"
-                    />
-                    <p className="text-xs text-muted-foreground">Minimum 6 characters</p>
-                  </div>
+                  {!isGoogleUser && (
+                    <div className="space-y-2">
+                      <Label htmlFor="password">Password *</Label>
+                      <Input
+                        id="password"
+                        name="password"
+                        type="password"
+                        required
+                        value={formData.password}
+                        onChange={handleInputChange}
+                        placeholder="••••••••"
+                        minLength={6}
+                        className="border-2 border-border focus:border-primary transition-colors"
+                      />
+                      <p className="text-xs text-muted-foreground">Minimum 6 characters</p>
+                    </div>
+                  )}
                 </div>
               </div>
 
