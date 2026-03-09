@@ -353,18 +353,28 @@ export function TradeCrmLandingPage({ config }: Props) {
       {/* Internal Links */}
       <section className="py-12 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h3 className="font-semibold text-foreground mb-4">{tradePlural} CRM by City</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2 mb-6">
+            {cities.slice(0, 12).map((city) => (
+              <Link key={city.slug} to={`/crm-for-${slug}-in-${city.slug}`} className="text-xs text-primary hover:underline text-center p-1.5 rounded border border-border/50 hover:border-primary/30 transition-colors">
+                {city.name}, {city.stateCode}
+              </Link>
+            ))}
+          </div>
           <div className="flex flex-wrap justify-center gap-4 text-sm">
-            <Link to="/features/crm" className="text-primary hover:underline">CRM Features</Link>
+            <Link to="/features/contractor-crm" className="text-primary hover:underline">CRM Features</Link>
             <span className="text-muted-foreground">·</span>
-            <Link to="/features/estimating" className="text-primary hover:underline">Estimating</Link>
+            <Link to="/features/contractor-estimating" className="text-primary hover:underline">Estimating</Link>
             <span className="text-muted-foreground">·</span>
-            <Link to="/features/jobs" className="text-primary hover:underline">Job Management</Link>
+            <Link to="/features/job-scheduling" className="text-primary hover:underline">Job Scheduling</Link>
             <span className="text-muted-foreground">·</span>
-            <Link to="/products/pocketbot" className="text-primary hover:underline">PocketBot Voice AI</Link>
+            <Link to="/features/forge-ai-automation" className="text-primary hover:underline">Forge AI</Link>
+            <span className="text-muted-foreground">·</span>
+            <Link to="/blog" className="text-primary hover:underline">Blog</Link>
             <span className="text-muted-foreground">·</span>
             <Link to="/pricing" className="text-primary hover:underline">Pricing</Link>
             <span className="text-muted-foreground">·</span>
-            <Link to="/contractor-crm-software" className="text-primary hover:underline">Contractor CRM</Link>
+            <Link to="/trades" className="text-primary hover:underline">All Trades</Link>
           </div>
         </div>
       </section>

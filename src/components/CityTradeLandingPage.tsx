@@ -181,7 +181,7 @@ export function CityTradeLandingPage({ trade, city }: Props) {
                 <span className="font-semibold text-foreground">Pricing Plans</span>
                 <p className="text-sm text-muted-foreground mt-1">Find the right plan for your business</p>
               </Link>
-              <Link to="/blog-podcast" className="p-4 rounded-lg border border-border hover:border-primary/50 transition-colors">
+              <Link to="/blog" className="p-4 rounded-lg border border-border hover:border-primary/50 transition-colors">
                 <span className="font-semibold text-foreground">Contractor Blog</span>
                 <p className="text-sm text-muted-foreground mt-1">Tips and strategies for growing your business</p>
               </Link>
