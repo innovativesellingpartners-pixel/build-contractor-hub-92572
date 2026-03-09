@@ -30,6 +30,20 @@ import {
 export default function Jobs() {
   const [activeContactForm, setActiveContactForm] = useState<string | null>(null);
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    document.title = "Contractor Job Management Software — Schedule, Track & Complete | myCT1";
+    const setMeta = (name: string, content: string) => {
+      let el = document.querySelector(`meta[name="${name}"]`) as HTMLMetaElement | null;
+      if (!el) { el = document.createElement("meta"); el.name = name; document.head.appendChild(el); }
+      el.content = content;
+    };
+    setMeta("description", "Contractor job management software that schedules crews, tracks progress, and manages every project from estimate to final payment. Try myCT1 free.");
+    let canon = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+    if (!canon) { canon = document.createElement("link"); canon.rel = "canonical"; document.head.appendChild(canon); }
+    canon.href = "https://myct1.com/features/jobs";
+  }, []);
+
   const stats = [
     { number: "98%", label: "On-Time Completion" },
     { number: "+15%", label: "Profit Margin" },
