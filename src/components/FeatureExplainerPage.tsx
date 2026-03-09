@@ -132,7 +132,7 @@ export function FeatureExplainerPage({ config }: Props) {
         </div>
       </section>
 
-      {/* Internal Links */}
+      {/* Internal Links — Feature Pages, Trade Pages, Blog, Pricing */}
       <section className="py-16 md:py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
@@ -154,13 +154,40 @@ export function FeatureExplainerPage({ config }: Props) {
                 <span className="font-semibold text-foreground">Job Scheduling</span>
                 <p className="text-sm text-muted-foreground mt-1">Schedule jobs and assign crews</p>
               </Link>
-              <Link to="/trades" className="p-4 rounded-lg border border-border bg-card hover:border-primary/50 transition-colors">
-                <span className="font-semibold text-foreground">Browse by Trade</span>
-                <p className="text-sm text-muted-foreground mt-1">See how myCT1 serves your trade</p>
+              <Link to="/features/forge-ai-automation" className="p-4 rounded-lg border border-border bg-card hover:border-primary/50 transition-colors">
+                <span className="font-semibold text-foreground">Forge AI Automation</span>
+                <p className="text-sm text-muted-foreground mt-1">AI-powered call answering and follow-ups</p>
               </Link>
-              <Link to="/blog" className="p-4 rounded-lg border border-border bg-card hover:border-primary/50 transition-colors">
-                <span className="font-semibold text-foreground">Contractor Blog</span>
-                <p className="text-sm text-muted-foreground mt-1">Tips and growth strategies</p>
+              <Link to="/features/invoice-automation" className="p-4 rounded-lg border border-border bg-card hover:border-primary/50 transition-colors">
+                <span className="font-semibold text-foreground">Invoice Automation</span>
+                <p className="text-sm text-muted-foreground mt-1">Generate invoices and collect payments</p>
+              </Link>
+            </div>
+
+            {/* Trade Pages */}
+            <h3 className="text-lg font-semibold text-foreground mt-10 mb-4">CRM by Trade</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+              <Link to="/crm-for-plumbers" className="text-sm text-primary hover:underline py-1">Plumber CRM</Link>
+              <Link to="/crm-for-electricians" className="text-sm text-primary hover:underline py-1">Electrician CRM</Link>
+              <Link to="/crm-for-hvac-contractors" className="text-sm text-primary hover:underline py-1">HVAC CRM</Link>
+              <Link to="/crm-for-roofing-contractors" className="text-sm text-primary hover:underline py-1">Roofing CRM</Link>
+              <Link to="/crm-for-general-contractors" className="text-sm text-primary hover:underline py-1">General Contractor CRM</Link>
+              <Link to="/crm-for-remodeling-contractors" className="text-sm text-primary hover:underline py-1">Remodeling CRM</Link>
+              <Link to="/crm-for-painting-contractors" className="text-sm text-primary hover:underline py-1">Painting CRM</Link>
+              <Link to="/crm-for-landscaping-contractors" className="text-sm text-primary hover:underline py-1">Landscaping CRM</Link>
+              <Link to="/trades" className="text-sm font-medium text-primary hover:underline py-1">View all trades →</Link>
+            </div>
+
+            {/* Blog & Resources */}
+            <h3 className="text-lg font-semibold text-foreground mt-10 mb-4">From the Blog</h3>
+            <div className="grid sm:grid-cols-2 gap-2">
+              <Link to="/blog" className="p-3 rounded-lg border border-border bg-card hover:border-primary/50 transition-colors">
+                <span className="font-semibold text-foreground text-sm">Contractor Business Blog</span>
+                <p className="text-xs text-muted-foreground mt-1">100+ guides on lead gen, estimating, cash flow, and growth</p>
+              </Link>
+              <Link to="/contractor-business-resources" className="p-3 rounded-lg border border-border bg-card hover:border-primary/50 transition-colors">
+                <span className="font-semibold text-foreground text-sm">Business Resources Hub</span>
+                <p className="text-xs text-muted-foreground mt-1">Complete directory of contractor tools and guides</p>
               </Link>
             </div>
           </div>

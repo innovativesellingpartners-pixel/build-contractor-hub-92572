@@ -183,6 +183,13 @@ const App = () => (
           <Route path="/network-map" element={<NetworkMap />} />
             <Route path="/nationwide-network" element={<NationwideNetwork />} />
             <Route path="/trades-we-serve" element={<TradesWeServe />} />
+            {/* Redirect /business-suite/* feature pages to /features/* to consolidate SEO */}
+            <Route path="/business-suite/crm" element={<Navigate to="/features/crm" replace />} />
+            <Route path="/business-suite/estimating" element={<Navigate to="/features/estimating" replace />} />
+            <Route path="/business-suite/jobs" element={<Navigate to="/features/jobs" replace />} />
+            <Route path="/business-suite/voice-ai" element={<Navigate to="/features/voice-ai" replace />} />
+            <Route path="/business-suite/reporting" element={<Navigate to="/features/reporting" replace />} />
+            <Route path="/business-suite/training" element={<Navigate to="/features/training" replace />} />
             <Route path="/blog-podcast" element={<BlogPodcast />} />
             <Route path="/blog/contractor-crm-guide" element={<ContractorCRMGuide />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
