@@ -97,10 +97,10 @@ export function NewLandingPage() {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title="Contractor Business Software | CRM, Estimating & AI Tools Nationwide"
-        description="America's leading contractor business suite. Professional CRM, estimating software, AI assistants, job management & invoicing for contractors across all 50 states. Start your free trial today."
+        title="myCT1 — The All-in-One Business Platform for Contractors"
+        description="Run your entire contracting business from one platform. CRM, estimating, job management, invoicing, AI call answering, and reporting — built for contractors who want to grow. Start free."
         canonical="/"
-        keywords="contractor software, contractor CRM, estimating software, contractor business management, roofing contractor software, HVAC contractor software, plumbing contractor software, electrical contractor software, construction management, AI for contractors"
+        keywords="contractor business software, contractor CRM, estimating software, job management, contractor invoicing, AI for contractors"
       />
       <MainSiteHeader onContactClick={() => setActiveContactForm("contact-sales")} />
 
