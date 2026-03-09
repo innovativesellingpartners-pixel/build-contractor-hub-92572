@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { MainSiteHeader } from "@/components/MainSiteHeader";
 import { PublicFooter } from "@/components/PublicFooter";
 import { FloatingTrialButton } from "@/components/FloatingTrialButton";
+import { SeoBreadcrumb } from "@/components/SeoBreadcrumb";
 import type { FeaturePageConfig } from "@/data/seoFeaturePages";
 
 interface Props {
