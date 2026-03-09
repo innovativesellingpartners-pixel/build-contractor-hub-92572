@@ -120,10 +120,10 @@ export function Pricing() {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title="Contractor Software Pricing — Plans Starting at $99/mo | myCT1"
-        description="Transparent contractor software pricing from myCT1. CRM, estimating, job management, invoicing, and AI tools from $99.99/month. No hidden fees. Start free."
+        title="Contractor Software Pricing — Plans from $99/mo | myCT1"
+        description="Simple, transparent pricing for contractor software. CRM, estimating, job management, invoicing, and AI tools starting at $99.99/month. No contracts. No hidden fees."
         canonical="/pricing"
-        keywords="contractor software pricing, contractor CRM pricing, estimating software cost, job management software price"
+        keywords="contractor software pricing, contractor CRM cost, estimating software pricing, job management software price"
         structuredData={structuredDataGenerators.product(
           'myCT1 Contractor Business Suite',
           'Complete contractor business management software with CRM, estimating, invoicing, job management, and AI-powered tools.',
@@ -141,7 +141,7 @@ export function Pricing() {
             Contractor Software Pricing
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Our tiered approach ensures you get exactly what you need at your current stage while providing a clear path for growth as your business expands.
+            Pick a plan that fits your business today. Upgrade anytime as you grow. No long-term contracts, no hidden fees, cancel anytime.
           </p>
         </div>
       </section>

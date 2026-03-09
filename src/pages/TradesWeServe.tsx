@@ -28,10 +28,10 @@ export const TradesWeServe = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title="Trades We Serve - Software for Roofers, Plumbers, HVAC, Electricians & More"
-        description="myCT1 contractor software serves all major trades nationwide: roofing, plumbing, HVAC, electrical, painting, remodeling, landscaping & general contracting. Get industry-specific tools."
+        title="Contractor Software by Trade — Tools for Every Home Service Business | myCT1"
+        description="Whether you are a roofer, plumber, electrician, or HVAC tech — myCT1 has trade-specific CRM, estimating, and job management built for how you work. Find your trade."
         canonical="/trades-we-serve"
-        keywords="roofing contractor software, plumbing software, HVAC contractor management, electrical contractor CRM, painting contractor software, remodeling contractor tools, landscaping business software, general contractor management"
+        keywords="contractor software by trade, roofing CRM, plumbing software, HVAC contractor software, electrician CRM, painting contractor tools"
       />
       <FloatingTrialButton />
       <MainSiteHeader />
@@ -43,9 +43,9 @@ export const TradesWeServe = () => {
           <div className="absolute inset-0 bg-background/85 backdrop-blur-sm" />
         </div>
         <div className="relative container mx-auto px-4 text-center">
-          <h1 className="text-5xl md:text-6xl font-bold mb-6">The Trades We Serve</h1>
+          <h1 className="text-5xl md:text-6xl font-bold mb-6">Contractor Software by Trade</h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-            The myCT1 Business-in-a-Box platform is built for contractors across all major trades. Manage leads, estimates, jobs, invoices, and payments from one system — no matter your trade.
+            Generic software was not built for contractors. myCT1 gives roofers, plumbers, electricians, HVAC techs, and 25+ other trades the CRM, estimating, and job tools designed for how you actually run your business.
           </p>
           <Link to="/pricing">
             <Button size="lg">Get Started Today</Button>

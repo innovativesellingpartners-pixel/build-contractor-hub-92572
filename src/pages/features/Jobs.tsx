@@ -32,13 +32,13 @@ export default function Jobs() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    document.title = "Contractor Job Management Software — Schedule, Track & Complete | myCT1";
+    document.title = "Contractor Job Management Software — Schedule Crews & Track Jobs | myCT1";
     const setMeta = (name: string, content: string) => {
       let el = document.querySelector(`meta[name="${name}"]`) as HTMLMetaElement | null;
       if (!el) { el = document.createElement("meta"); el.name = name; document.head.appendChild(el); }
       el.content = content;
     };
-    setMeta("description", "Contractor job management software that schedules crews, tracks progress, and manages every project from estimate to final payment. Try myCT1 free.");
+    setMeta("description", "Missed deadlines and budget overruns kill contractor profits. myCT1 job management tracks every project from estimate to final payment so nothing falls through. Try free.");
     let canon = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
     if (!canon) { canon = document.createElement("link"); canon.rel = "canonical"; document.head.appendChild(canon); }
     canon.href = "https://myct1.com/features/jobs";
@@ -90,7 +90,7 @@ export default function Jobs() {
               Contractor Job Management <span className="text-primary">Software</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Schedule crews, track progress, and manage every job from start to finish. Keep projects on time, on budget, and customers happy.
+              Running multiple jobs off whiteboards and group texts leads to missed deadlines and blown budgets. myCT1 gives you one dashboard to schedule crews, track progress, and manage every project from signed estimate to final payment.
             </p>
           </div>
 
