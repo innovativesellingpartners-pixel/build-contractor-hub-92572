@@ -73,6 +73,11 @@ export function FeatureExplainerPage({ config }: Props) {
         </div>
       </section>
 
+      {/* Breadcrumb */}
+      <div className="container mx-auto px-4">
+        <SeoBreadcrumb items={[{ label: "Features", href: "/features" }, { label: title }]} />
+      </div>
+
       {/* Overview */}
       <section className="py-16 md:py-20 bg-background">
         <div className="container mx-auto px-4">
