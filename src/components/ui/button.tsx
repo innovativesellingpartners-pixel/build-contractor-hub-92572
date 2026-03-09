@@ -5,19 +5,21 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium ring-offset-background transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium text-foreground ring-offset-background transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
         default: "bg-primary text-primary-foreground hover:bg-primary/90",
         destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-        outline: "border border-border bg-background hover:bg-accent/10 hover:text-accent-foreground hover:border-primary/50 shadow-sm",
+        outline:
+          "border border-border bg-transparent text-foreground hover:bg-accent/10 hover:text-accent-foreground hover:border-primary/50 shadow-sm",
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
+        ghost: "bg-transparent hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
         // Industrial contractor variants
         hero: "bg-gradient-hero text-primary-foreground font-bold px-8 py-4 rounded-lg shadow-hero hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300",
-        industrial: "bg-gradient-to-r from-construction-steel to-foreground text-white font-semibold border-2 border-primary hover:border-primary-hover hover:shadow-industrial",
+        industrial:
+          "bg-gradient-to-r from-construction-steel to-foreground text-primary-foreground font-semibold border-2 border-primary hover:border-primary-hover hover:shadow-industrial",
         contractor: "bg-primary hover:bg-primary-hover text-primary-foreground font-semibold border border-primary/20 shadow-lg hover:shadow-xl transition-all",
         // Vibrant status variants
         success: "bg-success text-success-foreground hover:bg-success/90 shadow-lg shadow-success/30",
