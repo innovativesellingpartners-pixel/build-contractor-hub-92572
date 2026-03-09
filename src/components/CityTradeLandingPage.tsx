@@ -105,6 +105,15 @@ export function CityTradeLandingPage({ trade, city }: Props) {
         </div>
       </section>
 
+      {/* Breadcrumb */}
+      <div className="container mx-auto px-4">
+        <SeoBreadcrumb items={[
+          { label: "Trades", href: "/trades" },
+          { label: trade.keyword, href: `/crm-for-${trade.slug}` },
+          { label: city.name },
+        ]} />
+      </div>
+
       {/* Why local contractors need myCT1 */}
       <section className="py-16 md:py-20 bg-background">
         <div className="container mx-auto px-4">
