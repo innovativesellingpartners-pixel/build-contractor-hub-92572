@@ -46,7 +46,7 @@ export function PublicFooter() {
               <li><Link to="/crm-for-hvac-contractors" className="hover:text-primary transition-colors">CRM for HVAC</Link></li>
               <li><Link to="/crm-for-roofing-contractors" className="hover:text-primary transition-colors">CRM for Roofers</Link></li>
               <li><Link to="/crm-for-general-contractors" className="hover:text-primary transition-colors">CRM for GCs</Link></li>
-            </ul>
+              <li><Link to="/contractor-business-resources" className="hover:text-primary transition-colors">Contractor Business Resources</Link></li>
           </div>
 
           {/* Company */}
