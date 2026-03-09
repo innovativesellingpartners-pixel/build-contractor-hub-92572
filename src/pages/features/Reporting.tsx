@@ -82,7 +82,7 @@ export default function Reporting() {
               Dashboard & Reporting
             </Badge>
             <h1 className="text-5xl font-bold text-foreground mb-6">
-              Know Your Numbers, <span className="text-primary">Grow Your Business</span>
+              Contractor Reporting <span className="text-primary">Software</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               See your entire business at a glance. Track revenue, close rates, job profitability, and team performance in real-time dashboards.

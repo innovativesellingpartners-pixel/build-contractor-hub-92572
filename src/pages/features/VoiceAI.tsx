@@ -82,7 +82,7 @@ export default function VoiceAI() {
               Voice AI
             </Badge>
             <h1 className="text-5xl font-bold text-foreground mb-6">
-              Never Miss a <span className="text-primary">Call Again</span>
+              AI Answering Service for <span className="text-primary">Contractors</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               Answer every call with AI that sounds natural, captures leads, and books appointments. Never miss an opportunity, even at 2 AM.
