@@ -7,7 +7,9 @@ import { Badge } from "@/components/ui/badge";
 import { MainSiteHeader } from "@/components/MainSiteHeader";
 import { PublicFooter } from "@/components/PublicFooter";
 import { FloatingTrialButton } from "@/components/FloatingTrialButton";
+import { SeoBreadcrumb } from "@/components/SeoBreadcrumb";
 import type { TradeCrmConfig } from "@/data/tradeCrmPages";
+import cities from "@/data/seoCities";
 import heroBg from "@/assets/hero-crm-dashboard.jpg";
 
 interface Props {
