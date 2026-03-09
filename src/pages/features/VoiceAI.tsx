@@ -25,6 +25,20 @@ import {
 } from "lucide-react";
 
 export default function VoiceAI() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    document.title = "AI Answering Service for Contractors — Never Miss a Call | myCT1";
+    const setMeta = (name: string, content: string) => {
+      let el = document.querySelector(`meta[name="${name}"]`) as HTMLMetaElement | null;
+      if (!el) { el = document.createElement("meta"); el.name = name; document.head.appendChild(el); }
+      el.content = content;
+    };
+    setMeta("description", "AI answering service for contractors that picks up every call, captures leads, and books appointments 24/7. Try myCT1 Voice AI free.");
+    let canon = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+    if (!canon) { canon = document.createElement("link"); canon.rel = "canonical"; document.head.appendChild(canon); }
+    canon.href = "https://myct1.com/features/voice-ai";
+  }, []);
+
   const stats = [
     { number: "100%", label: "Calls Answered" },
     { number: "24/7", label: "Availability" },
