@@ -226,7 +226,11 @@ export default function ContractorBusinessResources() {
           </div>
 
           {/* Cities directory */}
-          <h3 className="text-lg font-semibold text-foreground mb-4">Browse by City</h3>
+          <div className="mt-6">
+            <Link to="/cities" className="text-primary hover:text-primary/80 text-sm font-medium">
+              Browse all cities →
+            </Link>
+          </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-2">
             {topCities.map((city) => (
               <Link
