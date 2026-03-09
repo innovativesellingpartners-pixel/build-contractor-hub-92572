@@ -182,6 +182,13 @@ const App = () => (
             <Route path="/features/communication" element={<Communication />} />
             <Route path="/features/voice-ai" element={<VoiceAI />} />
             <Route path="/features/reporting" element={<ReportingFeature />} />
+            <Route path="/marketplace" element={<Marketplace />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/what-we-do" element={<WhatWeDo />} />
+            <Route path="/core-values" element={<CoreValues />} />
+            <Route path="/network-map" element={<NetworkMap />} />
+            <Route path="/nationwide-network" element={<NationwideNetwork />} />
+            <Route path="/trades-we-serve" element={<TradesWeServe />} />
             <Route path="/blog-podcast" element={<BlogPodcast />} />
             <Route path="/blog/contractor-crm-guide" element={<ContractorCRMGuide />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
