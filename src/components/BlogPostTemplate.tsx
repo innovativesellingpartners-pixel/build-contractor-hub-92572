@@ -85,6 +85,11 @@ export function BlogPostTemplate({ post }: Props) {
         </div>
       </section>
 
+      {/* Breadcrumb */}
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <SeoBreadcrumb items={[{ label: "Blog", href: "/blog" }, { label: category, href: "/blog" }, { label: title }]} />
+      </div>
+
       {/* Article Body */}
       <article className="py-10 md:py-14">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
