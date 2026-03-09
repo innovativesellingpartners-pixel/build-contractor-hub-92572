@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { MainSiteHeader } from "@/components/MainSiteHeader";
 import { PublicFooter } from "@/components/PublicFooter";
 import { FloatingTrialButton } from "@/components/FloatingTrialButton";
+import { SeoBreadcrumb } from "@/components/SeoBreadcrumb";
 import type { BlogPostData } from "@/data/blogPosts/types";
 import ct1Logo from "@/assets/ct1-round-logo-new.png";
 
