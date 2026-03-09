@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { MainSiteHeader } from "@/components/MainSiteHeader";
 import { PublicFooter } from "@/components/PublicFooter";
 import { FloatingTrialButton } from "@/components/FloatingTrialButton";
+import { SeoBreadcrumb } from "@/components/SeoBreadcrumb";
 import type { TradeCrmConfig } from "@/data/tradeCrmPages";
 import type { CityConfig } from "@/data/seoCities";
 
@@ -104,6 +105,15 @@ export function CityTradeLandingPage({ trade, city }: Props) {
         </div>
       </section>
 
+      {/* Breadcrumb */}
+      <div className="container mx-auto px-4">
+        <SeoBreadcrumb items={[
+          { label: "Trades", href: "/trades" },
+          { label: trade.keyword, href: `/crm-for-${trade.slug}` },
+          { label: city.name },
+        ]} />
+      </div>
+
       {/* Why local contractors need myCT1 */}
       <section className="py-16 md:py-20 bg-background">
         <div className="container mx-auto px-4">
@@ -171,7 +181,7 @@ export function CityTradeLandingPage({ trade, city }: Props) {
                 <span className="font-semibold text-foreground">Pricing Plans</span>
                 <p className="text-sm text-muted-foreground mt-1">Find the right plan for your business</p>
               </Link>
-              <Link to="/blog-podcast" className="p-4 rounded-lg border border-border hover:border-primary/50 transition-colors">
+              <Link to="/blog" className="p-4 rounded-lg border border-border hover:border-primary/50 transition-colors">
                 <span className="font-semibold text-foreground">Contractor Blog</span>
                 <p className="text-sm text-muted-foreground mt-1">Tips and strategies for growing your business</p>
               </Link>

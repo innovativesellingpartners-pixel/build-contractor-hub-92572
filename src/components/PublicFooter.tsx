@@ -37,16 +37,14 @@ export function PublicFooter() {
           <div>
             <h4 className="font-semibold text-background mb-4">Resources</h4>
             <ul className="space-y-2 text-sm text-background/70">
+              <li><Link to="/contractor-business-resources" className="hover:text-primary transition-colors">Contractor Business Resources</Link></li>
+              <li><Link to="/trades" className="hover:text-primary transition-colors">CRM by Trade</Link></li>
+              <li><Link to="/cities" className="hover:text-primary transition-colors">CRM by City</Link></li>
+              <li><Link to="/features" className="hover:text-primary transition-colors">Platform Features</Link></li>
+              <li><Link to="/blog" className="hover:text-primary transition-colors">Contractor Blog</Link></li>
               <li><Link to="/contractor-crm-software" className="hover:text-primary transition-colors">Contractor CRM</Link></li>
               <li><Link to="/contractor-estimating-software" className="hover:text-primary transition-colors">Estimating Software</Link></li>
               <li><Link to="/ai-answering-service-for-contractors" className="hover:text-primary transition-colors">AI Answering Service</Link></li>
-              <li><Link to="/forge-ai-invoice-assistant" className="hover:text-primary transition-colors">AI Invoice Assistant</Link></li>
-              <li><Link to="/crm-for-plumbers" className="hover:text-primary transition-colors">CRM for Plumbers</Link></li>
-              <li><Link to="/crm-for-electricians" className="hover:text-primary transition-colors">CRM for Electricians</Link></li>
-              <li><Link to="/crm-for-hvac-contractors" className="hover:text-primary transition-colors">CRM for HVAC</Link></li>
-              <li><Link to="/crm-for-roofing-contractors" className="hover:text-primary transition-colors">CRM for Roofers</Link></li>
-              <li><Link to="/crm-for-general-contractors" className="hover:text-primary transition-colors">CRM for GCs</Link></li>
-              <li><Link to="/contractor-business-resources" className="hover:text-primary transition-colors">Contractor Business Resources</Link></li>
             </ul>
           </div>
 

@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { MainSiteHeader } from "@/components/MainSiteHeader";
 import { PublicFooter } from "@/components/PublicFooter";
 import { FloatingTrialButton } from "@/components/FloatingTrialButton";
+import { SeoBreadcrumb } from "@/components/SeoBreadcrumb";
 import type { BlogPostData } from "@/data/blogPosts/types";
 import ct1Logo from "@/assets/ct1-round-logo-new.png";
 
@@ -84,6 +85,11 @@ export function BlogPostTemplate({ post }: Props) {
         </div>
       </section>
 
+      {/* Breadcrumb */}
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <SeoBreadcrumb items={[{ label: "Blog", href: "/blog" }, { label: category, href: "/blog" }, { label: title }]} />
+      </div>
+
       {/* Article Body */}
       <article className="py-10 md:py-14">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -135,11 +141,13 @@ export function BlogPostTemplate({ post }: Props) {
                 <h3 className="text-sm font-semibold text-foreground mb-4">Explore the Platform</h3>
                 <div className="grid gap-2 sm:grid-cols-2">
                   {[
-                    { to: "/features/crm", label: "CRM & Lead Management" },
-                    { to: "/features/estimating", label: "Estimating Tools" },
-                    { to: "/features/jobs", label: "Job Scheduling" },
-                    { to: "/features/voice-ai", label: "Voice AI Assistant" },
-                    { to: "/products/pocketbot", label: "PocketBot AI" },
+                    { to: "/features/contractor-crm", label: "CRM & Lead Management" },
+                    { to: "/features/contractor-estimating", label: "Estimating Tools" },
+                    { to: "/features/job-scheduling", label: "Job Scheduling" },
+                    { to: "/features/forge-ai-automation", label: "Forge AI Automation" },
+                    { to: "/crm-for-plumbers", label: "CRM for Plumbers" },
+                    { to: "/crm-for-electricians", label: "CRM for Electricians" },
+                    { to: "/trades", label: "All Trades" },
                     { to: "/pricing", label: "View Pricing" },
                   ].map(({ to, label }) => (
                     <Link key={to} to={to} className="flex items-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors py-1.5 px-2 rounded-md hover:bg-muted/50">

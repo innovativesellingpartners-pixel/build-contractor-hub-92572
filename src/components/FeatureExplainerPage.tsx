@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { MainSiteHeader } from "@/components/MainSiteHeader";
 import { PublicFooter } from "@/components/PublicFooter";
 import { FloatingTrialButton } from "@/components/FloatingTrialButton";
+import { SeoBreadcrumb } from "@/components/SeoBreadcrumb";
 import type { FeaturePageConfig } from "@/data/seoFeaturePages";
 
 interface Props {
@@ -71,6 +72,11 @@ export function FeatureExplainerPage({ config }: Props) {
           </div>
         </div>
       </section>
+
+      {/* Breadcrumb */}
+      <div className="container mx-auto px-4">
+        <SeoBreadcrumb items={[{ label: "Features", href: "/features" }, { label: title }]} />
+      </div>
 
       {/* Overview */}
       <section className="py-16 md:py-20 bg-background">
@@ -148,13 +154,13 @@ export function FeatureExplainerPage({ config }: Props) {
                 <span className="font-semibold text-foreground">Job Scheduling</span>
                 <p className="text-sm text-muted-foreground mt-1">Schedule jobs and assign crews</p>
               </Link>
-              <Link to="/features/forge-ai-automation" className="p-4 rounded-lg border border-border bg-card hover:border-primary/50 transition-colors">
-                <span className="font-semibold text-foreground">Forge AI</span>
-                <p className="text-sm text-muted-foreground mt-1">AI-powered automation</p>
+              <Link to="/trades" className="p-4 rounded-lg border border-border bg-card hover:border-primary/50 transition-colors">
+                <span className="font-semibold text-foreground">Browse by Trade</span>
+                <p className="text-sm text-muted-foreground mt-1">See how myCT1 serves your trade</p>
               </Link>
-              <Link to="/trades-we-serve" className="p-4 rounded-lg border border-border bg-card hover:border-primary/50 transition-colors">
-                <span className="font-semibold text-foreground">Trades We Serve</span>
-                <p className="text-sm text-muted-foreground mt-1">See all supported contractor trades</p>
+              <Link to="/blog" className="p-4 rounded-lg border border-border bg-card hover:border-primary/50 transition-colors">
+                <span className="font-semibold text-foreground">Contractor Blog</span>
+                <p className="text-sm text-muted-foreground mt-1">Tips and growth strategies</p>
               </Link>
             </div>
           </div>

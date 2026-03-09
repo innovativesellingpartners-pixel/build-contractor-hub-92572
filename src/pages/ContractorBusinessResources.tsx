@@ -193,9 +193,9 @@ export default function ContractorBusinessResources() {
               </Link>
             ))}
           </div>
-          <div className="mt-6">
-            <Link to="/trades-we-serve" className="text-primary hover:text-primary/80 text-sm font-medium">
-              View all trades we serve →
+          <div className="mt-6 flex gap-4">
+            <Link to="/trades" className="text-primary hover:text-primary/80 text-sm font-medium">
+              View all trades →
             </Link>
           </div>
         </div>
@@ -226,7 +226,11 @@ export default function ContractorBusinessResources() {
           </div>
 
           {/* Cities directory */}
-          <h3 className="text-lg font-semibold text-foreground mb-4">Browse by City</h3>
+          <div className="mt-6">
+            <Link to="/cities" className="text-primary hover:text-primary/80 text-sm font-medium">
+              Browse all cities →
+            </Link>
+          </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-2">
             {topCities.map((city) => (
               <Link
@@ -273,9 +277,12 @@ export default function ContractorBusinessResources() {
             ))}
           </div>
 
-          <div className="mt-8">
-            <Link to="/blog-podcast" className="text-primary hover:text-primary/80 text-sm font-medium">
+          <div className="mt-8 flex gap-4">
+            <Link to="/blog" className="text-primary hover:text-primary/80 text-sm font-medium">
               Browse all articles →
+            </Link>
+            <Link to="/features" className="text-primary hover:text-primary/80 text-sm font-medium">
+              Browse all features →
             </Link>
           </div>
         </div>

@@ -26,6 +26,10 @@ import CrmForTrade from "@/pages/CrmForTrade";
 import ContractorBusinessResources from "@/pages/ContractorBusinessResources";
 import FeaturePage from "@/pages/FeaturePage";
 import BlogPost from "@/pages/BlogPost";
+import TradesDirectory from "@/pages/TradesDirectory";
+import CitiesDirectory from "@/pages/CitiesDirectory";
+import FeaturesDirectory from "@/pages/FeaturesDirectory";
+import BlogDirectory from "@/pages/BlogDirectory";
 import { Privacy } from "@/pages/Privacy";
 import { Terms } from "@/pages/Terms";
 import { Dashboard } from "@/components/Dashboard";
@@ -207,6 +211,10 @@ const App = () => (
             <Route path="/contractor-estimating-software" element={<ContractorEstimatingSoftware />} />
             <Route path="/ai-answering-service-for-contractors" element={<AiAnsweringServiceForContractors />} />
             <Route path="/contractor-business-resources" element={<ContractorBusinessResources />} />
+            <Route path="/trades" element={<TradesDirectory />} />
+            <Route path="/cities" element={<CitiesDirectory />} />
+            <Route path="/features" element={<FeaturesDirectory />} />
+            <Route path="/blog" element={<BlogDirectory />} />
             <Route path="/crm-for-*" element={<CrmForTrade />} />
             <Route path="/features/:slug" element={<FeaturePage />} />
             <Route path="/trial-signup" element={<TrialSignup />} />
