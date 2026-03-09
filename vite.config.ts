@@ -37,6 +37,7 @@ function generateSitemapPlugin(): Plugin {
     { loc: "/contractor-estimating-software", changefreq: "monthly", priority: "0.8" },
     { loc: "/ai-answering-service-for-contractors", changefreq: "monthly", priority: "0.8" },
     { loc: "/forge-ai-invoice-assistant", changefreq: "monthly", priority: "0.8" },
+    { loc: "/contractor-business-resources", changefreq: "weekly", priority: "0.8" },
   ];
 
   function loadAllUrls(): Array<{ loc: string; changefreq: string; priority: string }> {
