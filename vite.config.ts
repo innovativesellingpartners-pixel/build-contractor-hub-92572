@@ -31,7 +31,6 @@ function generateSitemapPlugin(): Plugin {
     { loc: "/blog-podcast", changefreq: "weekly", priority: "0.6" },
     { loc: "/legal/privacy", changefreq: "yearly", priority: "0.3" },
     { loc: "/legal/terms", changefreq: "yearly", priority: "0.3" },
-    { loc: "/auth", changefreq: "monthly", priority: "0.6" },
     { loc: "/trial-signup", changefreq: "monthly", priority: "0.8" },
     { loc: "/contractor-crm-software", changefreq: "monthly", priority: "0.8" },
     { loc: "/contractor-estimating-software", changefreq: "monthly", priority: "0.8" },
@@ -42,6 +41,9 @@ function generateSitemapPlugin(): Plugin {
     { loc: "/cities", changefreq: "weekly", priority: "0.8" },
     { loc: "/features", changefreq: "weekly", priority: "0.8" },
     { loc: "/blog", changefreq: "weekly", priority: "0.8" },
+    { loc: "/help", changefreq: "monthly", priority: "0.5" },
+    { loc: "/support", changefreq: "monthly", priority: "0.5" },
+    { loc: "/network-map", changefreq: "monthly", priority: "0.5" },
   ];
 
   function loadAllUrls(): Array<{ loc: string; changefreq: string; priority: string }> {

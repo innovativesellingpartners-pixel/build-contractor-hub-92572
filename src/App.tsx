@@ -159,28 +159,34 @@ const App = () => (
             <Route path="/platform" element={<Platform />} />
             <Route path="/for-consumers" element={<ForConsumers />} />
             <Route path="/business-suite" element={<BusinessSuite />} />
-            <Route path="/business-suite/training" element={<Training />} />
-            <Route path="/business-suite/crm" element={<CRM />} />
-            <Route path="/business-suite/leads" element={<Leads />} />
-            <Route path="/business-suite/quickbooks" element={<QuickBooks />} />
-            <Route path="/business-suite/insurance" element={<Insurance />} />
-            <Route path="/business-suite/accounting" element={<AccountingFeature />} />
-            <Route path="/business-suite/estimating" element={<Estimating />} />
-            <Route path="/business-suite/jobs" element={<Jobs />} />
-            <Route path="/business-suite/communication" element={<Communication />} />
-            <Route path="/business-suite/voice-ai" element={<VoiceAI />} />
-            <Route path="/business-suite/reporting" element={<ReportingFeature />} />
+            {/* Redirect /business-suite/* to /features/* to consolidate SEO */}
+            <Route path="/business-suite/training" element={<Navigate to="/features/training" replace />} />
+            <Route path="/business-suite/crm" element={<Navigate to="/features/crm" replace />} />
+            <Route path="/business-suite/leads" element={<Navigate to="/features/crm" replace />} />
+            <Route path="/business-suite/quickbooks" element={<Navigate to="/features/crm" replace />} />
+            <Route path="/business-suite/insurance" element={<Navigate to="/features/crm" replace />} />
+            <Route path="/business-suite/accounting" element={<Navigate to="/features/crm" replace />} />
+            <Route path="/business-suite/estimating" element={<Navigate to="/features/estimating" replace />} />
+            <Route path="/business-suite/jobs" element={<Navigate to="/features/jobs" replace />} />
+            <Route path="/business-suite/communication" element={<Navigate to="/features/crm" replace />} />
+            <Route path="/business-suite/voice-ai" element={<Navigate to="/features/voice-ai" replace />} />
+            <Route path="/business-suite/reporting" element={<Navigate to="/features/reporting" replace />} />
             <Route path="/features/training" element={<Training />} />
             <Route path="/features/crm" element={<CRM />} />
+            <Route path="/features/leads" element={<Leads />} />
+            <Route path="/features/quickbooks" element={<QuickBooks />} />
+            <Route path="/features/insurance" element={<Insurance />} />
+            <Route path="/features/accounting" element={<AccountingFeature />} />
             <Route path="/features/estimating" element={<Estimating />} />
             <Route path="/features/jobs" element={<Jobs />} />
+            <Route path="/features/communication" element={<Communication />} />
             <Route path="/features/voice-ai" element={<VoiceAI />} />
             <Route path="/features/reporting" element={<ReportingFeature />} />
             <Route path="/marketplace" element={<Marketplace />} />
             <Route path="/about" element={<About />} />
-          <Route path="/what-we-do" element={<WhatWeDo />} />
-          <Route path="/core-values" element={<CoreValues />} />
-          <Route path="/network-map" element={<NetworkMap />} />
+            <Route path="/what-we-do" element={<WhatWeDo />} />
+            <Route path="/core-values" element={<CoreValues />} />
+            <Route path="/network-map" element={<NetworkMap />} />
             <Route path="/nationwide-network" element={<NationwideNetwork />} />
             <Route path="/trades-we-serve" element={<TradesWeServe />} />
             <Route path="/blog-podcast" element={<BlogPodcast />} />
