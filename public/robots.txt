@@ -42,6 +42,8 @@ Allow: /trades-we-serve
 Allow: /contact
 Allow: /about
 Allow: /blog-podcast
+Allow: /blog/
+Allow: /crm-for-
 Allow: /legal/
 
 # Sitemap location
