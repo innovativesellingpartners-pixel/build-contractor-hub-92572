@@ -277,9 +277,12 @@ export default function ContractorBusinessResources() {
             ))}
           </div>
 
-          <div className="mt-8">
-            <Link to="/blog-podcast" className="text-primary hover:text-primary/80 text-sm font-medium">
+          <div className="mt-8 flex gap-4">
+            <Link to="/blog" className="text-primary hover:text-primary/80 text-sm font-medium">
               Browse all articles →
+            </Link>
+            <Link to="/features" className="text-primary hover:text-primary/80 text-sm font-medium">
+              Browse all features →
             </Link>
           </div>
         </div>
