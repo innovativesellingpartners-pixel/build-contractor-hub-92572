@@ -87,7 +87,7 @@ export default function Jobs() {
               Jobs Management
             </Badge>
             <h1 className="text-5xl font-bold text-foreground mb-6">
-              Keep Every Job <span className="text-primary">On Track</span>
+              Contractor Job Management <span className="text-primary">Software</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               Schedule crews, track progress, and manage every job from start to finish. Keep projects on time, on budget, and customers happy.
