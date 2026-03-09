@@ -141,7 +141,7 @@ export function Pricing() {
             Contractor Software Pricing
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Our tiered approach ensures you get exactly what you need at your current stage while providing a clear path for growth as your business expands.
+            Pick a plan that fits your business today. Upgrade anytime as you grow. No long-term contracts, no hidden fees, cancel anytime.
           </p>
         </div>
       </section>

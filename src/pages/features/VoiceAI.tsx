@@ -85,7 +85,7 @@ export default function VoiceAI() {
               AI Answering Service for <span className="text-primary">Contractors</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Answer every call with AI that sounds natural, captures leads, and books appointments. Never miss an opportunity, even at 2 AM.
+              You are on a roof or under a sink when the phone rings. That caller will not leave a voicemail — they will call the next contractor. myCT1 Voice AI answers every call, captures lead details, and books appointments while you work.
             </p>
           </div>
 

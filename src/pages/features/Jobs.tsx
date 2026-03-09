@@ -90,7 +90,7 @@ export default function Jobs() {
               Contractor Job Management <span className="text-primary">Software</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Schedule crews, track progress, and manage every job from start to finish. Keep projects on time, on budget, and customers happy.
+              Running multiple jobs off whiteboards and group texts leads to missed deadlines and blown budgets. myCT1 gives you one dashboard to schedule crews, track progress, and manage every project from signed estimate to final payment.
             </p>
           </div>
 

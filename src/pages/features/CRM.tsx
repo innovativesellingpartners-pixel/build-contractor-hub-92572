@@ -85,7 +85,7 @@ export function CRM() {
               Contractor CRM Software — <span className="text-primary">All-in-One</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Manage customers, track jobs, and grow your business with powerful, easy-to-use tools designed specifically for contractors.
+              Leads slip through the cracks when you rely on spreadsheets, texts, and memory. myCT1 gives contractors one place to track every lead, customer, estimate, and job — so nothing gets lost and you close more work.
             </p>
           </div>
 

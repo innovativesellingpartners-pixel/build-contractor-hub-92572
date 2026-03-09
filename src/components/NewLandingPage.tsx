@@ -171,13 +171,13 @@ export function NewLandingPage() {
             </div>
             
             <p className="text-xl sm:text-2xl lg:text-3xl mb-1 text-white/90 leading-relaxed max-w-4xl font-light">
-              A nationwide network of contractors.
+              Stop losing leads. Stop chasing payments. Stop juggling tools.
             </p>
             <p className="text-lg sm:text-xl lg:text-2xl mb-4 text-white/80 leading-relaxed max-w-4xl font-light">
-              Building, Scaling, and Sustaining their businesses!
+              CRM, estimating, jobs, invoicing, and AI — all in one place.
             </p>
             <p className="text-4xl sm:text-5xl lg:text-6xl mb-12 font-bold text-white drop-shadow-md">
-              Powered by <span className="text-primary" style={{ textShadow: '0 0 30px rgba(220, 38, 38, 0.5)' }}>CT1</span>
+              Powered by <span className="text-primary" style={{ textShadow: '0 0 30px rgba(220, 38, 38, 0.5)' }}>myCT1</span>
             </p>
             
             <div className="flex flex-col sm:flex-row gap-5 mb-10">

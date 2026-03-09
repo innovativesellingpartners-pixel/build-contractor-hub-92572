@@ -84,7 +84,7 @@ export default function Estimating() {
               Contractor Estimating <span className="text-primary">Software</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Build professional estimates fast, send them digitally, and get paid faster. From line items to e-signatures, everything in one place.
+              The first contractor to send a clean, professional estimate usually wins the job. myCT1 lets you build detailed proposals in minutes, send them from your phone, and collect e-signatures on the spot.
             </p>
           </div>
 

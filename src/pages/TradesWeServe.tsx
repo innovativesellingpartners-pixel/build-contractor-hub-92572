@@ -43,9 +43,9 @@ export const TradesWeServe = () => {
           <div className="absolute inset-0 bg-background/85 backdrop-blur-sm" />
         </div>
         <div className="relative container mx-auto px-4 text-center">
-          <h1 className="text-5xl md:text-6xl font-bold mb-6">The Trades We Serve</h1>
+          <h1 className="text-5xl md:text-6xl font-bold mb-6">Contractor Software by Trade</h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-            The myCT1 Business-in-a-Box platform is built for contractors across all major trades. Manage leads, estimates, jobs, invoices, and payments from one system — no matter your trade.
+            Generic software was not built for contractors. myCT1 gives roofers, plumbers, electricians, HVAC techs, and 25+ other trades the CRM, estimating, and job tools designed for how you actually run your business.
           </p>
           <Link to="/pricing">
             <Button size="lg">Get Started Today</Button>
