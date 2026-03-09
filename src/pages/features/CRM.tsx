@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { PublicFooter } from "@/components/PublicFooter";
 import { Button } from "@/components/ui/button";
