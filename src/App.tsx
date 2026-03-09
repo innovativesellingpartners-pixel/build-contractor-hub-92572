@@ -215,7 +215,7 @@ const App = () => (
             <Route path="/cities" element={<CitiesDirectory />} />
             <Route path="/features" element={<FeaturesDirectory />} />
             <Route path="/blog" element={<BlogDirectory />} />
-            <Route path="/crm-for-*" element={<CrmForTrade />} />
+            <Route path="/crm-for-:tradeSlug" element={<CrmForTrade />} />
             <Route path="/features/:slug" element={<FeaturePage />} />
             <Route path="/trial-signup" element={<TrialSignup />} />
             <Route path="/bot-signup" element={<BotSignup />} />
