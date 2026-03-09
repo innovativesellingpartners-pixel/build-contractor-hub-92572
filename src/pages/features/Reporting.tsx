@@ -27,13 +27,13 @@ import {
 export default function Reporting() {
   useEffect(() => {
     window.scrollTo(0, 0);
-    document.title = "Contractor Reporting Software — Dashboards & Business Analytics | myCT1";
+    document.title = "Contractor Reporting Software — Know Your Numbers, Grow Profits | myCT1";
     const setMeta = (name: string, content: string) => {
       let el = document.querySelector(`meta[name="${name}"]`) as HTMLMetaElement | null;
       if (!el) { el = document.createElement("meta"); el.name = name; document.head.appendChild(el); }
       el.content = content;
     };
-    setMeta("description", "Contractor reporting software with real-time dashboards for revenue, job profitability, lead conversion, and team performance. Try myCT1 free.");
+    setMeta("description", "Most contractors guess at their numbers. myCT1 reporting shows revenue, job profitability, and lead conversion in real time — so you see exactly where money is made and lost. Try free.");
     let canon = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
     if (!canon) { canon = document.createElement("link"); canon.rel = "canonical"; document.head.appendChild(canon); }
     canon.href = "https://myct1.com/features/reporting";
