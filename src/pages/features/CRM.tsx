@@ -82,7 +82,7 @@ export function CRM() {
               CRM & Job Management
             </Badge>
             <h1 className="text-5xl font-bold text-foreground mb-6">
-              Manage Customers & Jobs <span className="text-primary">All-in-One</span>
+              Contractor CRM Software — <span className="text-primary">All-in-One</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               Manage customers, track jobs, and grow your business with powerful, easy-to-use tools designed specifically for contractors.
