@@ -83,6 +83,11 @@ export function TradeCrmLandingPage({ config }: Props) {
         </div>
       </section>
 
+      {/* Breadcrumb */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <SeoBreadcrumb items={[{ label: "Trades", href: "/trades" }, { label: keyword }]} />
+      </div>
+
       {/* Section 1 – Challenges */}
       <section className="py-20 sm:py-28">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
