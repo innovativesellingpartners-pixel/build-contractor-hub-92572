@@ -27,13 +27,13 @@ import {
 export function CRM() {
   useEffect(() => {
     window.scrollTo(0, 0);
-    document.title = "Contractor CRM Software — Manage Leads, Customers & Jobs | myCT1";
+    document.title = "Contractor CRM Software — Track Leads & Close More Jobs | myCT1";
     const setMeta = (name: string, content: string) => {
       let el = document.querySelector(`meta[name="${name}"]`) as HTMLMetaElement | null;
       if (!el) { el = document.createElement("meta"); el.name = name; document.head.appendChild(el); }
       el.content = content;
     };
-    setMeta("description", "Contractor CRM software that tracks leads, manages customers, and organizes every job. Built for home service businesses. Try myCT1 free.");
+    setMeta("description", "Stop losing leads to sticky notes and spreadsheets. myCT1 CRM tracks every lead, customer, and job in one place so contractors close 30% more deals. Try it free.");
     let canon = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
     if (!canon) { canon = document.createElement("link"); canon.rel = "canonical"; document.head.appendChild(canon); }
     canon.href = "https://myct1.com/features/crm";
