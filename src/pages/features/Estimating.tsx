@@ -26,13 +26,13 @@ import {
 export default function Estimating() {
   useEffect(() => {
     window.scrollTo(0, 0);
-    document.title = "Contractor Estimating Software — Professional Proposals & E-Signatures | myCT1";
+    document.title = "Contractor Estimating Software — Send Proposals & Get Signed Fast | myCT1";
     const setMeta = (name: string, content: string) => {
       let el = document.querySelector(`meta[name="${name}"]`) as HTMLMetaElement | null;
       if (!el) { el = document.createElement("meta"); el.name = name; document.head.appendChild(el); }
       el.content = content;
     };
-    setMeta("description", "Contractor estimating software that builds professional proposals, collects e-signatures, and converts approved estimates into jobs. Try myCT1 free.");
+    setMeta("description", "Slow estimates cost you jobs. myCT1 lets contractors build professional proposals in minutes, send them digitally, and collect e-signatures — closing 28% more work. Try free.");
     let canon = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
     if (!canon) { canon = document.createElement("link"); canon.rel = "canonical"; document.head.appendChild(canon); }
     canon.href = "https://myct1.com/features/estimating";
