@@ -4,8 +4,17 @@ import cities from "@/data/seoCities";
 import { TradeCrmLandingPage } from "@/components/TradeCrmLandingPage";
 import { CityTradeLandingPage } from "@/components/CityTradeLandingPage";
 
-export default function CrmForTrade() {
-  const { tradeSlug } = useParams<{ tradeSlug: string }>();
+type CrmForTradeProps = {
+  /**
+   * Legacy support for routes like /crm-for-plumbers (React Router params can't match partial segments).
+   * When provided, this takes precedence over useParams().
+   */
+  tradeSlug?: string;
+};
+
+export default function CrmForTrade({ tradeSlug: tradeSlugProp }: CrmForTradeProps) {
+  const params = useParams<{ tradeSlug: string }>();
+  const tradeSlug = tradeSlugProp ?? params.tradeSlug;
 
   if (!tradeSlug) {
     return <Navigate to="/contractor-crm-software" replace />;

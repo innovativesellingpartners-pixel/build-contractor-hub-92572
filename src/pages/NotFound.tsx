@@ -3,13 +3,34 @@ import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Home } from "lucide-react";
 import ct1Logo from "@/assets/ct1-round-logo-new.png";
+import CrmForTrade from "@/pages/CrmForTrade";
 
 const NotFound = () => {
   const location = useLocation();
 
+  // Legacy SEO route support: React Router can't match partial segments like "/crm-for-:tradeSlug".
+  // So we resolve those programmatic pages here to avoid 404s.
+  const legacyPrefix = "/crm-for-";
+  const legacyTradeSlug = location.pathname.startsWith(legacyPrefix)
+    ? location.pathname.slice(legacyPrefix.length)
+    : null;
+
+  const isLegacyCrmPage = Boolean(
+    legacyTradeSlug && legacyTradeSlug.length > 0 && !legacyTradeSlug.includes("/")
+  );
+
   useEffect(() => {
-    console.error("404 Error: User attempted to access non-existent route:", location.pathname);
-  }, [location.pathname]);
+    if (!isLegacyCrmPage) {
+      console.error(
+        "404 Error: User attempted to access non-existent route:",
+        location.pathname
+      );
+    }
+  }, [isLegacyCrmPage, location.pathname]);
+
+  if (isLegacyCrmPage) {
+    return <CrmForTrade tradeSlug={legacyTradeSlug ?? undefined} />;
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
