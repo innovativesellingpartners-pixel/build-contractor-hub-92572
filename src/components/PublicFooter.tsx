@@ -45,6 +45,8 @@ export function PublicFooter() {
               <li><Link to="/contractor-crm-software" className="hover:text-primary transition-colors">Contractor CRM</Link></li>
               <li><Link to="/contractor-estimating-software" className="hover:text-primary transition-colors">Estimating Software</Link></li>
               <li><Link to="/ai-answering-service-for-contractors" className="hover:text-primary transition-colors">AI Answering Service</Link></li>
+              <li><Link to="/contractor-job-management-software" className="hover:text-primary transition-colors">Job Management</Link></li>
+              <li><Link to="/contractor-invoicing-software" className="hover:text-primary transition-colors">Invoicing Software</Link></li>
             </ul>
           </div>
 
