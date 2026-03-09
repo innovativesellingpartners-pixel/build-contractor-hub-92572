@@ -81,7 +81,7 @@ export default function Estimating() {
               Estimating & Proposals
             </Badge>
             <h1 className="text-5xl font-bold text-foreground mb-6">
-              Win More Jobs with <span className="text-primary">Better Estimates</span>
+              Contractor Estimating <span className="text-primary">Software</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               Build professional estimates fast, send them digitally, and get paid faster. From line items to e-signatures, everything in one place.

@@ -225,6 +225,9 @@ export default function Reporting() {
               </Button>
             </Link>
           </div>
+          <p className="mt-6 text-sm opacity-80">
+            Learn more: <Link to="/contractor-crm-software" className="underline hover:opacity-100">Contractor CRM Software</Link> · <Link to="/contractor-estimating-software" className="underline hover:opacity-100">Estimating Software</Link> · <Link to="/ai-answering-service-for-contractors" className="underline hover:opacity-100">AI Answering Service</Link>
+          </p>
         </div>
       </section>
 
