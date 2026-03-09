@@ -24,6 +24,20 @@ import {
 } from "lucide-react";
 
 export default function Estimating() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    document.title = "Contractor Estimating Software — Professional Proposals & E-Signatures | myCT1";
+    const setMeta = (name: string, content: string) => {
+      let el = document.querySelector(`meta[name="${name}"]`) as HTMLMetaElement | null;
+      if (!el) { el = document.createElement("meta"); el.name = name; document.head.appendChild(el); }
+      el.content = content;
+    };
+    setMeta("description", "Contractor estimating software that builds professional proposals, collects e-signatures, and converts approved estimates into jobs. Try myCT1 free.");
+    let canon = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+    if (!canon) { canon = document.createElement("link"); canon.rel = "canonical"; document.head.appendChild(canon); }
+    canon.href = "https://myct1.com/features/estimating";
+  }, []);
+
   const stats = [
     { number: "5 min", label: "Average Estimate Time" },
     { number: "100%", label: "Digital Delivery" },
