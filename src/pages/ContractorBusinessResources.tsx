@@ -193,9 +193,9 @@ export default function ContractorBusinessResources() {
               </Link>
             ))}
           </div>
-          <div className="mt-6">
-            <Link to="/trades-we-serve" className="text-primary hover:text-primary/80 text-sm font-medium">
-              View all trades we serve →
+          <div className="mt-6 flex gap-4">
+            <Link to="/trades" className="text-primary hover:text-primary/80 text-sm font-medium">
+              View all trades →
             </Link>
           </div>
         </div>
