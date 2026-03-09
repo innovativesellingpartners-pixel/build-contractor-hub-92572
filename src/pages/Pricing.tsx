@@ -120,10 +120,10 @@ export function Pricing() {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title="Pricing - Contractor Software Plans"
-        description="Choose from flexible pricing plans for myCT1 contractor software. From $99.99/month for essential CRM and training to full business suite with AI tools. Start your free trial."
+        title="Contractor Software Pricing — Plans Starting at $99/mo | myCT1"
+        description="Transparent contractor software pricing from myCT1. CRM, estimating, job management, invoicing, and AI tools from $99.99/month. No hidden fees. Start free."
         canonical="/pricing"
-        keywords="contractor software pricing, CRM pricing, contractor management cost, estimating software price, business software plans"
+        keywords="contractor software pricing, contractor CRM pricing, estimating software cost, job management software price"
         structuredData={structuredDataGenerators.product(
           'myCT1 Contractor Business Suite',
           'Complete contractor business management software with CRM, estimating, invoicing, job management, and AI-powered tools.',
