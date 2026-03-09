@@ -95,6 +95,9 @@ export default function FeaturesDirectory() {
               { to: "/contractor-estimating-software", label: "Contractor Estimating Software", desc: "How estimating software helps contractors win more jobs" },
               { to: "/ai-answering-service-for-contractors", label: "AI Answering Service", desc: "Never miss a call with AI-powered answering" },
               { to: "/forge-ai-invoice-assistant", label: "Forge AI Invoice Assistant", desc: "Automate invoicing and payment follow-ups" },
+              { to: "/contractor-job-management-software", label: "Job Management Software", desc: "Schedule crews, track progress, manage every project" },
+              { to: "/contractor-invoicing-software", label: "Contractor Invoicing Software", desc: "Automate invoicing and get paid faster" },
+              { to: "/customer-portal-for-contractors", label: "Customer Portal", desc: "Give clients a branded portal for approvals and payments" },
             ].map((item) => (
               <Link key={item.to} to={item.to} className="p-4 rounded-lg border border-border hover:border-primary/50 transition-all">
                 <span className="font-semibold text-foreground">{item.label}</span>

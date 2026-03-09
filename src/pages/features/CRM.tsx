@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { PublicFooter } from "@/components/PublicFooter";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,20 @@ import {
 } from "lucide-react";
 
 export function CRM() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    document.title = "Contractor CRM Software — Manage Leads, Customers & Jobs | myCT1";
+    const setMeta = (name: string, content: string) => {
+      let el = document.querySelector(`meta[name="${name}"]`) as HTMLMetaElement | null;
+      if (!el) { el = document.createElement("meta"); el.name = name; document.head.appendChild(el); }
+      el.content = content;
+    };
+    setMeta("description", "Contractor CRM software that tracks leads, manages customers, and organizes every job. Built for home service businesses. Try myCT1 free.");
+    let canon = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+    if (!canon) { canon = document.createElement("link"); canon.rel = "canonical"; document.head.appendChild(canon); }
+    canon.href = "https://myct1.com/features/crm";
+  }, []);
+
   const stats = [
     { number: "30%", label: "More Deals Closed" },
     { number: "15+", label: "Hours Saved Weekly" },
@@ -67,7 +82,7 @@ export function CRM() {
               CRM & Job Management
             </Badge>
             <h1 className="text-5xl font-bold text-foreground mb-6">
-              Manage Customers & Jobs <span className="text-primary">All-in-One</span>
+              Contractor CRM Software — <span className="text-primary">All-in-One</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               Manage customers, track jobs, and grow your business with powerful, easy-to-use tools designed specifically for contractors.

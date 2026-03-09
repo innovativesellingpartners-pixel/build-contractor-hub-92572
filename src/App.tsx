@@ -217,6 +217,10 @@ const App = () => (
             <Route path="/contractor-estimating-software" element={<ContractorEstimatingSoftware />} />
             <Route path="/ai-answering-service-for-contractors" element={<AiAnsweringServiceForContractors />} />
             <Route path="/contractor-business-resources" element={<ContractorBusinessResources />} />
+            {/* High-intent keyword redirects to existing feature pages */}
+            <Route path="/contractor-job-management-software" element={<Navigate to="/features/jobs" replace />} />
+            <Route path="/contractor-invoicing-software" element={<Navigate to="/features/invoice-automation" replace />} />
+            <Route path="/customer-portal-for-contractors" element={<Navigate to="/features/customer-portal" replace />} />
             <Route path="/trades" element={<TradesDirectory />} />
             <Route path="/cities" element={<CitiesDirectory />} />
             <Route path="/features" element={<FeaturesDirectory />} />

@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { PublicFooter } from "@/components/PublicFooter";
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,20 @@ import ct1Logo from '@/assets/ct1-round-logo-new.png';
 import joeCipriano from '@/assets/joe-cipriano.png';
 
 export default function ForConsumers() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    document.title = "Customer Portal for Contractors — Track Jobs & Pay Online | myCT1";
+    const setMeta = (name: string, content: string) => {
+      let el = document.querySelector(`meta[name="${name}"]`) as HTMLMetaElement | null;
+      if (!el) { el = document.createElement("meta"); el.name = name; document.head.appendChild(el); }
+      el.content = content;
+    };
+    setMeta("description", "The myCT1 customer portal lets homeowners view estimates, approve change orders, track job progress, and pay invoices online. Hire a CT1 contractor today.");
+    let canon = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+    if (!canon) { canon = document.createElement("link"); canon.rel = "canonical"; document.head.appendChild(canon); }
+    canon.href = "https://myct1.com/for-consumers";
+  }, []);
+
   const benefits = [
     {
       icon: Shield,

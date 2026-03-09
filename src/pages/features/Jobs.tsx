@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PublicFooter } from "@/components/PublicFooter";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -29,6 +29,20 @@ import {
 
 export default function Jobs() {
   const [activeContactForm, setActiveContactForm] = useState<string | null>(null);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    document.title = "Contractor Job Management Software — Schedule, Track & Complete | myCT1";
+    const setMeta = (name: string, content: string) => {
+      let el = document.querySelector(`meta[name="${name}"]`) as HTMLMetaElement | null;
+      if (!el) { el = document.createElement("meta"); el.name = name; document.head.appendChild(el); }
+      el.content = content;
+    };
+    setMeta("description", "Contractor job management software that schedules crews, tracks progress, and manages every project from estimate to final payment. Try myCT1 free.");
+    let canon = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+    if (!canon) { canon = document.createElement("link"); canon.rel = "canonical"; document.head.appendChild(canon); }
+    canon.href = "https://myct1.com/features/jobs";
+  }, []);
 
   const stats = [
     { number: "98%", label: "On-Time Completion" },
@@ -73,7 +87,7 @@ export default function Jobs() {
               Jobs Management
             </Badge>
             <h1 className="text-5xl font-bold text-foreground mb-6">
-              Keep Every Job <span className="text-primary">On Track</span>
+              Contractor Job Management <span className="text-primary">Software</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               Schedule crews, track progress, and manage every job from start to finish. Keep projects on time, on budget, and customers happy.
@@ -216,6 +230,9 @@ export default function Jobs() {
               </Button>
             </Link>
           </div>
+          <p className="mt-6 text-sm opacity-80">
+            Learn more: <Link to="/contractor-crm-software" className="underline hover:opacity-100">Contractor CRM Software</Link> · <Link to="/contractor-estimating-software" className="underline hover:opacity-100">Estimating Software</Link> · <Link to="/forge-ai-invoice-assistant" className="underline hover:opacity-100">AI Invoice Assistant</Link>
+          </p>
         </div>
       </section>
 

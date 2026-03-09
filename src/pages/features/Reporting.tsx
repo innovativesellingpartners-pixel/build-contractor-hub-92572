@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PublicFooter } from "@/components/PublicFooter";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,20 @@ import {
 } from "lucide-react";
 
 export default function Reporting() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    document.title = "Contractor Reporting Software — Dashboards & Business Analytics | myCT1";
+    const setMeta = (name: string, content: string) => {
+      let el = document.querySelector(`meta[name="${name}"]`) as HTMLMetaElement | null;
+      if (!el) { el = document.createElement("meta"); el.name = name; document.head.appendChild(el); }
+      el.content = content;
+    };
+    setMeta("description", "Contractor reporting software with real-time dashboards for revenue, job profitability, lead conversion, and team performance. Try myCT1 free.");
+    let canon = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+    if (!canon) { canon = document.createElement("link"); canon.rel = "canonical"; document.head.appendChild(canon); }
+    canon.href = "https://myct1.com/features/reporting";
+  }, []);
+
   const stats = [
     { number: "Real-Time", label: "Data Updates" },
     { number: "20+", label: "Report Types" },
@@ -68,7 +82,7 @@ export default function Reporting() {
               Dashboard & Reporting
             </Badge>
             <h1 className="text-5xl font-bold text-foreground mb-6">
-              Know Your Numbers, <span className="text-primary">Grow Your Business</span>
+              Contractor Reporting <span className="text-primary">Software</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               See your entire business at a glance. Track revenue, close rates, job profitability, and team performance in real-time dashboards.
@@ -211,6 +225,9 @@ export default function Reporting() {
               </Button>
             </Link>
           </div>
+          <p className="mt-6 text-sm opacity-80">
+            Learn more: <Link to="/contractor-crm-software" className="underline hover:opacity-100">Contractor CRM Software</Link> · <Link to="/contractor-estimating-software" className="underline hover:opacity-100">Estimating Software</Link> · <Link to="/ai-answering-service-for-contractors" className="underline hover:opacity-100">AI Answering Service</Link>
+          </p>
         </div>
       </section>
 
