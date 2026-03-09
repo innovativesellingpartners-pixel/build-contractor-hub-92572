@@ -27,13 +27,13 @@ import {
 export default function VoiceAI() {
   useEffect(() => {
     window.scrollTo(0, 0);
-    document.title = "AI Answering Service for Contractors — Never Miss a Call | myCT1";
+    document.title = "AI Answering Service for Contractors — Capture Every Call 24/7 | myCT1";
     const setMeta = (name: string, content: string) => {
       let el = document.querySelector(`meta[name="${name}"]`) as HTMLMetaElement | null;
       if (!el) { el = document.createElement("meta"); el.name = name; document.head.appendChild(el); }
       el.content = content;
     };
-    setMeta("description", "AI answering service for contractors that picks up every call, captures leads, and books appointments 24/7. Try myCT1 Voice AI free.");
+    setMeta("description", "85% of callers who reach voicemail call your competitor instead. myCT1 Voice AI answers every call, captures leads, and books appointments 24/7 — even at 2 AM. Try free.");
     let canon = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
     if (!canon) { canon = document.createElement("link"); canon.rel = "canonical"; document.head.appendChild(canon); }
     canon.href = "https://myct1.com/features/voice-ai";
