@@ -25,6 +25,20 @@ import {
 } from "lucide-react";
 
 export default function Reporting() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    document.title = "Contractor Reporting Software — Dashboards & Business Analytics | myCT1";
+    const setMeta = (name: string, content: string) => {
+      let el = document.querySelector(`meta[name="${name}"]`) as HTMLMetaElement | null;
+      if (!el) { el = document.createElement("meta"); el.name = name; document.head.appendChild(el); }
+      el.content = content;
+    };
+    setMeta("description", "Contractor reporting software with real-time dashboards for revenue, job profitability, lead conversion, and team performance. Try myCT1 free.");
+    let canon = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+    if (!canon) { canon = document.createElement("link"); canon.rel = "canonical"; document.head.appendChild(canon); }
+    canon.href = "https://myct1.com/features/reporting";
+  }, []);
+
   const stats = [
     { number: "Real-Time", label: "Data Updates" },
     { number: "20+", label: "Report Types" },
