@@ -727,7 +727,7 @@ export function NewLandingPage() {
               <div className="space-y-2 text-sm text-muted">
                 <div className="flex items-center gap-2">
                   <Phone className="h-4 w-4" />
-                  <span>(248) 752-7308</span>
+                  <span>(419) 827-4285</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4" />
