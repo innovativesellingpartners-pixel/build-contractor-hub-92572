@@ -25,7 +25,7 @@ export function Contact() {
       icon: Phone,
       title: "Phone Support",
       description: "Speak directly with our sales team",
-      contact: "(248) 752-7308",
+      contact: "(419) 827-4285",
       hours: "Mon-Fri 8AM-6PM EST"
     },
     {
@@ -55,7 +55,7 @@ export function Contact() {
     {
       city: "Fraser, MI",
       address: "31780 Groesbeck Hwy, Fraser, MI 48026",
-      phone: "(248) 752-7308",
+      phone: "(419) 827-4285",
       region: "Flagship Location",
       website: "https://restoreitright.com/",
       coverage: "And surrounding areas"
@@ -66,11 +66,11 @@ export function Contact() {
     <div className="min-h-screen bg-background">
       <SEOHead
         title="Contact Us - Get Started with myCT1 Contractor Software"
-        description="Contact myCT1 for a free demo of our contractor business software. Call (248) 752-7308 or email sales@myct1.com. We serve contractors nationwide across all 50 states."
+        description="Contact myCT1 for a free demo of our contractor business software. Call (419) 827-4285 or email sales@myct1.com. We serve contractors nationwide across all 50 states."
         canonical="/contact"
         keywords="contact myCT1, contractor software demo, contractor CRM support, business software help"
         structuredData={structuredDataGenerators.faq([
-          { question: "How do I get started with myCT1?", answer: "Start with a free trial at myct1.com or contact our sales team at (248) 752-7308 for a personalized demo." },
+          { question: "How do I get started with myCT1?", answer: "Start with a free trial at myct1.com or contact our sales team at (419) 827-4285 for a personalized demo." },
           { question: "What trades does myCT1 support?", answer: "myCT1 supports all major trades including roofing, plumbing, HVAC, electrical, painting, remodeling, landscaping, and general contracting." },
           { question: "Is there a free trial?", answer: "Yes! myCT1 offers a free trial so you can experience the full platform before committing." }
         ])}

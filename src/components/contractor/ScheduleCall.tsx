@@ -286,7 +286,7 @@ export function ScheduleCall() {
                 </div>
                 <div className="flex items-center justify-center md:justify-start gap-1">
                   <Phone className="h-3 w-3 flex-shrink-0" />
-                  <span>(248) 752-7308</span>
+                  <span>(419) 827-4285</span>
                 </div>
               </div>
             </div>
