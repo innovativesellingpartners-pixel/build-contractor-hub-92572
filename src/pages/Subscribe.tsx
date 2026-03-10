@@ -235,7 +235,7 @@ export function Subscribe() {
                           Forgot your password?
                         </button>
                         <div className="text-xs text-gray-400">
-                          Need help? Call <span className="font-medium">(248) 752-7308</span>
+                          Need help? Call <span className="font-medium">(419) 827-4285</span>
                         </div>
                       </div>
                     </form>

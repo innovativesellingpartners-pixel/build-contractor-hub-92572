@@ -70,7 +70,7 @@ export function Contact() {
         canonical="/contact"
         keywords="contact myCT1, contractor software demo, contractor CRM support, business software help"
         structuredData={structuredDataGenerators.faq([
-          { question: "How do I get started with myCT1?", answer: "Start with a free trial at myct1.com or contact our sales team at (248) 752-7308 for a personalized demo." },
+          { question: "How do I get started with myCT1?", answer: "Start with a free trial at myct1.com or contact our sales team at (419) 827-4285 for a personalized demo." },
           { question: "What trades does myCT1 support?", answer: "myCT1 supports all major trades including roofing, plumbing, HVAC, electrical, painting, remodeling, landscaping, and general contracting." },
           { question: "Is there a free trial?", answer: "Yes! myCT1 offers a free trial so you can experience the full platform before committing." }
         ])}
