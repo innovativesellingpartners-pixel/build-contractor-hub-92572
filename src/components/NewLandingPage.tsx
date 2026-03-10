@@ -477,11 +477,11 @@ export function NewLandingPage() {
             ].map((partner) => (
               <Dialog key={partner.name} open={activeContactForm === `tech-${partner.name}`} onOpenChange={(open) => setActiveContactForm(open ? `tech-${partner.name}` : null)}>
                 <DialogTrigger asChild>
-                  <button className="bg-card border-2 border-border rounded-2xl p-8 sm:p-10 flex items-center justify-center hover:shadow-xl hover:border-primary/50 hover:-translate-y-2 transition-all duration-300 cursor-pointer group aspect-[4/3] overflow-hidden">
+                  <button className="bg-card border-2 border-border rounded-2xl p-10 sm:p-12 flex items-center justify-center hover:shadow-xl hover:border-primary/50 hover:-translate-y-2 transition-all duration-300 cursor-pointer group aspect-[4/3] overflow-hidden">
                     <img
                       src={partner.src}
                       alt={partner.name}
-                      className="h-12 sm:h-14 w-auto max-w-[85%] object-contain opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300 dark:brightness-0 dark:invert"
+                      className="h-20 sm:h-24 w-auto max-w-[90%] object-contain opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300 dark:brightness-0 dark:invert"
                     />
                   </button>
                 </DialogTrigger>
