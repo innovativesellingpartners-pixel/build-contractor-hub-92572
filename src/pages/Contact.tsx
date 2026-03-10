@@ -55,7 +55,7 @@ export function Contact() {
     {
       city: "Fraser, MI",
       address: "31780 Groesbeck Hwy, Fraser, MI 48026",
-      phone: "(248) 752-7308",
+      phone: "(419) 827-4285",
       region: "Flagship Location",
       website: "https://restoreitright.com/",
       coverage: "And surrounding areas"
