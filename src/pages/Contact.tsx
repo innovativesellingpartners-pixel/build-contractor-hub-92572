@@ -66,7 +66,7 @@ export function Contact() {
     <div className="min-h-screen bg-background">
       <SEOHead
         title="Contact Us - Get Started with myCT1 Contractor Software"
-        description="Contact myCT1 for a free demo of our contractor business software. Call (248) 752-7308 or email sales@myct1.com. We serve contractors nationwide across all 50 states."
+        description="Contact myCT1 for a free demo of our contractor business software. Call (419) 827-4285 or email sales@myct1.com. We serve contractors nationwide across all 50 states."
         canonical="/contact"
         keywords="contact myCT1, contractor software demo, contractor CRM support, business software help"
         structuredData={structuredDataGenerators.faq([
