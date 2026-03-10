@@ -660,7 +660,7 @@ export function NewLandingPage() {
           <div className="flex flex-col sm:flex-row gap-6 justify-center">
             <Dialog open={activeContactForm === "start-building"} onOpenChange={(open) => setActiveContactForm(open ? "start-building" : null)}>
               <DialogTrigger asChild>
-                <Button size="lg" className="bg-background text-primary hover:bg-background/90 text-xl px-12 py-6 font-bold">
+                <Button size="lg" className="bg-background text-primary hover:bg-background/90 border-2 border-primary text-xl px-12 py-6 font-bold">
                   Start Building Today
                   <ArrowRight className="ml-2 h-6 w-6" />
                 </Button>
