@@ -25,7 +25,7 @@ export function Contact() {
       icon: Phone,
       title: "Phone Support",
       description: "Speak directly with our sales team",
-      contact: "(248) 752-7308",
+      contact: "(419) 827-4285",
       hours: "Mon-Fri 8AM-6PM EST"
     },
     {
