@@ -1,28 +1,29 @@
 
 
-## Fix: Remove CT1 Logo from Customer-Facing Estimates and Invoices
+## Problem
 
-### Problem
-When estimates are sent to customers, the public estimate page falls back to the CT1 logo when a contractor hasn't uploaded their own logo. Customers should only see their contractor's branding, not CT1 branding in the header.
+The `section-cta` class uses `--gradient-black` for its background, but in **light mode** that variable is defined as a near-white gradient (`hsl(210 20% 98%)` to `hsl(210 16% 94%)`). The text is `text-primary-foreground` (white), making everything invisible.
 
-### What Changes
+Three issues in this section:
+1. **"Ready to One-Up Your Business?"** — white text on light gray background
+2. **"Start Building Today" button** — `bg-background text-primary` with no border, looks like floating text
+3. **"Explore The Network" button** — `border-background text-background` = white border/text on light gray
 
-**File: `src/pages/PublicEstimate.tsx`**
+## Fix
 
-1. **Remove the CT1 logo import** (line 13) -- the `ct1PoweredLogo` import is used in two places: the header fallback and the "Powered by CT1" footer. The footer usage is intentional branding, so the import stays but the header fallback changes.
+**1. Fix `--gradient-black` in light mode** (src/index.css, line 85)
 
-2. **Update the header logo fallback** (line 217) -- Instead of falling back to the CT1 logo when the contractor has no logo, use a `Building2` icon (same pattern as `PublicInvoice.tsx`):
-   - Change: `const displayLogo = contractor?.logo_url || ct1PoweredLogo;`
-   - To: `const displayLogo = contractor?.logo_url;`
+Change the light-mode `--gradient-black` to an actual dark gradient so the CTA section has a dark background in both modes:
 
-3. **Update the header logo rendering** (around lines 231-240) -- Add a conditional: if `displayLogo` exists, show the contractor's logo image; otherwise show a generic `Building2` icon in a styled circle, matching the invoice page pattern.
+```css
+--gradient-black: linear-gradient(135deg, hsl(220 14% 12%), hsl(220 14% 18%));
+```
 
-### What Stays
-- The **"Powered by CT1"** footer branding at the bottom of estimates remains unchanged (this is the platform branding standard).
-- The **PublicInvoice.tsx** page already handles this correctly with the `Building2` fallback icon -- no changes needed there.
-- The **estimate PDF preview/download** components already use only the contractor's `logo_url` with no CT1 fallback -- no changes needed.
+This makes the section dark in both light and dark mode, which is the intended design (it's a CTA section meant to stand out). The existing white text, white-bordered buttons, and white-background "Start Building Today" button will all become visible.
 
-### Technical Details
-- Only 1 file modified: `src/pages/PublicEstimate.tsx`
-- ~10 lines changed total
-- Pattern mirrors the existing `PublicInvoice.tsx` implementation (lines 142-154)
+**2. Add visible border to "Start Building Today" button** (src/components/NewLandingPage.tsx, line 663)
+
+Add `border-2 border-primary` so it reads as a clickable button even on varied backgrounds.
+
+No other files need changes. The `text-primary-foreground` on the heading/paragraph, and `border-background text-background` on "Explore The Network" will all work correctly once the background is dark.
+
