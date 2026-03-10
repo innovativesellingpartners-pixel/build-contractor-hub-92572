@@ -330,7 +330,7 @@ export function HelpHome({ onNavigateToArticle, onNavigateToCategory, onOpenChat
                 </a>
               </Button>
               <Button variant="outline" asChild>
-                <a href="tel:+18005551234">
+                <a href="tel:+14198274285">
                   Call Us
                 </a>
               </Button>

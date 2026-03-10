@@ -613,10 +613,10 @@ export function Auth() {
 
                     <div className="text-center pt-2">
                       <a 
-                        href="tel:+12487527308"
+                        href="tel:+14198274285"
                         className="text-sm text-muted-foreground hover:text-primary transition-colors"
                       >
-                        Or call us: <span className="font-medium">(248) 752-7308</span>
+                        Or call us: <span className="font-medium">(419) 827-4285</span>
                       </a>
                     </div>
                   </div>
@@ -688,11 +688,11 @@ export function Auth() {
                           <span className="font-medium">sales@myct1.com</span>
                         </a>
                         <a 
-                          href="tel:+12487527308"
+                          href="tel:+14198274285"
                           className="flex items-center gap-2 text-sm hover:text-primary transition-colors"
                         >
                           <Phone className="h-4 w-4" />
-                          <span className="font-medium">(248) 752-7308</span>
+                          <span className="font-medium">(419) 827-4285</span>
                         </a>
                       </div>
                     </div>

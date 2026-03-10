@@ -328,9 +328,9 @@ export function Marketplace() {
                       </a>
                     </Button>
                     <Button className="w-full" variant="outline" asChild>
-                      <a href="tel:+12487527308">
+                      <a href="tel:+14198274285">
                         <Phone className="h-4 w-4 mr-2" />
-                        (248) 752-7308
+                        (419) 827-4285
                       </a>
                     </Button>
                   </div>
