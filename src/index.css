@@ -82,7 +82,7 @@
     --gradient-hero: linear-gradient(135deg, hsl(210 20% 98%), hsl(210 16% 94%));
     --gradient-card: linear-gradient(180deg, hsl(var(--card)), hsl(var(--muted)));
     --gradient-red: linear-gradient(45deg, hsl(var(--ct1-red) / 0.08), hsl(var(--ct1-light-red) / 0.05));
-    --gradient-black: linear-gradient(135deg, hsl(210 20% 98%), hsl(210 16% 94%));
+    --gradient-black: linear-gradient(135deg, hsl(220 14% 12%), hsl(220 14% 18%));
     --gradient-blue: linear-gradient(135deg, hsl(217 91% 60% / 0.08), hsl(262 83% 58% / 0.04));
     --gradient-success: linear-gradient(135deg, hsl(142 71% 45% / 0.08), hsl(189 94% 43% / 0.04));
 
