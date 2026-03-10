@@ -341,7 +341,7 @@ export function Subscribe() {
                       </Button>
                       <div className="text-center">
                         <div className="text-xs text-steel-light">
-                          Need help? Call <span className="font-medium">(248) 752-7308</span>
+                          Need help? Call <span className="font-medium">(419) 827-4285</span>
                         </div>
                       </div>
                     </form>
