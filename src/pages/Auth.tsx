@@ -91,7 +91,7 @@ export function Auth() {
                     window.location.href = oauthData.url;
                     return;
                   } else {
-                    console.warn('[Auth] Combined OAuth init failed:', oauthError);
+                    if (import.meta.env.DEV) console.warn('[Auth] Combined OAuth init failed:', oauthError);
                   }
                 } catch (err) {
                   console.error('[Auth] Auto-connect error:', err);
