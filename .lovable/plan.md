@@ -17,12 +17,17 @@ myCT1 is a multi-tenant SaaS platform for contractors built on React/Vite with a
 
 ## Improvement Roadmap
 
-### Phase 1 — Critical Security Fixes (Week 1)
-- [ ] Remove `has_full_access()` email-domain bypass function
-- [ ] Replace with proper `has_role(auth.uid(), 'admin')` checks
-- [ ] Fix `estimates` public token RLS policy (`public_token IS NOT NULL` → token value check)
-- [ ] Lock down `portal_participants` and `invoice_payment_sessions` world-readable policies
-- [ ] Verify `user_roles` INSERT policy prevents non-admin role creation
+### Phase 1 — Critical Security Fixes (Week 1) ✅ COMPLETED
+- [x] Remove `has_full_access()` email-domain bypass function
+- [x] Replace with proper `has_role(auth.uid(), 'admin')` checks
+- [x] Fix `estimates` public token RLS policy (`public_token IS NOT NULL` → removed, uses Edge Function)
+- [x] Fix `change_orders` public token RLS policy → created `get-public-change-order` Edge Function
+- [x] Lock down `portal_participants` and `invoice_payment_sessions` world-readable policies
+- [x] Fix `customer_portal_tokens` UPDATE policy → `update_portal_token_last_accessed()` function
+- [x] Fix `profiles` portal token policy chain
+- [x] Fix `estimate_templates` account visibility to require authentication
+- [x] Verify email confirmation required for signup (confirmed)
+- [x] Verify anonymous signups disabled (confirmed)
 
 ### Phase 2 — Team Access Foundation (Week 2-3)
 - [ ] Create `get_user_contractor_id(uuid)` security definer function
