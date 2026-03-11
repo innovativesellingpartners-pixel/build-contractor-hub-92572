@@ -47,6 +47,7 @@ import ProfileEdit from "./pages/ProfileEdit";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminLayout } from "@/components/admin/AdminLayout";
+import { AdminProtectedRoute } from "@/components/AdminProtectedRoute";
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
 import { UserManagement } from "@/components/admin/UserManagement";
 import { UserDetailPage } from "@/components/admin/UserDetailPage";
@@ -102,7 +103,15 @@ import PublicHelpCenter from "./pages/PublicHelpCenter";
 import PublicSupport from "./pages/PublicSupport";
 import DashboardHelpCenter from "./pages/DashboardHelpCenter";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 30_000,
+      gcTime: 300_000,
+    },
+  },
+});
 
 // Wrapper to conditionally show Pocket Agent on public pages or Dashboard AI help on authenticated pages
 function PocketAgentWrapper() {
@@ -287,8 +296,9 @@ const App = () => (
                   <CoursePlayer />
                 </ProtectedRoute>
               } />
-            {/* Admin Routes */}
-            <Route path="/admin" element={<AdminLayout />}>
+            {/* Admin Routes — role-gated */}
+            <Route path="/admin" element={<AdminProtectedRoute />}>
+              <Route element={<AdminLayout />}>
               <Route index element={<AdminDashboard />} />
               <Route path="users" element={<UserManagement />} />
               <Route path="users/:userId" element={<UserDetailPage />} />
@@ -307,6 +317,7 @@ const App = () => (
               <Route path="settings" element={<AdminSettings />} />
               <Route path="catalog-import" element={<AdminCatalogImport />} />
               <Route path="product-form" element={<AdminProductForm />} />
+              </Route>
             </Route>
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

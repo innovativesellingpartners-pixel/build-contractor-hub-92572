@@ -61,7 +61,7 @@ export function Auth() {
         if (sub) {
           // For paying Google users, check if they have Gmail/Calendar connections
           const isOAuthUser = user.app_metadata?.provider === "google" || user.app_metadata?.providers?.includes("google");
-          console.log('[Auth] Paying user detected. isOAuthUser:', isOAuthUser, 'provider:', user.app_metadata?.provider, 'providers:', user.app_metadata?.providers);
+          if (import.meta.env.DEV) console.log('[Auth] Paying user detected. isOAuthUser:', isOAuthUser, 'provider:', user.app_metadata?.provider, 'providers:', user.app_metadata?.providers);
           
           if (isOAuthUser) {
             // Check if already prompted this session to avoid infinite redirect loops
@@ -72,11 +72,11 @@ export function Auth() {
                 supabase.from("calendar_connections").select("id").eq("user_id", user.id).eq("provider", "google").maybeSingle(),
               ]);
               
-              console.log('[Auth] Connection check — email:', !!emailConn, 'calendar:', !!calConn);
+              if (import.meta.env.DEV) console.log('[Auth] Connection check — email:', !!emailConn, 'calendar:', !!calConn);
               
               if (!emailConn || !calConn) {
                 try {
-                  console.log('[Auth] Missing connections, invoking google-oauth-init-combined...');
+                  if (import.meta.env.DEV) console.log('[Auth] Missing connections, invoking google-oauth-init-combined...');
                   sessionStorage.setItem('ct1_oauth_connect_prompted', 'true');
                   
                   const { data: oauthData, error: oauthError } = await supabase.functions.invoke(
@@ -84,17 +84,17 @@ export function Auth() {
                     { body: {} }
                   );
                   
-                  console.log('[Auth] Combined OAuth response:', { oauthData, oauthError });
+                  if (import.meta.env.DEV) console.log('[Auth] Combined OAuth response:', { oauthData, oauthError });
                   
                   if (!oauthError && oauthData?.url) {
                     sessionStorage.setItem('ct1_post_oauth_redirect', '/dashboard');
                     window.location.href = oauthData.url;
                     return;
                   } else {
-                    console.warn('[Auth] Combined OAuth init failed:', oauthError);
+                    if (import.meta.env.DEV) console.warn('[Auth] Combined OAuth init failed:', oauthError);
                   }
                 } catch (err) {
-                  console.error('[Auth] Auto-connect error:', err);
+                  if (import.meta.env.DEV) console.error('[Auth] Auto-connect error:', err);
                 }
               }
             }
