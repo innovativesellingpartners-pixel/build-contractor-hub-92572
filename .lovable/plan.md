@@ -1,80 +1,41 @@
-# myCT1 Backend Architecture Audit Report
 
-## Status: APPROVED — Review complete, no changes made
 
----
+## Remove All Sticky Headers/Footers — Maximize Contractor Screen Space
 
-## Section 1: Architecture Summary
+### Summary
+Remove every `sticky` header and footer across the Contractor Hub (CT1 CRM) and related pages so all headers scroll with content, giving contractors maximum usable screen real estate. The bottom navigation bar stays fixed as requested.
 
-myCT1 is a multi-tenant SaaS platform for contractors built on React/Vite with a Lovable Cloud (Supabase) backend. The tenant model uses a **hybrid user_id / contractor_id** approach:
+### Files to Change
 
-- A `contractors` table holds business entities, auto-provisioned on signup via the `handle_new_user()` trigger
-- A `contractor_users` junction table maps users to contractors with roles (`owner`, `admin`, `staff`)
-- Most core business tables use `user_id` rather than `contractor_id`
-- Some tables use `contractor_id` or `tenant_id` inconsistently
+**1. CRM Dashboard page — `src/pages/CRMDashboard.tsx` (line 640)**
+- Remove `sticky top-0 z-50` from the mobile header div
+- Header scrolls with content naturally
 
----
+**2. Help Center — `src/components/help/HelpCenter.tsx` (line 90)**
+- Remove `sticky top-0 z-10` from the back-navigation header
+- Remove backdrop-blur since it's no longer floating
 
-## Improvement Roadmap
+**3. Table header component — `src/components/ui/table.tsx` (line 55)**
+- Remove `sticky top-0 z-10` from `TableHead`
+- Table headers scroll with their table content
 
-### Phase 1 — Critical Security Fixes (Week 1) ✅ COMPLETED
-- [x] Remove `has_full_access()` email-domain bypass function
-- [x] Replace with proper `has_role(auth.uid(), 'admin')` checks
-- [x] Fix `estimates` public token RLS policy (`public_token IS NOT NULL` → removed, uses Edge Function)
-- [x] Fix `change_orders` public token RLS policy → created `get-public-change-order` Edge Function
-- [x] Lock down `portal_participants` and `invoice_payment_sessions` world-readable policies
-- [x] Fix `customer_portal_tokens` UPDATE policy → `update_portal_token_last_accessed()` function
-- [x] Fix `profiles` portal token policy chain
-- [x] Fix `estimate_templates` account visibility to require authentication
-- [x] Verify email confirmation required for signup (confirmed)
-- [x] Verify anonymous signups disabled (confirmed)
+**4. Leads Section table — `src/components/contractor/crm/sections/LeadsSection.tsx` (line 509)**
+- Remove `sticky top-0` from the `<thead>` element
 
-### Phase 2 — Team Access Foundation (Week 2-3) ✅ COMPLETED
-- [x] Create `get_user_contractor_id(uuid)` security definer function
-- [x] Create `is_contractor_member(uuid)` security definer function
-- [x] Create `is_contractor_admin(uuid)` security definer function
-- [x] Add contractor-scoped SELECT policies to core tables (estimates, jobs, invoices, leads, customers)
-- [x] Add contractor-scoped SELECT policies to related tables (change_orders, payments, daily_logs, expenses, crew_members)
-- [x] Add contractor-scoped INSERT/UPDATE policies for team admins
-- [x] Add performance indexes on contractor_users (user_id, contractor_id, composite lookup)
-- [x] Remove frontend `.eq('user_id', user.id)` filters from useJobs, useLeads, useCustomers, useEstimates (RLS now handles scoping)
-- [ ] Test with multi-user contractor accounts
+**5. Calendar Section — `src/components/contractor/crm/sections/CalendarSection.tsx` (line 1057)**
+- Remove `sticky top-0` from the time-slot schedule label
 
-### Phase 3 — Data Integrity Hardening (Week 3-4)
-- [ ] Add status transition validation triggers for estimates, jobs, invoices, leads
-- [ ] Create enums for `estimates.status` and `leads.status`
-- [ ] Move invoice creation to an Edge Function
-- [ ] Add unique constraint on `invoice_number`
-- [ ] Add `quickbooks_sync_log` table with idempotency key
+**6. CT1CRM mobile header — `src/components/contractor/crm/CT1CRM.tsx` (line 408)**
+- Already non-sticky — no change needed (confirmed)
 
-### Phase 4 — Audit and Observability (Week 4-5)
-- [ ] Add audit triggers for invoices, payments (INSERT/UPDATE/DELETE)
-- [ ] Add structured QB sync logging
-- [ ] Add financial deletion audit trail
-- [ ] Clean up duplicate RLS policies
+### What stays fixed
+- **Bottom Nav** (`src/components/contractor/crm/BottomNav.tsx`) — remains `fixed bottom-0` as requested
+- **Global Pocketbot** floating buttons — utility buttons, not headers/footers
+- **UI primitives** (Dialog overlays, Sheet overlays, AlertDialog) — these are modal overlays, not page headers
 
-### Phase 5 — Team Roles Expansion (Week 5-6)
-- [ ] Expand `contractor_users.role` to include granular team roles
-- [ ] Create role-based RLS policies
-- [ ] Add role-based UI gating
-- [ ] Document the permission matrix
+### Not in scope (marketing/public pages)
+- `LandingPage.tsx`, `BusinessSuite.tsx`, `Subscribe.tsx`, `NetworkMap.tsx` — these are public-facing marketing pages, not the contractor workspace. Will leave as-is unless you want those changed too.
 
-### Phase 6 — Performance Optimization (Ongoing)
-- [ ] Replace `has_full_access()` auth.users query with cached role check
-- [ ] Monitor slow queries as data grows
-- [ ] Consider materialized views for reporting dashboards
+### Approach
+Each change is a simple class removal — no layout restructuring needed. Mobile-first by nature since the sticky classes were primarily impacting mobile viewports.
 
----
-
-## Top 10 Risks (by severity)
-
-1. **CRITICAL** — `has_full_access()` email-domain bypass
-2. **CRITICAL** — Team members cannot access business data (user_id-scoped RLS)
-3. **HIGH** — Public estimate exposure (public_token IS NOT NULL)
-4. **HIGH** — `portal_participants` and `invoice_payment_sessions` world-readable
-5. **HIGH** — No status transition validation
-6. **HIGH** — Invoice creation is frontend-only
-7. **MEDIUM** — No QuickBooks sync tracking
-8. **MEDIUM** — Missing audit trails for financial operations
-9. **MEDIUM** — Inconsistent tenant scoping columns
-10. **LOW** — `estimates.status` and `leads.status` are untyped text
