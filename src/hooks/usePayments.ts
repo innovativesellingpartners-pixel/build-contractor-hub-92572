@@ -31,7 +31,6 @@ export function usePayments(jobId?: string, customerId?: string) {
       let query = supabase
         .from('payments')
         .select('*')
-        .eq('contractor_id', user.id)
         .order('paid_at', { ascending: false });
 
       if (jobId) {
