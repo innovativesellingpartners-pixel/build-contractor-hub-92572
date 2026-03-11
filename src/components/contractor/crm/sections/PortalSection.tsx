@@ -168,18 +168,59 @@ export default function PortalSection() {
             Manage portal access links for your customers
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={fetchTokens} className="gap-1.5">
-          <RefreshCw className="h-4 w-4" />
-          <span className="hidden sm:inline">Refresh</span>
-        </Button>
-      </div>
-
-      {/* Summary Cards */}
-      <div className={cn("grid gap-3", isMobile ? "grid-cols-2" : "grid-cols-3")}>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <p className="text-2xl font-bold tabular-nums">{activeTokens.length}</p>
-            <p className="text-xs text-muted-foreground">Active Links</p>
+        <div className="flex items-center gap-2">
+          <Dialog open={createOpen} onOpenChange={(open) => { setCreateOpen(open); if (open) fetchJobs(); }}>
+            <DialogTrigger asChild>
+              <Button size="sm" className="gap-1.5">
+                <Plus className="h-4 w-4" />
+                <span className="hidden sm:inline">Create Portal</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Create Customer Portal</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-2">
+                <div className="space-y-2">
+                  <Label htmlFor="portal-label">Portal Label</Label>
+                  <Input
+                    id="portal-label"
+                    placeholder="e.g. Smith Kitchen Remodel"
+                    value={portalLabel}
+                    onChange={(e) => setPortalLabel(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="portal-job">Job (Optional)</Label>
+                  <Select value={selectedJobId} onValueChange={setSelectedJobId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="No job linked" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">No job linked</SelectItem>
+                      {jobs.map((job) => (
+                        <SelectItem key={job.id} value={job.id}>
+                          {job.job_number ? `${job.job_number} — ` : ''}{job.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">Optionally link this portal to a job.</p>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
+                <Button onClick={handleCreate} disabled={creating}>
+                  {creating ? 'Creating...' : 'Create Portal'}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+          <Button variant="outline" size="sm" onClick={fetchTokens} className="gap-1.5">
+            <RefreshCw className="h-4 w-4" />
+            <span className="hidden sm:inline">Refresh</span>
+          </Button>
+        </div>
           </CardContent>
         </Card>
         <Card>
