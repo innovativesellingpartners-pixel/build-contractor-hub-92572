@@ -1118,13 +1118,15 @@ function getParticipantColor(senderName: string, senderType: string, participant
   return PARTICIPANT_COLORS[participantMap.get(key)! % PARTICIPANT_COLORS.length];
 }
 
-function MessagesTab({ portalTokenId, jobId, customerName, contractorName, isContractor }: {
+function MessagesTab({ portalTokenId, jobId, customerName, contractorName, isContractor, portalTokenValue }: {
   portalTokenId: string;
   jobId: string;
   customerName: string;
   contractorName: string;
   isContractor: boolean;
+  portalTokenValue?: string;
 }) {
+  const portalClient = portalTokenValue ? createPortalClient(portalTokenValue) : supabase;
   const queryClient = useQueryClient();
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
