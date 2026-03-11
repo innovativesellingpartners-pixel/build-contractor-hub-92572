@@ -393,3 +393,9 @@
     word-wrap: break-word;
   }
 }
+
+/* Touch scrolling utility */
+.touch-scroll {
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+}
