@@ -403,20 +403,9 @@ const navItems = [
       {isMobile ? (
         <>
 
-          {/* Back Navigation for Mobile - Condensed with logo */}
+          {/* Search bar for mobile - sections already have their own back/dash nav */}
           {isMobile && !showMobileLanding && (
-            <div className="border-b bg-card px-3 py-2 overflow-hidden max-w-full flex items-center justify-between gap-2">
-              <BackNavigation 
-                onBack={handleBack}
-                onBackToDashboard={() => {
-                  setNavigationHistory([]);
-                  setActiveSection('dashboard');
-                  setShowMobileLanding(true);
-                  sessionStorage.setItem('ct1CrmActiveSection', 'dashboard');
-                  sessionStorage.setItem('ct1CrmShowLanding', 'true');
-                }}
-                showBackButton={true}
-              />
+            <div className="border-b bg-card px-3 py-2 overflow-hidden max-w-full flex items-center justify-end gap-2">
               <CRMSearchBar onNavigate={handleSectionChange} />
             </div>
           )}
