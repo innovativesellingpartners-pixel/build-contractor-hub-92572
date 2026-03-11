@@ -10,6 +10,7 @@ import { useHelpArticle, useSubmitFeedback } from '@/hooks/useHelpCenter';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { markdownToHtml } from '@/lib/markdownToHtml';
+import DOMPurify from 'dompurify';
 
 interface HelpArticleViewProps {
   slug: string;
