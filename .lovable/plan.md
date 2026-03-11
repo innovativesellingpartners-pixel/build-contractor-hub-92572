@@ -1,28 +1,70 @@
+# myCT1 Backend Architecture Audit Report
 
+## Status: APPROVED — Review complete, no changes made
 
-## Fix: Remove CT1 Logo from Customer-Facing Estimates and Invoices
+---
 
-### Problem
-When estimates are sent to customers, the public estimate page falls back to the CT1 logo when a contractor hasn't uploaded their own logo. Customers should only see their contractor's branding, not CT1 branding in the header.
+## Section 1: Architecture Summary
 
-### What Changes
+myCT1 is a multi-tenant SaaS platform for contractors built on React/Vite with a Lovable Cloud (Supabase) backend. The tenant model uses a **hybrid user_id / contractor_id** approach:
 
-**File: `src/pages/PublicEstimate.tsx`**
+- A `contractors` table holds business entities, auto-provisioned on signup via the `handle_new_user()` trigger
+- A `contractor_users` junction table maps users to contractors with roles (`owner`, `admin`, `staff`)
+- Most core business tables use `user_id` rather than `contractor_id`
+- Some tables use `contractor_id` or `tenant_id` inconsistently
 
-1. **Remove the CT1 logo import** (line 13) -- the `ct1PoweredLogo` import is used in two places: the header fallback and the "Powered by CT1" footer. The footer usage is intentional branding, so the import stays but the header fallback changes.
+---
 
-2. **Update the header logo fallback** (line 217) -- Instead of falling back to the CT1 logo when the contractor has no logo, use a `Building2` icon (same pattern as `PublicInvoice.tsx`):
-   - Change: `const displayLogo = contractor?.logo_url || ct1PoweredLogo;`
-   - To: `const displayLogo = contractor?.logo_url;`
+## Improvement Roadmap
 
-3. **Update the header logo rendering** (around lines 231-240) -- Add a conditional: if `displayLogo` exists, show the contractor's logo image; otherwise show a generic `Building2` icon in a styled circle, matching the invoice page pattern.
+### Phase 1 — Critical Security Fixes (Week 1)
+- [ ] Remove `has_full_access()` email-domain bypass function
+- [ ] Replace with proper `has_role(auth.uid(), 'admin')` checks
+- [ ] Fix `estimates` public token RLS policy (`public_token IS NOT NULL` → token value check)
+- [ ] Lock down `portal_participants` and `invoice_payment_sessions` world-readable policies
+- [ ] Verify `user_roles` INSERT policy prevents non-admin role creation
 
-### What Stays
-- The **"Powered by CT1"** footer branding at the bottom of estimates remains unchanged (this is the platform branding standard).
-- The **PublicInvoice.tsx** page already handles this correctly with the `Building2` fallback icon -- no changes needed there.
-- The **estimate PDF preview/download** components already use only the contractor's `logo_url` with no CT1 fallback -- no changes needed.
+### Phase 2 — Team Access Foundation (Week 2-3)
+- [ ] Create `get_user_contractor_id(uuid)` security definer function
+- [ ] Add contractor-scoped SELECT policies to core tables (estimates, jobs, invoices, leads, customers, payments)
+- [ ] Add contractor-scoped INSERT/UPDATE policies
+- [ ] Test with multi-user contractor accounts
 
-### Technical Details
-- Only 1 file modified: `src/pages/PublicEstimate.tsx`
-- ~10 lines changed total
-- Pattern mirrors the existing `PublicInvoice.tsx` implementation (lines 142-154)
+### Phase 3 — Data Integrity Hardening (Week 3-4)
+- [ ] Add status transition validation triggers for estimates, jobs, invoices, leads
+- [ ] Create enums for `estimates.status` and `leads.status`
+- [ ] Move invoice creation to an Edge Function
+- [ ] Add unique constraint on `invoice_number`
+- [ ] Add `quickbooks_sync_log` table with idempotency key
+
+### Phase 4 — Audit and Observability (Week 4-5)
+- [ ] Add audit triggers for invoices, payments (INSERT/UPDATE/DELETE)
+- [ ] Add structured QB sync logging
+- [ ] Add financial deletion audit trail
+- [ ] Clean up duplicate RLS policies
+
+### Phase 5 — Team Roles Expansion (Week 5-6)
+- [ ] Expand `contractor_users.role` to include granular team roles
+- [ ] Create role-based RLS policies
+- [ ] Add role-based UI gating
+- [ ] Document the permission matrix
+
+### Phase 6 — Performance Optimization (Ongoing)
+- [ ] Replace `has_full_access()` auth.users query with cached role check
+- [ ] Monitor slow queries as data grows
+- [ ] Consider materialized views for reporting dashboards
+
+---
+
+## Top 10 Risks (by severity)
+
+1. **CRITICAL** — `has_full_access()` email-domain bypass
+2. **CRITICAL** — Team members cannot access business data (user_id-scoped RLS)
+3. **HIGH** — Public estimate exposure (public_token IS NOT NULL)
+4. **HIGH** — `portal_participants` and `invoice_payment_sessions` world-readable
+5. **HIGH** — No status transition validation
+6. **HIGH** — Invoice creation is frontend-only
+7. **MEDIUM** — No QuickBooks sync tracking
+8. **MEDIUM** — Missing audit trails for financial operations
+9. **MEDIUM** — Inconsistent tenant scoping columns
+10. **LOW** — `estimates.status` and `leads.status` are untyped text
