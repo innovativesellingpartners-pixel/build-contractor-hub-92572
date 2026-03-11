@@ -223,6 +223,7 @@ export default function CustomerPortal() {
             customerName={customer?.name || 'Customer'}
             contractorName={contractor.company_name || 'Contractor'}
             isContractor={isContractor}
+            portalTokenValue={portalToken.token}
           />
         )}
         {activeTab === 'payments' && <PaymentsTab jobId={job.id} job={job} />}
