@@ -506,7 +506,7 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
             </DialogHeader>
             <div className="flex-1 overflow-auto border rounded-md">
               <table className="w-full text-sm">
-                <thead className="bg-muted sticky top-0">
+                <thead className="bg-muted">
                   <tr>
                     <th className="text-left p-2 font-medium">Name</th>
                     <th className="text-left p-2 font-medium">Email</th>

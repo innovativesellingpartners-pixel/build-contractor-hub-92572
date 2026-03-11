@@ -637,7 +637,7 @@ export function CRMDashboard() {
   return (
     <div className="flex flex-col lg:flex-row h-screen bg-background">
       {/* Mobile Header */}
-      <div className="lg:hidden border-b border-border bg-card p-4 sticky top-0 z-50">
+      <div className="lg:hidden border-b border-border bg-card p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img src={ct1Logo} alt="CT1" className="h-8 w-8" />
