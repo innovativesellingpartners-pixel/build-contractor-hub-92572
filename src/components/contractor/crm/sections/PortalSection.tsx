@@ -221,6 +221,14 @@ export default function PortalSection() {
             <span className="hidden sm:inline">Refresh</span>
           </Button>
         </div>
+      </div>
+
+      {/* Summary Cards */}
+      <div className={cn("grid gap-3", isMobile ? "grid-cols-2" : "grid-cols-3")}>
+        <Card>
+          <CardContent className="p-4 text-center">
+            <p className="text-2xl font-bold tabular-nums">{activeTokens.length}</p>
+            <p className="text-xs text-muted-foreground">Active Links</p>
           </CardContent>
         </Card>
         <Card>
