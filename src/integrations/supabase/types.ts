@@ -1247,7 +1247,7 @@ export type Database = {
           expires_at: string | null
           id: string
           is_active: boolean
-          job_id: string
+          job_id: string | null
           label: string | null
           last_accessed_at: string | null
           token: string
@@ -1260,7 +1260,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           is_active?: boolean
-          job_id: string
+          job_id?: string | null
           label?: string | null
           last_accessed_at?: string | null
           token?: string
@@ -1273,7 +1273,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           is_active?: boolean
-          job_id?: string
+          job_id?: string | null
           label?: string | null
           last_accessed_at?: string | null
           token?: string
