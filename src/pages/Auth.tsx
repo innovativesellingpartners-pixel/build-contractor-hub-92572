@@ -84,7 +84,7 @@ export function Auth() {
                     { body: {} }
                   );
                   
-                  console.log('[Auth] Combined OAuth response:', { oauthData, oauthError });
+                  if (import.meta.env.DEV) console.log('[Auth] Combined OAuth response:', { oauthData, oauthError });
                   
                   if (!oauthError && oauthData?.url) {
                     sessionStorage.setItem('ct1_post_oauth_redirect', '/dashboard');
