@@ -87,7 +87,7 @@ export default function HelpCenter({ onBack, onNavigateToSection, showChatbot = 
     <div className="min-h-full bg-background relative">
       {/* Header with back navigation */}
       {(currentView !== 'home' || onBack) && (
-        <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border/50 px-4 py-3">
+        <div className="bg-background border-b border-border/50 px-4 py-3">
           <Button
             variant="ghost"
             size="sm"

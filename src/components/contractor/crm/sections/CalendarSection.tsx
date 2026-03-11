@@ -1054,7 +1054,7 @@ export default function CalendarSection({ onSectionChange }: CalendarSectionProp
                       
                       {/* Time Slots Grid */}
                       <div className="space-y-0.5 max-h-[500px] overflow-y-auto">
-                        <div className="text-xs font-medium text-muted-foreground flex items-center gap-1 mb-2 sticky top-0 bg-background py-1">
+                        <div className="text-xs font-medium text-muted-foreground flex items-center gap-1 mb-2 py-1">
                           <Clock className="h-3 w-3" />
                           Schedule
                         </div>
