@@ -1147,7 +1147,7 @@ function MessagesTab({ portalTokenId, jobId, customerName, contractorName, isCon
   const { data: messages } = useQuery({
     queryKey: ['portal-messages', portalTokenId],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data } = await portalClient
         .from('portal_messages')
         .select('*')
         .eq('portal_token_id', portalTokenId)
