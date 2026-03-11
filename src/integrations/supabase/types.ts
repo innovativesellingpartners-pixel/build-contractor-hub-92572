@@ -6196,6 +6196,13 @@ export type Database = {
             referencedRelation: "lesson_quiz_questions"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "user_quiz_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "quiz_questions_safe"
+            referencedColumns: ["id"]
+          },
         ]
       }
       user_roles: {
@@ -6221,7 +6228,53 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      quiz_questions_safe: {
+        Row: {
+          correct_answer: string | null
+          created_at: string | null
+          id: string | null
+          lesson_id: string | null
+          options: Json | null
+          order_index: number | null
+          points: number | null
+          question_text: string | null
+          question_type: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          correct_answer?: never
+          created_at?: string | null
+          id?: string | null
+          lesson_id?: string | null
+          options?: Json | null
+          order_index?: number | null
+          points?: number | null
+          question_text?: string | null
+          question_type?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          correct_answer?: never
+          created_at?: string | null
+          id?: string | null
+          lesson_id?: string | null
+          options?: Json | null
+          order_index?: number | null
+          points?: number | null
+          question_text?: string | null
+          question_type?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_quiz_questions_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "course_lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       admin_get_stats: {
