@@ -5,10 +5,8 @@
 export function markdownToHtml(md: string): string {
   if (!md) return '';
 
-  // If content already contains HTML tags, return as-is
-  if (/<[a-z][\s\S]*>/i.test(md) && !md.includes('## ')) {
-    return md;
-  }
+  // Previously returned raw HTML as-is — removed for XSS safety.
+  // All content now goes through the markdown parser.
 
   let html = md;
 

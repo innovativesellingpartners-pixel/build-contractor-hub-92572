@@ -317,6 +317,7 @@ const App = () => (
               <Route path="settings" element={<AdminSettings />} />
               <Route path="catalog-import" element={<AdminCatalogImport />} />
               <Route path="product-form" element={<AdminProductForm />} />
+              </Route>
             </Route>
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

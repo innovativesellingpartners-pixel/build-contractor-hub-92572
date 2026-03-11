@@ -252,7 +252,7 @@ export function HelpArticleView({ slug, onBack, onNavigateToArticle, onOpenChat,
               <CardContent>
                 <div 
                   className="prose prose-sm max-w-none dark:prose-invert"
-                  dangerouslySetInnerHTML={{ __html: markdownToHtml(article.common_errors) }}
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(markdownToHtml(article.common_errors)) }}
                 />
               </CardContent>
             </Card>
