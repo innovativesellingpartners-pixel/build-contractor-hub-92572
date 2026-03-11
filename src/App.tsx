@@ -296,8 +296,9 @@ const App = () => (
                   <CoursePlayer />
                 </ProtectedRoute>
               } />
-            {/* Admin Routes */}
-            <Route path="/admin" element={<AdminLayout />}>
+            {/* Admin Routes — role-gated */}
+            <Route path="/admin" element={<AdminProtectedRoute />}>
+              <Route element={<AdminLayout />}>
               <Route index element={<AdminDashboard />} />
               <Route path="users" element={<UserManagement />} />
               <Route path="users/:userId" element={<UserDetailPage />} />
