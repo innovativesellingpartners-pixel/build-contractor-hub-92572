@@ -94,7 +94,7 @@ export function Auth() {
                     if (import.meta.env.DEV) console.warn('[Auth] Combined OAuth init failed:', oauthError);
                   }
                 } catch (err) {
-                  console.error('[Auth] Auto-connect error:', err);
+                  if (import.meta.env.DEV) console.error('[Auth] Auto-connect error:', err);
                 }
               }
             }
