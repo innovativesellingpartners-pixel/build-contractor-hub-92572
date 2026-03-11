@@ -102,7 +102,15 @@ import PublicHelpCenter from "./pages/PublicHelpCenter";
 import PublicSupport from "./pages/PublicSupport";
 import DashboardHelpCenter from "./pages/DashboardHelpCenter";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 30_000,
+      gcTime: 300_000,
+    },
+  },
+});
 
 // Wrapper to conditionally show Pocket Agent on public pages or Dashboard AI help on authenticated pages
 function PocketAgentWrapper() {
