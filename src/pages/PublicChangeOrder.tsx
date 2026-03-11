@@ -56,14 +56,14 @@ export default function PublicChangeOrder() {
 
   const fetchChangeOrder = async () => {
     try {
-      const { data, error } = await supabase
-        .from('change_orders')
-        .select('*, jobs(title, site_address)')
-        .eq('public_token', token)
-        .single();
+      const { data: response, error } = await supabase.functions.invoke('get-public-change-order', {
+        body: { token, action: 'get' }
+      });
 
       if (error) throw error;
+      if (!response?.data) throw new Error('Change order not found');
       
+      const data = response.data;
       const changeOrderData: ChangeOrderData = {
         ...data,
         line_items: Array.isArray(data.line_items) ? data.line_items : [],
@@ -82,18 +82,8 @@ export default function PublicChangeOrder() {
 
   const logView = async () => {
     try {
-      // Update viewed_at if not already viewed
-      await supabase
-        .from('change_orders')
-        .update({ viewed_at: new Date().toISOString() })
-        .eq('public_token', token)
-        .is('viewed_at', null);
-
-      // Log the view
-      await supabase.from('change_order_views').insert({
-        change_order_id: changeOrder?.id,
-        ip_address: null,
-        user_agent: navigator.userAgent,
+      await supabase.functions.invoke('get-public-change-order', {
+        body: { token, action: 'log_view' }
       });
     } catch (error) {
       console.error('Error logging view:', error);
