@@ -1,0 +1,1 @@
+DROP POLICY "Public insert portal messages via active token" ON public.portal_messages;
