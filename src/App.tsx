@@ -47,6 +47,7 @@ import ProfileEdit from "./pages/ProfileEdit";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminLayout } from "@/components/admin/AdminLayout";
+import { AdminProtectedRoute } from "@/components/AdminProtectedRoute";
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
 import { UserManagement } from "@/components/admin/UserManagement";
 import { UserDetailPage } from "@/components/admin/UserDetailPage";
