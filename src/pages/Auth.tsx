@@ -72,7 +72,7 @@ export function Auth() {
                 supabase.from("calendar_connections").select("id").eq("user_id", user.id).eq("provider", "google").maybeSingle(),
               ]);
               
-              console.log('[Auth] Connection check — email:', !!emailConn, 'calendar:', !!calConn);
+              if (import.meta.env.DEV) console.log('[Auth] Connection check — email:', !!emailConn, 'calendar:', !!calConn);
               
               if (!emailConn || !calConn) {
                 try {
