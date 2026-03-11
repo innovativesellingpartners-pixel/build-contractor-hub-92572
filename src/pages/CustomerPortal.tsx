@@ -959,7 +959,8 @@ function DocumentsTab({ jobId }: { jobId: string }) {
 }
 
 // ==================== PHOTOS TAB ====================
-function PhotosTab({ jobId, portalTokenId, customerName }: { jobId: string; portalTokenId: string; customerName?: string }) {
+function PhotosTab({ jobId, portalTokenId, customerName, portalTokenValue }: { jobId: string; portalTokenId: string; customerName?: string; portalTokenValue?: string }) {
+  const portalClient = portalTokenValue ? createPortalClient(portalTokenValue) : supabase;
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
