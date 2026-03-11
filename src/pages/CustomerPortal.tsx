@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { createPortalClient } from '@/lib/portalClient';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -212,9 +213,9 @@ export default function CustomerPortal() {
 
       <main className="max-w-4xl mx-auto px-4 py-5 space-y-5">
         {activeTab === 'overview' && <OverviewTab job={job} contractor={contractor} />}
-        {activeTab === 'schedule' && <ScheduleTab jobId={job.id} isContractor={isContractor} contractorId={portalToken.contractor_id} portalTokenId={portalToken.id} />}
+        {activeTab === 'schedule' && <ScheduleTab jobId={job.id} isContractor={isContractor} contractorId={portalToken.contractor_id} portalTokenId={portalToken.id} portalTokenValue={portalToken.token} />}
         {activeTab === 'documents' && <DocumentsTab jobId={job.id} />}
-        {activeTab === 'photos' && <PhotosTab jobId={job.id} portalTokenId={portalToken.id} customerName={customer?.name} />}
+        {activeTab === 'photos' && <PhotosTab jobId={job.id} portalTokenId={portalToken.id} customerName={customer?.name} portalTokenValue={portalToken.token} />}
         {activeTab === 'messages' && (
           <MessagesTab
             portalTokenId={portalToken.id}
@@ -222,6 +223,7 @@ export default function CustomerPortal() {
             customerName={customer?.name || 'Customer'}
             contractorName={contractor.company_name || 'Contractor'}
             isContractor={isContractor}
+            portalTokenValue={portalToken.token}
           />
         )}
         {activeTab === 'payments' && <PaymentsTab jobId={job.id} job={job} />}
@@ -255,7 +257,8 @@ export default function CustomerPortal() {
 }
 
 // ==================== SCHEDULE TAB ====================
-function ScheduleTab({ jobId, isContractor = false, contractorId, portalTokenId }: { jobId: string; isContractor?: boolean; contractorId?: string; portalTokenId?: string }) {
+function ScheduleTab({ jobId, isContractor = false, contractorId, portalTokenId, portalTokenValue }: { jobId: string; isContractor?: boolean; contractorId?: string; portalTokenId?: string; portalTokenValue?: string }) {
+  const portalClient = portalTokenValue ? createPortalClient(portalTokenValue) : supabase;
   const [selectedMonth, setSelectedMonth] = useState(() => new Date());
   const [clickedDate, setClickedDate] = useState<string | null>(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -264,7 +267,7 @@ function ScheduleTab({ jobId, isContractor = false, contractorId, portalTokenId 
   const { data: events, isLoading } = useQuery({
     queryKey: ['portal-calendar-events', jobId],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data } = await portalClient
         .from('portal_calendar_events')
         .select('*')
         .eq('job_id', jobId)
@@ -957,7 +960,8 @@ function DocumentsTab({ jobId }: { jobId: string }) {
 }
 
 // ==================== PHOTOS TAB ====================
-function PhotosTab({ jobId, portalTokenId, customerName }: { jobId: string; portalTokenId: string; customerName?: string }) {
+function PhotosTab({ jobId, portalTokenId, customerName, portalTokenValue }: { jobId: string; portalTokenId: string; customerName?: string; portalTokenValue?: string }) {
+  const portalClient = portalTokenValue ? createPortalClient(portalTokenValue) : supabase;
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -966,7 +970,7 @@ function PhotosTab({ jobId, portalTokenId, customerName }: { jobId: string; port
   const { data: jobPhotos } = useQuery({
     queryKey: ['portal-job-photos', jobId],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data } = await portalClient
         .from('job_photos')
         .select('id, photo_url, caption, created_at')
         .eq('job_id', jobId)
@@ -978,7 +982,7 @@ function PhotosTab({ jobId, portalTokenId, customerName }: { jobId: string; port
   const { data: customerPhotos } = useQuery({
     queryKey: ['portal-customer-photos', portalTokenId],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data } = await portalClient
         .from('portal_photo_uploads')
         .select('*')
         .eq('portal_token_id', portalTokenId)
@@ -1115,13 +1119,15 @@ function getParticipantColor(senderName: string, senderType: string, participant
   return PARTICIPANT_COLORS[participantMap.get(key)! % PARTICIPANT_COLORS.length];
 }
 
-function MessagesTab({ portalTokenId, jobId, customerName, contractorName, isContractor }: {
+function MessagesTab({ portalTokenId, jobId, customerName, contractorName, isContractor, portalTokenValue }: {
   portalTokenId: string;
   jobId: string;
   customerName: string;
   contractorName: string;
   isContractor: boolean;
+  portalTokenValue?: string;
 }) {
+  const portalClient = portalTokenValue ? createPortalClient(portalTokenValue) : supabase;
   const queryClient = useQueryClient();
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
@@ -1142,7 +1148,7 @@ function MessagesTab({ portalTokenId, jobId, customerName, contractorName, isCon
   const { data: messages } = useQuery({
     queryKey: ['portal-messages', portalTokenId],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data } = await portalClient
         .from('portal_messages')
         .select('*')
         .eq('portal_token_id', portalTokenId)
