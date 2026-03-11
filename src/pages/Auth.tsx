@@ -76,7 +76,7 @@ export function Auth() {
               
               if (!emailConn || !calConn) {
                 try {
-                  console.log('[Auth] Missing connections, invoking google-oauth-init-combined...');
+                  if (import.meta.env.DEV) console.log('[Auth] Missing connections, invoking google-oauth-init-combined...');
                   sessionStorage.setItem('ct1_oauth_connect_prompted', 'true');
                   
                   const { data: oauthData, error: oauthError } = await supabase.functions.invoke(
