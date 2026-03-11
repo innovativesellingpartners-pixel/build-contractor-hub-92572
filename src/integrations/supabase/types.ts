@@ -6258,6 +6258,7 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_request_token: { Args: never; Returns: string }
       get_user_contractor_id: { Args: { _user_id: string }; Returns: string }
       get_user_tier: { Args: { user_id: string }; Returns: string }
       has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
