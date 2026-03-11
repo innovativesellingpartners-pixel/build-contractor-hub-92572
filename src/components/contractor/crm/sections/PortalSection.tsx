@@ -42,7 +42,23 @@ export default function PortalSection() {
   const [tokens, setTokens] = useState<PortalToken[]>([]);
   const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [portalLabel, setPortalLabel] = useState('');
+  const [selectedJobId, setSelectedJobId] = useState<string>('none');
+  const [jobs, setJobs] = useState<{ id: string; name: string; job_number: string | null }[]>([]);
   const isMobile = useIsMobile();
+
+  const fetchJobs = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const { data } = await supabase
+      .from('jobs')
+      .select('id, name, job_number')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+    setJobs(data || []);
+  };
 
   const fetchTokens = async () => {
     try {
@@ -85,8 +101,39 @@ export default function PortalSection() {
     }
   };
 
+  const handleCreate = async () => {
+    try {
+      setCreating(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const insertData: any = {
+        contractor_id: user.id,
+        label: portalLabel.trim() || null,
+      };
+      if (selectedJobId !== 'none') {
+        insertData.job_id = selectedJobId;
+      }
+
+      const { error } = await supabase.from('customer_portal_tokens').insert(insertData);
+      if (error) throw error;
+
+      toast.success('Customer portal created!');
+      setCreateOpen(false);
+      setPortalLabel('');
+      setSelectedJobId('none');
+      fetchTokens();
+    } catch (err: any) {
+      console.error('Error creating portal:', err);
+      toast.error(err.message || 'Failed to create portal');
+    } finally {
+      setCreating(false);
+    }
+  };
+
   useEffect(() => {
     fetchTokens();
+    fetchJobs();
   }, []);
 
   const copyLink = (token: string) => {
