@@ -188,3 +188,6 @@ verify_jwt = true
 
 [functions.search-products]
 verify_jwt = false
+
+[functions.get-public-change-order]
+verify_jwt = false

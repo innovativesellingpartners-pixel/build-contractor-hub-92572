@@ -67,10 +67,7 @@ export default function CustomerPortal() {
         throw new Error('This portal link has expired');
       }
 
-      await supabase
-        .from('customer_portal_tokens')
-        .update({ last_accessed_at: new Date().toISOString() })
-        .eq('id', portalToken.id);
+      await supabase.rpc('update_portal_token_last_accessed', { p_token_id: portalToken.id });
 
       const { data: job } = await supabase
         .from('jobs')

@@ -6259,7 +6259,6 @@ export type Database = {
         }[]
       }
       get_user_tier: { Args: { user_id: string }; Returns: string }
-      has_full_access: { Args: { user_id: string }; Returns: boolean }
       has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
       is_super_admin: { Args: { _user_id: string }; Returns: boolean }
       search_knowledge: {
@@ -6306,6 +6305,10 @@ export type Database = {
           p_refresh_token: string
           p_user_id: string
         }
+        Returns: undefined
+      }
+      update_portal_token_last_accessed: {
+        Args: { p_token_id: string }
         Returns: undefined
       }
     }
