@@ -29,10 +29,15 @@ myCT1 is a multi-tenant SaaS platform for contractors built on React/Vite with a
 - [x] Verify email confirmation required for signup (confirmed)
 - [x] Verify anonymous signups disabled (confirmed)
 
-### Phase 2 — Team Access Foundation (Week 2-3)
-- [ ] Create `get_user_contractor_id(uuid)` security definer function
-- [ ] Add contractor-scoped SELECT policies to core tables (estimates, jobs, invoices, leads, customers, payments)
-- [ ] Add contractor-scoped INSERT/UPDATE policies
+### Phase 2 — Team Access Foundation (Week 2-3) ✅ COMPLETED
+- [x] Create `get_user_contractor_id(uuid)` security definer function
+- [x] Create `is_contractor_member(uuid)` security definer function
+- [x] Create `is_contractor_admin(uuid)` security definer function
+- [x] Add contractor-scoped SELECT policies to core tables (estimates, jobs, invoices, leads, customers)
+- [x] Add contractor-scoped SELECT policies to related tables (change_orders, payments, daily_logs, expenses, crew_members)
+- [x] Add contractor-scoped INSERT/UPDATE policies for team admins
+- [x] Add performance indexes on contractor_users (user_id, contractor_id, composite lookup)
+- [x] Remove frontend `.eq('user_id', user.id)` filters from useJobs, useLeads, useCustomers, useEstimates (RLS now handles scoping)
 - [ ] Test with multi-user contractor accounts
 
 ### Phase 3 — Data Integrity Hardening (Week 3-4)
