@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import DOMPurify from 'dompurify';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Mail, Plug, Check, Loader2, X, RefreshCw, Circle, ArrowLeft, Reply, Send, ChevronDown, ChevronUp, Search, PenSquare, Paperclip, ChevronLeft, ChevronRight, MailOpen, Calendar as CalendarIcon, AlertTriangle, Plus } from 'lucide-react';
