@@ -222,7 +222,7 @@ export function HelpArticleView({ slug, onBack, onNavigateToArticle, onOpenChat,
                   prose-li:marker:text-primary
                   prose-code:bg-muted prose-code:px-1 prose-code:py-0.5 prose-code:rounded
                   prose-pre:bg-muted prose-pre:border"
-                dangerouslySetInnerHTML={{ __html: markdownToHtml(article.content) }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(markdownToHtml(article.content)) }}
               />
             </CardContent>
           </Card>
