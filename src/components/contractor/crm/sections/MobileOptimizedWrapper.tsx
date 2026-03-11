@@ -33,7 +33,7 @@ export function MobileOptimizedWrapper({
           </div>
         </div>
       )}
-      <div className="space-y-5 overflow-hidden">{children}</div>
+      <div className="space-y-5 overflow-x-hidden">{children}</div>
     </div>
   );
 }

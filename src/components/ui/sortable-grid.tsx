@@ -184,7 +184,7 @@ export function SortableListItem({ id, children, disabled = false }: SortableLis
       {...attributes}
       {...listeners}
       className={cn(
-        'touch-none cursor-grab active:cursor-grabbing',
+        disabled ? 'touch-auto' : 'touch-none cursor-grab active:cursor-grabbing',
         isDragging && 'opacity-50 scale-[1.02] shadow-lg bg-muted rounded-lg'
       )}
     >
