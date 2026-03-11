@@ -969,7 +969,7 @@ function PhotosTab({ jobId, portalTokenId, customerName, portalTokenValue }: { j
   const { data: jobPhotos } = useQuery({
     queryKey: ['portal-job-photos', jobId],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data } = await portalClient
         .from('job_photos')
         .select('id, photo_url, caption, created_at')
         .eq('job_id', jobId)
