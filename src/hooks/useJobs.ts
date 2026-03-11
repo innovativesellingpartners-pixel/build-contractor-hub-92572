@@ -59,7 +59,6 @@ export const useJobs = () => {
       const { data, error } = await supabase
         .from('jobs')
         .select('*')
-        .eq('user_id', user.id)
         .eq('archived', false)
         .order('created_at', { ascending: false });
 

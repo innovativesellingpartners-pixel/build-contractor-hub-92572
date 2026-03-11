@@ -6258,8 +6258,17 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_user_contractor_id: { Args: { _user_id: string }; Returns: string }
       get_user_tier: { Args: { user_id: string }; Returns: string }
       has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
+      is_contractor_admin: {
+        Args: { _record_user_id: string }
+        Returns: boolean
+      }
+      is_contractor_member: {
+        Args: { _record_user_id: string }
+        Returns: boolean
+      }
       is_super_admin: { Args: { _user_id: string }; Returns: boolean }
       search_knowledge: {
         Args: { search_query: string }
