@@ -57,7 +57,8 @@ export function SortableItem({
       ref={setNodeRef}
       style={style}
       className={cn(
-        'relative touch-none',
+        'relative',
+        disabled ? 'touch-auto' : 'touch-none',
         isDragging && 'opacity-50 scale-105 shadow-xl',
         className
       )}
