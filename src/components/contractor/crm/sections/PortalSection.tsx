@@ -3,7 +3,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Copy, ExternalLink, Link2, MessageSquare, RefreshCw } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Copy, ExternalLink, Link2, MessageSquare, Plus, RefreshCw } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -38,7 +42,23 @@ export default function PortalSection() {
   const [tokens, setTokens] = useState<PortalToken[]>([]);
   const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [portalLabel, setPortalLabel] = useState('');
+  const [selectedJobId, setSelectedJobId] = useState<string>('none');
+  const [jobs, setJobs] = useState<{ id: string; name: string; job_number: string | null }[]>([]);
   const isMobile = useIsMobile();
+
+  const fetchJobs = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const { data } = await supabase
+      .from('jobs')
+      .select('id, name, job_number')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+    setJobs(data || []);
+  };
 
   const fetchTokens = async () => {
     try {
@@ -81,8 +101,39 @@ export default function PortalSection() {
     }
   };
 
+  const handleCreate = async () => {
+    try {
+      setCreating(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const insertData: any = {
+        contractor_id: user.id,
+        label: portalLabel.trim() || null,
+      };
+      if (selectedJobId !== 'none') {
+        insertData.job_id = selectedJobId;
+      }
+
+      const { error } = await supabase.from('customer_portal_tokens').insert(insertData);
+      if (error) throw error;
+
+      toast.success('Customer portal created!');
+      setCreateOpen(false);
+      setPortalLabel('');
+      setSelectedJobId('none');
+      fetchTokens();
+    } catch (err: any) {
+      console.error('Error creating portal:', err);
+      toast.error(err.message || 'Failed to create portal');
+    } finally {
+      setCreating(false);
+    }
+  };
+
   useEffect(() => {
     fetchTokens();
+    fetchJobs();
   }, []);
 
   const copyLink = (token: string) => {
@@ -117,10 +168,59 @@ export default function PortalSection() {
             Manage portal access links for your customers
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={fetchTokens} className="gap-1.5">
-          <RefreshCw className="h-4 w-4" />
-          <span className="hidden sm:inline">Refresh</span>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Dialog open={createOpen} onOpenChange={(open) => { setCreateOpen(open); if (open) fetchJobs(); }}>
+            <DialogTrigger asChild>
+              <Button size="sm" className="gap-1.5">
+                <Plus className="h-4 w-4" />
+                <span className="hidden sm:inline">Create Portal</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Create Customer Portal</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-2">
+                <div className="space-y-2">
+                  <Label htmlFor="portal-label">Portal Label</Label>
+                  <Input
+                    id="portal-label"
+                    placeholder="e.g. Smith Kitchen Remodel"
+                    value={portalLabel}
+                    onChange={(e) => setPortalLabel(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="portal-job">Job (Optional)</Label>
+                  <Select value={selectedJobId} onValueChange={setSelectedJobId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="No job linked" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">No job linked</SelectItem>
+                      {jobs.map((job) => (
+                        <SelectItem key={job.id} value={job.id}>
+                          {job.job_number ? `${job.job_number} — ` : ''}{job.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">Optionally link this portal to a job.</p>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
+                <Button onClick={handleCreate} disabled={creating}>
+                  {creating ? 'Creating...' : 'Create Portal'}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+          <Button variant="outline" size="sm" onClick={fetchTokens} className="gap-1.5">
+            <RefreshCw className="h-4 w-4" />
+            <span className="hidden sm:inline">Refresh</span>
+          </Button>
+        </div>
       </div>
 
       {/* Summary Cards */}
@@ -155,7 +255,7 @@ export default function PortalSection() {
             <CardContent className="p-6 text-center text-muted-foreground">
               <Link2 className="h-8 w-8 mx-auto mb-2 opacity-50" />
               <p>No active customer portals yet.</p>
-              <p className="text-xs mt-1">Generate customer portals from the job detail view.</p>
+              <p className="text-xs mt-1">Click "Create Portal" above to get started.</p>
             </CardContent>
           </Card>
         ) : (

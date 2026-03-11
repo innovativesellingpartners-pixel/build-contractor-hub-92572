@@ -1,0 +1,1 @@
+ALTER TABLE public.customer_portal_tokens ALTER COLUMN job_id DROP NOT NULL;
