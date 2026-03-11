@@ -349,10 +349,6 @@ export function Dashboard() {
               </Link>
             </div>
             <div className="flex items-center gap-2 md:gap-4">
-              <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-muted/60 rounded-lg border border-border/40">
-                <Building2 className="h-4 w-4 text-muted-foreground" />
-                <span className="font-medium text-sm">{profile?.company_name || 'Your Company'}</span>
-              </div>
               
               {/* Home Button */}
               <Button 
