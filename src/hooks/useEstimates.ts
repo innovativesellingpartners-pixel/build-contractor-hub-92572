@@ -129,7 +129,6 @@ export function useEstimates() {
       const { data, error } = await supabase
         .from('estimates')
         .select('*')
-        .eq('user_id', user.id)
         .is('archived_at', null)
         .order('created_at', { ascending: false });
 
