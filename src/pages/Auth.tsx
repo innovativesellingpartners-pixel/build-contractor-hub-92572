@@ -61,7 +61,7 @@ export function Auth() {
         if (sub) {
           // For paying Google users, check if they have Gmail/Calendar connections
           const isOAuthUser = user.app_metadata?.provider === "google" || user.app_metadata?.providers?.includes("google");
-          console.log('[Auth] Paying user detected. isOAuthUser:', isOAuthUser, 'provider:', user.app_metadata?.provider, 'providers:', user.app_metadata?.providers);
+          if (import.meta.env.DEV) console.log('[Auth] Paying user detected. isOAuthUser:', isOAuthUser, 'provider:', user.app_metadata?.provider, 'providers:', user.app_metadata?.providers);
           
           if (isOAuthUser) {
             // Check if already prompted this session to avoid infinite redirect loops
