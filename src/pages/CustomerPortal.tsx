@@ -266,7 +266,7 @@ function ScheduleTab({ jobId, isContractor = false, contractorId, portalTokenId,
   const { data: events, isLoading } = useQuery({
     queryKey: ['portal-calendar-events', jobId],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data } = await portalClient
         .from('portal_calendar_events')
         .select('*')
         .eq('job_id', jobId)
