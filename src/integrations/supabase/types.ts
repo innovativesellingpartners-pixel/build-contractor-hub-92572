@@ -6230,7 +6230,6 @@ export type Database = {
     Views: {
       quiz_questions_safe: {
         Row: {
-          correct_answer: string | null
           created_at: string | null
           id: string | null
           lesson_id: string | null
@@ -6242,7 +6241,6 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
-          correct_answer?: never
           created_at?: string | null
           id?: string | null
           lesson_id?: string | null
@@ -6254,7 +6252,6 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
-          correct_answer?: never
           created_at?: string | null
           id?: string | null
           lesson_id?: string | null

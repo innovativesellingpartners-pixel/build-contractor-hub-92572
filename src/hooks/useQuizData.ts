@@ -31,9 +31,9 @@ export const useQuizQuestions = (lessonId: string) => {
     queryFn: async () => {
       if (!lessonId) return [];
 
-      // Don't request correct_answer - validate server-side
+      // Use safe view that excludes correct_answer column
       const { data, error } = await supabase
-        .from('lesson_quiz_questions')
+        .from('quiz_questions_safe')
         .select('id, lesson_id, question_text, question_type, options, order_index, points, created_at, updated_at')
         .eq('lesson_id', lessonId)
         .order('order_index', { ascending: true });
