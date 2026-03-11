@@ -55,7 +55,6 @@ export default function PortalSection() {
     const { data } = await supabase
       .from('jobs')
       .select('id, name, job_number')
-      .eq('user_id', user.id)
       .order('created_at', { ascending: false });
     setJobs(data || []);
   };
