@@ -103,17 +103,15 @@ export default function PublicChangeOrder() {
 
     setSigning(true);
     try {
-      const signatureData = clientSigRef.current.toDataURL();
+      const signatureDataUrl = clientSigRef.current.toDataURL();
 
-      const { error } = await supabase
-        .from('change_orders')
-        .update({
-          client_signature: signatureData,
-          signed_at: new Date().toISOString(),
-          status: 'approved',
-          date_approved: new Date().toISOString(),
-        })
-        .eq('public_token', token);
+      const { data: response, error } = await supabase.functions.invoke('get-public-change-order', {
+        body: { 
+          token, 
+          action: 'sign',
+          signatureData: { client_signature: signatureDataUrl }
+        }
+      });
 
       if (error) throw error;
 
