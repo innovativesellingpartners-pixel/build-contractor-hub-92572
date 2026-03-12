@@ -3551,12 +3551,16 @@ export type Database = {
           budget_source: string | null
           change_orders_total: number | null
           city: string | null
+          contact_name: string | null
           contract_value: number | null
           converted_at: string | null
           converted_to_customer_id: string | null
           created_at: string
           custom_fields: Json | null
+          customer_address: string | null
+          customer_email: string | null
           customer_id: string | null
+          customer_name: string | null
           description: string | null
           end_date: string | null
           expenses_total: number | null
@@ -3570,6 +3574,8 @@ export type Database = {
           opportunity_id: string | null
           original_estimate_id: string | null
           payments_collected: number | null
+          phone_business: string | null
+          phone_home: string | null
           profit: number | null
           scheduled_end_date: string | null
           scheduled_start_date: string | null
@@ -3599,12 +3605,16 @@ export type Database = {
           budget_source?: string | null
           change_orders_total?: number | null
           city?: string | null
+          contact_name?: string | null
           contract_value?: number | null
           converted_at?: string | null
           converted_to_customer_id?: string | null
           created_at?: string
           custom_fields?: Json | null
+          customer_address?: string | null
+          customer_email?: string | null
           customer_id?: string | null
+          customer_name?: string | null
           description?: string | null
           end_date?: string | null
           expenses_total?: number | null
@@ -3618,6 +3628,8 @@ export type Database = {
           opportunity_id?: string | null
           original_estimate_id?: string | null
           payments_collected?: number | null
+          phone_business?: string | null
+          phone_home?: string | null
           profit?: number | null
           scheduled_end_date?: string | null
           scheduled_start_date?: string | null
@@ -3647,12 +3659,16 @@ export type Database = {
           budget_source?: string | null
           change_orders_total?: number | null
           city?: string | null
+          contact_name?: string | null
           contract_value?: number | null
           converted_at?: string | null
           converted_to_customer_id?: string | null
           created_at?: string
           custom_fields?: Json | null
+          customer_address?: string | null
+          customer_email?: string | null
           customer_id?: string | null
+          customer_name?: string | null
           description?: string | null
           end_date?: string | null
           expenses_total?: number | null
@@ -3666,6 +3682,8 @@ export type Database = {
           opportunity_id?: string | null
           original_estimate_id?: string | null
           payments_collected?: number | null
+          phone_business?: string | null
+          phone_home?: string | null
           profit?: number | null
           scheduled_end_date?: string | null
           scheduled_start_date?: string | null
