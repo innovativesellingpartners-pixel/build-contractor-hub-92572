@@ -288,6 +288,73 @@ function DailyLogsTab({ jobId, jobName }: { jobId: string; jobName: string }) {
   );
 }
 
+// Inline edit field for Job detail view
+function JobInlineField({ label, value, onSave, type = 'text', multiline, placeholder }: {
+  label: string;
+  value: string;
+  onSave: (v: string) => any;
+  type?: 'text' | 'number' | 'date';
+  multiline?: boolean;
+  placeholder?: string;
+}) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState(value);
+  const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
+
+  useEffect(() => { setEditValue(value); }, [value]);
+  useEffect(() => { if (isEditing && inputRef.current) { inputRef.current.focus(); } }, [isEditing]);
+
+  const handleSave = useCallback(async () => {
+    if (editValue.trim() !== value.trim()) {
+      await onSave(editValue.trim());
+    }
+    setIsEditing(false);
+  }, [editValue, value, onSave]);
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !multiline) { e.preventDefault(); handleSave(); }
+    if (e.key === 'Escape') { setEditValue(value); setIsEditing(false); }
+  };
+
+  return (
+    <div>
+      <h4 className="text-sm font-medium text-muted-foreground mb-1">{label}</h4>
+      {isEditing ? (
+        multiline ? (
+          <textarea
+            ref={inputRef as React.RefObject<HTMLTextAreaElement>}
+            value={editValue}
+            onChange={e => setEditValue(e.target.value)}
+            onBlur={handleSave}
+            onKeyDown={handleKeyDown}
+            rows={2}
+            className="w-full text-sm border border-border rounded-md px-2 py-1.5 bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
+            placeholder={placeholder}
+          />
+        ) : (
+          <Input
+            ref={inputRef as React.RefObject<HTMLInputElement>}
+            type={type}
+            value={editValue}
+            onChange={e => setEditValue(e.target.value)}
+            onBlur={handleSave}
+            onKeyDown={handleKeyDown}
+            className="h-8 text-sm"
+            placeholder={placeholder}
+          />
+        )
+      ) : (
+        <p 
+          className="text-sm cursor-pointer hover:text-primary transition-colors min-h-[24px] py-0.5"
+          onClick={() => setIsEditing(true)}
+        >
+          {value || <span className="text-muted-foreground italic">{placeholder || 'Click to edit'}</span>}
+        </p>
+      )}
+    </div>
+  );
+}
+
 export default function JobDetailView({ job, open, onOpenChange, onCreateEstimate, onEditJob, onDuplicateJob }: JobDetailViewProps) {
   const { updateJob } = useJobs();
   const { user } = useAuth();
