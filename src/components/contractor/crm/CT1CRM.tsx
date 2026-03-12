@@ -425,7 +425,8 @@ const navItems = [
           {/* Bottom Navigation */}
           <BottomNav 
             activeSection={activeSection} 
-            onSectionChange={handleSectionChange} 
+            onSectionChange={handleSectionChange}
+            hidden={isScrollingDown}
           />
         </>
       ) : (
