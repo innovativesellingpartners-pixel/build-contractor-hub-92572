@@ -668,8 +668,19 @@ function LogsTabContent({ jobId, jobName }: { jobId: string; jobName: string }) 
   );
 }
 
-export default function JobDetailViewBlue({ job, open, onOpenChange, onCreateEstimate, onEditJob, onDuplicateJob, onArchiveJob, onSectionChange }: JobDetailViewBlueProps) {
-  const { updateJob, refreshJobs } = useJobs();
+export default function JobDetailViewBlue({
+  job,
+  open,
+  onOpenChange,
+  onUpdateJob,
+  onRefreshJobs,
+  onCreateEstimate,
+  onEditJob,
+  onDuplicateJob,
+  onArchiveJob,
+  onSectionChange,
+}: JobDetailViewBlueProps) {
+  const updateJob = onUpdateJob;
   const { customers, refreshCustomers } = useCustomers();
   const { user } = useAuth();
   const [isDuplicating, setIsDuplicating] = useState(false);
@@ -687,9 +698,12 @@ export default function JobDetailViewBlue({ job, open, onOpenChange, onCreateEst
   
   // Pull to refresh functionality
   const handleRefresh = useCallback(async () => {
-    await Promise.all([refreshJobs(), refreshCustomers()]);
+    await Promise.all([
+      refreshCustomers(),
+      onRefreshJobs ? onRefreshJobs() : Promise.resolve(),
+    ]);
     toast.success('Refreshed!');
-  }, [refreshJobs, refreshCustomers]);
+  }, [onRefreshJobs, refreshCustomers]);
   
   const { isRefreshing, pullDistance, handlers, containerRef } = usePullToRefresh({
     onRefresh: handleRefresh,
