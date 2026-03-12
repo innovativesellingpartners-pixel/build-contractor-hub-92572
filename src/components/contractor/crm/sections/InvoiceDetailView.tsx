@@ -502,17 +502,7 @@ export function InvoiceDetailView({ invoice, onClose, onSectionChange }: Invoice
           </>
         )}
 
-        {/* Notes */}
-        {invoice.notes && (
-          <>
-            <SectionHeader>NOTES</SectionHeader>
-            <InfoCard className="rounded-none">
-              <div className="p-4">
-                <p className="text-sm text-slate-700 whitespace-pre-wrap">{invoice.notes}</p>
-              </div>
-            </InfoCard>
-          </>
-        )}
+        {/* Notes are now inline-editable in the Invoice Details section above */}
 
         {/* Source Estimate Link */}
         {sourceEstimate && (
