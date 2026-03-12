@@ -1028,9 +1028,6 @@ export default function JobDetailViewBlue({ job, open, onOpenChange, onCreateEst
                   <EditableInfoRow label="City" value={job.city} onSave={(v) => updateJob(job.id!, { city: v || null })} placeholder="City" />
                   <EditableInfoRow label="State" value={job.state} onSave={(v) => updateJob(job.id!, { state: v || null })} placeholder="State" />
                   <EditableInfoRow label="Zip Code" value={job.zip_code} onSave={(v) => updateJob(job.id!, { zip_code: v || null })} placeholder="Zip code" />
-                  {getFullAddress() && (
-                    <AddressRow address={getFullAddress()} onNavigate={handleNavigate} />
-                  )}
                 </InfoCard>
 
                 {/* Dates */}
