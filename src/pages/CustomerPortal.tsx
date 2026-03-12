@@ -1185,7 +1185,7 @@ function MessagesTab({ portalTokenId, jobId, customerName, contractorName, isCon
       const senderType = isContractor ? 'contractor' : 'customer';
       const senderName = isContractor ? contractorName : displayName;
 
-      const { error } = await supabase.from('portal_messages').insert({
+      const { error } = await portalClient.from('portal_messages').insert({
         portal_token_id: portalTokenId,
         job_id: jobId,
         sender_type: senderType,
