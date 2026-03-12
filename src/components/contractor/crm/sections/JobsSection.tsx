@@ -373,6 +373,8 @@ export default function JobsSection({ onSectionChange, initialJobId, onClearInit
           job={selectedJob}
           open={detailOpen}
           onOpenChange={setDetailOpen}
+          onUpdateJob={handleUpdateJob}
+          onRefreshJobs={refreshJobs}
           onCreateEstimate={handleCreateEstimateFromJob}
           onEditJob={handleEditJob}
           onDuplicateJob={handleDuplicateJob}

@@ -9,7 +9,7 @@ import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { PullToRefreshIndicator } from '@/components/ui/pull-to-refresh';
 import { PhotoReportDialog } from './job/PhotoReportDialog';
 import { cn } from '@/lib/utils';
-import { useJobs, Job } from '@/hooks/useJobs';
+import { Job } from '@/hooks/useJobs';
 import { useCustomers } from '@/hooks/useCustomers';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
@@ -50,6 +50,8 @@ interface JobDetailViewBlueProps {
   job: Job | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onUpdateJob: (jobId: string, updates: Partial<Job>) => Promise<Job>;
+  onRefreshJobs?: () => Promise<void>;
   onCreateEstimate?: () => void;
   onEditJob?: (job: Job) => void;
   onDuplicateJob?: (jobId: string) => Promise<Job | undefined>;
@@ -666,8 +668,19 @@ function LogsTabContent({ jobId, jobName }: { jobId: string; jobName: string }) 
   );
 }
 
-export default function JobDetailViewBlue({ job, open, onOpenChange, onCreateEstimate, onEditJob, onDuplicateJob, onArchiveJob, onSectionChange }: JobDetailViewBlueProps) {
-  const { updateJob, refreshJobs } = useJobs();
+export default function JobDetailViewBlue({
+  job,
+  open,
+  onOpenChange,
+  onUpdateJob,
+  onRefreshJobs,
+  onCreateEstimate,
+  onEditJob,
+  onDuplicateJob,
+  onArchiveJob,
+  onSectionChange,
+}: JobDetailViewBlueProps) {
+  const updateJob = onUpdateJob;
   const { customers, refreshCustomers } = useCustomers();
   const { user } = useAuth();
   const [isDuplicating, setIsDuplicating] = useState(false);
@@ -685,9 +698,12 @@ export default function JobDetailViewBlue({ job, open, onOpenChange, onCreateEst
   
   // Pull to refresh functionality
   const handleRefresh = useCallback(async () => {
-    await Promise.all([refreshJobs(), refreshCustomers()]);
+    await Promise.all([
+      refreshCustomers(),
+      onRefreshJobs ? onRefreshJobs() : Promise.resolve(),
+    ]);
     toast.success('Refreshed!');
-  }, [refreshJobs, refreshCustomers]);
+  }, [onRefreshJobs, refreshCustomers]);
   
   const { isRefreshing, pullDistance, handlers, containerRef } = usePullToRefresh({
     onRefresh: handleRefresh,
