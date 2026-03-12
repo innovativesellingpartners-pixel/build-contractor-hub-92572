@@ -225,34 +225,28 @@ export function CustomerDetailViewBlue({ customer, onClose, onSectionChange, onC
           {/* Customer Information */}
           <SectionHeader>CUSTOMER INFORMATION</SectionHeader>
         <InfoCard className="rounded-none">
-          <InfoRow label="Name" value={customer.name} />
-          <InfoRow label="Type" value={customer.customer_type || 'Residential'} />
+          <EditableInfoRow label="Name" value={customer.name} onSave={(v) => updateCustomer(customer.id, { name: v })} placeholder="Customer name" />
+          <EditableInfoRow 
+            label="Type" 
+            value={customer.customer_type || 'Residential'} 
+            onSave={(v) => updateCustomer(customer.id, { customer_type: v })}
+            selectOptions={[
+              { value: 'Residential', label: 'Residential' },
+              { value: 'Commercial', label: 'Commercial' },
+              { value: 'Industrial', label: 'Industrial' },
+            ]}
+          />
         </InfoCard>
 
         {/* Contact Information */}
         <SectionHeader>CONTACT DETAILS</SectionHeader>
         <InfoCard className="rounded-none">
-          {customer.email && (
-            <InfoRow 
-              label="Email" 
-              value={
-                <a href={`mailto:${customer.email}`} className="text-sky-600 underline">
-                  {customer.email}
-                </a>
-              } 
-            />
-          )}
-          {customer.phone && (
-            <InfoRow 
-              label="Phone" 
-              value={
-                <a href={`tel:${customer.phone}`} className="text-sky-600 underline">
-                  {customer.phone}
-                </a>
-              } 
-            />
-          )}
-          {getFullAddress() && <InfoRow label="Address" value={getFullAddress()} />}
+          <EditableInfoRow label="Email" value={customer.email} type="email" onSave={(v) => updateCustomer(customer.id, { email: v || null })} placeholder="Email address" />
+          <EditableInfoRow label="Phone" value={customer.phone} type="tel" onSave={(v) => updateCustomer(customer.id, { phone: v || null })} placeholder="Phone number" />
+          <EditableInfoRow label="Address" value={customer.address} onSave={(v) => updateCustomer(customer.id, { address: v || null })} placeholder="Street address" />
+          <EditableInfoRow label="City" value={customer.city} onSave={(v) => updateCustomer(customer.id, { city: v || null })} placeholder="City" />
+          <EditableInfoRow label="State" value={customer.state} onSave={(v) => updateCustomer(customer.id, { state: v || null })} placeholder="State" />
+          <EditableInfoRow label="Zip Code" value={customer.zip_code} onSave={(v) => updateCustomer(customer.id, { zip_code: v || null })} placeholder="Zip code" />
         </InfoCard>
 
         {/* Quick Contact Buttons */}
