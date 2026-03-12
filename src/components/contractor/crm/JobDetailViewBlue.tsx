@@ -680,6 +680,8 @@ export default function JobDetailViewBlue({ job, open, onOpenChange, onCreateEst
   // Find the customer associated with this job
   const customer = job?.customer_id ? customers.find(c => c.id === job.customer_id) : null;
   const [isArchiving, setIsArchiving] = useState(false);
+  const [newMeetings, setNewMeetings] = useState<MeetingFormData[]>([]);
+  const { meetings: existingMeetings, addMeeting, deleteMeeting } = useJobMeetings(job?.id);
   
   // Pull to refresh functionality
   const handleRefresh = useCallback(async () => {
