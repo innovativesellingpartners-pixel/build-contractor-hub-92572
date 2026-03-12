@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { 
   LayoutDashboard, 
   ClipboardList, 
@@ -40,6 +40,7 @@ import {
   ClipboardList as ClipboardListHub
 } from 'lucide-react';
 import { BottomNav } from './BottomNav';
+import { useScrollDirection } from '@/hooks/useScrollDirection';
 import { BackNavigation } from './BackNavigation';
 import CRMDashboard from './sections/CRMDashboard';
 import LeadsSection from './sections/LeadsSection';
@@ -146,6 +147,8 @@ const navItems = [
   const [initialEstimateId, setInitialEstimateId] = useState<string | null>(null);
   const [initialJobId, setInitialJobId] = useState<string | null>(null);
   const isMobile = useIsMobile();
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const isScrollingDown = useScrollDirection(scrollContainerRef);
 
   // Save active section to sessionStorage whenever it changes
   const handleSectionChange = (section: string) => {
@@ -411,8 +414,8 @@ const navItems = [
           )}
 
           {/* Main Content with bottom padding for nav - overflow protected */}
-          <main className="flex-1 overflow-hidden w-full max-w-full pb-28 bg-background">
-            <div className="h-full overflow-y-auto overflow-x-hidden max-w-full overscroll-contain" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}>
+          <main className={cn("flex-1 overflow-hidden w-full max-w-full bg-background transition-[padding-bottom] duration-300", isScrollingDown ? "pb-6" : "pb-28")}>
+            <div ref={scrollContainerRef} className="h-full overflow-y-auto overflow-x-hidden max-w-full overscroll-contain" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}>
               <div className="min-h-full w-full max-w-full pb-6">
                 {renderSection()}
               </div>
@@ -422,7 +425,8 @@ const navItems = [
           {/* Bottom Navigation */}
           <BottomNav 
             activeSection={activeSection} 
-            onSectionChange={handleSectionChange} 
+            onSectionChange={handleSectionChange}
+            hidden={isScrollingDown}
           />
         </>
       ) : (

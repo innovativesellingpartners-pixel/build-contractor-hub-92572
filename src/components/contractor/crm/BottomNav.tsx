@@ -38,6 +38,7 @@ type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calenda
 interface BottomNavProps {
   activeSection: Section;
   onSectionChange: (section: Section) => void;
+  hidden?: boolean;
 }
 
 const defaultBottomNavItems: Section[] = ['dashboard', 'calls', 'emails', 'leads'];
@@ -64,7 +65,7 @@ const allNavItems = [
   { id: 'help' as Section, label: 'Help Center', icon: HelpCircle },
 ];
 
-export function BottomNav({ activeSection, onSectionChange }: BottomNavProps) {
+export function BottomNav({ activeSection, onSectionChange, hidden = false }: BottomNavProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isCustomizing, setIsCustomizing] = useState(false);
   
@@ -112,7 +113,9 @@ export function BottomNav({ activeSection, onSectionChange }: BottomNavProps) {
       "border-t-2 border-slate-200 dark:border-slate-700",
       "shadow-2xl shadow-slate-900/10",
       "safe-area-inset-bottom",
-      "pointer-events-auto"
+      "pointer-events-auto",
+      "transition-transform duration-300 ease-in-out",
+      hidden ? "translate-y-full" : "translate-y-0"
     )}>
       <div className="flex items-center justify-around h-16 max-w-screen-sm mx-auto px-2">
         {visibleNavItems.map((item) => {
