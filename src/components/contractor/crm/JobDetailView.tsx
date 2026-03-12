@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -283,6 +284,73 @@ function DailyLogsTab({ jobId, jobName }: { jobId: string; jobName: string }) {
         jobId={jobId}
         jobName={jobName}
       />
+    </div>
+  );
+}
+
+// Inline edit field for Job detail view
+function JobInlineField({ label, value, onSave, type = 'text', multiline, placeholder }: {
+  label: string;
+  value: string;
+  onSave: (v: string) => any;
+  type?: 'text' | 'number' | 'date';
+  multiline?: boolean;
+  placeholder?: string;
+}) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState(value);
+  const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
+
+  useEffect(() => { setEditValue(value); }, [value]);
+  useEffect(() => { if (isEditing && inputRef.current) { inputRef.current.focus(); } }, [isEditing]);
+
+  const handleSave = useCallback(async () => {
+    if (editValue.trim() !== value.trim()) {
+      await onSave(editValue.trim());
+    }
+    setIsEditing(false);
+  }, [editValue, value, onSave]);
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !multiline) { e.preventDefault(); handleSave(); }
+    if (e.key === 'Escape') { setEditValue(value); setIsEditing(false); }
+  };
+
+  return (
+    <div>
+      <h4 className="text-sm font-medium text-muted-foreground mb-1">{label}</h4>
+      {isEditing ? (
+        multiline ? (
+          <textarea
+            ref={inputRef as React.RefObject<HTMLTextAreaElement>}
+            value={editValue}
+            onChange={e => setEditValue(e.target.value)}
+            onBlur={handleSave}
+            onKeyDown={handleKeyDown}
+            rows={2}
+            className="w-full text-sm border border-border rounded-md px-2 py-1.5 bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
+            placeholder={placeholder}
+          />
+        ) : (
+          <Input
+            ref={inputRef as React.RefObject<HTMLInputElement>}
+            type={type}
+            value={editValue}
+            onChange={e => setEditValue(e.target.value)}
+            onBlur={handleSave}
+            onKeyDown={handleKeyDown}
+            className="h-8 text-sm"
+            placeholder={placeholder}
+          />
+        )
+      ) : (
+        <p 
+          className="text-sm cursor-pointer hover:text-primary transition-colors min-h-[24px] py-0.5"
+          onClick={() => setIsEditing(true)}
+        >
+          {value || <span className="text-muted-foreground italic">{placeholder || 'Click to edit'}</span>}
+        </p>
+      )}
     </div>
   );
 }
@@ -574,18 +642,32 @@ export default function JobDetailView({ job, open, onOpenChange, onCreateEstimat
                       <CardTitle>Job Information</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
-                      {job.description && (
-                        <div>
-                          <h4 className="text-sm font-medium text-muted-foreground mb-1">Description</h4>
-                          <p className="text-sm">{job.description}</p>
-                        </div>
-                      )}
-                      {job.notes && (
-                        <div>
-                          <h4 className="text-sm font-medium text-muted-foreground mb-1">Notes</h4>
-                          <p className="text-sm text-muted-foreground">{job.notes}</p>
-                        </div>
-                      )}
+                      <JobInlineField 
+                        label="Name" 
+                        value={job.name} 
+                        onSave={(v) => updateJob(job.id!, { name: v })} 
+                      />
+                      <JobInlineField 
+                        label="Description" 
+                        value={job.description || ''} 
+                        onSave={(v) => updateJob(job.id!, { description: v || null })}
+                        multiline
+                        placeholder="Add description..."
+                      />
+                      <JobInlineField 
+                        label="Notes" 
+                        value={job.notes || ''} 
+                        onSave={(v) => updateJob(job.id!, { notes: v || null })}
+                        multiline
+                        placeholder="Add notes..."
+                      />
+                      <JobInlineField 
+                        label="Contract Value" 
+                        value={String(job.contract_value || '')} 
+                        type="number"
+                        onSave={(v) => updateJob(job.id!, { contract_value: parseFloat(v) || 0 })}
+                        placeholder="0.00"
+                      />
                     </CardContent>
                   </Card>
 
@@ -596,16 +678,31 @@ export default function JobDetailView({ job, open, onOpenChange, onCreateEstimat
                         Location
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-2">
-                      {job.address && <p className="text-sm">{job.address}</p>}
-                      {(job.city || job.state) && (
-                        <p className="text-sm">
-                          {job.city}{job.city && job.state && ', '}{job.state} {job.zip_code}
-                        </p>
-                      )}
-                      {!job.address && !job.city && !job.state && (
-                        <p className="text-sm text-muted-foreground">No location specified</p>
-                      )}
+                    <CardContent className="space-y-3">
+                      <JobInlineField 
+                        label="Address" 
+                        value={job.address || ''} 
+                        onSave={(v) => updateJob(job.id!, { address: v || null })} 
+                        placeholder="Street address"
+                      />
+                      <JobInlineField 
+                        label="City" 
+                        value={job.city || ''} 
+                        onSave={(v) => updateJob(job.id!, { city: v || null })} 
+                        placeholder="City"
+                      />
+                      <JobInlineField 
+                        label="State" 
+                        value={job.state || ''} 
+                        onSave={(v) => updateJob(job.id!, { state: v || null })} 
+                        placeholder="State"
+                      />
+                      <JobInlineField 
+                        label="Zip Code" 
+                        value={job.zip_code || ''} 
+                        onSave={(v) => updateJob(job.id!, { zip_code: v || null })} 
+                        placeholder="Zip code"
+                      />
                     </CardContent>
                   </Card>
                 </div>

@@ -18,6 +18,7 @@ import {
   SectionHeader,
   InfoCard,
   InfoRow,
+  EditableInfoRow,
   ActionButton,
   DetailHeader,
   StatusBadge,
@@ -307,42 +308,39 @@ export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSecti
         {/* Lead Information */}
         <SectionHeader>LEAD INFORMATION</SectionHeader>
         <InfoCard className="rounded-none">
-          <InfoRow label="Name" value={lead.name} />
-          <InfoRow label="Status" value={<StatusBadge status={lead.status} />} />
-          {lead.company && <InfoRow label="Company" value={lead.company} />}
-          {lead.project_type && <InfoRow label="Project Type" value={lead.project_type} />}
-          {lead.value && (
-            <InfoRow 
-              label="Estimated Value" 
-              value={`$${lead.value.toLocaleString('en-US', { minimumFractionDigits: 2 })}`} 
-            />
-          )}
+          <EditableInfoRow label="Name" value={lead.name} onSave={(v) => updateLead(lead.id, { name: v })} placeholder="Lead name" />
+          <EditableInfoRow 
+            label="Status" 
+            value={lead.status} 
+            onSave={(v) => updateLead(lead.id, { status: v as Lead['status'] })}
+            selectOptions={[
+              { value: 'new', label: 'New' },
+              { value: 'contacted', label: 'Contacted' },
+              { value: 'qualified', label: 'Qualified' },
+              { value: 'won', label: 'Won' },
+              { value: 'lost', label: 'Lost' },
+            ]}
+          />
+          <EditableInfoRow label="Company" value={lead.company} onSave={(v) => updateLead(lead.id, { company: v || null })} placeholder="Company name" />
+          <EditableInfoRow label="Project Type" value={lead.project_type} onSave={(v) => updateLead(lead.id, { project_type: v || null })} placeholder="Project type" />
+          <EditableInfoRow 
+            label="Estimated Value" 
+            value={lead.value} 
+            type="number"
+            onSave={(v) => updateLead(lead.id, { value: v ? parseFloat(v) : null })} 
+            placeholder="0.00" 
+          />
         </InfoCard>
 
         {/* Contact Information */}
         <SectionHeader>CONTACT INFORMATION</SectionHeader>
         <InfoCard className="rounded-none">
-          {lead.email && (
-            <InfoRow 
-              label="Email" 
-              value={
-                <a href={`mailto:${lead.email}`} className="text-sky-600 underline">
-                  {lead.email}
-                </a>
-              } 
-            />
-          )}
-          {lead.phone && (
-            <InfoRow 
-              label="Phone" 
-              value={
-                <a href={`tel:${lead.phone}`} className="text-sky-600 underline">
-                  {lead.phone}
-                </a>
-              } 
-            />
-          )}
-          {getFullAddress() && <InfoRow label="Address" value={getFullAddress()} />}
+          <EditableInfoRow label="Email" value={lead.email} type="email" onSave={(v) => updateLead(lead.id, { email: v || null })} placeholder="Email address" />
+          <EditableInfoRow label="Phone" value={lead.phone} type="tel" onSave={(v) => updateLead(lead.id, { phone: v || null })} placeholder="Phone number" />
+          <EditableInfoRow label="Address" value={lead.address} onSave={(v) => updateLead(lead.id, { address: v || null })} placeholder="Street address" />
+          <EditableInfoRow label="City" value={lead.city} onSave={(v) => updateLead(lead.id, { city: v || null })} placeholder="City" />
+          <EditableInfoRow label="State" value={lead.state} onSave={(v) => updateLead(lead.id, { state: v || null })} placeholder="State" />
+          <EditableInfoRow label="Zip Code" value={lead.zip_code} onSave={(v) => updateLead(lead.id, { zip_code: v || null })} placeholder="Zip code" />
         </InfoCard>
 
         {/* Quick Contact Buttons */}
