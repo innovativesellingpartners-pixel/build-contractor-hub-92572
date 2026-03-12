@@ -372,24 +372,49 @@ export function InvoiceDetailView({ invoice, onClose, onSectionChange }: Invoice
         <SectionHeader>INVOICE DETAILS</SectionHeader>
         <InfoCard className="rounded-none">
           <InfoRow label="Invoice #" value={invoice.invoice_number} />
-          <InfoRow 
+          <EditableInfoRow 
             label="Status" 
-            value={
-              <Badge className={getStatusColor(invoice.status)}>
-                {invoice.status.toUpperCase()}
-              </Badge>
-            } 
+            value={invoice.status} 
+            onSave={(v) => updateInvoice({ id: invoice.id!, status: v } as any)}
+            selectOptions={[
+              { value: 'draft', label: 'Draft' },
+              { value: 'sent', label: 'Sent' },
+              { value: 'partial', label: 'Partial' },
+              { value: 'paid', label: 'Paid' },
+              { value: 'overdue', label: 'Overdue' },
+            ]}
           />
-          <InfoRow 
+          <EditableInfoRow 
             label="Issue Date" 
-            value={format(new Date(invoice.issue_date), 'MMM d, yyyy')} 
+            value={invoice.issue_date}
+            type="date"
+            onSave={(v) => updateInvoice({ id: invoice.id!, issue_date: v } as any)} 
           />
-          {invoice.due_date && (
-            <InfoRow 
-              label="Due Date" 
-              value={format(new Date(invoice.due_date), 'MMM d, yyyy')} 
-            />
-          )}
+          <EditableInfoRow 
+            label="Due Date" 
+            value={invoice.due_date}
+            type="date"
+            onSave={(v) => updateInvoice({ id: invoice.id!, due_date: v || null } as any)} 
+          />
+          <EditableInfoRow 
+            label="Amount Due" 
+            value={invoice.amount_due}
+            type="number"
+            onSave={(v) => updateInvoice({ id: invoice.id!, amount_due: parseFloat(v) || 0 } as any)} 
+          />
+          <EditableInfoRow 
+            label="Amount Paid" 
+            value={invoice.amount_paid}
+            type="number"
+            onSave={(v) => updateInvoice({ id: invoice.id!, amount_paid: parseFloat(v) || 0 } as any)} 
+          />
+          <EditableInfoRow 
+            label="Notes" 
+            value={invoice.notes}
+            type="textarea"
+            onSave={(v) => updateInvoice({ id: invoice.id!, notes: v || null } as any)}
+            placeholder="Add notes..."
+          />
         </InfoCard>
 
         {/* GC/Customer Information */}
