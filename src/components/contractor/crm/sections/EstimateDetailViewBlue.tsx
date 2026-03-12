@@ -20,6 +20,7 @@ import {
   SectionHeader,
   InfoCard,
   InfoRow,
+  EditableInfoRow,
   ActionButton,
   DetailHeader,
   StatusBadge,
