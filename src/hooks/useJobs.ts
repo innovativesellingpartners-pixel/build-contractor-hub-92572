@@ -194,7 +194,7 @@ export const useJobs = () => {
 
       if (error) throw error;
 
-      setJobs(jobs.filter(job => job.id !== id));
+      setJobs(prev => prev.filter(job => job.id !== id));
       toast({
         title: 'Job deleted',
         description: 'Job has been deleted successfully',
