@@ -588,41 +588,32 @@ export function EstimateDetailViewBlue({
           {/* Estimate Information */}
           <SectionHeader>ESTIMATE DETAILS</SectionHeader>
         <InfoCard className="rounded-none">
-          <InfoRow label="Title" value={estimate.title} />
+          <EditableInfoRow label="Title" value={estimate.title} onSave={(v) => updateEstimate({ id: estimate.id!, title: v } as any)} placeholder="Estimate title" />
           <InfoRow label="Estimate #" value={estimate.estimate_number} />
-          <InfoRow label="Status" value={<StatusBadge status={estimate.status} />} />
+          <EditableInfoRow 
+            label="Status" 
+            value={estimate.status} 
+            onSave={(v) => updateEstimate({ id: estimate.id!, status: v } as any)}
+            selectOptions={[
+              { value: 'draft', label: 'Draft' },
+              { value: 'sent', label: 'Sent' },
+              { value: 'accepted', label: 'Accepted' },
+              { value: 'rejected', label: 'Rejected' },
+              { value: 'sold', label: 'Sold' },
+            ]}
+          />
           <InfoRow label="Delivery" value={getDeliveryStatus()} />
-          {estimate.project_name && <InfoRow label="Project" value={estimate.project_name} />}
-          {estimate.valid_until && (
-            <InfoRow label="Valid Until" value={format(new Date(estimate.valid_until), 'MMM d, yyyy')} />
-          )}
+          <EditableInfoRow label="Project" value={estimate.project_name} onSave={(v) => updateEstimate({ id: estimate.id!, project_name: v || null } as any)} placeholder="Project name" />
+          <EditableInfoRow label="Valid Until" value={estimate.valid_until} type="date" onSave={(v) => updateEstimate({ id: estimate.id!, valid_until: v || null } as any)} />
         </InfoCard>
 
         {/* Client Information */}
         <SectionHeader>CLIENT INFORMATION</SectionHeader>
         <InfoCard className="rounded-none">
-          <InfoRow label="Name" value={estimate.client_name} />
-          {estimate.client_email && (
-            <InfoRow 
-              label="Email" 
-              value={
-                <a href={`mailto:${estimate.client_email}`} className="text-sky-600 underline">
-                  {estimate.client_email}
-                </a>
-              } 
-            />
-          )}
-          {estimate.client_phone && (
-            <InfoRow 
-              label="Phone" 
-              value={
-                <a href={`tel:${estimate.client_phone}`} className="text-sky-600 underline">
-                  {estimate.client_phone}
-                </a>
-              } 
-            />
-          )}
-          {estimate.site_address && <InfoRow label="Site Address" value={estimate.site_address} />}
+          <EditableInfoRow label="Name" value={estimate.client_name} onSave={(v) => updateEstimate({ id: estimate.id!, client_name: v || null } as any)} placeholder="Client name" />
+          <EditableInfoRow label="Email" value={estimate.client_email} type="email" onSave={(v) => updateEstimate({ id: estimate.id!, client_email: v || null } as any)} placeholder="Email address" />
+          <EditableInfoRow label="Phone" value={estimate.client_phone} type="tel" onSave={(v) => updateEstimate({ id: estimate.id!, client_phone: v || null } as any)} placeholder="Phone number" />
+          <EditableInfoRow label="Site Address" value={estimate.site_address} onSave={(v) => updateEstimate({ id: estimate.id!, site_address: v || null } as any)} placeholder="Site address" />
         </InfoCard>
 
         {/* Financial Summary */}
