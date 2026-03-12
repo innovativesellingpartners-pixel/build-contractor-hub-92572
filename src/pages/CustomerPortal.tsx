@@ -1128,6 +1128,7 @@ function MessagesTab({ portalTokenId, jobId, customerName, contractorName, isCon
   portalTokenValue?: string;
 }) {
   const portalClient = portalTokenValue ? createPortalClient(portalTokenValue) : supabase;
+  const messageReadClient = isContractor ? supabase : portalClient;
   const queryClient = useQueryClient();
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
