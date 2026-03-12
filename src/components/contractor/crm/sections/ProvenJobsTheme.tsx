@@ -67,7 +67,7 @@ export function InfoRow({ label, value, className, valueClassName, isClickable, 
 interface EditableInfoRowProps {
   label: string;
   value: string | number | null | undefined;
-  onSave: (newValue: string) => void | Promise<void>;
+  onSave: (newValue: string) => any;
   type?: 'text' | 'email' | 'tel' | 'number' | 'date' | 'textarea';
   selectOptions?: { value: string; label: string }[];
   placeholder?: string;
