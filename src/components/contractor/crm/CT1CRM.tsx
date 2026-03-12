@@ -40,6 +40,7 @@ import {
   ClipboardList as ClipboardListHub
 } from 'lucide-react';
 import { BottomNav } from './BottomNav';
+import { useScrollDirection } from '@/hooks/useScrollDirection';
 import { BackNavigation } from './BackNavigation';
 import CRMDashboard from './sections/CRMDashboard';
 import LeadsSection from './sections/LeadsSection';
