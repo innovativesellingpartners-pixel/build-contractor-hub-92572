@@ -147,6 +147,8 @@ const navItems = [
   const [initialEstimateId, setInitialEstimateId] = useState<string | null>(null);
   const [initialJobId, setInitialJobId] = useState<string | null>(null);
   const isMobile = useIsMobile();
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const isScrollingDown = useScrollDirection(scrollContainerRef);
 
   // Save active section to sessionStorage whenever it changes
   const handleSectionChange = (section: string) => {
