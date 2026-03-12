@@ -364,16 +364,16 @@ export function CustomerDetailViewBlue({ customer, onClose, onSectionChange, onC
         </InfoCard>
 
         {/* Notes */}
-        {customer.notes && (
-          <>
-            <SectionHeader>NOTES</SectionHeader>
-            <InfoCard className="rounded-none">
-              <div className="p-4">
-                <p className="text-sm text-slate-700 whitespace-pre-wrap">{customer.notes}</p>
-              </div>
-            </InfoCard>
-          </>
-        )}
+          <SectionHeader>NOTES</SectionHeader>
+          <InfoCard className="rounded-none">
+            <EditableInfoRow 
+              label="Notes" 
+              value={customer.notes} 
+              type="textarea"
+              onSave={(v) => updateCustomer(customer.id, { notes: v || null })} 
+              placeholder="Add notes..."
+            />
+          </InfoCard>
         </div>
       </div>
 
