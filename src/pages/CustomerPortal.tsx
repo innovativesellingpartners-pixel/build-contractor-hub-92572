@@ -265,7 +265,7 @@ function ScheduleTab({ jobId, isContractor = false, contractorId, portalTokenId,
   const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
   const [showEventDialog, setShowEventDialog] = useState(false);
   const { data: events, isLoading } = useQuery({
-    queryKey: ['portal-calendar-events', jobId],
+    queryKey: ['portal-calendar-events', jobId, isContractor],
     queryFn: async () => {
       const { data } = await portalClient
         .from('portal_calendar_events')
