@@ -65,7 +65,7 @@ const allNavItems = [
   { id: 'help' as Section, label: 'Help Center', icon: HelpCircle },
 ];
 
-export function BottomNav({ activeSection, onSectionChange }: BottomNavProps) {
+export function BottomNav({ activeSection, onSectionChange, hidden = false }: BottomNavProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isCustomizing, setIsCustomizing] = useState(false);
   
