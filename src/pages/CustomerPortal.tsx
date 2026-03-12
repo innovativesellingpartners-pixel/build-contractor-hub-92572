@@ -265,7 +265,7 @@ function ScheduleTab({ jobId, isContractor = false, contractorId, portalTokenId,
   const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
   const [showEventDialog, setShowEventDialog] = useState(false);
   const { data: events, isLoading } = useQuery({
-    queryKey: ['portal-calendar-events', jobId],
+    queryKey: ['portal-calendar-events', jobId, isContractor],
     queryFn: async () => {
       const { data } = await portalClient
         .from('portal_calendar_events')
@@ -294,9 +294,11 @@ function ScheduleTab({ jobId, isContractor = false, contractorId, portalTokenId,
   };
 
   // Group events by month
+  const parsePortalDate = (dateStr: string) => new Date(`${dateStr}T00:00:00`);
   const now = new Date();
-  const upcomingEvents = events?.filter(e => new Date(e.event_date) >= new Date(now.toDateString())) || [];
-  const pastEvents = events?.filter(e => new Date(e.event_date) < new Date(now.toDateString())) || [];
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const upcomingEvents = events?.filter(e => parsePortalDate(e.event_date) >= todayStart) || [];
+  const pastEvents = events?.filter(e => parsePortalDate(e.event_date) < todayStart) || [];
 
   // Calendar grid for selected month
   const year = selectedMonth.getFullYear();
@@ -307,8 +309,8 @@ function ScheduleTab({ jobId, isContractor = false, contractorId, portalTokenId,
   const daysInMonth = lastDay.getDate();
 
   const eventsThisMonth = events?.filter(e => {
-    const startDate = new Date(e.event_date);
-    const endDate = e.event_end_date ? new Date(e.event_end_date) : startDate;
+    const startDate = parsePortalDate(e.event_date);
+    const endDate = e.event_end_date ? parsePortalDate(e.event_end_date) : startDate;
     const monthStart = new Date(year, month, 1);
     const monthEnd = new Date(year, month + 1, 0);
     return startDate <= monthEnd && endDate >= monthStart;
@@ -316,8 +318,8 @@ function ScheduleTab({ jobId, isContractor = false, contractorId, portalTokenId,
 
   const eventsByDay: Record<number, typeof eventsThisMonth> = {};
   eventsThisMonth.forEach(e => {
-    const startDate = new Date(e.event_date);
-    const endDate = e.event_end_date ? new Date(e.event_end_date) : startDate;
+    const startDate = parsePortalDate(e.event_date);
+    const endDate = e.event_end_date ? parsePortalDate(e.event_end_date) : startDate;
     const monthStart = new Date(year, month, 1);
     const monthEnd = new Date(year, month + 1, 0);
     const loopStart = startDate < monthStart ? 1 : startDate.getDate();
@@ -1128,6 +1130,7 @@ function MessagesTab({ portalTokenId, jobId, customerName, contractorName, isCon
   portalTokenValue?: string;
 }) {
   const portalClient = portalTokenValue ? createPortalClient(portalTokenValue) : supabase;
+  const messageReadClient = isContractor ? supabase : portalClient;
   const queryClient = useQueryClient();
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
@@ -1146,9 +1149,9 @@ function MessagesTab({ portalTokenId, jobId, customerName, contractorName, isCon
   const participantMapRef = useRef(new Map<string, number>());
 
   const { data: messages } = useQuery({
-    queryKey: ['portal-messages', portalTokenId],
+    queryKey: ['portal-messages', portalTokenId, isContractor],
     queryFn: async () => {
-      const { data } = await portalClient
+      const { data } = await messageReadClient
         .from('portal_messages')
         .select('*')
         .eq('portal_token_id', portalTokenId)
