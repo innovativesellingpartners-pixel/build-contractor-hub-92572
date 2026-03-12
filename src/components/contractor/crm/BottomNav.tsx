@@ -113,7 +113,9 @@ export function BottomNav({ activeSection, onSectionChange, hidden = false }: Bo
       "border-t-2 border-slate-200 dark:border-slate-700",
       "shadow-2xl shadow-slate-900/10",
       "safe-area-inset-bottom",
-      "pointer-events-auto"
+      "pointer-events-auto",
+      "transition-transform duration-300 ease-in-out",
+      hidden ? "translate-y-full" : "translate-y-0"
     )}>
       <div className="flex items-center justify-around h-16 max-w-screen-sm mx-auto px-2">
         {visibleNavItems.map((item) => {
