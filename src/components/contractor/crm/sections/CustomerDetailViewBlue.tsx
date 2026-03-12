@@ -229,7 +229,7 @@ export function CustomerDetailViewBlue({ customer, onClose, onSectionChange, onC
           <EditableInfoRow 
             label="Type" 
             value={customer.customer_type || 'Residential'} 
-            onSave={(v) => updateCustomer(customer.id, { customer_type: v })}
+            onSave={(v) => updateCustomer(customer.id, { customer_type: v as any })}
             selectOptions={[
               { value: 'Residential', label: 'Residential' },
               { value: 'Commercial', label: 'Commercial' },
