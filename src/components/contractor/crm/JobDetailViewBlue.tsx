@@ -1056,14 +1056,79 @@ export default function JobDetailViewBlue({ job, open, onOpenChange, onCreateEst
                     <MoneyDisplay amount={job.profit} label="Profit" />
                   </div>
                   <EditableInfoRow label="Contract Value" value={job.contract_value} onSave={(v) => updateJob(job.id!, { contract_value: parseFloat(v) || 0 })} type="number" placeholder="0.00" />
+                  <EditableInfoRow label="Est. Budget" value={job.budget_amount} onSave={(v) => updateJob(job.id!, { budget_amount: parseFloat(v) || 0 })} type="number" placeholder="0.00" />
+                  <EditableInfoRow label="Total Cost" value={job.total_cost} onSave={(v) => updateJob(job.id!, { total_cost: parseFloat(v) || 0 })} type="number" placeholder="0.00" />
                   <InfoRow label="Change Orders" value={`$${(job.change_orders_total || 0).toFixed(2)}`} />
                   <InfoRow label="Expenses" value={`$${(job.expenses_total || 0).toFixed(2)}`} />
                 </InfoCard>
 
-                {/* Notes */}
-                <SectionHeader>NOTES</SectionHeader>
+                {/* Notes & Recording Walkthrough */}
+                <SectionHeader>NOTES & RECORDING</SectionHeader>
+                <InfoCard className="rounded-none p-4">
+                  <AIScopeNotes
+                    notes={job.notes || ''}
+                    onNotesChange={(notes) => updateJob(job.id!, { notes: notes || null })}
+                    label="Job Notes"
+                    placeholder="Record your walk-around or type notes about site conditions, customer requests, and scope details"
+                  />
+                </InfoCard>
+
+                {/* Meetings & Site Visits */}
+                <SectionHeader>MEETINGS & SITE VISITS</SectionHeader>
+                <InfoCard className="rounded-none p-4 space-y-3">
+                  <JobMeetingsSection
+                    meetings={newMeetings}
+                    onAddMeeting={async (meeting) => {
+                      if (job.id) {
+                        const jobLocation = [job.address, job.city, job.state, job.zip_code].filter(Boolean).join(', ');
+                        await addMeeting({
+                          job_id: job.id,
+                          title: meeting.title,
+                          meeting_type: meeting.meeting_type,
+                          scheduled_date: meeting.scheduled_date,
+                          scheduled_time: meeting.scheduled_time,
+                          duration_minutes: meeting.duration_minutes,
+                          location: meeting.location || jobLocation,
+                          notes: meeting.notes,
+                        }, job.name, jobLocation, job.job_number);
+                      } else {
+                        setNewMeetings(prev => [...prev, meeting]);
+                      }
+                    }}
+                    onRemoveMeeting={(index) => setNewMeetings(prev => prev.filter((_, i) => i !== index))}
+                    onUpdateMeeting={(index, meeting) => setNewMeetings(prev => prev.map((m, i) => i === index ? meeting : m))}
+                    jobLocation={[job.address, job.city, job.state, job.zip_code].filter(Boolean).join(', ')}
+                  />
+                  {existingMeetings.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium text-muted-foreground">Scheduled Meetings:</p>
+                      {existingMeetings.map((meeting) => (
+                        <div key={meeting.id} className="flex items-center justify-between p-2.5 bg-muted/30 rounded-lg border text-sm">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-sm truncate">{meeting.title}</span>
+                              <span className="text-[10px] px-1.5 py-0.5 bg-primary/10 text-primary rounded shrink-0">
+                                {meeting.meeting_type.replace('_', ' ')}
+                              </span>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              {new Date(meeting.scheduled_date).toLocaleDateString()} {meeting.scheduled_time && `at ${meeting.scheduled_time}`}
+                            </p>
+                          </div>
+                          <Button variant="ghost" size="sm" onClick={() => deleteMeeting(meeting.id)} className="text-destructive hover:text-destructive h-7 text-xs shrink-0">
+                            Delete
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </InfoCard>
+
+                {/* Additional Details */}
+                <SectionHeader>ADDITIONAL DETAILS</SectionHeader>
                 <InfoCard className="rounded-none">
-                  <EditableInfoRow label="Notes" value={job.notes} onSave={(v) => updateJob(job.id!, { notes: v || null })} type="textarea" placeholder="Add notes..." />
+                  <EditableInfoRow label="Sub Trade" value={job.sub_trade} onSave={(v) => updateJob(job.id!, { sub_trade: v || null })} placeholder="Sub trade" />
+                  <EditableInfoRow label="Budget Alert Threshold" value={job.budget_alert_threshold} onSave={(v) => updateJob(job.id!, { budget_alert_threshold: parseFloat(v) || null })} type="number" placeholder="e.g. 90" />
                 </InfoCard>
               </div>
             )}
