@@ -9,7 +9,7 @@ import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { PullToRefreshIndicator } from '@/components/ui/pull-to-refresh';
 import { PhotoReportDialog } from './job/PhotoReportDialog';
 import { cn } from '@/lib/utils';
-import { useJobs, Job } from '@/hooks/useJobs';
+import { Job } from '@/hooks/useJobs';
 import { useCustomers } from '@/hooks/useCustomers';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
@@ -50,6 +50,8 @@ interface JobDetailViewBlueProps {
   job: Job | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onUpdateJob: (jobId: string, updates: Partial<Job>) => Promise<Job>;
+  onRefreshJobs?: () => Promise<void>;
   onCreateEstimate?: () => void;
   onEditJob?: (job: Job) => void;
   onDuplicateJob?: (jobId: string) => Promise<Job | undefined>;
