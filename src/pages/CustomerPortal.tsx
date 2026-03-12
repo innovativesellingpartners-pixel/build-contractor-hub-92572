@@ -1149,7 +1149,7 @@ function MessagesTab({ portalTokenId, jobId, customerName, contractorName, isCon
   const participantMapRef = useRef(new Map<string, number>());
 
   const { data: messages } = useQuery({
-    queryKey: ['portal-messages', portalTokenId],
+    queryKey: ['portal-messages', portalTokenId, isContractor],
     queryFn: async () => {
       const { data } = await messageReadClient
         .from('portal_messages')
