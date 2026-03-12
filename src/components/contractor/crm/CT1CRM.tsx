@@ -414,8 +414,8 @@ const navItems = [
           )}
 
           {/* Main Content with bottom padding for nav - overflow protected */}
-          <main className="flex-1 overflow-hidden w-full max-w-full pb-28 bg-background">
-            <div className="h-full overflow-y-auto overflow-x-hidden max-w-full overscroll-contain" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}>
+          <main className={cn("flex-1 overflow-hidden w-full max-w-full bg-background transition-[padding-bottom] duration-300", isScrollingDown ? "pb-6" : "pb-28")}>
+            <div ref={scrollContainerRef} className="h-full overflow-y-auto overflow-x-hidden max-w-full overscroll-contain" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}>
               <div className="min-h-full w-full max-w-full pb-6">
                 {renderSection()}
               </div>
