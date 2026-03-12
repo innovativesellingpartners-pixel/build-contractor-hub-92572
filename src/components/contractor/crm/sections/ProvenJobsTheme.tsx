@@ -63,6 +63,178 @@ export function InfoRow({ label, value, className, valueClassName, isClickable, 
   );
 }
 
+// Inline-editable info row — click to edit, blur/Enter to save, Escape to cancel
+interface EditableInfoRowProps {
+  label: string;
+  value: string | number | null | undefined;
+  onSave: (newValue: string) => void | Promise<void>;
+  type?: 'text' | 'email' | 'tel' | 'number' | 'date' | 'textarea';
+  selectOptions?: { value: string; label: string }[];
+  placeholder?: string;
+  className?: string;
+  disabled?: boolean;
+}
+
+export function EditableInfoRow({
+  label,
+  value,
+  onSave,
+  type = 'text',
+  selectOptions,
+  placeholder,
+  className,
+  disabled,
+}: EditableInfoRowProps) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState(String(value ?? ''));
+  const [isSaving, setIsSaving] = useState(false);
+  const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    setEditValue(String(value ?? ''));
+  }, [value]);
+
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+      if (inputRef.current instanceof HTMLInputElement) {
+        inputRef.current.select();
+      }
+    }
+  }, [isEditing]);
+
+  const handleSave = useCallback(async () => {
+    const trimmed = editValue.trim();
+    if (trimmed === String(value ?? '').trim()) {
+      setIsEditing(false);
+      return;
+    }
+    setIsSaving(true);
+    try {
+      await onSave(trimmed);
+    } finally {
+      setIsSaving(false);
+      setIsEditing(false);
+    }
+  }, [editValue, value, onSave]);
+
+  const handleCancel = () => {
+    setEditValue(String(value ?? ''));
+    setIsEditing(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && type !== 'textarea') {
+      e.preventDefault();
+      handleSave();
+    } else if (e.key === 'Escape') {
+      handleCancel();
+    }
+  };
+
+  // Display formatted value
+  const displayValue = (() => {
+    if (selectOptions) {
+      const opt = selectOptions.find(o => o.value === String(value ?? ''));
+      return opt?.label || String(value ?? '') || '—';
+    }
+    if (type === 'number' && value != null) {
+      return typeof value === 'number' ? value.toLocaleString() : value;
+    }
+    return String(value ?? '') || '—';
+  })();
+
+  if (disabled) {
+    return <InfoRow label={label} value={displayValue} className={className} />;
+  }
+
+  return (
+    <div
+      className={cn(
+        'flex justify-between items-center px-4 py-3 border-b border-border last:border-b-0 min-h-[48px] group',
+        !isEditing && 'cursor-pointer hover:bg-muted/50 active:bg-muted transition-colors',
+        className
+      )}
+      onClick={() => !isEditing && setIsEditing(true)}
+    >
+      <span className="text-muted-foreground font-medium text-sm flex-shrink-0 mr-3">{label}</span>
+      {isEditing ? (
+        <div className="flex items-center gap-1.5 flex-1 justify-end min-w-0" onClick={e => e.stopPropagation()}>
+          {selectOptions ? (
+            <Select
+              value={editValue}
+              onValueChange={(val) => {
+                setEditValue(val);
+                // Auto-save for selects
+                const trimmed = val.trim();
+                if (trimmed !== String(value ?? '').trim()) {
+                  setIsSaving(true);
+                  Promise.resolve(onSave(trimmed)).finally(() => {
+                    setIsSaving(false);
+                    setIsEditing(false);
+                  });
+                } else {
+                  setIsEditing(false);
+                }
+              }}
+            >
+              <SelectTrigger className="h-8 text-sm w-auto min-w-[120px] max-w-[200px]">
+                <SelectValue placeholder={placeholder || 'Select...'} />
+              </SelectTrigger>
+              <SelectContent>
+                {selectOptions.map(opt => (
+                  <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : type === 'textarea' ? (
+            <textarea
+              ref={inputRef as React.RefObject<HTMLTextAreaElement>}
+              value={editValue}
+              onChange={e => setEditValue(e.target.value)}
+              onBlur={handleSave}
+              onKeyDown={handleKeyDown}
+              rows={2}
+              className="flex-1 min-w-0 text-sm text-right border border-border rounded-md px-2 py-1 bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
+              placeholder={placeholder}
+            />
+          ) : (
+            <Input
+              ref={inputRef as React.RefObject<HTMLInputElement>}
+              type={type}
+              value={editValue}
+              onChange={e => setEditValue(e.target.value)}
+              onBlur={handleSave}
+              onKeyDown={handleKeyDown}
+              className="h-8 text-sm text-right flex-1 min-w-0 max-w-[200px]"
+              placeholder={placeholder}
+              disabled={isSaving}
+            />
+          )}
+          <button
+            type="button"
+            onClick={handleSave}
+            className="p-1 rounded-md text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors"
+          >
+            <Check className="w-3.5 h-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={handleCancel}
+            className="p-1 rounded-md text-muted-foreground hover:bg-muted transition-colors"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      ) : (
+        <span className="text-foreground text-sm text-right max-w-[60%] truncate group-hover:text-primary transition-colors">
+          {displayValue}
+        </span>
+      )}
+    </div>
+  );
+}
+
 // Status/Action button - elegant styling
 interface ActionButtonProps {
   children: ReactNode;
