@@ -38,6 +38,7 @@ type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calenda
 interface BottomNavProps {
   activeSection: Section;
   onSectionChange: (section: Section) => void;
+  hidden?: boolean;
 }
 
 const defaultBottomNavItems: Section[] = ['dashboard', 'calls', 'emails', 'leads'];
