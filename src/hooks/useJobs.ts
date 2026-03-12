@@ -157,6 +157,9 @@ export const useJobs = () => {
   };
 
   const updateJob = async (id: string, updates: Partial<Job>) => {
+    // Optimistic update immediately
+    setJobs(prev => prev.map(job => job.id === id ? { ...job, ...updates } as Job : job));
+
     try {
       const { data, error } = await supabase
         .from('jobs')
@@ -167,13 +170,12 @@ export const useJobs = () => {
 
       if (error) throw error;
 
-      setJobs(jobs.map(job => job.id === id ? data as Job : job));
-      toast({
-        title: 'Job updated',
-        description: 'Job has been updated successfully',
-      });
+      // Replace with server-confirmed data
+      setJobs(prev => prev.map(job => job.id === id ? data as Job : job));
       return data as Job;
     } catch (error: any) {
+      // Rollback: re-fetch all jobs on error
+      await fetchJobs();
       toast({
         title: 'Error updating job',
         description: error.message,
