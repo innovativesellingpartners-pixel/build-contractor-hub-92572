@@ -101,7 +101,7 @@ export const useJobs = () => {
       if (error) throw error;
 
       const newJob = data as Job;
-      setJobs([newJob, ...jobs]);
+      setJobs(prev => [newJob, ...prev]);
       
       const jobLocation = [newJob.address, newJob.city, newJob.state, newJob.zip_code].filter(Boolean).join(', ');
       
