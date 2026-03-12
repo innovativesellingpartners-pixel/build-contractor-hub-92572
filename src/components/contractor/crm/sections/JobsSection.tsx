@@ -53,6 +53,16 @@ export default function JobsSection({ onSectionChange, initialJobId, onClearInit
     }
   }, [initialJobId, jobs, onClearInitialJob]);
 
+  // Keep selectedJob in sync with latest jobs array data
+  useEffect(() => {
+    if (selectedJob && jobs.length > 0) {
+      const updated = jobs.find(j => j.id === selectedJob.id);
+      if (updated && updated !== selectedJob) {
+        setSelectedJob(updated);
+      }
+    }
+  }, [jobs, selectedJob]);
+
   // Persist open job ID to sessionStorage
   useEffect(() => {
     if (detailOpen && selectedJob?.id) {
