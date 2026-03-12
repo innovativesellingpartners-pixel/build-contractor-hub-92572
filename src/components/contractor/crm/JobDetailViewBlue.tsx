@@ -31,7 +31,6 @@ import { ImageViewer } from '@/components/ui/image-viewer';
 import { AIScopeNotes } from './AIScopeNotes';
 import { JobMeetingsSection, MeetingFormData } from './JobMeetingsSection';
 import { useJobMeetings } from '@/hooks/useJobMeetings';
-import { ImageViewer } from '@/components/ui/image-viewer';
 import {
   BlueBackground,
   SectionHeader,
