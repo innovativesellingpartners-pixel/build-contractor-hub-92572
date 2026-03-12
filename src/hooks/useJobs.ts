@@ -44,6 +44,12 @@ export interface Job {
   trade_type?: string;
   lead_id?: string;
   sub_trade?: string;
+  customer_name?: string;
+  contact_name?: string;
+  phone_home?: string;
+  phone_business?: string;
+  customer_email?: string;
+  customer_address?: string;
 }
 
 export const useJobs = () => {

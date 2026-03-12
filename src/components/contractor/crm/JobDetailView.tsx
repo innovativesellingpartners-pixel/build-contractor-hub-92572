@@ -706,6 +706,50 @@ export default function JobDetailView({ job, open, onOpenChange, onCreateEstimat
                     </CardContent>
                   </Card>
                 </div>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Customer / Contact Information</CardTitle>
+                  </CardHeader>
+                  <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <JobInlineField 
+                      label="Customer Name" 
+                      value={job.customer_name || ''} 
+                      onSave={(v) => updateJob(job.id!, { customer_name: v || null })} 
+                      placeholder="Customer name"
+                    />
+                    <JobInlineField 
+                      label="Contact Name" 
+                      value={job.contact_name || ''} 
+                      onSave={(v) => updateJob(job.id!, { contact_name: v || null })} 
+                      placeholder="Contact name"
+                    />
+                    <JobInlineField 
+                      label="Phone (Home)" 
+                      value={job.phone_home || ''} 
+                      onSave={(v) => updateJob(job.id!, { phone_home: v || null })} 
+                      placeholder="Home phone"
+                    />
+                    <JobInlineField 
+                      label="Phone (Business)" 
+                      value={job.phone_business || ''} 
+                      onSave={(v) => updateJob(job.id!, { phone_business: v || null })} 
+                      placeholder="Business phone"
+                    />
+                    <JobInlineField 
+                      label="Email" 
+                      value={job.customer_email || ''} 
+                      onSave={(v) => updateJob(job.id!, { customer_email: v || null })} 
+                      placeholder="Email address"
+                    />
+                    <JobInlineField 
+                      label="Customer Address" 
+                      value={job.customer_address || ''} 
+                      onSave={(v) => updateJob(job.id!, { customer_address: v || null })} 
+                      placeholder="Customer address"
+                    />
+                  </CardContent>
+                </Card>
               </TabsContent>
 
               <TabsContent value="financials" className="mt-4">
