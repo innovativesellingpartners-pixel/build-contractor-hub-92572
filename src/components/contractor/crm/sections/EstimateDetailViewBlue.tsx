@@ -48,6 +48,7 @@ export function EstimateDetailViewBlue({
   onDuplicate
 }: EstimateDetailViewBlueProps) {
   const { user } = useAuth();
+  const { updateEstimate } = useEstimates();
   const [isConverting, setIsConverting] = useState(false);
   const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
   const [customerDialogOpen, setCustomerDialogOpen] = useState(false);
