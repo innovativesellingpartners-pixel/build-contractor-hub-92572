@@ -243,7 +243,7 @@ export const useJobs = () => {
       if (error) throw error;
 
       const newJob = data as Job;
-      setJobs([newJob, ...jobs]);
+      setJobs(prev => [newJob, ...prev]);
       
       // Create calendar event for duplicated job (non-blocking) - pass auth token
       supabase.auth.getSession().then(({ data: { session } }) => {
