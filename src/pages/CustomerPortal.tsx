@@ -258,7 +258,7 @@ export default function CustomerPortal() {
 
 // ==================== SCHEDULE TAB ====================
 function ScheduleTab({ jobId, isContractor = false, contractorId, portalTokenId, portalTokenValue }: { jobId: string; isContractor?: boolean; contractorId?: string; portalTokenId?: string; portalTokenValue?: string }) {
-  const portalClient = portalTokenValue ? createPortalClient(portalTokenValue) : supabase;
+  const portalClient = isContractor ? supabase : (portalTokenValue ? createPortalClient(portalTokenValue) : supabase);
   const [selectedMonth, setSelectedMonth] = useState(() => new Date());
   const [clickedDate, setClickedDate] = useState<string | null>(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
