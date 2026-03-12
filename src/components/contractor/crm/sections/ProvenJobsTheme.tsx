@@ -1,6 +1,8 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState, useRef, useEffect, useCallback } from 'react';
 import { cn } from '@/lib/utils';
-import { ArrowLeft, LayoutDashboard } from 'lucide-react';
+import { ArrowLeft, LayoutDashboard, Check, X } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import ct1Logo from '@/assets/ct1-round-logo-new.png';
 
 // Elegant light background wrapper with safe area for mobile browsers
