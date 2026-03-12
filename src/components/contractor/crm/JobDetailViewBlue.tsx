@@ -33,6 +33,7 @@ import {
   SectionHeader,
   InfoCard,
   InfoRow,
+  EditableInfoRow,
   ActionButton,
   DetailHeader,
   StatusBadge,
@@ -949,19 +950,38 @@ export default function JobDetailViewBlue({ job, open, onOpenChange, onCreateEst
                 {/* Job Information */}
                 <SectionHeader>INFORMATION</SectionHeader>
                 <InfoCard className="rounded-none">
-                  <InfoRow label="Job Name" value={job.name} />
+                  <EditableInfoRow label="Job Name" value={job.name} onSave={(v) => updateJob(job.id!, { name: v })} />
                   <InfoRow label="Job Number" value={job.job_number} />
-                  <InfoRow 
+                  <EditableInfoRow 
                     label="Status" 
-                    value={<StatusBadge status={job.status} />} 
+                    value={job.status} 
+                    onSave={(v) => updateJob(job.id!, { status: v as any })}
+                    selectOptions={[
+                      { value: 'scheduled', label: 'Scheduled' },
+                      { value: 'in_progress', label: 'In Progress' },
+                      { value: 'on_hold', label: 'On Hold' },
+                      { value: 'completed', label: 'Completed' },
+                    ]}
                   />
-                  {job.description && <InfoRow label="Description" value={job.description} />}
+                  <EditableInfoRow label="Description" value={job.description} onSave={(v) => updateJob(job.id!, { description: v || null })} type="textarea" placeholder="Add description..." />
+                  <EditableInfoRow label="Trade" value={job.trade_type} onSave={(v) => updateJob(job.id!, { trade_type: v || null })} placeholder="Trade type" />
                 </InfoCard>
 
-                {/* Customer Contact */}
+                {/* Customer / Contact Information */}
+                <SectionHeader>CUSTOMER / CONTACT</SectionHeader>
+                <InfoCard className="rounded-none">
+                  <EditableInfoRow label="Customer Name" value={job.customer_name} onSave={(v) => updateJob(job.id!, { customer_name: v || null })} placeholder="Customer name" />
+                  <EditableInfoRow label="Contact Name" value={job.contact_name} onSave={(v) => updateJob(job.id!, { contact_name: v || null })} placeholder="Contact name" />
+                  <EditableInfoRow label="Phone (Home)" value={job.phone_home} onSave={(v) => updateJob(job.id!, { phone_home: v || null })} type="tel" placeholder="Home phone" />
+                  <EditableInfoRow label="Phone (Business)" value={job.phone_business} onSave={(v) => updateJob(job.id!, { phone_business: v || null })} type="tel" placeholder="Business phone" />
+                  <EditableInfoRow label="Email" value={job.customer_email} onSave={(v) => updateJob(job.id!, { customer_email: v || null })} type="email" placeholder="Email address" />
+                  <EditableInfoRow label="Customer Address" value={job.customer_address} onSave={(v) => updateJob(job.id!, { customer_address: v || null })} placeholder="Customer address" />
+                </InfoCard>
+
+                {/* Linked CRM Customer */}
                 {customer && (
                   <>
-                    <SectionHeader>CUSTOMER CONTACT</SectionHeader>
+                    <SectionHeader>LINKED CRM CUSTOMER</SectionHeader>
                     <InfoCard className="rounded-none">
                       <InfoRow 
                         label="Name" 
@@ -976,10 +996,7 @@ export default function JobDetailViewBlue({ job, open, onOpenChange, onCreateEst
                         <InfoRow 
                           label="Phone" 
                           value={
-                            <a 
-                              href={`tel:${customer.phone}`} 
-                              className="flex items-center gap-2 text-primary hover:underline"
-                            >
+                            <a href={`tel:${customer.phone}`} className="flex items-center gap-2 text-primary hover:underline">
                               <Phone className="w-4 h-4" />
                               {customer.phone}
                             </a>
@@ -990,10 +1007,7 @@ export default function JobDetailViewBlue({ job, open, onOpenChange, onCreateEst
                         <InfoRow 
                           label="Email" 
                           value={
-                            <a 
-                              href={`mailto:${customer.email}`} 
-                              className="flex items-center gap-2 text-primary hover:underline"
-                            >
+                            <a href={`mailto:${customer.email}`} className="flex items-center gap-2 text-primary hover:underline">
                               <Mail className="w-4 h-4" />
                               {customer.email}
                             </a>
@@ -1006,27 +1020,24 @@ export default function JobDetailViewBlue({ job, open, onOpenChange, onCreateEst
                     </InfoCard>
                   </>
                 )}
+
                 {/* Location */}
-                {getFullAddress() && (
-                  <>
-                    <SectionHeader>LOCATION</SectionHeader>
-                    <InfoCard className="rounded-none">
-                      <AddressRow address={getFullAddress()} onNavigate={handleNavigate} />
-                    </InfoCard>
-                  </>
-                )}
+                <SectionHeader>LOCATION</SectionHeader>
+                <InfoCard className="rounded-none">
+                  <EditableInfoRow label="Address" value={job.address} onSave={(v) => updateJob(job.id!, { address: v || null })} placeholder="Street address" />
+                  <EditableInfoRow label="City" value={job.city} onSave={(v) => updateJob(job.id!, { city: v || null })} placeholder="City" />
+                  <EditableInfoRow label="State" value={job.state} onSave={(v) => updateJob(job.id!, { state: v || null })} placeholder="State" />
+                  <EditableInfoRow label="Zip Code" value={job.zip_code} onSave={(v) => updateJob(job.id!, { zip_code: v || null })} placeholder="Zip code" />
+                  {getFullAddress() && (
+                    <AddressRow address={getFullAddress()} onNavigate={handleNavigate} />
+                  )}
+                </InfoCard>
 
                 {/* Dates */}
                 <SectionHeader>JOB DATES</SectionHeader>
                 <InfoCard className="rounded-none">
-                  <InfoRow 
-                    label="Start Date" 
-                    value={job.start_date ? format(new Date(job.start_date), 'MMM d, yyyy') : null} 
-                  />
-                  <InfoRow 
-                    label="End Date" 
-                    value={job.end_date ? format(new Date(job.end_date), 'MMM d, yyyy') : null} 
-                  />
+                  <EditableInfoRow label="Start Date" value={job.start_date || ''} onSave={(v) => updateJob(job.id!, { start_date: v || null })} type="date" />
+                  <EditableInfoRow label="End Date" value={job.end_date || ''} onSave={(v) => updateJob(job.id!, { end_date: v || null })} type="date" />
                   <InfoRow 
                     label="Created" 
                     value={job.created_at ? format(new Date(job.created_at), 'MMM d, yyyy') : null} 
@@ -1042,21 +1053,16 @@ export default function JobDetailViewBlue({ job, open, onOpenChange, onCreateEst
                     <MoneyDisplay amount={job.payments_collected} label="Payments Collected" />
                     <MoneyDisplay amount={job.profit} label="Profit" />
                   </div>
+                  <EditableInfoRow label="Contract Value" value={job.contract_value} onSave={(v) => updateJob(job.id!, { contract_value: parseFloat(v) || 0 })} type="number" placeholder="0.00" />
                   <InfoRow label="Change Orders" value={`$${(job.change_orders_total || 0).toFixed(2)}`} />
                   <InfoRow label="Expenses" value={`$${(job.expenses_total || 0).toFixed(2)}`} />
                 </InfoCard>
 
                 {/* Notes */}
-                {job.notes && (
-                  <>
-                    <SectionHeader>NOTES</SectionHeader>
-                    <InfoCard className="rounded-none">
-                      <div className="p-4">
-                        <p className="text-sm text-slate-700 whitespace-pre-wrap">{job.notes}</p>
-                      </div>
-                    </InfoCard>
-                  </>
-                )}
+                <SectionHeader>NOTES</SectionHeader>
+                <InfoCard className="rounded-none">
+                  <EditableInfoRow label="Notes" value={job.notes} onSave={(v) => updateJob(job.id!, { notes: v || null })} type="textarea" placeholder="Add notes..." />
+                </InfoCard>
               </div>
             )}
 
