@@ -970,11 +970,6 @@ export default function JobDetailViewBlue({ job, open, onOpenChange, onCreateEst
                   />
                   <EditableInfoRow label="Description" value={job.description} onSave={(v) => updateJob(job.id!, { description: v || null })} type="textarea" placeholder="Add description..." />
                   <EditableInfoRow label="Trade" value={job.trade_type} onSave={(v) => updateJob(job.id!, { trade_type: v || null })} placeholder="Trade type" />
-                </InfoCard>
-
-                {/* Customer / Contact Information */}
-                <SectionHeader>CUSTOMER / CONTACT</SectionHeader>
-                <InfoCard className="rounded-none">
                   <EditableInfoRow label="Customer Name" value={job.customer_name} onSave={(v) => updateJob(job.id!, { customer_name: v || null })} placeholder="Customer name" />
                   <EditableInfoRow label="Contact Name" value={job.contact_name} onSave={(v) => updateJob(job.id!, { contact_name: v || null })} placeholder="Contact name" />
                   <EditableInfoRow label="Phone (Home)" value={job.phone_home} onSave={(v) => updateJob(job.id!, { phone_home: v || null })} type="tel" placeholder="Home phone" />
