@@ -35,18 +35,32 @@ export default function JobsSection({ onSectionChange, initialJobId, onClearInit
   const [convertDialogOpen, setConvertDialogOpen] = useState(false);
   const { templates } = useEstimateTemplates();
 
-  // Handle initial job ID to auto-open the detail view
+  // Restore open job from sessionStorage or initialJobId on mount/jobs load
   useEffect(() => {
-    if (initialJobId && jobs && jobs.length > 0) {
-      const job = jobs.find(j => j.id === initialJobId);
+    if (!jobs || jobs.length === 0) return;
+
+    const targetId = initialJobId || sessionStorage.getItem('ct1OpenJobId');
+    if (targetId) {
+      const job = jobs.find(j => j.id === targetId);
       if (job) {
         setSelectedJob(job);
         setDetailOpen(true);
-        // Clear the initial job ID after opening
-        onClearInitialJob?.();
+        if (initialJobId) onClearInitialJob?.();
+      } else {
+        // Job not found, clean up
+        sessionStorage.removeItem('ct1OpenJobId');
       }
     }
   }, [initialJobId, jobs, onClearInitialJob]);
+
+  // Persist open job ID to sessionStorage
+  useEffect(() => {
+    if (detailOpen && selectedJob?.id) {
+      sessionStorage.setItem('ct1OpenJobId', selectedJob.id);
+    } else if (!detailOpen) {
+      sessionStorage.removeItem('ct1OpenJobId');
+    }
+  }, [detailOpen, selectedJob?.id]);
 
   const handleJobClick = (job: Job) => {
     setSelectedJob(job);
