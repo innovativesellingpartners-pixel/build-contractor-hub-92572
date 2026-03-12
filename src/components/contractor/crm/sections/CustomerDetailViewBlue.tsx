@@ -35,7 +35,7 @@ interface CustomerDetailViewBlueProps {
 export function CustomerDetailViewBlue({ customer, onClose, onSectionChange, onCreateJob, onEdit }: CustomerDetailViewBlueProps) {
   const { estimates, createEstimateAsync } = useEstimates();
   const { jobs } = useJobs();
-  const { customers, refreshCustomers } = useCustomers();
+  const { customers, refreshCustomers, updateCustomer } = useCustomers();
   const { user } = useAuth();
   const [isCreatingJob, setIsCreatingJob] = useState(false);
   const [isCreatingEstimate, setIsCreatingEstimate] = useState(false);
