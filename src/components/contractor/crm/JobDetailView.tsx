@@ -575,18 +575,32 @@ export default function JobDetailView({ job, open, onOpenChange, onCreateEstimat
                       <CardTitle>Job Information</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
-                      {job.description && (
-                        <div>
-                          <h4 className="text-sm font-medium text-muted-foreground mb-1">Description</h4>
-                          <p className="text-sm">{job.description}</p>
-                        </div>
-                      )}
-                      {job.notes && (
-                        <div>
-                          <h4 className="text-sm font-medium text-muted-foreground mb-1">Notes</h4>
-                          <p className="text-sm text-muted-foreground">{job.notes}</p>
-                        </div>
-                      )}
+                      <JobInlineField 
+                        label="Name" 
+                        value={job.name} 
+                        onSave={(v) => updateJob(job.id!, { name: v })} 
+                      />
+                      <JobInlineField 
+                        label="Description" 
+                        value={job.description || ''} 
+                        onSave={(v) => updateJob(job.id!, { description: v || null })}
+                        multiline
+                        placeholder="Add description..."
+                      />
+                      <JobInlineField 
+                        label="Notes" 
+                        value={job.notes || ''} 
+                        onSave={(v) => updateJob(job.id!, { notes: v || null })}
+                        multiline
+                        placeholder="Add notes..."
+                      />
+                      <JobInlineField 
+                        label="Contract Value" 
+                        value={String(job.contract_value || '')} 
+                        type="number"
+                        onSave={(v) => updateJob(job.id!, { contract_value: parseFloat(v) || 0 })}
+                        placeholder="0.00"
+                      />
                     </CardContent>
                   </Card>
 
@@ -597,16 +611,31 @@ export default function JobDetailView({ job, open, onOpenChange, onCreateEstimat
                         Location
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-2">
-                      {job.address && <p className="text-sm">{job.address}</p>}
-                      {(job.city || job.state) && (
-                        <p className="text-sm">
-                          {job.city}{job.city && job.state && ', '}{job.state} {job.zip_code}
-                        </p>
-                      )}
-                      {!job.address && !job.city && !job.state && (
-                        <p className="text-sm text-muted-foreground">No location specified</p>
-                      )}
+                    <CardContent className="space-y-3">
+                      <JobInlineField 
+                        label="Address" 
+                        value={job.address || ''} 
+                        onSave={(v) => updateJob(job.id!, { address: v || null })} 
+                        placeholder="Street address"
+                      />
+                      <JobInlineField 
+                        label="City" 
+                        value={job.city || ''} 
+                        onSave={(v) => updateJob(job.id!, { city: v || null })} 
+                        placeholder="City"
+                      />
+                      <JobInlineField 
+                        label="State" 
+                        value={job.state || ''} 
+                        onSave={(v) => updateJob(job.id!, { state: v || null })} 
+                        placeholder="State"
+                      />
+                      <JobInlineField 
+                        label="Zip Code" 
+                        value={job.zip_code || ''} 
+                        onSave={(v) => updateJob(job.id!, { zip_code: v || null })} 
+                        placeholder="Zip code"
+                      />
                     </CardContent>
                   </Card>
                 </div>
