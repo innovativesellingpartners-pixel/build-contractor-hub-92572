@@ -109,13 +109,32 @@ export const TrainingHub = () => {
               </p>
             </div>
             <CardContent className="p-3 md:p-4">
-              <div className="aspect-video w-full relative rounded-lg overflow-hidden shadow-lg">
+              <div className="aspect-video w-full relative rounded-lg overflow-hidden shadow-lg bg-muted">
                 <iframe
                   src="https://drive.google.com/file/d/1eMBOcQ776JFxqniVIZ7g78DQxn5GzwbY/preview"
                   className="w-full h-full rounded-lg"
                   allow="autoplay"
+                  sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
                   title="Welcome to CT1's 5-Star Training"
+                  onError={(e) => {
+                    const target = e.currentTarget;
+                    target.style.display = 'none';
+                    const fallback = target.nextElementSibling as HTMLElement;
+                    if (fallback) fallback.style.display = 'flex';
+                  }}
                 />
+                <div className="absolute inset-0 flex-col items-center justify-center gap-4 hidden" style={{ display: 'none' }}>
+                  <Play className="h-16 w-16 text-primary" />
+                  <p className="text-muted-foreground text-sm">Video could not be loaded in preview.</p>
+                  <a
+                    href="https://drive.google.com/file/d/1eMBOcQ776JFxqniVIZ7g78DQxn5GzwbY/view"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary underline text-sm font-medium"
+                  >
+                    Open video in new tab
+                  </a>
+                </div>
               </div>
             </CardContent>
           </Card>
