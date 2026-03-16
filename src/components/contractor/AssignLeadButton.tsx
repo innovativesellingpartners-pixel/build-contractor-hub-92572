@@ -26,41 +26,45 @@ export function AssignLeadButton({ leadId, currentUserId, iconOnly = false, onAs
   const [selectedContractorId, setSelectedContractorId] = useState(currentUserId || '');
   const [saving, setSaving] = useState(false);
 
-  const { data: contractors = [] } = useQuery({
-    queryKey: ['contractors-for-assignment'],
+  // Fetch ALL platform users (profiles) so every user can be assigned
+  const { data: allUsers = [] } = useQuery({
+    queryKey: ['all-users-for-assignment'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('contractors')
-        .select('id, business_name, contractor_number')
-        .order('business_name');
-      if (error) throw error;
-      return data;
-    },
-    enabled: isAdmin && open,
-  });
+      // Get all profiles
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, contact_name, company_name')
+        .order('contact_name');
+      if (profilesError) throw profilesError;
 
-  // Fetch admin users so they appear in the dropdown too
-  const { data: adminProfiles = [] } = useQuery({
-    queryKey: ['admin-profiles-for-assignment'],
-    queryFn: async () => {
-      const { data: roles, error } = await supabase
+      // Get all user roles to identify admins
+      const { data: roles } = await supabase
         .from('user_roles')
         .select('user_id, role')
         .in('role', ['admin', 'super_admin']);
-      if (error) throw error;
-      if (!roles || roles.length === 0) return [];
-      const userIds = roles.map(r => r.user_id);
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('id, contact_name, company_name')
-        .in('id', userIds);
-      return (roles || []).map(r => ({
-        user_id: r.user_id,
-        role: r.role,
-        name: profiles?.find(p => p.id === r.user_id)?.contact_name 
-          || profiles?.find(p => p.id === r.user_id)?.company_name 
-          || 'Admin',
-      }));
+
+      // Get contractor business names
+      const { data: contractors } = await supabase
+        .from('contractors')
+        .select('id, business_name, contractor_number');
+
+      const roleMap = new Map((roles || []).map(r => [r.user_id, r.role]));
+      const contractorMap = new Map((contractors || []).map(c => [c.id, c]));
+
+      return (profiles || []).map(p => {
+        const role = roleMap.get(p.id);
+        const contractor = contractorMap.get(p.id);
+        const isAdminUser = role === 'admin' || role === 'super_admin';
+        const displayName = p.contact_name || contractor?.business_name || p.company_name || 'Unknown User';
+        return {
+          id: p.id,
+          displayName,
+          businessName: contractor?.business_name || null,
+          contractorNumber: contractor?.contractor_number || null,
+          role: role || 'user',
+          isAdmin: isAdminUser,
+        };
+      });
     },
     enabled: isAdmin && open,
   });
