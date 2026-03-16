@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { UserPlus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -38,6 +39,36 @@ export function AssignLeadButton({ leadId, currentUserId, iconOnly = false, onAs
     enabled: isAdmin && open,
   });
 
+  // Check if the current assignee is an admin (not found in contractors)
+  const { data: assigneeRole } = useQuery({
+    queryKey: ['assignee-role', currentUserId],
+    queryFn: async () => {
+      if (!currentUserId) return null;
+      const { data } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', currentUserId)
+        .maybeSingle();
+      return data?.role || null;
+    },
+    enabled: !!currentUserId,
+  });
+
+  // Get the admin's profile name if assignee is admin
+  const { data: assigneeProfile } = useQuery({
+    queryKey: ['assignee-profile', currentUserId],
+    queryFn: async () => {
+      if (!currentUserId) return null;
+      const { data } = await supabase
+        .from('profiles')
+        .select('contact_name, company_name')
+        .eq('id', currentUserId)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!currentUserId,
+  });
+
   const contractorOptions = contractors.map((c) => ({
     value: c.id,
     label: c.business_name,
@@ -45,6 +76,13 @@ export function AssignLeadButton({ leadId, currentUserId, iconOnly = false, onAs
   }));
 
   const currentContractor = contractors.find(c => c.id === currentUserId);
+  const isAssigneeAdmin = !currentContractor && (assigneeRole === 'admin' || assigneeRole === 'super_admin');
+  
+  const assigneeDisplayName = currentContractor 
+    ? currentContractor.business_name 
+    : isAssigneeAdmin 
+      ? (assigneeProfile?.contact_name || assigneeProfile?.company_name || 'Admin')
+      : null;
 
   if (!isAdmin) return null;
 
@@ -99,7 +137,7 @@ export function AssignLeadButton({ leadId, currentUserId, iconOnly = false, onAs
           }}
         >
           <UserPlus className="h-4 w-4" />
-          {currentContractor ? `Assigned: ${currentContractor.business_name}` : 'Assign'}
+          {assigneeDisplayName ? `Assigned: ${assigneeDisplayName}${isAssigneeAdmin ? ' (Admin)' : ''}` : 'Assign'}
         </Button>
       )}
 
@@ -109,9 +147,11 @@ export function AssignLeadButton({ leadId, currentUserId, iconOnly = false, onAs
             <DialogTitle>Assign Lead to Contractor</DialogTitle>
           </DialogHeader>
           <div className="py-4 space-y-3">
-            {currentContractor && (
+            {assigneeDisplayName && (
               <p className="text-sm text-muted-foreground">
-                Currently assigned to: <span className="font-medium text-foreground">{currentContractor.business_name}</span> ({currentContractor.contractor_number})
+                Currently assigned to: <span className="font-medium text-foreground">{assigneeDisplayName}</span>
+                {isAssigneeAdmin && <Badge variant="secondary" className="ml-2 text-xs">Admin</Badge>}
+                {currentContractor?.contractor_number && ` (${currentContractor.contractor_number})`}
               </p>
             )}
             <SearchableSelect

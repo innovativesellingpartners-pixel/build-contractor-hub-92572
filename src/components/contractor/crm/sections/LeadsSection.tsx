@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { useLeads } from '@/hooks/useLeads';
 import { useCustomers } from '@/hooks/useCustomers';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Plus, Phone, Mail, Edit, Users, TrendingUp, Upload, FileSpreadsheet, ChevronRight, DollarSign, UserPlus } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -25,6 +26,49 @@ interface LeadsSectionProps {
 export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
   const { leads, sources, loading, addLead, updateLead, deleteLead, refreshLeads, archiveLead } = useLeads();
   const { customers } = useCustomers();
+
+  // Fetch contractors and admin users for assignment display
+  const { data: allContractors = [] } = useQuery({
+    queryKey: ['contractors-for-display'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('contractors')
+        .select('id, business_name, contractor_number')
+        .order('business_name');
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: adminUsersForDisplay = [] } = useQuery({
+    queryKey: ['admin-users-for-display'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('user_id, role')
+        .in('role', ['admin', 'super_admin']);
+      if (error) throw error;
+      const userIds = (data || []).map(r => r.user_id);
+      if (userIds.length === 0) return [];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, contact_name, company_name')
+        .in('id', userIds);
+      return (data || []).map(r => ({
+        ...r,
+        profile: profiles?.find(p => p.id === r.user_id),
+      }));
+    },
+  });
+
+  const getAssigneeName = (userId?: string) => {
+    if (!userId) return null;
+    const contractor = allContractors.find(c => c.id === userId);
+    if (contractor) return contractor.business_name;
+    const admin = adminUsersForDisplay.find(a => a.user_id === userId);
+    if (admin) return `${admin.profile?.contact_name || admin.profile?.company_name || 'Admin'} (Admin)`;
+    return null;
+  };
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<any>(null);
   const [detailViewOpen, setDetailViewOpen] = useState(false);
@@ -360,6 +404,10 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
                 <RowMetaLine>
                   {lead.company && <span className="truncate max-w-[150px]">{lead.company}</span>}
                   {lead.project_type && <span className="truncate max-w-[120px]">{lead.project_type}</span>}
+                  {(() => {
+                    const name = getAssigneeName(lead.user_id);
+                    return name ? <span className="truncate max-w-[180px] text-primary font-medium">{name}</span> : null;
+                  })()}
                 </RowMetaLine>
               </RowContent>
 

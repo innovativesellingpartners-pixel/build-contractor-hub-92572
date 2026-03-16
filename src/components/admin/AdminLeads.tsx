@@ -41,6 +41,29 @@ export const AdminLeads = () => {
     },
   });
 
+  // Fetch admin user roles and profiles to identify admin-assigned leads
+  const { data: adminUsers = [] } = useQuery({
+    queryKey: ['adminUsersForLeads'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('user_id, role')
+        .in('role', ['admin', 'super_admin']);
+      if (error) throw error;
+      // Fetch profiles for these admin users
+      const userIds = data.map(r => r.user_id);
+      if (userIds.length === 0) return [];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, contact_name, company_name')
+        .in('id', userIds);
+      return (data || []).map(r => ({
+        ...r,
+        profile: profiles?.find(p => p.id === r.user_id),
+      }));
+    },
+  });
+
   const contractorOptions = contractors.map((c) => ({
     value: c.id,
     label: c.business_name,
@@ -219,14 +242,24 @@ export const AdminLeads = () => {
                   <TableCell>
                     {(() => {
                       const contractor = contractors.find(c => c.id === lead.user_id);
-                      return contractor ? (
-                        <div>
-                          <div className="text-sm font-medium">{contractor.business_name}</div>
-                          <div className="text-xs text-muted-foreground">{contractor.contractor_number}</div>
-                        </div>
-                      ) : (
-                        <Badge variant="outline" className="text-xs text-muted-foreground">Unassigned</Badge>
-                      );
+                      const adminUser = !contractor ? adminUsers.find(a => a.user_id === lead.user_id) : null;
+                      if (contractor) {
+                        return (
+                          <div>
+                            <div className="text-sm font-medium">{contractor.business_name}</div>
+                            <div className="text-xs text-muted-foreground">{contractor.contractor_number}</div>
+                          </div>
+                        );
+                      } else if (adminUser) {
+                        return (
+                          <div>
+                            <div className="text-sm font-medium">{adminUser.profile?.contact_name || adminUser.profile?.company_name || 'Admin'}</div>
+                            <Badge variant="secondary" className="text-xs mt-0.5">Admin</Badge>
+                          </div>
+                        );
+                      } else {
+                        return <Badge variant="outline" className="text-xs text-muted-foreground">Unassigned</Badge>;
+                      }
                     })()}
                   </TableCell>
                   <TableCell>
