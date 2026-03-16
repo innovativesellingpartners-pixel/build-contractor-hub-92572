@@ -1,12 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, BookOpen, Settings, Phone, CreditCard, Users, FileText, Briefcase, BarChart2, HelpCircle, MessageSquare, Bug, Lightbulb, ChevronRight, Star, Zap } from 'lucide-react';
+import { Search, BookOpen, Settings, Phone, CreditCard, Users, FileText, Briefcase, BarChart2, HelpCircle, MessageSquare, Bug, Lightbulb, ChevronRight, Star, Zap, Bot, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useHelpCategories, useFeaturedArticles, useHelpSearch, useLogArticleClick } from '@/hooks/useHelpCenter';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import ReactMarkdown from 'react-markdown';
 
 interface HelpHomeProps {
   onNavigateToArticle: (slug: string) => void;
@@ -39,18 +42,54 @@ const quickActions = [
 
 export function HelpHome({ onNavigateToArticle, onNavigateToCategory, onOpenChat, onOpenSupport }: HelpHomeProps) {
   const navigate = useNavigate();
+  const { profile } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearchResults, setShowSearchResults] = useState(false);
+  const [aiAnswer, setAiAnswer] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiSearched, setAiSearched] = useState(false);
   
   const { data: categories = [], isLoading: categoriesLoading } = useHelpCategories();
   const { data: featuredArticles = [], isLoading: featuredLoading } = useFeaturedArticles();
   const { data: searchResults = [], isLoading: searchLoading } = useHelpSearch(searchQuery);
   const logClick = useLogArticleClick();
 
+  // Auto-trigger AI when article search returns few/no results
+  useEffect(() => {
+    if (!showSearchResults || searchQuery.length < 3 || searchLoading) return;
+    if (searchResults.length <= 2 && !aiSearched && !aiLoading) {
+      fetchAIAnswer(searchQuery);
+    }
+  }, [searchResults, searchLoading, showSearchResults, searchQuery]);
+
+  const fetchAIAnswer = useCallback(async (query: string) => {
+    setAiLoading(true);
+    setAiSearched(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('help-chatbot', {
+        body: {
+          message: query,
+          userName: profile?.contact_name || 'Contractor',
+          companyName: profile?.company_name,
+          conversationHistory: [],
+        },
+      });
+      if (!error && data?.message) {
+        setAiAnswer(data.message);
+      }
+    } catch (e) {
+      console.error('AI search error:', e);
+    } finally {
+      setAiLoading(false);
+    }
+  }, [profile]);
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       setShowSearchResults(true);
+      setAiAnswer('');
+      setAiSearched(false);
     }
   };
 
@@ -59,6 +98,17 @@ export function HelpHome({ onNavigateToArticle, onNavigateToCategory, onOpenChat
     onNavigateToArticle(article.slug);
     setShowSearchResults(false);
     setSearchQuery('');
+    setAiAnswer('');
+    setAiSearched(false);
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    setShowSearchResults(value.length >= 2);
+    if (value.length < 2) {
+      setAiAnswer('');
+      setAiSearched(false);
+    }
   };
 
   const handleQuickAction = (action: typeof quickActions[0]) => {
