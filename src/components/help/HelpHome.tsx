@@ -1,12 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, BookOpen, Settings, Phone, CreditCard, Users, FileText, Briefcase, BarChart2, HelpCircle, MessageSquare, Bug, Lightbulb, ChevronRight, Star, Zap } from 'lucide-react';
+import { Search, BookOpen, Settings, Phone, CreditCard, Users, FileText, Briefcase, BarChart2, HelpCircle, MessageSquare, Bug, Lightbulb, ChevronRight, Star, Zap, Bot, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useHelpCategories, useFeaturedArticles, useHelpSearch, useLogArticleClick } from '@/hooks/useHelpCenter';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import ReactMarkdown from 'react-markdown';
 
 interface HelpHomeProps {
   onNavigateToArticle: (slug: string) => void;
@@ -39,18 +42,54 @@ const quickActions = [
 
 export function HelpHome({ onNavigateToArticle, onNavigateToCategory, onOpenChat, onOpenSupport }: HelpHomeProps) {
   const navigate = useNavigate();
+  const { profile } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearchResults, setShowSearchResults] = useState(false);
+  const [aiAnswer, setAiAnswer] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiSearched, setAiSearched] = useState(false);
   
   const { data: categories = [], isLoading: categoriesLoading } = useHelpCategories();
   const { data: featuredArticles = [], isLoading: featuredLoading } = useFeaturedArticles();
   const { data: searchResults = [], isLoading: searchLoading } = useHelpSearch(searchQuery);
   const logClick = useLogArticleClick();
 
+  // Auto-trigger AI when article search returns few/no results
+  useEffect(() => {
+    if (!showSearchResults || searchQuery.length < 3 || searchLoading) return;
+    if (searchResults.length <= 2 && !aiSearched && !aiLoading) {
+      fetchAIAnswer(searchQuery);
+    }
+  }, [searchResults, searchLoading, showSearchResults, searchQuery]);
+
+  const fetchAIAnswer = useCallback(async (query: string) => {
+    setAiLoading(true);
+    setAiSearched(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('help-chatbot', {
+        body: {
+          message: query,
+          userName: profile?.contact_name || 'Contractor',
+          companyName: profile?.company_name,
+          conversationHistory: [],
+        },
+      });
+      if (!error && data?.message) {
+        setAiAnswer(data.message);
+      }
+    } catch (e) {
+      console.error('AI search error:', e);
+    } finally {
+      setAiLoading(false);
+    }
+  }, [profile]);
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       setShowSearchResults(true);
+      setAiAnswer('');
+      setAiSearched(false);
     }
   };
 
@@ -59,6 +98,17 @@ export function HelpHome({ onNavigateToArticle, onNavigateToCategory, onOpenChat
     onNavigateToArticle(article.slug);
     setShowSearchResults(false);
     setSearchQuery('');
+    setAiAnswer('');
+    setAiSearched(false);
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    setShowSearchResults(value.length >= 2);
+    if (value.length < 2) {
+      setAiAnswer('');
+      setAiSearched(false);
+    }
   };
 
   const handleQuickAction = (action: typeof quickActions[0]) => {
@@ -91,58 +141,100 @@ export function HelpHome({ onNavigateToArticle, onNavigateToCategory, onOpenChat
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input
                 type="search"
-                placeholder="Search for help articles... (e.g., 'create estimate', 'connect bank')"
+                placeholder="Ask anything about CT1... (e.g., 'assign a lead', 'create estimate')"
                 value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setShowSearchResults(e.target.value.length >= 2);
-                }}
+                onChange={(e) => handleSearchChange(e.target.value)}
                 className="pl-12 pr-4 py-6 text-lg rounded-xl border-2 border-primary/20 focus:border-primary"
               />
             </div>
             
             {/* Search Results Dropdown */}
             {showSearchResults && searchQuery.length >= 2 && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-card border rounded-xl shadow-lg max-h-96 overflow-y-auto z-50">
+              <div className="absolute top-full left-0 right-0 mt-2 bg-card border rounded-xl shadow-lg max-h-[500px] overflow-y-auto z-50 text-left">
                 {searchLoading ? (
                   <div className="p-4 text-center text-muted-foreground">
                     Searching...
                   </div>
-                ) : searchResults.length === 0 ? (
-                  <div className="p-4 text-center">
-                    <p className="text-muted-foreground mb-2">No results found for "{searchQuery}"</p>
-                    <Button variant="outline" size="sm" onClick={onOpenChat}>
-                      <MessageSquare className="h-4 w-4 mr-2" />
-                      Ask our Help Bot
-                    </Button>
-                  </div>
                 ) : (
-                  <ul className="divide-y">
-                    {searchResults.map((article) => (
-                      <li key={article.id}>
-                        <button
-                          onClick={() => handleSearchResultClick(article)}
-                          className="w-full p-4 text-left hover:bg-muted/50 transition-colors flex items-start gap-3"
-                        >
-                          <BookOpen className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium truncate">{article.title}</p>
-                            {article.excerpt && (
-                              <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
-                                {article.excerpt}
-                              </p>
-                            )}
-                            {article.category && (
-                              <Badge variant="secondary" className="mt-2">
-                                {article.category.name}
-                              </Badge>
-                            )}
+                  <>
+                    {/* Article results */}
+                    {searchResults.length > 0 && (
+                      <ul className="divide-y">
+                        {searchResults.map((article) => (
+                          <li key={article.id}>
+                            <button
+                              onClick={() => handleSearchResultClick(article)}
+                              className="w-full p-4 text-left hover:bg-muted/50 transition-colors flex items-start gap-3"
+                            >
+                              <BookOpen className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium truncate">{article.title}</p>
+                                {article.excerpt && (
+                                  <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
+                                    {article.excerpt}
+                                  </p>
+                                )}
+                                {article.category && (
+                                  <Badge variant="secondary" className="mt-2">
+                                    {article.category.name}
+                                  </Badge>
+                                )}
+                              </div>
+                              <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+
+                    {/* AI Answer Section */}
+                    {(aiLoading || aiAnswer) && (
+                      <div className={cn("p-4 border-t", searchResults.length === 0 && "border-t-0")}>
+                        <div className="flex items-center gap-2 mb-3">
+                          <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center">
+                            <Bot className="h-3.5 w-3.5 text-primary" />
                           </div>
-                          <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
+                          <span className="text-sm font-semibold text-primary">AI Answer</span>
+                        </div>
+                        {aiLoading ? (
+                          <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            Finding the best answer for you...
+                          </div>
+                        ) : aiAnswer ? (
+                          <div className="prose prose-sm max-w-none text-sm">
+                            <ReactMarkdown>{aiAnswer}</ReactMarkdown>
+                          </div>
+                        ) : null}
+                      </div>
+                    )}
+
+                    {/* No results and no AI yet */}
+                    {searchResults.length === 0 && !aiLoading && !aiAnswer && (
+                      <div className="p-4 text-center">
+                        <p className="text-muted-foreground mb-3">No articles found for "{searchQuery}"</p>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => fetchAIAnswer(searchQuery)}
+                        >
+                          <Bot className="h-4 w-4 mr-2" />
+                          Ask AI for Help
+                        </Button>
+                      </div>
+                    )}
+
+                    {/* Chat link */}
+                    {(aiAnswer || searchResults.length > 0) && (
+                      <div className="p-3 border-t bg-muted/30 flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground">Need more help?</span>
+                        <Button variant="ghost" size="sm" className="text-xs h-7" onClick={onOpenChat}>
+                          <MessageSquare className="h-3.5 w-3.5 mr-1.5" />
+                          Continue in Chat
+                        </Button>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             )}
