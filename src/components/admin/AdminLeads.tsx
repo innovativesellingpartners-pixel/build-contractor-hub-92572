@@ -1,16 +1,24 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Search, Mail, Phone, MapPin, ExternalLink } from 'lucide-react';
+import { Search, Mail, Phone, MapPin, ExternalLink, UserPlus } from 'lucide-react';
 import { useState } from 'react';
 import { format } from 'date-fns';
 import { EditLeadDialog } from '@/components/contractor/EditLeadDialog';
 import { Lead, LeadSource } from '@/hooks/useLeads';
 import { toast } from 'sonner';
+import { SearchableSelect } from '@/components/ui/searchable-select';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
 
 export const AdminLeads = () => {
   const [searchTerm, setSearchTerm] = useState('');
