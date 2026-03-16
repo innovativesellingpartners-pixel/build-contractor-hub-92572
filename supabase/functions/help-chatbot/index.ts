@@ -281,7 +281,7 @@ ${articlesContext}${aiTopicContext}`;
       body: JSON.stringify({
         model: 'google/gemini-3-flash-preview',
         messages,
-        max_tokens: 800,
+        max_tokens: 1500,
         temperature: 0.7,
       }),
     });
