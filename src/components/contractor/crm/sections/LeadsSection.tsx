@@ -416,6 +416,12 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
                 >
                   <Edit className="h-4 w-4" />
                 </Button>
+                <AssignLeadButton 
+                  leadId={lead.id} 
+                  currentUserId={lead.user_id} 
+                  iconOnly 
+                  onAssigned={refreshLeads}
+                />
                 {!(lead as any).converted_at && (
                   <Button 
                     variant="ghost" 
