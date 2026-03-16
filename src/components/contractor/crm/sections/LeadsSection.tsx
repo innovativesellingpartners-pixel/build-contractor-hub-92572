@@ -404,6 +404,10 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
                 <RowMetaLine>
                   {lead.company && <span className="truncate max-w-[150px]">{lead.company}</span>}
                   {lead.project_type && <span className="truncate max-w-[120px]">{lead.project_type}</span>}
+                  {(() => {
+                    const name = getAssigneeName(lead.user_id);
+                    return name ? <span className="truncate max-w-[180px] text-primary font-medium">{name}</span> : null;
+                  })()}
                 </RowMetaLine>
               </RowContent>
 
