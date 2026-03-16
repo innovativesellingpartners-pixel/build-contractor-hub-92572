@@ -10,10 +10,9 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Lead, LeadSource, OTHER_SOURCE_ID } from '@/hooks/useLeads';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Briefcase, UserPlus } from 'lucide-react';
+import { Briefcase } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useAdminAuth } from '@/hooks/useAdminAuth';
-import { useQuery } from '@tanstack/react-query';
+import { AssignLeadButton } from './AssignLeadButton';
 
 interface EditLeadDialogProps {
   lead: Lead | null;
@@ -27,7 +26,6 @@ interface EditLeadDialogProps {
 
 export function EditLeadDialog({ lead, open, onOpenChange, onUpdate, onDelete, sources, onConvertToJob }: EditLeadDialogProps) {
   const { user } = useAuth();
-  const { isAdmin } = useAdminAuth();
   const [convertDialogOpen, setConvertDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -47,28 +45,6 @@ export function EditLeadDialog({ lead, open, onOpenChange, onUpdate, onDelete, s
   });
 
   const isOtherSource = formData.source_id === OTHER_SOURCE_ID;
-
-  // Fetch contractors for assignment (admin only)
-  const { data: contractors = [] } = useQuery({
-    queryKey: ['contractors-for-assignment'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('contractors')
-        .select('id, business_name, contractor_number')
-        .order('business_name');
-      if (error) throw error;
-      return data;
-    },
-    enabled: isAdmin,
-  });
-
-  const contractorOptions = contractors.map((c) => ({
-    value: c.id,
-    label: c.business_name,
-    description: c.contractor_number || undefined,
-  }));
-
-  const currentContractor = contractors.find(c => c.id === lead?.user_id);
 
   useEffect(() => {
     if (lead) {
@@ -240,37 +216,14 @@ export function EditLeadDialog({ lead, open, onOpenChange, onUpdate, onDelete, s
             )}
           </div>
 
-          {/* Assigned To - visible for admins */}
-          {isAdmin && (
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                <UserPlus className="h-4 w-4" />
-                Assigned to Contractor
-              </Label>
-              <SearchableSelect
-                value={lead?.user_id || ''}
-                onValueChange={async (contractorId) => {
-                  if (!lead) return;
-                  try {
-                    await onUpdate(lead.id, { user_id: contractorId } as any);
-                    const name = contractors.find(c => c.id === contractorId)?.business_name;
-                    toast.success(`Lead assigned to ${name}`);
-                  } catch (error) {
-                    toast.error('Failed to assign lead');
-                  }
-                }}
-                placeholder="Select a contractor..."
-                searchPlaceholder="Search contractors..."
-                emptyMessage="No contractors found."
-                options={contractorOptions}
-              />
-              {currentContractor && (
-                <p className="text-xs text-muted-foreground">
-                  Currently: {currentContractor.business_name} ({currentContractor.contractor_number})
-                </p>
-              )}
-            </div>
-          )}
+          {/* Assigned To */}
+          <div className="space-y-2">
+            <Label>Assigned to Contractor</Label>
+            <AssignLeadButton
+              leadId={lead.id}
+              currentUserId={lead.user_id}
+            />
+          </div>
           <div className="space-y-2">
             <Label htmlFor="edit-address">Address</Label>
             <LocationAutocomplete

@@ -7,12 +7,13 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
-import { FileText, Briefcase, ArrowRight, Phone, Plus, Pencil, Navigation, CalendarPlus, Copy } from 'lucide-react';
+import { FileText, Briefcase, ArrowRight, Phone, Plus, Pencil, Navigation, CalendarPlus, Copy, UserPlus } from 'lucide-react';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { PullToRefreshIndicator } from '@/components/ui/pull-to-refresh';
 import { ScheduleMeetingDialog } from '../ScheduleMeetingDialog';
 import { useQueryClient } from '@tanstack/react-query';
 import { AIScopeNotes } from '../AIScopeNotes';
+import { AssignLeadButton } from '../../AssignLeadButton';
 import {
   BlueBackground,
   SectionHeader,
@@ -266,6 +267,18 @@ export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSecti
               </ActionButton>
             )}
           </ActionButtonRow>
+
+          {/* Assigned To */}
+          <SectionHeader>ASSIGNED TO</SectionHeader>
+          <InfoCard className="rounded-none">
+            <div className="px-4 py-3">
+              <AssignLeadButton
+                leadId={lead.id}
+                currentUserId={lead.user_id}
+                onAssigned={() => refreshLeads()}
+              />
+            </div>
+          </InfoCard>
           {/* Converted Status */}
           {isConverted && linkedJob && (
           <>

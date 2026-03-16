@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { useLeads } from '@/hooks/useLeads';
 import { useCustomers } from '@/hooks/useCustomers';
 import { Button } from '@/components/ui/button';
-import { Plus, Phone, Mail, Edit, Users, TrendingUp, Upload, FileSpreadsheet, ChevronRight, DollarSign } from 'lucide-react';
+import { Plus, Phone, Mail, Edit, Users, TrendingUp, Upload, FileSpreadsheet, ChevronRight, DollarSign, UserPlus } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { AddLeadDialog } from '../../AddLeadDialog';
 import { EditLeadDialog } from '../../EditLeadDialog';
@@ -16,6 +16,7 @@ import { LeadDetailViewBlue } from './LeadDetailViewBlue';
 import { PredictiveSearch } from '../PredictiveSearch';
 import { SwipeToArchive } from '@/components/ui/swipe-to-archive';
 import { CrmNavHeader } from '../CrmNavHeader';
+import { AssignLeadButton } from '../../AssignLeadButton';
 
 interface LeadsSectionProps {
   onSectionChange?: (section: string) => void;
@@ -415,6 +416,12 @@ export default function LeadsSection({ onSectionChange }: LeadsSectionProps) {
                 >
                   <Edit className="h-4 w-4" />
                 </Button>
+                <AssignLeadButton 
+                  leadId={lead.id} 
+                  currentUserId={lead.user_id} 
+                  iconOnly 
+                  onAssigned={refreshLeads}
+                />
                 {!(lead as any).converted_at && (
                   <Button 
                     variant="ghost" 
