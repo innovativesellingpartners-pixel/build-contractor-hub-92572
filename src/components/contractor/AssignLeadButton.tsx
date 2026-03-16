@@ -38,6 +38,36 @@ export function AssignLeadButton({ leadId, currentUserId, iconOnly = false, onAs
     enabled: isAdmin && open,
   });
 
+  // Check if the current assignee is an admin (not found in contractors)
+  const { data: assigneeRole } = useQuery({
+    queryKey: ['assignee-role', currentUserId],
+    queryFn: async () => {
+      if (!currentUserId) return null;
+      const { data } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', currentUserId)
+        .maybeSingle();
+      return data?.role || null;
+    },
+    enabled: !!currentUserId,
+  });
+
+  // Get the admin's profile name if assignee is admin
+  const { data: assigneeProfile } = useQuery({
+    queryKey: ['assignee-profile', currentUserId],
+    queryFn: async () => {
+      if (!currentUserId) return null;
+      const { data } = await supabase
+        .from('profiles')
+        .select('contact_name, company_name')
+        .eq('id', currentUserId)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!currentUserId,
+  });
+
   const contractorOptions = contractors.map((c) => ({
     value: c.id,
     label: c.business_name,
@@ -45,6 +75,13 @@ export function AssignLeadButton({ leadId, currentUserId, iconOnly = false, onAs
   }));
 
   const currentContractor = contractors.find(c => c.id === currentUserId);
+  const isAssigneeAdmin = !currentContractor && (assigneeRole === 'admin' || assigneeRole === 'super_admin');
+  
+  const assigneeDisplayName = currentContractor 
+    ? currentContractor.business_name 
+    : isAssigneeAdmin 
+      ? (assigneeProfile?.contact_name || assigneeProfile?.company_name || 'Admin')
+      : null;
 
   if (!isAdmin) return null;
 
