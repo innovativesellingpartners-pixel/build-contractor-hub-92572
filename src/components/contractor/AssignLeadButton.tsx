@@ -182,7 +182,7 @@ export function AssignLeadButton({ leadId, currentUserId, iconOnly = false, onAs
               <p className="text-sm text-muted-foreground">
                 Currently assigned to: <span className="font-medium text-foreground">{assigneeDisplayName}</span>
                 {isAssigneeAdmin && <Badge variant="secondary" className="ml-2 text-xs">Admin</Badge>}
-                {currentContractor?.contractor_number && ` (${currentContractor.contractor_number})`}
+                {currentUser?.contractorNumber && ` (${currentUser.contractorNumber})`}
               </p>
             )}
             <SearchableSelect
