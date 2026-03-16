@@ -24,7 +24,48 @@ export const AdminLeads = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [assignDialogOpen, setAssignDialogOpen] = useState(false);
+  const [assignLeadId, setAssignLeadId] = useState<string | null>(null);
+  const [selectedContractorId, setSelectedContractorId] = useState<string>('');
   const queryClient = useQueryClient();
+
+  const { data: contractors = [] } = useQuery({
+    queryKey: ['adminContractors'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('contractors')
+        .select('id, business_name, contractor_number')
+        .order('business_name');
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const contractorOptions = contractors.map((c) => ({
+    value: c.id,
+    label: c.business_name,
+    description: c.contractor_number || undefined,
+  }));
+
+  const assignMutation = useMutation({
+    mutationFn: async ({ leadId, contractorId }: { leadId: string; contractorId: string }) => {
+      const { error } = await supabase
+        .from('leads')
+        .update({ user_id: contractorId })
+        .eq('id', leadId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success('Lead assigned to contractor');
+      queryClient.invalidateQueries({ queryKey: ['adminLeads'] });
+      setAssignDialogOpen(false);
+      setAssignLeadId(null);
+      setSelectedContractorId('');
+    },
+    onError: () => {
+      toast.error('Failed to assign lead');
+    },
+  });
 
   const { data: leads, isLoading } = useQuery({
     queryKey: ['adminLeads'],
