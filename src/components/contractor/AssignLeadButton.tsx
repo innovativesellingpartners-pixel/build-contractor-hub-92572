@@ -106,20 +106,47 @@ export function AssignLeadButton({ leadId, currentUserId, iconOnly = false, onAs
     enabled: !!currentUserId,
   });
 
-  // Build options from all users
-  const allOptions = allUsers.map(u => ({
-    value: u.id,
-    label: u.isAdmin ? `${u.displayName} (Admin)` : u.displayName,
-    description: u.isAdmin
-      ? (u.role === 'super_admin' ? 'Super Admin' : 'Admin')
-      : ([u.businessName, u.contractorNumber].filter(Boolean).join(' • ') || 'User'),
-  }));
+  // Build options from all users (searchable by any meaningful user field)
+  const allOptions = allUsers.map((u) => {
+    const label = u.isAdmin
+      ? `${u.displayName} (Admin)`
+      : (u.contractorBusinessName && u.contractorBusinessName !== 'My Business'
+          ? u.contractorBusinessName
+          : u.displayName);
 
-  const currentUser = allUsers.find(u => u.id === currentUserId);
+    const detailParts = [
+      u.contactName,
+      u.profileCompanyName,
+      u.contractorBusinessName,
+      u.contractorNumber,
+    ].filter(Boolean);
+
+    return {
+      value: u.id,
+      label,
+      description: u.isAdmin
+        ? (u.role === 'super_admin' ? 'Super Admin' : 'Admin')
+        : (detailParts.join(' • ') || 'User'),
+      searchTerms: [
+        u.displayName,
+        u.contactName,
+        u.profileCompanyName,
+        u.contractorBusinessName,
+        u.contractorNumber,
+        u.role,
+      ].filter(Boolean),
+    };
+  });
+
+  const currentUser = allUsers.find((u) => u.id === currentUserId);
   const isAssigneeAdmin = currentUser?.isAdmin || false;
-  
-  const assigneeDisplayName = currentUser 
-    ? (currentUser.isAdmin ? currentUser.displayName : (currentUser.businessName || currentUser.displayName))
+
+  const assigneeDisplayName = currentUser
+    ? (currentUser.isAdmin
+      ? currentUser.displayName
+      : (currentUser.contractorBusinessName && currentUser.contractorBusinessName !== 'My Business'
+          ? currentUser.contractorBusinessName
+          : currentUser.displayName))
     : null;
 
   if (!isAdmin) return null;
