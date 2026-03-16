@@ -99,30 +99,21 @@ export function AssignLeadButton({ leadId, currentUserId, iconOnly = false, onAs
     enabled: !!currentUserId,
   });
 
-  // Build combined options: contractors + admin users (deduped)
-  const contractorIds = new Set(contractors.map(c => c.id));
-  const contractorOptions = contractors.map((c) => ({
-    value: c.id,
-    label: c.business_name,
-    description: c.contractor_number || undefined,
+  // Build options from all users
+  const allOptions = allUsers.map(u => ({
+    value: u.id,
+    label: u.isAdmin ? `${u.displayName} (Admin)` : (u.businessName || u.displayName),
+    description: u.isAdmin 
+      ? (u.role === 'super_admin' ? 'Super Admin' : 'Admin')
+      : (u.contractorNumber || undefined),
   }));
-  const adminOptions = adminProfiles
-    .filter(a => !contractorIds.has(a.user_id)) // exclude admins who are also contractors
-    .map(a => ({
-      value: a.user_id,
-      label: `${a.name} (Admin)`,
-      description: a.role === 'super_admin' ? 'Super Admin' : 'Admin',
-    }));
-  const allOptions = [...contractorOptions, ...adminOptions];
 
-  const currentContractor = contractors.find(c => c.id === currentUserId);
-  const isAssigneeAdmin = !currentContractor && (assigneeRole === 'admin' || assigneeRole === 'super_admin');
+  const currentUser = allUsers.find(u => u.id === currentUserId);
+  const isAssigneeAdmin = currentUser?.isAdmin || false;
   
-  const assigneeDisplayName = currentContractor 
-    ? currentContractor.business_name 
-    : isAssigneeAdmin 
-      ? (assigneeProfile?.contact_name || assigneeProfile?.company_name || 'Admin')
-      : null;
+  const assigneeDisplayName = currentUser 
+    ? (currentUser.isAdmin ? currentUser.displayName : (currentUser.businessName || currentUser.displayName))
+    : null;
 
   if (!isAdmin) return null;
 
