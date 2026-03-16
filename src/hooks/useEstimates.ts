@@ -245,6 +245,9 @@ export function useEstimates() {
           client_printed_name: estimate.client_printed_name,
           client_acceptance_date: estimate.client_acceptance_date,
           
+          // Public token for sharing
+          public_token: crypto.randomUUID(),
+          
           // Legacy fields
           trade_type: estimate.trade_type,
           project_description: estimate.project_description,

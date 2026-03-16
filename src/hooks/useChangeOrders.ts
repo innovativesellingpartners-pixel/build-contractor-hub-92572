@@ -109,6 +109,7 @@ export function useChangeOrders(jobId?: string) {
         total_amount: totalAmount,
         additional_cost: totalAmount,
         line_items: (changeOrder.line_items || []) as unknown as Json,
+        public_token: crypto.randomUUID(),
       };
 
       const { data, error } = await supabase
