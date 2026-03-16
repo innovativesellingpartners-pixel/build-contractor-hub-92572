@@ -41,6 +41,29 @@ export const AdminLeads = () => {
     },
   });
 
+  // Fetch admin user roles and profiles to identify admin-assigned leads
+  const { data: adminUsers = [] } = useQuery({
+    queryKey: ['adminUsersForLeads'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('user_id, role')
+        .in('role', ['admin', 'super_admin']);
+      if (error) throw error;
+      // Fetch profiles for these admin users
+      const userIds = data.map(r => r.user_id);
+      if (userIds.length === 0) return [];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, contact_name, company_name')
+        .in('id', userIds);
+      return (data || []).map(r => ({
+        ...r,
+        profile: profiles?.find(p => p.id === r.user_id),
+      }));
+    },
+  });
+
   const contractorOptions = contractors.map((c) => ({
     value: c.id,
     label: c.business_name,
