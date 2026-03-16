@@ -306,6 +306,39 @@ export const AdminLeads = () => {
           queryClient.invalidateQueries({ queryKey: ['adminLeads'] });
         }}
       />
+
+      <Dialog open={assignDialogOpen} onOpenChange={setAssignDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Assign Lead to Contractor</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <SearchableSelect
+              options={contractorOptions}
+              value={selectedContractorId}
+              onValueChange={setSelectedContractorId}
+              placeholder="Select a contractor..."
+              searchPlaceholder="Search contractors..."
+              emptyMessage="No contractors found."
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAssignDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              disabled={!selectedContractorId || assignMutation.isPending}
+              onClick={() => {
+                if (assignLeadId && selectedContractorId) {
+                  assignMutation.mutate({ leadId: assignLeadId, contractorId: selectedContractorId });
+                }
+              }}
+            >
+              {assignMutation.isPending ? 'Assigning...' : 'Assign'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
