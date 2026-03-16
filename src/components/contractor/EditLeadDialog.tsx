@@ -216,37 +216,14 @@ export function EditLeadDialog({ lead, open, onOpenChange, onUpdate, onDelete, s
             )}
           </div>
 
-          {/* Assigned To - visible for admins */}
-          {isAdmin && (
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                <UserPlus className="h-4 w-4" />
-                Assigned to Contractor
-              </Label>
-              <SearchableSelect
-                value={lead?.user_id || ''}
-                onValueChange={async (contractorId) => {
-                  if (!lead) return;
-                  try {
-                    await onUpdate(lead.id, { user_id: contractorId } as any);
-                    const name = contractors.find(c => c.id === contractorId)?.business_name;
-                    toast.success(`Lead assigned to ${name}`);
-                  } catch (error) {
-                    toast.error('Failed to assign lead');
-                  }
-                }}
-                placeholder="Select a contractor..."
-                searchPlaceholder="Search contractors..."
-                emptyMessage="No contractors found."
-                options={contractorOptions}
-              />
-              {currentContractor && (
-                <p className="text-xs text-muted-foreground">
-                  Currently: {currentContractor.business_name} ({currentContractor.contractor_number})
-                </p>
-              )}
-            </div>
-          )}
+          {/* Assigned To */}
+          <div className="space-y-2">
+            <Label>Assigned to Contractor</Label>
+            <AssignLeadButton
+              leadId={lead.id}
+              currentUserId={lead.user_id}
+            />
+          </div>
           <div className="space-y-2">
             <Label htmlFor="edit-address">Address</Label>
             <LocationAutocomplete
