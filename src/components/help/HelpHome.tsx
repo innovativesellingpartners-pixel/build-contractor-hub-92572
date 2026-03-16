@@ -125,32 +125,23 @@ export function HelpHome({ onNavigateToArticle, onNavigateToCategory, onOpenChat
 
   return (
     <div className="space-y-8">
-      {/* Hero Section with Search */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-background border border-primary/20 p-8 md:p-12">
-        <div className="absolute inset-0 bg-grid-pattern opacity-5" />
-        <div className="relative z-10 max-w-2xl mx-auto text-center">
-          <h1 className="text-3xl md:text-4xl font-bold mb-4">
-            How can we help you?
-          </h1>
-          <p className="text-muted-foreground mb-6">
-            Search our knowledge base or browse categories below
-          </p>
+      {/* Search Bar - Outside hero to prevent overflow clipping */}
+      <div className="relative z-20 max-w-2xl mx-auto">
+        <form onSubmit={handleSearch} className="relative">
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Ask anything about CT1... (e.g., 'assign a lead', 'create estimate')"
+              value={searchQuery}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className="pl-12 pr-4 py-6 text-lg rounded-xl border-2 border-border focus:border-primary shadow-sm"
+            />
+          </div>
           
-          <form onSubmit={handleSearch} className="relative">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Ask anything about CT1... (e.g., 'assign a lead', 'create estimate')"
-                value={searchQuery}
-                onChange={(e) => handleSearchChange(e.target.value)}
-                className="pl-12 pr-4 py-6 text-lg rounded-xl border-2 border-primary/20 focus:border-primary"
-              />
-            </div>
-            
-            {/* Search Results Dropdown */}
-            {showSearchResults && searchQuery.length >= 2 && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-card border rounded-xl shadow-lg max-h-[500px] overflow-y-auto z-50 text-left">
+          {/* Search Results Dropdown */}
+          {showSearchResults && searchQuery.length >= 2 && (
+            <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-xl shadow-xl max-h-[500px] overflow-y-auto z-50 text-left">
                 {searchLoading ? (
                   <div className="p-4 text-center text-muted-foreground">
                     Searching...
