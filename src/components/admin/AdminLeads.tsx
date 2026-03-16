@@ -1,22 +1,71 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Search, Mail, Phone, MapPin, ExternalLink } from 'lucide-react';
+import { Search, Mail, Phone, MapPin, ExternalLink, UserPlus } from 'lucide-react';
 import { useState } from 'react';
 import { format } from 'date-fns';
 import { EditLeadDialog } from '@/components/contractor/EditLeadDialog';
 import { Lead, LeadSource } from '@/hooks/useLeads';
 import { toast } from 'sonner';
+import { SearchableSelect } from '@/components/ui/searchable-select';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
 
 export const AdminLeads = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [assignDialogOpen, setAssignDialogOpen] = useState(false);
+  const [assignLeadId, setAssignLeadId] = useState<string | null>(null);
+  const [selectedContractorId, setSelectedContractorId] = useState<string>('');
   const queryClient = useQueryClient();
+
+  const { data: contractors = [] } = useQuery({
+    queryKey: ['adminContractors'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('contractors')
+        .select('id, business_name, contractor_number')
+        .order('business_name');
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const contractorOptions = contractors.map((c) => ({
+    value: c.id,
+    label: c.business_name,
+    description: c.contractor_number || undefined,
+  }));
+
+  const assignMutation = useMutation({
+    mutationFn: async ({ leadId, contractorId }: { leadId: string; contractorId: string }) => {
+      const { error } = await supabase
+        .from('leads')
+        .update({ user_id: contractorId })
+        .eq('id', leadId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success('Lead assigned to contractor');
+      queryClient.invalidateQueries({ queryKey: ['adminLeads'] });
+      setAssignDialogOpen(false);
+      setAssignLeadId(null);
+      setSelectedContractorId('');
+    },
+    onError: () => {
+      toast.error('Failed to assign lead');
+    },
+  });
 
   const { data: leads, isLoading } = useQuery({
     queryKey: ['adminLeads'],
@@ -169,7 +218,7 @@ export const AdminLeads = () => {
                   </TableCell>
                   <TableCell>
                     <div className="text-sm">
-                      {(lead.profiles as any)?.company_name || (lead.profiles as any)?.contact_name || 'Unknown'}
+                      {contractors.find(c => c.id === lead.user_id)?.business_name || (lead.profiles as any)?.company_name || 'Unassigned'}
                     </div>
                   </TableCell>
                   <TableCell>
@@ -206,16 +255,31 @@ export const AdminLeads = () => {
                     {format(new Date(lead.created_at), 'MMM d, yyyy')}
                   </TableCell>
                   <TableCell>
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleRowClick(lead);
-                      }}
-                    >
-                      <ExternalLink className="h-4 w-4" />
-                    </Button>
+                    <div className="flex items-center gap-1">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        title="Assign to Contractor"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setAssignLeadId(lead.id);
+                          setSelectedContractorId(lead.user_id || '');
+                          setAssignDialogOpen(true);
+                        }}
+                      >
+                        <UserPlus className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRowClick(lead);
+                        }}
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -242,6 +306,39 @@ export const AdminLeads = () => {
           queryClient.invalidateQueries({ queryKey: ['adminLeads'] });
         }}
       />
+
+      <Dialog open={assignDialogOpen} onOpenChange={setAssignDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Assign Lead to Contractor</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <SearchableSelect
+              options={contractorOptions}
+              value={selectedContractorId}
+              onValueChange={setSelectedContractorId}
+              placeholder="Select a contractor..."
+              searchPlaceholder="Search contractors..."
+              emptyMessage="No contractors found."
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAssignDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              disabled={!selectedContractorId || assignMutation.isPending}
+              onClick={() => {
+                if (assignLeadId && selectedContractorId) {
+                  assignMutation.mutate({ leadId: assignLeadId, contractorId: selectedContractorId });
+                }
+              }}
+            >
+              {assignMutation.isPending ? 'Assigning...' : 'Assign'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
