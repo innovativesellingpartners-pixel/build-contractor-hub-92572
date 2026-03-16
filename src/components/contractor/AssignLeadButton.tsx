@@ -102,10 +102,10 @@ export function AssignLeadButton({ leadId, currentUserId, iconOnly = false, onAs
   // Build options from all users
   const allOptions = allUsers.map(u => ({
     value: u.id,
-    label: u.isAdmin ? `${u.displayName} (Admin)` : (u.businessName || u.displayName),
-    description: u.isAdmin 
+    label: u.isAdmin ? `${u.displayName} (Admin)` : u.displayName,
+    description: u.isAdmin
       ? (u.role === 'super_admin' ? 'Super Admin' : 'Admin')
-      : (u.contractorNumber || undefined),
+      : ([u.businessName, u.contractorNumber].filter(Boolean).join(' • ') || 'User'),
   }));
 
   const currentUser = allUsers.find(u => u.id === currentUserId);
