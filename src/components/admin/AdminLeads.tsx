@@ -217,9 +217,17 @@ export const AdminLeads = () => {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="text-sm">
-                      {contractors.find(c => c.id === lead.user_id)?.business_name || (lead.profiles as any)?.company_name || 'Unassigned'}
-                    </div>
+                    {(() => {
+                      const contractor = contractors.find(c => c.id === lead.user_id);
+                      return contractor ? (
+                        <div>
+                          <div className="text-sm font-medium">{contractor.business_name}</div>
+                          <div className="text-xs text-muted-foreground">{contractor.contractor_number}</div>
+                        </div>
+                      ) : (
+                        <Badge variant="outline" className="text-xs text-muted-foreground">Unassigned</Badge>
+                      );
+                    })()}
                   </TableCell>
                   <TableCell>
                     <div className="space-y-1 text-sm">
