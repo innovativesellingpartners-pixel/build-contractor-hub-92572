@@ -132,7 +132,7 @@ export function AssignLeadButton({ leadId, currentUserId, iconOnly = false, onAs
         .eq('id', leadId);
       if (error) throw error;
 
-      const name = contractors.find(c => c.id === selectedContractorId)?.business_name;
+      const name = allOptions.find(o => o.value === selectedContractorId)?.label;
       toast.success(`Lead assigned to ${name}`);
       queryClient.invalidateQueries({ queryKey: ['leads'] });
       queryClient.invalidateQueries({ queryKey: ['adminLeads'] });
