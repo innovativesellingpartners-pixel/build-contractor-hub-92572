@@ -7,7 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
-import { FileText, Briefcase, ArrowRight, Phone, Plus, Pencil, Navigation, CalendarPlus, Copy } from 'lucide-react';
+import { FileText, Briefcase, ArrowRight, Phone, Plus, Pencil, Navigation, CalendarPlus, Copy, UserPlus } from 'lucide-react';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { PullToRefreshIndicator } from '@/components/ui/pull-to-refresh';
 import { ScheduleMeetingDialog } from '../ScheduleMeetingDialog';
