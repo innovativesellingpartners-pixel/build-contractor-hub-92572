@@ -218,7 +218,7 @@ export const AdminLeads = () => {
                   </TableCell>
                   <TableCell>
                     <div className="text-sm">
-                      {(lead.profiles as any)?.company_name || (lead.profiles as any)?.contact_name || 'Unknown'}
+                      {contractors.find(c => c.id === lead.user_id)?.business_name || (lead.profiles as any)?.company_name || 'Unassigned'}
                     </div>
                   </TableCell>
                   <TableCell>
