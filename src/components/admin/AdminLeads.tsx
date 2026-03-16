@@ -255,16 +255,31 @@ export const AdminLeads = () => {
                     {format(new Date(lead.created_at), 'MMM d, yyyy')}
                   </TableCell>
                   <TableCell>
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleRowClick(lead);
-                      }}
-                    >
-                      <ExternalLink className="h-4 w-4" />
-                    </Button>
+                    <div className="flex items-center gap-1">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        title="Assign to Contractor"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setAssignLeadId(lead.id);
+                          setSelectedContractorId(lead.user_id || '');
+                          setAssignDialogOpen(true);
+                        }}
+                      >
+                        <UserPlus className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRowClick(lead);
+                        }}
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
