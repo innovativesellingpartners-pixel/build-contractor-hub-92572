@@ -39,6 +39,32 @@ export function AssignLeadButton({ leadId, currentUserId, iconOnly = false, onAs
     enabled: isAdmin && open,
   });
 
+  // Fetch admin users so they appear in the dropdown too
+  const { data: adminProfiles = [] } = useQuery({
+    queryKey: ['admin-profiles-for-assignment'],
+    queryFn: async () => {
+      const { data: roles, error } = await supabase
+        .from('user_roles')
+        .select('user_id, role')
+        .in('role', ['admin', 'super_admin']);
+      if (error) throw error;
+      if (!roles || roles.length === 0) return [];
+      const userIds = roles.map(r => r.user_id);
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, contact_name, company_name')
+        .in('id', userIds);
+      return (roles || []).map(r => ({
+        user_id: r.user_id,
+        role: r.role,
+        name: profiles?.find(p => p.id === r.user_id)?.contact_name 
+          || profiles?.find(p => p.id === r.user_id)?.company_name 
+          || 'Admin',
+      }));
+    },
+    enabled: isAdmin && open,
+  });
+
   // Check if the current assignee is an admin (not found in contractors)
   const { data: assigneeRole } = useQuery({
     queryKey: ['assignee-role', currentUserId],
@@ -69,11 +95,21 @@ export function AssignLeadButton({ leadId, currentUserId, iconOnly = false, onAs
     enabled: !!currentUserId,
   });
 
+  // Build combined options: contractors + admin users (deduped)
+  const contractorIds = new Set(contractors.map(c => c.id));
   const contractorOptions = contractors.map((c) => ({
     value: c.id,
     label: c.business_name,
     description: c.contractor_number || undefined,
   }));
+  const adminOptions = adminProfiles
+    .filter(a => !contractorIds.has(a.user_id)) // exclude admins who are also contractors
+    .map(a => ({
+      value: a.user_id,
+      label: `${a.name} (Admin)`,
+      description: a.role === 'super_admin' ? 'Super Admin' : 'Admin',
+    }));
+  const allOptions = [...contractorOptions, ...adminOptions];
 
   const currentContractor = contractors.find(c => c.id === currentUserId);
   const isAssigneeAdmin = !currentContractor && (assigneeRole === 'admin' || assigneeRole === 'super_admin');
