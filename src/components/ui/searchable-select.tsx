@@ -72,7 +72,7 @@ export function SearchableSelect({
               {options.map((option) => (
                 <CommandItem
                   key={option.value}
-                  value={option.label}
+                  value={`${option.label} ${option.description ?? ''} ${option.value}`.trim()}
                   onSelect={() => {
                     onValueChange(option.value);
                     setOpen(false);
