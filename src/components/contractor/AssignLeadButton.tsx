@@ -136,7 +136,7 @@ export function AssignLeadButton({ leadId, currentUserId, iconOnly = false, onAs
           }}
         >
           <UserPlus className="h-4 w-4" />
-          {currentContractor ? `Assigned: ${currentContractor.business_name}` : 'Assign'}
+          {assigneeDisplayName ? `Assigned: ${assigneeDisplayName}${isAssigneeAdmin ? ' (Admin)' : ''}` : 'Assign'}
         </Button>
       )}
 
