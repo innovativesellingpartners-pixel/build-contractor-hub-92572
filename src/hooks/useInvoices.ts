@@ -58,7 +58,7 @@ export function useInvoices(jobId?: string) {
 
       const { data, error } = await supabase
         .from('invoices')
-        .insert([{ ...invoice, user_id: user.id }])
+        .insert([{ ...invoice, user_id: user.id, public_token: crypto.randomUUID() }])
         .select()
         .single();
 
