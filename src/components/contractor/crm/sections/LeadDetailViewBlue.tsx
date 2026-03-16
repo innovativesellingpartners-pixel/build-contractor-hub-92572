@@ -267,6 +267,18 @@ export function LeadDetailViewBlue({ lead, onConvertToCustomer, onClose, onSecti
               </ActionButton>
             )}
           </ActionButtonRow>
+
+          {/* Assigned To */}
+          <SectionHeader>ASSIGNED TO</SectionHeader>
+          <InfoCard className="rounded-none">
+            <div className="px-4 py-3">
+              <AssignLeadButton
+                leadId={lead.id}
+                currentUserId={lead.user_id}
+                onAssigned={() => refreshLeads()}
+              />
+            </div>
+          </InfoCard>
           {/* Converted Status */}
           {isConverted && linkedJob && (
           <>
