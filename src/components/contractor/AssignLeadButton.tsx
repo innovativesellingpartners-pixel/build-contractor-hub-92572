@@ -146,9 +146,11 @@ export function AssignLeadButton({ leadId, currentUserId, iconOnly = false, onAs
             <DialogTitle>Assign Lead to Contractor</DialogTitle>
           </DialogHeader>
           <div className="py-4 space-y-3">
-            {currentContractor && (
+            {assigneeDisplayName && (
               <p className="text-sm text-muted-foreground">
-                Currently assigned to: <span className="font-medium text-foreground">{currentContractor.business_name}</span> ({currentContractor.contractor_number})
+                Currently assigned to: <span className="font-medium text-foreground">{assigneeDisplayName}</span>
+                {isAssigneeAdmin && <Badge variant="secondary" className="ml-2 text-xs">Admin</Badge>}
+                {currentContractor?.contractor_number && ` (${currentContractor.contractor_number})`}
               </p>
             )}
             <SearchableSelect
