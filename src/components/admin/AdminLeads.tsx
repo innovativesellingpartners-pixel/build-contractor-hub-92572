@@ -242,14 +242,24 @@ export const AdminLeads = () => {
                   <TableCell>
                     {(() => {
                       const contractor = contractors.find(c => c.id === lead.user_id);
-                      return contractor ? (
-                        <div>
-                          <div className="text-sm font-medium">{contractor.business_name}</div>
-                          <div className="text-xs text-muted-foreground">{contractor.contractor_number}</div>
-                        </div>
-                      ) : (
-                        <Badge variant="outline" className="text-xs text-muted-foreground">Unassigned</Badge>
-                      );
+                      const adminUser = !contractor ? adminUsers.find(a => a.user_id === lead.user_id) : null;
+                      if (contractor) {
+                        return (
+                          <div>
+                            <div className="text-sm font-medium">{contractor.business_name}</div>
+                            <div className="text-xs text-muted-foreground">{contractor.contractor_number}</div>
+                          </div>
+                        );
+                      } else if (adminUser) {
+                        return (
+                          <div>
+                            <div className="text-sm font-medium">{adminUser.profile?.contact_name || adminUser.profile?.company_name || 'Admin'}</div>
+                            <Badge variant="secondary" className="text-xs mt-0.5">Admin</Badge>
+                          </div>
+                        );
+                      } else {
+                        return <Badge variant="outline" className="text-xs text-muted-foreground">Unassigned</Badge>;
+                      }
                     })()}
                   </TableCell>
                   <TableCell>
