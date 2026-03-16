@@ -191,12 +191,12 @@ export function AssignLeadButton({ leadId, currentUserId, iconOnly = false, onAs
               </p>
             )}
             <SearchableSelect
-              options={contractorOptions}
+              options={allOptions}
               value={selectedContractorId}
               onValueChange={setSelectedContractorId}
-              placeholder="Search for a contractor..."
-              searchPlaceholder="Type contractor name or number..."
-              emptyMessage="No contractors found."
+              placeholder="Search for a user or contractor..."
+              searchPlaceholder="Type name or number..."
+              emptyMessage="No users found."
             />
           </div>
           <DialogFooter>
