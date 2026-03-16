@@ -26,7 +26,6 @@ interface EditLeadDialogProps {
 
 export function EditLeadDialog({ lead, open, onOpenChange, onUpdate, onDelete, sources, onConvertToJob }: EditLeadDialogProps) {
   const { user } = useAuth();
-  const { isAdmin } = useAdminAuth();
   const [convertDialogOpen, setConvertDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -46,28 +45,6 @@ export function EditLeadDialog({ lead, open, onOpenChange, onUpdate, onDelete, s
   });
 
   const isOtherSource = formData.source_id === OTHER_SOURCE_ID;
-
-  // Fetch contractors for assignment (admin only)
-  const { data: contractors = [] } = useQuery({
-    queryKey: ['contractors-for-assignment'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('contractors')
-        .select('id, business_name, contractor_number')
-        .order('business_name');
-      if (error) throw error;
-      return data;
-    },
-    enabled: isAdmin,
-  });
-
-  const contractorOptions = contractors.map((c) => ({
-    value: c.id,
-    label: c.business_name,
-    description: c.contractor_number || undefined,
-  }));
-
-  const currentContractor = contractors.find(c => c.id === lead?.user_id);
 
   useEffect(() => {
     if (lead) {
