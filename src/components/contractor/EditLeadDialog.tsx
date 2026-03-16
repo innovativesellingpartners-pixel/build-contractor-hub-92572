@@ -10,10 +10,9 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Lead, LeadSource, OTHER_SOURCE_ID } from '@/hooks/useLeads';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Briefcase, UserPlus } from 'lucide-react';
+import { Briefcase } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useAdminAuth } from '@/hooks/useAdminAuth';
-import { useQuery } from '@tanstack/react-query';
+import { AssignLeadButton } from './AssignLeadButton';
 
 interface EditLeadDialogProps {
   lead: Lead | null;
