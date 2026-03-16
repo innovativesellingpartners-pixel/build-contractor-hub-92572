@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { useLeads } from '@/hooks/useLeads';
 import { useCustomers } from '@/hooks/useCustomers';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Plus, Phone, Mail, Edit, Users, TrendingUp, Upload, FileSpreadsheet, ChevronRight, DollarSign, UserPlus } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
