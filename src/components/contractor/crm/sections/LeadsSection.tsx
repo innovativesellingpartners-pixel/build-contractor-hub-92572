@@ -16,6 +16,7 @@ import { LeadDetailViewBlue } from './LeadDetailViewBlue';
 import { PredictiveSearch } from '../PredictiveSearch';
 import { SwipeToArchive } from '@/components/ui/swipe-to-archive';
 import { CrmNavHeader } from '../CrmNavHeader';
+import { AssignLeadButton } from '../../AssignLeadButton';
 
 interface LeadsSectionProps {
   onSectionChange?: (section: string) => void;

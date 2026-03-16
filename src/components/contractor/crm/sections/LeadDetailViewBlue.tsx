@@ -13,6 +13,7 @@ import { PullToRefreshIndicator } from '@/components/ui/pull-to-refresh';
 import { ScheduleMeetingDialog } from '../ScheduleMeetingDialog';
 import { useQueryClient } from '@tanstack/react-query';
 import { AIScopeNotes } from '../AIScopeNotes';
+import { AssignLeadButton } from '../../AssignLeadButton';
 import {
   BlueBackground,
   SectionHeader,
