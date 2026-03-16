@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { useLeads } from '@/hooks/useLeads';
 import { useCustomers } from '@/hooks/useCustomers';
 import { Button } from '@/components/ui/button';
-import { Plus, Phone, Mail, Edit, Users, TrendingUp, Upload, FileSpreadsheet, ChevronRight, DollarSign } from 'lucide-react';
+import { Plus, Phone, Mail, Edit, Users, TrendingUp, Upload, FileSpreadsheet, ChevronRight, DollarSign, UserPlus } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { AddLeadDialog } from '../../AddLeadDialog';
 import { EditLeadDialog } from '../../EditLeadDialog';
