@@ -27,6 +27,7 @@ interface EditLeadDialogProps {
 
 export function EditLeadDialog({ lead, open, onOpenChange, onUpdate, onDelete, sources, onConvertToJob }: EditLeadDialogProps) {
   const { user } = useAuth();
+  const { isAdmin } = useAdminAuth();
   const [convertDialogOpen, setConvertDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
