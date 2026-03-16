@@ -20,6 +20,7 @@ export interface SearchableSelectOption {
   value: string;
   label: string;
   description?: string;
+  searchTerms?: string[];
 }
 
 interface SearchableSelectProps {

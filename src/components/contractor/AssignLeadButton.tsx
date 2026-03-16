@@ -51,15 +51,22 @@ export function AssignLeadButton({ leadId, currentUserId, iconOnly = false, onAs
       const roleMap = new Map((roles || []).map(r => [r.user_id, r.role]));
       const contractorMap = new Map((contractors || []).map(c => [c.id, c]));
 
-      return (profiles || []).map(p => {
+      return (profiles || []).map((p) => {
         const role = roleMap.get(p.id);
         const contractor = contractorMap.get(p.id);
         const isAdminUser = role === 'admin' || role === 'super_admin';
-        const displayName = p.contact_name || contractor?.business_name || p.company_name || 'Unknown User';
+
+        const contactName = p.contact_name?.trim() || null;
+        const profileCompanyName = p.company_name?.trim() || null;
+        const contractorBusinessName = contractor?.business_name?.trim() || null;
+        const displayName = contactName || profileCompanyName || contractorBusinessName || 'Unknown User';
+
         return {
           id: p.id,
           displayName,
-          businessName: contractor?.business_name || null,
+          contactName,
+          profileCompanyName,
+          contractorBusinessName,
           contractorNumber: contractor?.contractor_number || null,
           role: role || 'user',
           isAdmin: isAdminUser,
