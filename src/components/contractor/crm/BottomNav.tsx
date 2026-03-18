@@ -62,6 +62,7 @@ const allNavItems = [
   { id: 'portal' as Section, label: 'Customer Portal', icon: LinkIcon },
   { id: 'crews' as Section, label: 'Crews', icon: Shield },
   { id: 'documents' as Section, label: 'Documents', icon: FolderOpen },
+  { id: 'network' as Section, label: 'Contractor Network', icon: Users },
   { id: 'help' as Section, label: 'Help Center', icon: HelpCircle },
 ];
 

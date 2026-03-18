@@ -308,6 +308,8 @@ const navItems = [
         return <CrewsSection onSectionChange={handleSectionChange} />;
       case 'documents':
         return <DocumentsSection onSectionChange={handleSectionChange} />;
+      case 'network':
+        return <ContractorNetworkSection onSectionChange={handleSectionChange} />;
       case 'ai-report':
         return <AIReportView onBack={handleBack} />;
       default:

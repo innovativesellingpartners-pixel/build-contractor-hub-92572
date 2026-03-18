@@ -43,6 +43,14 @@ const moreFeatures = [
     description: 'Stripe & Banking'
   },
   { 
+    id: 'network' as Section, 
+    label: 'Contractor Network', 
+    icon: Network, 
+    gradient: 'from-orange-500 to-orange-600',
+    borderColor: 'border-orange-400',
+    description: 'Find & connect'
+  },
+  { 
     id: 'help' as Section, 
     label: 'Help Center', 
     icon: HelpCircle, 
