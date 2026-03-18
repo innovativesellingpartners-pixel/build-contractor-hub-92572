@@ -318,9 +318,10 @@ const App = () => (
               <Route path="marketplace" element={<MarketplaceManagement />} />
               <Route path="help" element={<HelpAdmin />} />
               <Route path="settings" element={<AdminSettings />} />
-              <Route path="catalog-import" element={<AdminCatalogImport />} />
-              <Route path="product-form" element={<AdminProductForm />} />
-              </Route>
+               <Route path="catalog-import" element={<AdminCatalogImport />} />
+               <Route path="product-form" element={<AdminProductForm />} />
+               <Route path="assignments" element={<AssignmentAuditLog />} />
+               </Route>
             </Route>
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
