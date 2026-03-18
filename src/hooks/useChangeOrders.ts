@@ -12,6 +12,19 @@ export interface ChangeOrderLineItem {
   total: number;
 }
 
+export type ChangeOrderStatus = 'draft' | 'requested' | 'pending_approval' | 'sent' | 'viewed' | 'signed' | 'approved' | 'rejected' | 'revision_requested';
+
+export interface ChangeOrderHistoryEntry {
+  id: string;
+  change_order_id: string;
+  action: string;
+  performed_by: string | null;
+  notes: string | null;
+  from_status: string | null;
+  to_status: string | null;
+  created_at: string;
+}
+
 export interface ChangeOrder {
   id?: string;
   job_id: string;
@@ -27,12 +40,13 @@ export interface ChangeOrder {
   tax_rate?: number;
   tax_amount?: number;
   total_amount?: number;
-  status: 'draft' | 'sent' | 'viewed' | 'signed' | 'approved' | 'rejected' | 'requested';
+  status: ChangeOrderStatus;
   requested_by?: string;
   approved_by?: string;
   date_requested?: string;
   date_approved?: string;
   notes?: string;
+  revision_notes?: string;
   public_token?: string;
   client_name?: string;
   client_email?: string;
@@ -69,7 +83,6 @@ export function useChangeOrders(jobId?: string) {
 
       const { data, error } = await query;
       if (error) throw error;
-      // Map database response to ChangeOrder type
       return (data || []).map((item: any) => ({
         ...item,
         line_items: Array.isArray(item.line_items) ? item.line_items : [],
@@ -78,14 +91,35 @@ export function useChangeOrders(jobId?: string) {
     enabled: !!user?.id,
   });
 
+  const { data: changeOrderHistory } = useQuery({
+    queryKey: ['change_order_history', jobId],
+    queryFn: async () => {
+      if (!user?.id || !changeOrders?.length) return [];
+      
+      const ids = changeOrders.map(co => co.id!).filter(Boolean);
+      if (ids.length === 0) return [];
+
+      const { data, error } = await supabase
+        .from('change_order_history')
+        .select('*')
+        .in('change_order_id', ids)
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+      return (data || []) as ChangeOrderHistoryEntry[];
+    },
+    enabled: !!user?.id && !!changeOrders?.length,
+  });
+
   const createChangeOrder = useMutation({
     mutationFn: async (changeOrder: ChangeOrder) => {
       if (!user?.id) throw new Error('Not authenticated');
 
-      // Calculate totals
       const subtotal = changeOrder.line_items?.reduce((sum, item) => sum + item.total, 0) || changeOrder.additional_cost;
       const taxAmount = subtotal * ((changeOrder.tax_rate || 0) / 100);
       const totalAmount = subtotal + taxAmount;
+
+      const dbStatus = changeOrder.status === 'draft' ? 'draft' : 'requested';
 
       const insertData = {
         job_id: changeOrder.job_id,
@@ -100,8 +134,7 @@ export function useChangeOrders(jobId?: string) {
         client_phone: changeOrder.client_phone,
         client_address: changeOrder.client_address,
         tax_rate: changeOrder.tax_rate,
-        status: (changeOrder.status === 'draft' || changeOrder.status === 'sent' || changeOrder.status === 'viewed' || changeOrder.status === 'signed' 
-          ? 'requested' : changeOrder.status) as 'requested' | 'approved' | 'rejected',
+        status: dbStatus as any,
         user_id: user.id,
         requested_by: user.id,
         subtotal,
@@ -123,6 +156,7 @@ export function useChangeOrders(jobId?: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['change_orders'] });
+      queryClient.invalidateQueries({ queryKey: ['change_order_history'] });
       toast.success('Change order created successfully');
     },
     onError: (error) => {
@@ -132,7 +166,6 @@ export function useChangeOrders(jobId?: string) {
 
   const updateChangeOrder = useMutation({
     mutationFn: async ({ id, ...changeOrder }: ChangeOrder & { id: string }) => {
-      // Recalculate totals
       const subtotal = changeOrder.line_items?.reduce((sum, item) => sum + item.total, 0) || changeOrder.additional_cost;
       const taxAmount = subtotal * ((changeOrder.tax_rate || 0) / 100);
       const totalAmount = subtotal + taxAmount;
@@ -145,7 +178,6 @@ export function useChangeOrders(jobId?: string) {
         additional_cost: totalAmount,
       };
       
-      // If approving, set approved_by and date_approved
       if (changeOrder.status === 'approved') {
         updateData.approved_by = user?.id;
         updateData.date_approved = new Date().toISOString();
@@ -163,6 +195,7 @@ export function useChangeOrders(jobId?: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['change_orders'] });
+      queryClient.invalidateQueries({ queryKey: ['change_order_history'] });
       queryClient.invalidateQueries({ queryKey: ['jobs'] });
       toast.success('Change order updated successfully');
     },
@@ -182,6 +215,7 @@ export function useChangeOrders(jobId?: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['change_orders'] });
+      queryClient.invalidateQueries({ queryKey: ['change_order_history'] });
       toast.success('Change order deleted successfully');
     },
     onError: (error) => {
@@ -206,7 +240,8 @@ export function useChangeOrders(jobId?: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['change_orders'] });
-      toast.success('Change order sent successfully');
+      queryClient.invalidateQueries({ queryKey: ['change_order_history'] });
+      toast.success('Change order sent for customer approval');
     },
     onError: (error) => {
       toast.error(`Failed to send change order: ${error.message}`);
@@ -215,6 +250,7 @@ export function useChangeOrders(jobId?: string) {
 
   return {
     changeOrders,
+    changeOrderHistory,
     isLoading,
     createChangeOrder: createChangeOrder.mutate,
     updateChangeOrder: updateChangeOrder.mutate,
