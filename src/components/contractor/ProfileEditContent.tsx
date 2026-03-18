@@ -66,6 +66,7 @@ export function ProfileEditContent({ targetUserId }: ProfileEditContentProps = {
     zelle_phone: '',
     ach_instructions: '',
     accepted_payment_methods: ['card'] as string[],
+    google_place_id: '',
   });
 
   // Fetch target user's profile when admin editing
@@ -119,6 +120,7 @@ export function ProfileEditContent({ targetUserId }: ProfileEditContentProps = {
         zelle_phone: profile.zelle_phone || '',
         ach_instructions: profile.ach_instructions || '',
         accepted_payment_methods: profile.accepted_payment_methods || ['card'],
+        google_place_id: (profile as any).google_place_id || '',
       });
     }
   }, [profile]);
@@ -220,6 +222,7 @@ export function ProfileEditContent({ targetUserId }: ProfileEditContentProps = {
           updateData = {
             business_email: formData.business_email,
             website_url: formData.website_url,
+            google_place_id: formData.google_place_id || null,
           };
           break;
         case 'licensing':
@@ -539,6 +542,28 @@ export function ProfileEditContent({ targetUserId }: ProfileEditContentProps = {
                     placeholder="https://yourcompany.com"
                   />
                 </div>
+              </div>
+              <Separator />
+              <div className="space-y-2">
+                <Label htmlFor="google_place_id">Google Place ID</Label>
+                <Input
+                  id="google_place_id"
+                  name="google_place_id"
+                  value={formData.google_place_id}
+                  onChange={handleChange}
+                  placeholder="ChIJN1t_tDeuEmsRUsoyG83frY4"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Used for Google Review requests in the customer portal.{' '}
+                  <a
+                    href="https://developers.google.com/maps/documentation/places/web-service/place-id"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    Find your Place ID →
+                  </a>
+                </p>
               </div>
             </CardContent>
             <CardFooter className="border-t pt-4 flex justify-end">

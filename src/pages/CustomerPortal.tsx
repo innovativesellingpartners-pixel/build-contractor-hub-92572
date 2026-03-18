@@ -16,7 +16,7 @@ import {
   Send, Upload, CheckCircle2, Clock, AlertCircle, Loader2,
   Building2, MapPin, Phone, Mail, Calendar, ChevronRight,
   CalendarDays, MapPinned, Wrench, Flag, CircleDot,
-  ArrowLeft, LayoutDashboard, Plus, Pencil, DollarSign
+  ArrowLeft, LayoutDashboard, Plus, Pencil, DollarSign, Star
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -78,7 +78,7 @@ export default function CustomerPortal() {
 
       const { data: profile } = await supabase
         .from('profiles')
-        .select('company_name, contact_name, phone, business_email, logo_url, brand_primary_color, finix_merchant_id, zelle_email, zelle_phone, ach_instructions, accepted_payment_methods')
+        .select('company_name, contact_name, phone, business_email, logo_url, brand_primary_color, finix_merchant_id, zelle_email, zelle_phone, ach_instructions, accepted_payment_methods, google_place_id')
         .eq('id', portalToken.contractor_id)
         .single();
 
@@ -806,6 +806,34 @@ function OverviewTab({ job, contractor }: { job: any; contractor: any }) {
                 </span>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+      {/* Google Review Request Card - show when job is completed */}
+      {(job.job_status === 'completed') && contractor.google_place_id && (
+        <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+          <div className="p-5 text-center space-y-4">
+            <div className="flex justify-center">
+              <div className="h-14 w-14 rounded-full bg-amber-500/10 flex items-center justify-center">
+                <Star className="h-7 w-7 text-amber-500" />
+              </div>
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-lg font-bold">How was your experience?</h3>
+              <p className="text-sm text-muted-foreground">
+                We'd love to hear about your experience with{' '}
+                <span className="font-medium text-foreground">{contractor.company_name || 'us'}</span>.
+                Your feedback helps us improve and helps others find quality contractors.
+              </p>
+            </div>
+            <Button
+              size="lg"
+              className="gap-2 px-8"
+              onClick={() => window.open(`https://search.google.com/local/writereview?placeid=${contractor.google_place_id}`, '_blank')}
+            >
+              <Star className="h-4 w-4" />
+              Leave a Google Review
+            </Button>
           </div>
         </div>
       )}

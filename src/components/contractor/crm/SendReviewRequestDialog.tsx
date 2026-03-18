@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Star, MessageSquare, Copy, Check } from 'lucide-react';
+import { Star, MessageSquare, Copy, Check, Mail } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface SendReviewRequestDialogProps {
   open: boolean;
@@ -14,16 +15,34 @@ interface SendReviewRequestDialogProps {
   jobName: string;
   customerName?: string;
   customerPhone?: string;
+  customerEmail?: string;
 }
 
 export default function SendReviewRequestDialog({
-  open, onOpenChange, jobId, jobName, customerName, customerPhone,
+  open, onOpenChange, jobId, jobName, customerName, customerPhone, customerEmail,
 }: SendReviewRequestDialogProps) {
+  const { profile } = useAuth();
   const [phone, setPhone] = useState(customerPhone || '');
+  const [email, setEmail] = useState(customerEmail || '');
   const [sending, setSending] = useState(false);
+  const [sendingEmail, setSendingEmail] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [googlePlaceId, setGooglePlaceId] = useState('');
 
-  const reviewUrl = `${window.location.origin}/review/${jobId}`;
+  useEffect(() => {
+    if (open && profile) {
+      setGooglePlaceId((profile as any).google_place_id || '');
+    }
+  }, [open, profile]);
+
+  const googleReviewUrl = googlePlaceId
+    ? `https://search.google.com/local/writereview?placeid=${googlePlaceId}`
+    : '';
+
+  const reviewUrl = googleReviewUrl || `${window.location.origin}/review/${jobId}`;
+  const companyName = profile?.company_name || 'Your Contractor';
+
+  const smsMessage = `Hi ${customerName || 'there'}! Thank you for choosing ${companyName}. We'd love your feedback — please leave us a quick Google review: ${reviewUrl}`;
 
   const handleSendSMS = async () => {
     if (!phone) {
@@ -42,6 +61,7 @@ export default function SendReviewRequestDialog({
           meetingDate: new Date().toLocaleDateString(),
           meetingTime: '',
           location: reviewUrl,
+          customMessage: smsMessage,
         },
       });
 
@@ -60,6 +80,39 @@ export default function SendReviewRequestDialog({
     }
   };
 
+  const handleSendEmail = async () => {
+    if (!email) {
+      toast.error('Email address is required');
+      return;
+    }
+
+    setSendingEmail(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('send-review-email', {
+        body: {
+          recipientEmail: email,
+          recipientName: customerName || 'Customer',
+          companyName,
+          jobName,
+          reviewUrl,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        toast.success('Review request sent via email!');
+        onOpenChange(false);
+      } else {
+        throw new Error(data?.error || 'Failed to send email');
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to send review request email');
+    } finally {
+      setSendingEmail(false);
+    }
+  };
+
   const handleCopyLink = async () => {
     await navigator.clipboard.writeText(reviewUrl);
     setCopied(true);
@@ -73,7 +126,7 @@ export default function SendReviewRequestDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Star className="h-5 w-5 text-amber-500" />
-            Request Review
+            Request Google Review
           </DialogTitle>
         </DialogHeader>
 
@@ -83,6 +136,12 @@ export default function SendReviewRequestDialog({
             {customerName && <p className="text-xs text-muted-foreground">Customer: {customerName}</p>}
           </div>
 
+          {!googlePlaceId && (
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
+              <strong>Tip:</strong> Add your Google Place ID in your profile settings (Branding tab) to send customers directly to your Google review page.
+            </div>
+          )}
+
           <div className="space-y-2">
             <Label htmlFor="phone" className="text-sm">Customer Phone</Label>
             <Input
@@ -91,6 +150,17 @@ export default function SendReviewRequestDialog({
               placeholder="(555) 123-4567"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="email" className="text-sm">Customer Email</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="customer@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
           </div>
 
@@ -110,7 +180,11 @@ export default function SendReviewRequestDialog({
             </Button>
             <Button onClick={handleSendSMS} disabled={sending || !phone} className="flex-1">
               <MessageSquare className="h-4 w-4 mr-2" />
-              {sending ? 'Sending...' : 'Send via SMS'}
+              {sending ? 'Sending...' : 'SMS'}
+            </Button>
+            <Button onClick={handleSendEmail} disabled={sendingEmail || !email} variant="secondary" className="flex-1">
+              <Mail className="h-4 w-4 mr-2" />
+              {sendingEmail ? 'Sending...' : 'Email'}
             </Button>
           </div>
         </div>

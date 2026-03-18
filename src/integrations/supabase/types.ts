@@ -4887,6 +4887,7 @@ export type Database = {
           default_warranty_years: number | null
           finix_identity_id: string | null
           finix_merchant_id: string | null
+          google_place_id: string | null
           id: string
           license_number: string | null
           logo_url: string | null
@@ -4938,6 +4939,7 @@ export type Database = {
           default_warranty_years?: number | null
           finix_identity_id?: string | null
           finix_merchant_id?: string | null
+          google_place_id?: string | null
           id: string
           license_number?: string | null
           logo_url?: string | null
@@ -4989,6 +4991,7 @@ export type Database = {
           default_warranty_years?: number | null
           finix_identity_id?: string | null
           finix_merchant_id?: string | null
+          google_place_id?: string | null
           id?: string
           license_number?: string | null
           logo_url?: string | null
