@@ -1,9 +1,9 @@
 import { Card, CardContent } from '@/components/ui/card';
-import { ClipboardList, Users, BarChart2, CreditCard, HelpCircle } from 'lucide-react';
+import { ClipboardList, Users, BarChart2, CreditCard, HelpCircle, Network } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CrmNavHeader } from '../CrmNavHeader';
 
-type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'estimates' | 'reporting' | 'financials' | 'calls' | 'calendar' | 'emails' | 'payments' | 'accounting' | 'help';
+type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'estimates' | 'reporting' | 'financials' | 'calls' | 'calendar' | 'emails' | 'payments' | 'accounting' | 'help' | 'network';
 
 interface MoreSectionProps {
   onSectionChange: (section: Section) => void;
