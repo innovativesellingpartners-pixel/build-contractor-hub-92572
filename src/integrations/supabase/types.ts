@@ -4534,6 +4534,56 @@ export type Database = {
           },
         ]
       }
+      photo_reports: {
+        Row: {
+          created_at: string
+          id: string
+          job_id: string
+          notes: string | null
+          photo_ids: string[]
+          public_token: string
+          recipient_email: string | null
+          recipient_name: string | null
+          report_type: string
+          sent_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          job_id: string
+          notes?: string | null
+          photo_ids?: string[]
+          public_token?: string
+          recipient_email?: string | null
+          recipient_name?: string | null
+          report_type?: string
+          sent_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          job_id?: string
+          notes?: string | null
+          photo_ids?: string[]
+          public_token?: string
+          recipient_email?: string | null
+          recipient_name?: string | null
+          report_type?: string
+          sent_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "photo_reports_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       plaid_transactions: {
         Row: {
           amount: number

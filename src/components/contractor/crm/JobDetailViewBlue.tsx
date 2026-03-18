@@ -487,6 +487,7 @@ function PhotosTabContent({ jobId, jobName, customerName }: { jobId: string; job
         onOpenChange={setReportDialogOpen}
         photos={reportPhotos}
         jobName={jobName}
+        jobId={jobId}
         customerName={customerName}
       />
 

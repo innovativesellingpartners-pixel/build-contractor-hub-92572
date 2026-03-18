@@ -91,6 +91,7 @@ import PublicChangeOrder from "./pages/PublicChangeOrder";
 import PublicReview from "./pages/PublicReview";
 import CustomerPortal from "./pages/CustomerPortal";
 import PublicInvoice from "./pages/PublicInvoice";
+import PublicPhotoGallery from "./pages/PublicPhotoGallery";
 import Reporting from "./pages/Reporting";
 import AppInstall from "./pages/AppInstall";
 import Accounting from "./pages/Accounting";
@@ -136,7 +137,7 @@ function PocketAgentWrapper() {
   }
   
   // Don't show on auth, admin, or public estimate pages
-  const excludedPaths = ['/auth', '/admin', '/estimate/', '/p/estimate/', '/app-install'];
+  const excludedPaths = ['/auth', '/admin', '/estimate/', '/p/estimate/', '/app-install', '/photos/'];
   const isExcluded = excludedPaths.some(path => location.pathname.startsWith(path));
   
   if (isPublicPage && !isExcluded) {
@@ -220,6 +221,7 @@ const App = () => (
           <Route path="/invoice/:token" element={<PublicInvoice />} />
           <Route path="/change-order/:token" element={<PublicChangeOrder />} />
           <Route path="/review/:jobId" element={<PublicReview />} />
+          <Route path="/photos/:token" element={<PublicPhotoGallery />} />
           <Route path="/portal/:token" element={<CustomerPortal />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/contractor-crm-software" element={<ContractorCrmSoftware />} />
