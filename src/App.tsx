@@ -221,6 +221,7 @@ const App = () => (
           <Route path="/invoice/:token" element={<PublicInvoice />} />
           <Route path="/change-order/:token" element={<PublicChangeOrder />} />
           <Route path="/review/:jobId" element={<PublicReview />} />
+          <Route path="/photos/:token" element={<PublicPhotoGallery />} />
           <Route path="/portal/:token" element={<CustomerPortal />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/contractor-crm-software" element={<ContractorCrmSoftware />} />

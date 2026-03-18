@@ -377,6 +377,7 @@ export function JobPhotosSection({ jobId, jobName, customerName }: JobPhotosSect
         onOpenChange={setReportDialogOpen}
         photos={reportPhotos}
         jobName={jobName}
+        jobId={jobId}
         customerName={customerName}
       />
 
