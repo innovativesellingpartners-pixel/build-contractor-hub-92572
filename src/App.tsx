@@ -137,7 +137,7 @@ function PocketAgentWrapper() {
   }
   
   // Don't show on auth, admin, or public estimate pages
-  const excludedPaths = ['/auth', '/admin', '/estimate/', '/p/estimate/', '/app-install'];
+  const excludedPaths = ['/auth', '/admin', '/estimate/', '/p/estimate/', '/app-install', '/photos/'];
   const isExcluded = excludedPaths.some(path => location.pathname.startsWith(path));
   
   if (isPublicPage && !isExcluded) {
