@@ -78,7 +78,7 @@ export default function CustomerPortal() {
 
       const { data: profile } = await supabase
         .from('profiles')
-        .select('company_name, contact_name, phone, business_email, logo_url, brand_primary_color, finix_merchant_id, zelle_email, zelle_phone, ach_instructions, accepted_payment_methods')
+        .select('company_name, contact_name, phone, business_email, logo_url, brand_primary_color, finix_merchant_id, zelle_email, zelle_phone, ach_instructions, accepted_payment_methods, google_place_id')
         .eq('id', portalToken.contractor_id)
         .single();
 
