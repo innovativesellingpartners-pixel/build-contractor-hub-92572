@@ -34,6 +34,7 @@ const navItems = [
   { to: '/admin/support', icon: LifeBuoy, label: 'Support Tickets' },
   { to: '/admin/marketplace', icon: ShoppingCart, label: 'Marketplace' },
   { to: '/admin/help', icon: HelpCircle, label: 'Help Admin' },
+  { to: '/admin/assignments', icon: ArrowRightLeft, label: 'Assignment History' },
   { to: '/admin/settings', icon: Settings, label: 'Settings' },
   { to: '/admin/catalog-import', icon: Package, label: 'Catalog Import' },
   { to: '/admin/product-form', icon: PackagePlus, label: 'Add Product' },
