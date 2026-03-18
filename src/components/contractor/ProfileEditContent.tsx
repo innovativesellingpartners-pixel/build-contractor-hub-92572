@@ -123,6 +123,8 @@ export function ProfileEditContent({ targetUserId }: ProfileEditContentProps = {
         ach_instructions: profile.ach_instructions || '',
         accepted_payment_methods: profile.accepted_payment_methods || ['card'],
         google_place_id: (profile as any).google_place_id || '',
+        network_visible: (profile as any).network_visible || false,
+        network_bio: (profile as any).network_bio || '',
       });
     }
   }, [profile]);
