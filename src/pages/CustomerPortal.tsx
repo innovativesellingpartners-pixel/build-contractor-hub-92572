@@ -16,7 +16,7 @@ import {
   Send, Upload, CheckCircle2, Clock, AlertCircle, Loader2,
   Building2, MapPin, Phone, Mail, Calendar, ChevronRight,
   CalendarDays, MapPinned, Wrench, Flag, CircleDot,
-  ArrowLeft, LayoutDashboard, Plus, Pencil, DollarSign
+  ArrowLeft, LayoutDashboard, Plus, Pencil, DollarSign, Star
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
