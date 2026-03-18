@@ -1269,6 +1269,7 @@ export default function JobDetailViewBlue({
         jobName={job.name}
         customerName={customer?.name}
         customerPhone={customer?.phone}
+        customerEmail={customer?.email}
       />
 
       {/* Portal Link Dialog */}
