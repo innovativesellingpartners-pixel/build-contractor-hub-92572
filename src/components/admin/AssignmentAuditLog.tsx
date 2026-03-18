@@ -125,8 +125,8 @@ export const AssignmentAuditLog = () => {
   }, {});
 
   const leaderboard = Object.entries(statsByContractor)
-    .map(([uid, stats]) => ({ uid, name: resolveUser(uid), ...stats }))
-    .sort((a, b) => (b.total || 0) - (a.total || 0));
+    .map(([uid, stats]) => ({ uid, name: resolveUser(uid), lead: stats.lead || 0, job: stats.job || 0, estimate: stats.estimate || 0, invoice: stats.invoice || 0, customer: stats.customer || 0, total: stats.total || 0 }))
+    .sort((a, b) => b.total - a.total);
 
   return (
     <div className="space-y-6">
