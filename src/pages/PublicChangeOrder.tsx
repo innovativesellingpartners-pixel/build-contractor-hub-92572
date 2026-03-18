@@ -6,11 +6,13 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { CheckCircle, FileText, Loader2, Building2, Calendar, DollarSign, AlertTriangle } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { CheckCircle, FileText, Loader2, Building2, Calendar, DollarSign, AlertTriangle, RotateCcw, History } from 'lucide-react';
 import SignatureCanvas from 'react-signature-canvas';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import ct1Logo from '@/assets/ct1-round-logo-new.png';
+import { format } from 'date-fns';
 
 interface ChangeOrderData {
   id: string;
@@ -32,19 +34,35 @@ interface ChangeOrderData {
   date_requested?: string;
   change_order_number?: string;
   notes?: string;
+  revision_notes?: string;
   jobs?: {
     title: string;
     site_address?: string;
   };
 }
 
+interface HistoryEntry {
+  id: string;
+  action: string;
+  performed_by: string | null;
+  notes: string | null;
+  from_status: string | null;
+  to_status: string | null;
+  created_at: string;
+}
+
 export default function PublicChangeOrder() {
   const { token } = useParams();
   const [changeOrder, setChangeOrder] = useState<ChangeOrderData | null>(null);
+  const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [signing, setSigning] = useState(false);
   const [signed, setSigned] = useState(false);
+  const [revisionRequested, setRevisionRequested] = useState(false);
   const [agreementAccepted, setAgreementAccepted] = useState(false);
+  const [showRevisionForm, setShowRevisionForm] = useState(false);
+  const [revisionNotes, setRevisionNotes] = useState('');
+  const [submittingRevision, setSubmittingRevision] = useState(false);
   const clientSigRef = useRef<SignatureCanvas>(null);
 
   useEffect(() => {
@@ -72,6 +90,8 @@ export default function PublicChangeOrder() {
       
       setChangeOrder(changeOrderData);
       setSigned(!!data.signed_at || data.status === 'approved');
+      setRevisionRequested(data.status === 'revision_requested');
+      setHistory(response.history || []);
     } catch (error) {
       console.error('Error fetching change order:', error);
       toast.error('Failed to load change order');
@@ -122,6 +142,35 @@ export default function PublicChangeOrder() {
       toast.error('Failed to sign change order. Please try again.');
     } finally {
       setSigning(false);
+    }
+  };
+
+  const handleRequestRevision = async () => {
+    if (!revisionNotes.trim()) {
+      toast.error('Please describe what changes you need');
+      return;
+    }
+
+    setSubmittingRevision(true);
+    try {
+      const { data: response, error } = await supabase.functions.invoke('get-public-change-order', {
+        body: { 
+          token, 
+          action: 'request_revision',
+          revisionNotes: revisionNotes.trim()
+        }
+      });
+
+      if (error) throw error;
+
+      setRevisionRequested(true);
+      setShowRevisionForm(false);
+      toast.success('Revision request sent to contractor!');
+    } catch (error) {
+      console.error('Error requesting revision:', error);
+      toast.error('Failed to submit revision request. Please try again.');
+    } finally {
+      setSubmittingRevision(false);
     }
   };
 
@@ -189,10 +238,15 @@ export default function PublicChangeOrder() {
                     <CheckCircle className="h-6 w-6 mr-2" />
                     Approved
                   </Badge>
+                ) : revisionRequested ? (
+                  <Badge className="bg-amber-600 text-white border-0 text-lg px-6 py-3 shadow-lg">
+                    <RotateCcw className="h-5 w-5 mr-2" />
+                    Revision Requested
+                  </Badge>
                 ) : (
                   <Badge className="bg-white/20 text-white border-white/30 text-lg px-6 py-3 backdrop-blur-sm">
                     <AlertTriangle className="h-5 w-5 mr-2" />
-                    Awaiting Approval
+                    Awaiting Your Response
                   </Badge>
                 )}
               </div>
@@ -356,104 +410,199 @@ export default function PublicChangeOrder() {
           </Card>
         )}
 
-        {/* Signature Section */}
-        {!signed ? (
-          <Card className="border-2 shadow-2xl bg-gradient-to-br from-background to-muted/20">
-            <CardHeader className="bg-gradient-to-r from-amber-500/10 to-amber-500/5 border-b-2 border-amber-500/20 pb-6">
-              <CardTitle className="text-2xl flex items-center gap-2">
-                <FileText className="h-6 w-6 text-amber-500" />
-                Digital Signature Required
+        {/* History Timeline */}
+        {history.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <History className="h-5 w-5 text-amber-500" />
+                Activity History
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6 p-8">
-              <Alert className="border-amber-500/30 bg-gradient-to-r from-amber-500/10 to-amber-500/5 p-6">
-                <AlertTriangle className="h-6 w-6 text-amber-500" />
-                <AlertDescription className="text-base leading-relaxed ml-2">
-                  By signing below, you agree to the change order scope, terms, and additional cost 
-                  outlined above. Your digital signature will approve this change order and modify 
-                  your existing contract.
-                </AlertDescription>
-              </Alert>
+            <CardContent>
+              <div className="space-y-3">
+                {history.map((entry) => (
+                  <div key={entry.id} className="flex gap-3 text-sm">
+                    <div className="w-1.5 rounded-full bg-amber-500/30 shrink-0" />
+                    <div className="flex-1">
+                      <p className="font-medium">{entry.action}</p>
+                      {entry.notes && (
+                        <p className="text-muted-foreground text-xs mt-0.5">"{entry.notes}"</p>
+                      )}
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {format(new Date(entry.created_at), 'MMM d, yyyy h:mm a')}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
-              {/* Agreement Checkbox */}
-              <Card className="border-2 border-amber-500/30 bg-gradient-to-br from-background to-amber-500/5">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <FileText className="h-5 w-5 text-amber-500" />
-                    Change Order Agreement
+        {/* Action Section */}
+        {!signed && !revisionRequested ? (
+          <>
+            {/* Revision Request Form */}
+            {showRevisionForm ? (
+              <Card className="border-2 shadow-xl">
+                <CardHeader className="bg-gradient-to-r from-amber-500/10 to-amber-500/5 border-b pb-4">
+                  <CardTitle className="text-xl flex items-center gap-2">
+                    <RotateCcw className="h-5 w-5 text-amber-500" />
+                    Request Revision
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="bg-background/80 p-4 rounded-lg border border-amber-500/20">
-                    <p className="text-sm leading-relaxed text-foreground">
-                      This change order modifies the original contract. By signing, I acknowledge 
-                      that I understand and agree to the additional work described above, including 
-                      the associated cost of <strong>${totalAmount.toFixed(2)}</strong>. This 
-                      amount will be added to the total contract value and is due according to 
-                      the payment terms of the original agreement.
-                    </p>
-                  </div>
-                  
-                  <div className="flex items-start space-x-3 bg-amber-500/5 p-4 rounded-lg border-2 border-amber-500/20">
-                    <Checkbox
-                      id="agreement"
-                      checked={agreementAccepted}
-                      onCheckedChange={(checked) => setAgreementAccepted(checked as boolean)}
-                      className="mt-1"
-                    />
-                    <label
-                      htmlFor="agreement"
-                      className="text-sm font-medium leading-relaxed cursor-pointer text-foreground"
+                <CardContent className="space-y-4 p-6">
+                  <p className="text-sm text-muted-foreground">
+                    Please describe what changes you'd like made to this change order. The contractor will be notified with your feedback.
+                  </p>
+                  <Textarea
+                    placeholder="Describe what needs to be changed..."
+                    value={revisionNotes}
+                    onChange={(e) => setRevisionNotes(e.target.value)}
+                    rows={4}
+                    className="resize-none"
+                  />
+                  <div className="flex gap-3">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setShowRevisionForm(false);
+                        setRevisionNotes('');
+                      }}
+                      className="flex-1"
                     >
-                      I have read and agree to the change order above. I understand that by signing, 
-                      I am approving this modification to my contract.
-                    </label>
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleRequestRevision}
+                      disabled={submittingRevision || !revisionNotes.trim()}
+                      className="flex-1 bg-amber-500 hover:bg-amber-600"
+                    >
+                      {submittingRevision ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Submitting...
+                        </>
+                      ) : (
+                        <>
+                          <RotateCcw className="h-4 w-4 mr-2" />
+                          Submit Revision Request
+                        </>
+                      )}
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
+            ) : (
+              /* Signature Section */
+              <Card className="border-2 shadow-2xl bg-gradient-to-br from-background to-muted/20">
+                <CardHeader className="bg-gradient-to-r from-amber-500/10 to-amber-500/5 border-b-2 border-amber-500/20 pb-6">
+                  <CardTitle className="text-2xl flex items-center gap-2">
+                    <FileText className="h-6 w-6 text-amber-500" />
+                    Your Response
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6 p-8">
+                  <Alert className="border-amber-500/30 bg-gradient-to-r from-amber-500/10 to-amber-500/5 p-6">
+                    <AlertTriangle className="h-6 w-6 text-amber-500" />
+                    <AlertDescription className="text-base leading-relaxed ml-2">
+                      Please review the change order details above. You can approve by signing below, 
+                      or request revisions if something needs to be changed.
+                    </AlertDescription>
+                  </Alert>
 
-              {/* Signature Pad */}
-              <div className="space-y-4">
-                <p className="text-sm font-medium text-muted-foreground">
-                  Please sign below to approve this change order:
-                </p>
-                <div className="border-2 border-dashed border-amber-500/30 rounded-lg p-2 bg-white">
-                  <SignatureCanvas
-                    ref={clientSigRef}
-                    penColor="black"
-                    canvasProps={{
-                      className: 'w-full h-32 sm:h-40',
-                      style: { width: '100%', height: '160px' }
-                    }}
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" onClick={clearSignature} size="sm">
-                    Clear Signature
-                  </Button>
-                </div>
-              </div>
+                  {/* Agreement Checkbox */}
+                  <Card className="border-2 border-amber-500/30 bg-gradient-to-br from-background to-amber-500/5">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <FileText className="h-5 w-5 text-amber-500" />
+                        Change Order Agreement
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="bg-background/80 p-4 rounded-lg border border-amber-500/20">
+                        <p className="text-sm leading-relaxed text-foreground">
+                          This change order modifies the original contract. By signing, I acknowledge 
+                          that I understand and agree to the additional work described above, including 
+                          the associated cost of <strong>${totalAmount.toFixed(2)}</strong>. This 
+                          amount will be added to the total contract value and is due according to 
+                          the payment terms of the original agreement.
+                        </p>
+                      </div>
+                      
+                      <div className="flex items-start space-x-3 bg-amber-500/5 p-4 rounded-lg border-2 border-amber-500/20">
+                        <Checkbox
+                          id="agreement"
+                          checked={agreementAccepted}
+                          onCheckedChange={(checked) => setAgreementAccepted(checked as boolean)}
+                          className="mt-1"
+                        />
+                        <label
+                          htmlFor="agreement"
+                          className="text-sm font-medium leading-relaxed cursor-pointer text-foreground"
+                        >
+                          I have read and agree to the change order above. I understand that by signing, 
+                          I am approving this modification to my contract.
+                        </label>
+                      </div>
+                    </CardContent>
+                  </Card>
 
-              <Button
-                onClick={handleSign}
-                disabled={signing || !agreementAccepted}
-                className="w-full h-14 text-lg font-bold bg-amber-500 hover:bg-amber-600"
-              >
-                {signing ? (
-                  <>
-                    <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle className="h-5 w-5 mr-2" />
-                    Sign & Approve Change Order
-                  </>
-                )}
-              </Button>
-            </CardContent>
-          </Card>
-        ) : (
+                  {/* Signature Pad */}
+                  <div className="space-y-4">
+                    <p className="text-sm font-medium text-muted-foreground">
+                      Please sign below to approve this change order:
+                    </p>
+                    <div className="border-2 border-dashed border-amber-500/30 rounded-lg p-2 bg-white">
+                      <SignatureCanvas
+                        ref={clientSigRef}
+                        penColor="black"
+                        canvasProps={{
+                          className: 'w-full h-32 sm:h-40',
+                          style: { width: '100%', height: '160px' }
+                        }}
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button variant="outline" onClick={clearSignature} size="sm">
+                        Clear Signature
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <Button
+                      onClick={handleSign}
+                      disabled={signing || !agreementAccepted}
+                      className="flex-1 h-14 text-lg font-bold bg-green-600 hover:bg-green-700"
+                    >
+                      {signing ? (
+                        <>
+                          <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                          Processing...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle className="h-5 w-5 mr-2" />
+                          Approve
+                        </>
+                      )}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowRevisionForm(true)}
+                      className="flex-1 h-14 text-lg font-bold border-amber-500 text-amber-600 hover:bg-amber-50"
+                    >
+                      <RotateCcw className="h-5 w-5 mr-2" />
+                      Request Revision
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </>
+        ) : signed ? (
           <Card className="border-2 border-green-500/50 bg-green-50 dark:bg-green-950/20">
             <CardContent className="p-8 text-center">
               <CheckCircle className="h-16 w-16 text-green-600 mx-auto mb-4" />
@@ -477,7 +626,26 @@ export default function PublicChangeOrder() {
               )}
             </CardContent>
           </Card>
-        )}
+        ) : revisionRequested ? (
+          <Card className="border-2 border-amber-500/50 bg-amber-50 dark:bg-amber-950/20">
+            <CardContent className="p-8 text-center">
+              <RotateCcw className="h-16 w-16 text-amber-600 mx-auto mb-4" />
+              <h3 className="text-2xl font-bold text-amber-700 dark:text-amber-400 mb-2">
+                Revision Requested
+              </h3>
+              <p className="text-muted-foreground">
+                Your revision request has been sent to the contractor. They will review your 
+                feedback and update the change order accordingly.
+              </p>
+              {changeOrder.revision_notes && (
+                <div className="mt-4 bg-background/80 p-4 rounded-lg border text-left">
+                  <p className="text-sm font-medium mb-1">Your feedback:</p>
+                  <p className="text-sm text-muted-foreground">{changeOrder.revision_notes}</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        ) : null}
       </div>
     </div>
   );
