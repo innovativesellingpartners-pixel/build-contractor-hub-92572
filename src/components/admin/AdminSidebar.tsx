@@ -15,7 +15,8 @@ import {
   Archive,
   GraduationCap,
   Package,
-  PackagePlus
+  PackagePlus,
+  ArrowRightLeft
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ct1Logo from '@/assets/ct1-round-logo-new.png';
@@ -33,6 +34,7 @@ const navItems = [
   { to: '/admin/support', icon: LifeBuoy, label: 'Support Tickets' },
   { to: '/admin/marketplace', icon: ShoppingCart, label: 'Marketplace' },
   { to: '/admin/help', icon: HelpCircle, label: 'Help Admin' },
+  { to: '/admin/assignments', icon: ArrowRightLeft, label: 'Assignment History' },
   { to: '/admin/settings', icon: Settings, label: 'Settings' },
   { to: '/admin/catalog-import', icon: Package, label: 'Catalog Import' },
   { to: '/admin/product-form', icon: PackagePlus, label: 'Add Product' },
