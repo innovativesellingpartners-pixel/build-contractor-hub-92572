@@ -222,6 +222,7 @@ export function ProfileEditContent({ targetUserId }: ProfileEditContentProps = {
           updateData = {
             business_email: formData.business_email,
             website_url: formData.website_url,
+            google_place_id: formData.google_place_id || null,
           };
           break;
         case 'licensing':
