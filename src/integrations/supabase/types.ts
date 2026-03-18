@@ -483,6 +483,47 @@ export type Database = {
         }
         Relationships: []
       }
+      change_order_history: {
+        Row: {
+          action: string
+          change_order_id: string
+          created_at: string
+          from_status: string | null
+          id: string
+          notes: string | null
+          performed_by: string | null
+          to_status: string | null
+        }
+        Insert: {
+          action: string
+          change_order_id: string
+          created_at?: string
+          from_status?: string | null
+          id?: string
+          notes?: string | null
+          performed_by?: string | null
+          to_status?: string | null
+        }
+        Update: {
+          action?: string
+          change_order_id?: string
+          created_at?: string
+          from_status?: string | null
+          id?: string
+          notes?: string | null
+          performed_by?: string | null
+          to_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "change_order_history_change_order_id_fkey"
+            columns: ["change_order_id"]
+            isOneToOne: false
+            referencedRelation: "change_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       change_order_views: {
         Row: {
           change_order_id: string | null
@@ -539,6 +580,7 @@ export type Database = {
           public_token: string | null
           reason: string | null
           requested_by: string | null
+          revision_notes: string | null
           scope_of_work: string | null
           sent_at: string | null
           signed_at: string | null
@@ -575,6 +617,7 @@ export type Database = {
           public_token?: string | null
           reason?: string | null
           requested_by?: string | null
+          revision_notes?: string | null
           scope_of_work?: string | null
           sent_at?: string | null
           signed_at?: string | null
@@ -611,6 +654,7 @@ export type Database = {
           public_token?: string | null
           reason?: string | null
           requested_by?: string | null
+          revision_notes?: string | null
           scope_of_work?: string | null
           sent_at?: string | null
           signed_at?: string | null
@@ -6394,7 +6438,16 @@ export type Database = {
       }
     }
     Enums: {
-      change_order_status: "requested" | "approved" | "rejected"
+      change_order_status:
+        | "requested"
+        | "approved"
+        | "rejected"
+        | "draft"
+        | "pending_approval"
+        | "revision_requested"
+        | "sent"
+        | "viewed"
+        | "signed"
       crew_role: "office" | "dispatcher" | "field_crew_member" | "customer"
       invoice_status: "draft" | "sent" | "partial" | "paid" | "overdue"
       job_status:
@@ -6544,7 +6597,17 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      change_order_status: ["requested", "approved", "rejected"],
+      change_order_status: [
+        "requested",
+        "approved",
+        "rejected",
+        "draft",
+        "pending_approval",
+        "revision_requested",
+        "sent",
+        "viewed",
+        "signed",
+      ],
       crew_role: ["office", "dispatcher", "field_crew_member", "customer"],
       invoice_status: ["draft", "sent", "partial", "paid", "overdue"],
       job_status: [
