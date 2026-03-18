@@ -91,6 +91,7 @@ import PublicChangeOrder from "./pages/PublicChangeOrder";
 import PublicReview from "./pages/PublicReview";
 import CustomerPortal from "./pages/CustomerPortal";
 import PublicInvoice from "./pages/PublicInvoice";
+import PublicPhotoGallery from "./pages/PublicPhotoGallery";
 import Reporting from "./pages/Reporting";
 import AppInstall from "./pages/AppInstall";
 import Accounting from "./pages/Accounting";
