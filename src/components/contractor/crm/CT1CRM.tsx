@@ -58,6 +58,7 @@ import ContactsSection from './sections/ContactsSection';
 import PortalSection from './sections/PortalSection';
 import CrewsSection from './sections/CrewsSection';
 import DocumentsSection from './sections/DocumentsSection';
+import ContractorNetworkSection from './sections/ContractorNetworkSection';
 import CRMSearchBar from './CRMSearchBar';
 import AIReportView from './sections/AIReportView';
 import ct1Logo from '@/assets/ct1-round-logo-new.png';
@@ -68,7 +69,7 @@ import { MobileLandingPage } from './MobileLandingPage';
 import { PaymentsBankingSection } from './sections/PaymentsBankingSection';
 import { TemplatesSection } from './estimate/TemplatesSection';
 
-type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calendar' | 'emails' | 'estimates' | 'reporting' | 'financials' | 'more' | 'payments' | 'accounting' | 'invoices' | 'templates' | 'gc' | 'contacts' | 'help' | 'portal' | 'ai-report' | 'crews' | 'documents';
+type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calendar' | 'emails' | 'estimates' | 'reporting' | 'financials' | 'more' | 'payments' | 'accounting' | 'invoices' | 'templates' | 'gc' | 'contacts' | 'help' | 'portal' | 'ai-report' | 'crews' | 'documents' | 'network';
 
 interface CT1CRMProps {
   onOpenPocketAgent?: () => void;
@@ -110,6 +111,7 @@ const navItems = [
   { id: 'portal' as Section, label: 'Customer Portal', icon: LinkIcon },
   { id: 'crews' as Section, label: 'Crews', icon: Shield },
   { id: 'documents' as Section, label: 'Documents', icon: FileText },
+  { id: 'network' as Section, label: 'Contractor Network', icon: Users },
 ];
 
 // Component moved to accept props - see above
@@ -306,6 +308,8 @@ const navItems = [
         return <CrewsSection onSectionChange={handleSectionChange} />;
       case 'documents':
         return <DocumentsSection onSectionChange={handleSectionChange} />;
+      case 'network':
+        return <ContractorNetworkSection onSectionChange={handleSectionChange} />;
       case 'ai-report':
         return <AIReportView onBack={handleBack} />;
       default:

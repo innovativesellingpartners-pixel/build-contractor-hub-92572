@@ -4190,6 +4190,39 @@ export type Database = {
           },
         ]
       }
+      network_inquiries: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          recipient_id: string
+          sender_company: string | null
+          sender_email: string | null
+          sender_id: string
+          sender_name: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          recipient_id: string
+          sender_company?: string | null
+          sender_email?: string | null
+          sender_id: string
+          sender_name?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          recipient_id?: string
+          sender_company?: string | null
+          sender_email?: string | null
+          sender_id?: string
+          sender_name?: string | null
+        }
+        Relationships: []
+      }
       oauth_states: {
         Row: {
           contractor_id: string
@@ -4985,6 +5018,8 @@ export type Database = {
           id: string
           license_number: string | null
           logo_url: string | null
+          network_bio: string | null
+          network_visible: boolean
           online_payments_enabled: boolean | null
           phone: string | null
           pocketbot_access_type: string
@@ -5037,6 +5072,8 @@ export type Database = {
           id: string
           license_number?: string | null
           logo_url?: string | null
+          network_bio?: string | null
+          network_visible?: boolean
           online_payments_enabled?: boolean | null
           phone?: string | null
           pocketbot_access_type?: string
@@ -5089,6 +5126,8 @@ export type Database = {
           id?: string
           license_number?: string | null
           logo_url?: string | null
+          network_bio?: string | null
+          network_visible?: boolean
           online_payments_enabled?: boolean | null
           phone?: string | null
           pocketbot_access_type?: string

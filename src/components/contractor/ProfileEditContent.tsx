@@ -7,7 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
-import { Upload, Loader2, Building2, Globe, DollarSign, Shield, Percent, Palette, Save, ImageIcon } from "lucide-react";
+import { Upload, Loader2, Building2, Globe, DollarSign, Shield, Percent, Palette, Save, ImageIcon, Users } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { WarrantyManagement } from "./WarrantyManagement";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -67,6 +67,8 @@ export function ProfileEditContent({ targetUserId }: ProfileEditContentProps = {
     ach_instructions: '',
     accepted_payment_methods: ['card'] as string[],
     google_place_id: '',
+    network_visible: false,
+    network_bio: '',
   });
 
   // Fetch target user's profile when admin editing
@@ -121,6 +123,8 @@ export function ProfileEditContent({ targetUserId }: ProfileEditContentProps = {
         ach_instructions: profile.ach_instructions || '',
         accepted_payment_methods: profile.accepted_payment_methods || ['card'],
         google_place_id: (profile as any).google_place_id || '',
+        network_visible: (profile as any).network_visible || false,
+        network_bio: (profile as any).network_bio || '',
       });
     }
   }, [profile]);
@@ -216,6 +220,8 @@ export function ProfileEditContent({ targetUserId }: ProfileEditContentProps = {
             city: formData.city,
             state: formData.state,
             zip_code: formData.zip_code,
+            network_visible: formData.network_visible,
+            network_bio: formData.network_bio || null,
           };
           break;
         case 'branding':
@@ -501,6 +507,46 @@ export function ProfileEditContent({ targetUserId }: ProfileEditContentProps = {
                     </div>
                   </div>
                 </div>
+              </div>
+
+              {/* Contractor Network Opt-In */}
+              <Separator />
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="text-sm font-medium flex items-center gap-2">
+                      <Users className="h-4 w-4" />
+                      Contractor Network Directory
+                    </Label>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      List your business in the CT1 Contractor Network so other contractors can find and connect with you.
+                      Only your business name, trade, location, and bio are shown — no private data.
+                    </p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.network_visible}
+                      onChange={(e) => setFormData(prev => ({ ...prev, network_visible: e.target.checked }))}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-muted rounded-full peer peer-checked:bg-primary transition-colors after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full" />
+                  </label>
+                </div>
+                {formData.network_visible && (
+                  <div className="space-y-2">
+                    <Label htmlFor="network_bio">Network Bio / Tagline</Label>
+                    <Input
+                      id="network_bio"
+                      name="network_bio"
+                      value={formData.network_bio}
+                      onChange={handleChange}
+                      placeholder="e.g. Licensed residential plumber serving the Greater Miami area since 2008"
+                      maxLength={200}
+                    />
+                    <p className="text-xs text-muted-foreground">{formData.network_bio.length}/200 characters</p>
+                  </div>
+                )}
               </div>
             </CardContent>
             <CardFooter className="border-t pt-4 flex justify-end">
