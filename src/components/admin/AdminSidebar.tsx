@@ -15,7 +15,8 @@ import {
   Archive,
   GraduationCap,
   Package,
-  PackagePlus
+  PackagePlus,
+  ArrowRightLeft
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ct1Logo from '@/assets/ct1-round-logo-new.png';
