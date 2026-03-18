@@ -94,7 +94,6 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Use the Lovable published URL as fallback to avoid SSL issues with custom domains
     const appUrl = Deno.env.get('APP_URL') || 'https://build-contractor-hub-92572.lovable.app';
     const publicUrl = `${appUrl}/change-order/${changeOrder.public_token}`;
 
@@ -114,7 +113,6 @@ const handler = async (req: Request): Promise<Response> => {
     const recipients = [clientEmail];
     const bcc: string[] | undefined = contractorEmail ? [contractorEmail] : undefined;
 
-    // Premium email template
     const emailHtml = `
 <!DOCTYPE html>
 <html lang="en">
@@ -169,7 +167,7 @@ const handler = async (req: Request): Promise<Response> => {
             <td style="background-color: #ffffff; padding: 40px;">
               <h2 style="margin: 0 0 20px 0; font-size: 26px; font-weight: 400; color: #161e2c; font-family: Georgia, 'Times New Roman', serif;">Dear ${clientName || 'Valued Customer'},</h2>
               <p style="margin: 0 0 24px 0; font-size: 16px; line-height: 1.8; color: #444444; font-family: Georgia, 'Times New Roman', serif;">
-                We have a change order request for your project. Please review the details below and sign to approve this modification to your contract.
+                We have a change order for your review. Please review the details and either approve or request revisions.
               </p>
               
               <!-- Project Card -->
@@ -199,14 +197,14 @@ const handler = async (req: Request): Promise<Response> => {
                 <tr>
                   <td align="center" style="padding: 8px 0 24px 0;">
                     <a href="${publicUrl}" target="_blank" style="display: inline-block; background-color: #f59e0b; color: #161e2c; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 14px; font-weight: 700; padding: 16px 40px; border-radius: 6px; text-decoration: none; letter-spacing: 0.5px;">
-                      REVIEW, SIGN &amp; APPROVE →
+                      REVIEW &amp; RESPOND →
                     </a>
                   </td>
                 </tr>
               </table>
               
               <p style="margin: 0; font-size: 13px; color: #999999; text-align: center; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;">
-                Click the button above to review and sign the change order online
+                Click the button above to approve or request revisions to this change order
               </p>
             </td>
           </tr>
@@ -264,18 +262,30 @@ const handler = async (req: Request): Promise<Response> => {
 
     const emailId = (emailResponse as any)?.id || (emailResponse as any)?.data?.id || 'sent';
 
-    // Update change order with sent status
+    // Record the previous status
+    const previousStatus = changeOrder.status;
+
+    // Update change order with sent/pending_approval status
     const { error: updateError } = await supabase
       .from('change_orders')
       .update({
         sent_at: new Date().toISOString(),
-        status: 'sent',
+        status: 'pending_approval',
       })
       .eq('id', changeOrderId);
 
     if (updateError) {
       console.error('Failed to update change order status:', updateError);
     }
+
+    // Log history
+    await supabase.from('change_order_history').insert({
+      change_order_id: changeOrderId,
+      action: 'Change order sent to customer for approval',
+      performed_by: contractorName || user.email || 'Contractor',
+      from_status: previousStatus,
+      to_status: 'pending_approval',
+    });
 
     return new Response(
       JSON.stringify({ success: true, emailId }),

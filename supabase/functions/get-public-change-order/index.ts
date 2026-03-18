@@ -13,14 +13,16 @@ serve(async (req) => {
 
   try {
     let token: string | null = null;
-    let action = 'get'; // 'get', 'sign', 'log_view'
+    let action = 'get'; // 'get', 'sign', 'log_view', 'request_revision'
     let signatureData: any = null;
+    let revisionNotes: string | null = null;
 
     if (req.method === 'POST') {
       const body = await req.json();
       token = body?.token || null;
       action = body?.action || 'get';
       signatureData = body?.signatureData || null;
+      revisionNotes = body?.revisionNotes || null;
     }
 
     if (!token) {
@@ -48,24 +50,29 @@ serve(async (req) => {
         );
       }
 
+      // Also fetch history
+      const { data: history } = await supabase
+        .from('change_order_history')
+        .select('*')
+        .eq('change_order_id', data.id)
+        .order('created_at', { ascending: true });
+
       return new Response(
-        JSON.stringify({ data }),
+        JSON.stringify({ data, history: history || [] }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     if (action === 'log_view') {
-      // Update viewed_at if not already viewed
       await supabase
         .from('change_orders')
         .update({ viewed_at: new Date().toISOString() })
         .eq('public_token', token)
         .is('viewed_at', null);
 
-      // Get the change order ID for logging
       const { data: co } = await supabase
         .from('change_orders')
-        .select('id')
+        .select('id, status')
         .eq('public_token', token)
         .single();
 
@@ -73,6 +80,15 @@ serve(async (req) => {
         await supabase.from('change_order_views').insert({
           change_order_id: co.id,
           user_agent: req.headers.get('user-agent') || null,
+        });
+
+        // Log history
+        await supabase.from('change_order_history').insert({
+          change_order_id: co.id,
+          action: 'Customer viewed change order',
+          performed_by: 'Customer',
+          from_status: co.status,
+          to_status: co.status,
         });
       }
 
@@ -90,6 +106,13 @@ serve(async (req) => {
         );
       }
 
+      // Get current status for history
+      const { data: current } = await supabase
+        .from('change_orders')
+        .select('id, status')
+        .eq('public_token', token)
+        .single();
+
       const { error } = await supabase
         .from('change_orders')
         .update({
@@ -106,6 +129,65 @@ serve(async (req) => {
           JSON.stringify({ error: 'Failed to sign change order' }),
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
+      }
+
+      // Log history
+      if (current) {
+        await supabase.from('change_order_history').insert({
+          change_order_id: current.id,
+          action: 'Customer approved and signed change order',
+          performed_by: signatureData.client_printed_name || 'Customer',
+          from_status: current.status,
+          to_status: 'approved',
+        });
+      }
+
+      return new Response(
+        JSON.stringify({ success: true }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (action === 'request_revision') {
+      if (!revisionNotes?.trim()) {
+        return new Response(
+          JSON.stringify({ error: 'Please provide notes explaining what needs to be changed' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Get current status for history
+      const { data: current } = await supabase
+        .from('change_orders')
+        .select('id, status')
+        .eq('public_token', token)
+        .single();
+
+      const { error } = await supabase
+        .from('change_orders')
+        .update({
+          status: 'revision_requested',
+          revision_notes: revisionNotes.trim(),
+        })
+        .eq('public_token', token);
+
+      if (error) {
+        return new Response(
+          JSON.stringify({ error: 'Failed to request revision' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Log history
+      if (current) {
+        await supabase.from('change_order_history').insert({
+          change_order_id: current.id,
+          action: 'Customer requested revision',
+          performed_by: 'Customer',
+          notes: revisionNotes.trim(),
+          from_status: current.status,
+          to_status: 'revision_requested',
+        });
       }
 
       return new Response(
