@@ -220,6 +220,8 @@ export function ProfileEditContent({ targetUserId }: ProfileEditContentProps = {
             city: formData.city,
             state: formData.state,
             zip_code: formData.zip_code,
+            network_visible: formData.network_visible,
+            network_bio: formData.network_bio || null,
           };
           break;
         case 'branding':
