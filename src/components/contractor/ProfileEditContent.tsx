@@ -120,6 +120,7 @@ export function ProfileEditContent({ targetUserId }: ProfileEditContentProps = {
         zelle_phone: profile.zelle_phone || '',
         ach_instructions: profile.ach_instructions || '',
         accepted_payment_methods: profile.accepted_payment_methods || ['card'],
+        google_place_id: (profile as any).google_place_id || '',
       });
     }
   }, [profile]);
