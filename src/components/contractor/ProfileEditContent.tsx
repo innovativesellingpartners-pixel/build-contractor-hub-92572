@@ -67,6 +67,8 @@ export function ProfileEditContent({ targetUserId }: ProfileEditContentProps = {
     ach_instructions: '',
     accepted_payment_methods: ['card'] as string[],
     google_place_id: '',
+    network_visible: false,
+    network_bio: '',
   });
 
   // Fetch target user's profile when admin editing
