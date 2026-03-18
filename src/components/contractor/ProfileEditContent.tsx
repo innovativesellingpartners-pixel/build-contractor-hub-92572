@@ -543,6 +543,28 @@ export function ProfileEditContent({ targetUserId }: ProfileEditContentProps = {
                   />
                 </div>
               </div>
+              <Separator />
+              <div className="space-y-2">
+                <Label htmlFor="google_place_id">Google Place ID</Label>
+                <Input
+                  id="google_place_id"
+                  name="google_place_id"
+                  value={formData.google_place_id}
+                  onChange={handleChange}
+                  placeholder="ChIJN1t_tDeuEmsRUsoyG83frY4"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Used for Google Review requests in the customer portal.{' '}
+                  <a
+                    href="https://developers.google.com/maps/documentation/places/web-service/place-id"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    Find your Place ID →
+                  </a>
+                </p>
+              </div>
             </CardContent>
             <CardFooter className="border-t pt-4 flex justify-end">
               <SectionSaveButton section="branding" />
