@@ -153,6 +153,42 @@ export type Database = {
           },
         ]
       }
+      assignment_audit_log: {
+        Row: {
+          assigned_by: string | null
+          assigned_from: string | null
+          assigned_to: string
+          created_at: string
+          id: string
+          notes: string | null
+          record_id: string
+          record_name: string | null
+          record_type: string
+        }
+        Insert: {
+          assigned_by?: string | null
+          assigned_from?: string | null
+          assigned_to: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          record_id: string
+          record_name?: string | null
+          record_type: string
+        }
+        Update: {
+          assigned_by?: string | null
+          assigned_from?: string | null
+          assigned_to?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          record_id?: string
+          record_name?: string | null
+          record_type?: string
+        }
+        Relationships: []
+      }
       assumption_templates: {
         Row: {
           body: string
