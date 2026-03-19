@@ -124,7 +124,8 @@ export const UserDetailPage = () => {
           subscription_tier: subscriptionTier,
           pocketbot_access_type: pocketbotValue,
           pocketbot_full_access: chatAgentEnabled || pocketbotValue !== 'none',
-        })
+          training_access: trainingAccess,
+        } as any)
         .eq('user_id', userId!);
       if (profileError) throw profileError;
 
