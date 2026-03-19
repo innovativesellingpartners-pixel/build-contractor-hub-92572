@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Edit, User, CreditCard, Phone as PhoneIcon, Bot, Shield, DollarSign, Zap, MessageSquare, Loader2, Check, X } from 'lucide-react';
+import { ArrowLeft, Edit, User, CreditCard, Phone as PhoneIcon, Bot, Shield, DollarSign, Zap, MessageSquare, Loader2, Check, X, GraduationCap } from 'lucide-react';
 import { VoiceAISettings } from './VoiceAISettings';
 import { PaymentProviderSettings } from './PaymentProviderSettings';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
@@ -31,6 +31,7 @@ export const UserDetailPage = () => {
   const [subscriptionTier, setSubscriptionTier] = useState('');
   const [pocketbotAccess, setPocketbotAccess] = useState('none');
   const [userRole, setUserRole] = useState('user');
+  const [trainingAccess, setTrainingAccess] = useState(true);
 
   // Subscription management
   const [platformFree, setPlatformFree] = useState(false);
@@ -85,6 +86,7 @@ export const UserDetailPage = () => {
         (user.profile?.pocketbot_full_access ? 'free_full' : 'none')
       );
       setUserRole(user.role || 'user');
+      setTrainingAccess(user.profile?.training_access ?? true);
     }
   }, [user]);
 
@@ -122,7 +124,8 @@ export const UserDetailPage = () => {
           subscription_tier: subscriptionTier,
           pocketbot_access_type: pocketbotValue,
           pocketbot_full_access: chatAgentEnabled || pocketbotValue !== 'none',
-        })
+          training_access: trainingAccess,
+        } as any)
         .eq('user_id', userId!);
       if (profileError) throw profileError;
 
@@ -334,6 +337,25 @@ export const UserDetailPage = () => {
                       <SelectItem value="super_admin">Super Admin</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+
+                <Separator />
+
+                {/* Training Access */}
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label className="flex items-center gap-2">
+                      <GraduationCap className="h-4 w-4" />
+                      5-Star Training Access
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Enable access to the training hub for this contractor
+                    </p>
+                  </div>
+                  <Switch
+                    checked={trainingAccess}
+                    onCheckedChange={setTrainingAccess}
+                  />
                 </div>
 
                 <Separator />

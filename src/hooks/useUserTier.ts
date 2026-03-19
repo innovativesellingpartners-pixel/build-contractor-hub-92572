@@ -68,9 +68,31 @@ export const useUserTier = () => {
     enabled: !!user?.id,
   });
 
+  // Fetch training access from profile
+  const { data: trainingAccess } = useQuery({
+    queryKey: ['trainingAccess', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return true;
+      
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('training_access')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error fetching training access:', error);
+        return true; // Default to true
+      }
+
+      return (data as any)?.training_access ?? true;
+    },
+    enabled: !!user?.id,
+  });
+
   // Check if user has full access via email domain OR super_admin role
   const hasFullAccess = user?.email?.endsWith('@myct1.com') || userRole === 'super_admin';
-  const tierFeatures = getTierFeatures(subscription?.tier_id ?? null, hasFullAccess);
+  const tierFeatures = getTierFeatures(subscription?.tier_id ?? null, hasFullAccess, trainingAccess ?? true);
 
   return {
     subscription,
@@ -81,7 +103,7 @@ export const useUserTier = () => {
   };
 };
 
-function getTierFeatures(tierId: string | null, hasFullAccess: boolean) {
+function getTierFeatures(tierId: string | null, hasFullAccess: boolean, trainingAccess: boolean = true) {
   if (hasFullAccess) {
     return {
       trainingHub: true,
@@ -101,7 +123,7 @@ function getTierFeatures(tierId: string | null, hasFullAccess: boolean) {
   // Bot user tier - Training, CRM, Marketplace, and Monthly Call
   if (tierId === 'bot_user') {
     return {
-      trainingHub: true,
+      trainingHub: trainingAccess,
       crm: true,
       monthlyCall: true,
       insurance: false,
@@ -118,7 +140,7 @@ function getTierFeatures(tierId: string | null, hasFullAccess: boolean) {
   // Trial tier - limited access to Training, CRM, and Marketplace
   if (tierId === 'trial') {
     return {
-      trainingHub: true,
+      trainingHub: trainingAccess,
       crm: true,
       monthlyCall: false,
       insurance: false,
@@ -134,7 +156,7 @@ function getTierFeatures(tierId: string | null, hasFullAccess: boolean) {
 
   if (tierId === 'launch') {
     return {
-      trainingHub: true,
+      trainingHub: trainingAccess,
       crm: true,
       monthlyCall: true,
       insurance: true,
@@ -151,7 +173,7 @@ function getTierFeatures(tierId: string | null, hasFullAccess: boolean) {
   // Free tier - full platform access (no billing, no admin)
   if (tierId === 'free') {
     return {
-      trainingHub: true,
+      trainingHub: trainingAccess,
       crm: true,
       monthlyCall: true,
       insurance: true,
@@ -167,7 +189,7 @@ function getTierFeatures(tierId: string | null, hasFullAccess: boolean) {
 
   if (tierId === 'growth' || tierId === 'accel') {
     return {
-      trainingHub: true,
+      trainingHub: trainingAccess,
       crm: true,
       monthlyCall: true,
       insurance: true,
@@ -181,16 +203,16 @@ function getTierFeatures(tierId: string | null, hasFullAccess: boolean) {
     };
   }
 
-  // No subscription
+  // No subscription - still give training and basic access
   return {
-    trainingHub: false,
+    trainingHub: trainingAccess,
     crm: false,
     monthlyCall: false,
     insurance: false,
     podcast: false,
     standards: false,
-    myAccount: false,
-    home: false,
+    myAccount: true,
+    home: true,
     leads: false,
     aiAssistant: false,
     marketplace: false,
