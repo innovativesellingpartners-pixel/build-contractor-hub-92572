@@ -199,6 +199,22 @@ export default function EstimatesSection({ onSectionChange, initialEstimateId, o
       return;
     }
 
+    // Check if translation is needed: contractor language != customer language
+    const contractorLang = (user as any)?.user_metadata?.preferred_language || 'en';
+    const customerLang = estimate.customer_language || 'en';
+    
+    // If languages differ and no existing translation, show translation preview
+    if (contractorLang !== customerLang && !estimate.translated_at) {
+      setPendingSendEstimate(estimate);
+      setShowTranslationPreview(true);
+      return;
+    }
+
+    // Otherwise send directly
+    await doSendEstimate(estimate);
+  };
+
+  const doSendEstimate = async (estimate: any) => {
     try {
       await sendEstimate({
         estimateId: estimate.id,
@@ -207,6 +223,33 @@ export default function EstimatesSection({ onSectionChange, initialEstimateId, o
       });
     } catch (error) {
       console.error('Error sending estimate:', error);
+    }
+  };
+
+  const handleTranslationConfirm = async (translated: Record<string, string>) => {
+    if (!pendingSendEstimate) return;
+    
+    try {
+      // Save translated content to estimate
+      await supabase
+        .from('estimates')
+        .update({
+          translated_content: translated,
+          translated_at: new Date().toISOString(),
+          original_language: (user as any)?.user_metadata?.preferred_language || 'es',
+          translated_language: pendingSendEstimate.customer_language || 'en',
+        } as any)
+        .eq('id', pendingSendEstimate.id);
+      
+      toast.success('Translation saved');
+      
+      // Now send the estimate
+      await doSendEstimate(pendingSendEstimate);
+    } catch (err) {
+      console.error('Failed to save translation before send:', err);
+      toast.error('Failed to save translation');
+    } finally {
+      setPendingSendEstimate(null);
     }
   };
 
