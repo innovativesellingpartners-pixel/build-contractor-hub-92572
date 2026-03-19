@@ -113,8 +113,8 @@ export const TrainingHub = () => {
                 <iframe
                   src="https://drive.google.com/file/d/1eMBOcQ776JFxqniVIZ7g78DQxn5GzwbY/preview"
                   className="w-full h-full rounded-lg"
-                  allow="autoplay; encrypted-media"
-                  referrerPolicy="no-referrer"
+                  allow="autoplay"
+                  sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
                   title="Welcome to CT1's 5-Star Training"
                   onError={(e) => {
                     const target = e.currentTarget;
@@ -135,6 +135,19 @@ export const TrainingHub = () => {
                     Open video in new tab
                   </a>
                 </div>
+              </div>
+              <div className="mt-3 flex items-center justify-between gap-3 rounded-md border border-border bg-muted/50 px-3 py-2">
+                <p className="text-xs text-muted-foreground">
+                  If the embedded player is blocked, open the training video directly.
+                </p>
+                <a
+                  href="https://drive.google.com/file/d/1eMBOcQ776JFxqniVIZ7g78DQxn5GzwbY/view"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs font-medium text-primary underline"
+                >
+                  Open in new tab
+                </a>
               </div>
             </CardContent>
           </Card>
