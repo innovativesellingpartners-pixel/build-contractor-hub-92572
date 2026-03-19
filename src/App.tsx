@@ -7,6 +7,7 @@ import { ThemeProvider } from "next-themes";
 import { GlobalPocketAgent } from "@/components/GlobalPocketbot";
 import { DashboardPocketAgent } from "@/components/DashboardPocketAgent";
 import { usePWABackNavigation } from "@/hooks/usePWABackNavigation";
+import { useLanguageSync } from "@/hooks/useLanguageSync";
 import { HomeRedirect } from "@/components/HomeRedirect";
 import { NewLandingPage } from "@/components/NewLandingPage";
 import { About } from "@/pages/About";
