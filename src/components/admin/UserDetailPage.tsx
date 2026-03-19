@@ -359,6 +359,8 @@ export const UserDetailPage = () => {
                 </div>
 
                 <Separator />
+
+                <Button 
                   onClick={() => saveAdminSettingsMutation.mutate()} 
                   disabled={saveAdminSettingsMutation.isPending}
                   className="w-full"
