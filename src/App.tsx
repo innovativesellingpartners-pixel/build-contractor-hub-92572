@@ -248,6 +248,7 @@ const App = () => (
             <Route path="/blog" element={<BlogDirectory />} />
             <Route path="/crm-for-:tradeSlug" element={<CrmForTrade />} />
             <Route path="/features/:slug" element={<FeaturePage />} />
+            <Route path="/contractor-hub/training/getting-started/starting-a-new-llc" element={<StartingNewLLC />} />
             <Route path="/trial-signup" element={<TrialSignup />} />
             <Route path="/bot-signup" element={<BotSignup />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
