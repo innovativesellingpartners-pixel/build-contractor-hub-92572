@@ -103,7 +103,7 @@ export const useUserTier = () => {
   };
 };
 
-function getTierFeatures(tierId: string | null, hasFullAccess: boolean) {
+function getTierFeatures(tierId: string | null, hasFullAccess: boolean, trainingAccess: boolean = true) {
   if (hasFullAccess) {
     return {
       trainingHub: true,
@@ -123,7 +123,7 @@ function getTierFeatures(tierId: string | null, hasFullAccess: boolean) {
   // Bot user tier - Training, CRM, Marketplace, and Monthly Call
   if (tierId === 'bot_user') {
     return {
-      trainingHub: true,
+      trainingHub: trainingAccess,
       crm: true,
       monthlyCall: true,
       insurance: false,
@@ -140,7 +140,7 @@ function getTierFeatures(tierId: string | null, hasFullAccess: boolean) {
   // Trial tier - limited access to Training, CRM, and Marketplace
   if (tierId === 'trial') {
     return {
-      trainingHub: true,
+      trainingHub: trainingAccess,
       crm: true,
       monthlyCall: false,
       insurance: false,
@@ -156,7 +156,7 @@ function getTierFeatures(tierId: string | null, hasFullAccess: boolean) {
 
   if (tierId === 'launch') {
     return {
-      trainingHub: true,
+      trainingHub: trainingAccess,
       crm: true,
       monthlyCall: true,
       insurance: true,
@@ -173,7 +173,7 @@ function getTierFeatures(tierId: string | null, hasFullAccess: boolean) {
   // Free tier - full platform access (no billing, no admin)
   if (tierId === 'free') {
     return {
-      trainingHub: true,
+      trainingHub: trainingAccess,
       crm: true,
       monthlyCall: true,
       insurance: true,
@@ -189,7 +189,7 @@ function getTierFeatures(tierId: string | null, hasFullAccess: boolean) {
 
   if (tierId === 'growth' || tierId === 'accel') {
     return {
-      trainingHub: true,
+      trainingHub: trainingAccess,
       crm: true,
       monthlyCall: true,
       insurance: true,
@@ -203,16 +203,16 @@ function getTierFeatures(tierId: string | null, hasFullAccess: boolean) {
     };
   }
 
-  // No subscription
+  // No subscription - still give training and basic access
   return {
-    trainingHub: false,
+    trainingHub: trainingAccess,
     crm: false,
     monthlyCall: false,
     insurance: false,
     podcast: false,
     standards: false,
-    myAccount: false,
-    home: false,
+    myAccount: true,
+    home: true,
     leads: false,
     aiAssistant: false,
     marketplace: false,
