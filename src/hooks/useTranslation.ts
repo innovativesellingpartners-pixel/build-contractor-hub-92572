@@ -3,6 +3,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { CONSTRUCTION_GLOSSARY, CONSTRUCTION_GLOSSARY_EN_TO_ES } from "@/constants/constructionTranslations";
 import { toast } from "sonner";
 
+export interface TranslationResult {
+  translated: Record<string, string>;
+  baseTranslated: Record<string, string>;
+  aiEnhanced: boolean;
+  refinedFields: string[];
+}
+
 /**
  * Hook for translating document content between Spanish and English
  * using the construction glossary + AI translation edge function.
@@ -12,16 +19,13 @@ export function useDocumentTranslation() {
 
   /**
    * Translate a set of text fields from one language to another.
-   * @param texts - Object with key:value pairs to translate
-   * @param sourceLang - "es" or "en"
-   * @param targetLang - "en" or "es"
-   * @returns Translated texts with the same keys, or null on failure
+   * Returns the full translation result including AI refinement metadata.
    */
   const translateTexts = async (
     texts: Record<string, string>,
     sourceLang: "es" | "en",
     targetLang: "en" | "es"
-  ): Promise<Record<string, string> | null> => {
+  ): Promise<TranslationResult | null> => {
     setTranslating(true);
     try {
       // Pick the right glossary direction
@@ -45,7 +49,12 @@ export function useDocumentTranslation() {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
 
-      return data.translated;
+      return {
+        translated: data.translated,
+        baseTranslated: data.baseTranslated || data.translated,
+        aiEnhanced: data.aiEnhanced || false,
+        refinedFields: data.refinedFields || [],
+      };
     } catch (err: any) {
       console.error("Translation failed:", err);
       toast.error(err?.message || "Translation failed. Please try again.");
