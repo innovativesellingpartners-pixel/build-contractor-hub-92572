@@ -951,6 +951,8 @@ export function EstimateDetailViewBlue({
           { key: "project_description", label: "Project Description", value: estimate.project_description || "" },
           { key: "scope_objective", label: "Scope of Work", value: estimate.scope_objective || "" },
           { key: "assumptions_and_exclusions", label: "Assumptions & Exclusions", value: estimate.assumptions_and_exclusions || "" },
+          { key: "warranty_text", label: "Warranty", value: estimate.warranty_text || "" },
+          { key: "terms_payment_schedule", label: "Payment Terms", value: estimate.terms_payment_schedule || "" },
           ...((estimate.line_items as any[]) || []).map((item: any, idx: number) => ({
             key: `line_item_${idx}_description`,
             label: `Line Item ${idx + 1}`,
@@ -958,19 +960,15 @@ export function EstimateDetailViewBlue({
           })),
         ].filter(f => f.value?.trim())}
         onConfirm={async (translated) => {
-          // Store translated version on the estimate record
           try {
             await supabase
               .from('estimates')
               .update({
-                trade_specific: {
-                  ...(estimate.trade_specific as any || {}),
-                  translated_content: translated,
-                  translated_at: new Date().toISOString(),
-                  original_language: 'es',
-                  translated_language: 'en',
-                }
-              })
+                translated_content: translated,
+                translated_at: new Date().toISOString(),
+                original_language: 'es',
+                translated_language: 'en',
+              } as any)
               .eq('id', estimate.id);
             toast.success('Translation saved to estimate');
           } catch (err) {
