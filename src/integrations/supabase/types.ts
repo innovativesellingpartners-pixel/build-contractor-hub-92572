@@ -5092,6 +5092,7 @@ export type Database = {
           subscription_tier: string | null
           tax_id: string | null
           trade: string | null
+          training_access: boolean
           updated_at: string
           user_id: string
           username: string | null
@@ -5147,6 +5148,7 @@ export type Database = {
           subscription_tier?: string | null
           tax_id?: string | null
           trade?: string | null
+          training_access?: boolean
           updated_at?: string
           user_id: string
           username?: string | null
@@ -5202,6 +5204,7 @@ export type Database = {
           subscription_tier?: string | null
           tax_id?: string | null
           trade?: string | null
+          training_access?: boolean
           updated_at?: string
           user_id?: string
           username?: string | null

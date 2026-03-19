@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS training_access boolean NOT NULL DEFAULT true;
