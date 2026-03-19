@@ -73,6 +73,22 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('Estimate not found');
     }
 
+    // Check if translated content exists and prepare display values
+    const tc = estimate.translated_content as Record<string, string> | null;
+    const useTranslation = !!tc && !!estimate.translated_at;
+    
+    // Helper to get translated or original value
+    const t = (field: string, original: string | null | undefined): string => {
+      if (useTranslation && tc && tc[field]) return tc[field];
+      return original || '';
+    };
+
+    // Get translated line item description
+    const tLineItem = (idx: number, original: string | null | undefined): string => {
+      if (useTranslation && tc && tc[`line_item_${idx}_description`]) return tc[`line_item_${idx}_description`];
+      return original || '';
+    };
+
     // SECURITY: Verify ownership - user must own this estimate
     if (estimate.user_id !== user.id) {
       return new Response(
@@ -314,7 +330,7 @@ const handler = async (req: Request): Promise<Response> => {
                 <tr>
                   <td style="padding: 24px;">
                     <span style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 11px; color: ${accentColor}; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Project Details</span>
-                    <h3 style="margin: 8px 0 12px 0; font-size: 20px; font-weight: 600; color: ${secondaryColor}; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;">${estimate.title}</h3>
+                    <h3 style="margin: 8px 0 12px 0; font-size: 20px; font-weight: 600; color: ${secondaryColor}; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;">${t('title', estimate.title)}</h3>
                     ${estimate.site_address ? `<p style="margin: 0 0 8px 0; font-size: 14px; color: #666666; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;">📍 ${estimate.site_address}</p>` : ''}
                     ${estimate.trade_type ? `<p style="margin: 0; font-size: 14px; color: #666666; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;">🔧 ${estimate.trade_type}</p>` : ''}
                   </td>
@@ -463,7 +479,7 @@ const handler = async (req: Request): Promise<Response> => {
       to: recipients,
       bcc,
       reply_to: replyToEmail || contractorEmail || undefined,
-      subject: `Estimate from ${companyName} - ${estimate.title}`,
+      subject: `Estimate from ${companyName} - ${t('title', estimate.title)}`,
       html: emailHtml,
     };
 

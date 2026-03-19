@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { CheckCircle, FileText, Loader2, CreditCard, Building2, Calendar, DollarSign, Wallet, AlertCircle } from 'lucide-react';
+import { CheckCircle, FileText, Loader2, CreditCard, Building2, Calendar, DollarSign, Wallet, AlertCircle, Languages } from 'lucide-react';
 import { FinixPaymentForm } from '@/components/payments/FinixPaymentForm';
 import { AlternativePaymentMethods } from '@/components/payments/AlternativePaymentMethods';
 import SignatureCanvas from 'react-signature-canvas';
@@ -261,6 +261,18 @@ function PublicEstimateInner() {
 
   const lineItems = estimate.line_items || [];
   const costSummary = estimate.cost_summary || {};
+  
+  // Translation helpers - use translated content if available
+  const tc = estimate.translated_content as Record<string, string> | null;
+  const useTranslation = !!tc && !!estimate.translated_at;
+  const tr = (field: string, original: string | null | undefined): string => {
+    if (useTranslation && tc && tc[field]) return tc[field];
+    return original || '';
+  };
+  const trLineItem = (idx: number, original: string | null | undefined): string => {
+    if (useTranslation && tc && tc[`line_item_${idx}_description`]) return tc[`line_item_${idx}_description`];
+    return original || '';
+  };
   const { total, deposit, remaining, amountPaid, hasDeposit, depositRemaining } = getPaymentAmounts();
   const isFullyPaid = remaining <= 0 || paymentComplete !== null;
   const isPartiallyPaid = amountPaid > 0 && remaining > 0;
@@ -379,7 +391,7 @@ function PublicEstimateInner() {
               style={{ borderLeft: `4px solid ${brandColors.primary}` }}
             >
               <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">
-                {estimate.title}
+                {tr('title', estimate.title)}
               </h2>
               <p className="text-muted-foreground text-lg flex items-center gap-2">
                 <Building2 className="h-5 w-5" style={{ color: brandColors.primary }} />
@@ -437,7 +449,7 @@ function PublicEstimateInner() {
             {estimate.project_description && (
               <div className="bg-primary/5 border-l-4 border-primary p-6 rounded-r-lg">
                 <p className="text-sm text-muted-foreground font-semibold mb-2">Project Description</p>
-                <p className="text-base leading-relaxed">{estimate.project_description}</p>
+                <p className="text-base leading-relaxed">{tr('project_description', estimate.project_description)}</p>
               </div>
             )}
           </CardContent>
@@ -459,7 +471,7 @@ function PublicEstimateInner() {
                       className="flex justify-between items-start py-3 border-b last:border-b-0"
                     >
                       <div className="flex-1">
-                        <p className="font-medium">{item.item_description}</p>
+                        <p className="font-medium">{trLineItem(index, item.item_description)}</p>
                         <p className="text-sm text-muted-foreground">
                           {item.quantity} {item.unit_type} × ${safeFixed(item.unit_cost)}
                         </p>
@@ -585,10 +597,20 @@ function PublicEstimateInner() {
             </CardHeader>
             <CardContent>
               <p className="whitespace-pre-wrap">
-                {estimate.assumptions_and_exclusions}
+                {tr('assumptions_and_exclusions', estimate.assumptions_and_exclusions)}
               </p>
             </CardContent>
           </Card>
+        )}
+
+        {/* Translated from badge */}
+        {useTranslation && (
+          <div className="text-center">
+            <Badge variant="outline" className="text-xs">
+              <Languages className="h-3 w-3 mr-1" />
+              Translated from {estimate.original_language === 'es' ? 'Spanish' : estimate.original_language}
+            </Badge>
+          </div>
         )}
 
         {/* Signature and Payment Section */}

@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Plus, FileText, Trash2, Eye, Send, CheckCircle, Clock, AlertCircle, RefreshCw, Users, Copy, ArrowLeft, Briefcase, ChevronRight, LayoutTemplate, FlaskConical } from 'lucide-react';
+import { Plus, FileText, Trash2, Eye, Send, CheckCircle, Clock, AlertCircle, RefreshCw, Users, Copy, ArrowLeft, Briefcase, ChevronRight, LayoutTemplate, FlaskConical, Languages } from 'lucide-react';
 import { useEstimates, EstimateLineItem } from '@/hooks/useEstimates';
 import { useLeads } from '@/hooks/useLeads';
 import EstimateBuilder from '../EstimateBuilder';
@@ -20,6 +20,7 @@ import { PredictiveSearch } from '../PredictiveSearch';
 import { SwipeToArchive } from '@/components/ui/swipe-to-archive';
 import { CrmNavHeader } from '../CrmNavHeader';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
+import { TranslationPreviewDialog } from '../TranslationPreviewDialog';
 
 interface EstimatesSectionProps {
   onSectionChange?: (section: string) => void;
@@ -40,6 +41,8 @@ export default function EstimatesSection({ onSectionChange, initialEstimateId, o
   const [isConverting, setIsConverting] = useState<string | null>(null);
   const [showTemplates, setShowTemplates] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [showTranslationPreview, setShowTranslationPreview] = useState(false);
+  const [pendingSendEstimate, setPendingSendEstimate] = useState<any>(null);
 
   // Handle initial estimate ID to auto-open the detail view
   React.useEffect(() => {
@@ -196,6 +199,22 @@ export default function EstimatesSection({ onSectionChange, initialEstimateId, o
       return;
     }
 
+    // Check if translation is needed: contractor language != customer language
+    const contractorLang = (user as any)?.user_metadata?.preferred_language || 'en';
+    const customerLang = estimate.customer_language || 'en';
+    
+    // If languages differ and no existing translation, show translation preview
+    if (contractorLang !== customerLang && !estimate.translated_at) {
+      setPendingSendEstimate(estimate);
+      setShowTranslationPreview(true);
+      return;
+    }
+
+    // Otherwise send directly
+    await doSendEstimate(estimate);
+  };
+
+  const doSendEstimate = async (estimate: any) => {
     try {
       await sendEstimate({
         estimateId: estimate.id,
@@ -204,6 +223,33 @@ export default function EstimatesSection({ onSectionChange, initialEstimateId, o
       });
     } catch (error) {
       console.error('Error sending estimate:', error);
+    }
+  };
+
+  const handleTranslationConfirm = async (translated: Record<string, string>) => {
+    if (!pendingSendEstimate) return;
+    
+    try {
+      // Save translated content to estimate
+      await supabase
+        .from('estimates')
+        .update({
+          translated_content: translated,
+          translated_at: new Date().toISOString(),
+          original_language: (user as any)?.user_metadata?.preferred_language || 'es',
+          translated_language: pendingSendEstimate.customer_language || 'en',
+        } as any)
+        .eq('id', pendingSendEstimate.id);
+      
+      toast.success('Translation saved');
+      
+      // Now send the estimate
+      await doSendEstimate(pendingSendEstimate);
+    } catch (err) {
+      console.error('Failed to save translation before send:', err);
+      toast.error('Failed to save translation');
+    } finally {
+      setPendingSendEstimate(null);
     }
   };
 
@@ -504,6 +550,12 @@ export default function EstimatesSection({ onSectionChange, initialEstimateId, o
                     <Badge variant={getStatusColor(estimate.status)} className="text-xs h-5">
                       {estimate.status}
                     </Badge>
+                    {estimate.translated_at && (
+                      <Badge variant="info" className="text-xs h-5">
+                        <Languages className="h-2.5 w-2.5 mr-0.5" />
+                        Translated
+                      </Badge>
+                    )}
                   </RowTitleLine>
                   
                   <RowMetaLine>
@@ -646,6 +698,34 @@ export default function EstimatesSection({ onSectionChange, initialEstimateId, o
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Translation Preview Dialog for Send Flow */}
+      {pendingSendEstimate && (
+        <TranslationPreviewDialog
+          open={showTranslationPreview}
+          onOpenChange={(open) => {
+            setShowTranslationPreview(open);
+            if (!open) setPendingSendEstimate(null);
+          }}
+          sourceLang={(user as any)?.user_metadata?.preferred_language === 'es' ? 'es' : 'es'}
+          targetLang={pendingSendEstimate?.customer_language === 'es' ? 'es' : 'en'}
+          fields={[
+            { key: "title", label: "Title", value: pendingSendEstimate?.title || "" },
+            { key: "description", label: "Description", value: pendingSendEstimate?.description || "" },
+            { key: "project_description", label: "Project Description", value: pendingSendEstimate?.project_description || "" },
+            { key: "scope_objective", label: "Scope of Work", value: pendingSendEstimate?.scope_objective || "" },
+            { key: "assumptions_and_exclusions", label: "Assumptions & Exclusions", value: pendingSendEstimate?.assumptions_and_exclusions || "" },
+            { key: "warranty_text", label: "Warranty", value: pendingSendEstimate?.warranty_text || "" },
+            { key: "terms_payment_schedule", label: "Payment Terms", value: pendingSendEstimate?.terms_payment_schedule || "" },
+            ...((pendingSendEstimate?.line_items as any[]) || []).map((item: any, idx: number) => ({
+              key: `line_item_${idx}_description`,
+              label: `Line Item ${idx + 1}`,
+              value: item.description || item.item_description || "",
+            })),
+          ].filter(f => f.value?.trim())}
+          onConfirm={handleTranslationConfirm}
+        />
+      )}
     </MobileOptimizedWrapper>
   );
 }

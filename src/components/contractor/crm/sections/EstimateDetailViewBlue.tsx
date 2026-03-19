@@ -6,6 +6,7 @@ import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { Send, Users, Briefcase, Eye, Copy, FileText, Receipt, Save, Download, LayoutTemplate, BookmarkPlus, Camera, MessageSquare, Loader2, CheckCircle, CreditCard, AlertCircle, Pencil, Languages } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { EstimatePhotosSection } from '../estimate/EstimatePhotosSection';
@@ -614,6 +615,26 @@ export function EstimateDetailViewBlue({
             ]}
           />
           <InfoRow label="Delivery" value={getDeliveryStatus()} />
+          <EditableInfoRow 
+            label="Customer Language" 
+            value={(estimate as any).customer_language || 'en'} 
+            onSave={(v) => updateEstimate({ id: estimate.id!, customer_language: v } as any)}
+            selectOptions={[
+              { value: 'en', label: 'English' },
+              { value: 'es', label: 'Spanish' },
+            ]}
+          />
+          {(estimate as any).translated_at && (
+            <InfoRow 
+              label="Translation" 
+              value={
+                <Badge variant="info" className="text-xs">
+                  <Languages className="h-3 w-3 mr-1" />
+                  Translated to {(estimate as any).translated_language === 'en' ? 'English' : 'Spanish'}
+                </Badge>
+              } 
+            />
+          )}
           <EditableInfoRow label="Project" value={estimate.project_name} onSave={(v) => updateEstimate({ id: estimate.id!, project_name: v || null } as any)} placeholder="Project name" />
           <EditableInfoRow label="Valid Until" value={estimate.valid_until} type="date" onSave={(v) => updateEstimate({ id: estimate.id!, valid_until: v || null } as any)} />
         </InfoCard>
@@ -930,6 +951,8 @@ export function EstimateDetailViewBlue({
           { key: "project_description", label: "Project Description", value: estimate.project_description || "" },
           { key: "scope_objective", label: "Scope of Work", value: estimate.scope_objective || "" },
           { key: "assumptions_and_exclusions", label: "Assumptions & Exclusions", value: estimate.assumptions_and_exclusions || "" },
+          { key: "warranty_text", label: "Warranty", value: estimate.warranty_text || "" },
+          { key: "terms_payment_schedule", label: "Payment Terms", value: estimate.terms_payment_schedule || "" },
           ...((estimate.line_items as any[]) || []).map((item: any, idx: number) => ({
             key: `line_item_${idx}_description`,
             label: `Line Item ${idx + 1}`,
@@ -937,19 +960,15 @@ export function EstimateDetailViewBlue({
           })),
         ].filter(f => f.value?.trim())}
         onConfirm={async (translated) => {
-          // Store translated version on the estimate record
           try {
             await supabase
               .from('estimates')
               .update({
-                trade_specific: {
-                  ...(estimate.trade_specific as any || {}),
-                  translated_content: translated,
-                  translated_at: new Date().toISOString(),
-                  original_language: 'es',
-                  translated_language: 'en',
-                }
-              })
+                translated_content: translated,
+                translated_at: new Date().toISOString(),
+                original_language: 'es',
+                translated_language: 'en',
+              } as any)
               .eq('id', estimate.id);
             toast.success('Translation saved to estimate');
           } catch (err) {
