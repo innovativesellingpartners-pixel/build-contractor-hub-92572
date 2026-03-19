@@ -479,7 +479,7 @@ const handler = async (req: Request): Promise<Response> => {
       to: recipients,
       bcc,
       reply_to: replyToEmail || contractorEmail || undefined,
-      subject: `Estimate from ${companyName} - ${estimate.title}`,
+      subject: `Estimate from ${companyName} - ${t('title', estimate.title)}`,
       html: emailHtml,
     };
 
