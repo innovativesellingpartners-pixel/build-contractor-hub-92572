@@ -471,7 +471,7 @@ function PublicEstimateInner() {
                       className="flex justify-between items-start py-3 border-b last:border-b-0"
                     >
                       <div className="flex-1">
-                        <p className="font-medium">{item.item_description}</p>
+                        <p className="font-medium">{trLineItem(index, item.item_description)}</p>
                         <p className="text-sm text-muted-foreground">
                           {item.quantity} {item.unit_type} × ${safeFixed(item.unit_cost)}
                         </p>
