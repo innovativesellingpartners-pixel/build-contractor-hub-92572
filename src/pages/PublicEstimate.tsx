@@ -391,7 +391,7 @@ function PublicEstimateInner() {
               style={{ borderLeft: `4px solid ${brandColors.primary}` }}
             >
               <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">
-                {estimate.title}
+                {tr('title', estimate.title)}
               </h2>
               <p className="text-muted-foreground text-lg flex items-center gap-2">
                 <Building2 className="h-5 w-5" style={{ color: brandColors.primary }} />
