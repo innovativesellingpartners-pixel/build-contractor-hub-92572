@@ -261,6 +261,18 @@ function PublicEstimateInner() {
 
   const lineItems = estimate.line_items || [];
   const costSummary = estimate.cost_summary || {};
+  
+  // Translation helpers - use translated content if available
+  const tc = estimate.translated_content as Record<string, string> | null;
+  const useTranslation = !!tc && !!estimate.translated_at;
+  const tr = (field: string, original: string | null | undefined): string => {
+    if (useTranslation && tc && tc[field]) return tc[field];
+    return original || '';
+  };
+  const trLineItem = (idx: number, original: string | null | undefined): string => {
+    if (useTranslation && tc && tc[`line_item_${idx}_description`]) return tc[`line_item_${idx}_description`];
+    return original || '';
+  };
   const { total, deposit, remaining, amountPaid, hasDeposit, depositRemaining } = getPaymentAmounts();
   const isFullyPaid = remaining <= 0 || paymentComplete !== null;
   const isPartiallyPaid = amountPaid > 0 && remaining > 0;

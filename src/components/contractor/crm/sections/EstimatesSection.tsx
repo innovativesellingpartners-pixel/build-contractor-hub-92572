@@ -550,6 +550,12 @@ export default function EstimatesSection({ onSectionChange, initialEstimateId, o
                     <Badge variant={getStatusColor(estimate.status)} className="text-xs h-5">
                       {estimate.status}
                     </Badge>
+                    {estimate.translated_at && (
+                      <Badge variant="info" className="text-xs h-5">
+                        <Languages className="h-2.5 w-2.5 mr-0.5" />
+                        Translated
+                      </Badge>
+                    )}
                   </RowTitleLine>
                   
                   <RowMetaLine>

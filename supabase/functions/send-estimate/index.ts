@@ -330,7 +330,7 @@ const handler = async (req: Request): Promise<Response> => {
                 <tr>
                   <td style="padding: 24px;">
                     <span style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size: 11px; color: ${accentColor}; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Project Details</span>
-                    <h3 style="margin: 8px 0 12px 0; font-size: 20px; font-weight: 600; color: ${secondaryColor}; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;">${estimate.title}</h3>
+                    <h3 style="margin: 8px 0 12px 0; font-size: 20px; font-weight: 600; color: ${secondaryColor}; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;">${t('title', estimate.title)}</h3>
                     ${estimate.site_address ? `<p style="margin: 0 0 8px 0; font-size: 14px; color: #666666; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;">📍 ${estimate.site_address}</p>` : ''}
                     ${estimate.trade_type ? `<p style="margin: 0; font-size: 14px; color: #666666; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;">🔧 ${estimate.trade_type}</p>` : ''}
                   </td>
