@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { TranslationPreviewDialog } from '../TranslationPreviewDialog';
 import { Estimate, useEstimates } from '@/hooks/useEstimates';
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
