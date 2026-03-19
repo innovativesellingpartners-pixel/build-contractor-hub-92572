@@ -341,7 +341,24 @@ export const UserDetailPage = () => {
 
                 <Separator />
 
-                <Button 
+                {/* Training Access */}
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label className="flex items-center gap-2">
+                      <GraduationCap className="h-4 w-4" />
+                      5-Star Training Access
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Enable access to the training hub for this contractor
+                    </p>
+                  </div>
+                  <Switch
+                    checked={trainingAccess}
+                    onCheckedChange={setTrainingAccess}
+                  />
+                </div>
+
+                <Separator />
                   onClick={() => saveAdminSettingsMutation.mutate()} 
                   disabled={saveAdminSettingsMutation.isPending}
                   className="w-full"
