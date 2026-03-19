@@ -8,7 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
-import { Upload, Loader2, Building2, Globe, DollarSign, Shield, Percent, Palette, Save, ImageIcon, Users } from "lucide-react";
+import { Upload, Loader2, Building2, Globe, DollarSign, Shield, Percent, Palette, Save, ImageIcon, Users, Languages } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { WarrantyManagement } from "./WarrantyManagement";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
