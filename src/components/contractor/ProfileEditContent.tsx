@@ -513,6 +513,30 @@ export function ProfileEditContent({ targetUserId }: ProfileEditContentProps = {
                 </div>
               </div>
 
+              {/* Preferred Language */}
+              <Separator />
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-sm font-medium flex items-center gap-2">
+                    <Languages className="h-4 w-4" />
+                    Preferred Language
+                  </Label>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Choose the language for your CT1 interface. Customer documents can be translated before sending.
+                  </p>
+                </div>
+                <select
+                  value={formData.preferred_language}
+                  onChange={(e) => {
+                    setFormData(prev => ({ ...prev, preferred_language: e.target.value }));
+                  }}
+                  className="flex h-10 w-full max-w-xs rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  <option value="en">English</option>
+                  <option value="es">Spanish (Espanol)</option>
+                </select>
+              </div>
+
               {/* Contractor Network Opt-In */}
               <Separator />
               <div className="space-y-4">
