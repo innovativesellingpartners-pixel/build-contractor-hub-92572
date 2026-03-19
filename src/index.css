@@ -375,13 +375,15 @@
 
   .card, [class*="Card"], [class*="card"] {
     max-width: 100%;
-    overflow: hidden;
+    overflow-x: hidden;
+    touch-action: pan-y;
   }
 
   button, .btn, [class*="Button"], [class*="button"] {
     max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
+    touch-action: manipulation;
   }
 
   input, textarea, select {
@@ -394,8 +396,27 @@
   }
 }
 
+/* Global touch scrolling — ensures scrolling works on all touch targets */
+html, body, #root {
+  touch-action: pan-y pan-x;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Ensure all containers allow vertical scroll propagation */
+*, *::before, *::after {
+  -webkit-overflow-scrolling: touch;
+}
+
 /* Touch scrolling utility */
 .touch-scroll {
   touch-action: pan-y;
   -webkit-overflow-scrolling: touch;
+}
+
+/* Sidebar independent scroll on desktop */
+[data-sidebar], .sidebar-scroll {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
 }
