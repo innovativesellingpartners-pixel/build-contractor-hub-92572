@@ -597,10 +597,20 @@ function PublicEstimateInner() {
             </CardHeader>
             <CardContent>
               <p className="whitespace-pre-wrap">
-                {estimate.assumptions_and_exclusions}
+                {tr('assumptions_and_exclusions', estimate.assumptions_and_exclusions)}
               </p>
             </CardContent>
           </Card>
+        )}
+
+        {/* Translated from badge */}
+        {useTranslation && (
+          <div className="text-center">
+            <Badge variant="outline" className="text-xs">
+              <Languages className="h-3 w-3 mr-1" />
+              Translated from {estimate.original_language === 'es' ? 'Spanish' : estimate.original_language}
+            </Badge>
+          </div>
         )}
 
         {/* Signature and Payment Section */}
