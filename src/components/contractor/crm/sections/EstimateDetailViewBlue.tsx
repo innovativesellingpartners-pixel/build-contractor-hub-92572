@@ -63,6 +63,7 @@ export function EstimateDetailViewBlue({
   const [showSMSConfirmDialog, setShowSMSConfirmDialog] = useState(false);
   const [showPaymentRequiredDialog, setShowPaymentRequiredDialog] = useState(false);
   const [isClosingWon, setIsClosingWon] = useState(false);
+  const [showTranslationDialog, setShowTranslationDialog] = useState(false);
 
   // Check if estimate is paid (payment_amount > 0 indicates deposit/payment received)
   const isPaid = estimate.paid_at != null || (estimate.payment_amount != null && estimate.payment_amount > 0);
