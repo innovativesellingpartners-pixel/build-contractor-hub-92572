@@ -614,6 +614,26 @@ export function EstimateDetailViewBlue({
             ]}
           />
           <InfoRow label="Delivery" value={getDeliveryStatus()} />
+          <EditableInfoRow 
+            label="Customer Language" 
+            value={(estimate as any).customer_language || 'en'} 
+            onSave={(v) => updateEstimate({ id: estimate.id!, customer_language: v } as any)}
+            selectOptions={[
+              { value: 'en', label: 'English' },
+              { value: 'es', label: 'Spanish' },
+            ]}
+          />
+          {(estimate as any).translated_at && (
+            <InfoRow 
+              label="Translation" 
+              value={
+                <Badge variant="info" className="text-xs">
+                  <Languages className="h-3 w-3 mr-1" />
+                  Translated to {(estimate as any).translated_language === 'en' ? 'English' : 'Spanish'}
+                </Badge>
+              } 
+            />
+          )}
           <EditableInfoRow label="Project" value={estimate.project_name} onSave={(v) => updateEstimate({ id: estimate.id!, project_name: v || null } as any)} placeholder="Project name" />
           <EditableInfoRow label="Valid Until" value={estimate.valid_until} type="date" onSave={(v) => updateEstimate({ id: estimate.id!, valid_until: v || null } as any)} />
         </InfoCard>
