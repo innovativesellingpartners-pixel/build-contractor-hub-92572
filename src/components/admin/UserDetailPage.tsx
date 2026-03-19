@@ -578,6 +578,51 @@ export const UserDetailPage = () => {
                   </div>
                 </div>
 
+                {/* 5-Star Training */}
+                <div className="rounded-lg border p-4 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-semibold flex items-center gap-2">
+                        <GraduationCap className="h-4 w-4 text-primary" />
+                        5-Star Training
+                      </h4>
+                      <p className="text-sm text-muted-foreground">Access to the training hub and courses</p>
+                    </div>
+                    <div className="text-right">
+                      {trainingAccess ? (
+                        <Badge className="bg-green-500/10 text-green-600 border-green-200">
+                          <Check className="h-3 w-3 mr-1" />
+                          Active (Free)
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-muted-foreground">
+                          Not Active
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      id="training-access"
+                      checked={trainingAccess}
+                      onCheckedChange={setTrainingAccess}
+                    />
+                    <Label htmlFor="training-access" className="text-sm">Enable Training Access</Label>
+                  </div>
+
+                  <Button
+                    size="sm"
+                    onClick={() => saveAdminSettingsMutation.mutate()}
+                    disabled={saveAdminSettingsMutation.isPending}
+                  >
+                    {saveAdminSettingsMutation.isPending ? (
+                      <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                    ) : null}
+                    {trainingAccess ? 'Update' : 'Enable'} Training
+                  </Button>
+                </div>
+
                 {/* Summary */}
                 <div className="bg-muted/50 rounded-lg p-4 space-y-2">
                   <h4 className="text-sm font-semibold">Monthly Billing Summary</h4>
