@@ -41,6 +41,8 @@ export default function EstimatesSection({ onSectionChange, initialEstimateId, o
   const [isConverting, setIsConverting] = useState<string | null>(null);
   const [showTemplates, setShowTemplates] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [showTranslationPreview, setShowTranslationPreview] = useState(false);
+  const [pendingSendEstimate, setPendingSendEstimate] = useState<any>(null);
 
   // Handle initial estimate ID to auto-open the detail view
   React.useEffect(() => {
