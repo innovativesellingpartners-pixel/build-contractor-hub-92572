@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Edit, User, CreditCard, Phone as PhoneIcon, Bot, Shield, DollarSign, Zap, MessageSquare, Loader2, Check, X } from 'lucide-react';
+import { ArrowLeft, Edit, User, CreditCard, Phone as PhoneIcon, Bot, Shield, DollarSign, Zap, MessageSquare, Loader2, Check, X, GraduationCap } from 'lucide-react';
 import { VoiceAISettings } from './VoiceAISettings';
 import { PaymentProviderSettings } from './PaymentProviderSettings';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
