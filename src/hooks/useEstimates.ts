@@ -99,6 +99,13 @@ export interface Estimate {
   trade_specific?: any;
   attachments?: any;
   
+  // Translation fields
+  customer_language?: string;
+  translated_content?: Record<string, string> | null;
+  original_language?: string;
+  translated_language?: string;
+  translated_at?: string;
+  
   // System fields
   created_at?: string;
   updated_at?: string;
