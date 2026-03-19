@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,7 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
-import { Upload, Loader2, Building2, Globe, DollarSign, Shield, Percent, Palette, Save, ImageIcon, Users } from "lucide-react";
+import { Upload, Loader2, Building2, Globe, DollarSign, Shield, Percent, Palette, Save, ImageIcon, Users, Languages } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { WarrantyManagement } from "./WarrantyManagement";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -69,6 +70,7 @@ export function ProfileEditContent({ targetUserId }: ProfileEditContentProps = {
     google_place_id: '',
     network_visible: false,
     network_bio: '',
+    preferred_language: 'en',
   });
 
   // Fetch target user's profile when admin editing
@@ -125,6 +127,7 @@ export function ProfileEditContent({ targetUserId }: ProfileEditContentProps = {
         google_place_id: (profile as any).google_place_id || '',
         network_visible: (profile as any).network_visible || false,
         network_bio: (profile as any).network_bio || '',
+        preferred_language: (profile as any).preferred_language || 'en',
       });
     }
   }, [profile]);
@@ -222,6 +225,7 @@ export function ProfileEditContent({ targetUserId }: ProfileEditContentProps = {
             zip_code: formData.zip_code,
             network_visible: formData.network_visible,
             network_bio: formData.network_bio || null,
+            preferred_language: formData.preferred_language,
           };
           break;
         case 'branding':
@@ -507,6 +511,30 @@ export function ProfileEditContent({ targetUserId }: ProfileEditContentProps = {
                     </div>
                   </div>
                 </div>
+              </div>
+
+              {/* Preferred Language */}
+              <Separator />
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-sm font-medium flex items-center gap-2">
+                    <Languages className="h-4 w-4" />
+                    Preferred Language
+                  </Label>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Choose the language for your CT1 interface. Customer documents can be translated before sending.
+                  </p>
+                </div>
+                <select
+                  value={formData.preferred_language}
+                  onChange={(e) => {
+                    setFormData(prev => ({ ...prev, preferred_language: e.target.value }));
+                  }}
+                  className="flex h-10 w-full max-w-xs rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  <option value="en">English</option>
+                  <option value="es">Spanish (Espanol)</option>
+                </select>
               </div>
 
               {/* Contractor Network Opt-In */}

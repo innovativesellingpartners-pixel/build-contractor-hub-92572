@@ -7,6 +7,7 @@ import { ThemeProvider } from "next-themes";
 import { GlobalPocketAgent } from "@/components/GlobalPocketbot";
 import { DashboardPocketAgent } from "@/components/DashboardPocketAgent";
 import { usePWABackNavigation } from "@/hooks/usePWABackNavigation";
+import { useLanguageSync } from "@/hooks/useLanguageSync";
 import { HomeRedirect } from "@/components/HomeRedirect";
 import { NewLandingPage } from "@/components/NewLandingPage";
 import { About } from "@/pages/About";
@@ -153,6 +154,12 @@ function PWABackHandler() {
   return null;
 }
 
+// Sync i18n language with user's profile preference
+function LanguageSyncWrapper() {
+  useLanguageSync();
+  return null;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
@@ -162,6 +169,7 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
           <PWABackHandler />
+          <LanguageSyncWrapper />
           <PocketAgentWrapper />
           <Routes>
             <Route path="/" element={<HomeRedirect />} />
