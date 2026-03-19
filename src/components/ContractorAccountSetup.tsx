@@ -62,8 +62,8 @@ export function ContractorAccountSetup({ isOpen, userId, onClose }: ContractorAc
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleSkip}>
-      <DialogContent className="sm:max-w-md">
+    <Dialog open={isOpen} onOpenChange={() => {}}>
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto" onPointerDownOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()}>
         <DialogHeader>
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 bg-primary/10 rounded-lg">
