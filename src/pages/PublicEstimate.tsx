@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { CheckCircle, FileText, Loader2, CreditCard, Building2, Calendar, DollarSign, Wallet, AlertCircle } from 'lucide-react';
+import { CheckCircle, FileText, Loader2, CreditCard, Building2, Calendar, DollarSign, Wallet, AlertCircle, Languages } from 'lucide-react';
 import { FinixPaymentForm } from '@/components/payments/FinixPaymentForm';
 import { AlternativePaymentMethods } from '@/components/payments/AlternativePaymentMethods';
 import SignatureCanvas from 'react-signature-canvas';
