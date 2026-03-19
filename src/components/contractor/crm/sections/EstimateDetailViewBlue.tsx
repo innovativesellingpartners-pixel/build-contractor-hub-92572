@@ -919,6 +919,44 @@ export function EstimateDetailViewBlue({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <TranslationPreviewDialog
+        open={showTranslationDialog}
+        onOpenChange={setShowTranslationDialog}
+        sourceLang="es"
+        targetLang="en"
+        fields={[
+          { key: "title", label: "Title", value: estimate.title || "" },
+          { key: "description", label: "Description", value: estimate.description || "" },
+          { key: "project_description", label: "Project Description", value: estimate.project_description || "" },
+          { key: "scope_objective", label: "Scope of Work", value: estimate.scope_objective || "" },
+          { key: "assumptions_and_exclusions", label: "Assumptions & Exclusions", value: estimate.assumptions_and_exclusions || "" },
+          ...((estimate.line_items as any[]) || []).map((item: any, idx: number) => ({
+            key: `line_item_${idx}_description`,
+            label: `Line Item ${idx + 1}`,
+            value: item.description || item.item_description || "",
+          })),
+        ].filter(f => f.value?.trim())}
+        onConfirm={async (translated) => {
+          // Store translated version on the estimate record
+          try {
+            await supabase
+              .from('estimates')
+              .update({
+                trade_specific: {
+                  ...(estimate.trade_specific as any || {}),
+                  translated_content: translated,
+                  translated_at: new Date().toISOString(),
+                  original_language: 'es',
+                  translated_language: 'en',
+                }
+              })
+              .eq('id', estimate.id);
+            toast.success('Translation saved to estimate');
+          } catch (err) {
+            console.error('Failed to save translation:', err);
+          }
+        }}
+      />
     </BlueBackground>
   );
 }
