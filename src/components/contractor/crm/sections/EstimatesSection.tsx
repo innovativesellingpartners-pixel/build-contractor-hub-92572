@@ -692,6 +692,34 @@ export default function EstimatesSection({ onSectionChange, initialEstimateId, o
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Translation Preview Dialog for Send Flow */}
+      {pendingSendEstimate && (
+        <TranslationPreviewDialog
+          open={showTranslationPreview}
+          onOpenChange={(open) => {
+            setShowTranslationPreview(open);
+            if (!open) setPendingSendEstimate(null);
+          }}
+          sourceLang={(user as any)?.user_metadata?.preferred_language === 'es' ? 'es' : 'es'}
+          targetLang={pendingSendEstimate?.customer_language === 'es' ? 'es' : 'en'}
+          fields={[
+            { key: "title", label: "Title", value: pendingSendEstimate?.title || "" },
+            { key: "description", label: "Description", value: pendingSendEstimate?.description || "" },
+            { key: "project_description", label: "Project Description", value: pendingSendEstimate?.project_description || "" },
+            { key: "scope_objective", label: "Scope of Work", value: pendingSendEstimate?.scope_objective || "" },
+            { key: "assumptions_and_exclusions", label: "Assumptions & Exclusions", value: pendingSendEstimate?.assumptions_and_exclusions || "" },
+            { key: "warranty_text", label: "Warranty", value: pendingSendEstimate?.warranty_text || "" },
+            { key: "terms_payment_schedule", label: "Payment Terms", value: pendingSendEstimate?.terms_payment_schedule || "" },
+            ...((pendingSendEstimate?.line_items as any[]) || []).map((item: any, idx: number) => ({
+              key: `line_item_${idx}_description`,
+              label: `Line Item ${idx + 1}`,
+              value: item.description || item.item_description || "",
+            })),
+          ].filter(f => f.value?.trim())}
+          onConfirm={handleTranslationConfirm}
+        />
+      )}
     </MobileOptimizedWrapper>
   );
 }
