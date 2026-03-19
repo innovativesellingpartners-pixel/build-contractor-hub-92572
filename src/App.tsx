@@ -105,6 +105,7 @@ import TierMarket from "./pages/products/TierMarket";
 import PublicHelpCenter from "./pages/PublicHelpCenter";
 import PublicSupport from "./pages/PublicSupport";
 import DashboardHelpCenter from "./pages/DashboardHelpCenter";
+import StartingNewLLC from "./pages/training/StartingNewLLC";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -247,6 +248,7 @@ const App = () => (
             <Route path="/blog" element={<BlogDirectory />} />
             <Route path="/crm-for-:tradeSlug" element={<CrmForTrade />} />
             <Route path="/features/:slug" element={<FeaturePage />} />
+            <Route path="/contractor-hub/training/getting-started/starting-a-new-llc" element={<StartingNewLLC />} />
             <Route path="/trial-signup" element={<TrialSignup />} />
             <Route path="/bot-signup" element={<BotSignup />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />

@@ -93,6 +93,34 @@ export const TrainingHub = () => {
 
   const renderCourses = () => (
     <>
+      {/* Getting Started Section */}
+      <div className="mb-6 md:mb-8">
+        <div className="mb-4 md:mb-6">
+          <h2 className="text-xl md:text-2xl font-bold">Getting Started</h2>
+          <p className="text-sm md:text-base text-muted-foreground mt-1">New to contracting? Start here. Learn how to set up your LLC, get licensed, and launch your business.</p>
+        </div>
+        <Card 
+          className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border-2 hover:border-primary overflow-hidden"
+          onClick={() => navigate('/contractor-hub/training/getting-started/starting-a-new-llc')}
+        >
+          <div className="bg-gradient-to-r from-primary to-primary/80 p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-2 h-2 rounded-full bg-white/80" />
+              <span className="text-[11px] font-bold tracking-widest uppercase text-white/70">Training Module</span>
+            </div>
+            <h3 className="font-bold text-lg text-primary-foreground">Starting a New LLC</h3>
+            <p className="text-xs text-primary-foreground/80">A State-by-State Training Course for Trades, Construction, and Home Improvement Professionals</p>
+          </div>
+          <CardContent className="p-4">
+            <p className="text-sm text-muted-foreground mb-3">Your step-by-step guide to forming an LLC, getting licensed, and launching your contracting business. Covers all 50 states + D.C.</p>
+            <Button variant="default" size="sm">
+              <Play className="h-3 w-3 mr-2" />
+              Start Module
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Welcome Section with Video and Stats */}
       <div className="mb-6 md:mb-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
