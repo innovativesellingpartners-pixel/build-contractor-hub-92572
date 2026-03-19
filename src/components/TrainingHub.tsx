@@ -109,26 +109,15 @@ export const TrainingHub = () => {
               </p>
             </div>
             <CardContent className="p-3 md:p-4">
-              <a
-                href="https://drive.google.com/file/d/1eMBOcQ776JFxqniVIZ7g78DQxn5GzwbY/view"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block aspect-video w-full relative rounded-lg overflow-hidden shadow-lg bg-muted group cursor-pointer"
-              >
-                <img
-                  src={videoThumbnail}
-                  alt="5-Star Training Video"
-                  className="w-full h-full object-cover"
+              <div className="aspect-video w-full relative rounded-lg overflow-hidden shadow-lg bg-muted">
+                <iframe
+                  src="https://drive.google.com/file/d/1eMBOcQ776JFxqniVIZ7g78DQxn5GzwbY/preview"
+                  className="w-full h-full rounded-lg"
+                  allow="autoplay; encrypted-media"
+                  allowFullScreen
+                  title="Welcome to CT1's 5-Star Training"
                 />
-                <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors flex items-center justify-center">
-                  <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-primary/90 group-hover:bg-primary flex items-center justify-center transition-colors shadow-lg">
-                    <Play className="h-8 w-8 md:h-10 md:w-10 text-primary-foreground fill-primary-foreground ml-1" />
-                  </div>
-                </div>
-                <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
-                  <span className="text-xs text-white/90 bg-black/50 px-2 py-1 rounded">Click to watch</span>
-                </div>
-              </a>
+              </div>
             </CardContent>
           </Card>
 
