@@ -126,6 +126,7 @@ export function ProfileEditContent({ targetUserId }: ProfileEditContentProps = {
         google_place_id: (profile as any).google_place_id || '',
         network_visible: (profile as any).network_visible || false,
         network_bio: (profile as any).network_bio || '',
+        preferred_language: (profile as any).preferred_language || 'en',
       });
     }
   }, [profile]);
