@@ -492,6 +492,15 @@ export function EstimateDetailViewBlue({
               {estimate.sent_at ? 'RESEND ESTIMATE' : 'SEND ESTIMATE'}
             </ActionButton>
           )}
+          {/* Translate for Customer */}
+          <ActionButton 
+            variant="secondary" 
+            onClick={() => setShowTranslationDialog(true)}
+            className="flex items-center gap-2"
+          >
+            <Languages className="w-4 h-4" />
+            TRANSLATE
+          </ActionButton>
           {/* 3. Send Invoice */}
           {canSendToGC && (
             <ActionButton 
