@@ -2214,6 +2214,7 @@ export type Database = {
           cost_summary: Json | null
           created_at: string
           customer_id: string | null
+          customer_language: string | null
           date_issued: string | null
           declined_at: string | null
           description: string | null
@@ -2230,6 +2231,7 @@ export type Database = {
           lead_id: string | null
           line_items: Json | null
           opportunity_id: string | null
+          original_language: string | null
           paid_at: string | null
           payment_amount: number | null
           payment_method: string | null
@@ -2274,6 +2276,9 @@ export type Database = {
           total_amount: number
           trade_specific: Json | null
           trade_type: string | null
+          translated_at: string | null
+          translated_content: Json | null
+          translated_language: string | null
           updated_at: string
           user_id: string
           valid_until: string | null
@@ -2301,6 +2306,7 @@ export type Database = {
           cost_summary?: Json | null
           created_at?: string
           customer_id?: string | null
+          customer_language?: string | null
           date_issued?: string | null
           declined_at?: string | null
           description?: string | null
@@ -2317,6 +2323,7 @@ export type Database = {
           lead_id?: string | null
           line_items?: Json | null
           opportunity_id?: string | null
+          original_language?: string | null
           paid_at?: string | null
           payment_amount?: number | null
           payment_method?: string | null
@@ -2361,6 +2368,9 @@ export type Database = {
           total_amount?: number
           trade_specific?: Json | null
           trade_type?: string | null
+          translated_at?: string | null
+          translated_content?: Json | null
+          translated_language?: string | null
           updated_at?: string
           user_id: string
           valid_until?: string | null
@@ -2388,6 +2398,7 @@ export type Database = {
           cost_summary?: Json | null
           created_at?: string
           customer_id?: string | null
+          customer_language?: string | null
           date_issued?: string | null
           declined_at?: string | null
           description?: string | null
@@ -2404,6 +2415,7 @@ export type Database = {
           lead_id?: string | null
           line_items?: Json | null
           opportunity_id?: string | null
+          original_language?: string | null
           paid_at?: string | null
           payment_amount?: number | null
           payment_method?: string | null
@@ -2448,6 +2460,9 @@ export type Database = {
           total_amount?: number
           trade_specific?: Json | null
           trade_type?: string | null
+          translated_at?: string | null
+          translated_content?: Json | null
+          translated_language?: string | null
           updated_at?: string
           user_id?: string
           valid_until?: string | null
