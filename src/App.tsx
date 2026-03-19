@@ -169,6 +169,7 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
           <PWABackHandler />
+          <LanguageSyncWrapper />
           <PocketAgentWrapper />
           <Routes>
             <Route path="/" element={<HomeRedirect />} />
