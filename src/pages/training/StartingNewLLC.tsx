@@ -685,7 +685,7 @@ export default function StartingNewLLC() {
       <div className="relative overflow-hidden print:hidden">
         <div className="absolute inset-0">
           <img src={heroBg} alt="" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[hsl(0,0%,8%)/0.92] via-[hsl(0,0%,10%)/0.85] to-[hsl(0,0%,8%)/0.92]" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[hsl(0,0%,4%)/0.95] via-[hsl(0,0%,6%)/0.88] to-[hsl(0,0%,4%)/0.95]" />
         </div>
         <div className="relative max-w-6xl mx-auto px-4 py-14 md:py-20">
           <div className="max-w-2xl">
