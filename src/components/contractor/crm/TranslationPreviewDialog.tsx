@@ -3,8 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Languages, Loader2, Check, Edit2 } from "lucide-react";
-import { useDocumentTranslation } from "@/hooks/useTranslation";
+import { Badge } from "@/components/ui/badge";
+import { Languages, Loader2, Check, Edit2, Sparkles } from "lucide-react";
+import { useDocumentTranslation, TranslationResult } from "@/hooks/useTranslation";
 import { useTranslation } from "react-i18next";
 
 interface TranslationField {
@@ -33,7 +34,10 @@ export function TranslationPreviewDialog({
   const { t } = useTranslation();
   const { translateTexts, translating } = useDocumentTranslation();
   const [translatedFields, setTranslatedFields] = useState<Record<string, string>>({});
+  const [baseTranslatedFields, setBaseTranslatedFields] = useState<Record<string, string>>({});
   const [hasTranslated, setHasTranslated] = useState(false);
+  const [aiEnhanced, setAiEnhanced] = useState(false);
+  const [refinedFieldKeys, setRefinedFieldKeys] = useState<string[]>([]);
   const [editing, setEditing] = useState<string | null>(null);
 
   const handleTranslate = async () => {
@@ -48,7 +52,10 @@ export function TranslationPreviewDialog({
 
     const result = await translateTexts(textsToTranslate, sourceLang, targetLang);
     if (result) {
-      setTranslatedFields(result);
+      setTranslatedFields(result.translated);
+      setBaseTranslatedFields(result.baseTranslated);
+      setAiEnhanced(result.aiEnhanced);
+      setRefinedFieldKeys(result.refinedFields);
       setHasTranslated(true);
     }
   };
@@ -56,16 +63,20 @@ export function TranslationPreviewDialog({
   const handleConfirm = () => {
     onConfirm(translatedFields);
     onOpenChange(false);
-    // Reset state
-    setTranslatedFields({});
-    setHasTranslated(false);
-    setEditing(null);
+    resetState();
   };
 
   const handleClose = () => {
     onOpenChange(false);
+    resetState();
+  };
+
+  const resetState = () => {
     setTranslatedFields({});
+    setBaseTranslatedFields({});
     setHasTranslated(false);
+    setAiEnhanced(false);
+    setRefinedFieldKeys([]);
     setEditing(null);
   };
 
@@ -79,6 +90,12 @@ export function TranslationPreviewDialog({
           <DialogTitle className="flex items-center gap-2">
             <Languages className="h-5 w-5" />
             {t("translation.reviewTranslation")}
+            {hasTranslated && aiEnhanced && (
+              <Badge variant="secondary" className="ml-2 gap-1 bg-primary/10 text-primary border-primary/20">
+                <Sparkles className="h-3 w-3" />
+                AI-Enhanced
+              </Badge>
+            )}
           </DialogTitle>
           <DialogDescription>
             {t("translation.reviewDescription")}
@@ -89,6 +106,9 @@ export function TranslationPreviewDialog({
           <div className="flex flex-col items-center gap-4 py-8">
             <p className="text-sm text-muted-foreground text-center">
               {fields.filter(f => f.value?.trim()).length} field(s) will be translated from {sourceLangLabel} to {targetLangLabel}.
+            </p>
+            <p className="text-xs text-muted-foreground text-center max-w-md">
+              Translation is AI-enhanced: a base translation is refined by a construction industry expert AI for accuracy and natural phrasing.
             </p>
             <Button onClick={handleTranslate} disabled={translating}>
               {translating ? (
@@ -106,46 +126,68 @@ export function TranslationPreviewDialog({
           </div>
         ) : (
           <div className="space-y-4">
-            {fields.filter(f => f.value?.trim()).map((field) => (
-              <div key={field.key} className="border rounded-lg p-3 space-y-2">
-                <Label className="text-xs font-medium text-muted-foreground">{field.label}</Label>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">{t("translation.originalVersion")}</p>
-                    <div className="text-sm bg-muted/50 rounded p-2 min-h-[60px]">
-                      {field.value}
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
-                      {t("translation.translatedVersion")}
-                      <button
-                        onClick={() => setEditing(editing === field.key ? null : field.key)}
-                        className="text-primary hover:underline"
-                      >
-                        <Edit2 className="h-3 w-3" />
-                      </button>
-                    </p>
-                    {editing === field.key ? (
-                      <Textarea
-                        value={translatedFields[field.key] || ""}
-                        onChange={(e) =>
-                          setTranslatedFields((prev) => ({
-                            ...prev,
-                            [field.key]: e.target.value,
-                          }))
-                        }
-                        className="text-sm min-h-[60px]"
-                      />
-                    ) : (
-                      <div className="text-sm bg-primary/5 border border-primary/20 rounded p-2 min-h-[60px]">
-                        {translatedFields[field.key] || field.value}
-                      </div>
+            {aiEnhanced && refinedFieldKeys.length > 0 && (
+              <div className="bg-primary/5 border border-primary/20 rounded-lg p-3 flex items-start gap-2">
+                <Sparkles className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                <p className="text-xs text-muted-foreground">
+                  AI refinement improved {refinedFieldKeys.length} field(s) for better construction terminology and natural phrasing. Refined fields are highlighted.
+                </p>
+              </div>
+            )}
+            {fields.filter(f => f.value?.trim()).map((field) => {
+              const isRefined = refinedFieldKeys.includes(field.key);
+              return (
+                <div
+                  key={field.key}
+                  className={`border rounded-lg p-3 space-y-2 ${isRefined ? "border-primary/30 bg-primary/[0.02]" : ""}`}
+                >
+                  <div className="flex items-center gap-2">
+                    <Label className="text-xs font-medium text-muted-foreground">{field.label}</Label>
+                    {isRefined && (
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 gap-0.5 border-primary/30 text-primary">
+                        <Sparkles className="h-2.5 w-2.5" />
+                        Refined
+                      </Badge>
                     )}
                   </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">{t("translation.originalVersion")}</p>
+                      <div className="text-sm bg-muted/50 rounded p-2 min-h-[60px]">
+                        {field.value}
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+                        {t("translation.translatedVersion")}
+                        <button
+                          onClick={() => setEditing(editing === field.key ? null : field.key)}
+                          className="text-primary hover:underline"
+                        >
+                          <Edit2 className="h-3 w-3" />
+                        </button>
+                      </p>
+                      {editing === field.key ? (
+                        <Textarea
+                          value={translatedFields[field.key] || ""}
+                          onChange={(e) =>
+                            setTranslatedFields((prev) => ({
+                              ...prev,
+                              [field.key]: e.target.value,
+                            }))
+                          }
+                          className="text-sm min-h-[60px]"
+                        />
+                      ) : (
+                        <div className={`text-sm rounded p-2 min-h-[60px] ${isRefined ? "bg-primary/5 border border-primary/20" : "bg-primary/5 border border-primary/20"}`}>
+                          {translatedFields[field.key] || field.value}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
