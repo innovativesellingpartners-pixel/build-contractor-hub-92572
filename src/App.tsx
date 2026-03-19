@@ -156,7 +156,6 @@ function PWABackHandler() {
 
 // Sync i18n language with user's profile preference
 function LanguageSyncWrapper() {
-  const { useLanguageSync } = require("@/hooks/useLanguageSync");
   useLanguageSync();
   return null;
 }
