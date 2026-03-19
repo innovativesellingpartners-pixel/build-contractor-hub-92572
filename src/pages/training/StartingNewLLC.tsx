@@ -691,26 +691,26 @@ export default function StartingNewLLC() {
           <div className="max-w-2xl">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-2 h-2 rounded-full bg-primary" />
-              <span className="text-[11px] font-bold tracking-[0.2em] uppercase text-primary/80">Training Module</span>
+              <span className="text-[11px] font-bold tracking-[0.2em] uppercase text-primary">Training Module</span>
             </div>
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-white mb-3 tracking-tight leading-tight">Starting a New LLC</h1>
-            <p className="text-base md:text-lg text-white/70 mb-1 leading-relaxed">A State-by-State Guide for Trades & Construction Professionals</p>
-            <p className="text-sm text-white/45 mb-8">Step-by-step instructions for all 50 states + D.C. Written in plain English.</p>
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-[hsl(var(--ct1-dark))] mb-3 tracking-tight leading-tight drop-shadow-sm">Starting a New LLC</h1>
+            <p className="text-base md:text-lg text-foreground/80 mb-1 leading-relaxed font-medium">A State-by-State Guide for Trades & Construction Professionals</p>
+            <p className="text-sm text-foreground/60 mb-8">Step-by-step instructions for all 50 states + D.C. Written in plain English.</p>
 
             {/* Search */}
             <div className="relative max-w-xl">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/40" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-foreground/40" />
               <input
                 ref={searchRef}
                 type="text"
                 value={query}
                 onChange={e => { setQuery(e.target.value); setSelectedState(null); }}
                 placeholder="Search by state name or abbreviation..."
-                className="w-full py-3.5 pl-12 pr-10 text-sm bg-white/10 border-2 border-white/15 rounded-xl text-white placeholder:text-white/40 outline-none focus:border-primary backdrop-blur-md transition-colors"
+                className="w-full py-3.5 pl-12 pr-10 text-sm bg-white/70 border-2 border-foreground/15 rounded-xl text-foreground placeholder:text-foreground/40 outline-none focus:border-primary backdrop-blur-md transition-colors shadow-sm"
               />
               {query && (
-                <button onClick={() => { setQuery(""); searchRef.current?.focus(); }} className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/15 flex items-center justify-center hover:bg-white/25 min-h-[44px] min-w-[44px]">
-                  <X className="h-3.5 w-3.5 text-white" />
+                <button onClick={() => { setQuery(""); searchRef.current?.focus(); }} className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-foreground/10 flex items-center justify-center hover:bg-foreground/20 min-h-[44px] min-w-[44px]">
+                  <X className="h-3.5 w-3.5 text-foreground" />
                 </button>
               )}
             </div>
