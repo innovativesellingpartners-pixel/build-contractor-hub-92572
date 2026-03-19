@@ -73,6 +73,22 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('Estimate not found');
     }
 
+    // Check if translated content exists and prepare display values
+    const tc = estimate.translated_content as Record<string, string> | null;
+    const useTranslation = !!tc && !!estimate.translated_at;
+    
+    // Helper to get translated or original value
+    const t = (field: string, original: string | null | undefined): string => {
+      if (useTranslation && tc && tc[field]) return tc[field];
+      return original || '';
+    };
+
+    // Get translated line item description
+    const tLineItem = (idx: number, original: string | null | undefined): string => {
+      if (useTranslation && tc && tc[`line_item_${idx}_description`]) return tc[`line_item_${idx}_description`];
+      return original || '';
+    };
+
     // SECURITY: Verify ownership - user must own this estimate
     if (estimate.user_id !== user.id) {
       return new Response(
