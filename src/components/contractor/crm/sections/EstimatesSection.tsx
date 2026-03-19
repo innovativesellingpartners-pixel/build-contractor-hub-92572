@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Plus, FileText, Trash2, Eye, Send, CheckCircle, Clock, AlertCircle, RefreshCw, Users, Copy, ArrowLeft, Briefcase, ChevronRight, LayoutTemplate, FlaskConical } from 'lucide-react';
+import { Plus, FileText, Trash2, Eye, Send, CheckCircle, Clock, AlertCircle, RefreshCw, Users, Copy, ArrowLeft, Briefcase, ChevronRight, LayoutTemplate, FlaskConical, Languages } from 'lucide-react';
 import { useEstimates, EstimateLineItem } from '@/hooks/useEstimates';
 import { useLeads } from '@/hooks/useLeads';
 import EstimateBuilder from '../EstimateBuilder';
@@ -20,6 +20,7 @@ import { PredictiveSearch } from '../PredictiveSearch';
 import { SwipeToArchive } from '@/components/ui/swipe-to-archive';
 import { CrmNavHeader } from '../CrmNavHeader';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
+import { TranslationPreviewDialog } from '../TranslationPreviewDialog';
 
 interface EstimatesSectionProps {
   onSectionChange?: (section: string) => void;
