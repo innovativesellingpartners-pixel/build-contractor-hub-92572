@@ -69,6 +69,7 @@ export function ProfileEditContent({ targetUserId }: ProfileEditContentProps = {
     google_place_id: '',
     network_visible: false,
     network_bio: '',
+    preferred_language: 'en',
   });
 
   // Fetch target user's profile when admin editing
