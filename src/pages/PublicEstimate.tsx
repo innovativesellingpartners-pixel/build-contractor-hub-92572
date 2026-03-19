@@ -449,7 +449,7 @@ function PublicEstimateInner() {
             {estimate.project_description && (
               <div className="bg-primary/5 border-l-4 border-primary p-6 rounded-r-lg">
                 <p className="text-sm text-muted-foreground font-semibold mb-2">Project Description</p>
-                <p className="text-base leading-relaxed">{estimate.project_description}</p>
+                <p className="text-base leading-relaxed">{tr('project_description', estimate.project_description)}</p>
               </div>
             )}
           </CardContent>
