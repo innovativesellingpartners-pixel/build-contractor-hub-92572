@@ -31,6 +31,7 @@ export const UserDetailPage = () => {
   const [subscriptionTier, setSubscriptionTier] = useState('');
   const [pocketbotAccess, setPocketbotAccess] = useState('none');
   const [userRole, setUserRole] = useState('user');
+  const [trainingAccess, setTrainingAccess] = useState(true);
 
   // Subscription management
   const [platformFree, setPlatformFree] = useState(false);
