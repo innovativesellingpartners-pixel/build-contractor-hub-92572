@@ -86,6 +86,7 @@ export const UserDetailPage = () => {
         (user.profile?.pocketbot_full_access ? 'free_full' : 'none')
       );
       setUserRole(user.role || 'user');
+      setTrainingAccess(user.profile?.training_access ?? true);
     }
   }, [user]);
 
