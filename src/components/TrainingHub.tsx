@@ -136,11 +136,11 @@ export const TrainingHub = () => {
                 Start your journey to becoming a top-performing contractor
               </p>
             </div>
-            <CardContent className="p-3 md:p-4">
-              <div className="aspect-video w-full relative rounded-lg overflow-hidden shadow-lg bg-muted">
+            <CardContent className="p-0">
+              <div className="aspect-video w-full relative overflow-hidden bg-muted">
                 <iframe
                   src="https://drive.google.com/file/d/1eMBOcQ776JFxqniVIZ7g78DQxn5GzwbY/preview"
-                  className="w-full h-full rounded-lg"
+                  className="w-full h-full"
                   allow="autoplay; encrypted-media"
                   allowFullScreen
                   title="Welcome to CT1's 5-Star Training"
