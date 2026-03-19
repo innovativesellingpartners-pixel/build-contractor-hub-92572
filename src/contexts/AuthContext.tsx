@@ -36,6 +36,8 @@ interface Profile {
   zelle_phone?: string;
   ach_instructions?: string;
   accepted_payment_methods?: string[];
+  // Language
+  preferred_language?: string;
   // Timestamps
   created_at: string;
   updated_at: string;

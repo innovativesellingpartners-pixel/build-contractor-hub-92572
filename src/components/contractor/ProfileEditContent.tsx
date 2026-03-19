@@ -224,6 +224,7 @@ export function ProfileEditContent({ targetUserId }: ProfileEditContentProps = {
             zip_code: formData.zip_code,
             network_visible: formData.network_visible,
             network_bio: formData.network_bio || null,
+            preferred_language: formData.preferred_language,
           };
           break;
         case 'branding':
