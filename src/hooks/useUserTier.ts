@@ -68,9 +68,31 @@ export const useUserTier = () => {
     enabled: !!user?.id,
   });
 
+  // Fetch training access from profile
+  const { data: trainingAccess } = useQuery({
+    queryKey: ['trainingAccess', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return true;
+      
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('training_access')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error fetching training access:', error);
+        return true; // Default to true
+      }
+
+      return (data as any)?.training_access ?? true;
+    },
+    enabled: !!user?.id,
+  });
+
   // Check if user has full access via email domain OR super_admin role
   const hasFullAccess = user?.email?.endsWith('@myct1.com') || userRole === 'super_admin';
-  const tierFeatures = getTierFeatures(subscription?.tier_id ?? null, hasFullAccess);
+  const tierFeatures = getTierFeatures(subscription?.tier_id ?? null, hasFullAccess, trainingAccess ?? true);
 
   return {
     subscription,
