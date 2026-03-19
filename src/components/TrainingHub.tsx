@@ -215,7 +215,7 @@ export const TrainingHub = () => {
         </div>
         
         {courses && courses.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-5">
             {courses.map((course, index) => {
               const Icon = getCategoryIcon(course.training_categories?.name || null);
               const colorScheme = getColorScheme(index);
@@ -226,62 +226,65 @@ export const TrainingHub = () => {
               return (
                 <Card 
                   key={course.id}
-                  className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border-2 hover:border-primary relative overflow-hidden"
+                  className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border hover:border-primary relative overflow-hidden flex flex-col"
                   onClick={() => navigate(`/dashboard/training/course/${course.id}`)}
                 >
                   {isCompleted && (
-                    <div className="absolute top-2 right-2 z-10">
-                      <CheckCircle className="h-6 w-6 text-green-600 fill-green-600" />
+                    <div className="absolute top-3 right-3 z-10">
+                      <div className="bg-green-600 text-white rounded-full p-1">
+                        <CheckCircle className="h-4 w-4" />
+                      </div>
                     </div>
                   )}
-                  {thumbnailImg && (
-                    <div className="w-full h-40 overflow-hidden">
+                  {thumbnailImg ? (
+                    <div className="w-full aspect-[16/9] overflow-hidden">
                       <img 
                         src={thumbnailImg} 
                         alt={course.title}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
                     </div>
+                  ) : (
+                    <div className={`w-full aspect-[16/9] ${colorScheme.bg} flex items-center justify-center`}>
+                      <Icon className={`h-12 w-12 ${colorScheme.text} opacity-60`} />
+                    </div>
                   )}
-                  <CardContent className="p-4 text-center">
-                    {!thumbnailImg && (
-                      <div className="mb-4 flex justify-center">
-                        <div className={`h-16 w-16 rounded-full ${colorScheme.bg} flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                          <Icon className={`h-8 w-8 ${colorScheme.text}`} />
-                        </div>
-                      </div>
-                    )}
-                    <h3 className="font-bold text-base mb-2">{course.title}</h3>
+                  <CardContent className="p-4 flex flex-col flex-1">
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <h3 className="font-bold text-sm leading-snug">{course.title}</h3>
+                    </div>
                     {course.description && (
-                      <p className="text-xs text-muted-foreground mb-3 line-clamp-2">{course.description}</p>
+                      <p className="text-xs text-muted-foreground mb-3 line-clamp-2 leading-relaxed">{course.description}</p>
                     )}
-                    {course.difficulty_level && (
-                      <Badge variant="secondary" className="mb-3 text-xs">
-                        {course.difficulty_level}
-                      </Badge>
-                    )}
-                    <Button variant="default" size="sm" className="w-full">
-                      {isEnrolled ? (
-                        <>
-                          {isCompleted ? (
-                            <>
-                              <CheckCircle className="h-3 w-3 mr-2" />
-                              Review
-                            </>
-                          ) : (
-                            <>
-                              <Play className="h-3 w-3 mr-2" />
-                              Continue
-                            </>
-                          )}
-                        </>
-                      ) : (
-                        <>
-                          <Play className="h-3 w-3 mr-2" />
-                          Start Now
-                        </>
+                    <div className="mt-auto flex items-center justify-between gap-2 pt-2">
+                      {course.difficulty_level && (
+                        <Badge variant="outline" className="text-[10px] px-2 py-0.5 font-medium">
+                          {course.difficulty_level}
+                        </Badge>
                       )}
-                    </Button>
+                      <Button variant="default" size="sm" className="ml-auto text-xs h-8 px-3">
+                        {isEnrolled ? (
+                          <>
+                            {isCompleted ? (
+                              <>
+                                <CheckCircle className="h-3 w-3 mr-1.5" />
+                                Review
+                              </>
+                            ) : (
+                              <>
+                                <Play className="h-3 w-3 mr-1.5" />
+                                Continue
+                              </>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            <Play className="h-3 w-3 mr-1.5" />
+                            Start
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               );
