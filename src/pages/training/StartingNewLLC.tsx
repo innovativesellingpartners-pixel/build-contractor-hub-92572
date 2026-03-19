@@ -1,58 +1,27 @@
 import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { Search, X, ChevronRight, ChevronDown, ArrowLeft, Printer, RotateCcw, CheckCircle2, Circle, Info, AlertTriangle, AlertCircle, Sparkles, ExternalLink } from "lucide-react";
+import { Search, X, ChevronRight, ChevronDown, ArrowLeft, Printer, RotateCcw, CheckCircle2, Info, AlertTriangle, AlertCircle, Sparkles, ExternalLink, Shield, DollarSign, FileText, Building2, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { states, overviewSteps, type StateData } from "@/data/llcStateData";
 import ct1Logo from "@/assets/ct1-round-logo-new.png";
+import heroBg from "@/assets/llc-hero-bg.jpg";
 
 const TOTAL_STEPS = 10;
 
 function getStorageKey(abbr: string) {
   return `ct1_llc_${abbr.toLowerCase()}`;
 }
-
 function loadProgress(abbr: string): Record<string, boolean> {
   try {
     const raw = localStorage.getItem(getStorageKey(abbr));
     return raw ? JSON.parse(raw) : {};
   } catch { return {}; }
 }
-
 function saveProgress(abbr: string, progress: Record<string, boolean>) {
   localStorage.setItem(getStorageKey(abbr), JSON.stringify(progress));
-}
-
-// ============ STATE CARD ============
-function StateCard({ state, onClick }: { state: StateData; onClick: (s: StateData) => void }) {
-  return (
-    <button
-      onClick={() => onClick(state)}
-      className="w-full text-left bg-card rounded-xl border border-border p-5 transition-all duration-200 hover:border-[#CC0000] hover:shadow-lg hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#CC0000]"
-    >
-      <div className="flex justify-between items-start mb-3">
-        <div>
-          <div className="text-xs font-extrabold text-[#CC0000] tracking-widest">{state.abbr}</div>
-          <div className="text-base font-bold text-foreground">{state.name}</div>
-        </div>
-        <div className="text-sm font-bold text-[#CC0000] whitespace-nowrap">{state.llcFee}</div>
-      </div>
-      <div className="flex gap-1.5 flex-wrap mb-2.5">
-        {state.statewide ? (
-          <Badge className="bg-[#CC0000] text-white text-[10px] px-2 py-0.5 hover:bg-[#CC0000]">State License</Badge>
-        ) : (
-          <Badge variant="secondary" className="text-[10px] px-2 py-0.5">Local Only</Badge>
-        )}
-        {state.nascla && (
-          <Badge className="bg-green-700 text-white text-[10px] px-2 py-0.5 hover:bg-green-700">NASCLA</Badge>
-        )}
-      </div>
-      <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">{state.licReq}</p>
-    </button>
-  );
 }
 
 // ============ CALLOUT BOXES ============
@@ -66,7 +35,6 @@ function TipBox({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
-
 function WarningBox({ children }: { children: React.ReactNode }) {
   return (
     <div className="my-4 p-4 bg-yellow-50 dark:bg-yellow-950/30 border-l-4 border-yellow-500 rounded-r-lg">
@@ -77,38 +45,62 @@ function WarningBox({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
-
 function AlertBox({ children }: { children: React.ReactNode }) {
   return (
-    <div className="my-4 p-4 bg-red-50 dark:bg-red-950/30 border-l-4 border-[#CC0000] rounded-r-lg">
+    <div className="my-4 p-4 bg-red-50 dark:bg-red-950/30 border-l-4 border-primary rounded-r-lg">
       <div className="flex gap-2 items-start">
-        <AlertCircle className="h-5 w-5 text-[#CC0000] mt-0.5 shrink-0" />
+        <AlertCircle className="h-5 w-5 text-primary mt-0.5 shrink-0" />
         <div className="text-sm text-red-900 dark:text-red-200 leading-relaxed font-medium">{children}</div>
       </div>
     </div>
   );
 }
-
 function RuleBox({ children }: { children: React.ReactNode }) {
   return (
-    <div className="my-4 p-4 bg-red-50 dark:bg-red-950/30 border-l-4 border-[#CC0000] rounded-r-lg">
+    <div className="my-4 p-4 bg-red-50 dark:bg-red-950/30 border-l-4 border-primary rounded-r-lg">
       <div className="flex gap-2 items-start">
-        <AlertCircle className="h-5 w-5 text-[#CC0000] mt-0.5 shrink-0" />
+        <AlertCircle className="h-5 w-5 text-primary mt-0.5 shrink-0" />
         <div className="text-sm text-red-900 dark:text-red-200 leading-relaxed font-bold">{children}</div>
       </div>
     </div>
   );
 }
-
 function ExtLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
-    <a href={href} target="_blank" rel="noopener noreferrer" className="text-[#CC0000] font-semibold underline underline-offset-2 hover:text-[#990000] inline-flex items-center gap-1">
+    <a href={href} target="_blank" rel="noopener noreferrer" className="text-primary font-semibold underline underline-offset-2 hover:opacity-80 inline-flex items-center gap-1">
       {children}<ExternalLink className="h-3 w-3" />
     </a>
   );
 }
 
-// ============ WALKTHROUGH STEP CONTENT ============
+// ============ Q&A CHECK ============
+function QuizCheck({ question, correctAnswer, explanation }: { question: string; correctAnswer: boolean; explanation: string }) {
+  const [answered, setAnswered] = useState<boolean | null>(null);
+  const isCorrect = answered === correctAnswer;
+
+  return (
+    <div className="my-4 p-4 bg-muted/50 border border-border rounded-xl">
+      <div className="flex items-start gap-2 mb-3">
+        <HelpCircle className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+        <p className="text-sm font-semibold">{question}</p>
+      </div>
+      {answered === null ? (
+        <div className="flex gap-2 ml-7">
+          <button onClick={() => setAnswered(true)} className="px-4 py-2 text-sm font-medium rounded-lg border border-border bg-card hover:bg-muted transition-colors min-h-[44px]">Yes</button>
+          <button onClick={() => setAnswered(false)} className="px-4 py-2 text-sm font-medium rounded-lg border border-border bg-card hover:bg-muted transition-colors min-h-[44px]">No</button>
+        </div>
+      ) : (
+        <div className={`ml-7 p-3 rounded-lg text-sm ${isCorrect ? "bg-green-50 dark:bg-green-950/30 text-green-800 dark:text-green-200" : "bg-yellow-50 dark:bg-yellow-950/30 text-yellow-800 dark:text-yellow-200"}`}>
+          <p className="font-bold mb-1">{isCorrect ? "✓ Correct!" : "✗ Not quite."}</p>
+          <p className="leading-relaxed">{explanation}</p>
+          {!isCorrect && <button onClick={() => setAnswered(null)} className="mt-2 text-xs underline">Try again</button>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ============ STEP CONTENT ============
 function getStepContent(stepNum: number, state: StateData) {
   switch (stepNum) {
     case 1:
@@ -126,6 +118,7 @@ function getStepContent(stepNum: number, state: StateData) {
               <li>If it is available, write it down exactly</li>
             </ol>
             <TipBox>Your name must include "LLC" at the end. Example: "Smith Roofing LLC" or "Johnson Construction Services LLC"</TipBox>
+            <QuizCheck question="Does your business name end with 'LLC'?" correctAnswer={true} explanation="Every LLC must have 'LLC' or 'Limited Liability Company' at the end. This is required by law in all 50 states." />
           </>
         ),
         doneWhen: "You searched and confirmed the name is available.",
@@ -143,6 +136,7 @@ function getStepContent(stepNum: number, state: StateData) {
               <li><strong>Option B:</strong> Hire an agent service ($50-$300 per year, keeps your address private)</li>
             </ul>
             <p className="text-sm mt-3">Write down the agent's full name and street address.</p>
+            <QuizCheck question="Can a P.O. Box be used as a registered agent address?" correctAnswer={false} explanation="No. A registered agent must have a physical street address, not a P.O. Box. The state needs to be able to deliver legal documents in person." />
           </>
         ),
         doneWhen: "You have a registered agent name and a physical address ready.",
@@ -197,6 +191,7 @@ function getStepContent(stepNum: number, state: StateData) {
               <li>Submit. Your EIN appears on screen right away.</li>
               <li>PRINT THIS PAGE. Save the PDF. You need this number for everything.</li>
             </ol>
+            <QuizCheck question="Does getting an EIN cost money?" correctAnswer={false} explanation="No! An EIN is completely free from the IRS. If a website charges you for an EIN, it is a third-party service. Go directly to irs.gov." />
           </>
         ),
         doneWhen: "You have a 9-digit EIN (format: XX-XXXXXXX) printed and saved.",
@@ -257,15 +252,13 @@ function getStepContent(stepNum: number, state: StateData) {
         whatThisIs: `Tell ${state.name} your business exists so you can pay taxes the right way.`,
         whatYouNeed: "EIN, LLC name and address, your filing confirmation.",
         doThisNow: (
-          <>
-            <ol className="list-decimal pl-5 space-y-2 text-sm">
-              <li>Go to your state's Department of Revenue website</li>
-              <li>Register your LLC for state taxes</li>
-              <li>Selling materials (not just labor)? Apply for a sales tax permit</li>
-              <li>Hiring employees? Register for withholding tax + unemployment insurance</li>
-              <li>Save your state tax ID number</li>
-            </ol>
-          </>
+          <ol className="list-decimal pl-5 space-y-2 text-sm">
+            <li>Go to your state's Department of Revenue website</li>
+            <li>Register your LLC for state taxes</li>
+            <li>Selling materials (not just labor)? Apply for a sales tax permit</li>
+            <li>Hiring employees? Register for withholding tax + unemployment insurance</li>
+            <li>Save your state tax ID number</li>
+          </ol>
         ),
         doneWhen: "You have a state tax registration number.",
       };
@@ -288,12 +281,12 @@ function getStepContent(stepNum: number, state: StateData) {
               <li>Receive your license number</li>
             </ol>
             <div className="mt-3 p-3 bg-muted rounded-lg">
-              <p className="text-xs font-bold text-[#CC0000] uppercase tracking-wide mb-1">Requirements</p>
+              <p className="text-xs font-bold text-primary uppercase tracking-wide mb-1">Requirements</p>
               <p className="text-sm">{state.licReq}</p>
             </div>
             {state.notes && (
               <div className="mt-2 p-3 bg-muted rounded-lg">
-                <p className="text-xs font-bold text-[#CC0000] uppercase tracking-wide mb-1">Notes</p>
+                <p className="text-xs font-bold text-primary uppercase tracking-wide mb-1">Notes</p>
                 <p className="text-sm">{state.notes}</p>
               </div>
             )}
@@ -327,7 +320,7 @@ function getStepContent(stepNum: number, state: StateData) {
               <li>Get these policies:</li>
             </ol>
             <div className="mt-3 space-y-2">
-              <p className="text-xs font-bold text-[#CC0000] uppercase tracking-wide">Required</p>
+              <p className="text-xs font-bold text-primary uppercase tracking-wide">Required</p>
               <ul className="list-disc pl-5 space-y-1 text-sm">
                 <li><strong>General Liability:</strong> covers property damage and injuries. Minimum $1M per incident / $2M total.</li>
                 <li><strong>Workers' Comp:</strong> required in most states if you have any employees. Some states require it for the owner too.</li>
@@ -343,6 +336,7 @@ function getStepContent(stepNum: number, state: StateData) {
               <li>Get your Certificate of Insurance (COI). This is the proof document you show clients.</li>
               <li>Save digital and printed copies.</li>
             </ol>
+            <QuizCheck question="Can you start working jobs before you have insurance?" correctAnswer={false} explanation="No. Working without insurance puts your personal assets at risk and most general contractors and clients will not hire you without proof of insurance (a COI)." />
           </>
         ),
         doneWhen: "Active policies in place. You have a COI ready to show.",
@@ -387,11 +381,10 @@ function getStepContent(stepNum: number, state: StateData) {
   }
 }
 
-// ============ WALKTHROUGH ============
+// ============ STATE WALKTHROUGH ============
 function StateWalkthrough({ state, onBack }: { state: StateData; onBack: () => void }) {
   const [progress, setProgress] = useState(() => loadProgress(state.abbr));
   const [openStep, setOpenStep] = useState<number | null>(() => {
-    // Open the first incomplete step
     for (let i = 1; i <= TOTAL_STEPS; i++) {
       if (!loadProgress(state.abbr)[`step${i}`]) return i;
     }
@@ -406,8 +399,6 @@ function StateWalkthrough({ state, onBack }: { state: StateData; onBack: () => v
     const updated = { ...progress, [`step${stepNum}`]: true };
     setProgress(updated);
     saveProgress(state.abbr, updated);
-
-    // Find next incomplete step
     let next: number | null = null;
     for (let i = stepNum + 1; i <= TOTAL_STEPS; i++) {
       if (!updated[`step${i}`]) { next = i; break; }
@@ -417,7 +408,6 @@ function StateWalkthrough({ state, onBack }: { state: StateData; onBack: () => v
         if (!updated[`step${i}`]) { next = i; break; }
       }
     }
-
     setOpenStep(next);
     if (next && stepRefs.current[next]) {
       setTimeout(() => stepRefs.current[next!]?.scrollIntoView({ behavior: "smooth", block: "center" }), 150);
@@ -426,16 +416,12 @@ function StateWalkthrough({ state, onBack }: { state: StateData; onBack: () => v
 
   const resetProgress = () => {
     if (window.confirm("Reset all progress for " + state.name + "? This cannot be undone.")) {
-      const cleared: Record<string, boolean> = {};
-      setProgress(cleared);
-      saveProgress(state.abbr, cleared);
+      setProgress({});
+      saveProgress(state.abbr, {});
       setOpenStep(1);
     }
   };
 
-  const handlePrint = () => window.print();
-
-  // Quick reference table
   const quickRefRows = [
     ["LLC Filing Agency", state.sos, null],
     ["Filing Website", state.sosUrl, state.sosUrl],
@@ -449,24 +435,23 @@ function StateWalkthrough({ state, onBack }: { state: StateData; onBack: () => v
 
   return (
     <div className="animate-in fade-in duration-300">
-      {/* Back button */}
-      <button onClick={onBack} className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#CC0000] hover:text-[#990000] mb-5 group">
+      <button onClick={onBack} className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:opacity-80 mb-5 group min-h-[44px]">
         <ArrowLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />
         Back to all states
       </button>
 
       {/* State header */}
       <div className="rounded-2xl overflow-hidden border border-border mb-6">
-        <div className="bg-gradient-to-r from-[#1A1A1A] to-[#333] p-6 md:p-8">
+        <div className="bg-gradient-to-r from-[hsl(var(--ct1-dark))] to-[hsl(0,0%,20%)] p-6 md:p-8">
           <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
             <div>
-              <div className="text-xs font-extrabold text-[#CC0000] tracking-[0.15em] mb-1">{state.abbr}</div>
+              <div className="text-xs font-extrabold text-primary tracking-[0.15em] mb-1">{state.abbr}</div>
               <h2 className="text-2xl md:text-3xl font-extrabold text-white">{state.name}</h2>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-lg font-bold text-[#CC0000]">{state.llcFee}</span>
+              <span className="text-lg font-bold text-primary">{state.llcFee}</span>
               {state.statewide ? (
-                <Badge className="bg-[#CC0000] text-white hover:bg-[#CC0000]">State License</Badge>
+                <Badge className="bg-primary text-primary-foreground hover:bg-primary">State License</Badge>
               ) : (
                 <Badge variant="secondary">Local Only</Badge>
               )}
@@ -483,20 +468,20 @@ function StateWalkthrough({ state, onBack }: { state: StateData; onBack: () => v
             </TabsList>
 
             <TabsContent value="walkthrough">
-              {/* Progress bar */}
+              {/* Progress */}
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium">{completedCount} of {TOTAL_STEPS} steps complete</span>
                   <div className="flex items-center gap-3">
-                    <button onClick={handlePrint} className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
+                    <button onClick={() => window.print()} className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 min-h-[44px]">
                       <Printer className="h-3.5 w-3.5" /> Print Checklist
                     </button>
-                    <button onClick={resetProgress} className="text-xs text-muted-foreground hover:text-[#CC0000] flex items-center gap-1">
+                    <button onClick={resetProgress} className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1 min-h-[44px]">
                       <RotateCcw className="h-3.5 w-3.5" /> Reset
                     </button>
                   </div>
                 </div>
-                <Progress value={(completedCount / TOTAL_STEPS) * 100} className="h-2.5 [&>div]:bg-[#CC0000]" />
+                <Progress value={(completedCount / TOTAL_STEPS) * 100} className="h-2.5 [&>div]:bg-primary" />
               </div>
 
               {/* Celebration */}
@@ -504,17 +489,7 @@ function StateWalkthrough({ state, onBack }: { state: StateData; onBack: () => v
                 <div className="mb-6 p-6 bg-green-600 text-white rounded-xl text-center relative overflow-hidden">
                   <div className="absolute inset-0 pointer-events-none">
                     {[...Array(20)].map((_, i) => (
-                      <div
-                        key={i}
-                        className="absolute animate-bounce"
-                        style={{
-                          left: `${Math.random() * 100}%`,
-                          top: `${Math.random() * 100}%`,
-                          animationDelay: `${Math.random() * 2}s`,
-                          animationDuration: `${1 + Math.random() * 2}s`,
-                          fontSize: `${10 + Math.random() * 14}px`,
-                        }}
-                      >
+                      <div key={i} className="absolute animate-bounce" style={{ left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%`, animationDelay: `${Math.random() * 2}s`, animationDuration: `${1 + Math.random() * 2}s`, fontSize: `${10 + Math.random() * 14}px` }}>
                         {["🎉", "⭐", "🎊", "✨"][Math.floor(Math.random() * 4)]}
                       </div>
                     ))}
@@ -534,41 +509,28 @@ function StateWalkthrough({ state, onBack }: { state: StateData; onBack: () => v
                   const isOpen = openStep === num;
                   const isDone = !!progress[`step${num}`];
                   const content = getStepContent(num, state);
-
                   return (
-                    <div
-                      key={num}
-                      ref={el => { stepRefs.current[num] = el; }}
-                      className={`border rounded-xl overflow-hidden transition-colors ${isDone ? "border-green-300 bg-green-50/50 dark:border-green-800 dark:bg-green-950/20" : "border-border"}`}
-                    >
-                      <button
-                        onClick={() => setOpenStep(isOpen ? null : num)}
-                        className="w-full flex items-center gap-3 p-4 text-left hover:bg-muted/50 transition-colors min-h-[52px]"
-                      >
-                        <div className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${isDone ? "bg-green-600 text-white" : "bg-[#CC0000]/10 text-[#CC0000]"}`}>
+                    <div key={num} ref={el => { stepRefs.current[num] = el; }} className={`border rounded-xl overflow-hidden transition-colors ${isDone ? "border-green-300 bg-green-50/50 dark:border-green-800 dark:bg-green-950/20" : "border-border"}`}>
+                      <button onClick={() => setOpenStep(isOpen ? null : num)} className="w-full flex items-center gap-3 p-4 text-left hover:bg-muted/50 transition-colors min-h-[52px]">
+                        <div className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${isDone ? "bg-green-600 text-white" : "bg-primary/10 text-primary"}`}>
                           {isDone ? <CheckCircle2 className="h-5 w-5" /> : num}
                         </div>
-                        <span className={`flex-1 font-semibold text-sm ${isDone ? "line-through text-muted-foreground" : ""}`}>
-                          {content.title}
-                        </span>
+                        <span className={`flex-1 font-semibold text-sm ${isDone ? "line-through text-muted-foreground" : ""}`}>{content.title}</span>
                         <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""}`} />
                       </button>
-
                       {isOpen && (
                         <div className="px-4 pb-4 pt-0 border-t border-border/50 animate-in slide-in-from-top-2 duration-200">
                           <div className="ml-11 space-y-4 mt-4">
                             <div>
-                              <h4 className="text-xs font-bold text-[#CC0000] uppercase tracking-wide mb-1">What this is</h4>
+                              <h4 className="text-xs font-bold text-primary uppercase tracking-wide mb-1">What this is</h4>
                               <p className="text-sm leading-relaxed">{content.whatThisIs}</p>
                             </div>
                             <div>
-                              <h4 className="text-xs font-bold text-[#CC0000] uppercase tracking-wide mb-1">What you need</h4>
-                              {typeof content.whatYouNeed === "string" ? (
-                                <p className="text-sm leading-relaxed">{content.whatYouNeed}</p>
-                              ) : content.whatYouNeed}
+                              <h4 className="text-xs font-bold text-primary uppercase tracking-wide mb-1">What you need</h4>
+                              {typeof content.whatYouNeed === "string" ? <p className="text-sm leading-relaxed">{content.whatYouNeed}</p> : content.whatYouNeed}
                             </div>
                             <div>
-                              <h4 className="text-xs font-bold text-[#CC0000] uppercase tracking-wide mb-1">Do this now</h4>
+                              <h4 className="text-xs font-bold text-primary uppercase tracking-wide mb-1">Do this now</h4>
                               {content.doThisNow}
                             </div>
                             <div>
@@ -576,19 +538,13 @@ function StateWalkthrough({ state, onBack }: { state: StateData; onBack: () => v
                               <p className="text-sm leading-relaxed">{content.doneWhen}</p>
                             </div>
                             {!isDone && (
-                              <Button
-                                onClick={(e) => { e.stopPropagation(); markComplete(num); }}
-                                className="bg-green-600 hover:bg-green-700 text-white font-bold"
-                              >
-                                <CheckCircle2 className="h-4 w-4 mr-2" />
-                                Mark Complete ✓
+                              <Button onClick={(e) => { e.stopPropagation(); markComplete(num); }} className="bg-green-600 hover:bg-green-700 text-white font-bold">
+                                <CheckCircle2 className="h-4 w-4 mr-2" /> Mark Complete ✓
                               </Button>
                             )}
                           </div>
                         </div>
                       )}
-
-                      {/* Print-only content */}
                       <div className="hidden print:block px-4 pb-4">
                         <div className="ml-11">
                           <p className="text-sm">{content.whatThisIs}</p>
@@ -611,9 +567,7 @@ function StateWalkthrough({ state, onBack }: { state: StateData; onBack: () => v
                       <tr key={i} className={i % 2 === 0 ? "bg-muted/50" : ""}>
                         <td className="p-3 font-bold text-muted-foreground w-[35%] border-b border-border/50">{label}</td>
                         <td className="p-3 border-b border-border/50">
-                          {link ? (
-                            <a href={link as string} target="_blank" rel="noopener noreferrer" className="text-[#CC0000] font-semibold hover:underline">{value}</a>
-                          ) : value || "N/A"}
+                          {link ? <a href={link as string} target="_blank" rel="noopener noreferrer" className="text-primary font-semibold hover:underline">{value}</a> : value || "N/A"}
                         </td>
                       </tr>
                     ))}
@@ -622,12 +576,12 @@ function StateWalkthrough({ state, onBack }: { state: StateData; onBack: () => v
               </div>
               <div className="mt-6 space-y-4">
                 <div>
-                  <h4 className="text-xs font-bold text-[#CC0000] uppercase tracking-wide mb-2">License Requirements</h4>
+                  <h4 className="text-xs font-bold text-primary uppercase tracking-wide mb-2">License Requirements</h4>
                   <p className="text-sm leading-relaxed">{state.licReq}</p>
                 </div>
                 {state.notes && (
-                  <div className="p-4 bg-red-50 dark:bg-red-950/20 border-l-4 border-[#CC0000] rounded-r-lg">
-                    <h4 className="text-xs font-bold text-[#CC0000] uppercase tracking-wide mb-1">Notes</h4>
+                  <div className="p-4 bg-red-50 dark:bg-red-950/20 border-l-4 border-primary rounded-r-lg">
+                    <h4 className="text-xs font-bold text-primary uppercase tracking-wide mb-1">Notes</h4>
                     <p className="text-sm leading-relaxed">{state.notes}</p>
                   </div>
                 )}
@@ -645,10 +599,8 @@ export default function StartingNewLLC() {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("all");
   const [selectedState, setSelectedState] = useState<StateData | null>(null);
-  const [showSteps, setShowSteps] = useState(true);
   const searchRef = useRef<HTMLInputElement>(null);
 
-  // Hash-based state selection
   useEffect(() => {
     const hash = window.location.hash.slice(1).toLowerCase();
     if (hash) {
@@ -693,9 +645,9 @@ export default function StartingNewLLC() {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background touch-pan-y">
       {/* Header */}
-      <div className="bg-[#1A1A1A] border-b-[3px] border-[#CC0000]">
+      <div className="bg-[hsl(var(--ct1-dark))] border-b-[3px] border-primary">
         <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
           <div className="flex items-center gap-3">
             <img src={ct1Logo} alt="CT1" className="h-9 w-9" />
@@ -729,74 +681,100 @@ export default function StartingNewLLC() {
         </div>
       </div>
 
-      {/* Hero */}
-      <div className="bg-gradient-to-br from-[#1A1A1A] via-[#2a0000] to-[#1A1A1A] py-12 md:py-16 px-4 print:hidden">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-2 h-2 rounded-full bg-[#CC0000]" />
-            <span className="text-[11px] font-bold tracking-[0.15em] uppercase text-[#CC0000]/70">Training Module</span>
-          </div>
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-white mb-3 tracking-tight">Starting a New LLC</h1>
-          <p className="text-base md:text-lg text-white/60 max-w-2xl mb-1">A State-by-State Training Course for Trades, Construction, and Home Improvement Professionals</p>
-          <p className="text-sm text-white/40 max-w-2xl mb-8">Your step-by-step guide to forming an LLC, getting licensed, and launching your contracting business. Covers all 50 states + D.C.</p>
+      {/* Hero with background image */}
+      <div className="relative overflow-hidden print:hidden">
+        <div className="absolute inset-0">
+          <img src={heroBg} alt="" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[hsl(0,0%,8%)/0.92] via-[hsl(0,0%,10%)/0.85] to-[hsl(0,0%,8%)/0.92]" />
+        </div>
+        <div className="relative max-w-6xl mx-auto px-4 py-14 md:py-20">
+          <div className="max-w-2xl">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-2 h-2 rounded-full bg-primary" />
+              <span className="text-[11px] font-bold tracking-[0.2em] uppercase text-primary/80">Training Module</span>
+            </div>
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-white mb-3 tracking-tight leading-tight">Starting a New LLC</h1>
+            <p className="text-base md:text-lg text-white/70 mb-1 leading-relaxed">A State-by-State Guide for Trades & Construction Professionals</p>
+            <p className="text-sm text-white/45 mb-8">Step-by-step instructions for all 50 states + D.C. Written in plain English.</p>
 
-          {/* Search */}
-          <div className="relative max-w-xl">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/40" />
-            <input
-              ref={searchRef}
-              type="text"
-              value={query}
-              onChange={e => { setQuery(e.target.value); setSelectedState(null); }}
-              placeholder="Search by state, abbreviation, license type, or keyword..."
-              className="w-full py-3.5 pl-12 pr-10 text-sm bg-white/10 border-2 border-white/15 rounded-xl text-white placeholder:text-white/40 outline-none focus:border-[#CC0000] backdrop-blur-md transition-colors"
-            />
-            {query && (
-              <button
-                onClick={() => { setQuery(""); searchRef.current?.focus(); }}
-                className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white/15 flex items-center justify-center hover:bg-white/25"
-              >
-                <X className="h-3.5 w-3.5 text-white" />
-              </button>
-            )}
+            {/* Search */}
+            <div className="relative max-w-xl">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/40" />
+              <input
+                ref={searchRef}
+                type="text"
+                value={query}
+                onChange={e => { setQuery(e.target.value); setSelectedState(null); }}
+                placeholder="Search by state name or abbreviation..."
+                className="w-full py-3.5 pl-12 pr-10 text-sm bg-white/10 border-2 border-white/15 rounded-xl text-white placeholder:text-white/40 outline-none focus:border-primary backdrop-blur-md transition-colors"
+              />
+              {query && (
+                <button onClick={() => { setQuery(""); searchRef.current?.focus(); }} className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/15 flex items-center justify-center hover:bg-white/25 min-h-[44px] min-w-[44px]">
+                  <X className="h-3.5 w-3.5 text-white" />
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
+      {/* Why LLC? Section - only show on landing */}
+      {!selectedState && (
+        <div className="bg-muted/30 border-b border-border print:hidden">
+          <div className="max-w-6xl mx-auto px-4 py-10">
+            <h2 className="text-xl font-extrabold text-foreground mb-2">Why Do You Need an LLC?</h2>
+            <p className="text-sm text-muted-foreground mb-6 max-w-2xl">An LLC (Limited Liability Company) protects your personal belongings — your house, car, and savings — if something goes wrong on a job. Here's why every contractor needs one.</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[
+                { icon: Shield, title: "Protect Your Assets", desc: "If someone sues your business, they can't take your personal stuff. Your home and savings stay safe." },
+                { icon: DollarSign, title: "Pay Less in Taxes", desc: "LLCs can save you money on taxes. You only pay taxes once, not twice like some other business types." },
+                { icon: Building2, title: "Look Professional", desc: "Clients and general contractors trust businesses with 'LLC' in the name. It shows you are serious." },
+                { icon: FileText, title: "Get Bigger Jobs", desc: "Most GCs and commercial clients require you to have an LLC and insurance before they hire you." },
+              ].map((item, i) => (
+                <div key={i} className="bg-card rounded-xl border border-border p-5">
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-3">
+                    <item.icon className="h-5 w-5 text-primary" />
+                  </div>
+                  <h3 className="text-sm font-bold mb-1">{item.title}</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Main content */}
       <div className="max-w-6xl mx-auto px-4 py-8 md:py-10">
-        {/* 8-step overview */}
-        {!selectedState && (
-          <div className="mb-8 print:hidden">
-            <button
-              onClick={() => setShowSteps(!showSteps)}
-              className="flex items-center gap-2 text-xs font-bold text-[#CC0000] uppercase tracking-wide mb-4 hover:text-[#990000]"
-            >
-              <ChevronRight className={`h-4 w-4 transition-transform ${showSteps ? "rotate-90" : ""}`} />
-              {showSteps ? "Hide" : "Show"} Formation Steps
-            </button>
-            {showSteps && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                {overviewSteps.map(s => (
-                  <Card key={s.num} className="border border-border">
-                    <CardContent className="p-4 flex gap-3 items-start">
-                      <div className="shrink-0 w-9 h-9 rounded-lg bg-[#CC0000]/10 flex items-center justify-center text-sm font-extrabold text-[#CC0000]">{s.num}</div>
-                      <div>
-                        <div className="text-sm font-bold mb-0.5">{s.title}</div>
-                        <div className="text-xs text-muted-foreground leading-relaxed">{s.desc}</div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
         {selectedState ? (
           <StateWalkthrough state={selectedState} onBack={() => setSelectedState(null)} />
         ) : (
           <>
+            {/* Collapsible 10-step overview */}
+            <details className="mb-8 print:hidden group">
+              <summary className="flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-wide cursor-pointer hover:opacity-80 list-none min-h-[44px]">
+                <ChevronRight className="h-4 w-4 transition-transform group-open:rotate-90" />
+                View the 10-Step Formation Process
+              </summary>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mt-4">
+                {overviewSteps.map(s => (
+                  <div key={s.num} className="bg-card rounded-lg border border-border p-3 flex gap-2.5 items-start">
+                    <div className="shrink-0 w-7 h-7 rounded-md bg-primary/10 flex items-center justify-center text-xs font-extrabold text-primary">{s.num}</div>
+                    <div>
+                      <div className="text-xs font-bold leading-snug">{s.title}</div>
+                      <div className="text-[11px] text-muted-foreground leading-snug mt-0.5 line-clamp-2">{s.desc}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </details>
+
+            {/* Intro text */}
+            <div className="mb-6">
+              <h2 className="text-lg font-extrabold mb-1">Choose Your State</h2>
+              <p className="text-sm text-muted-foreground">Select your state below to get a personalized step-by-step guide with links, fees, and requirements.</p>
+            </div>
+
             {/* Filter tabs */}
             <div className="flex gap-2 mb-5 flex-wrap print:hidden">
               {filterBtns.map(f => (
@@ -805,8 +783,8 @@ export default function StartingNewLLC() {
                   onClick={() => setFilter(f.key)}
                   className={`px-3.5 py-2 rounded-lg text-xs font-semibold transition-all border min-h-[44px] ${
                     filter === f.key
-                      ? "bg-[#CC0000] text-white border-[#CC0000]"
-                      : "bg-card text-muted-foreground border-border hover:border-[#CC0000]/50"
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-card text-muted-foreground border-border hover:border-primary/50"
                   }`}
                 >
                   {f.label} <span className="opacity-70 ml-1">{f.count}</span>
@@ -820,10 +798,30 @@ export default function StartingNewLLC() {
               {query && ` for "${query}"`}
             </div>
 
-            {/* State grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* State grid - compact list style */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {filtered.map(s => (
-                <StateCard key={s.abbr} state={s} onClick={setSelectedState} />
+                <button
+                  key={s.abbr}
+                  onClick={() => setSelectedState(s)}
+                  className="w-full text-left bg-card rounded-xl border border-border p-4 transition-all duration-200 hover:border-primary hover:shadow-md hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-[44px]"
+                >
+                  <div className="flex justify-between items-center mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-extrabold text-primary tracking-wider">{s.abbr}</span>
+                      <span className="text-sm font-bold text-foreground">{s.name}</span>
+                    </div>
+                    <span className="text-xs font-bold text-primary whitespace-nowrap">{s.llcFee}</span>
+                  </div>
+                  <div className="flex gap-1.5 flex-wrap">
+                    {s.statewide ? (
+                      <Badge className="bg-primary/10 text-primary text-[10px] px-2 py-0 border-0 hover:bg-primary/10">State License</Badge>
+                    ) : (
+                      <Badge variant="secondary" className="text-[10px] px-2 py-0">Local Only</Badge>
+                    )}
+                    {s.nascla && <Badge className="bg-green-100 text-green-800 text-[10px] px-2 py-0 border-0 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-300">NASCLA</Badge>}
+                  </div>
+                </button>
               ))}
             </div>
           </>
@@ -831,7 +829,7 @@ export default function StartingNewLLC() {
       </div>
 
       {/* Footer */}
-      <div className="bg-[#1A1A1A] border-t-[3px] border-[#CC0000] print:hidden">
+      <div className="bg-[hsl(var(--ct1-dark))] border-t-[3px] border-primary print:hidden">
         <div className="max-w-6xl mx-auto px-4 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex items-center gap-3">
@@ -842,7 +840,7 @@ export default function StartingNewLLC() {
               </div>
             </div>
             <div className="flex gap-5">
-              <a href="https://myct1.com" target="_blank" rel="noopener noreferrer" className="text-xs text-[#CC0000] font-semibold hover:underline">myct1.com</a>
+              <a href="https://myct1.com" target="_blank" rel="noopener noreferrer" className="text-xs text-primary font-semibold hover:underline">myct1.com</a>
               <a href="https://myct1.com/legal/privacy" target="_blank" rel="noopener noreferrer" className="text-xs text-gray-500 hover:text-gray-300">Privacy</a>
               <a href="https://myct1.com/legal/terms" target="_blank" rel="noopener noreferrer" className="text-xs text-gray-500 hover:text-gray-300">Terms</a>
             </div>
