@@ -113,8 +113,8 @@ export const TrainingHub = () => {
                 <iframe
                   src="https://drive.google.com/file/d/1eMBOcQ776JFxqniVIZ7g78DQxn5GzwbY/preview"
                   className="w-full h-full rounded-lg"
-                  allow="autoplay"
-                  sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
+                  allow="autoplay; encrypted-media"
+                  referrerPolicy="no-referrer"
                   title="Welcome to CT1's 5-Star Training"
                   onError={(e) => {
                     const target = e.currentTarget;
