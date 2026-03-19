@@ -1,0 +1,6 @@
+
+ALTER TABLE public.profiles 
+  ADD COLUMN IF NOT EXISTS preferred_language text NOT NULL DEFAULT 'en';
+
+ALTER TABLE public.customers 
+  ADD COLUMN IF NOT EXISTS preferred_language text NOT NULL DEFAULT 'en';

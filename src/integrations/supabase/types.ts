@@ -1400,6 +1400,7 @@ export type Database = {
           name: string
           notes: string | null
           phone: string | null
+          preferred_language: string
           referral_source: string | null
           referral_source_other: string | null
           state: string | null
@@ -1423,6 +1424,7 @@ export type Database = {
           name: string
           notes?: string | null
           phone?: string | null
+          preferred_language?: string
           referral_source?: string | null
           referral_source_other?: string | null
           state?: string | null
@@ -1446,6 +1448,7 @@ export type Database = {
           name?: string
           notes?: string | null
           phone?: string | null
+          preferred_language?: string
           referral_source?: string | null
           referral_source_other?: string | null
           state?: string | null
@@ -5060,6 +5063,7 @@ export type Database = {
           phone: string | null
           pocketbot_access_type: string
           pocketbot_full_access: boolean
+          preferred_language: string
           preferred_payment_provider: string | null
           qb_access_token: string | null
           qb_access_token_expires_at: string | null
@@ -5114,6 +5118,7 @@ export type Database = {
           phone?: string | null
           pocketbot_access_type?: string
           pocketbot_full_access?: boolean
+          preferred_language?: string
           preferred_payment_provider?: string | null
           qb_access_token?: string | null
           qb_access_token_expires_at?: string | null
@@ -5168,6 +5173,7 @@ export type Database = {
           phone?: string | null
           pocketbot_access_type?: string
           pocketbot_full_access?: boolean
+          preferred_language?: string
           preferred_payment_provider?: string | null
           qb_access_token?: string | null
           qb_access_token_expires_at?: string | null
