@@ -75,10 +75,30 @@
         "areaServed": "US",
         "availableLanguage": "English"
       },
-      "sameAs": [],
+      "sameAs": [
+        "https://www.facebook.com/myct1",
+        "https://www.linkedin.com/company/myct1",
+        "https://www.instagram.com/myct1",
+        "https://www.youtube.com/@myct1"
+      ],
       "areaServed": {
         "@type": "Country",
         "name": "United States"
+      }
+    }
+    </script>
+
+    <!-- Structured Data - WebSite with SearchAction -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "myCT1",
+      "url": "https://myct1.com",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://myct1.com/blog?q={search_term_string}",
+        "query-input": "required name=search_term_string"
       }
     }
     </script>
