@@ -27,6 +27,26 @@ export function BlogPostTemplate({ post }: Props) {
     })),
   };
 
+  const blogPostingSchema = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: title,
+    description: metaDescription,
+    url: `https://myct1.com/blog/${slug}`,
+    image: "https://myct1.com/og-blog-creative-3.png",
+    datePublished: new Date().toISOString().split("T")[0],
+    dateModified: new Date().toISOString().split("T")[0],
+    author: { "@type": "Organization", name: "myCT1", url: "https://myct1.com" },
+    publisher: {
+      "@type": "Organization",
+      name: "myCT1",
+      url: "https://myct1.com",
+      logo: { "@type": "ImageObject", url: "https://myct1.com/icons/icon-512.png" },
+    },
+    mainEntityOfPage: { "@type": "WebPage", "@id": `https://myct1.com/blog/${slug}` },
+    articleSection: category,
+  };
+
   useEffect(() => {
     window.scrollTo(0, 0);
     document.title = `${title} | myCT1`;
