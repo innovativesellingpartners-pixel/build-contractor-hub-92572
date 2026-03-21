@@ -33,7 +33,7 @@
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
-    <!-- og:url omitted: SPA serves same index.html for all routes, LinkedIn will use the shared URL -->
+    <meta property="og:url" content="https://myct1.com/" />
     <meta property="og:title" content="myCT1 - Contractor Business Software | CRM, Estimating & AI Tools" />
     <meta property="og:description" content="The complete contractor business suite. Professional CRM, estimating, AI assistants, job management and invoicing. Launching in Michigan, expanding nationwide." />
     <meta property="og:image" content="https://myct1.com/og-blog-creative-3.png" />
@@ -75,10 +75,30 @@
         "areaServed": "US",
         "availableLanguage": "English"
       },
-      "sameAs": [],
+      "sameAs": [
+        "https://www.facebook.com/myct1",
+        "https://www.linkedin.com/company/myct1",
+        "https://www.instagram.com/myct1",
+        "https://www.youtube.com/@myct1"
+      ],
       "areaServed": {
         "@type": "Country",
         "name": "United States"
+      }
+    }
+    </script>
+
+    <!-- Structured Data - WebSite with SearchAction -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "myCT1",
+      "url": "https://myct1.com",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://myct1.com/blog?q={search_term_string}",
+        "query-input": "required name=search_term_string"
       }
     }
     </script>

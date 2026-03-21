@@ -27,6 +27,26 @@ export function BlogPostTemplate({ post }: Props) {
     })),
   };
 
+  const blogPostingSchema = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: title,
+    description: metaDescription,
+    url: `https://myct1.com/blog/${slug}`,
+    image: "https://myct1.com/og-blog-creative-3.png",
+    datePublished: new Date().toISOString().split("T")[0],
+    dateModified: new Date().toISOString().split("T")[0],
+    author: { "@type": "Organization", name: "myCT1", url: "https://myct1.com" },
+    publisher: {
+      "@type": "Organization",
+      name: "myCT1",
+      url: "https://myct1.com",
+      logo: { "@type": "ImageObject", url: "https://myct1.com/icons/icon-512.png" },
+    },
+    mainEntityOfPage: { "@type": "WebPage", "@id": `https://myct1.com/blog/${slug}` },
+    articleSection: category,
+  };
+
   useEffect(() => {
     window.scrollTo(0, 0);
     document.title = `${title} | myCT1`;
@@ -45,7 +65,22 @@ export function BlogPostTemplate({ post }: Props) {
     let script = document.getElementById("faq-schema") as HTMLScriptElement | null;
     if (!script) { script = document.createElement("script"); script.id = "faq-schema"; script.type = "application/ld+json"; document.head.appendChild(script); }
     script.textContent = JSON.stringify(faqSchema);
-    return () => { script?.remove(); };
+
+    let bpScript = document.getElementById("blogposting-schema") as HTMLScriptElement | null;
+    if (!bpScript) { bpScript = document.createElement("script"); bpScript.id = "blogposting-schema"; bpScript.type = "application/ld+json"; document.head.appendChild(bpScript); }
+    bpScript.textContent = JSON.stringify(blogPostingSchema);
+
+    // Set OG meta tags for blog posts
+    const setOgMeta = (property: string, content: string) => {
+      let el = document.querySelector(`meta[property="${property}"]`) as HTMLMetaElement | null;
+      if (el) el.setAttribute("content", content);
+    };
+    setOgMeta("og:title", `${title} | myCT1`);
+    setOgMeta("og:description", metaDescription);
+    setOgMeta("og:url", `https://myct1.com/blog/${slug}`);
+    setOgMeta("og:type", "article");
+
+    return () => { script?.remove(); bpScript?.remove(); };
   }, [slug]);
 
   const renderParagraphs = (text: string) =>
