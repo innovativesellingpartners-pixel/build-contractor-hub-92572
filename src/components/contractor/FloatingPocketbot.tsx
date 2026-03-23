@@ -36,6 +36,7 @@ interface FloatingPocketAgentProps {
 
 export function FloatingPocketAgent({ onClose, onPositionChange, initialPosition }: FloatingPocketAgentProps) {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
