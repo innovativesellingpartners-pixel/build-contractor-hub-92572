@@ -326,6 +326,110 @@ serve(async (req) => {
             required: ["title"]
           }
         }
+      },
+      {
+        type: "function",
+        function: {
+          name: "create_lead",
+          description: "Create a new lead in the CT1 CRM system. Use this when users say things like 'create a lead for', 'add a lead', 'new lead', 'I got a call from', 'someone needs a quote', etc.",
+          parameters: {
+            type: "object",
+            properties: {
+              name: { type: "string", description: "Lead's full name" },
+              phone: { type: "string", description: "Phone number" },
+              email: { type: "string", description: "Email address" },
+              address: { type: "string", description: "Street address" },
+              city: { type: "string", description: "City" },
+              state: { type: "string", description: "State abbreviation" },
+              company: { type: "string", description: "Company or business name" },
+              source: { type: "string", description: "How the lead was acquired e.g. 'referral', 'website', 'phone call', 'walk-in'" },
+              notes: { type: "string", description: "Any additional notes about the lead or their needs" },
+              trade_type: { type: "string", description: "Trade type e.g. 'HVAC', 'Plumbing', 'Electrical', 'Roofing'" }
+            },
+            required: ["name"]
+          }
+        }
+      },
+      {
+        type: "function",
+        function: {
+          name: "create_customer",
+          description: "Create a new customer in the CT1 CRM. Use when users say 'add a customer', 'create a customer', 'new customer named', etc.",
+          parameters: {
+            type: "object",
+            properties: {
+              name: { type: "string", description: "Customer's full name" },
+              email: { type: "string", description: "Email address" },
+              phone: { type: "string", description: "Phone number" },
+              address: { type: "string", description: "Street address" },
+              city: { type: "string", description: "City" },
+              state: { type: "string", description: "State abbreviation" },
+              zip_code: { type: "string", description: "ZIP code" },
+              company: { type: "string", description: "Company name" },
+              notes: { type: "string", description: "Any notes about the customer" }
+            },
+            required: ["name"]
+          }
+        }
+      },
+      {
+        type: "function",
+        function: {
+          name: "create_job",
+          description: "Create a new job/project in the CT1 system. Use when users say 'create a job', 'new project', 'start a job for', etc.",
+          parameters: {
+            type: "object",
+            properties: {
+              project_name: { type: "string", description: "Name/title of the project" },
+              description: { type: "string", description: "Project description" },
+              job_address: { type: "string", description: "Job site address" },
+              job_city: { type: "string", description: "Job site city" },
+              job_state: { type: "string", description: "Job site state" },
+              contract_value: { type: "number", description: "Contract value in dollars" },
+              trade_type: { type: "string", description: "Trade type" },
+              notes: { type: "string", description: "Additional notes" }
+            },
+            required: ["project_name"]
+          }
+        }
+      },
+      {
+        type: "function",
+        function: {
+          name: "create_estimate",
+          description: "Create a new estimate/proposal in CT1. Use when users say 'create an estimate', 'make a proposal', 'new estimate for', etc.",
+          parameters: {
+            type: "object",
+            properties: {
+              title: { type: "string", description: "Estimate title" },
+              description: { type: "string", description: "Project/scope description" },
+              client_name: { type: "string", description: "Client name" },
+              client_email: { type: "string", description: "Client email" },
+              client_phone: { type: "string", description: "Client phone" },
+              client_address: { type: "string", description: "Client address" },
+              project_address: { type: "string", description: "Project/job site address" },
+              trade_type: { type: "string", description: "Trade type" },
+              total_amount: { type: "number", description: "Total estimated amount if known" }
+            },
+            required: ["title"]
+          }
+        }
+      },
+      {
+        type: "function",
+        function: {
+          name: "create_customer_portal",
+          description: "Create a customer portal link for a customer. Use when users say 'create a portal', 'set up a customer portal', 'give my customer portal access', etc.",
+          parameters: {
+            type: "object",
+            properties: {
+              customer_id: { type: "string", description: "The customer's ID (UUID). Ask the user which customer if not clear." },
+              job_id: { type: "string", description: "Optional job ID to link the portal to a specific job." },
+              label: { type: "string", description: "A label for this portal link e.g. 'Kitchen Remodel Portal'" }
+            },
+            required: ["customer_id"]
+          }
+        }
       }
     ];
 
