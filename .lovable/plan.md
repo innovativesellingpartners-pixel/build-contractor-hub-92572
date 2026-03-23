@@ -1,95 +1,78 @@
 
 
-# Automatic Estimate Translation for Customer Delivery
+# Pocket Agent CRM Actions — Full CRUD Tool Calling
 
 ## Overview
-When a contractor sends an estimate, the system will automatically translate all free-text fields into the customer's preferred language before delivery. The contractor's original version remains untouched. This builds on the existing translation infrastructure (edge function, glossary, `TranslationPreviewDialog`).
 
-## What Already Exists
-- `translate-document` edge function (Lovable AI + construction glossary)
-- `useDocumentTranslation` hook
-- `TranslationPreviewDialog` component (manual translate button on estimate detail)
-- `preferred_language` field on `profiles` table
-- `preferred_language` field on `customers` table
-- `trade_specific` JSONB field on estimates (already stores `translated_content`)
+Transform the Pocket Agent from a read-only advisor into a fully actionable assistant that can create and manage leads, customers, jobs, estimates, and customer portals directly from natural language commands.
 
-## Plan
+## Architecture
 
-### 1. Database: Add translation storage to estimates
-Migration to add columns to `estimates`:
-- `translated_content` (JSONB) -- stores translated field values keyed by field name
-- `translated_language` (text) -- e.g. "en"
-- `original_language` (text) -- e.g. "es"
-- `translated_at` (timestamptz)
+The existing pattern is solid: the edge function defines AI tools, the AI decides when to call them, the edge function executes the tool server-side using the service-role client, and returns structured JSON to the frontend. We extend this same pattern with new CRM action tools.
 
-This replaces the current approach of nesting inside `trade_specific`.
+```text
+User: "Create a lead for John Smith, 555-1234, needs a new roof"
+  → AI calls create_lead tool
+  → Edge function inserts into leads table (service role)
+  → Returns confirmation + link to the new record
+  → Frontend shows confirmation message with "View Lead" button
+```
 
-### 2. Update `send-estimate` edge function
-Before sending the email:
-1. Fetch the contractor's `preferred_language` from `profiles`
-2. Fetch the customer's `preferred_language` from `customers` (default "en") or use a new `customer_language` field on the estimate itself
-3. If languages differ, call the `translate-document` function internally (or inline the same AI gateway logic) to translate: `title`, `description`, `project_description`, `scope_objective`, `assumptions_and_exclusions`, all line item descriptions, `terms_payment_schedule`, `warranty_text`, and `notes`
-4. Store the translated content on the estimate record (`translated_content`, `translated_at`, etc.)
-5. Use the translated text in the email HTML instead of originals
-6. If translation fails, return an error -- never send a half-translated estimate
+## Changes
 
-### 3. Update `PublicEstimate.tsx` (customer-facing page)
-When rendering the public estimate page:
-- Check if `translated_content` exists on the estimate
-- If yes, display translated values for all text fields (title, description, line items, scope, terms, etc.)
-- Keep all numbers, dates, amounts, names, addresses unchanged
-- Add a small "Translated from Spanish" note at the bottom
+### 1. Edge Function: Add CRM Action Tools (`supabase/functions/pocketbot-chat/index.ts`)
 
-### 4. Update `generate-estimate-pdf` edge function
-- Same logic: if `translated_content` exists, use translated text in the PDF output
-- Keep amounts, dates, names unchanged
+Add 5 new tool definitions to the existing `tools` array:
 
-### 5. UI: Add "Customer Language" to estimate detail/form
-- On `EstimateDetailViewBlue.tsx`, add a "Customer Language" dropdown (English/Spanish) that saves to the estimate record (new `customer_language` column, default "en")
-- On `EstimateBuilder.tsx`, add the same dropdown in the form
-- Show a "Translated to English" badge on the estimate card/detail when `translated_at` is set
+- **`create_lead`** — Insert into `leads` table with name, phone, email, address, source, notes, trade_type. Auto-assigns `user_id` and `contractor_id` from the authenticated user.
+- **`create_customer`** — Insert into `customers` table with name, email, phone, address, company.
+- **`create_job`** — Insert into `jobs` table with project_name, description, address, customer_id (optional), status, contract_value.
+- **`create_estimate`** — Insert into `estimates` table with title, description, client details, line_items JSON, trade_type.
+- **`create_customer_portal`** — Insert into `customer_portal_tokens` table with customer_id, job_id (optional), generates a public_token, and returns the portal URL.
 
-### 6. Auto-translate on Send flow
-Modify `handleSendEstimate` in `EstimatesSection.tsx` and the `send-estimate` edge function:
-- When contractor clicks Send, if contractor language != customer language:
-  1. Call translate-document to get translations
-  2. Show `TranslationPreviewDialog` with the results so contractor can review/edit
-  3. On confirm, save translated content and proceed with send
-  4. On cancel, abort send
-- If languages match, send directly (no translation step)
+Each tool handler will:
+1. Parse the AI's arguments
+2. Look up the user's `contractor_id` via `get_user_contractor_id(user.id)`
+3. Insert the record using the service-role Supabase client
+4. Return a confirmation message with the record details and a navigation path (e.g., `/dashboard/leads/{id}`)
 
-### 7. SMS send flow
-Same pattern for `send-estimate-sms`: use translated content if available.
+### 2. Update System Prompt in Edge Function
+
+Add a new section to the system prompt explaining the CRM action capabilities:
+
+```
+CRM ACTIONS:
+You can directly create records in the CT1 system. When users ask you to:
+- "Create a lead for..." → use create_lead
+- "Add a customer named..." → use create_customer  
+- "Create a job for..." → use create_job
+- "Create an estimate for..." → use create_estimate
+- "Set up a customer portal for..." → use create_customer_portal
+
+Always confirm what you're about to create and include all details the user provided.
+When information is missing (e.g., no email), still create the record with available data.
+```
+
+### 3. Frontend: Handle New Response Types (`src/components/contractor/FloatingPocketbot.tsx`)
+
+Add handling for new response types (`crm_record_created`) in the JSON response handler. Display:
+- Confirmation message from the AI
+- A "View Record" button that navigates to the relevant dashboard page (e.g., `/dashboard/leads/{id}`)
+
+Add a new `navigationPath` field to the Message interface to support inline navigation buttons.
+
+### 4. Security Considerations
+
+- All inserts use the **service-role client** scoped to the authenticated user's `contractor_id` — no cross-tenant leakage
+- The user's `auth.uid()` is verified before any operations
+- The `contractor_id` is resolved server-side via `get_user_contractor_id()`, not from client input
+- Rate limiting already in place continues to apply
 
 ## Technical Details
 
-**New estimate columns** (migration):
-```sql
-ALTER TABLE estimates ADD COLUMN customer_language text DEFAULT 'en';
-ALTER TABLE estimates ADD COLUMN translated_content jsonb;
-ALTER TABLE estimates ADD COLUMN original_language text;
-ALTER TABLE estimates ADD COLUMN translated_language text;
-ALTER TABLE estimates ADD COLUMN translated_at timestamptz;
-```
-
-**Fields to translate** (text only, never amounts/dates/names):
-- `title`, `description`, `project_description`, `scope_objective`
-- `assumptions_and_exclusions`, `warranty_text`, `terms_payment_schedule`
-- Each line item's `description` / `item_description`
-- `notes`
-
-**Fields never translated**: `client_name`, `client_email`, `client_phone`, `client_address`, `site_address`, amounts, quantities, dates, estimate number, contractor info.
-
-**Send flow change**: The translation preview dialog intercepts the send action when languages differ, requiring contractor approval before sending.
-
-**Caching**: Once translated and stored on the estimate, resending reuses the stored translation unless content has changed (compare a hash of translatable fields).
-
-## Files to Create/Edit
-- **Create**: Migration for new estimate columns
-- **Edit**: `supabase/functions/send-estimate/index.ts` -- use translated content in email
-- **Edit**: `src/pages/PublicEstimate.tsx` -- render translated content
-- **Edit**: `src/components/contractor/crm/sections/EstimatesSection.tsx` -- intercept send with translation preview
-- **Edit**: `src/components/contractor/crm/sections/EstimateDetailViewBlue.tsx` -- add customer language dropdown, translated badge, update translation dialog flow
-- **Edit**: `src/components/contractor/crm/EstimateBuilder.tsx` -- add customer language dropdown
-- **Edit**: `supabase/functions/generate-estimate-pdf/index.ts` -- use translated content in PDF
+- **Tables involved**: `leads`, `customers`, `jobs`, `estimates`, `customer_portal_tokens`
+- **No schema changes needed** — all tables already exist with the required columns
+- **No new edge functions** — extends the existing `pocketbot-chat` function
+- **Tool calling pattern** — identical to existing `add_task` tool implementation
+- **Portal token generation** — uses `crypto.randomUUID()` for the `public_token` field
 
