@@ -6534,6 +6534,10 @@ export type Database = {
         Args: { _record_user_id: string }
         Returns: boolean
       }
+      is_contractor_owner: {
+        Args: { _contractor_id: string }
+        Returns: boolean
+      }
       is_super_admin: { Args: { _user_id: string }; Returns: boolean }
       search_knowledge: {
         Args: { search_query: string }
