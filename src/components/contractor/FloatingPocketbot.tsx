@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bot, Send, Loader2, Lock, Sparkles, X, Minimize2, Download, GripVertical, Mic, MicOff, MessageCircle, Headphones } from "lucide-react";
+import { Bot, Send, Loader2, Lock, Sparkles, X, Minimize2, Download, GripVertical, Mic, MicOff, MessageCircle, Headphones, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,6 +21,8 @@ interface Message {
   fileName?: string;
   jobData?: ExtractedJobData;
   products?: ProductResult[];
+  navigationPath?: string;
+  recordType?: string;
 }
 
 const MAX_FREE_PROMPTS = 3;
@@ -33,6 +36,7 @@ interface FloatingPocketAgentProps {
 
 export function FloatingPocketAgent({ onClose, onPositionChange, initialPosition }: FloatingPocketAgentProps) {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
@@ -480,6 +484,16 @@ export function FloatingPocketAgent({ onClose, onPositionChange, initialPosition
           setIsLoading(false);
           return;
         }
+        if (jsonResponse.type === "crm_record_created") {
+          setMessages([...newMessages, {
+            role: "assistant",
+            content: jsonResponse.content,
+            navigationPath: jsonResponse.navigationPath,
+            recordType: jsonResponse.recordType
+          }]);
+          setIsLoading(false);
+          return;
+        }
         // Handle task_added and other JSON types
         if (jsonResponse.content) {
           setMessages([...newMessages, {
@@ -821,6 +835,20 @@ export function FloatingPocketAgent({ onClose, onPositionChange, initialPosition
                     )}
                     {message.products && message.products.length > 0 && (
                       <ChatProductCard products={message.products} />
+                    )}
+                    {message.navigationPath && (
+                      <Button
+                        onClick={() => {
+                          navigate(message.navigationPath!);
+                          onClose();
+                        }}
+                        variant="outline"
+                        size="sm"
+                        className="mt-2 w-full text-xs"
+                      >
+                        <ExternalLink className="h-3 w-3 mr-1" />
+                        View {message.recordType === 'lead' ? 'Lead' : message.recordType === 'customer' ? 'Customer' : message.recordType === 'job' ? 'Job' : message.recordType === 'estimate' ? 'Estimate' : message.recordType === 'portal' ? 'Customer' : 'Record'}
+                      </Button>
                     )}
                   </div>
                 </div>
