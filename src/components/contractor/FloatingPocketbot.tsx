@@ -484,6 +484,16 @@ export function FloatingPocketAgent({ onClose, onPositionChange, initialPosition
           setIsLoading(false);
           return;
         }
+        if (jsonResponse.type === "crm_record_created") {
+          setMessages([...newMessages, {
+            role: "assistant",
+            content: jsonResponse.content,
+            navigationPath: jsonResponse.navigationPath,
+            recordType: jsonResponse.recordType
+          }]);
+          setIsLoading(false);
+          return;
+        }
         // Handle task_added and other JSON types
         if (jsonResponse.content) {
           setMessages([...newMessages, {
