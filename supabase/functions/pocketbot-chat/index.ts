@@ -1032,6 +1032,303 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
             );
           }
         }
+
+        // === CRM ACTION TOOLS ===
+        if (name === "create_lead") {
+          try {
+            const args = JSON.parse(argsStr);
+            console.log("Creating lead:", args);
+            
+            // Get contractor_id for the user
+            const { data: contractorData } = await supabase
+              .rpc('get_user_contractor_id', { _user_id: user.id });
+            const contractorId = contractorData || user.id;
+            
+            const { data: leadData, error: leadError } = await supabase
+              .from('leads')
+              .insert({
+                user_id: contractorId,
+                name: args.name,
+                phone: args.phone || null,
+                email: args.email || null,
+                address: args.address || null,
+                city: args.city || null,
+                state: args.state || null,
+                company: args.company || null,
+                source: args.source || 'pocketbot',
+                notes: args.notes || null,
+                trade_type: args.trade_type || null,
+                status: 'new'
+              })
+              .select('id, name, lead_number')
+              .single();
+            
+            if (leadError) {
+              console.error("Error creating lead:", leadError);
+              return new Response(
+                JSON.stringify({ 
+                  type: "crm_action_error",
+                  content: `I tried to create a lead for "${args.name}" but encountered an error: ${leadError.message}. Please try again or create it manually in your Leads section.`
+                }),
+                { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+              );
+            }
+            
+            return new Response(
+              JSON.stringify({ 
+                type: "crm_record_created",
+                content: `✅ Lead created successfully!\n\n**${leadData.name}** (${leadData.lead_number})\n${args.phone ? `📞 ${args.phone}` : ''}${args.email ? `\n📧 ${args.email}` : ''}${args.notes ? `\n📝 ${args.notes}` : ''}\n\nYou can view and manage this lead in your CRM.`,
+                recordType: "lead",
+                recordId: leadData.id,
+                navigationPath: `/dashboard/leads`
+              }),
+              { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+          } catch (parseError) {
+            console.error("Error in create_lead:", parseError);
+            return new Response(
+              JSON.stringify({ type: "crm_action_error", content: "I had trouble creating the lead. Could you please try again?" }),
+              { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+          }
+        }
+
+        if (name === "create_customer") {
+          try {
+            const args = JSON.parse(argsStr);
+            console.log("Creating customer:", args);
+            
+            const { data: contractorData } = await supabase
+              .rpc('get_user_contractor_id', { _user_id: user.id });
+            const contractorId = contractorData || user.id;
+            
+            const { data: customerData, error: customerError } = await supabase
+              .from('customers')
+              .insert({
+                user_id: contractorId,
+                name: args.name,
+                email: args.email || null,
+                phone: args.phone || null,
+                address: args.address || null,
+                city: args.city || null,
+                state: args.state || null,
+                zip_code: args.zip_code || null,
+                company: args.company || null,
+                notes: args.notes || null
+              })
+              .select('id, name, customer_number')
+              .single();
+            
+            if (customerError) {
+              console.error("Error creating customer:", customerError);
+              return new Response(
+                JSON.stringify({ 
+                  type: "crm_action_error",
+                  content: `I tried to create a customer "${args.name}" but encountered an error: ${customerError.message}. Please try again or create it manually.`
+                }),
+                { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+              );
+            }
+            
+            return new Response(
+              JSON.stringify({ 
+                type: "crm_record_created",
+                content: `✅ Customer created successfully!\n\n**${customerData.name}** (${customerData.customer_number})\n${args.phone ? `📞 ${args.phone}` : ''}${args.email ? `\n📧 ${args.email}` : ''}${args.company ? `\n🏢 ${args.company}` : ''}\n\nYou can view and manage this customer in your CRM.`,
+                recordType: "customer",
+                recordId: customerData.id,
+                navigationPath: `/dashboard/customers`
+              }),
+              { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+          } catch (parseError) {
+            console.error("Error in create_customer:", parseError);
+            return new Response(
+              JSON.stringify({ type: "crm_action_error", content: "I had trouble creating the customer. Could you please try again?" }),
+              { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+          }
+        }
+
+        if (name === "create_job") {
+          try {
+            const args = JSON.parse(argsStr);
+            console.log("Creating job:", args);
+            
+            const { data: contractorData } = await supabase
+              .rpc('get_user_contractor_id', { _user_id: user.id });
+            const contractorId = contractorData || user.id;
+            
+            const { data: jobData, error: jobError } = await supabase
+              .from('jobs')
+              .insert({
+                user_id: contractorId,
+                project_name: args.project_name,
+                description: args.description || null,
+                job_address: args.job_address || null,
+                job_city: args.job_city || null,
+                job_state: args.job_state || null,
+                contract_value: args.contract_value || 0,
+                trade_type: args.trade_type || null,
+                notes: args.notes || null,
+                job_status: 'not_started'
+              })
+              .select('id, project_name, job_number')
+              .single();
+            
+            if (jobError) {
+              console.error("Error creating job:", jobError);
+              return new Response(
+                JSON.stringify({ 
+                  type: "crm_action_error",
+                  content: `I tried to create a job "${args.project_name}" but encountered an error: ${jobError.message}. Please try again or create it manually.`
+                }),
+                { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+              );
+            }
+            
+            let jobMsg = `✅ Job created successfully!\n\n**${jobData.project_name}** (${jobData.job_number})`;
+            if (args.contract_value) jobMsg += `\n💰 Contract: $${Number(args.contract_value).toLocaleString()}`;
+            if (args.job_address) jobMsg += `\n📍 ${args.job_address}`;
+            if (args.trade_type) jobMsg += `\n🔧 ${args.trade_type}`;
+            jobMsg += `\n\nYou can view and manage this job in your Jobs section.`;
+            
+            return new Response(
+              JSON.stringify({ 
+                type: "crm_record_created",
+                content: jobMsg,
+                recordType: "job",
+                recordId: jobData.id,
+                navigationPath: `/dashboard/jobs/${jobData.id}`
+              }),
+              { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+          } catch (parseError) {
+            console.error("Error in create_job:", parseError);
+            return new Response(
+              JSON.stringify({ type: "crm_action_error", content: "I had trouble creating the job. Could you please try again?" }),
+              { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+          }
+        }
+
+        if (name === "create_estimate") {
+          try {
+            const args = JSON.parse(argsStr);
+            console.log("Creating estimate:", args);
+            
+            const { data: contractorData } = await supabase
+              .rpc('get_user_contractor_id', { _user_id: user.id });
+            const contractorId = contractorData || user.id;
+            
+            const { data: estimateData, error: estimateError } = await supabase
+              .from('estimates')
+              .insert({
+                user_id: contractorId,
+                title: args.title,
+                description: args.description || null,
+                client_name: args.client_name || null,
+                client_email: args.client_email || null,
+                client_phone: args.client_phone || null,
+                client_address: args.client_address || null,
+                project_address: args.project_address || null,
+                trade_type: args.trade_type || null,
+                total_amount: args.total_amount || 0,
+                status: 'draft'
+              })
+              .select('id, title, estimate_number')
+              .single();
+            
+            if (estimateError) {
+              console.error("Error creating estimate:", estimateError);
+              return new Response(
+                JSON.stringify({ 
+                  type: "crm_action_error",
+                  content: `I tried to create an estimate "${args.title}" but encountered an error: ${estimateError.message}. Please try again or create it manually.`
+                }),
+                { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+              );
+            }
+            
+            let estMsg = `✅ Estimate created successfully!\n\n**${estimateData.title}** (${estimateData.estimate_number})`;
+            if (args.client_name) estMsg += `\n👤 ${args.client_name}`;
+            if (args.total_amount) estMsg += `\n💰 $${Number(args.total_amount).toLocaleString()}`;
+            if (args.trade_type) estMsg += `\n🔧 ${args.trade_type}`;
+            estMsg += `\n\nYou can add line items and send this estimate from your Estimates section.`;
+            
+            return new Response(
+              JSON.stringify({ 
+                type: "crm_record_created",
+                content: estMsg,
+                recordType: "estimate",
+                recordId: estimateData.id,
+                navigationPath: `/dashboard/estimates/${estimateData.id}`
+              }),
+              { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+          } catch (parseError) {
+            console.error("Error in create_estimate:", parseError);
+            return new Response(
+              JSON.stringify({ type: "crm_action_error", content: "I had trouble creating the estimate. Could you please try again?" }),
+              { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+          }
+        }
+
+        if (name === "create_customer_portal") {
+          try {
+            const args = JSON.parse(argsStr);
+            console.log("Creating customer portal:", args);
+            
+            const { data: contractorData } = await supabase
+              .rpc('get_user_contractor_id', { _user_id: user.id });
+            const contractorId = contractorData || user.id;
+            
+            const portalToken = crypto.randomUUID();
+            
+            const { data: portalData, error: portalError } = await supabase
+              .from('customer_portal_tokens')
+              .insert({
+                contractor_id: contractorId,
+                customer_id: args.customer_id,
+                job_id: args.job_id || null,
+                token: portalToken,
+                label: args.label || 'Customer Portal',
+                is_active: true
+              })
+              .select('id, token, label')
+              .single();
+            
+            if (portalError) {
+              console.error("Error creating portal:", portalError);
+              return new Response(
+                JSON.stringify({ 
+                  type: "crm_action_error",
+                  content: `I tried to create a customer portal but encountered an error: ${portalError.message}. Make sure you provided a valid customer ID.`
+                }),
+                { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+              );
+            }
+            
+            const portalUrl = `${Deno.env.get('APP_URL') || 'https://myct1.com'}/portal/${portalData.token}`;
+            
+            return new Response(
+              JSON.stringify({ 
+                type: "crm_record_created",
+                content: `✅ Customer portal created!\n\n**${portalData.label}**\n🔗 Portal Link: ${portalUrl}\n\nShare this link with your customer so they can view project updates, communicate with you, and track progress.`,
+                recordType: "portal",
+                recordId: portalData.id,
+                navigationPath: `/dashboard/customers`
+              }),
+              { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+          } catch (parseError) {
+            console.error("Error in create_customer_portal:", parseError);
+            return new Response(
+              JSON.stringify({ type: "crm_action_error", content: "I had trouble creating the customer portal. Could you please try again with a valid customer ID?" }),
+              { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+          }
+        }
       }
     }
 
