@@ -21,6 +21,8 @@ interface Message {
   fileName?: string;
   jobData?: ExtractedJobData;
   products?: ProductResult[];
+  navigationPath?: string;
+  recordType?: string;
 }
 
 const MAX_FREE_PROMPTS = 3;
