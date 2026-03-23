@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bot, Send, Loader2, Lock, Sparkles, X, Minimize2, Download, GripVertical, Mic, MicOff, MessageCircle, Headphones } from "lucide-react";
+import { Bot, Send, Loader2, Lock, Sparkles, X, Minimize2, Download, GripVertical, Mic, MicOff, MessageCircle, Headphones, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
