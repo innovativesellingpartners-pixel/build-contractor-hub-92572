@@ -836,6 +836,20 @@ export function FloatingPocketAgent({ onClose, onPositionChange, initialPosition
                     {message.products && message.products.length > 0 && (
                       <ChatProductCard products={message.products} />
                     )}
+                    {message.navigationPath && (
+                      <Button
+                        onClick={() => {
+                          navigate(message.navigationPath!);
+                          onClose();
+                        }}
+                        variant="outline"
+                        size="sm"
+                        className="mt-2 w-full text-xs"
+                      >
+                        <ExternalLink className="h-3 w-3 mr-1" />
+                        View {message.recordType === 'lead' ? 'Lead' : message.recordType === 'customer' ? 'Customer' : message.recordType === 'job' ? 'Job' : message.recordType === 'estimate' ? 'Estimate' : message.recordType === 'portal' ? 'Customer' : 'Record'}
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))}
