@@ -109,6 +109,36 @@ export type Database = {
           },
         ]
       }
+      ai_estimate_usage: {
+        Row: {
+          created_at: string
+          generated_at: string
+          id: string
+          input_summary: string | null
+          job_type: string | null
+          token_count: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          generated_at?: string
+          id?: string
+          input_summary?: string | null
+          job_type?: string | null
+          token_count?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          generated_at?: string
+          id?: string
+          input_summary?: string | null
+          job_type?: string | null
+          token_count?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       ai_topic_rules: {
         Row: {
           category: string

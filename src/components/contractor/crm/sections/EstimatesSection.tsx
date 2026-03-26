@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Plus, FileText, Trash2, Eye, Send, CheckCircle, Clock, AlertCircle, RefreshCw, Users, Copy, ArrowLeft, Briefcase, ChevronRight, LayoutTemplate, FlaskConical, Languages } from 'lucide-react';
+import { Plus, FileText, Trash2, Eye, Send, CheckCircle, Clock, AlertCircle, RefreshCw, Users, Copy, ArrowLeft, Briefcase, ChevronRight, LayoutTemplate, FlaskConical, Languages, Sparkles } from 'lucide-react';
 import { useEstimates, EstimateLineItem } from '@/hooks/useEstimates';
 import { useLeads } from '@/hooks/useLeads';
 import EstimateBuilder from '../EstimateBuilder';
@@ -21,6 +21,7 @@ import { SwipeToArchive } from '@/components/ui/swipe-to-archive';
 import { CrmNavHeader } from '../CrmNavHeader';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { TranslationPreviewDialog } from '../TranslationPreviewDialog';
+import AIEstimateGenerator from '../../AIEstimateGenerator';
 
 interface EstimatesSectionProps {
   onSectionChange?: (section: string) => void;
@@ -43,6 +44,7 @@ export default function EstimatesSection({ onSectionChange, initialEstimateId, o
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [showTranslationPreview, setShowTranslationPreview] = useState(false);
   const [pendingSendEstimate, setPendingSendEstimate] = useState<any>(null);
+  const [showAIGenerator, setShowAIGenerator] = useState(false);
 
   // Handle initial estimate ID to auto-open the detail view
   React.useEffect(() => {
@@ -435,6 +437,37 @@ export default function EstimatesSection({ onSectionChange, initialEstimateId, o
     );
   }
 
+  // Show AI generator if active
+  if (showAIGenerator) {
+    return (
+      <AIEstimateGenerator
+        onBack={() => setShowAIGenerator(false)}
+        onStartNewEstimate={(lineItems, metadata) => {
+          setShowAIGenerator(false);
+          setSelectedEstimate(null);
+          setIsFormOpen(true);
+          // The estimate form will pick up these items via a callback
+          // For now, create a new estimate with the AI-generated items
+          createEstimateAsync({
+            title: metadata.title || 'AI Generated Estimate',
+            status: 'draft',
+            total_amount: metadata.grand_total || 0,
+            subtotal: metadata.subtotal || 0,
+            grand_total: metadata.grand_total || 0,
+            project_description: metadata.project_description || '',
+            line_items: lineItems,
+          }).then(newEstimate => {
+            if (newEstimate) {
+              setSelectedEstimate(newEstimate);
+              setIsFormOpen(true);
+              toast.success('New estimate created with AI-generated items');
+            }
+          });
+        }}
+      />
+    );
+  }
+
   return (
     <MobileOptimizedWrapper
       title="Estimates"
@@ -455,6 +488,10 @@ export default function EstimatesSection({ onSectionChange, initialEstimateId, o
           <Button variant="outline" onClick={() => setShowTemplates(true)} className="w-full sm:w-auto">
             <LayoutTemplate className="h-4 w-4 mr-2" />
             Templates
+          </Button>
+          <Button variant="outline" onClick={() => setShowAIGenerator(true)} className="w-full sm:w-auto">
+            <Sparkles className="h-4 w-4 mr-2" />
+            AI Estimate
           </Button>
           <Button onClick={handleNew} className="w-full sm:w-auto">
             <Plus className="h-4 w-4 mr-2" />
