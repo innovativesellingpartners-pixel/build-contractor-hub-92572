@@ -1,3 +1,4 @@
+import React, { Suspense } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,102 +13,111 @@ import { usePWABackNavigation } from "@/hooks/usePWABackNavigation";
 import { useLanguageSync } from "@/hooks/useLanguageSync";
 import { HomeRedirect } from "@/components/HomeRedirect";
 import { NewLandingPage } from "@/components/NewLandingPage";
-import { About } from "@/pages/About";
-import { Contact } from "@/pages/Contact";
 import { Auth } from "@/pages/Auth";
-import { Pricing } from "@/pages/Pricing";
-import { WhatWeDo } from "@/pages/WhatWeDo";
-import { CoreValues } from "@/pages/CoreValues";
-import { TradesWeServe } from "@/pages/TradesWeServe";
-import { BlogPodcast } from "@/pages/BlogPodcast";
-import { ContractorCRMGuide } from "@/pages/blog/ContractorCRMGuide";
-import { ContractorCrmSoftware } from "@/pages/ContractorCrmSoftware";
-import { ContractorEstimatingSoftware } from "@/pages/ContractorEstimatingSoftware";
-import { AiAnsweringServiceForContractors } from "@/pages/AiAnsweringServiceForContractors";
-import { ForgeAiInvoiceAssistant } from "@/pages/ForgeAiInvoiceAssistant";
-import CrmForTrade from "@/pages/CrmForTrade";
-import ContractorBusinessResources from "@/pages/ContractorBusinessResources";
-import FeaturePage from "@/pages/FeaturePage";
-import BlogPost from "@/pages/BlogPost";
-import TradesDirectory from "@/pages/TradesDirectory";
-import CitiesDirectory from "@/pages/CitiesDirectory";
-import FeaturesDirectory from "@/pages/FeaturesDirectory";
-import BlogDirectory from "@/pages/BlogDirectory";
-import { Privacy } from "@/pages/Privacy";
-import { Terms } from "@/pages/Terms";
-import { Dashboard } from "@/components/Dashboard";
-import { Marketplace } from "@/components/Marketplace";
-import { TrainingHub } from "@/components/TrainingHub";
-import { TrainingModulePage } from "@/components/TrainingModulePage";
-import { CoursePlayer } from "@/components/CoursePlayer";
-import Subscribe from "./pages/Subscribe";
-import NotFound from "./pages/NotFound";
-import NetworkMap from "./pages/NetworkMap";
-import NationwideNetwork from "./pages/NationwideNetwork";
-import PaymentSuccess from "./pages/PaymentSuccess";
-import PayBill from "./pages/PayBill";
-import ProfileEdit from "./pages/ProfileEdit";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { AdminLayout } from "@/components/admin/AdminLayout";
 import { AdminProtectedRoute } from "@/components/AdminProtectedRoute";
-import { AdminDashboard } from "@/components/admin/AdminDashboard";
-import { UserManagement } from "@/components/admin/UserManagement";
-import { UserDetailPage } from "@/components/admin/UserDetailPage";
-import { TrainingManagement } from "@/components/admin/TrainingManagement";
-import { MarketplaceManagement } from "@/components/admin/MarketplaceManagement";
-import { SupportTickets } from "@/components/admin/SupportTickets";
-import { AdminLeads } from "@/components/admin/AdminLeads";
-import { AdminEstimates } from "@/components/admin/AdminEstimates";
-import { AdminInvoices } from "@/components/admin/AdminInvoices";
-import { AdminJobs } from "@/components/admin/AdminJobs";
-import { AdminCustomers } from "@/components/admin/AdminCustomers";
-import { AdminGCContacts } from "@/components/admin/AdminGCContacts";
-import { AdminSettings } from "@/components/admin/AdminSettings";
-import { PocketAgentAccessManagement } from "@/components/admin/PocketbotAccessManagement";
-import { HelpAdmin } from "@/components/admin/HelpAdmin";
-import { ContractorOnboarding } from "@/components/admin/ContractorOnboarding";
-import ArchiveManagement from "@/components/admin/ArchiveManagement";
-import AdminCatalogImport from "@/pages/admin/AdminCatalogImport";
-import AdminProductForm from "@/pages/admin/AdminProductForm";
-import { AssignmentAuditLog } from "@/components/admin/AssignmentAuditLog";
-import AdminUserProfileEdit from "@/pages/AdminUserProfileEdit";
-import { BusinessSuite } from "@/pages/BusinessSuite";
-import { Training } from "@/pages/features/Training";
-import { CRM } from "@/pages/features/CRM";
-import { Leads } from "@/pages/features/Leads";
-import { QuickBooks } from "@/pages/features/QuickBooks";
-import { Insurance } from "@/pages/features/Insurance";
-import Estimating from "@/pages/features/Estimating";
-import Jobs from "@/pages/features/Jobs";
-import VoiceAI from "@/pages/features/VoiceAI";
-import ReportingFeature from "@/pages/features/Reporting";
-import AccountingFeature from "@/pages/features/Accounting";
-import Communication from "@/pages/features/Communication";
-import { TrialSignup } from "@/pages/TrialSignup";
-import { BotSignup } from "@/pages/BotSignup";
-import Savings from "./pages/Savings";
-import Platform from "./pages/Platform";
-import ForConsumers from "./pages/ForConsumers";
-import { CRMDashboard } from "@/pages/CRMDashboard";
-import PublicEstimate from "./pages/PublicEstimate";
-import PublicChangeOrder from "./pages/PublicChangeOrder";
-import PublicReview from "./pages/PublicReview";
-import CustomerPortal from "./pages/CustomerPortal";
-import PublicInvoice from "./pages/PublicInvoice";
-import PublicPhotoGallery from "./pages/PublicPhotoGallery";
-import Reporting from "./pages/Reporting";
-import AppInstall from "./pages/AppInstall";
-import Accounting from "./pages/Accounting";
-import PocketAgentProduct from "./pages/products/PocketbotProduct";
-import VoiceAIProduct from "./pages/products/VoiceAIProduct";
-import TierLaunch from "./pages/products/TierLaunch";
-import TierGrowth from "./pages/products/TierGrowth";
-import TierMarket from "./pages/products/TierMarket";
-import PublicHelpCenter from "./pages/PublicHelpCenter";
-import PublicSupport from "./pages/PublicSupport";
-import DashboardHelpCenter from "./pages/DashboardHelpCenter";
-import StartingNewLLC from "./pages/training/StartingNewLLC";
+import NotFound from "./pages/NotFound";
+
+// PageLoader for Suspense fallback
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+  </div>
+);
+
+// Lazy-loaded pages
+const About = React.lazy(() => import("@/pages/About").then(m => ({ default: m.About })));
+const Contact = React.lazy(() => import("@/pages/Contact").then(m => ({ default: m.Contact })));
+const Pricing = React.lazy(() => import("@/pages/Pricing").then(m => ({ default: m.Pricing })));
+const WhatWeDo = React.lazy(() => import("@/pages/WhatWeDo").then(m => ({ default: m.WhatWeDo })));
+const CoreValues = React.lazy(() => import("@/pages/CoreValues").then(m => ({ default: m.CoreValues })));
+const TradesWeServe = React.lazy(() => import("@/pages/TradesWeServe").then(m => ({ default: m.TradesWeServe })));
+const BlogPodcast = React.lazy(() => import("@/pages/BlogPodcast").then(m => ({ default: m.BlogPodcast })));
+const ContractorCRMGuide = React.lazy(() => import("@/pages/blog/ContractorCRMGuide").then(m => ({ default: m.ContractorCRMGuide })));
+const ContractorCrmSoftware = React.lazy(() => import("@/pages/ContractorCrmSoftware").then(m => ({ default: m.ContractorCrmSoftware })));
+const ContractorEstimatingSoftware = React.lazy(() => import("@/pages/ContractorEstimatingSoftware").then(m => ({ default: m.ContractorEstimatingSoftware })));
+const AiAnsweringServiceForContractors = React.lazy(() => import("@/pages/AiAnsweringServiceForContractors").then(m => ({ default: m.AiAnsweringServiceForContractors })));
+const ForgeAiInvoiceAssistant = React.lazy(() => import("@/pages/ForgeAiInvoiceAssistant").then(m => ({ default: m.ForgeAiInvoiceAssistant })));
+const CrmForTrade = React.lazy(() => import("@/pages/CrmForTrade"));
+const ContractorBusinessResources = React.lazy(() => import("@/pages/ContractorBusinessResources"));
+const FeaturePage = React.lazy(() => import("@/pages/FeaturePage"));
+const BlogPost = React.lazy(() => import("@/pages/BlogPost"));
+const TradesDirectory = React.lazy(() => import("@/pages/TradesDirectory"));
+const CitiesDirectory = React.lazy(() => import("@/pages/CitiesDirectory"));
+const FeaturesDirectory = React.lazy(() => import("@/pages/FeaturesDirectory"));
+const BlogDirectory = React.lazy(() => import("@/pages/BlogDirectory"));
+const Privacy = React.lazy(() => import("@/pages/Privacy").then(m => ({ default: m.Privacy })));
+const Terms = React.lazy(() => import("@/pages/Terms").then(m => ({ default: m.Terms })));
+const Dashboard = React.lazy(() => import("@/components/Dashboard").then(m => ({ default: m.Dashboard })));
+const Marketplace = React.lazy(() => import("@/components/Marketplace").then(m => ({ default: m.Marketplace })));
+const TrainingHub = React.lazy(() => import("@/components/TrainingHub").then(m => ({ default: m.TrainingHub })));
+const TrainingModulePage = React.lazy(() => import("@/components/TrainingModulePage").then(m => ({ default: m.TrainingModulePage })));
+const CoursePlayer = React.lazy(() => import("@/components/CoursePlayer").then(m => ({ default: m.CoursePlayer })));
+const Subscribe = React.lazy(() => import("./pages/Subscribe"));
+const NetworkMap = React.lazy(() => import("./pages/NetworkMap"));
+const NationwideNetwork = React.lazy(() => import("./pages/NationwideNetwork"));
+const PaymentSuccess = React.lazy(() => import("./pages/PaymentSuccess"));
+const PayBill = React.lazy(() => import("./pages/PayBill"));
+const ProfileEdit = React.lazy(() => import("./pages/ProfileEdit"));
+const AdminLayout = React.lazy(() => import("@/components/admin/AdminLayout").then(m => ({ default: m.AdminLayout })));
+const AdminDashboard = React.lazy(() => import("@/components/admin/AdminDashboard").then(m => ({ default: m.AdminDashboard })));
+const UserManagement = React.lazy(() => import("@/components/admin/UserManagement").then(m => ({ default: m.UserManagement })));
+const UserDetailPage = React.lazy(() => import("@/components/admin/UserDetailPage").then(m => ({ default: m.UserDetailPage })));
+const TrainingManagement = React.lazy(() => import("@/components/admin/TrainingManagement").then(m => ({ default: m.TrainingManagement })));
+const MarketplaceManagement = React.lazy(() => import("@/components/admin/MarketplaceManagement").then(m => ({ default: m.MarketplaceManagement })));
+const SupportTickets = React.lazy(() => import("@/components/admin/SupportTickets").then(m => ({ default: m.SupportTickets })));
+const AdminLeads = React.lazy(() => import("@/components/admin/AdminLeads").then(m => ({ default: m.AdminLeads })));
+const AdminEstimates = React.lazy(() => import("@/components/admin/AdminEstimates").then(m => ({ default: m.AdminEstimates })));
+const AdminInvoices = React.lazy(() => import("@/components/admin/AdminInvoices").then(m => ({ default: m.AdminInvoices })));
+const AdminJobs = React.lazy(() => import("@/components/admin/AdminJobs").then(m => ({ default: m.AdminJobs })));
+const AdminCustomers = React.lazy(() => import("@/components/admin/AdminCustomers").then(m => ({ default: m.AdminCustomers })));
+const AdminGCContacts = React.lazy(() => import("@/components/admin/AdminGCContacts").then(m => ({ default: m.AdminGCContacts })));
+const AdminSettings = React.lazy(() => import("@/components/admin/AdminSettings").then(m => ({ default: m.AdminSettings })));
+const PocketAgentAccessManagement = React.lazy(() => import("@/components/admin/PocketbotAccessManagement").then(m => ({ default: m.PocketAgentAccessManagement })));
+const HelpAdmin = React.lazy(() => import("@/components/admin/HelpAdmin").then(m => ({ default: m.HelpAdmin })));
+const ContractorOnboarding = React.lazy(() => import("@/components/admin/ContractorOnboarding").then(m => ({ default: m.ContractorOnboarding })));
+const ArchiveManagement = React.lazy(() => import("@/components/admin/ArchiveManagement"));
+const AdminCatalogImport = React.lazy(() => import("@/pages/admin/AdminCatalogImport"));
+const AdminProductForm = React.lazy(() => import("@/pages/admin/AdminProductForm"));
+const AssignmentAuditLog = React.lazy(() => import("@/components/admin/AssignmentAuditLog").then(m => ({ default: m.AssignmentAuditLog })));
+const AdminUserProfileEdit = React.lazy(() => import("@/pages/AdminUserProfileEdit"));
+const BusinessSuite = React.lazy(() => import("@/pages/BusinessSuite").then(m => ({ default: m.BusinessSuite })));
+const Training = React.lazy(() => import("@/pages/features/Training").then(m => ({ default: m.Training })));
+const CRM = React.lazy(() => import("@/pages/features/CRM").then(m => ({ default: m.CRM })));
+const Leads = React.lazy(() => import("@/pages/features/Leads").then(m => ({ default: m.Leads })));
+const QuickBooks = React.lazy(() => import("@/pages/features/QuickBooks").then(m => ({ default: m.QuickBooks })));
+const Insurance = React.lazy(() => import("@/pages/features/Insurance").then(m => ({ default: m.Insurance })));
+const Estimating = React.lazy(() => import("@/pages/features/Estimating"));
+const Jobs = React.lazy(() => import("@/pages/features/Jobs"));
+const VoiceAI = React.lazy(() => import("@/pages/features/VoiceAI"));
+const ReportingFeature = React.lazy(() => import("@/pages/features/Reporting"));
+const AccountingFeature = React.lazy(() => import("@/pages/features/Accounting"));
+const Communication = React.lazy(() => import("@/pages/features/Communication"));
+const TrialSignup = React.lazy(() => import("@/pages/TrialSignup").then(m => ({ default: m.TrialSignup })));
+const BotSignup = React.lazy(() => import("@/pages/BotSignup").then(m => ({ default: m.BotSignup })));
+const Savings = React.lazy(() => import("./pages/Savings"));
+const Platform = React.lazy(() => import("./pages/Platform"));
+const ForConsumers = React.lazy(() => import("./pages/ForConsumers"));
+const CRMDashboard = React.lazy(() => import("@/pages/CRMDashboard").then(m => ({ default: m.CRMDashboard })));
+const PublicEstimate = React.lazy(() => import("./pages/PublicEstimate"));
+const PublicChangeOrder = React.lazy(() => import("./pages/PublicChangeOrder"));
+const PublicReview = React.lazy(() => import("./pages/PublicReview"));
+const CustomerPortal = React.lazy(() => import("./pages/CustomerPortal"));
+const PublicInvoice = React.lazy(() => import("./pages/PublicInvoice"));
+const PublicPhotoGallery = React.lazy(() => import("./pages/PublicPhotoGallery"));
+const Reporting = React.lazy(() => import("./pages/Reporting"));
+const AppInstall = React.lazy(() => import("./pages/AppInstall"));
+const Accounting = React.lazy(() => import("./pages/Accounting"));
+const PocketAgentProduct = React.lazy(() => import("./pages/products/PocketbotProduct"));
+const VoiceAIProduct = React.lazy(() => import("./pages/products/VoiceAIProduct"));
+const TierLaunch = React.lazy(() => import("./pages/products/TierLaunch"));
+const TierGrowth = React.lazy(() => import("./pages/products/TierGrowth"));
+const TierMarket = React.lazy(() => import("./pages/products/TierMarket"));
+const PublicHelpCenter = React.lazy(() => import("./pages/PublicHelpCenter"));
+const PublicSupport = React.lazy(() => import("./pages/PublicSupport"));
+const DashboardHelpCenter = React.lazy(() => import("./pages/DashboardHelpCenter"));
+const StartingNewLLC = React.lazy(() => import("./pages/training/StartingNewLLC"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -163,6 +173,11 @@ function LanguageSyncWrapper() {
   return null;
 }
 
+// Helper to wrap lazy components in Suspense
+const Lazy = ({ children }: { children: React.ReactNode }) => (
+  <Suspense fallback={<PageLoader />}>{children}</Suspense>
+);
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
@@ -178,10 +193,10 @@ const App = () => (
           <Routes>
             <Route path="/" element={<HomeRedirect />} />
             <Route path="/home" element={<NewLandingPage />} />
-            <Route path="/savings" element={<Savings />} />
-            <Route path="/platform" element={<Platform />} />
-            <Route path="/for-consumers" element={<ForConsumers />} />
-            <Route path="/business-suite" element={<BusinessSuite />} />
+            <Route path="/savings" element={<Lazy><Savings /></Lazy>} />
+            <Route path="/platform" element={<Lazy><Platform /></Lazy>} />
+            <Route path="/for-consumers" element={<Lazy><ForConsumers /></Lazy>} />
+            <Route path="/business-suite" element={<Lazy><BusinessSuite /></Lazy>} />
             {/* Redirect /business-suite/* to /features/* to consolidate SEO */}
             <Route path="/business-suite/training" element={<Navigate to="/features/training" replace />} />
             <Route path="/business-suite/crm" element={<Navigate to="/features/crm" replace />} />
@@ -194,91 +209,91 @@ const App = () => (
             <Route path="/business-suite/communication" element={<Navigate to="/features/crm" replace />} />
             <Route path="/business-suite/voice-ai" element={<Navigate to="/features/voice-ai" replace />} />
             <Route path="/business-suite/reporting" element={<Navigate to="/features/reporting" replace />} />
-            <Route path="/features/training" element={<Training />} />
-            <Route path="/features/crm" element={<CRM />} />
-            <Route path="/features/leads" element={<Leads />} />
-            <Route path="/features/quickbooks" element={<QuickBooks />} />
-            <Route path="/features/insurance" element={<Insurance />} />
-            <Route path="/features/accounting" element={<AccountingFeature />} />
-            <Route path="/features/estimating" element={<Estimating />} />
-            <Route path="/features/jobs" element={<Jobs />} />
-            <Route path="/features/communication" element={<Communication />} />
-            <Route path="/features/voice-ai" element={<VoiceAI />} />
-            <Route path="/features/reporting" element={<ReportingFeature />} />
-            <Route path="/marketplace" element={<Marketplace />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/what-we-do" element={<WhatWeDo />} />
-            <Route path="/core-values" element={<CoreValues />} />
-            <Route path="/network-map" element={<NetworkMap />} />
-            <Route path="/nationwide-network" element={<NationwideNetwork />} />
-            <Route path="/trades-we-serve" element={<TradesWeServe />} />
-            <Route path="/blog-podcast" element={<BlogPodcast />} />
-            <Route path="/blog/contractor-crm-guide" element={<ContractorCRMGuide />} />
-            <Route path="/blog/:slug" element={<BlogPost />} />
-            <Route path="/products/pocket-agent" element={<PocketAgentProduct />} />
+            <Route path="/features/training" element={<Lazy><Training /></Lazy>} />
+            <Route path="/features/crm" element={<Lazy><CRM /></Lazy>} />
+            <Route path="/features/leads" element={<Lazy><Leads /></Lazy>} />
+            <Route path="/features/quickbooks" element={<Lazy><QuickBooks /></Lazy>} />
+            <Route path="/features/insurance" element={<Lazy><Insurance /></Lazy>} />
+            <Route path="/features/accounting" element={<Lazy><AccountingFeature /></Lazy>} />
+            <Route path="/features/estimating" element={<Lazy><Estimating /></Lazy>} />
+            <Route path="/features/jobs" element={<Lazy><Jobs /></Lazy>} />
+            <Route path="/features/communication" element={<Lazy><Communication /></Lazy>} />
+            <Route path="/features/voice-ai" element={<Lazy><VoiceAI /></Lazy>} />
+            <Route path="/features/reporting" element={<Lazy><ReportingFeature /></Lazy>} />
+            <Route path="/marketplace" element={<Lazy><Marketplace /></Lazy>} />
+            <Route path="/about" element={<Lazy><About /></Lazy>} />
+            <Route path="/what-we-do" element={<Lazy><WhatWeDo /></Lazy>} />
+            <Route path="/core-values" element={<Lazy><CoreValues /></Lazy>} />
+            <Route path="/network-map" element={<Lazy><NetworkMap /></Lazy>} />
+            <Route path="/nationwide-network" element={<Lazy><NationwideNetwork /></Lazy>} />
+            <Route path="/trades-we-serve" element={<Lazy><TradesWeServe /></Lazy>} />
+            <Route path="/blog-podcast" element={<Lazy><BlogPodcast /></Lazy>} />
+            <Route path="/blog/contractor-crm-guide" element={<Lazy><ContractorCRMGuide /></Lazy>} />
+            <Route path="/blog/:slug" element={<Lazy><BlogPost /></Lazy>} />
+            <Route path="/products/pocket-agent" element={<Lazy><PocketAgentProduct /></Lazy>} />
             <Route path="/products/pocketbot" element={<Navigate to="/products/pocket-agent" replace />} />
-            <Route path="/products/voice-ai" element={<VoiceAIProduct />} />
-            <Route path="/products/tier-launch" element={<TierLaunch />} />
-            <Route path="/products/tier-growth" element={<TierGrowth />} />
-            <Route path="/products/tier-market" element={<TierMarket />} />
-            <Route path="/legal/terms" element={<Terms />} />
-            <Route path="/legal/privacy" element={<Privacy />} />
+            <Route path="/products/voice-ai" element={<Lazy><VoiceAIProduct /></Lazy>} />
+            <Route path="/products/tier-launch" element={<Lazy><TierLaunch /></Lazy>} />
+            <Route path="/products/tier-growth" element={<Lazy><TierGrowth /></Lazy>} />
+            <Route path="/products/tier-market" element={<Lazy><TierMarket /></Lazy>} />
+            <Route path="/legal/terms" element={<Lazy><Terms /></Lazy>} />
+            <Route path="/legal/privacy" element={<Lazy><Privacy /></Lazy>} />
             <Route path="/privacy" element={<Navigate to="/legal/privacy" replace />} />
             <Route path="/terms" element={<Navigate to="/legal/terms" replace />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/help" element={<PublicHelpCenter />} />
-            <Route path="/support" element={<PublicSupport />} />
+            <Route path="/contact" element={<Lazy><Contact /></Lazy>} />
+            <Route path="/help" element={<Lazy><PublicHelpCenter /></Lazy>} />
+            <Route path="/support" element={<Lazy><PublicSupport /></Lazy>} />
             <Route path="/auth" element={<Auth />} />
-          <Route path="/estimate/:token" element={<PublicEstimate />} />
-          <Route path="/p/estimate/:token" element={<PublicEstimate />} />
-          <Route path="/invoice/:token" element={<PublicInvoice />} />
-          <Route path="/change-order/:token" element={<PublicChangeOrder />} />
-          <Route path="/review/:jobId" element={<PublicReview />} />
-          <Route path="/photos/:token" element={<PublicPhotoGallery />} />
-          <Route path="/portal/:token" element={<CustomerPortal />} />
-            <Route path="/pricing" element={<Pricing />} />
-            <Route path="/contractor-crm-software" element={<ContractorCrmSoftware />} />
-            <Route path="/contractor-estimating-software" element={<ContractorEstimatingSoftware />} />
-            <Route path="/ai-answering-service-for-contractors" element={<AiAnsweringServiceForContractors />} />
-            <Route path="/contractor-business-resources" element={<ContractorBusinessResources />} />
+          <Route path="/estimate/:token" element={<Lazy><PublicEstimate /></Lazy>} />
+          <Route path="/p/estimate/:token" element={<Lazy><PublicEstimate /></Lazy>} />
+          <Route path="/invoice/:token" element={<Lazy><PublicInvoice /></Lazy>} />
+          <Route path="/change-order/:token" element={<Lazy><PublicChangeOrder /></Lazy>} />
+          <Route path="/review/:jobId" element={<Lazy><PublicReview /></Lazy>} />
+          <Route path="/photos/:token" element={<Lazy><PublicPhotoGallery /></Lazy>} />
+          <Route path="/portal/:token" element={<Lazy><CustomerPortal /></Lazy>} />
+            <Route path="/pricing" element={<Lazy><Pricing /></Lazy>} />
+            <Route path="/contractor-crm-software" element={<Lazy><ContractorCrmSoftware /></Lazy>} />
+            <Route path="/contractor-estimating-software" element={<Lazy><ContractorEstimatingSoftware /></Lazy>} />
+            <Route path="/ai-answering-service-for-contractors" element={<Lazy><AiAnsweringServiceForContractors /></Lazy>} />
+            <Route path="/contractor-business-resources" element={<Lazy><ContractorBusinessResources /></Lazy>} />
             {/* High-intent keyword redirects to existing feature pages */}
             <Route path="/contractor-job-management-software" element={<Navigate to="/features/jobs" replace />} />
             <Route path="/contractor-invoicing-software" element={<Navigate to="/features/invoice-automation" replace />} />
             <Route path="/customer-portal-for-contractors" element={<Navigate to="/features/customer-portal" replace />} />
-            <Route path="/trades" element={<TradesDirectory />} />
-            <Route path="/cities" element={<CitiesDirectory />} />
-            <Route path="/features" element={<FeaturesDirectory />} />
-            <Route path="/blog" element={<BlogDirectory />} />
-            <Route path="/crm-for-:tradeSlug" element={<CrmForTrade />} />
-            <Route path="/features/:slug" element={<FeaturePage />} />
-            <Route path="/contractor-hub/training/getting-started/starting-a-new-llc" element={<StartingNewLLC />} />
-            <Route path="/trial-signup" element={<TrialSignup />} />
-            <Route path="/bot-signup" element={<BotSignup />} />
-            <Route path="/payment-success" element={<PaymentSuccess />} />
+            <Route path="/trades" element={<Lazy><TradesDirectory /></Lazy>} />
+            <Route path="/cities" element={<Lazy><CitiesDirectory /></Lazy>} />
+            <Route path="/features" element={<Lazy><FeaturesDirectory /></Lazy>} />
+            <Route path="/blog" element={<Lazy><BlogDirectory /></Lazy>} />
+            <Route path="/crm-for-:tradeSlug" element={<Lazy><CrmForTrade /></Lazy>} />
+            <Route path="/features/:slug" element={<Lazy><FeaturePage /></Lazy>} />
+            <Route path="/contractor-hub/training/getting-started/starting-a-new-llc" element={<Lazy><StartingNewLLC /></Lazy>} />
+            <Route path="/trial-signup" element={<Lazy><TrialSignup /></Lazy>} />
+            <Route path="/bot-signup" element={<Lazy><BotSignup /></Lazy>} />
+            <Route path="/payment-success" element={<Lazy><PaymentSuccess /></Lazy>} />
             <Route path="/pay-bill" element={
               <ProtectedRoute>
-                <PayBill />
+                <Lazy><PayBill /></Lazy>
               </ProtectedRoute>
             } />
-            <Route path="/subscribe" element={<Subscribe />} />
+            <Route path="/subscribe" element={<Lazy><Subscribe /></Lazy>} />
             <Route path="/dashboard" element={
               <ProtectedRoute>
                 <RouteErrorBoundary>
-                  <Dashboard />
+                  <Lazy><Dashboard /></Lazy>
                 </RouteErrorBoundary>
               </ProtectedRoute>
             } />
             <Route path="/dashboard/helpcenter" element={
               <ProtectedRoute>
-                <DashboardHelpCenter />
+                <Lazy><DashboardHelpCenter /></Lazy>
               </ProtectedRoute>
             } />
             <Route path="/dashboard/profile" element={
               <ProtectedRoute>
-                <ProfileEdit />
+                <Lazy><ProfileEdit /></Lazy>
               </ProtectedRoute>
             } />
-            <Route path="/app-install" element={<AppInstall />} />
+            <Route path="/app-install" element={<Lazy><AppInstall /></Lazy>} />
             <Route path="/crm" element={
               <ProtectedRoute>
                 <RouteErrorBoundary>
@@ -288,57 +303,57 @@ const App = () => (
             } />
             <Route path="/reporting" element={
               <ProtectedRoute>
-                <Reporting />
+                <Lazy><Reporting /></Lazy>
               </ProtectedRoute>
             } />
             <Route path="/accounting" element={
               <ProtectedRoute>
-                <Accounting />
+                <Lazy><Accounting /></Lazy>
               </ProtectedRoute>
             } />
             <Route path="/dashboard/marketplace" element={
               <ProtectedRoute>
-                <Marketplace />
+                <Lazy><Marketplace /></Lazy>
               </ProtectedRoute>
             } />
               <Route path="/dashboard/training" element={
                 <ProtectedRoute>
-                  <TrainingHub />
+                  <Lazy><TrainingHub /></Lazy>
                 </ProtectedRoute>
               } />
               <Route path="/dashboard/training/module/:moduleId" element={
                 <ProtectedRoute>
-                  <TrainingModulePage />
+                  <Lazy><TrainingModulePage /></Lazy>
                 </ProtectedRoute>
               } />
               <Route path="/dashboard/training/course/:courseId" element={
                 <ProtectedRoute>
-                  <CoursePlayer />
+                  <Lazy><CoursePlayer /></Lazy>
                 </ProtectedRoute>
               } />
             {/* Admin Routes — role-gated */}
             <Route path="/admin" element={<AdminProtectedRoute />}>
-              <Route element={<AdminLayout />}>
+              <Route element={<Lazy><AdminLayout /></Lazy>}>
                 <RouteErrorBoundary>
-                <Route index element={<AdminDashboard />} />
-                <Route path="users" element={<UserManagement />} />
-                <Route path="users/:userId" element={<UserDetailPage />} />
-                <Route path="users/:userId/edit" element={<AdminUserProfileEdit />} />
-                <Route path="leads" element={<AdminLeads />} />
-                <Route path="estimates" element={<AdminEstimates />} />
-                <Route path="invoices" element={<AdminInvoices />} />
-                <Route path="jobs" element={<AdminJobs />} />
-                <Route path="customers" element={<AdminCustomers />} />
-                <Route path="gc-contacts" element={<AdminGCContacts />} />
-                <Route path="archive" element={<ArchiveManagement />} />
-                <Route path="onboarding" element={<ContractorOnboarding />} />
-                <Route path="support" element={<SupportTickets />} />
-                <Route path="marketplace" element={<MarketplaceManagement />} />
-                <Route path="help" element={<HelpAdmin />} />
-                <Route path="settings" element={<AdminSettings />} />
-                <Route path="catalog-import" element={<AdminCatalogImport />} />
-                <Route path="product-form" element={<AdminProductForm />} />
-                <Route path="assignments" element={<AssignmentAuditLog />} />
+                <Route index element={<Lazy><AdminDashboard /></Lazy>} />
+                <Route path="users" element={<Lazy><UserManagement /></Lazy>} />
+                <Route path="users/:userId" element={<Lazy><UserDetailPage /></Lazy>} />
+                <Route path="users/:userId/edit" element={<Lazy><AdminUserProfileEdit /></Lazy>} />
+                <Route path="leads" element={<Lazy><AdminLeads /></Lazy>} />
+                <Route path="estimates" element={<Lazy><AdminEstimates /></Lazy>} />
+                <Route path="invoices" element={<Lazy><AdminInvoices /></Lazy>} />
+                <Route path="jobs" element={<Lazy><AdminJobs /></Lazy>} />
+                <Route path="customers" element={<Lazy><AdminCustomers /></Lazy>} />
+                <Route path="gc-contacts" element={<Lazy><AdminGCContacts /></Lazy>} />
+                <Route path="archive" element={<Lazy><ArchiveManagement /></Lazy>} />
+                <Route path="onboarding" element={<Lazy><ContractorOnboarding /></Lazy>} />
+                <Route path="support" element={<Lazy><SupportTickets /></Lazy>} />
+                <Route path="marketplace" element={<Lazy><MarketplaceManagement /></Lazy>} />
+                <Route path="help" element={<Lazy><HelpAdmin /></Lazy>} />
+                <Route path="settings" element={<Lazy><AdminSettings /></Lazy>} />
+                <Route path="catalog-import" element={<Lazy><AdminCatalogImport /></Lazy>} />
+                <Route path="product-form" element={<Lazy><AdminProductForm /></Lazy>} />
+                <Route path="assignments" element={<Lazy><AssignmentAuditLog /></Lazy>} />
                 </RouteErrorBoundary>
               </Route>
             </Route>
