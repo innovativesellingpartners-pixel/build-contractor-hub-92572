@@ -555,6 +555,7 @@ export function Dashboard() {
                       />
                       <TeamManagement onBack={() => handleSectionChange('leads')} />
                     </div>
+                  )}
                   {activeSection === 'marketplace' && (
                     <div className="p-3 md:p-4 lg:p-6 min-h-[400px] md:min-h-[600px] pb-20">
                       <BackNavigation 
