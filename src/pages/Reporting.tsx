@@ -129,6 +129,7 @@ export default function Reporting() {
         </div>
 
         {/* Content */}
+        {activeSection === "scorecard" && <BusinessScorecard onNavigateToReport={setActiveSection} />}
         {activeSection === "dashboard" && <UnifiedDashboard />}
         {activeSection === "sales" && <SalesPipelineReport />}
         {activeSection === "jobs" && <JobsProjectsReport />}
