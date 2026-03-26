@@ -95,64 +95,9 @@ export function TeamManagement({ onBack }: Props) {
           </h2>
           <p className="text-sm text-muted-foreground">Create and manage your team members with role-based access</p>
         </div>
-        <Dialog open={createOpen} onOpenChange={(open) => { setCreateOpen(open); if (!open) resetForm(); }}>
-          <DialogTrigger asChild>
-            <Button><UserPlus className="h-4 w-4 mr-2" />Add Team Member</Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>Add Team Member</DialogTitle>
-              <DialogDescription>Create a new team member account. They'll receive login credentials via email.</DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label>Name *</Label>
-                <Input value={formName} onChange={(e) => setFormName(e.target.value)} placeholder="John Doe" />
-              </div>
-              <div>
-                <Label>Email *</Label>
-                <Input value={formEmail} onChange={(e) => setFormEmail(e.target.value)} placeholder="john@example.com" type="email" />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label>Phone</Label>
-                  <Input value={formPhone} onChange={(e) => setFormPhone(e.target.value)} placeholder="(555) 123-4567" />
-                </div>
-                <div>
-                  <Label>Job Title</Label>
-                  <Input value={formJobTitle} onChange={(e) => setFormJobTitle(e.target.value)} placeholder="Foreman" />
-                </div>
-              </div>
-              <div>
-                <Label>Password *</Label>
-                <Input value={formPassword} onChange={(e) => setFormPassword(e.target.value)} type="password" placeholder="Min 8 characters" />
-              </div>
-              <div>
-                <Label>Role</Label>
-                <Select value={formRole} onValueChange={setFormRole}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(ROLE_LABELS).filter(([k]) => k !== 'owner').map(([value, label]) => (
-                      <SelectItem key={value} value={value}>{label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {ROLE_DESCRIPTIONS[formRole] && (
-                  <p className="text-xs text-muted-foreground mt-1">{ROLE_DESCRIPTIONS[formRole]}</p>
-                )}
-              </div>
-              {formError && (
-                <p className="text-sm text-destructive bg-destructive/10 rounded-md p-2">{formError}</p>
-              )}
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => { setCreateOpen(false); resetForm(); }}>Cancel</Button>
-              <Button onClick={handleCreate} disabled={createMember.isPending}>
-                {createMember.isPending ? "Creating..." : "Create & Send Credentials"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <Button onClick={() => { setCreateOpen(!createOpen); if (createOpen) resetForm(); }}>
+          <UserPlus className="h-4 w-4 mr-2" />{createOpen ? 'Cancel' : 'Add Team Member'}
+        </Button>
       </div>
 
       {/* Summary Stats */}
