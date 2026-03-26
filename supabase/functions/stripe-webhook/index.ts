@@ -37,6 +37,18 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
+    // Idempotency check: skip if event already processed
+    const { data: existing } = await supabase
+      .from('stripe_webhook_events')
+      .select('id')
+      .eq('stripe_event_id', event.id)
+      .maybeSingle();
+
+    if (existing) {
+      console.log(`Event ${event.id} already processed, skipping`);
+      return new Response(JSON.stringify({ received: true, duplicate: true }), { status: 200 });
+    }
+
     // Handle specific event types
     switch (event.type) {
       case 'checkout.session.completed': {
