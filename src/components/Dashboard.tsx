@@ -285,14 +285,14 @@ export function Dashboard() {
     }
   }, []);
 
-  const getTierBadgeColor = (tier?: string) => {
+  const getTierBadgeColor = useCallback((tier?: string) => {
     switch (tier) {
       case 'launch': return 'bg-blue-500';
       case 'growth': return 'bg-green-500';
       case 'accel': return 'bg-purple-500';
       default: return 'bg-blue-500';
     }
-  };
+  }, []);
 
   return (
     <div className="relative min-h-screen bg-background flex flex-col">
