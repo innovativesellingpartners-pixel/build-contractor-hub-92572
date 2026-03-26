@@ -319,26 +319,28 @@ const App = () => (
             {/* Admin Routes — role-gated */}
             <Route path="/admin" element={<AdminProtectedRoute />}>
               <Route element={<AdminLayout />}>
-              <Route index element={<AdminDashboard />} />
-              <Route path="users" element={<UserManagement />} />
-              <Route path="users/:userId" element={<UserDetailPage />} />
-              <Route path="users/:userId/edit" element={<AdminUserProfileEdit />} />
-              <Route path="leads" element={<AdminLeads />} />
-              <Route path="estimates" element={<AdminEstimates />} />
-              <Route path="invoices" element={<AdminInvoices />} />
-              <Route path="jobs" element={<AdminJobs />} />
-              <Route path="customers" element={<AdminCustomers />} />
-              <Route path="gc-contacts" element={<AdminGCContacts />} />
-              <Route path="archive" element={<ArchiveManagement />} />
-              <Route path="onboarding" element={<ContractorOnboarding />} />
-              <Route path="support" element={<SupportTickets />} />
-              <Route path="marketplace" element={<MarketplaceManagement />} />
-              <Route path="help" element={<HelpAdmin />} />
-              <Route path="settings" element={<AdminSettings />} />
-               <Route path="catalog-import" element={<AdminCatalogImport />} />
-               <Route path="product-form" element={<AdminProductForm />} />
-               <Route path="assignments" element={<AssignmentAuditLog />} />
-               </Route>
+                <RouteErrorBoundary>
+                <Route index element={<AdminDashboard />} />
+                <Route path="users" element={<UserManagement />} />
+                <Route path="users/:userId" element={<UserDetailPage />} />
+                <Route path="users/:userId/edit" element={<AdminUserProfileEdit />} />
+                <Route path="leads" element={<AdminLeads />} />
+                <Route path="estimates" element={<AdminEstimates />} />
+                <Route path="invoices" element={<AdminInvoices />} />
+                <Route path="jobs" element={<AdminJobs />} />
+                <Route path="customers" element={<AdminCustomers />} />
+                <Route path="gc-contacts" element={<AdminGCContacts />} />
+                <Route path="archive" element={<ArchiveManagement />} />
+                <Route path="onboarding" element={<ContractorOnboarding />} />
+                <Route path="support" element={<SupportTickets />} />
+                <Route path="marketplace" element={<MarketplaceManagement />} />
+                <Route path="help" element={<HelpAdmin />} />
+                <Route path="settings" element={<AdminSettings />} />
+                <Route path="catalog-import" element={<AdminCatalogImport />} />
+                <Route path="product-form" element={<AdminProductForm />} />
+                <Route path="assignments" element={<AssignmentAuditLog />} />
+                </RouteErrorBoundary>
+              </Route>
             </Route>
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
