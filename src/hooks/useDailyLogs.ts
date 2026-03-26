@@ -1,7 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+
+export interface MaterialItem {
+  item: string;
+  quantity: number;
+  unit: string;
+}
 
 export interface DailyLog {
   id: string;
@@ -15,8 +21,18 @@ export interface DailyLog {
   materials_used?: string;
   equipment_used?: string;
   notes?: string;
+  crew_on_site?: string[];
+  issues_delays?: string;
+  photos?: string[];
+  client_visible?: boolean;
+  signed_by?: string;
+  signature_url?: string;
+  status?: string;
   created_at: string;
+  updated_at?: string;
 }
+
+export type DailyLogInput = Omit<DailyLog, 'id' | 'job_id' | 'user_id' | 'created_at' | 'updated_at'>;
 
 export const useDailyLogs = (jobId?: string) => {
   const [logs, setLogs] = useState<DailyLog[]>([]);
@@ -24,7 +40,7 @@ export const useDailyLogs = (jobId?: string) => {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const fetchLogs = async () => {
+  const fetchLogs = useCallback(async () => {
     if (!user || !jobId) return;
 
     try {
@@ -45,13 +61,13 @@ export const useDailyLogs = (jobId?: string) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [jobId, user]);
 
   useEffect(() => {
     fetchLogs();
-  }, [jobId, user]);
+  }, [fetchLogs]);
 
-  const addLog = async (logData: Omit<DailyLog, 'id' | 'job_id' | 'user_id' | 'created_at'>) => {
+  const addLog = async (logData: DailyLogInput) => {
     if (!user || !jobId) return;
 
     try {
@@ -61,7 +77,7 @@ export const useDailyLogs = (jobId?: string) => {
           ...logData,
           job_id: jobId,
           user_id: user.id,
-        }])
+        } as any])
         .select()
         .single();
 
@@ -69,8 +85,8 @@ export const useDailyLogs = (jobId?: string) => {
 
       setLogs([data as DailyLog, ...logs]);
       toast({
-        title: 'Log added',
-        description: 'Daily log has been saved successfully',
+        title: 'Log saved',
+        description: logData.status === 'submitted' ? 'Daily log submitted and locked' : 'Daily log draft saved',
       });
       return data as DailyLog;
     } catch (error: any) {
@@ -87,7 +103,7 @@ export const useDailyLogs = (jobId?: string) => {
     try {
       const { data, error } = await supabase
         .from('daily_logs')
-        .update(updates)
+        .update(updates as any)
         .eq('id', id)
         .select()
         .single();
