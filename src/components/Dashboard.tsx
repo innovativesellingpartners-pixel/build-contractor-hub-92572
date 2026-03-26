@@ -252,14 +252,12 @@ export function Dashboard() {
     setIsDraggingChatButton(true);
   }, []);
 
-  const handleChatButtonClick = () => {
-    // Only toggle Pocket Agent if user didn't drag
+  const handleChatButtonClick = useCallback(() => {
     if (!hasDragged) {
-      setPocketAgentOpen(!pocketAgentOpen);
+      setPocketAgentOpen(prev => !prev);
     }
-    // Reset drag state after click
     setHasDragged(false);
-  };
+  }, [hasDragged]);
 
   // Save active section to sessionStorage whenever it changes
   const handleSectionChange = useCallback((section: ActiveSection) => {
