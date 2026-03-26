@@ -102,17 +102,46 @@ serve(async (req) => {
       
       const details: string[] = [];
       if (log.weather) details.push(`<strong>Weather:</strong> ${escapeHtml(log.weather)}`);
-      if (log.crew_count) details.push(`<strong>Crew:</strong> ${log.crew_count}`);
+      if (log.crew_count) details.push(`<strong>Crew Count:</strong> ${log.crew_count}`);
       if (log.hours_worked) details.push(`<strong>Hours:</strong> ${log.hours_worked}`);
-      if (log.materials_used) details.push(`<strong>Materials:</strong> ${escapeHtml(log.materials_used)}`);
+      if (log.materials_used) details.push(`<strong>Materials:</strong> ${escapeHtml(typeof log.materials_used === 'string' ? log.materials_used : JSON.stringify(log.materials_used))}`);
       if (log.equipment_used) details.push(`<strong>Equipment:</strong> ${escapeHtml(log.equipment_used)}`);
+
+      // New fields
+      const crewOnSite = Array.isArray(log.crew_on_site) ? log.crew_on_site : [];
+      const photos = Array.isArray(log.photos) ? log.photos : [];
+
+      let crewHtml = '';
+      if (crewOnSite.length > 0) {
+        crewHtml = `<div style="margin-top: 8px; font-size: 14px; color: #4b5563;"><strong>Crew On Site:</strong> ${crewOnSite.map((n: string) => escapeHtml(n)).join(', ')}</div>`;
+      }
+
+      let photosHtml = '';
+      if (photos.length > 0) {
+        const photoImgs = photos.map((url: string) => `<img src="${escapeHtml(url)}" style="width: 120px; height: 90px; object-fit: cover; border-radius: 6px; border: 1px solid #e5e7eb;" />`).join('');
+        photosHtml = `<div style="margin-top: 8px;"><strong style="font-size: 14px; color: #4b5563;">Photos:</strong><div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px;">${photoImgs}</div></div>`;
+      }
+
+      let issuesHtml = '';
+      if (log.issues_delays) {
+        issuesHtml = `<div style="font-size: 14px; color: #b45309; margin-top: 8px; background: #fef3c7; padding: 8px 12px; border-radius: 6px;"><strong>⚠ Issues/Delays:</strong><br/>${escapeHtml(log.issues_delays)}</div>`;
+      }
+
+      let signatureHtml = '';
+      if (log.signature_url) {
+        signatureHtml = `<div style="margin-top: 8px; font-size: 13px; color: #6b7280;"><strong>Signed by:</strong> ${escapeHtml(log.signed_by || 'N/A')}<br/><img src="${escapeHtml(log.signature_url)}" style="height: 40px; margin-top: 4px; background: white; border: 1px solid #e5e7eb; border-radius: 4px; padding: 2px 4px;" /></div>`;
+      }
 
       return `
         <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
           <h3 style="margin: 0 0 8px 0; color: #1f2937; font-size: 16px;">${date}</h3>
           ${details.length ? `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px 16px; margin-bottom: 8px; font-size: 14px; color: #4b5563;">${details.join('')}</div>` : ''}
           ${log.work_completed ? `<div style="font-size: 14px; color: #374151; margin-top: 8px;"><strong>Work Completed:</strong><br/>${escapeHtml(log.work_completed)}</div>` : ''}
+          ${crewHtml}
+          ${issuesHtml}
+          ${photosHtml}
           ${log.notes ? `<div style="font-size: 13px; color: #6b7280; margin-top: 8px;"><em>Notes: ${escapeHtml(log.notes)}</em></div>` : ''}
+          ${signatureHtml}
         </div>
       `;
     }).join('');
