@@ -523,6 +523,15 @@ export function Dashboard() {
                       <CrewManagement />
                     </div>
                   )}
+                  {activeSection === 'reviews' && (
+                    <div className="p-3 md:p-4 lg:p-6 min-h-[400px] md:min-h-[600px] pb-20">
+                      <BackNavigation 
+                        onBackToDashboard={() => handleSectionChange('leads')}
+                        className="mb-4 lg:hidden"
+                      />
+                      <ReputationDashboard onBack={() => handleSectionChange('leads')} />
+                    </div>
+                  )}
                   {activeSection === 'marketplace' && (
                     <div className="p-3 md:p-4 lg:p-6 min-h-[400px] md:min-h-[600px] pb-20">
                       <BackNavigation 
