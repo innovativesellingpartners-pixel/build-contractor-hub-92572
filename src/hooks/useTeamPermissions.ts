@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
-export type TeamRole = 'owner' | 'manager' | 'sales_rep' | 'project_manager' | 'field_tech' | 'viewer';
+export type TeamRole = 'owner' | 'manager' | 'sales_rep' | 'project_manager' | 'field_tech' | 'office_staff' | 'viewer';
 
 export interface TeamPermissions {
   leads: boolean;
@@ -52,6 +52,12 @@ const ROLE_PERMISSIONS: Record<TeamRole, TeamPermissions> = {
     billing: false, reports: false, team_management: false, settings: false,
     create_daily_logs: true, edit_daily_logs: false,
   },
+  office_staff: {
+    leads: true, estimates: true, customers: true, jobs: true,
+    daily_logs: true, crews: false, schedules: true, financials: false,
+    billing: false, reports: true, team_management: false, settings: false,
+    create_daily_logs: true, edit_daily_logs: true,
+  },
   viewer: {
     leads: true, estimates: true, customers: true, jobs: true,
     daily_logs: true, crews: true, schedules: true, financials: false,
@@ -72,15 +78,15 @@ export function useTeamPermissions() {
       const { data: membership } = await supabase
         .from('team_members')
         .select('*')
-        .eq('member_user_id', user.id)
+        .eq('member_id', user.id)
         .eq('status', 'active')
         .maybeSingle();
 
       if (membership) {
         const role = membership.role as TeamRole;
-        const basePerms = { ...ROLE_PERMISSIONS[role] };
+        const basePerms = { ...(ROLE_PERMISSIONS[role] || ROLE_PERMISSIONS.viewer) };
         // Apply granular overrides
-        const overrides = (membership.permissions || {}) as Record<string, boolean>;
+        const overrides = (membership.permissions as Record<string, boolean> | null) || {};
         Object.entries(overrides).forEach(([key, val]) => {
           if (key in basePerms) {
             (basePerms as any)[key] = val;
@@ -91,7 +97,7 @@ export function useTeamPermissions() {
           isTeamMember: true,
           role,
           permissions: basePerms,
-          ownerUserId: membership.owner_user_id,
+          ownerUserId: membership.owner_id,
           memberRecord: membership,
         };
       }

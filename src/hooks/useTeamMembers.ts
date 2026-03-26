@@ -21,17 +21,18 @@ export function useTeamMembers() {
     enabled: !!user?.id,
   });
 
-  const inviteMember = useMutation({
-    mutationFn: async (params: { email: string; name: string; role: string }) => {
-      const { data, error } = await supabase.functions.invoke('invite-team-member', {
+  const createMember = useMutation({
+    mutationFn: async (params: { email: string; password: string; name: string; phone?: string; job_title?: string; role: string }) => {
+      const { data, error } = await supabase.functions.invoke('create-team-member', {
         body: params,
       });
       if (error) throw error;
+      if (data?.error) throw new Error(data.error);
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['team-members'] });
-      toast({ title: "Invitation sent", description: "Team member has been invited." });
+      toast({ title: "Team member created", description: "They can now log in with their credentials." });
     },
     onError: (error: Error) => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -73,14 +74,16 @@ export function useTeamMembers() {
     },
   });
 
-  const activeMembers = teamMembers.filter((m: any) => m.status !== 'removed');
-  const pendingInvites = teamMembers.filter((m: any) => m.status === 'invited');
+  const activeMembers = teamMembers.filter((m: any) => m.status === 'active');
+  const suspendedMembers = teamMembers.filter((m: any) => m.status === 'suspended');
+  const visibleMembers = teamMembers.filter((m: any) => m.status !== 'removed');
 
   return {
-    teamMembers: activeMembers,
-    pendingInvites,
+    teamMembers: visibleMembers,
+    activeMembers,
+    suspendedMembers,
     isLoading,
-    inviteMember,
+    createMember,
     updateMember,
     removeMember,
   };
