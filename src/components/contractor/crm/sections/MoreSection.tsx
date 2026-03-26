@@ -1,9 +1,9 @@
 import { Card, CardContent } from '@/components/ui/card';
-import { ClipboardList, Users, BarChart2, CreditCard, HelpCircle, Network } from 'lucide-react';
+import { ClipboardList, Users, BarChart2, CreditCard, HelpCircle, Network, UsersRound } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CrmNavHeader } from '../CrmNavHeader';
 
-type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'estimates' | 'reporting' | 'financials' | 'calls' | 'calendar' | 'emails' | 'payments' | 'accounting' | 'help' | 'network';
+type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'estimates' | 'reporting' | 'financials' | 'calls' | 'calendar' | 'emails' | 'payments' | 'accounting' | 'help' | 'network' | 'team';
 
 interface MoreSectionProps {
   onSectionChange: (section: Section) => void;
@@ -49,6 +49,14 @@ const moreFeatures = [
     gradient: 'from-orange-500 to-orange-600',
     borderColor: 'border-orange-400',
     description: 'Find & connect'
+  },
+  { 
+    id: 'team' as Section, 
+    label: 'Team', 
+    icon: UsersRound, 
+    gradient: 'from-indigo-500 to-indigo-600',
+    borderColor: 'border-indigo-400',
+    description: 'Manage your team'
   },
   { 
     id: 'help' as Section, 
