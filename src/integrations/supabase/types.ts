@@ -5473,6 +5473,126 @@ export type Database = {
         }
         Relationships: []
       }
+      review_requests: {
+        Row: {
+          channel: string | null
+          created_at: string
+          customer_email: string | null
+          customer_id: string | null
+          customer_phone: string | null
+          id: string
+          job_id: string | null
+          reminder_count: number
+          review_token: string | null
+          sent_at: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          channel?: string | null
+          created_at?: string
+          customer_email?: string | null
+          customer_id?: string | null
+          customer_phone?: string | null
+          id?: string
+          job_id?: string | null
+          reminder_count?: number
+          review_token?: string | null
+          sent_at?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          channel?: string | null
+          created_at?: string
+          customer_email?: string | null
+          customer_id?: string | null
+          customer_phone?: string | null
+          id?: string
+          job_id?: string | null
+          reminder_count?: number
+          review_token?: string | null
+          sent_at?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_requests_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_requests_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reviews: {
+        Row: {
+          created_at: string
+          customer_name: string | null
+          google_review_redirected: boolean
+          id: string
+          is_public: boolean
+          job_id: string | null
+          photos: Json | null
+          rating: number
+          review_request_id: string | null
+          review_text: string | null
+          submitted_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          customer_name?: string | null
+          google_review_redirected?: boolean
+          id?: string
+          is_public?: boolean
+          job_id?: string | null
+          photos?: Json | null
+          rating: number
+          review_request_id?: string | null
+          review_text?: string | null
+          submitted_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          customer_name?: string | null
+          google_review_redirected?: boolean
+          id?: string
+          is_public?: boolean
+          job_id?: string | null
+          photos?: Json | null
+          rating?: number
+          review_request_id?: string | null
+          review_text?: string | null
+          submitted_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_review_request_id_fkey"
+            columns: ["review_request_id"]
+            isOneToOne: false
+            referencedRelation: "review_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       scheduled_sms_reminders: {
         Row: {
           contractor_twilio_number: string | null
