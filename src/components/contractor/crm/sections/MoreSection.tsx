@@ -51,6 +51,14 @@ const moreFeatures = [
     description: 'Find & connect'
   },
   { 
+    id: 'team' as Section, 
+    label: 'Team', 
+    icon: UsersRound, 
+    gradient: 'from-indigo-500 to-indigo-600',
+    borderColor: 'border-indigo-400',
+    description: 'Manage your team'
+  },
+  { 
     id: 'help' as Section, 
     label: 'Help Center', 
     icon: HelpCircle, 
