@@ -6213,6 +6213,51 @@ export type Database = {
           },
         ]
       }
+      team_members: {
+        Row: {
+          accepted_at: string | null
+          created_at: string | null
+          email: string
+          id: string
+          invited_at: string | null
+          member_user_id: string | null
+          name: string | null
+          owner_user_id: string
+          permissions: Json | null
+          role: string
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string | null
+          email: string
+          id?: string
+          invited_at?: string | null
+          member_user_id?: string | null
+          name?: string | null
+          owner_user_id: string
+          permissions?: Json | null
+          role?: string
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string | null
+          email?: string
+          id?: string
+          invited_at?: string | null
+          member_user_id?: string | null
+          name?: string | null
+          owner_user_id?: string
+          permissions?: Json | null
+          role?: string
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       teller_connections: {
         Row: {
           account_id: string | null
