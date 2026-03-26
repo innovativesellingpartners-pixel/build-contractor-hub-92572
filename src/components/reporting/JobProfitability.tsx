@@ -61,7 +61,11 @@ export function JobProfitability({ filters }: JobProfitabilityProps) {
       // Calculate profitability metrics for each job
       return data?.map((job) => {
         const revenue = Number(job.budget_amount) || 0;
-        const cost = Number(job.actual_cost) || 0;
+        const baseCost = Number(job.actual_cost) || 0;
+        const subCost = (subAssigns || [])
+          .filter((s: any) => s.job_id === job.id)
+          .reduce((sum: number, s: any) => sum + Number(s.agreed_amount || 0), 0);
+        const cost = baseCost + subCost;
         const profit = revenue - cost;
         const margin = revenue > 0 ? (profit / revenue) * 100 : 0;
 
