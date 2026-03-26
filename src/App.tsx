@@ -4,6 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { RouteErrorBoundary } from "@/components/RouteErrorBoundary";
 import { GlobalPocketAgent } from "@/components/GlobalPocketbot";
 import { DashboardPocketAgent } from "@/components/DashboardPocketAgent";
 import { usePWABackNavigation } from "@/hooks/usePWABackNavigation";
