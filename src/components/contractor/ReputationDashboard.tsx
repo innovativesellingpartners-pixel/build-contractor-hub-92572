@@ -11,7 +11,9 @@ import { Star, Send, Clock, ExternalLink, TrendingUp, MessageSquare, ArrowLeft }
 import { useReviews } from '@/hooks/useReviews';
 import { useJobs } from '@/hooks/useJobs';
 import { useCustomers } from '@/hooks/useCustomers';
-import { useProfile } from '@/hooks/useProfile';
+import { useAuth } from '@/contexts/AuthContext';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { format, subMonths, startOfMonth } from 'date-fns';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { cn } from '@/lib/utils';
