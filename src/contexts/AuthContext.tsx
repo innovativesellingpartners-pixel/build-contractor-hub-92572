@@ -96,7 +96,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const isPWA = window.matchMedia('(display-mode: standalone)').matches || 
                   (window.navigator as any).standalone === true;
     
-    console.log('Auth initialization:', { isPWA, hasLocalStorage: !!window.localStorage });
+    if (import.meta.env.DEV) console.log('Auth initialization:', { isPWA, hasLocalStorage: !!window.localStorage });
 
     let authStateInitialized = false;
 
@@ -104,11 +104,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         authStateInitialized = true;
-        console.log('Auth state changed:', event, { hasSession: !!session, hasUser: !!session?.user });
+        if (import.meta.env.DEV) console.log('Auth state changed:', event, { hasSession: !!session, hasUser: !!session?.user });
         
         // During sign-out, don't update state — let signOut() handle the redirect
         if (signingOutRef.current) {
-          console.log('Sign-out in progress, skipping auth state update');
+          if (import.meta.env.DEV) console.log('Sign-out in progress, skipping auth state update');
           return;
         }
         
@@ -136,11 +136,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (authStateInitialized) {
-        console.log('Initial session check skipped (already initialized by auth event)');
+        if (import.meta.env.DEV) console.log('Initial session check skipped (already initialized by auth event)');
         return;
       }
 
-      console.log('Initial session check:', { hasSession: !!session, hasUser: !!session?.user });
+      if (import.meta.env.DEV) console.log('Initial session check:', { hasSession: !!session, hasUser: !!session?.user });
       
       setSession(session);
       setUser(session?.user ?? null);
@@ -162,7 +162,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const checkForUpdates = async () => {
     // Check if there's a service worker update ready
     if ('serviceWorker' in navigator && localStorage.getItem('sw-update-ready') === 'true') {
-      console.log('Service worker update detected, reloading...');
+      if (import.meta.env.DEV) console.log('Service worker update detected, reloading...');
       localStorage.removeItem('sw-update-ready');
       
       // Get the waiting service worker and activate it
@@ -212,7 +212,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signOut = async () => {
-    console.log('Signing out...');
+    if (import.meta.env.DEV) console.log('Signing out...');
     
     // Set guard to prevent onAuthStateChange from updating state during sign-out
     signingOutRef.current = true;
@@ -228,7 +228,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('rememberMe');
     
     // Redirect BEFORE calling signOut to prevent race condition flash
-    console.log('Sign out complete, redirecting to /auth...');
+    if (import.meta.env.DEV) console.log('Sign out complete, redirecting to /auth...');
     window.location.replace('/auth');
     
     // Sign out from Supabase after redirect is initiated
