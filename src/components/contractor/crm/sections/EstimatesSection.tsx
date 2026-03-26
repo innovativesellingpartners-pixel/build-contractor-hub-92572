@@ -437,6 +437,37 @@ export default function EstimatesSection({ onSectionChange, initialEstimateId, o
     );
   }
 
+  // Show AI generator if active
+  if (showAIGenerator) {
+    return (
+      <AIEstimateGenerator
+        onBack={() => setShowAIGenerator(false)}
+        onStartNewEstimate={(lineItems, metadata) => {
+          setShowAIGenerator(false);
+          setSelectedEstimate(null);
+          setIsFormOpen(true);
+          // The estimate form will pick up these items via a callback
+          // For now, create a new estimate with the AI-generated items
+          createEstimateAsync({
+            title: metadata.title || 'AI Generated Estimate',
+            status: 'draft',
+            total_amount: metadata.grand_total || 0,
+            subtotal: metadata.subtotal || 0,
+            grand_total: metadata.grand_total || 0,
+            project_description: metadata.project_description || '',
+            line_items: lineItems,
+          }).then(newEstimate => {
+            if (newEstimate) {
+              setSelectedEstimate(newEstimate);
+              setIsFormOpen(true);
+              toast.success('New estimate created with AI-generated items');
+            }
+          });
+        }}
+      />
+    );
+  }
+
   return (
     <MobileOptimizedWrapper
       title="Estimates"
