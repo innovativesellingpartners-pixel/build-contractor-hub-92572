@@ -100,7 +100,63 @@ export function TeamManagement({ onBack }: Props) {
         </Button>
       </div>
 
-      {/* Summary Stats */}
+      {/* Inline Add Team Member Form */}
+      {createOpen && (
+        <Card className="border-primary/30">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg">Add Team Member</CardTitle>
+            <CardDescription>Create a new team member account. They'll receive login credentials via email.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label>Name *</Label>
+              <Input value={formName} onChange={(e) => setFormName(e.target.value)} placeholder="John Doe" />
+            </div>
+            <div>
+              <Label>Email *</Label>
+              <Input value={formEmail} onChange={(e) => setFormEmail(e.target.value)} placeholder="john@example.com" type="email" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Phone</Label>
+                <Input value={formPhone} onChange={(e) => setFormPhone(e.target.value)} placeholder="(555) 123-4567" />
+              </div>
+              <div>
+                <Label>Job Title</Label>
+                <Input value={formJobTitle} onChange={(e) => setFormJobTitle(e.target.value)} placeholder="Foreman" />
+              </div>
+            </div>
+            <div>
+              <Label>Password *</Label>
+              <Input value={formPassword} onChange={(e) => setFormPassword(e.target.value)} type="password" placeholder="Min 8 characters" />
+            </div>
+            <div>
+              <Label>Role</Label>
+              <Select value={formRole} onValueChange={setFormRole}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {Object.entries(ROLE_LABELS).filter(([k]) => k !== 'owner').map(([value, label]) => (
+                    <SelectItem key={value} value={value}>{label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {ROLE_DESCRIPTIONS[formRole] && (
+                <p className="text-xs text-muted-foreground mt-1">{ROLE_DESCRIPTIONS[formRole]}</p>
+              )}
+            </div>
+            {formError && (
+              <p className="text-sm text-destructive bg-destructive/10 rounded-md p-2">{formError}</p>
+            )}
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" onClick={() => { setCreateOpen(false); resetForm(); }}>Cancel</Button>
+              <Button onClick={handleCreate} disabled={createMember.isPending}>
+                {createMember.isPending ? "Creating..." : "Create & Send Credentials"}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="grid grid-cols-3 gap-3">
         <Card>
           <CardContent className="p-4 text-center">
