@@ -950,6 +950,7 @@ function UnifiedHubSidebar({ activeHubSection, onHubSectionChange, onCrmSectionC
     { id: 'voiceai', label: 'Voice AI', icon: Bot, feature: 'aiAssistant' },
     { id: 'marketplace', label: 'Marketplace', icon: Store, feature: 'marketplace' },
     { id: 'crews' as ActiveSection, label: 'Crews', icon: Users },
+    { id: 'subs' as ActiveSection, label: 'Subs & Vendors', icon: Building2 },
     { id: 'tasks', label: 'My Tasks', icon: ClipboardList },
     { id: 'insurance', label: 'Insurance', icon: Shield, feature: 'insurance' },
     { id: 'account', label: 'My Account', icon: User, feature: 'myAccount' },
