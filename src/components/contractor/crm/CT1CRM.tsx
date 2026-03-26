@@ -312,6 +312,8 @@ const navItems = [
         return <DocumentsSection onSectionChange={handleSectionChange} />;
       case 'network':
         return <ContractorNetworkSection onSectionChange={handleSectionChange} />;
+      case 'team':
+        return <TeamManagement onBack={() => handleSectionChange('dashboard')} />;
       case 'ai-report':
         return <AIReportView onBack={handleBack} />;
       default:
