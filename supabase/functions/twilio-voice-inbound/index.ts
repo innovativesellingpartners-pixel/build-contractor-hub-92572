@@ -656,7 +656,7 @@ async function generateSummary(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'google/gemini-2.5-flash-lite',
         messages: [{
           role: 'system',
           content: 'Summarize this call in 2 sentences. Include key info collected and outcome.'
