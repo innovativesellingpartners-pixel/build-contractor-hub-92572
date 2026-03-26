@@ -333,8 +333,7 @@ const App = () => (
               } />
             {/* Admin Routes — role-gated */}
             <Route path="/admin" element={<AdminProtectedRoute />}>
-              <Route element={<Lazy><AdminLayout /></Lazy>}>
-                <RouteErrorBoundary>
+              <Route element={<RouteErrorBoundary><Lazy><AdminLayout /></Lazy></RouteErrorBoundary>}>
                 <Route index element={<Lazy><AdminDashboard /></Lazy>} />
                 <Route path="users" element={<Lazy><UserManagement /></Lazy>} />
                 <Route path="users/:userId" element={<Lazy><UserDetailPage /></Lazy>} />
@@ -354,7 +353,6 @@ const App = () => (
                 <Route path="catalog-import" element={<Lazy><AdminCatalogImport /></Lazy>} />
                 <Route path="product-form" element={<Lazy><AdminProductForm /></Lazy>} />
                 <Route path="assignments" element={<Lazy><AssignmentAuditLog /></Lazy>} />
-                </RouteErrorBoundary>
               </Route>
             </Route>
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
