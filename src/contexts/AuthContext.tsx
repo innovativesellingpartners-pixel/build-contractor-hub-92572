@@ -104,7 +104,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         authStateInitialized = true;
-        console.log('Auth state changed:', event, { hasSession: !!session, hasUser: !!session?.user });
+        if (import.meta.env.DEV) console.log('Auth state changed:', event, { hasSession: !!session, hasUser: !!session?.user });
         
         // During sign-out, don't update state — let signOut() handle the redirect
         if (signingOutRef.current) {
