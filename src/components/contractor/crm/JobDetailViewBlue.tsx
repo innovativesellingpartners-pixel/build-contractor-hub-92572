@@ -31,6 +31,7 @@ import { DailyLogForm } from '@/components/contractor/DailyLogForm';
 import { DailyLogList } from '@/components/contractor/DailyLogList';
 import { useCrews } from '@/hooks/useCrews';
 import { ImageViewer } from '@/components/ui/image-viewer';
+import JobCostTracker from '@/components/contractor/JobCostTracker';
 import { AIScopeNotes } from './AIScopeNotes';
 import { JobMeetingsSection, MeetingFormData } from './JobMeetingsSection';
 import { useJobMeetings } from '@/hooks/useJobMeetings';
@@ -764,6 +765,7 @@ export default function JobDetailViewBlue({
     { id: 'info', label: 'INFO', icon: <Info className="w-4 h-4" /> },
     { id: 'profitability', label: 'P&L', icon: <BarChart3 className="w-4 h-4" /> },
     { id: 'budget', label: 'BUDGET', icon: <Target className="w-4 h-4" /> },
+    { id: 'costs', label: 'COSTS', icon: <DollarSign className="w-4 h-4" /> },
     { id: 'tasks', label: 'TASKS', icon: <ClipboardList className="w-4 h-4" /> },
     { id: 'materials', label: 'MATERIALS', icon: <Package className="w-4 h-4" /> },
     { id: 'changes', label: 'CHANGES', icon: <FileText className="w-4 h-4" /> },
@@ -1077,6 +1079,12 @@ export default function JobDetailViewBlue({
             {activeTab === 'budget' && (
               <div className="p-4">
                 <JobBudgetTracker job={job} />
+              </div>
+            )}
+
+            {activeTab === 'costs' && (
+              <div className="p-4">
+                <JobCostTracker job={job} />
               </div>
             )}
 
