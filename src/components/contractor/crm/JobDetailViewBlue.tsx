@@ -764,6 +764,7 @@ export default function JobDetailViewBlue({
     { id: 'info', label: 'INFO', icon: <Info className="w-4 h-4" /> },
     { id: 'profitability', label: 'P&L', icon: <BarChart3 className="w-4 h-4" /> },
     { id: 'budget', label: 'BUDGET', icon: <Target className="w-4 h-4" /> },
+    { id: 'costs', label: 'COSTS', icon: <DollarSign className="w-4 h-4" /> },
     { id: 'tasks', label: 'TASKS', icon: <ClipboardList className="w-4 h-4" /> },
     { id: 'materials', label: 'MATERIALS', icon: <Package className="w-4 h-4" /> },
     { id: 'changes', label: 'CHANGES', icon: <FileText className="w-4 h-4" /> },
