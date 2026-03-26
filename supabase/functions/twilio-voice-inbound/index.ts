@@ -406,7 +406,7 @@ async function getAIResponse(
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'google/gemini-2.5-flash',
+          model: 'google/gemini-2.5-flash-lite',
           messages,
           max_tokens: 100, // Even shorter for faster responses
           temperature: 0.8, // Slightly more natural variation
