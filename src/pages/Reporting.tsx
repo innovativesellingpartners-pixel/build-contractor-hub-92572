@@ -42,9 +42,11 @@ import { AccountsReceivableReport } from "@/components/reporting/unified/Account
 import { AccountsPayableReport } from "@/components/reporting/unified/AccountsPayableReport";
 import { CustomReportBuilder } from "@/components/reporting/unified/CustomReportBuilder";
 import { ContractorVisibilityDashboard } from "@/components/reporting/unified/ContractorVisibilityDashboard";
+import { BusinessScorecard } from "@/components/reporting/BusinessScorecard";
 import { cn } from "@/lib/utils";
 
 const sections = [
+  { value: "scorecard", label: "Scorecard", icon: Gauge },
   { value: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { value: "sales", label: "Sales & Pipeline", icon: TrendingUp },
   { value: "jobs", label: "Jobs & Projects", icon: Briefcase },
@@ -54,7 +56,7 @@ const sections = [
   { value: "ar", label: "Receivables", icon: FileText },
   { value: "ap", label: "Payables", icon: Store },
   { value: "custom", label: "Custom Reports", icon: Wrench },
-  { value: "visibility", label: "Contractor Visibility", icon: Gauge },
+  { value: "visibility", label: "Contractor Visibility", icon: LayoutDashboard },
 ];
 
 export default function Reporting() {
