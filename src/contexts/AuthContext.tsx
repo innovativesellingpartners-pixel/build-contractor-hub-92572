@@ -18,27 +18,24 @@ interface Profile {
   logo_url?: string;
   subscription_tier?: string;
   training_level?: number;
-  // Branding fields
   business_email?: string;
   website_url?: string;
   license_number?: string;
   trade?: string;
-  // Brand colors
   brand_primary_color?: string;
   brand_secondary_color?: string;
   brand_accent_color?: string;
-  // Estimate defaults
   default_sales_tax_rate?: number;
   default_deposit_percent?: number;
   default_warranty_years?: number;
-  // Payment settings
   zelle_email?: string;
   zelle_phone?: string;
   ach_instructions?: string;
   accepted_payment_methods?: string[];
-  // Language
   preferred_language?: string;
-  // Timestamps
+  parent_owner_id?: string;
+  max_team_seats?: number;
+  per_seat_price?: number;
   created_at: string;
   updated_at: string;
 }
@@ -53,6 +50,11 @@ interface AuthContextType {
   signUp: (email: string, password: string, companyName?: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: any }>;
+  // Team member context
+  isTeamMember: boolean;
+  ownerProfile: Profile | null;
+  teamRole: string | null;
+  effectiveUserId: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -72,6 +74,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
   const signingOutRef = useRef(false);
 
+  // Team member state
+  const [ownerProfile, setOwnerProfile] = useState<Profile | null>(null);
+  const [teamRole, setTeamRole] = useState<string | null>(null);
+
+  const isTeamMember = !!profile?.parent_owner_id;
+  const effectiveUserId = profile?.parent_owner_id || user?.id || null;
+
   const fetchProfile = async (userId: string) => {
     try {
       const { data, error } = await supabase
@@ -86,13 +95,48 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       setProfile(data);
+
+      // If this user is a team member, fetch owner's profile and team role
+      if (data?.parent_owner_id) {
+        // Fetch owner profile
+        const { data: ownerData } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', data.parent_owner_id)
+          .maybeSingle();
+        setOwnerProfile(ownerData);
+
+        // Fetch team role
+        const { data: memberData } = await supabase
+          .from('team_members')
+          .select('role, status')
+          .eq('member_id', userId)
+          .eq('status', 'active')
+          .maybeSingle();
+
+        if (memberData) {
+          setTeamRole(memberData.role);
+
+          // If suspended, sign out
+          if (memberData.status === 'suspended') {
+            toast.error('Your account has been suspended. Contact your administrator.');
+            await supabase.auth.signOut({ scope: 'local' });
+            return;
+          }
+        } else {
+          // No active membership found — might be removed
+          setTeamRole(null);
+        }
+      } else {
+        setOwnerProfile(null);
+        setTeamRole(null);
+      }
     } catch (error) {
       console.error('Error fetching profile:', error);
     }
   };
 
   useEffect(() => {
-    // Check if running as PWA
     const isPWA = window.matchMedia('(display-mode: standalone)').matches || 
                   (window.navigator as any).standalone === true;
     
@@ -100,13 +144,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     let authStateInitialized = false;
 
-    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         authStateInitialized = true;
         if (import.meta.env.DEV) console.log('Auth state changed:', event, { hasSession: !!session, hasUser: !!session?.user });
         
-        // During sign-out, don't update state — let signOut() handle the redirect
         if (signingOutRef.current) {
           if (import.meta.env.DEV) console.log('Sign-out in progress, skipping auth state update');
           return;
@@ -115,21 +157,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Defer profile fetching to avoid potential auth deadlock
         if (session?.user) {
           setTimeout(() => {
             fetchProfile(session.user.id);
           }, 0);
         } else {
           setProfile(null);
+          setOwnerProfile(null);
+          setTeamRole(null);
         }
         
         setLoading(false);
       }
     );
 
-    // Fallback check: only apply if listener hasn't already initialized state.
-    // This prevents a stale/null getSession result from overwriting a fresh SIGNED_IN session.
     supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (error) {
         console.error('Error getting session:', error);
@@ -151,6 +192,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }, 0);
       } else {
         setProfile(null);
+        setOwnerProfile(null);
+        setTeamRole(null);
       }
       
       setLoading(false);
@@ -160,16 +203,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const checkForUpdates = async () => {
-    // Check if there's a service worker update ready
     if ('serviceWorker' in navigator && localStorage.getItem('sw-update-ready') === 'true') {
       if (import.meta.env.DEV) console.log('Service worker update detected, reloading...');
       localStorage.removeItem('sw-update-ready');
       
-      // Get the waiting service worker and activate it
       const registration = await navigator.serviceWorker.getRegistration();
       if (registration?.waiting) {
         registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-        // Reload after a short delay to let the new SW activate
         setTimeout(() => window.location.reload(), 100);
       }
     }
@@ -181,14 +221,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       password,
     });
     
-    // Store remember me preference and check for updates
     if (!error) {
       if (rememberMe) {
         localStorage.setItem('rememberMe', 'true');
       } else {
         localStorage.removeItem('rememberMe');
       }
-      // Check for PWA updates after successful login
       await checkForUpdates();
     }
     
@@ -214,24 +252,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signOut = async () => {
     if (import.meta.env.DEV) console.log('Signing out...');
     
-    // Set guard to prevent onAuthStateChange from updating state during sign-out
     signingOutRef.current = true;
-    
-    // Set loading to true FIRST to prevent any flash of unauthenticated UI
     setLoading(true);
     
-    // Clear all state immediately
     setUser(null);
     setSession(null);
     setProfile(null);
+    setOwnerProfile(null);
+    setTeamRole(null);
     localStorage.removeItem('ct1-auth-token');
     localStorage.removeItem('rememberMe');
     
-    // Redirect BEFORE calling signOut to prevent race condition flash
     if (import.meta.env.DEV) console.log('Sign out complete, redirecting to /auth...');
     window.location.replace('/auth');
     
-    // Sign out from Supabase after redirect is initiated
     try {
       await supabase.auth.signOut({ scope: 'local' });
     } catch (err) {
@@ -270,6 +304,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signOut,
     resetPassword,
     refreshProfile,
+    // Team member context
+    isTeamMember,
+    ownerProfile,
+    teamRole,
+    effectiveUserId,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
