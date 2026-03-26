@@ -170,6 +170,7 @@ const App = () => (
         <TooltipProvider>
           <Toaster />
           <Sonner />
+          <ErrorBoundary>
           <BrowserRouter>
           <PWABackHandler />
           <LanguageSyncWrapper />
