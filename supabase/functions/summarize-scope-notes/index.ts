@@ -45,7 +45,7 @@ Guidelines:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'google/gemini-2.5-flash-lite',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: `Please organize and summarize the following scope notes into professional, bullet-pointed format:\n\n${notes}` }
