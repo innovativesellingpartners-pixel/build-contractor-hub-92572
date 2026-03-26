@@ -31,6 +31,7 @@ import { DailyLogForm } from '@/components/contractor/DailyLogForm';
 import { DailyLogList } from '@/components/contractor/DailyLogList';
 import { useCrews } from '@/hooks/useCrews';
 import { ImageViewer } from '@/components/ui/image-viewer';
+import JobCostTracker from '@/components/contractor/JobCostTracker';
 import { AIScopeNotes } from './AIScopeNotes';
 import { JobMeetingsSection, MeetingFormData } from './JobMeetingsSection';
 import { useJobMeetings } from '@/hooks/useJobMeetings';

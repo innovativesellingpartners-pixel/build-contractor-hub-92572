@@ -351,6 +351,9 @@ export function Dashboard() {
             </div>
             <div className="flex items-center gap-2 md:gap-4">
               
+              {/* Notification Bell */}
+              <NotificationBell />
+              
               {/* Home Button */}
               <Button 
                 variant="outline" 
