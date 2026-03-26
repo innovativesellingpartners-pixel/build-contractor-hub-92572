@@ -5207,9 +5207,12 @@ export type Database = {
           id: string
           license_number: string | null
           logo_url: string | null
+          max_team_seats: number | null
           network_bio: string | null
           network_visible: boolean
           online_payments_enabled: boolean | null
+          parent_owner_id: string | null
+          per_seat_price: number | null
           phone: string | null
           pocketbot_access_type: string
           pocketbot_full_access: boolean
@@ -5263,9 +5266,12 @@ export type Database = {
           id: string
           license_number?: string | null
           logo_url?: string | null
+          max_team_seats?: number | null
           network_bio?: string | null
           network_visible?: boolean
           online_payments_enabled?: boolean | null
+          parent_owner_id?: string | null
+          per_seat_price?: number | null
           phone?: string | null
           pocketbot_access_type?: string
           pocketbot_full_access?: boolean
@@ -5319,9 +5325,12 @@ export type Database = {
           id?: string
           license_number?: string | null
           logo_url?: string | null
+          max_team_seats?: number | null
           network_bio?: string | null
           network_visible?: boolean
           online_payments_enabled?: boolean | null
+          parent_owner_id?: string | null
+          per_seat_price?: number | null
           phone?: string | null
           pocketbot_access_type?: string
           pocketbot_full_access?: boolean
@@ -6220,10 +6229,12 @@ export type Database = {
           email: string
           id: string
           invited_at: string | null
-          member_user_id: string | null
-          name: string | null
-          owner_user_id: string
+          job_title: string | null
+          member_id: string
+          name: string
+          owner_id: string
           permissions: Json | null
+          phone: string | null
           role: string
           status: string
           updated_at: string | null
@@ -6234,10 +6245,12 @@ export type Database = {
           email: string
           id?: string
           invited_at?: string | null
-          member_user_id?: string | null
-          name?: string | null
-          owner_user_id: string
+          job_title?: string | null
+          member_id: string
+          name: string
+          owner_id: string
           permissions?: Json | null
+          phone?: string | null
           role?: string
           status?: string
           updated_at?: string | null
@@ -6248,10 +6261,12 @@ export type Database = {
           email?: string
           id?: string
           invited_at?: string | null
-          member_user_id?: string | null
-          name?: string | null
-          owner_user_id?: string
+          job_title?: string | null
+          member_id?: string
+          name?: string
+          owner_id?: string
           permissions?: Json | null
+          phone?: string | null
           role?: string
           status?: string
           updated_at?: string | null
@@ -6983,6 +6998,7 @@ export type Database = {
         Returns: boolean
       }
       is_super_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_team_member_of: { Args: { _owner_id: string }; Returns: boolean }
       search_knowledge: {
         Args: { search_query: string }
         Returns: {
