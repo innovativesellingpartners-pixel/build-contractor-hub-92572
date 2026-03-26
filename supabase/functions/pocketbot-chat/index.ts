@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "npm:@supabase/supabase-js@2.58.0";
+import { createClient } from 'npm:@supabase/supabase-js@2.58.0';
 import { jsPDF } from "npm:jspdf@2.5.2";
 
 import { buildCorsHeaders } from '../_shared/cors.ts';
