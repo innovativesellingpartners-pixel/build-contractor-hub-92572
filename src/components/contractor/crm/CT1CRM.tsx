@@ -265,6 +265,7 @@ const navItems = [
           onNavigateToPortal={() => handleSectionChange('portal')}
           onNavigateToCrews={() => handleSectionChange('crews')}
           onNavigateToDocuments={() => handleSectionChange('documents')}
+          onNavigateToTeam={() => handleSectionChange('team')}
         />
       );
     }

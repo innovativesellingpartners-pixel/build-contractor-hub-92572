@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react';
-import { Briefcase, FileText, Users, DollarSign, Phone, Mail, Headset, Calendar, Receipt, Settings2, RotateCcw, UserPlus, BarChart3, Eye, EyeOff, Plus, Link as LinkIcon, Shield } from 'lucide-react';
+import { useState, useCallback, useMemo } from 'react';
+import { Briefcase, FileText, Users, DollarSign, Phone, Mail, Headset, Calendar, Receipt, Settings2, RotateCcw, UserPlus, BarChart3, Eye, EyeOff, Plus, Link as LinkIcon, Shield, UsersRound } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ContactSupport } from '@/components/ContactSupport';
@@ -21,6 +21,7 @@ interface MobileLandingPageProps {
   onNavigateToPortal?: () => void;
   onNavigateToCrews?: () => void;
   onNavigateToDocuments?: () => void;
+  onNavigateToTeam?: () => void;
 }
 
 const mobileModules = [
@@ -108,6 +109,13 @@ const mobileModules = [
     icon: Shield,
     gradient: 'from-rose-500 via-pink-500 to-pink-600',
   },
+  {
+    id: 'team',
+    title: 'Team',
+    description: 'Manage your team',
+    icon: UsersRound,
+    gradient: 'from-indigo-500 via-blue-600 to-cyan-600',
+  },
 ];
 
 const defaultOrder = mobileModules.map(m => m.id);
@@ -153,15 +161,25 @@ export function MobileLandingPage({
   onNavigateToPortal,
   onNavigateToCrews,
   onNavigateToDocuments,
+  onNavigateToTeam,
 }: MobileLandingPageProps) {
   const [contactSupportOpen, setContactSupportOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   
   const { order, setOrder, resetToDefault } = useLayoutPreferences('dashboardOrder', defaultOrder);
   const { hidden, toggle: toggleHidden, resetHidden } = useHiddenTiles();
+  const moduleIds = useMemo(() => mobileModules.map((module) => module.id), []);
+
+  const normalizedOrder = useMemo(
+    () => [
+      ...order.filter((id) => moduleIds.includes(id)),
+      ...moduleIds.filter((id) => !order.includes(id)),
+    ],
+    [order, moduleIds]
+  );
 
   const sortedModules = [...mobileModules].sort((a, b) => {
-    return order.indexOf(a.id) - order.indexOf(b.id);
+    return normalizedOrder.indexOf(a.id) - normalizedOrder.indexOf(b.id);
   });
 
   const visibleModules = isEditMode ? sortedModules : sortedModules.filter(m => !hidden.includes(m.id));
@@ -184,6 +202,7 @@ export function MobileLandingPage({
       case 'portal': onNavigateToPortal?.(); break;
       case 'crews': onNavigateToCrews?.(); break;
       case 'documents': onNavigateToDocuments?.(); break;
+      case 'team': onNavigateToTeam?.(); break;
     }
   };
 
@@ -240,7 +259,7 @@ export function MobileLandingPage({
 
         {/* Grid of Module Cards */}
         <SortableGrid
-          items={order}
+          items={normalizedOrder}
           onReorder={handleReorder}
           disabled={!isEditMode}
           strategy="grid"
