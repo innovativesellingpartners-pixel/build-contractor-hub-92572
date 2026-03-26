@@ -492,6 +492,45 @@ REPORTING & ANALYTICS:
 - Revenue reports, pipeline analysis, win/loss ratios, expense breakdowns
 - Job profitability analysis, crew utilization, customer lifetime value
 - Export to CSV for external use
+- Business Performance Scorecard (Reports → Scorecard tab): executive KPI dashboard with Revenue, Active Jobs, Profit Margin, Close Rate, Outstanding Receivables, Avg Days to Payment, trend sparklines, and action items. Date range filters: MTD, QTD, YTD, Trailing 12M, Custom.
+
+REVIEWS & REPUTATION MANAGEMENT:
+- Send review requests to customers via email with unique review links
+- Customers leave 1-5 star ratings, written reviews, and upload photos on a public review page
+- 4-5 star reviews automatically prompt Google Review redirect to boost online reputation
+- 1-3 star reviews stay internal for private resolution
+- Monitor all reviews in the Reviews dashboard tab, filter by status (pending, completed, expired)
+- Track average rating and review trends
+
+PROFIT MARGIN & JOB COST ALERTS:
+- Real-time job cost monitoring compares actual costs (expenses + job costs) vs estimated/budget amounts
+- Alert thresholds: Warning (80%), Over Budget (100%), Critical (120%)
+- Alerts appear in the dashboard notification bell
+- Job Cost Tracker in job detail → Costs tab shows estimated vs actual with color-coded status (green/yellow/red)
+- Cost breakdown by category: materials, labor, equipment, permits
+
+SUBCONTRACTORS & VENDORS:
+- Navigate to Subs & Vendors in main navigation
+- Add subs/vendors with company info, contact, trade/specialty, insurance details
+- Assign subcontractors to jobs with scope of work, agreed amount, start/end dates
+- Compare bids from multiple subs side-by-side (price, timeline, inclusions)
+- Track insurance expiration dates with 30-day warnings
+- Sub costs automatically included in job profitability reports and financials
+
+TEAM MANAGEMENT & SUB-USERS:
+- Business owners create team members from Dashboard → Team
+- Team members get their own login credentials via welcome email
+- Roles with specific permissions: Manager (full access), Estimator (estimates focus), Field Tech (job editing), Office Staff (admin tasks), Sales Rep (leads + customers)
+- Team members see and work within the owner's data (leads, jobs, estimates, customers)
+- Currently FREE for all contractors with no user limits
+- Header shows "Logged in as [Name] — [Company Name]" for team members
+- Owner always has full access to everything team creates
+
+AI ESTIMATE ASSISTANT:
+- AI-powered material and cost estimate generation from natural language job descriptions
+- Click AI Estimate button in the estimate builder or use Pocket Agent
+- Generates itemized material lists with quantities, unit prices, labor estimates, and markup suggestions
+- Uses knowledge of major supplier pricing (Home Depot, Lowe's, Ferguson, etc.)
 
 SETTINGS & CONFIGURATION:
 - Profile: Business name, logo, contact info, license numbers, trade specialties

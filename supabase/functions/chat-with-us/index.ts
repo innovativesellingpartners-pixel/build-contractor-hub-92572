@@ -43,6 +43,12 @@ About CT1:
 - CT1 helps contractors streamline their operations, win more jobs, and grow their business
 - The platform includes Pocket Agent AI assistant, voice AI for calls, estimate builder, job tracking, crew management, and financial tools
 - CT1 serves all trades including HVAC, plumbing, electrical, roofing, general contracting, painting, landscaping, and more
+- NEW: Customer Review & Reputation Management — send review requests, collect star ratings and written reviews, auto-redirect 4-5 star reviewers to Google Reviews
+- NEW: Profit Margin & Job Costing Alerts — real-time cost monitoring with automated warning/over-budget/critical alerts and notification bell
+- NEW: Subcontractor & Vendor Portal — manage subs and vendors, assign to jobs, compare bids, track insurance expiration
+- NEW: Team Management & Sub-Users — business owners can create team members with role-based permissions (Manager, Estimator, Field Tech, Office Staff, Sales Rep). Team members get their own login and see the owner's data. Currently FREE with no user limits.
+- NEW: Business Performance Scorecard — executive KPI dashboard with revenue, active jobs, margin, close rate, receivables, days-to-payment, trend sparklines, and action items. Available in Reports → Scorecard tab.
+- NEW: AI Material & Cost Estimating — AI-powered estimate generation from natural language job descriptions, producing itemized material lists with quantities and pricing
 
 Your responsibilities:
 1. Answer questions about CT1 features, pricing, and capabilities

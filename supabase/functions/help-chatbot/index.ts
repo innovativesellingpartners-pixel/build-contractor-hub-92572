@@ -236,6 +236,56 @@ STRICT GUARDRAILS:
 - **Calendar**: Scheduling and appointments
 - **Reports**: Business analytics and AI-powered reporting
 - **More Menu**: Profile, Phone Setup, Bank Connection, QuickBooks, Insurance, Documents, Crew Management, Help Center
+- **Reviews**: Customer review requests, ratings, reputation monitoring
+- **Subs & Vendors**: Subcontractor and vendor directory, assignments, bid comparison, insurance tracking
+- **Team**: Team member management, role assignments, invitations
+- **Scorecard**: Business performance KPI dashboard (first tab in Reports)
+
+### REVIEWS & REPUTATION MANAGEMENT
+- Send review requests to customers via email with unique review links
+- Customers can leave 1-5 star ratings, written reviews, and upload photos
+- 4-5 star reviews automatically prompt customers to leave a Google Review
+- 1-3 star reviews stay internal for private resolution
+- Monitor all reviews in the Reviews dashboard tab
+- Filter by status: pending, completed, expired
+
+### PROFIT MARGIN & JOB COST ALERTS
+- Real-time job cost monitoring compares actual costs vs budget
+- Alert thresholds: Warning (80%), Over Budget (100%), Critical (120%)
+- Alerts appear in the notification bell in the dashboard header
+- Job Cost Tracker shows estimated vs actual with color-coded status
+- View cost breakdown by category in job detail → Costs tab
+
+### SUBCONTRACTORS & VENDORS
+- Navigate to Subs & Vendors in the main navigation
+- Add subs/vendors with company info, trade/specialty, insurance details
+- Assign subcontractors to specific jobs with scope, amount, and dates
+- Compare bids from multiple subs side-by-side
+- Track insurance expiration dates with 30-day warnings
+- Sub costs automatically included in job profitability reports
+
+### TEAM MANAGEMENT & SUB-USERS
+- Business owners can create team members from Dashboard → Team
+- Team members get their own login credentials via welcome email
+- Roles: Manager (full access), Estimator (estimates focus), Field Tech (job editing), Office Staff (admin tasks), Sales Rep (leads + customers)
+- Team members see and work within the owner's data
+- Currently FREE for all contractors with no user limits
+- Header shows "Logged in as [Name] — [Company Name]" for team members
+
+### BUSINESS PERFORMANCE SCORECARD
+- Executive KPI dashboard at Reports → Scorecard tab
+- Key metrics: Revenue, Active Jobs, Profit Margin, Close Rate, Outstanding Receivables, Avg Days to Payment
+- Date range filters: MTD, QTD, YTD, Trailing 12M, Custom
+- Trend sparklines and comparison against previous period
+- Action items: overdue invoices, stale estimates, expiring docs, margin warnings
+- Each metric card links to its detailed view
+
+### AI ESTIMATE ASSISTANT
+- Generate material lists and cost estimates using AI
+- Click AI Estimate button in the estimate builder
+- Describe the job in natural language
+- AI generates itemized materials, quantities, unit prices, and labor estimates
+- Review and add generated items to your estimate
 
 ### COMMON WORKFLOWS
 
@@ -246,6 +296,11 @@ STRICT GUARDRAILS:
 5. **Set Up Phone**: More → Phone Setup → Configure AI receptionist settings
 6. **Connect Bank**: More → Bank Connection → Link via Plaid
 7. **Manage Crew**: More → Crew Management → Add members, create crews, assign to jobs
+8. **Send Review Request**: Reviews tab → Send Review Request → Select customer and job
+9. **Check Job Margins**: Jobs → Job Detail → Costs tab → View cost tracker
+10. **Add Sub to Job**: Jobs → Job Detail → Subcontractors tab → Assign Subcontractor
+11. **Invite Team Member**: Team → Add Team Member → Fill details and select role
+12. **View Scorecard**: Reports → Scorecard tab → Select date range
 
 Guidelines:
 - Be concise but thorough — use bullet points and headers for clarity
