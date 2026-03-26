@@ -2,13 +2,9 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { Resend } from "https://esm.sh/resend@4.0.0";
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 interface PasswordResetRequest {
   email: string;
@@ -17,7 +13,7 @@ interface PasswordResetRequest {
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: buildCorsHeaders(req) });
   }
 
   try {
@@ -28,7 +24,7 @@ const handler = async (req: Request): Promise<Response> => {
         JSON.stringify({ error: "Email is required" }),
         {
           status: 400,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
+          headers: { "Content-Type": "application/json", ...buildCorsHeaders(req) },
         }
       );
     }
@@ -70,14 +66,14 @@ const handler = async (req: Request): Promise<Response> => {
         console.log("No user for email, returning success to avoid leakage");
         return new Response(
           JSON.stringify({ message: "If an account exists with this email, you will receive a password reset link" }),
-          { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+          { status: 200, headers: { "Content-Type": "application/json", ...buildCorsHeaders(req) } }
         );
       }
       
       console.error("Error generating reset link:", resetError);
       return new Response(
         JSON.stringify({ error: "Failed to generate reset link" }),
-        { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        { status: 500, headers: { "Content-Type": "application/json", ...buildCorsHeaders(req) } }
       );
     }
 
@@ -154,7 +150,7 @@ const handler = async (req: Request): Promise<Response> => {
         status: 200,
         headers: {
           "Content-Type": "application/json",
-          ...corsHeaders,
+          ...buildCorsHeaders(req),
         },
       }
     );
@@ -164,7 +160,7 @@ const handler = async (req: Request): Promise<Response> => {
       JSON.stringify({ error: error.message }),
       {
         status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
+        headers: { "Content-Type": "application/json", ...buildCorsHeaders(req) },
       }
     );
   }

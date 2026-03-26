@@ -1,17 +1,14 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.58.0';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-forwarded-for',
-};
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
 const RATE_LIMIT_WINDOW = 3600000; // 1 hour in milliseconds
 const MAX_VIEWS_PER_HOUR = 10;
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response('ok', { headers: buildCorsHeaders(req) });
   }
 
   try {
@@ -35,7 +32,7 @@ serve(async (req) => {
       console.warn('get-public-estimate: missing token');
       return new Response(
         JSON.stringify({ error: 'Token is required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -69,7 +66,7 @@ serve(async (req) => {
         }),
         { 
           status: 429, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' }
         }
       );
     }
@@ -85,7 +82,7 @@ serve(async (req) => {
       if (error.code === 'PGRST116') {
         return new Response(
           JSON.stringify({ error: 'Estimate not found' }),
-          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 404, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
         );
       }
       throw error;
@@ -120,7 +117,7 @@ serve(async (req) => {
       }),
       { 
         status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' }
       }
     );
 
@@ -130,7 +127,7 @@ serve(async (req) => {
       JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       { 
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' }
       }
     );
   }

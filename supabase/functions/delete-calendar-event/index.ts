@@ -1,9 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
 function decodeToken(token: any): string {
   if (!token) return '';
@@ -143,7 +140,7 @@ async function deleteOutlookCalendarEvent(accessToken: string, eventId: string):
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: buildCorsHeaders(req) });
   }
 
   try {
@@ -151,7 +148,7 @@ Deno.serve(async (req) => {
     if (!authHeader) {
       return new Response(JSON.stringify({ error: 'No authorization header' }), {
         status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -166,7 +163,7 @@ Deno.serve(async (req) => {
     if (userError || !user) {
       return new Response(JSON.stringify({ error: 'Invalid token' }), {
         status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -175,7 +172,7 @@ Deno.serve(async (req) => {
     if (!eventId || !provider) {
       return new Response(JSON.stringify({ error: 'Missing eventId or provider' }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -191,7 +188,7 @@ Deno.serve(async (req) => {
     if (connError || !connections || connections.length === 0) {
       return new Response(JSON.stringify({ error: 'No calendar connection found' }), {
         status: 404,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -225,13 +222,13 @@ Deno.serve(async (req) => {
     console.log(`Successfully deleted event ${eventId}`);
 
     return new Response(JSON.stringify({ success: true }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
     });
   } catch (error: any) {
     console.error('Error deleting calendar event:', error);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
     });
   }
 });

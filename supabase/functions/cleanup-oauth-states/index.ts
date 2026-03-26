@@ -1,14 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.58.0';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response('ok', { headers: buildCorsHeaders(req) });
   }
 
   try {
@@ -27,7 +24,7 @@ serve(async (req) => {
         JSON.stringify({ success: false, error: error.message }),
         { 
           status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' }
         }
       );
     }
@@ -38,7 +35,7 @@ serve(async (req) => {
       JSON.stringify({ success: true, message: 'OAuth states cleaned up successfully' }),
       { 
         status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' }
       }
     );
   } catch (error) {
@@ -47,7 +44,7 @@ serve(async (req) => {
       JSON.stringify({ success: false, error: error instanceof Error ? error.message : 'Unknown error' }),
       { 
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' }
       }
     );
   }

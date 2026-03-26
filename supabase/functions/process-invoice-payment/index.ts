@@ -1,10 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
 interface ProcessPaymentRequest {
   invoice_id: string;
@@ -15,7 +12,7 @@ interface ProcessPaymentRequest {
 
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: buildCorsHeaders(req) });
   }
 
   try {
@@ -28,7 +25,7 @@ serve(async (req: Request) => {
     if (!invoice_id || !public_token) {
       return new Response(
         JSON.stringify({ error: "invoice_id and public_token are required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -46,7 +43,7 @@ serve(async (req: Request) => {
       console.error("Invoice not found:", invoiceError);
       return new Response(
         JSON.stringify({ error: "Invoice not found" }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 404, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -59,7 +56,7 @@ serve(async (req: Request) => {
     if (remainingBalance <= 0) {
       return new Response(
         JSON.stringify({ error: "Invoice is already paid in full" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -91,7 +88,7 @@ serve(async (req: Request) => {
     if (!cloverApiToken || !cloverMerchantId) {
       return new Response(
         JSON.stringify({ error: "Payment provider not configured" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 500, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -164,7 +161,7 @@ serve(async (req: Request) => {
       console.error("Failed to create Clover checkout:", lastError);
       return new Response(
         JSON.stringify({ error: "Failed to create payment session" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 500, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -187,13 +184,13 @@ serve(async (req: Request) => {
         session_id: sessionId,
         amount: chargeAmount,
       }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 200, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
     );
   } catch (error: any) {
     console.error("Error in process-invoice-payment:", error);
     return new Response(
       JSON.stringify({ error: error.message }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
     );
   }
 });

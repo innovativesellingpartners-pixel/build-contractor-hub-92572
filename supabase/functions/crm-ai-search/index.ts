@@ -1,14 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: buildCorsHeaders(req) });
   }
 
   try {
@@ -21,7 +18,7 @@ serve(async (req: Request) => {
     if (!authHeader) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -30,7 +27,7 @@ serve(async (req: Request) => {
     if (authError || !user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -38,7 +35,7 @@ serve(async (req: Request) => {
     if (!query || typeof query !== "string") {
       return new Response(JSON.stringify({ error: "Missing query" }), {
         status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -50,7 +47,7 @@ serve(async (req: Request) => {
     if (!LOVABLE_API_KEY) {
       return new Response(JSON.stringify({ error: "AI not configured" }), {
         status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -142,20 +139,20 @@ Examples:
       if (aiResponse.status === 429) {
         return new Response(JSON.stringify({ error: "AI rate limit exceeded. Please try again in a moment." }), {
           status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
       if (aiResponse.status === 402) {
         return new Response(JSON.stringify({ error: "AI usage limit reached." }), {
           status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
       const errText = await aiResponse.text();
       console.error("AI error:", aiResponse.status, errText);
       return new Response(JSON.stringify({ error: "Failed to parse query" }), {
         status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -175,7 +172,7 @@ Examples:
       console.error("Failed to parse AI response:", rawContent);
       return new Response(JSON.stringify({ error: "Could not understand query. Try rephrasing." }), {
         status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -913,7 +910,7 @@ Examples:
       default:
         return new Response(JSON.stringify({ error: `Unknown report type: ${reportType}` }), {
           status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
         });
     }
 
@@ -968,14 +965,14 @@ Analyze this data and provide a clear, actionable answer to their question. Be s
       openAsReport,
     }), {
       status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
     });
 
   } catch (error: any) {
     console.error("Error in crm-ai-search:", error);
     return new Response(JSON.stringify({ error: error.message || "Internal error" }), {
       status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 });

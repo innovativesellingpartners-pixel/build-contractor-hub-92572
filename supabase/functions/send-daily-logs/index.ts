@@ -9,16 +9,13 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { Resend } from "npm:resend@2.0.0";
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
-};
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response('ok', { headers: buildCorsHeaders(req) });
   }
 
   try {
@@ -30,7 +27,7 @@ serve(async (req) => {
 
     if (!authHeader) {
       return new Response(JSON.stringify({ error: 'Missing authorization' }), {
-        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 401, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -42,7 +39,7 @@ serve(async (req) => {
     const { data: { user }, error: userError } = await supabase.auth.getUser(jwt);
     if (userError || !user) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 401, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -50,7 +47,7 @@ serve(async (req) => {
 
     if (!jobId || !recipientEmails?.length) {
       return new Response(JSON.stringify({ error: 'jobId and recipientEmails are required' }), {
-        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -59,7 +56,7 @@ serve(async (req) => {
     const validEmails = recipientEmails.filter((e: string) => emailRegex.test(e?.trim()));
     if (!validEmails.length) {
       return new Response(JSON.stringify({ error: 'No valid email addresses provided' }), {
-        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -83,7 +80,7 @@ serve(async (req) => {
 
     if (!logs?.length) {
       return new Response(JSON.stringify({ error: 'No logs found' }), {
-        status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 404, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -151,7 +148,7 @@ serve(async (req) => {
           error: 'Email sending restricted. You may need to verify your email domain.',
           details: emailResponse.error.message
         }), {
-          status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 403, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
         });
       }
       
@@ -163,7 +160,7 @@ serve(async (req) => {
       message: `Logs sent to ${validEmails.length} recipient(s)`,
       messageId: emailResponse.data?.id 
     }), {
-      status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 200, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
@@ -172,7 +169,7 @@ serve(async (req) => {
       error: 'Failed to send logs', 
       message: error instanceof Error ? error.message : 'Unknown error' 
     }), {
-      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 500, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
     });
   }
 });

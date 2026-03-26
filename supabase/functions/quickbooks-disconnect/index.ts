@@ -1,9 +1,9 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { corsHeaders } from '../_shared/cors.ts';
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: buildCorsHeaders(req) });
   }
 
   try {
@@ -108,7 +108,7 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({ success: true, message: 'QuickBooks disconnected successfully' }),
       { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
         status: 200 
       }
     );
@@ -119,7 +119,7 @@ Deno.serve(async (req) => {
       JSON.stringify({ success: false, error: message }),
       { 
         status: 400, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } 
       }
     );
   }

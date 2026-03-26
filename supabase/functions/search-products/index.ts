@@ -1,21 +1,18 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.58.0";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: buildCorsHeaders(req) });
   }
 
   try {
     const authHeader = req.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        status: 401, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' }
       });
     }
 
@@ -29,7 +26,7 @@ serve(async (req) => {
     const { data: claimsData, error: claimsError } = await userClient.auth.getClaims(token);
     if (claimsError || !claimsData?.claims) {
       return new Response(JSON.stringify({ error: 'Invalid auth' }), {
-        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        status: 401, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' }
       });
     }
 
@@ -98,7 +95,7 @@ serve(async (req) => {
     if (queryError) {
       console.error('Product search error:', queryError);
       return new Response(JSON.stringify({ error: 'Product search failed. Please try again.' }), {
-        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        status: 500, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' }
       });
     }
 
@@ -107,14 +104,14 @@ serve(async (req) => {
       count: products?.length || 0,
       filters_applied: { retailer, category, subcategory, trade, brand, material_type, material, size_text, thickness, dimensions, color, zip_code, max_price, min_price, query_text: freeText, limit },
     }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' }
     });
   } catch (error) {
     console.error('Search error:', error);
     return new Response(JSON.stringify({
       error: 'An internal error occurred while searching products.'
     }), {
-      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      status: 500, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' }
     });
   }
 });

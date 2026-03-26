@@ -1,13 +1,10 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: buildCorsHeaders(req) });
   }
 
   try {
@@ -19,7 +16,7 @@ serve(async (req) => {
       console.error('No authorization header');
       return new Response(
         JSON.stringify({ error: 'No authorization header' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 401, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -31,7 +28,7 @@ serve(async (req) => {
       console.error('Missing required fields');
       return new Response(
         JSON.stringify({ error: 'Missing required fields: amount, customer_email' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -40,7 +37,7 @@ serve(async (req) => {
       console.error('Invalid amount:', amount);
       return new Response(
         JSON.stringify({ error: 'Amount must be at least $1.00' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -55,7 +52,7 @@ serve(async (req) => {
       console.error('Missing Clover credentials');
       return new Response(
         JSON.stringify({ error: 'Payment system configuration error' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 500, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -138,7 +135,7 @@ serve(async (req) => {
             checkout_url: retryData.href,
             session_id: retryData.id,
           }),
-          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 200, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
         );
       }
 
@@ -155,7 +152,7 @@ serve(async (req) => {
         checkout_url: cloverData.href,
         session_id: cloverData.id,
       }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 200, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
@@ -166,7 +163,7 @@ serve(async (req) => {
         error: 'Payment processing failed',
         details: errorMessage
       }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
     );
   }
 });

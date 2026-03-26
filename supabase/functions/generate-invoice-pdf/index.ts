@@ -2,10 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 import { PDFDocument, rgb, StandardFonts } from "https://esm.sh/pdf-lib@1.17.1";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
 interface GeneratePDFRequest {
   invoiceId: string;
@@ -73,7 +70,7 @@ async function fetchAndEmbedLogo(pdfDoc: any, logoUrl: string): Promise<any | nu
 
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: buildCorsHeaders(req) });
   }
 
   try {
@@ -88,7 +85,7 @@ const handler = async (req: Request): Promise<Response> => {
     if (!authHeader) {
       return new Response(
         JSON.stringify({ error: "Unauthorized - No authentication header" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 401, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -98,7 +95,7 @@ const handler = async (req: Request): Promise<Response> => {
     if (authError || !user) {
       return new Response(
         JSON.stringify({ error: "Unauthorized - Invalid token" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 401, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -115,7 +112,7 @@ const handler = async (req: Request): Promise<Response> => {
     if (invoice.user_id !== user.id) {
       return new Response(
         JSON.stringify({ error: "Forbidden - You don't have access to this invoice" }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 403, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -539,7 +536,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     return new Response(pdfBuffer.buffer, {
       headers: {
-        ...corsHeaders,
+        ...buildCorsHeaders(req),
         "Content-Type": "application/pdf",
         "Content-Disposition": `attachment; filename="Invoice-${invoice.invoice_number || invoiceId}.pdf"`,
       },
@@ -549,7 +546,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.error("PDF generation error:", error);
     return new Response(
       JSON.stringify({ error: error.message || "Failed to generate PDF" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
     );
   }
 };

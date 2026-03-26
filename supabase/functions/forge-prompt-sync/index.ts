@@ -1,10 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
 /** Generate the structured Vapi prompt server-side (mirrors src/lib/generateVapiPrompt.ts) */
 function buildPrompt(p: any): string {
@@ -53,7 +49,7 @@ function buildPrompt(p: any): string {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: buildCorsHeaders(req) });
   }
 
   try {
@@ -80,7 +76,7 @@ Deno.serve(async (req) => {
       if (error || !data?.user) {
         return new Response(JSON.stringify({ error: "Unauthorized" }), {
           status: 401,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
       // Users can only sync their own profile (admins override via internal key)
@@ -88,14 +84,14 @@ Deno.serve(async (req) => {
     } else {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
     if (!contractorId) {
       return new Response(JSON.stringify({ error: "contractor_id required" }), {
         status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -110,7 +106,7 @@ Deno.serve(async (req) => {
     if (profileError || !profile) {
       return new Response(
         JSON.stringify({ error: "Profile not found", details: profileError?.message }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 404, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -151,13 +147,13 @@ Deno.serve(async (req) => {
               prompt_saved: true,
               forge_error: `Forge returned ${syncResponse.status}`,
             }),
-            { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            { status: 200, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
           );
         }
 
         return new Response(
           JSON.stringify({ success: true, synced: true, prompt_saved: true }),
-          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          { status: 200, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
         );
       } catch (forgeErr) {
         console.error("Forge sync error:", forgeErr);
@@ -168,7 +164,7 @@ Deno.serve(async (req) => {
             prompt_saved: true,
             forge_error: String(forgeErr),
           }),
-          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          { status: 200, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
         );
       }
     }
@@ -180,13 +176,13 @@ Deno.serve(async (req) => {
         prompt_saved: true,
         note: "Forge base URL not configured — prompt saved but not synced",
       }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 200, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
     );
   } catch (err) {
     console.error("forge-prompt-sync error:", err);
     return new Response(
       JSON.stringify({ error: "Internal error", details: String(err) }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
     );
   }
 });

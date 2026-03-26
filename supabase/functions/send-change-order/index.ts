@@ -2,16 +2,12 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4';
 
+import { buildCorsHeaders } from '../_shared/cors.ts';
+
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const FROM_EMAIL = Deno.env.get('EMAIL_FROM') || 'onboarding@resend.dev';
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
 
 interface SendChangeOrderRequest {
   changeOrderId: string;
@@ -35,7 +31,7 @@ function formatDate(dateStr: string | null | undefined) {
 
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: buildCorsHeaders(req) });
   }
 
   try {
@@ -46,7 +42,7 @@ const handler = async (req: Request): Promise<Response> => {
     if (!authHeader) {
       return new Response(
         JSON.stringify({ error: "Unauthorized - No authentication header" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 401, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -56,7 +52,7 @@ const handler = async (req: Request): Promise<Response> => {
     if (authError || !user) {
       return new Response(
         JSON.stringify({ error: "Unauthorized - Invalid token" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 401, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -77,7 +73,7 @@ const handler = async (req: Request): Promise<Response> => {
     if (changeOrder.user_id !== user.id) {
       return new Response(
         JSON.stringify({ error: "Forbidden - You don't have access to this change order" }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 403, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -90,7 +86,7 @@ const handler = async (req: Request): Promise<Response> => {
           success: false, 
           error: 'Client email is required to send change order. Please add the client\'s email address first.' 
         }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -289,14 +285,14 @@ const handler = async (req: Request): Promise<Response> => {
 
     return new Response(
       JSON.stringify({ success: true, emailId }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 200, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
     );
 
   } catch (error: any) {
     console.error("Error in send-change-order function:", error);
     return new Response(
       JSON.stringify({ success: false, error: error.message }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
     );
   }
 };

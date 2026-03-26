@@ -1,9 +1,9 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.58.0';
-import { corsHeaders } from '../_shared/cors.ts';
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response('ok', { headers: buildCorsHeaders(req) });
   }
 
   try {
@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
     if (authError || !user) {
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+        { headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' }, status: 401 }
       );
     }
 
@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
     if (!roles || roles.length === 0) {
       return new Response(
         JSON.stringify({ error: 'Forbidden: Admin access required' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 403 }
+        { headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' }, status: 403 }
       );
     }
 
@@ -50,14 +50,14 @@ Deno.serve(async (req) => {
     if (!userId || !newPassword) {
       return new Response(
         JSON.stringify({ error: 'User ID and new password are required' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+        { headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' }, status: 400 }
       );
     }
 
     if (newPassword.length < 6) {
       return new Response(
         JSON.stringify({ error: 'Password must be at least 6 characters long' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+        { headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' }, status: 400 }
       );
     }
 
@@ -73,14 +73,14 @@ Deno.serve(async (req) => {
 
     return new Response(
       JSON.stringify({ success: true, message: 'Password reset successfully' }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      { headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' }, status: 200 }
     );
 
   } catch (error) {
     console.error('Error resetting password:', error);
     return new Response(
       JSON.stringify({ error: (error as Error).message }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      { headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' }, status: 500 }
     );
   }
 });

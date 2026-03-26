@@ -1,13 +1,10 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response('ok', { headers: buildCorsHeaders(req) });
   }
 
   try {
@@ -17,14 +14,14 @@ serve(async (req) => {
     if (!prompt || typeof prompt !== 'string') {
       return new Response(
         JSON.stringify({ error: 'Invalid prompt format' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
     if (prompt.length > 5000) {
       return new Response(
         JSON.stringify({ error: 'Prompt exceeds 5000 character limit' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -32,7 +29,7 @@ serve(async (req) => {
     if (trimmedPrompt.length === 0) {
       return new Response(
         JSON.stringify({ error: 'Prompt cannot be empty' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -119,7 +116,7 @@ For costs, convert phrases like "25k", "$25,000", "twenty-five thousand" to nume
       return new Response(
         JSON.stringify({ jobDetails }),
         {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
         },
       );
     } else {
@@ -132,7 +129,7 @@ For costs, convert phrases like "25k", "$25,000", "twenty-five thousand" to nume
       JSON.stringify({ error: error.message }),
       {
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
       },
     );
   }

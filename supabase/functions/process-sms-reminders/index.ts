@@ -1,10 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
 async function sendSMS(to: string, body: string, fromNumber: string): Promise<{ success: boolean; sid?: string; error?: string }> {
   const accountSid = Deno.env.get("TWILIO_ACCOUNT_SID");
@@ -54,7 +51,7 @@ async function sendSMS(to: string, body: string, fromNumber: string): Promise<{ 
 
 serve(async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: buildCorsHeaders(req) });
   }
 
   try {
@@ -77,7 +74,7 @@ serve(async (req: Request): Promise<Response> => {
       console.error("Error fetching pending reminders:", fetchError);
       return new Response(JSON.stringify({ error: fetchError.message }), {
         status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -85,7 +82,7 @@ serve(async (req: Request): Promise<Response> => {
       console.log("No pending reminders to process");
       return new Response(JSON.stringify({ message: "No pending reminders", processed: 0 }), {
         status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -155,14 +152,14 @@ serve(async (req: Request): Promise<Response> => {
       }),
       {
         status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
       }
     );
   } catch (error: any) {
     console.error("Error in process-sms-reminders:", error);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 });

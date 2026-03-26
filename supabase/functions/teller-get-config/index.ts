@@ -1,16 +1,13 @@
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
-};
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: buildCorsHeaders(req) });
   }
 
   const applicationId = Deno.env.get('TELLER_APPLICATION_ID');
 
   return new Response(JSON.stringify({ applicationId: applicationId || null }), {
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
   });
 });

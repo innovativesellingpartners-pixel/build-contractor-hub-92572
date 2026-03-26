@@ -1,16 +1,13 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.58.0';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
 const POCKETBOT_PRICE_CENTS = 2000; // $20.00/month
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: buildCorsHeaders(req) });
   }
 
   try {
@@ -36,7 +33,7 @@ serve(async (req) => {
     if (profile?.pocketbot_access_type === 'paid' || profile?.pocketbot_access_type === 'free_full') {
       return new Response(
         JSON.stringify({ success: false, message: 'You already have full Pocket Agent access.' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+        { headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' }, status: 200 }
       );
     }
 
@@ -110,7 +107,7 @@ serve(async (req) => {
             session_id: cloverData.checkoutSessionId,
             environment: successEnv,
           }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+          { headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' }, status: 200 }
         );
       }
 
@@ -124,7 +121,7 @@ serve(async (req) => {
     console.error('Pocketbot checkout error:', error);
     return new Response(
       JSON.stringify({ success: false, message: error instanceof Error ? error.message : 'Failed to create checkout' }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      { headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' }, status: 200 }
     );
   }
 });

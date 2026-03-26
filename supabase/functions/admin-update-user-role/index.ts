@@ -1,15 +1,12 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: buildCorsHeaders(req) });
   }
 
   try {
@@ -35,7 +32,7 @@ serve(async (req) => {
         JSON.stringify({ success: false, error: 'Unauthorized' }),
         { 
           status: 200, // Return 200 to ensure response body is accessible
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' }
         }
       );
     }
@@ -53,7 +50,7 @@ serve(async (req) => {
         JSON.stringify({ success: false, error: 'Forbidden - Admin access required' }),
         { 
           status: 200, // Return 200 to ensure response body is accessible
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' }
         }
       );
     }
@@ -66,7 +63,7 @@ serve(async (req) => {
         JSON.stringify({ success: false, error: 'Missing required fields: userId and newRole' }),
         { 
           status: 200, // Return 200 to ensure response body is accessible
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' }
         }
       );
     }
@@ -78,7 +75,7 @@ serve(async (req) => {
         JSON.stringify({ success: false, error: 'Invalid role. Must be one of: user, admin, super_admin' }),
         { 
           status: 200, // Return 200 to ensure response body is accessible
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' }
         }
       );
     }
@@ -120,7 +117,7 @@ serve(async (req) => {
       JSON.stringify({ success: true, data: result }),
       {
         status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' }
       }
     );
 
@@ -133,7 +130,7 @@ serve(async (req) => {
       }),
       {
         status: 200, // Return 200 to ensure response body is accessible
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' }
       }
     );
   }

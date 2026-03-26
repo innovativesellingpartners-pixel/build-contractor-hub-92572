@@ -1,10 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.58.0";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
 async function getLowesToken(): Promise<string> {
   const clientId = Deno.env.get('LOWES_CLIENT_ID');
@@ -58,7 +55,7 @@ function normalizeProduct(raw: any): any {
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: buildCorsHeaders(req) });
   }
 
   try {
@@ -66,7 +63,7 @@ serve(async (req) => {
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       return new Response(JSON.stringify({ error: 'Auth required' }), {
-        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        status: 401, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' }
       });
     }
 
@@ -79,7 +76,7 @@ serve(async (req) => {
     const { data: { user }, error: authError } = await userClient.auth.getUser();
     if (authError || !user) {
       return new Response(JSON.stringify({ error: 'Invalid auth' }), {
-        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        status: 401, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' }
       });
     }
 
@@ -96,7 +93,7 @@ serve(async (req) => {
     const isAdmin = roleData || user.email?.endsWith('@myct1.com');
     if (!isAdmin) {
       return new Response(JSON.stringify({ error: 'Admin access required' }), {
-        status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        status: 403, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' }
       });
     }
 
@@ -210,7 +207,7 @@ serve(async (req) => {
 
       if (error) {
         return new Response(JSON.stringify({ success: false, error: error.message }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' }
         });
       }
 
@@ -220,7 +217,7 @@ serve(async (req) => {
         count: data?.length || 0,
         message: `Inserted ${data?.length || 0} sample furnace products`
       }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' }
       });
     }
 
@@ -232,7 +229,7 @@ serve(async (req) => {
         success: false,
         error: 'LOWES_PRODUCT_ENDPOINT not configured. Use "insert_sample" action to add test data.'
       }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' }
       });
     }
 
@@ -252,7 +249,7 @@ serve(async (req) => {
         error: `Lowe's API error: ${productResponse.status}`,
         details: errText
       }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' }
       });
     }
 
@@ -271,7 +268,7 @@ serve(async (req) => {
           success: false,
           error: `Database upsert failed: ${upsertError.message}`
         }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' }
         });
       }
     }
@@ -283,7 +280,7 @@ serve(async (req) => {
       synced_at: new Date().toISOString(),
       message: `Synced ${normalized.length} products from Lowe's`
     }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' }
     });
 
   } catch (error) {
@@ -292,7 +289,7 @@ serve(async (req) => {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error' 
     }), {
-      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      status: 500, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' }
     });
   }
 });

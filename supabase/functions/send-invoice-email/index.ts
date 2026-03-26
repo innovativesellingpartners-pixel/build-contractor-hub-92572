@@ -3,12 +3,9 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { Resend } from "npm:resend@2.0.0";
 import { PDFDocument, rgb, StandardFonts } from "https://esm.sh/pdf-lib@1.17.1";
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 interface SendInvoiceRequest {
   invoiceId: string;
@@ -537,7 +534,7 @@ const handler = async (req: Request): Promise<Response> => {
   console.log("send-invoice-email function called");
 
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: buildCorsHeaders(req) });
   }
 
   try {
@@ -560,7 +557,7 @@ const handler = async (req: Request): Promise<Response> => {
       console.error("Missing required fields: invoiceId or recipientEmails");
       return new Response(
         JSON.stringify({ error: "Missing required fields: invoiceId, recipientEmails" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -587,7 +584,7 @@ const handler = async (req: Request): Promise<Response> => {
       console.error("Invoice not found:", invoiceError);
       return new Response(
         JSON.stringify({ error: "Invoice not found" }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 404, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -893,13 +890,13 @@ const handler = async (req: Request): Promise<Response> => {
         attachmentsCount: attachments.length,
         attachmentMode: waiverAttachmentMode
       }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 200, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
     );
   } catch (error: any) {
     console.error("Error in send-invoice-email:", error);
     return new Response(
       JSON.stringify({ error: error.message }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
     );
   }
 };

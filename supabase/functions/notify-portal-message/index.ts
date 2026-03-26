@@ -1,14 +1,11 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: buildCorsHeaders(req) });
   }
 
   try {
@@ -21,7 +18,7 @@ serve(async (req: Request) => {
     if (!portal_token_id || !message) {
       return new Response(JSON.stringify({ error: "Missing portal_token_id or message" }), {
         status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -37,7 +34,7 @@ serve(async (req: Request) => {
       console.error("Portal token not found:", tokenError);
       return new Response(JSON.stringify({ error: "Portal token not found" }), {
         status: 404,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -52,7 +49,7 @@ serve(async (req: Request) => {
       console.log("Contractor has no phone number, skipping SMS notification");
       return new Response(JSON.stringify({ success: true, skipped: true, reason: "no_phone" }), {
         status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -88,7 +85,7 @@ serve(async (req: Request) => {
       console.log("No SMS from number configured, skipping");
       return new Response(JSON.stringify({ success: true, skipped: true, reason: "no_from_number" }), {
         status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -114,20 +111,20 @@ serve(async (req: Request) => {
       console.error("Twilio error:", twilioData);
       return new Response(JSON.stringify({ error: twilioData.message || "Failed to send SMS" }), {
         status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
     console.log("SMS notification sent to contractor:", profile.phone);
     return new Response(JSON.stringify({ success: true, sid: twilioData.sid }), {
       status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
     });
   } catch (error: any) {
     console.error("Error in notify-portal-message:", error);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 });

@@ -1,9 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
 function decodeToken(token: any): string {
   if (!token) return '';
@@ -88,14 +85,14 @@ async function refreshOutlookToken(refreshToken: string, connection: any, supaba
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: buildCorsHeaders(req) });
   }
 
   try {
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       return new Response(JSON.stringify({ error: 'No authorization header' }), {
-        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 401, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -108,7 +105,7 @@ Deno.serve(async (req) => {
     const { data: { user }, error: userError } = await supabase.auth.getUser(token);
     if (userError || !user) {
       return new Response(JSON.stringify({ error: 'Invalid token' }), {
-        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 401, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -116,7 +113,7 @@ Deno.serve(async (req) => {
 
     if (!eventId || !provider || !rsvpResponse) {
       return new Response(JSON.stringify({ error: 'Missing eventId, provider, or response' }), {
-        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -131,7 +128,7 @@ Deno.serve(async (req) => {
 
     if (connError || !connections || connections.length === 0) {
       return new Response(JSON.stringify({ error: 'No calendar connection found' }), {
-        status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 404, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -216,19 +213,19 @@ Deno.serve(async (req) => {
 
     } else {
       return new Response(JSON.stringify({ error: 'Unknown provider' }), {
-        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
     console.log(`RSVP successful for event ${eventId}`);
     return new Response(JSON.stringify({ success: true, result }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
     });
 
   } catch (error: any) {
     console.error('RSVP error:', error);
     return new Response(JSON.stringify({ error: error.message }), {
-      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 500, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
     });
   }
 });

@@ -1,10 +1,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
-};
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
 interface FinixPaymentRequest {
   entity_type: 'estimate' | 'invoice';
@@ -54,13 +51,13 @@ function validateCardDetails(body: FinixPaymentRequest): string | null {
 function errorResponse(message: string, status = 400) {
   return new Response(
     JSON.stringify({ success: false, message }),
-    { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    { status, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
   );
 }
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: buildCorsHeaders(req) });
   }
 
   const requestId = crypto.randomUUID();
@@ -157,7 +154,7 @@ serve(async (req) => {
             amount: recentPayment[0].amount,
             transfer_id: recentPayment[0].id,
           }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
         );
       }
     }
@@ -706,13 +703,13 @@ serve(async (req) => {
         amount: amountToCharge,
         payment_intent: payment_intent || 'full',
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
     );
   } catch (error: any) {
     console.error(`[${requestId}] Unhandled error:`, error);
     return new Response(
       JSON.stringify({ success: false, message: error.message || 'An unexpected error occurred. Please try again.' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
     );
   }
 });

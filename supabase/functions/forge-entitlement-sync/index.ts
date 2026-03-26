@@ -1,14 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: buildCorsHeaders(req) });
   }
 
   try {
@@ -16,7 +13,7 @@ serve(async (req) => {
     const expectedKey = Deno.env.get('CT1_SYNC_SECRET');
     if (!expectedKey || !authHeader || authHeader !== `Bearer ${expectedKey}`) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 401, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -24,7 +21,7 @@ serve(async (req) => {
 
     if (!external_contractor_id) {
       return new Response(JSON.stringify({ error: 'external_contractor_id is required' }), {
-        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -51,13 +48,13 @@ serve(async (req) => {
     if (updateError) {
       console.error('Update error:', updateError);
       return new Response(JSON.stringify({ error: updateError.message }), {
-        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
     if (!data) {
       return new Response(JSON.stringify({ error: 'Contractor not found' }), {
-        status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 404, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -67,13 +64,13 @@ serve(async (req) => {
       voice_ai_enabled: data.voice_ai_enabled,
       subscription_tier: data.subscription_tier,
     }), {
-      status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 200, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
     });
 
   } catch (error: any) {
     console.error('Error in forge-entitlement-sync:', error);
     return new Response(JSON.stringify({ error: error.message }), {
-      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 500, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
     });
   }
 });

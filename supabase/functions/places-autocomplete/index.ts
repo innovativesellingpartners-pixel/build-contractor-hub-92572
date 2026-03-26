@@ -1,9 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
 // Simple in-memory cache with 5-minute TTL
 const cache = new Map<string, { data: any; expires: number }>();
@@ -50,7 +47,7 @@ serve(async (req) => {
   
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: buildCorsHeaders(req) });
   }
 
   try {
@@ -67,7 +64,7 @@ serve(async (req) => {
     if (!query || query.length < 2) {
       return new Response(
         JSON.stringify({ predictions: [], expanded: false }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -76,7 +73,7 @@ serve(async (req) => {
       console.error('GOOGLE_PLACES_API_KEY not configured');
       return new Response(
         JSON.stringify({ error: 'Places API not configured' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 500, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -87,7 +84,7 @@ serve(async (req) => {
       console.log(`Cache hit for query: ${query}, latency: ${Date.now() - startTime}ms`);
       return new Response(
         JSON.stringify(cachedResult),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -121,7 +118,7 @@ serve(async (req) => {
       console.error('Google Places API error:', data.status, data.error_message);
       return new Response(
         JSON.stringify({ predictions: [], error: data.error_message, expanded: false }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -181,13 +178,13 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify(result),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
     );
   } catch (error) {
     console.error('Places autocomplete error:', error);
     return new Response(
       JSON.stringify({ error: 'Failed to fetch predictions', predictions: [] }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
     );
   }
 });

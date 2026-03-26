@@ -8,14 +8,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response('ok', { headers: buildCorsHeaders(req) });
   }
 
   try {
@@ -45,7 +42,7 @@ serve(async (req) => {
   <Say voice="Polly.Joanna">We're sorry, but we couldn't connect your call. Please try again later.</Say>
   <Hangup/>
 </Response>`, {
-        headers: { 'Content-Type': 'text/xml', ...corsHeaders }
+        headers: { 'Content-Type': 'text/xml', ...buildCorsHeaders(req) }
       });
     }
 
@@ -63,7 +60,7 @@ serve(async (req) => {
   <Say voice="Polly.Joanna">We're sorry, but we couldn't connect your call. Please try again later.</Say>
   <Hangup/>
 </Response>`, {
-        headers: { 'Content-Type': 'text/xml', ...corsHeaders }
+        headers: { 'Content-Type': 'text/xml', ...buildCorsHeaders(req) }
       });
     }
 
@@ -104,7 +101,7 @@ serve(async (req) => {
 </Response>`;
 
     return new Response(gatherTwiml, {
-      headers: { 'Content-Type': 'text/xml', ...corsHeaders }
+      headers: { 'Content-Type': 'text/xml', ...buildCorsHeaders(req) }
     });
 
   } catch (error) {
@@ -114,7 +111,7 @@ serve(async (req) => {
   <Say voice="Polly.Joanna">We're sorry, but an error occurred. Please try calling again.</Say>
   <Hangup/>
 </Response>`, {
-      headers: { 'Content-Type': 'text/xml', ...corsHeaders }
+      headers: { 'Content-Type': 'text/xml', ...buildCorsHeaders(req) }
     });
   }
 });
