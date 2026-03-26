@@ -59,6 +59,7 @@ import PortalSection from './sections/PortalSection';
 import CrewsSection from './sections/CrewsSection';
 import DocumentsSection from './sections/DocumentsSection';
 import ContractorNetworkSection from './sections/ContractorNetworkSection';
+import TeamManagement from '@/components/contractor/TeamManagement';
 import CRMSearchBar from './CRMSearchBar';
 import AIReportView from './sections/AIReportView';
 import ct1Logo from '@/assets/ct1-round-logo-new.png';
