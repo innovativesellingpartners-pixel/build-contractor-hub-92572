@@ -67,8 +67,9 @@ import { CatalogAdminPanel } from "@/components/contractor/CatalogAdminPanel";
 import { CrewManagement } from "@/components/contractor/CrewManagement";
 import ReputationDashboard from "@/components/contractor/ReputationDashboard";
 import { NotificationBell } from "@/components/contractor/NotificationBell";
+import SubVendorPortal from "@/components/contractor/SubVendorPortal";
 
-type ActiveSection = 'training' | 'crm' | 'marketplace' | 'leads' | 'insurance' | 'account' | 'voiceai' | 'reporting' | 'tasks' | 'help' | 'connections' | 'crews' | 'reviews';
+type ActiveSection = 'training' | 'crm' | 'marketplace' | 'leads' | 'insurance' | 'account' | 'voiceai' | 'reporting' | 'tasks' | 'help' | 'connections' | 'crews' | 'reviews' | 'subs';
 
 export function Dashboard() {
   const navigate = useNavigate();
