@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -235,7 +235,7 @@ export function Dashboard() {
     }
   }, []);
 
-  const handleChatButtonDragStart = (
+  const handleChatButtonDragStart = useCallback((
     e: React.MouseEvent<HTMLButtonElement> | React.TouchEvent<HTMLButtonElement>
   ) => {
     if (!chatButtonRef.current) return;
@@ -250,49 +250,47 @@ export function Dashboard() {
       y: point.clientY - rect.top,
     });
     setIsDraggingChatButton(true);
-  };
+  }, []);
 
-  const handleChatButtonClick = () => {
-    // Only toggle Pocket Agent if user didn't drag
+  const handleChatButtonClick = useCallback(() => {
     if (!hasDragged) {
-      setPocketAgentOpen(!pocketAgentOpen);
+      setPocketAgentOpen(prev => !prev);
     }
-    // Reset drag state after click
     setHasDragged(false);
-  };
+  }, [hasDragged]);
 
   // Save active section to sessionStorage whenever it changes
-  const handleSectionChange = (section: ActiveSection) => {
+  const handleSectionChange = useCallback((section: ActiveSection) => {
     setActiveSection(section);
     sessionStorage.setItem('dashboardActiveSection', section);
     setMobileMenuOpen(false);
-  };
+  }, []);
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     await signOut();
     toast({
       title: "Logged out",
       description: "You have been successfully logged out.",
     });
-  };
+  }, [signOut, toast]);
 
-  const getTierLabel = (tier?: string) => {
+  const getTierLabel = useCallback((tier?: string) => {
     switch (tier) {
       case 'launch': return 'LAUNCH Growth Starter';
       case 'growth': return 'Growth Business Builder';
       case 'accel': return 'Accel! Market Dominator';
       default: return 'LAUNCH Growth Starter';
     }
-  };
+  }, []);
 
-  const getTierBadgeColor = (tier?: string) => {
+  const getTierBadgeColor = useCallback((tier?: string) => {
     switch (tier) {
       case 'launch': return 'bg-blue-500';
       case 'growth': return 'bg-green-500';
       case 'accel': return 'bg-purple-500';
       default: return 'bg-blue-500';
     }
-  };
+  }, []);
 
   return (
     <div className="relative min-h-screen bg-background flex flex-col">
