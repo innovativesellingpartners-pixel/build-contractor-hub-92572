@@ -281,7 +281,9 @@ const App = () => (
             <Route path="/app-install" element={<AppInstall />} />
             <Route path="/crm" element={
               <ProtectedRoute>
-                <Navigate to="/dashboard" replace />
+                <RouteErrorBoundary>
+                  <Navigate to="/dashboard" replace />
+                </RouteErrorBoundary>
               </ProtectedRoute>
             } />
             <Route path="/reporting" element={
