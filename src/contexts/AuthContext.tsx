@@ -140,7 +140,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
 
-      console.log('Initial session check:', { hasSession: !!session, hasUser: !!session?.user });
+      if (import.meta.env.DEV) console.log('Initial session check:', { hasSession: !!session, hasUser: !!session?.user });
       
       setSession(session);
       setUser(session?.user ?? null);
