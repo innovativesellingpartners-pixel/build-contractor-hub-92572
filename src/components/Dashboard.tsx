@@ -74,7 +74,7 @@ type ActiveSection = 'training' | 'crm' | 'marketplace' | 'leads' | 'insurance' 
 
 export function Dashboard() {
   const navigate = useNavigate();
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, signOut, isTeamMember, ownerProfile, teamRole, effectiveUserId } = useAuth();
   const { isAdmin } = useAdminAuth();
   const { tierFeatures, hasFullAccess } = useUserTier();
   const { toast } = useToast();
