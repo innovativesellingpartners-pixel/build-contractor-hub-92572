@@ -5865,6 +5865,120 @@ export type Database = {
         }
         Relationships: []
       }
+      sub_assignments: {
+        Row: {
+          agreed_amount: number | null
+          created_at: string | null
+          end_date: string | null
+          id: string
+          job_id: string
+          notes: string | null
+          scope_of_work: string | null
+          start_date: string | null
+          status: string | null
+          subcontractor_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          agreed_amount?: number | null
+          created_at?: string | null
+          end_date?: string | null
+          id?: string
+          job_id: string
+          notes?: string | null
+          scope_of_work?: string | null
+          start_date?: string | null
+          status?: string | null
+          subcontractor_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          agreed_amount?: number | null
+          created_at?: string | null
+          end_date?: string | null
+          id?: string
+          job_id?: string
+          notes?: string | null
+          scope_of_work?: string | null
+          start_date?: string | null
+          status?: string | null
+          subcontractor_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sub_assignments_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sub_assignments_subcontractor_id_fkey"
+            columns: ["subcontractor_id"]
+            isOneToOne: false
+            referencedRelation: "subcontractors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subcontractors: {
+        Row: {
+          company_name: string
+          contact_name: string | null
+          created_at: string | null
+          documents: Json | null
+          email: string | null
+          id: string
+          insurance_expiry: string | null
+          license_number: string | null
+          notes: string | null
+          phone: string | null
+          rating: number | null
+          status: string | null
+          trade: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          company_name: string
+          contact_name?: string | null
+          created_at?: string | null
+          documents?: Json | null
+          email?: string | null
+          id?: string
+          insurance_expiry?: string | null
+          license_number?: string | null
+          notes?: string | null
+          phone?: string | null
+          rating?: number | null
+          status?: string | null
+          trade?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          company_name?: string
+          contact_name?: string | null
+          created_at?: string | null
+          documents?: Json | null
+          email?: string | null
+          id?: string
+          insurance_expiry?: string | null
+          license_number?: string | null
+          notes?: string | null
+          phone?: string | null
+          rating?: number | null
+          status?: string | null
+          trade?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           addon_type: string | null
