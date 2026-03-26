@@ -37,7 +37,7 @@ export default function JobCostTracker({ job }: JobCostTrackerProps) {
   const spentPercent = estimatedBudget > 0 ? Math.min((totalSpent / estimatedBudget) * 100, 100) : 0;
 
   // Completion percentage from job
-  const completionPercent = Number(job.completion_percentage || 0);
+  const completionPercent = Number((job as any).completion_percentage || 0);
   const projectedFinalCost = completionPercent > 0 ? (totalSpent / completionPercent) * 100 : totalSpent;
 
   const getGaugeColor = () => {

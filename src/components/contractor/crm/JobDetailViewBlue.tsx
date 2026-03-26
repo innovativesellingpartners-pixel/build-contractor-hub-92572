@@ -1081,6 +1081,12 @@ export default function JobDetailViewBlue({
               </div>
             )}
 
+            {activeTab === 'costs' && (
+              <div className="p-4">
+                <JobCostTracker job={job} />
+              </div>
+            )}
+
             {activeTab === 'tasks' && (
               <div className="p-4">
                 <TasksTab jobId={job.id!} />
