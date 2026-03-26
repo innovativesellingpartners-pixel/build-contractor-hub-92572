@@ -1,49 +1,46 @@
 
 
-# Update Edge Function AI Models — Optimization Plan
+# Migrate All Edge Functions to Origin-Restricted CORS
 
 ## Summary
 
-Update 8 edge functions to use the recommended AI models from the optimization plan. Two functions (`elevenlabs-stream-handler`, `twilio-stream-handler`) use direct OpenAI APIs with a separate API key and will be left unchanged to avoid breaking their integrations.
+Update all 113 edge functions under `supabase/functions/` to replace wildcard CORS (`Access-Control-Allow-Origin: *`) with the origin-restricted `buildCorsHeaders(req)` from `_shared/cors.ts`. No logic changes — CORS header references only.
 
-## Changes
+## Two Patterns to Fix
 
-### Upgrade to `openai/gpt-5-mini` (better reasoning/tool-calling)
+**Pattern A (102 functions)** — Local `const corsHeaders = { ... }` block:
+- Delete the local `const corsHeaders` declaration
+- Add `import { buildCorsHeaders } from '../_shared/cors.ts';`
+- Replace all `corsHeaders` usages with `buildCorsHeaders(req)`
 
-| Function | Current Model | Why |
-|---|---|---|
-| `pocketbot-chat` (2 calls) | `gemini-2.5-flash` | CRM tool-calling needs stronger reasoning |
+**Pattern B (11 functions)** — Import from shared:
+- Change `import { corsHeaders } from '../_shared/cors.ts'` → `import { buildCorsHeaders } from '../_shared/cors.ts'`
+- Replace all `corsHeaders` usages with `buildCorsHeaders(req)`
 
-### Upgrade to `google/gemini-3-flash-preview` (better structured extraction)
+## Replacement Rules (applied identically in every file)
 
-| Function | Current Model | Why |
-|---|---|---|
-| `estimate-assistant` | `gemini-2.5-flash` | Better JSON extraction |
-| `extract-job-details` | `gemini-2.5-flash` | Better structured output |
+| Before | After |
+|---|---|
+| `const corsHeaders = { ... };` | *(deleted)* |
+| `import { corsHeaders } from '../_shared/cors.ts'` | `import { buildCorsHeaders } from '../_shared/cors.ts'` |
+| `return new Response(null, { headers: corsHeaders })` | `return new Response(null, { headers: buildCorsHeaders(req) })` |
+| `headers: { ...corsHeaders, 'Content-Type': ... }` | `headers: { ...buildCorsHeaders(req), 'Content-Type': ... }` |
+| `{ headers: corsHeaders }` | `{ headers: buildCorsHeaders(req) }` |
 
-### Downgrade to `google/gemini-2.5-flash-lite` (cost savings, simple tasks)
+## Important Notes
 
-| Function | Current Model | Why |
-|---|---|---|
-| `summarize-scope-notes` | `gemini-2.5-flash` | Simple summarization task |
-| `twilio-voice-inbound` (2 calls) | `gemini-2.5-flash` | Low-latency voice responses |
+- `_shared/cors.ts` is NOT modified — it already has the correct `buildCorsHeaders` function
+- `buildCorsHeaders(req)` requires the `req` parameter, which is available in every handler since all functions receive `req: Request`
+- Some functions use `serve(async (req) => ...)`, others use `Deno.serve(async (req) => ...)` — both have `req` in scope
+- Functions like `elevenlabs-stream-handler` and `twilio-stream-handler` that have CORS headers also get updated (CORS is separate from their OpenAI API usage)
 
-### Keep unchanged
+## Files Modified
 
-| Function | Current Model | Why |
-|---|---|---|
-| `crm-ai-search` | `gemini-3-flash-preview` | Already optimal |
-| `chat-with-us` | `gemini-3-flash-preview` | Already optimal |
-| `help-chatbot` | `gemini-3-flash-preview` | Already optimal |
-| `sales-coach` | `gemini-3-flash-preview` | Already optimal |
-| `translate-document` | `gemini-3-flash-preview` + `gemini-2.5-pro` | Already optimal |
-| `elevenlabs-stream-handler` | Direct OpenAI `gpt-4o-mini` | Uses separate OPENAI_API_KEY, not Lovable AI gateway — leave as-is |
-| `twilio-stream-handler` | Direct OpenAI realtime API | Uses separate OPENAI_API_KEY — leave as-is |
+All 113 `index.ts` files under `supabase/functions/` (excluding `_shared/`). Each file gets the same mechanical transformation — no behavioral changes.
 
-## Technical Details
+## Risk Assessment
 
-- **Files modified**: 5 edge function files, model string changes only
-- **No logic changes** — just swapping model identifiers
-- **No schema or migration changes needed**
-- All changes use models available through the Lovable AI gateway
+- **Low risk** — purely mechanical string replacement of header references
+- The `buildCorsHeaders` function already allows all the same Lovable preview domains plus production domains
+- If any origin is missed, `buildCorsHeaders` falls back to the primary domain (`myct1.com`), which the browser will enforce
 
