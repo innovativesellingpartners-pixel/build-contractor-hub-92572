@@ -262,11 +262,11 @@ export function Dashboard() {
   };
 
   // Save active section to sessionStorage whenever it changes
-  const handleSectionChange = (section: ActiveSection) => {
+  const handleSectionChange = useCallback((section: ActiveSection) => {
     setActiveSection(section);
     sessionStorage.setItem('dashboardActiveSection', section);
     setMobileMenuOpen(false);
-  };
+  }, []);
 
   const handleLogout = async () => {
     await signOut();
