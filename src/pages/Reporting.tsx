@@ -60,7 +60,7 @@ const sections = [
 ];
 
 export default function Reporting() {
-  const [activeSection, setActiveSection] = useState("dashboard");
+  const [activeSection, setActiveSection] = useState("scorecard");
 
   const navigate = useNavigate();
 
