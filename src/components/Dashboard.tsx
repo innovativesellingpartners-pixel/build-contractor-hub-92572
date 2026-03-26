@@ -74,7 +74,7 @@ type ActiveSection = 'training' | 'crm' | 'marketplace' | 'leads' | 'insurance' 
 
 export function Dashboard() {
   const navigate = useNavigate();
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, signOut, isTeamMember, ownerProfile, teamRole, effectiveUserId } = useAuth();
   const { isAdmin } = useAdminAuth();
   const { tierFeatures, hasFullAccess } = useUserTier();
   const { toast } = useToast();
@@ -347,7 +347,12 @@ export function Dashboard() {
                 <img src={ct1Logo} alt="CT1 Logo" className="h-8 w-8 md:h-10 md:w-10" />
                 <div className="hidden sm:block">
                   <h1 className="text-sm md:text-base font-semibold text-foreground">CT1 Contractor Hub</h1>
-                  <p className="text-xs text-muted-foreground">Hello, {profile?.contact_name || 'Contractor'}</p>
+                  <p className="text-xs text-muted-foreground">
+                    Hello, {profile?.contact_name || 'Contractor'}
+                    {isTeamMember && ownerProfile?.company_name && (
+                      <span className="ml-1 text-primary/80">— {ownerProfile.company_name}</span>
+                    )}
+                  </p>
                 </div>
               </Link>
             </div>
