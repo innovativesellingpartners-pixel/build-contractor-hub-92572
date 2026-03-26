@@ -1,9 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
-};
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
 function getQBErrorMessage(status: number, body: any): string {
   switch (status) {
@@ -60,7 +57,7 @@ async function refreshToken(connection: any, adminClient: any, decryptedRefreshT
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: buildCorsHeaders(req) });
   }
 
   try {
@@ -138,7 +135,7 @@ Deno.serve(async (req) => {
       console.error('QuickBooks API error:', qbResponse.status, JSON.stringify(data));
       return new Response(
         JSON.stringify({ error: friendlyMessage, qbStatus: qbResponse.status }),
-        { status: qbResponse.status >= 500 ? 502 : 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: qbResponse.status >= 500 ? 502 : 400, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -151,14 +148,14 @@ Deno.serve(async (req) => {
 
     return new Response(
       JSON.stringify(data),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
     );
   } catch (error) {
     console.error('Error in quickbooks-api:', error);
     const message = error instanceof Error ? error.message : 'An error occurred';
     return new Response(
       JSON.stringify({ error: message }),
-      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 400, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
     );
   }
 });

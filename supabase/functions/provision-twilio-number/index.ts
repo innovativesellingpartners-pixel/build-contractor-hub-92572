@@ -11,21 +11,18 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
-};
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response('ok', { headers: buildCorsHeaders(req) });
   }
 
   try {
     if (req.method !== 'POST') {
       return new Response(
         JSON.stringify({ error: 'Method Not Allowed' }),
-        { status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 405, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -37,7 +34,7 @@ serve(async (req) => {
     if (!authHeader) {
       return new Response(
         JSON.stringify({ error: 'Missing authorization header' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 401, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -52,7 +49,7 @@ serve(async (req) => {
     if (userError || !user) {
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 401, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -93,7 +90,7 @@ serve(async (req) => {
             error: 'You already have a phone number assigned. Contact an admin to change it.',
             phone_number: existingNumber.twilio_phone_number
           }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 400, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
         );
       }
     }
@@ -114,7 +111,7 @@ serve(async (req) => {
     if (!twilioAccountSid || !twilioAuthToken) {
       return new Response(
         JSON.stringify({ error: 'Twilio configuration error' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 500, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -132,7 +129,7 @@ serve(async (req) => {
       console.error('Failed to search numbers:', errorText);
       return new Response(
         JSON.stringify({ error: 'Failed to find available phone numbers' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 500, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -140,7 +137,7 @@ serve(async (req) => {
     if (!availableNumbers.available_phone_numbers?.length) {
       return new Response(
         JSON.stringify({ error: 'No phone numbers available' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 500, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -176,14 +173,14 @@ serve(async (req) => {
               error: 'twilio_trial_limit',
               message: 'Twilio trial account limit reached. Release existing number or upgrade Twilio.',
             }),
-            { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            { status: 402, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
           );
         }
       } catch (_) {}
 
       return new Response(
         JSON.stringify({ error: 'Failed to purchase phone number', details: errorText }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 500, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -207,7 +204,7 @@ serve(async (req) => {
       console.error('Failed to store phone number:', insertError);
       return new Response(
         JSON.stringify({ error: 'Failed to save phone number' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 500, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -218,14 +215,14 @@ serve(async (req) => {
         twilio_sid: twilioSid,
         contractor_id: targetUserId,
       }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 200, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
     console.error('Error provisioning Twilio number:', error);
     return new Response(
       JSON.stringify({ error: 'Internal server error', message: error instanceof Error ? error.message : 'Unknown error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
     );
   }
 });

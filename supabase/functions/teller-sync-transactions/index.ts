@@ -1,9 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
-};
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
 /**
  * Ensure certificate/private key are valid PEM strings.
@@ -63,14 +60,14 @@ async function tellerFetch(url: string, accessToken: string, cert: string, key: 
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: buildCorsHeaders(req) });
   }
 
   try {
     const authHeader = req.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 401, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -85,7 +82,7 @@ Deno.serve(async (req) => {
     if (authError || !user) {
       console.error('Auth error:', authError);
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 401, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -97,7 +94,7 @@ Deno.serve(async (req) => {
     if (!rawCert || !rawKey) {
       console.error('TELLER_CERTIFICATE or TELLER_PRIVATE_KEY not configured');
       return new Response(JSON.stringify({ error: 'mTLS certificates not configured' }), {
-        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -118,7 +115,7 @@ Deno.serve(async (req) => {
 
     if (!connections?.length) {
       return new Response(JSON.stringify({ synced: 0, message: 'No active connections' }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -231,12 +228,12 @@ Deno.serve(async (req) => {
     console.log('Sync summary:', JSON.stringify(response));
 
     return new Response(JSON.stringify(response), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
     });
   } catch (error: any) {
     console.error('Teller sync transactions error:', error);
     return new Response(JSON.stringify({ error: error.message }), {
-      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 500, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
     });
   }
 });

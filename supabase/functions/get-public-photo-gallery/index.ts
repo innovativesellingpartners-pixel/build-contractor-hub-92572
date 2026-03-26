@@ -1,14 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'npm:@supabase/supabase-js@2.58.0';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
-};
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: buildCorsHeaders(req) });
   }
 
   try {
@@ -17,7 +14,7 @@ serve(async (req) => {
     if (!token) {
       return new Response(
         JSON.stringify({ error: 'Token is required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -35,7 +32,7 @@ serve(async (req) => {
     if (reportError || !report) {
       return new Response(
         JSON.stringify({ error: 'Photo report not found' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 404, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -98,13 +95,13 @@ serve(async (req) => {
         },
         photos,
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
     );
   } catch (err) {
     console.error('get-public-photo-gallery error:', err);
     return new Response(
       JSON.stringify({ error: 'Internal server error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
     );
   }
 });

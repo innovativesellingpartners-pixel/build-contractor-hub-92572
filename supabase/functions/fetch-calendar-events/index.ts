@@ -1,10 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
 // Decode token from various formats (hex-encoded, Buffer, or plain string)
 function decodeToken(token: any): string {
@@ -40,7 +37,7 @@ function decodeToken(token: any): string {
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: buildCorsHeaders(req) });
   }
 
   try {
@@ -48,7 +45,7 @@ serve(async (req) => {
     if (!authHeader) {
       return new Response(JSON.stringify({ error: 'No authorization header' }), {
         status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -66,7 +63,7 @@ serve(async (req) => {
       console.error('Auth error:', userError);
       return new Response(JSON.stringify({ error: 'Invalid token' }), {
         status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -83,14 +80,14 @@ serve(async (req) => {
       console.error('Error fetching connections:', connError);
       return new Response(JSON.stringify({ error: 'Failed to fetch connections' }), {
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
     if (!connections || connections.length === 0) {
       return new Response(JSON.stringify({ events: [], message: 'No calendars connected' }), {
         status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -168,7 +165,7 @@ serve(async (req) => {
 
     return new Response(JSON.stringify({ events: allEvents }), {
       status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
     });
 
   } catch (error: unknown) {
@@ -176,7 +173,7 @@ serve(async (req) => {
     const errorMessage = error instanceof Error ? error.message : 'Server error';
     return new Response(JSON.stringify({ error: errorMessage }), {
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
     });
   }
 });

@@ -1,11 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
 const REFINEMENT_SYSTEM_PROMPT = `You are a bilingual English-Spanish construction industry expert. You are reviewing a translation of a contractor's estimate that will be sent to an English-speaking customer. Your job is to: 1) Fix any mistranslations, especially construction-specific terminology. 2) Ensure all construction terms use standard American English trade terminology (e.g., 'drywall' not 'plasterboard', 'grout' not 'filler', 'baseboard' not 'skirting board', 'dumpster' not 'skip'). 3) Make the English read naturally and professionally, as if a native English-speaking contractor wrote it. 4) Preserve all numbers, measurements, dollar amounts, dates, names, and addresses exactly as they are — do not translate or alter these. 5) Keep the same structure and line-by-line format as the original. Return ONLY valid JSON with the same keys and corrected English values — no explanations or commentary.
 
@@ -14,7 +10,7 @@ lechada = grout, tablero de yeso = drywall, zócalo = baseboard, moldura de coro
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: buildCorsHeaders(req) });
   }
 
   try {
@@ -23,7 +19,7 @@ serve(async (req) => {
     if (!authHeader) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -37,7 +33,7 @@ serve(async (req) => {
     if (authError || !user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -46,7 +42,7 @@ serve(async (req) => {
     if (!texts || !sourceLang || !targetLang) {
       return new Response(
         JSON.stringify({ error: "Missing required fields: texts, sourceLang, targetLang" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -54,7 +50,7 @@ serve(async (req) => {
     if (!LOVABLE_API_KEY) {
       return new Response(JSON.stringify({ error: "LOVABLE_API_KEY is not configured" }), {
         status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -104,20 +100,20 @@ You will receive a JSON object where each key maps to a text value. Return a JSO
       if (baseResponse.status === 429) {
         return new Response(
           JSON.stringify({ error: "Rate limit exceeded. Please try again in a moment." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          { status: 429, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
         );
       }
       if (baseResponse.status === 402) {
         return new Response(
           JSON.stringify({ error: "Translation service requires additional credits." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          { status: 402, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
         );
       }
       const errText = await baseResponse.text();
       console.error("Base translation error:", baseResponse.status, errText);
       return new Response(
         JSON.stringify({ error: "Translation service unavailable" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 500, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -132,7 +128,7 @@ You will receive a JSON object where each key maps to a text value. Return a JSO
       console.error("Failed to parse base translation:", baseContent);
       return new Response(
         JSON.stringify({ error: "Failed to parse base translation result" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 500, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -209,13 +205,13 @@ You will receive a JSON object where each key maps to a text value. Return a JSO
       refinedFields,
     }), {
       status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
     });
   } catch (error) {
     console.error("Translation error:", error);
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
     );
   }
 });

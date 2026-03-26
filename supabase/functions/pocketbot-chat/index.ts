@@ -2,10 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.58.0";
 import { jsPDF } from "npm:jspdf@2.5.2";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
 const RATE_LIMIT_PER_DAY = 50;
 const FREE_USER_LIMIT = 3;
@@ -51,7 +48,7 @@ const generatePDF = (content: { title: string; sections: Array<{ heading: string
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: buildCorsHeaders(req) });
   }
 
   try {
@@ -62,7 +59,7 @@ serve(async (req) => {
         JSON.stringify({ error: "Authentication required" }),
         {
           status: 401,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
         }
       );
     }
@@ -83,7 +80,7 @@ serve(async (req) => {
         JSON.stringify({ error: "Invalid authentication" }),
         {
           status: 401,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
         }
       );
     }
@@ -149,7 +146,7 @@ serve(async (req) => {
           }),
           {
             status: 429,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
           }
         );
       } else {
@@ -166,14 +163,14 @@ serve(async (req) => {
     if (!messages || !Array.isArray(messages)) {
       return new Response(
         JSON.stringify({ error: 'Invalid messages format' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
     if (messages.length > 50) {
       return new Response(
         JSON.stringify({ error: 'Message history exceeds 50 messages limit' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -712,7 +709,7 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
           JSON.stringify({ error: "Rate limits exceeded, please try again later." }),
           {
             status: 429,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
           }
         );
       }
@@ -721,7 +718,7 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
           JSON.stringify({ error: "Payment required, please add funds to your Lovable AI workspace." }),
           {
             status: 402,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
           }
         );
       }
@@ -731,7 +728,7 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
         JSON.stringify({ error: "AI gateway error" }),
         {
           status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
         }
       );
     }
@@ -762,7 +759,7 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
               fileName: `${args.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`
             }),
             {
-              headers: { ...corsHeaders, "Content-Type": "application/json" },
+              headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
             }
           );
         }
@@ -788,7 +785,7 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
                 jobData: args
               }),
               {
-                headers: { ...corsHeaders, "Content-Type": "application/json" },
+                headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
               }
             );
           } catch (parseError) {
@@ -799,7 +796,7 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
                 content: "I had trouble parsing the job data. Could you please try again with more detail?"
               }),
               {
-                headers: { ...corsHeaders, "Content-Type": "application/json" },
+                headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
               }
             );
           }
@@ -866,7 +863,7 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
                   content: "I had trouble searching the product catalog. Please try again.",
                   products: []
                 }),
-                { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+                { headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
               );
             }
 
@@ -896,7 +893,7 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
                   content: noResultsMsg,
                   products: []
                 }),
-                { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+                { headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
               );
             }
 
@@ -949,7 +946,7 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
                 content: summaryMsg,
                 products: products
               }),
-              { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+              { headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
             );
           } catch (parseError) {
             console.error("Error in search_products:", parseError);
@@ -959,7 +956,7 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
                 content: "I had trouble searching for products. Please try again.",
                 products: []
               }),
-              { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+              { headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
             );
           }
         }
@@ -992,7 +989,7 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
                   content: `I tried to add the task "${args.title}" but encountered an error. Please try again or add it manually in your Tasks section.`
                 }),
                 {
-                  headers: { ...corsHeaders, "Content-Type": "application/json" },
+                  headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
                 }
               );
             }
@@ -1016,7 +1013,7 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
                 task: taskData
               }),
               {
-                headers: { ...corsHeaders, "Content-Type": "application/json" },
+                headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
               }
             );
           } catch (parseError) {
@@ -1027,7 +1024,7 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
                 content: "I had trouble understanding the task details. Could you please try again?"
               }),
               {
-                headers: { ...corsHeaders, "Content-Type": "application/json" },
+                headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
               }
             );
           }
@@ -1070,7 +1067,7 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
                   type: "crm_action_error",
                   content: `I tried to create a lead for "${args.name}" but encountered an error: ${leadError.message}. Please try again or create it manually in your Leads section.`
                 }),
-                { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+                { headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
               );
             }
             
@@ -1082,13 +1079,13 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
                 recordId: leadData.id,
                 navigationPath: `/dashboard/leads`
               }),
-              { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+              { headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
             );
           } catch (parseError) {
             console.error("Error in create_lead:", parseError);
             return new Response(
               JSON.stringify({ type: "crm_action_error", content: "I had trouble creating the lead. Could you please try again?" }),
-              { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+              { headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
             );
           }
         }
@@ -1126,7 +1123,7 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
                   type: "crm_action_error",
                   content: `I tried to create a customer "${args.name}" but encountered an error: ${customerError.message}. Please try again or create it manually.`
                 }),
-                { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+                { headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
               );
             }
             
@@ -1138,13 +1135,13 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
                 recordId: customerData.id,
                 navigationPath: `/dashboard/customers`
               }),
-              { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+              { headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
             );
           } catch (parseError) {
             console.error("Error in create_customer:", parseError);
             return new Response(
               JSON.stringify({ type: "crm_action_error", content: "I had trouble creating the customer. Could you please try again?" }),
-              { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+              { headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
             );
           }
         }
@@ -1182,7 +1179,7 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
                   type: "crm_action_error",
                   content: `I tried to create a job "${args.project_name}" but encountered an error: ${jobError.message}. Please try again or create it manually.`
                 }),
-                { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+                { headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
               );
             }
             
@@ -1200,13 +1197,13 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
                 recordId: jobData.id,
                 navigationPath: `/dashboard/jobs/${jobData.id}`
               }),
-              { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+              { headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
             );
           } catch (parseError) {
             console.error("Error in create_job:", parseError);
             return new Response(
               JSON.stringify({ type: "crm_action_error", content: "I had trouble creating the job. Could you please try again?" }),
-              { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+              { headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
             );
           }
         }
@@ -1245,7 +1242,7 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
                   type: "crm_action_error",
                   content: `I tried to create an estimate "${args.title}" but encountered an error: ${estimateError.message}. Please try again or create it manually.`
                 }),
-                { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+                { headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
               );
             }
             
@@ -1263,13 +1260,13 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
                 recordId: estimateData.id,
                 navigationPath: `/dashboard/estimates/${estimateData.id}`
               }),
-              { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+              { headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
             );
           } catch (parseError) {
             console.error("Error in create_estimate:", parseError);
             return new Response(
               JSON.stringify({ type: "crm_action_error", content: "I had trouble creating the estimate. Could you please try again?" }),
-              { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+              { headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
             );
           }
         }
@@ -1305,7 +1302,7 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
                   type: "crm_action_error",
                   content: `I tried to create a customer portal but encountered an error: ${portalError.message}. Make sure you provided a valid customer ID.`
                 }),
-                { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+                { headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
               );
             }
             
@@ -1319,13 +1316,13 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
                 recordId: portalData.id,
                 navigationPath: `/dashboard/customers`
               }),
-              { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+              { headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
             );
           } catch (parseError) {
             console.error("Error in create_customer_portal:", parseError);
             return new Response(
               JSON.stringify({ type: "crm_action_error", content: "I had trouble creating the customer portal. Could you please try again with a valid customer ID?" }),
-              { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+              { headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
             );
           }
         }
@@ -1337,7 +1334,7 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
       return new Response(
         JSON.stringify({ content: accumulatedContent }),
         {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
         }
       );
     }
@@ -1364,7 +1361,7 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
     });
 
     return new Response(streamResponse.body, {
-      headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+      headers: { ...buildCorsHeaders(req), "Content-Type": "text/event-stream" },
     });
   } catch (error) {
     console.error("Chat error:", error);
@@ -1372,7 +1369,7 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
       JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
       {
         status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
       }
     );
   }

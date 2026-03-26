@@ -1,16 +1,13 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
 serve(async (req) => {
   const startTime = Date.now();
   
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: buildCorsHeaders(req) });
   }
 
   try {
@@ -21,7 +18,7 @@ serve(async (req) => {
     if (!placeId) {
       return new Response(
         JSON.stringify({ error: 'placeId is required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -30,7 +27,7 @@ serve(async (req) => {
       console.error('GOOGLE_PLACES_API_KEY not configured');
       return new Response(
         JSON.stringify({ error: 'Places API not configured' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 500, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -50,7 +47,7 @@ serve(async (req) => {
       console.error('Google Places Details error:', data.status, data.error_message);
       return new Response(
         JSON.stringify({ error: data.error_message || 'Failed to fetch place details' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -99,13 +96,13 @@ serve(async (req) => {
         placeId: result.place_id,
         source: 'geo_autocomplete',
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
     );
   } catch (error) {
     console.error('Places details error:', error);
     return new Response(
       JSON.stringify({ error: 'Failed to fetch place details' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
     );
   }
 });

@@ -2,15 +2,12 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: buildCorsHeaders(req) });
   }
 
   try {
@@ -31,7 +28,7 @@ serve(async (req) => {
       console.error('User authentication error:', userError);
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -40,7 +37,7 @@ serve(async (req) => {
     if (!enrollmentId) {
       return new Response(JSON.stringify({ error: 'Enrollment ID is required' }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -69,14 +66,14 @@ serve(async (req) => {
       console.error('Error fetching notes:', notesError);
       return new Response(JSON.stringify({ error: 'Failed to fetch notes' }), {
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
     if (!notes || notes.length === 0) {
       return new Response(JSON.stringify({ error: 'No notes found' }), {
         status: 404,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -100,7 +97,7 @@ serve(async (req) => {
 
       return new Response(textContent, {
         headers: {
-          ...corsHeaders,
+          ...buildCorsHeaders(req),
           'Content-Type': 'text/plain',
           'Content-Disposition': `attachment; filename="${courseName.replace(/[^\w\s-]/g, '')}-notes.txt"`,
         },
@@ -120,7 +117,7 @@ serve(async (req) => {
       }))
     }), {
       headers: {
-        ...corsHeaders,
+        ...buildCorsHeaders(req),
         'Content-Type': 'application/json',
         'Content-Disposition': `attachment; filename="${courseName.replace(/[^\w\s-]/g, '')}-notes.json"`,
       },
@@ -130,7 +127,7 @@ serve(async (req) => {
     console.error('Export notes error:', error);
     return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
     });
   }
 });

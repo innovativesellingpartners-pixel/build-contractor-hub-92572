@@ -1,9 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
 const SYSTEM_PROMPT = `You are a real-time sales coach for contractors in the trades industry (HVAC, plumbing, electrical, roofing, general construction, etc.). You are listening to a live conversation between a contractor/salesperson and a prospective customer.
 
@@ -26,7 +23,7 @@ Return your response as a JSON object with a "suggestions" array, each with a "t
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: buildCorsHeaders(req) });
   }
 
   try {
@@ -35,7 +32,7 @@ serve(async (req) => {
     if (!transcript && !latestSegment) {
       return new Response(
         JSON.stringify({ suggestions: [] }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -106,13 +103,13 @@ Based on this conversation, provide 2-3 dialogue suggestions the contractor/sale
       if (response.status === 429) {
         return new Response(
           JSON.stringify({ error: "Rate limit exceeded. Please wait a moment.", suggestions: [] }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          { status: 429, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
         );
       }
       if (response.status === 402) {
         return new Response(
           JSON.stringify({ error: "AI usage limit reached.", suggestions: [] }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          { status: 402, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
         );
       }
       const errorText = await response.text();
@@ -127,7 +124,7 @@ Based on this conversation, provide 2-3 dialogue suggestions the contractor/sale
     if (toolCall?.function?.arguments) {
       const parsed = JSON.parse(toolCall.function.arguments);
       return new Response(JSON.stringify(parsed), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -137,7 +134,7 @@ Based on this conversation, provide 2-3 dialogue suggestions the contractor/sale
       try {
         const parsed = JSON.parse(content);
         return new Response(JSON.stringify(parsed), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
         });
       } catch {
         // Return empty suggestions if parsing fails
@@ -146,7 +143,7 @@ Based on this conversation, provide 2-3 dialogue suggestions the contractor/sale
 
     return new Response(
       JSON.stringify({ suggestions: [] }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
     );
   } catch (error) {
     console.error("Sales coach error:", error);
@@ -154,7 +151,7 @@ Based on this conversation, provide 2-3 dialogue suggestions the contractor/sale
       JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error", suggestions: [] }),
       {
         status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
       }
     );
   }

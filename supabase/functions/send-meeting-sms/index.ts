@@ -1,10 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
 interface SMSRequest {
   meetingId: string;
@@ -109,7 +106,7 @@ function formatPhoneNumber(phone: string): string {
 
 serve(async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: buildCorsHeaders(req) });
   }
 
   try {
@@ -121,7 +118,7 @@ serve(async (req: Request): Promise<Response> => {
     if (!authHeader) {
       return new Response(JSON.stringify({ error: "No authorization header" }), {
         status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -132,7 +129,7 @@ serve(async (req: Request): Promise<Response> => {
     if (authError || !user) {
       return new Response(JSON.stringify({ error: "Invalid token" }), {
         status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -142,7 +139,7 @@ serve(async (req: Request): Promise<Response> => {
     if (!recipientPhone) {
       return new Response(JSON.stringify({ error: "Recipient phone is required" }), {
         status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -156,7 +153,7 @@ serve(async (req: Request): Promise<Response> => {
         success: false 
       }), {
         status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
     
@@ -255,14 +252,14 @@ ${contractorPhone ? `Need to reach us? Call: ${contractorPhone}` : 'See you soon
       }),
       {
         status: smsResult.success ? 200 : 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
       }
     );
   } catch (error: any) {
     console.error("Error in send-meeting-sms:", error);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 });

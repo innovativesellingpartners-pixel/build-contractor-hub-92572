@@ -1,14 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.58.0";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: buildCorsHeaders(req) });
   }
 
   try {
@@ -16,7 +13,7 @@ serve(async (req) => {
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       return new Response(JSON.stringify({ error: 'Auth required' }), {
-        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        status: 401, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' }
       });
     }
 
@@ -29,7 +26,7 @@ serve(async (req) => {
     const { data: { user }, error: authError } = await userClient.auth.getUser();
     if (authError || !user) {
       return new Response(JSON.stringify({ error: 'Invalid auth' }), {
-        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        status: 401, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' }
       });
     }
 
@@ -48,7 +45,7 @@ serve(async (req) => {
     const isAdmin = roleData || user.email?.endsWith('@myct1.com');
     if (!isAdmin) {
       return new Response(JSON.stringify({ error: 'Admin access required' }), {
-        status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        status: 403, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' }
       });
     }
 
@@ -60,7 +57,7 @@ serve(async (req) => {
         error: 'Lowe\'s API credentials not configured',
         details: 'LOWES_CLIENT_ID and LOWES_CLIENT_SECRET must be set'
       }), {
-        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        status: 500, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' }
       });
     }
 
@@ -85,7 +82,7 @@ serve(async (req) => {
         error: `Lowe's auth failed: ${tokenResponse.status}`,
         details: errorText
       }), {
-        status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        status: 200, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' }
       });
     }
 
@@ -99,7 +96,7 @@ serve(async (req) => {
       message: 'Lowe\'s authentication successful',
       tested_at: new Date().toISOString()
     }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' }
     });
 
   } catch (error) {
@@ -108,7 +105,7 @@ serve(async (req) => {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error' 
     }), {
-      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      status: 500, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' }
     });
   }
 });

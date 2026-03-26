@@ -1,16 +1,12 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "GET, PUT, DELETE, OPTIONS",
-};
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: buildCorsHeaders(req) });
   }
 
   try {
@@ -23,7 +19,7 @@ serve(async (req) => {
     if (!authHeader) {
       return new Response(
         JSON.stringify({ error: "No authorization header" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 401, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -33,7 +29,7 @@ serve(async (req) => {
     if (authError || !user) {
       return new Response(
         JSON.stringify({ error: "Invalid token" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 401, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -45,7 +41,7 @@ serve(async (req) => {
     if (!estimateId) {
       return new Response(
         JSON.stringify({ error: "estimateId is required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -59,14 +55,14 @@ serve(async (req) => {
     if (estimateError || !estimate) {
       return new Response(
         JSON.stringify({ error: "Estimate not found" }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 404, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
     if (estimate.user_id !== user.id) {
       return new Response(
         JSON.stringify({ error: "Not authorized to access this estimate" }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 403, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -86,7 +82,7 @@ serve(async (req) => {
             // No draft found
             return new Response(
               JSON.stringify({ error: "No draft found" }),
-              { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+              { status: 404, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
             );
           }
           throw draftError;
@@ -99,7 +95,7 @@ serve(async (req) => {
             version: draft.version,
             updatedAt: draft.updated_at,
           }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          { headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
         );
       }
 
@@ -110,7 +106,7 @@ serve(async (req) => {
         if (!payload) {
           return new Response(
             JSON.stringify({ error: "payload is required" }),
-            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            { status: 400, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
           );
         }
 
@@ -131,7 +127,7 @@ serve(async (req) => {
                 serverVersion: existingDraft.version,
                 code: "VERSION_CONFLICT",
               }),
-              { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+              { status: 409, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
             );
           }
 
@@ -155,7 +151,7 @@ serve(async (req) => {
               version: updatedDraft.version,
               updatedAt: updatedDraft.updated_at,
             }),
-            { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            { headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
           );
         } else {
           // Create new draft
@@ -179,7 +175,7 @@ serve(async (req) => {
               version: newDraft.version,
               updatedAt: newDraft.updated_at,
             }),
-            { status: 201, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            { status: 201, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
           );
         }
       }
@@ -195,14 +191,14 @@ serve(async (req) => {
 
         return new Response(
           JSON.stringify({ success: true }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          { headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
         );
       }
 
       default:
         return new Response(
           JSON.stringify({ error: "Method not allowed" }),
-          { status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          { status: 405, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
         );
     }
   } catch (error: unknown) {
@@ -210,7 +206,7 @@ serve(async (req) => {
     console.error("Error in estimate-draft function:", error);
     return new Response(
       JSON.stringify({ error: errorMessage }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
     );
   }
 });

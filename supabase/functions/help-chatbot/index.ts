@@ -1,14 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
-};
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: buildCorsHeaders(req) });
   }
 
   try {
@@ -293,7 +290,7 @@ ${articlesContext}${aiTopicContext}`;
           suggestSupport: true 
         }), {
           status: 200,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
         });
       }
       if (response.status === 402) {
@@ -302,7 +299,7 @@ ${articlesContext}${aiTopicContext}`;
           suggestSupport: true 
         }), {
           status: 200,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
         });
       }
       const errorText = await response.text();
@@ -330,7 +327,7 @@ ${articlesContext}${aiTopicContext}`;
       suggestSupport,
       searchResults: searchResults?.slice(0, 5) || [],
     }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
     });
   } catch (error) {
     console.error('Help chatbot error:', error);
@@ -340,7 +337,7 @@ ${articlesContext}${aiTopicContext}`;
       error: error instanceof Error ? error.message : 'Unknown error' 
     }), {
       status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
     });
   }
 });

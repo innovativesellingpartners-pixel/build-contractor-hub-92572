@@ -1,11 +1,11 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
-import { corsHeaders } from '../_shared/cors.ts';
+import { buildCorsHeaders } from '../_shared/cors.ts';
 import { getPlaidClient, getCurrentContractorId, validatePlaidConfig } from '../_shared/stripe-plaid.ts';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: buildCorsHeaders(req) });
   }
 
   try {
@@ -65,7 +65,7 @@ serve(async (req) => {
         item_id,
         institution_name: institution_name || 'Unknown Bank',
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      { headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' }, status: 200 }
     );
 
   } catch (error) {
@@ -73,7 +73,7 @@ serve(async (req) => {
     const message = error instanceof Error ? error.message : 'Unknown error';
     return new Response(
       JSON.stringify({ error: message }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      { headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' }, status: 400 }
     );
   }
 });

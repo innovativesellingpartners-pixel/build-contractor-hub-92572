@@ -1,13 +1,10 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: buildCorsHeaders(req) });
   }
 
   try {
@@ -16,7 +13,7 @@ serve(async (req) => {
     if (!recipientEmail || !reviewUrl) {
       return new Response(
         JSON.stringify({ success: false, error: "Missing required fields" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -26,7 +23,7 @@ serve(async (req) => {
     if (!resendApiKey) {
       return new Response(
         JSON.stringify({ success: false, error: "Email service not configured" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 500, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -82,19 +79,19 @@ serve(async (req) => {
       console.error("Resend error:", errorText);
       return new Response(
         JSON.stringify({ success: false, error: "Failed to send email" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 500, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
     return new Response(
       JSON.stringify({ success: true }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
     );
   } catch (error) {
     console.error("Error:", error);
     return new Response(
       JSON.stringify({ success: false, error: error.message }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
     );
   }
 });

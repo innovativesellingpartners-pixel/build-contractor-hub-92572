@@ -1,11 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import Stripe from "https://esm.sh/stripe@14.10.0";
-import { corsHeaders } from "../_shared/cors.ts";
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: buildCorsHeaders(req) });
   }
 
   try {
@@ -28,7 +28,7 @@ serve(async (req) => {
     if (authError || !user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -36,7 +36,7 @@ serve(async (req) => {
     if (!billing_cycle || !["monthly", "annual"].includes(billing_cycle)) {
       return new Response(JSON.stringify({ error: "billing_cycle must be 'monthly' or 'annual'" }), {
         status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -117,13 +117,13 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({ url: session.url, sessionId: session.id }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
+      { headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" }, status: 200 }
     );
   } catch (error: any) {
     console.error("Error in voice-ai-checkout:", error);
     return new Response(
       JSON.stringify({ error: error.message }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
+      { headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" }, status: 400 }
     );
   }
 });

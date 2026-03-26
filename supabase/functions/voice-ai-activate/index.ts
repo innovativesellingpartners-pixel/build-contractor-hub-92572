@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
-import { corsHeaders } from "../_shared/cors.ts";
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
 /**
  * Activates Voice AI for a contractor:
@@ -15,7 +15,7 @@ import { corsHeaders } from "../_shared/cors.ts";
  */
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: buildCorsHeaders(req) });
   }
 
   try {
@@ -29,7 +29,7 @@ serve(async (req) => {
     if (!contractor_id) {
       return new Response(JSON.stringify({ error: "contractor_id required" }), {
         status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -72,7 +72,7 @@ serve(async (req) => {
     if (!isAuthorized) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -177,13 +177,13 @@ serve(async (req) => {
         voice_ai_enabled: true,
         message: "Voice AI activated. Forge deployment initiated.",
       }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 200, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
     );
   } catch (error: any) {
     console.error("Error in voice-ai-activate:", error);
     return new Response(
       JSON.stringify({ error: error.message }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
     );
   }
 });

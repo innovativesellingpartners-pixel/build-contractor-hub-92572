@@ -1,14 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: buildCorsHeaders(req) });
   }
 
   try {
@@ -20,7 +17,7 @@ serve(async (req) => {
         JSON.stringify({ error: 'Missing recording URL' }), 
         { 
           status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' }
         }
       );
     }
@@ -53,7 +50,7 @@ serve(async (req) => {
     // Stream it back to the client
     return new Response(audioData, {
       headers: {
-        ...corsHeaders,
+        ...buildCorsHeaders(req),
         'Content-Type': 'audio/mpeg',
         'Content-Length': audioData.byteLength.toString(),
         'Cache-Control': 'public, max-age=86400', // Cache for 24 hours
@@ -67,7 +64,7 @@ serve(async (req) => {
       JSON.stringify({ error: errorMessage }), 
       { 
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' }
       }
     );
   }
