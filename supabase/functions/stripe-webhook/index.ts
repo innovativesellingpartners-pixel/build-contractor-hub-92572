@@ -88,6 +88,11 @@ serve(async (req) => {
         console.log(`Unhandled event type: ${event.type}`);
     }
 
+    // Record event as processed
+    await supabase
+      .from('stripe_webhook_events')
+      .insert({ stripe_event_id: event.id, event_type: event.type });
+
     return new Response(
       JSON.stringify({ received: true }),
       { status: 200 }
