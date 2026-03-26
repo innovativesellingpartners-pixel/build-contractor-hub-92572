@@ -113,6 +113,7 @@ const navItems = [
   { id: 'crews' as Section, label: 'Crews', icon: Shield },
   { id: 'documents' as Section, label: 'Documents', icon: FileText },
   { id: 'network' as Section, label: 'Contractor Network', icon: Users },
+  { id: 'team' as Section, label: 'Team', icon: Users },
 ];
 
 // Component moved to accept props - see above
