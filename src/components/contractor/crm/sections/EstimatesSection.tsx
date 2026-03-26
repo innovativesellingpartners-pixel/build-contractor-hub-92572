@@ -489,6 +489,10 @@ export default function EstimatesSection({ onSectionChange, initialEstimateId, o
             <LayoutTemplate className="h-4 w-4 mr-2" />
             Templates
           </Button>
+          <Button variant="outline" onClick={() => setShowAIGenerator(true)} className="w-full sm:w-auto">
+            <Sparkles className="h-4 w-4 mr-2" />
+            AI Estimate
+          </Button>
           <Button onClick={handleNew} className="w-full sm:w-auto">
             <Plus className="h-4 w-4 mr-2" />
             Create Estimate
