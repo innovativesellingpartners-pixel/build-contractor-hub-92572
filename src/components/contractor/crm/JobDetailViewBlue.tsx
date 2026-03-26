@@ -538,36 +538,22 @@ function PhotosTabContent({ jobId, jobName, customerName }: { jobId: string; job
   );
 }
 
-// Daily Logs Tab (simplified)
+// Daily Logs Tab — enhanced with form, list, photos, signature, crew checkboxes
 function LogsTabContent({ jobId, jobName }: { jobId: string; jobName: string }) {
   const { logs, addLog, deleteLog } = useDailyLogs(jobId);
+  const { crews } = useCrews();
   const [isAdding, setIsAdding] = useState(false);
   const [showSendDialog, setShowSendDialog] = useState(false);
-  const [newLog, setNewLog] = useState({
-    log_date: new Date().toISOString().split('T')[0],
-    weather: '',
-    crew_count: '',
-    hours_worked: '',
-    work_completed: '',
-  });
 
-  const handleAddLog = async () => {
-    await addLog({
-      log_date: newLog.log_date,
-      weather: newLog.weather,
-      crew_count: parseInt(newLog.crew_count) || undefined,
-      hours_worked: parseFloat(newLog.hours_worked) || undefined,
-      work_completed: newLog.work_completed,
+  // Build crew member names from all crews
+  const crewMemberNames = useMemo(() => {
+    const names = new Set<string>();
+    crews.forEach(c => {
+      if (c.foreman_name) names.add(c.foreman_name);
+      (c.members ?? []).forEach((m: any) => { if (m.name) names.add(m.name); });
     });
-    setNewLog({
-      log_date: new Date().toISOString().split('T')[0],
-      weather: '',
-      crew_count: '',
-      hours_worked: '',
-      work_completed: '',
-    });
-    setIsAdding(false);
-  };
+    return Array.from(names);
+  }, [crews]);
 
   return (
     <div className="p-4 space-y-4">
@@ -577,89 +563,24 @@ function LogsTabContent({ jobId, jobName }: { jobId: string; jobName: string }) 
             <Mail className="h-4 w-4 mr-1" /> Send Logs
           </ActionButton>
         )}
-        <ActionButton variant="secondary" onClick={() => setIsAdding(!isAdding)}>
-          {isAdding ? 'Cancel' : 'Add Log'}
-        </ActionButton>
+        {!isAdding && (
+          <ActionButton variant="secondary" onClick={() => setIsAdding(true)}>
+            Add Log
+          </ActionButton>
+        )}
       </div>
 
       {isAdding && (
-        <InfoCard className="p-4 space-y-3 rounded-md">
-          <div className="grid grid-cols-2 gap-3">
-            <input
-              type="date"
-              className="px-3 py-2 border border-border rounded-md text-sm bg-background"
-              value={newLog.log_date}
-              onChange={(e) => setNewLog({ ...newLog, log_date: e.target.value })}
-            />
-            <input
-              type="text"
-              placeholder="Weather"
-              className="px-3 py-2 border border-border rounded-md text-sm bg-background"
-              value={newLog.weather}
-              onChange={(e) => setNewLog({ ...newLog, weather: e.target.value })}
-            />
-            <input
-              type="number"
-              placeholder="Crew"
-              className="px-3 py-2 border border-border rounded-md text-sm bg-background"
-              value={newLog.crew_count}
-              onChange={(e) => setNewLog({ ...newLog, crew_count: e.target.value })}
-            />
-            <input
-              type="number"
-              step="0.5"
-              placeholder="Hours"
-              className="px-3 py-2 border border-border rounded-md text-sm bg-background"
-              value={newLog.hours_worked}
-              onChange={(e) => setNewLog({ ...newLog, hours_worked: e.target.value })}
-            />
-          </div>
-          <textarea
-            placeholder="Work Completed"
-            className="w-full px-3 py-2 border border-border rounded-md text-sm bg-background"
-            rows={2}
-            value={newLog.work_completed}
-            onChange={(e) => setNewLog({ ...newLog, work_completed: e.target.value })}
-          />
-          <ActionButton variant="success" fullWidth onClick={handleAddLog}>
-            Save Log
-          </ActionButton>
-        </InfoCard>
+        <DailyLogForm
+          jobId={jobId}
+          jobName={jobName}
+          crewMembers={crewMemberNames}
+          onSave={addLog}
+          onCancel={() => setIsAdding(false)}
+        />
       )}
 
-      <div className="space-y-3">
-        {logs && logs.length > 0 ? (
-          logs.map((log) => (
-            <InfoCard key={log.id}>
-              <div className="p-4">
-                <div className="flex justify-between items-start mb-2">
-                  <p className="font-semibold text-slate-800">
-                    {format(new Date(log.log_date), 'EEEE, MMM d')}
-                  </p>
-                  <button
-                    onClick={() => deleteLog(log.id!)}
-                    className="text-xs text-red-500 hover:underline"
-                  >
-                    Delete
-                  </button>
-                </div>
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  {log.weather && <p><span className="text-muted-foreground">Weather:</span> {log.weather}</p>}
-                  {log.crew_count && <p><span className="text-muted-foreground">Crew:</span> {log.crew_count}</p>}
-                  {log.hours_worked && <p><span className="text-muted-foreground">Hours:</span> {log.hours_worked}</p>}
-                </div>
-                {log.work_completed && (
-                  <p className="text-sm mt-2 text-slate-600">{log.work_completed}</p>
-                )}
-              </div>
-            </InfoCard>
-          ))
-        ) : (
-          <div className="text-center py-8 text-slate-500 text-sm">
-            No daily logs yet.
-          </div>
-        )}
-      </div>
+      <DailyLogList logs={logs || []} onDelete={deleteLog} />
 
       <SendLogsDialog
         open={showSendDialog}
@@ -671,7 +592,6 @@ function LogsTabContent({ jobId, jobName }: { jobId: string; jobName: string }) 
     </div>
   );
 }
-
 export default function JobDetailViewBlue({
   job,
   open,
