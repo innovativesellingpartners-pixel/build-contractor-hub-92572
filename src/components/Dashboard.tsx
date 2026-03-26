@@ -68,8 +68,9 @@ import { CrewManagement } from "@/components/contractor/CrewManagement";
 import ReputationDashboard from "@/components/contractor/ReputationDashboard";
 import { NotificationBell } from "@/components/contractor/NotificationBell";
 import SubVendorPortal from "@/components/contractor/SubVendorPortal";
+import TeamManagement from "@/components/contractor/TeamManagement";
 
-type ActiveSection = 'training' | 'crm' | 'marketplace' | 'leads' | 'insurance' | 'account' | 'voiceai' | 'reporting' | 'tasks' | 'help' | 'connections' | 'crews' | 'reviews' | 'subs';
+type ActiveSection = 'training' | 'crm' | 'marketplace' | 'leads' | 'insurance' | 'account' | 'voiceai' | 'reporting' | 'tasks' | 'help' | 'connections' | 'crews' | 'reviews' | 'subs' | 'team';
 
 export function Dashboard() {
   const navigate = useNavigate();
