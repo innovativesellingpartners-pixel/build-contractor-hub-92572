@@ -136,7 +136,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (authStateInitialized) {
-        console.log('Initial session check skipped (already initialized by auth event)');
+        if (import.meta.env.DEV) console.log('Initial session check skipped (already initialized by auth event)');
         return;
       }
 
