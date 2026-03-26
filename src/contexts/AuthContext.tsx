@@ -212,7 +212,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signOut = async () => {
-    console.log('Signing out...');
+    if (import.meta.env.DEV) console.log('Signing out...');
     
     // Set guard to prevent onAuthStateChange from updating state during sign-out
     signingOutRef.current = true;
