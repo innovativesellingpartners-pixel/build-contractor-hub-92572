@@ -1147,25 +1147,50 @@ export type Database = {
         Row: {
           assigned_by: string | null
           assigned_date: string
+          crew_id: string | null
           crew_member_id: string
+          end_time: string | null
           id: string
           job_id: string
+          notes: string | null
+          start_time: string | null
+          status: string
+          user_id: string | null
         }
         Insert: {
           assigned_by?: string | null
           assigned_date?: string
+          crew_id?: string | null
           crew_member_id: string
+          end_time?: string | null
           id?: string
           job_id: string
+          notes?: string | null
+          start_time?: string | null
+          status?: string
+          user_id?: string | null
         }
         Update: {
           assigned_by?: string | null
           assigned_date?: string
+          crew_id?: string | null
           crew_member_id?: string
+          end_time?: string | null
           id?: string
           job_id?: string
+          notes?: string | null
+          start_time?: string | null
+          status?: string
+          user_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "crew_assignments_crew_id_fkey"
+            columns: ["crew_id"]
+            isOneToOne: false
+            referencedRelation: "crews"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "crew_assignments_crew_member_id_fkey"
             columns: ["crew_member_id"]
@@ -1280,10 +1305,14 @@ export type Database = {
           color: string | null
           created_at: string
           description: string | null
+          foreman_name: string | null
+          foreman_phone: string | null
           id: string
           is_active: boolean
           lead_crew_member_id: string | null
+          members: Json | null
           name: string
+          status: string
           updated_at: string
           user_id: string
         }
@@ -1291,10 +1320,14 @@ export type Database = {
           color?: string | null
           created_at?: string
           description?: string | null
+          foreman_name?: string | null
+          foreman_phone?: string | null
           id?: string
           is_active?: boolean
           lead_crew_member_id?: string | null
+          members?: Json | null
           name: string
+          status?: string
           updated_at?: string
           user_id: string
         }
@@ -1302,10 +1335,14 @@ export type Database = {
           color?: string | null
           created_at?: string
           description?: string | null
+          foreman_name?: string | null
+          foreman_phone?: string | null
           id?: string
           is_active?: boolean
           lead_crew_member_id?: string | null
+          members?: Json | null
           name?: string
+          status?: string
           updated_at?: string
           user_id?: string
         }
