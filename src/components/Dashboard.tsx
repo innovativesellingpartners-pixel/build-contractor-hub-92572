@@ -276,14 +276,14 @@ export function Dashboard() {
     });
   }, [signOut, toast]);
 
-  const getTierLabel = (tier?: string) => {
+  const getTierLabel = useCallback((tier?: string) => {
     switch (tier) {
       case 'launch': return 'LAUNCH Growth Starter';
       case 'growth': return 'Growth Business Builder';
       case 'accel': return 'Accel! Market Dominator';
       default: return 'LAUNCH Growth Starter';
     }
-  };
+  }, []);
 
   const getTierBadgeColor = (tier?: string) => {
     switch (tier) {
