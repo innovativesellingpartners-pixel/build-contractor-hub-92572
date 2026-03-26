@@ -235,7 +235,7 @@ export function Dashboard() {
     }
   }, []);
 
-  const handleChatButtonDragStart = (
+  const handleChatButtonDragStart = useCallback((
     e: React.MouseEvent<HTMLButtonElement> | React.TouchEvent<HTMLButtonElement>
   ) => {
     if (!chatButtonRef.current) return;
@@ -250,7 +250,7 @@ export function Dashboard() {
       y: point.clientY - rect.top,
     });
     setIsDraggingChatButton(true);
-  };
+  }, []);
 
   const handleChatButtonClick = () => {
     // Only toggle Pocket Agent if user didn't drag
