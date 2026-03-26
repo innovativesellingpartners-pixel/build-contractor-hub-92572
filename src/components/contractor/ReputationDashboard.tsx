@@ -37,6 +37,7 @@ export default function ReputationDashboard({ onBack }: { onBack?: () => void })
     },
     enabled: !!user?.id,
   });
+  const [showRequestDialog, setShowRequestDialog] = useState(false);
   const [selectedJobId, setSelectedJobId] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
