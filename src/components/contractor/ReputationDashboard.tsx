@@ -22,8 +22,21 @@ export default function ReputationDashboard({ onBack }: { onBack?: () => void })
   const { reviews, reviewRequests, reviewsLoading, sendReviewRequest, avgRating, ratingBreakdown, pendingRequests } = useReviews();
   const { jobs } = useJobs();
   const { customers } = useCustomers();
-  const { profile } = useProfile();
-  const [showRequestDialog, setShowRequestDialog] = useState(false);
+  const { user } = useAuth();
+
+  const { data: profile } = useQuery({
+    queryKey: ['profile-google', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data } = await supabase
+        .from('profiles')
+        .select('company_name, google_place_id')
+        .eq('id', user.id)
+        .single();
+      return data;
+    },
+    enabled: !!user?.id,
+  });
   const [selectedJobId, setSelectedJobId] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
