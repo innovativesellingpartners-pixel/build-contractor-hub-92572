@@ -65,8 +65,9 @@ import { PersonalTasks } from "@/components/contractor/PersonalTasks";
 import { ConnectionsHub } from "@/components/contractor/ConnectionsHub";
 import { CatalogAdminPanel } from "@/components/contractor/CatalogAdminPanel";
 import { CrewManagement } from "@/components/contractor/CrewManagement";
+import ReputationDashboard from "@/components/contractor/ReputationDashboard";
 
-type ActiveSection = 'training' | 'crm' | 'marketplace' | 'leads' | 'insurance' | 'account' | 'voiceai' | 'reporting' | 'tasks' | 'help' | 'connections' | 'crews';
+type ActiveSection = 'training' | 'crm' | 'marketplace' | 'leads' | 'insurance' | 'account' | 'voiceai' | 'reporting' | 'tasks' | 'help' | 'connections' | 'crews' | 'reviews';
 
 export function Dashboard() {
   const navigate = useNavigate();
@@ -520,6 +521,15 @@ export function Dashboard() {
                         className="mb-4 lg:hidden"
                       />
                       <CrewManagement />
+                    </div>
+                  )}
+                  {activeSection === 'reviews' && (
+                    <div className="p-3 md:p-4 lg:p-6 min-h-[400px] md:min-h-[600px] pb-20">
+                      <BackNavigation 
+                        onBackToDashboard={() => handleSectionChange('leads')}
+                        className="mb-4 lg:hidden"
+                      />
+                      <ReputationDashboard onBack={() => handleSectionChange('leads')} />
                     </div>
                   )}
                   {activeSection === 'marketplace' && (
