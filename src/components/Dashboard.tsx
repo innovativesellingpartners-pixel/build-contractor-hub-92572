@@ -64,8 +64,9 @@ import HelpCenter from "@/components/help/HelpCenter";
 import { PersonalTasks } from "@/components/contractor/PersonalTasks";
 import { ConnectionsHub } from "@/components/contractor/ConnectionsHub";
 import { CatalogAdminPanel } from "@/components/contractor/CatalogAdminPanel";
+import { CrewManagement } from "@/components/contractor/CrewManagement";
 
-type ActiveSection = 'training' | 'crm' | 'marketplace' | 'leads' | 'insurance' | 'account' | 'voiceai' | 'reporting' | 'tasks' | 'help' | 'connections';
+type ActiveSection = 'training' | 'crm' | 'marketplace' | 'leads' | 'insurance' | 'account' | 'voiceai' | 'reporting' | 'tasks' | 'help' | 'connections' | 'crews';
 
 export function Dashboard() {
   const navigate = useNavigate();
