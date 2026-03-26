@@ -64,8 +64,9 @@ import HelpCenter from "@/components/help/HelpCenter";
 import { PersonalTasks } from "@/components/contractor/PersonalTasks";
 import { ConnectionsHub } from "@/components/contractor/ConnectionsHub";
 import { CatalogAdminPanel } from "@/components/contractor/CatalogAdminPanel";
+import { CrewManagement } from "@/components/contractor/CrewManagement";
 
-type ActiveSection = 'training' | 'crm' | 'marketplace' | 'leads' | 'insurance' | 'account' | 'voiceai' | 'reporting' | 'tasks' | 'help' | 'connections';
+type ActiveSection = 'training' | 'crm' | 'marketplace' | 'leads' | 'insurance' | 'account' | 'voiceai' | 'reporting' | 'tasks' | 'help' | 'connections' | 'crews';
 
 export function Dashboard() {
   const navigate = useNavigate();
@@ -512,6 +513,15 @@ export function Dashboard() {
                       <PersonalTasks />
                     </div>
                   )}
+                  {activeSection === 'crews' && (
+                    <div className="p-3 md:p-4 lg:p-6 min-h-[400px] md:min-h-[600px] pb-20">
+                      <BackNavigation 
+                        onBackToDashboard={() => handleSectionChange('leads')}
+                        className="mb-4 lg:hidden"
+                      />
+                      <CrewManagement />
+                    </div>
+                  )}
                   {activeSection === 'marketplace' && (
                     <div className="p-3 md:p-4 lg:p-6 min-h-[400px] md:min-h-[600px] pb-20">
                       <BackNavigation 
@@ -924,6 +934,7 @@ function UnifiedHubSidebar({ activeHubSection, onHubSectionChange, onCrmSectionC
     { id: 'training', label: '5-Star Training', icon: BookOpen, feature: 'trainingHub' },
     { id: 'voiceai', label: 'Voice AI', icon: Bot, feature: 'aiAssistant' },
     { id: 'marketplace', label: 'Marketplace', icon: Store, feature: 'marketplace' },
+    { id: 'crews' as ActiveSection, label: 'Crews', icon: Users },
     { id: 'tasks', label: 'My Tasks', icon: ClipboardList },
     { id: 'insurance', label: 'Insurance', icon: Shield, feature: 'insurance' },
     { id: 'account', label: 'My Account', icon: User, feature: 'myAccount' },
@@ -1069,6 +1080,19 @@ function SidebarNav({ activeSection, setActiveSection, tierFeatures }: SidebarNa
         Reporting
       </Button>
       
+      <Button
+        variant={activeSection === 'crews' ? 'default' : 'ghost'}
+        className={`w-full justify-start transition-all ${
+          activeSection === 'crews' 
+            ? 'shadow-md' 
+            : 'hover:bg-red-50 hover:border-red-500 hover:text-black border border-transparent'
+        }`}
+        onClick={() => setActiveSection('crews')}
+      >
+        <Users className="h-4 w-4 mr-3" />
+        Crews
+      </Button>
+
       <Button
         variant={activeSection === 'tasks' ? 'default' : 'ghost'}
         className={`w-full justify-start transition-all ${
