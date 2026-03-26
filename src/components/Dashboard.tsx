@@ -68,8 +68,9 @@ import { CrewManagement } from "@/components/contractor/CrewManagement";
 import ReputationDashboard from "@/components/contractor/ReputationDashboard";
 import { NotificationBell } from "@/components/contractor/NotificationBell";
 import SubVendorPortal from "@/components/contractor/SubVendorPortal";
+import TeamManagement from "@/components/contractor/TeamManagement";
 
-type ActiveSection = 'training' | 'crm' | 'marketplace' | 'leads' | 'insurance' | 'account' | 'voiceai' | 'reporting' | 'tasks' | 'help' | 'connections' | 'crews' | 'reviews' | 'subs';
+type ActiveSection = 'training' | 'crm' | 'marketplace' | 'leads' | 'insurance' | 'account' | 'voiceai' | 'reporting' | 'tasks' | 'help' | 'connections' | 'crews' | 'reviews' | 'subs' | 'team';
 
 export function Dashboard() {
   const navigate = useNavigate();
@@ -546,6 +547,15 @@ export function Dashboard() {
                       <SubVendorPortal onBack={() => handleSectionChange('leads')} />
                     </div>
                   )}
+                  {activeSection === 'team' && (
+                    <div className="p-3 md:p-4 lg:p-6 min-h-[400px] md:min-h-[600px] pb-20">
+                      <BackNavigation 
+                        onBackToDashboard={() => handleSectionChange('leads')}
+                        className="mb-4 lg:hidden"
+                      />
+                      <TeamManagement onBack={() => handleSectionChange('leads')} />
+                    </div>
+                  )}
                   {activeSection === 'marketplace' && (
                     <div className="p-3 md:p-4 lg:p-6 min-h-[400px] md:min-h-[600px] pb-20">
                       <BackNavigation 
@@ -960,6 +970,7 @@ function UnifiedHubSidebar({ activeHubSection, onHubSectionChange, onCrmSectionC
     { id: 'marketplace', label: 'Marketplace', icon: Store, feature: 'marketplace' },
     { id: 'crews' as ActiveSection, label: 'Crews', icon: Users },
     { id: 'subs' as ActiveSection, label: 'Subs & Vendors', icon: Building2 },
+    { id: 'team' as ActiveSection, label: 'Team', icon: Users },
     { id: 'tasks', label: 'My Tasks', icon: ClipboardList },
     { id: 'insurance', label: 'Insurance', icon: Shield, feature: 'insurance' },
     { id: 'account', label: 'My Account', icon: User, feature: 'myAccount' },
