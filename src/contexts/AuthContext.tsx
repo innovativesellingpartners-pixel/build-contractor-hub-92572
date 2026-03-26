@@ -96,7 +96,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const isPWA = window.matchMedia('(display-mode: standalone)').matches || 
                   (window.navigator as any).standalone === true;
     
-    console.log('Auth initialization:', { isPWA, hasLocalStorage: !!window.localStorage });
+    if (import.meta.env.DEV) console.log('Auth initialization:', { isPWA, hasLocalStorage: !!window.localStorage });
 
     let authStateInitialized = false;
 
