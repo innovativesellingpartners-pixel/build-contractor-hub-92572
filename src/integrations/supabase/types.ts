@@ -3551,6 +3551,50 @@ export type Database = {
           },
         ]
       }
+      job_cost_alerts: {
+        Row: {
+          alert_type: string
+          created_at: string | null
+          current_percent: number | null
+          id: string
+          is_read: boolean | null
+          job_id: string
+          message: string
+          threshold_percent: number | null
+          user_id: string
+        }
+        Insert: {
+          alert_type: string
+          created_at?: string | null
+          current_percent?: number | null
+          id?: string
+          is_read?: boolean | null
+          job_id: string
+          message: string
+          threshold_percent?: number | null
+          user_id: string
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string | null
+          current_percent?: number | null
+          id?: string
+          is_read?: boolean | null
+          job_id?: string
+          message?: string
+          threshold_percent?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_cost_alerts_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       job_costs: {
         Row: {
           amount: number
@@ -6730,6 +6774,15 @@ export type Database = {
           total_roles: number
           total_services: number
           total_users: number
+        }[]
+      }
+      check_job_profitability: {
+        Args: { p_job_id: string }
+        Returns: {
+          actual_total: number
+          estimated_total: number
+          status: string
+          variance_percent: number
         }[]
       }
       cleanup_expired_oauth_states: { Args: never; Returns: undefined }
