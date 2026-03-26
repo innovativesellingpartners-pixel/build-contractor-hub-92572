@@ -228,7 +228,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('rememberMe');
     
     // Redirect BEFORE calling signOut to prevent race condition flash
-    console.log('Sign out complete, redirecting to /auth...');
+    if (import.meta.env.DEV) console.log('Sign out complete, redirecting to /auth...');
     window.location.replace('/auth');
     
     // Sign out from Supabase after redirect is initiated
