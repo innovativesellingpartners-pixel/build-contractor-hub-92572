@@ -4,6 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { RouteErrorBoundary } from "@/components/RouteErrorBoundary";
 import { GlobalPocketAgent } from "@/components/GlobalPocketbot";
 import { DashboardPocketAgent } from "@/components/DashboardPocketAgent";
 import { usePWABackNavigation } from "@/hooks/usePWABackNavigation";
@@ -168,6 +170,7 @@ const App = () => (
         <TooltipProvider>
           <Toaster />
           <Sonner />
+          <ErrorBoundary>
           <BrowserRouter>
           <PWABackHandler />
           <LanguageSyncWrapper />
@@ -260,7 +263,9 @@ const App = () => (
             <Route path="/subscribe" element={<Subscribe />} />
             <Route path="/dashboard" element={
               <ProtectedRoute>
-                <Dashboard />
+                <RouteErrorBoundary>
+                  <Dashboard />
+                </RouteErrorBoundary>
               </ProtectedRoute>
             } />
             <Route path="/dashboard/helpcenter" element={
@@ -276,7 +281,9 @@ const App = () => (
             <Route path="/app-install" element={<AppInstall />} />
             <Route path="/crm" element={
               <ProtectedRoute>
-                <Navigate to="/dashboard" replace />
+                <RouteErrorBoundary>
+                  <Navigate to="/dashboard" replace />
+                </RouteErrorBoundary>
               </ProtectedRoute>
             } />
             <Route path="/reporting" element={
@@ -312,31 +319,34 @@ const App = () => (
             {/* Admin Routes — role-gated */}
             <Route path="/admin" element={<AdminProtectedRoute />}>
               <Route element={<AdminLayout />}>
-              <Route index element={<AdminDashboard />} />
-              <Route path="users" element={<UserManagement />} />
-              <Route path="users/:userId" element={<UserDetailPage />} />
-              <Route path="users/:userId/edit" element={<AdminUserProfileEdit />} />
-              <Route path="leads" element={<AdminLeads />} />
-              <Route path="estimates" element={<AdminEstimates />} />
-              <Route path="invoices" element={<AdminInvoices />} />
-              <Route path="jobs" element={<AdminJobs />} />
-              <Route path="customers" element={<AdminCustomers />} />
-              <Route path="gc-contacts" element={<AdminGCContacts />} />
-              <Route path="archive" element={<ArchiveManagement />} />
-              <Route path="onboarding" element={<ContractorOnboarding />} />
-              <Route path="support" element={<SupportTickets />} />
-              <Route path="marketplace" element={<MarketplaceManagement />} />
-              <Route path="help" element={<HelpAdmin />} />
-              <Route path="settings" element={<AdminSettings />} />
-               <Route path="catalog-import" element={<AdminCatalogImport />} />
-               <Route path="product-form" element={<AdminProductForm />} />
-               <Route path="assignments" element={<AssignmentAuditLog />} />
-               </Route>
+                <RouteErrorBoundary>
+                <Route index element={<AdminDashboard />} />
+                <Route path="users" element={<UserManagement />} />
+                <Route path="users/:userId" element={<UserDetailPage />} />
+                <Route path="users/:userId/edit" element={<AdminUserProfileEdit />} />
+                <Route path="leads" element={<AdminLeads />} />
+                <Route path="estimates" element={<AdminEstimates />} />
+                <Route path="invoices" element={<AdminInvoices />} />
+                <Route path="jobs" element={<AdminJobs />} />
+                <Route path="customers" element={<AdminCustomers />} />
+                <Route path="gc-contacts" element={<AdminGCContacts />} />
+                <Route path="archive" element={<ArchiveManagement />} />
+                <Route path="onboarding" element={<ContractorOnboarding />} />
+                <Route path="support" element={<SupportTickets />} />
+                <Route path="marketplace" element={<MarketplaceManagement />} />
+                <Route path="help" element={<HelpAdmin />} />
+                <Route path="settings" element={<AdminSettings />} />
+                <Route path="catalog-import" element={<AdminCatalogImport />} />
+                <Route path="product-form" element={<AdminProductForm />} />
+                <Route path="assignments" element={<AssignmentAuditLog />} />
+                </RouteErrorBoundary>
+              </Route>
             </Route>
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
+        </ErrorBoundary>
         </TooltipProvider>
       </AuthProvider>
     </ThemeProvider>
