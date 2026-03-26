@@ -48,6 +48,16 @@ export function JobProfitability({ filters }: JobProfitabilityProps) {
 
       const { data } = await query;
 
+      // Fetch sub assignment costs per job
+      const jobIds = (data || []).map((j: any) => j.id);
+      const { data: subAssigns } = jobIds.length > 0
+        ? await supabase
+            .from("sub_assignments")
+            .select("job_id, agreed_amount, status")
+            .in("job_id", jobIds)
+            .in("status", ["accepted", "in_progress", "completed", "paid"])
+        : { data: [] };
+
       // Calculate profitability metrics for each job
       return data?.map((job) => {
         const revenue = Number(job.budget_amount) || 0;
