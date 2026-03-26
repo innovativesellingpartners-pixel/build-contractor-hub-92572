@@ -56,7 +56,7 @@ export function BusinessScorecard({ onNavigateToReport }: ScorecardProps) {
       const { data } = await supabase
         .from("jobs")
         .select("id, contract_value, expenses_total, payments_collected, created_at, job_status")
-        .in("job_status", ["in_progress", "scheduled", "not_started"]);
+        .in("job_status", ["in_progress", "scheduled"]);
       return data || [];
     },
   });
