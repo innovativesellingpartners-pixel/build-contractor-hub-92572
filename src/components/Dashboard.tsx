@@ -268,13 +268,13 @@ export function Dashboard() {
     setMobileMenuOpen(false);
   }, []);
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     await signOut();
     toast({
       title: "Logged out",
       description: "You have been successfully logged out.",
     });
-  };
+  }, [signOut, toast]);
 
   const getTierLabel = (tier?: string) => {
     switch (tier) {
