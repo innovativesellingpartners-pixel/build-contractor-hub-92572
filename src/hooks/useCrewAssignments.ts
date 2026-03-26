@@ -15,7 +15,7 @@ export interface CrewAssignment {
   end_time: string | null;
   notes: string | null;
   status: string;
-  jobs?: { id: string; project_name: string | null; job_number: string | null } | null;
+  jobs?: { id: string; name: string; job_number: string | null } | null;
   crews?: { id: string; name: string; color: string | null } | null;
 }
 
