@@ -34,7 +34,7 @@ export function useCrewAssignments(weekStart?: Date) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("crew_assignments")
-        .select("*, jobs(id, project_name, job_number), crews(id, name, color)")
+        .select("*, jobs(id, name, job_number), crews(id, name, color)")
         .gte("assigned_date", startStr)
         .lte("assigned_date", endStr)
         .order("assigned_date");
