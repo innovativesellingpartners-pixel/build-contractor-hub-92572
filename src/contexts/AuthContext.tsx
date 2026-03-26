@@ -162,7 +162,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const checkForUpdates = async () => {
     // Check if there's a service worker update ready
     if ('serviceWorker' in navigator && localStorage.getItem('sw-update-ready') === 'true') {
-      console.log('Service worker update detected, reloading...');
+      if (import.meta.env.DEV) console.log('Service worker update detected, reloading...');
       localStorage.removeItem('sw-update-ready');
       
       // Get the waiting service worker and activate it
