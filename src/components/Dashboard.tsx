@@ -1081,6 +1081,19 @@ function SidebarNav({ activeSection, setActiveSection, tierFeatures }: SidebarNa
       </Button>
       
       <Button
+        variant={activeSection === 'crews' ? 'default' : 'ghost'}
+        className={`w-full justify-start transition-all ${
+          activeSection === 'crews' 
+            ? 'shadow-md' 
+            : 'hover:bg-red-50 hover:border-red-500 hover:text-black border border-transparent'
+        }`}
+        onClick={() => setActiveSection('crews')}
+      >
+        <Users className="h-4 w-4 mr-3" />
+        Crews
+      </Button>
+
+      <Button
         variant={activeSection === 'tasks' ? 'default' : 'ghost'}
         className={`w-full justify-start transition-all ${
           activeSection === 'tasks' 
