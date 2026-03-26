@@ -14,7 +14,7 @@
  * 6. Extended session support (up to 2 hours)
  */
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.58.0';
 
 const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
