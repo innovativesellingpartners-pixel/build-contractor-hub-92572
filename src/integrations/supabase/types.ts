@@ -1526,43 +1526,67 @@ export type Database = {
       }
       daily_logs: {
         Row: {
+          client_visible: boolean
           created_at: string
           crew_count: number | null
+          crew_on_site: Json | null
           equipment_used: string | null
           hours_worked: number | null
           id: string
+          issues_delays: string | null
           job_id: string
           log_date: string
           materials_used: string | null
           notes: string | null
+          photos: Json | null
+          signature_url: string | null
+          signed_by: string | null
+          status: string
+          updated_at: string | null
           user_id: string
           weather: string | null
           work_completed: string | null
         }
         Insert: {
+          client_visible?: boolean
           created_at?: string
           crew_count?: number | null
+          crew_on_site?: Json | null
           equipment_used?: string | null
           hours_worked?: number | null
           id?: string
+          issues_delays?: string | null
           job_id: string
           log_date?: string
           materials_used?: string | null
           notes?: string | null
+          photos?: Json | null
+          signature_url?: string | null
+          signed_by?: string | null
+          status?: string
+          updated_at?: string | null
           user_id: string
           weather?: string | null
           work_completed?: string | null
         }
         Update: {
+          client_visible?: boolean
           created_at?: string
           crew_count?: number | null
+          crew_on_site?: Json | null
           equipment_used?: string | null
           hours_worked?: number | null
           id?: string
+          issues_delays?: string | null
           job_id?: string
           log_date?: string
           materials_used?: string | null
           notes?: string | null
+          photos?: Json | null
+          signature_url?: string | null
+          signed_by?: string | null
+          status?: string
+          updated_at?: string | null
           user_id?: string
           weather?: string | null
           work_completed?: string | null
