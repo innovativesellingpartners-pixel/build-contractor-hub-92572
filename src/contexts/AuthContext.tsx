@@ -108,7 +108,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         // During sign-out, don't update state — let signOut() handle the redirect
         if (signingOutRef.current) {
-          console.log('Sign-out in progress, skipping auth state update');
+          if (import.meta.env.DEV) console.log('Sign-out in progress, skipping auth state update');
           return;
         }
         
