@@ -32,7 +32,7 @@ export function DailyLogForm({ jobId, jobName, crewMembers = [], onSave, onCance
     hours_worked: '',
     issues_delays: '',
     client_visible: false,
-    signed_by: profile?.full_name || '',
+    signed_by: profile?.contact_name || '',
   });
 
   const [materials, setMaterials] = useState<MaterialItem[]>([]);
