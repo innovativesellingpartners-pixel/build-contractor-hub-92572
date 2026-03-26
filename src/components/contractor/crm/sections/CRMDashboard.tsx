@@ -112,6 +112,14 @@ const mainModules = [
     borderColor: 'border-rose-400',
     description: 'Manage crews & members'
   },
+  { 
+    id: 'team' as Section, 
+    label: 'Team', 
+    icon: UsersRound, 
+    gradient: 'from-indigo-500 to-indigo-600',
+    borderColor: 'border-indigo-400',
+    description: 'Manage your team'
+  },
 ];
 
 const defaultOrder = mainModules.map(m => m.id);
