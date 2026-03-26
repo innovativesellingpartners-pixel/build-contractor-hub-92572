@@ -21,6 +21,7 @@ import { SwipeToArchive } from '@/components/ui/swipe-to-archive';
 import { CrmNavHeader } from '../CrmNavHeader';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { TranslationPreviewDialog } from '../TranslationPreviewDialog';
+import AIEstimateGenerator from '../../AIEstimateGenerator';
 
 interface EstimatesSectionProps {
   onSectionChange?: (section: string) => void;
