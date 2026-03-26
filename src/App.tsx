@@ -263,7 +263,9 @@ const App = () => (
             <Route path="/subscribe" element={<Subscribe />} />
             <Route path="/dashboard" element={
               <ProtectedRoute>
-                <Dashboard />
+                <RouteErrorBoundary>
+                  <Dashboard />
+                </RouteErrorBoundary>
               </ProtectedRoute>
             } />
             <Route path="/dashboard/helpcenter" element={
