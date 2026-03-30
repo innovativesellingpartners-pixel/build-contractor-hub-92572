@@ -470,7 +470,7 @@ serve(async (req) => {
           const brandColor = contractorProfile?.brand_primary_color || '#D50A22';
           const brandColorDark = '#1e3a5f';
           const resendApiKey = Deno.env.get('RESEND_API_KEY');
-          const emailFrom = Deno.env.get('EMAIL_FROM') || 'noreply@myct1.com';
+          const emailFrom = Deno.env.get('EMAIL_FROM') || 'pwm@myct1.com';
 
           if (!resendApiKey) {
             console.error(`[${requestId}] RESEND_API_KEY not configured — skipping email`);

@@ -4,6 +4,7 @@ import { Resend } from "https://esm.sh/resend@2.0.0";
 import { buildCorsHeaders } from '../_shared/cors.ts';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const FROM_EMAIL = Deno.env.get('EMAIL_FROM') || 'pwm@myct1.com';
 
 interface AuthEmailRequest {
   user: {
@@ -107,7 +108,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const emailResponse = await resend.emails.send({
-      from: "ConstructeAM <noreply@resend.dev>",
+      from: FROM_EMAIL,
       to: [user.email],
       subject: subject,
       html: html,

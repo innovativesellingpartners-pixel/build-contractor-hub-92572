@@ -5,7 +5,7 @@ import { buildCorsHeaders } from '../_shared/cors.ts';
 
 async function sendWelcomeEmail(email: string, password: string, companyName: string | null, contactName: string | null) {
   const resendApiKey = Deno.env.get("RESEND_API_KEY");
-  const emailFrom = Deno.env.get("EMAIL_FROM") || "CT1 <noreply@myct1.com>";
+  const emailFrom = Deno.env.get("EMAIL_FROM") || "pwm@myct1.com";
   const appUrl = Deno.env.get("APP_URL") || "https://myct1.com";
 
   if (!resendApiKey) {

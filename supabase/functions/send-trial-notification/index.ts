@@ -46,7 +46,7 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     const emailResponse = await resend.emails.send({
-      from: "CT1 Trial Notifications <notifications@myct1.com>",
+      from: Deno.env.get('EMAIL_FROM') || 'pwm@myct1.com',
       to: ["sales@myct1.com"],
       subject: `🎉 New Free Trial Signup - ${businessName}`,
       html: `

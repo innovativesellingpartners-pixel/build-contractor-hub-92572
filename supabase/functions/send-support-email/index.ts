@@ -146,7 +146,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send email to sales@myct1.com using sanitized data
     const emailResponse = await resend.emails.send({
-      from: "CT1 Support <onboarding@resend.dev>",
+      from: Deno.env.get('EMAIL_FROM') || 'pwm@myct1.com',
       to: ["sales@myct1.com"],
       reply_to: sanitized.email,
       subject: `New Support Ticket: ${sanitized.reason}`,
@@ -178,7 +178,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send confirmation email to user using sanitized data
     await resend.emails.send({
-      from: "CT1 Support <onboarding@resend.dev>",
+      from: Deno.env.get('EMAIL_FROM') || 'pwm@myct1.com',
       to: [sanitized.email],
       subject: "Support Ticket Received - CT1",
       html: `

@@ -7,7 +7,7 @@ import { buildCorsHeaders } from '../_shared/cors.ts';
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-const FROM_EMAIL = Deno.env.get('EMAIL_FROM') || 'onboarding@resend.dev';
+const FROM_EMAIL = Deno.env.get('EMAIL_FROM') || 'pwm@myct1.com';
 
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
