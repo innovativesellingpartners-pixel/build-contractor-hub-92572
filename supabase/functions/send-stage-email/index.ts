@@ -138,7 +138,7 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     // Send email
-    const fromEmail = Deno.env.get("EMAIL_FROM") || "noreply@myct1.com";
+    const fromEmail = Deno.env.get("EMAIL_FROM") || "pwm@myct1.com";
     
     const emailResponse = await resend.emails.send({
       from: `${variables.company_name} <${fromEmail}>`,

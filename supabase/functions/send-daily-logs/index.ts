@@ -22,7 +22,7 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const fromEmail = Deno.env.get('EMAIL_FROM') || 'onboarding@resend.dev';
+    const fromEmail = Deno.env.get('EMAIL_FROM') || 'pwm@myct1.com';
     const authHeader = req.headers.get('Authorization');
 
     if (!authHeader) {

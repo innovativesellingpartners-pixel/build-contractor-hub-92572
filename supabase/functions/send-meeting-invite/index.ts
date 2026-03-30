@@ -368,7 +368,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`Sending meeting invite to ${recipientEmail} from contractor: ${senderEmail || businessEmail}`);
 
     // Use contractor's email in display name, but send through verified domain
-    const baseFromEmail = Deno.env.get("EMAIL_FROM") || "noreply@myct1.com";
+    const baseFromEmail = Deno.env.get("EMAIL_FROM") || "pwm@myct1.com";
     const fromName = businessName || "CT1 Contractor";
     const fromEmail = `${fromName} <${baseFromEmail}>`;
     const replyToEmail = senderEmail || businessEmail;

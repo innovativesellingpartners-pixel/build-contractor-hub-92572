@@ -126,7 +126,7 @@ serve(async (req) => {
 
     // 4. Send welcome email
     const resendKey = Deno.env.get("RESEND_API_KEY");
-    const emailFrom = Deno.env.get("EMAIL_FROM") || "CT1 <noreply@myct1.com>";
+    const emailFrom = Deno.env.get("EMAIL_FROM") || "pwm@myct1.com";
     const appUrl = Deno.env.get("APP_URL") || "https://myct1.com";
     const companyName = callerProfile?.company_name || "CT1";
 

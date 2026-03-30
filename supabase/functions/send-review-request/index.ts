@@ -72,7 +72,7 @@ serve(async (req) => {
     if (channel === 'email' || channel === 'both') {
       const resendKey = Deno.env.get('RESEND_API_KEY');
       if (resendKey && customer_email) {
-        const emailFrom = Deno.env.get('EMAIL_FROM') || 'noreply@myct1.com';
+        const emailFrom = Deno.env.get('EMAIL_FROM') || 'pwm@myct1.com';
         
         const emailHtml = `
 <!DOCTYPE html>
