@@ -83,7 +83,7 @@ const handler = async (req: Request): Promise<Response> => {
     const recoveryLink = resetData.properties.action_link;
     // Send email via Resend
     const emailResponse = await resend.emails.send({
-      from: "CT1 Network <onboarding@resend.dev>",
+      from: Deno.env.get('EMAIL_FROM') || 'pwm@myct1.com',
       to: [email],
       subject: "Reset Your Password - CT1 Contractor Portal",
       html: `

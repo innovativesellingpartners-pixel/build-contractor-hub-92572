@@ -108,7 +108,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const emailResponse = await resend.emails.send({
-      from: "ConstructeAM <noreply@resend.dev>",
+      from: FROM_EMAIL,
       to: [user.email],
       subject: subject,
       html: html,

@@ -102,7 +102,7 @@ const handler = async (req: Request): Promise<Response> => {
     `;
 
     const emailResponse = await resend.emails.send({
-      from: Deno.env.get("EMAIL_FROM") || "CT1 Reports <onboarding@resend.dev>",
+      from: Deno.env.get("EMAIL_FROM") || 'pwm@myct1.com',
       to: [email],
       subject: `${reportData.title} - ${reportData.dateRange}`,
       html: emailHtml,
