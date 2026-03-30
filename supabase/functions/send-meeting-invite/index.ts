@@ -238,7 +238,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Generate unique ID for this meeting
     const eventUID = generateUID();
-    const organizerEmail = senderEmail || businessEmail || Deno.env.get("EMAIL_FROM") || "noreply@myct1.com";
+    const organizerEmail = senderEmail || businessEmail || Deno.env.get("EMAIL_FROM") || "pwm@myct1.com";
 
     // Build description for ICS
     const icsDescription = [
