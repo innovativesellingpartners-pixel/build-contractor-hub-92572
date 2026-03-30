@@ -118,7 +118,7 @@ serve(async (req: Request) => {
     // Send Email
     if (sendEmail && recipientEmail) {
       try {
-        const fromEmail = Deno.env.get("EMAIL_FROM") || "CT1 <noreply@myct1.com>";
+        const fromEmail = Deno.env.get("EMAIL_FROM") || 'pwm@myct1.com';
         
         const emailHtml = `
           <!DOCTYPE html>
