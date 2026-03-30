@@ -94,7 +94,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send notification email to sales team
     const salesEmailResponse = await resend.emails.send({
-      from: "CT1 Contact Form <noreply@myct1.com>",
+      from: Deno.env.get('EMAIL_FROM') || 'pwm@myct1.com',
       to: ["sales@myct1.com"],
       subject: `New CT1 Contact Form Submission - ${formType || 'General'}`,
       html: `
