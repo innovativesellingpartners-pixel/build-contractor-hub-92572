@@ -76,6 +76,7 @@ export const AdminSidebar = ({ onNavigate }: AdminSidebarProps) => {
           </NavLink>
         ))}
       </nav>
+      <LegalLinks />
     </aside>
   );
 };
