@@ -469,6 +469,7 @@ const navItems = [
             </div>
 
             <NavigationContent />
+            {sidebarOpen && <LegalLinks />}
           </aside>
 
           {/* Main Content */}
