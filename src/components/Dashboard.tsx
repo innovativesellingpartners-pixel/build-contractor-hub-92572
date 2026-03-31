@@ -1023,6 +1023,7 @@ function UnifiedHubSidebar({ activeHubSection, onHubSectionChange, onCrmSectionC
             </Button>
           ))}
       </nav>
+      <LegalLinks />
     </aside>
   );
 }
