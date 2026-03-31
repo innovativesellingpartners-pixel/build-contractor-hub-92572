@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ct1Logo from '@/assets/ct1-round-logo-new.png';
+import { LegalLinks } from '@/components/LegalLinks';
 
 const navItems = [
   { to: '/admin', icon: Users, label: 'User Management', end: true },
@@ -75,6 +76,7 @@ export const AdminSidebar = ({ onNavigate }: AdminSidebarProps) => {
           </NavLink>
         ))}
       </nav>
+      <LegalLinks />
     </aside>
   );
 };

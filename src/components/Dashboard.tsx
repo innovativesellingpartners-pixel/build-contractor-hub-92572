@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { LegalLinks } from "@/components/LegalLinks";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -1022,6 +1023,7 @@ function UnifiedHubSidebar({ activeHubSection, onHubSectionChange, onCrmSectionC
             </Button>
           ))}
       </nav>
+      <LegalLinks />
     </aside>
   );
 }
@@ -1228,6 +1230,7 @@ function SidebarNav({ activeSection, setActiveSection, tierFeatures }: SidebarNa
           </a>
         </Button>
       )}
+      <LegalLinks />
     </nav>
   );
 }
