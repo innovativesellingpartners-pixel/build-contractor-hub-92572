@@ -1230,6 +1230,7 @@ function SidebarNav({ activeSection, setActiveSection, tierFeatures }: SidebarNa
           </a>
         </Button>
       )}
+      <LegalLinks />
     </nav>
   );
 }
