@@ -35,34 +35,34 @@ import ct1Logo from '@/assets/ct1-round-logo-new.png';
 import { CRMSection } from '@/config/navigation';
 
 interface BottomNavProps {
-  activeSection: Section;
-  onSectionChange: (section: Section) => void;
+  activeSection: CRMSection;
+  onSectionChange: (section: CRMSection) => void;
   hidden?: boolean;
 }
 
-const defaultBottomNavItems: Section[] = ['dashboard', 'calls', 'emails', 'leads'];
+const defaultBottomNavItems: CRMSection[] = ['dashboard', 'calls', 'emails', 'leads'];
 
 // All navigation items for the slide-out menu
 const allNavItems = [
-  { id: 'dashboard' as Section, label: 'Dashboard', icon: LayoutDashboard },
-  { id: 'leads' as Section, label: 'Leads', icon: ClipboardList },
-  { id: 'jobs' as Section, label: 'Jobs', icon: Briefcase },
-  { id: 'estimates' as Section, label: 'Estimates', icon: FileText },
-  { id: 'customers' as Section, label: 'Customers', icon: Users },
-  { id: 'emails' as Section, label: 'Emails', icon: Mail },
-  { id: 'calls' as Section, label: 'Calls', icon: Phone },
-  { id: 'calendar' as Section, label: 'Calendar', icon: Calendar },
-  { id: 'invoices' as Section, label: 'Invoices', icon: Receipt },
-  { id: 'accounting' as Section, label: 'Accounting', icon: DollarSign },
-  { id: 'templates' as Section, label: 'Estimate Templates', icon: LayoutTemplate },
-  { id: 'reporting' as Section, label: 'Reporting', icon: BarChart2 },
-  { id: 'gc' as Section, label: 'General Contractors', icon: Building2 },
-  { id: 'contacts' as Section, label: 'Contacts', icon: Contact },
-  { id: 'portal' as Section, label: 'Customer Portal', icon: LinkIcon },
-  { id: 'crews' as Section, label: 'Crews', icon: Shield },
-  { id: 'documents' as Section, label: 'Documents', icon: FolderOpen },
-  { id: 'network' as Section, label: 'Contractor Network', icon: Users },
-  { id: 'help' as Section, label: 'Help Center', icon: HelpCircle },
+  { id: 'dashboard' as CRMSection, label: 'Dashboard', icon: LayoutDashboard },
+  { id: 'leads' as CRMSection, label: 'Leads', icon: ClipboardList },
+  { id: 'jobs' as CRMSection, label: 'Jobs', icon: Briefcase },
+  { id: 'estimates' as CRMSection, label: 'Estimates', icon: FileText },
+  { id: 'customers' as CRMSection, label: 'Customers', icon: Users },
+  { id: 'emails' as CRMSection, label: 'Emails', icon: Mail },
+  { id: 'calls' as CRMSection, label: 'Calls', icon: Phone },
+  { id: 'calendar' as CRMSection, label: 'Calendar', icon: Calendar },
+  { id: 'invoices' as CRMSection, label: 'Invoices', icon: Receipt },
+  { id: 'accounting' as CRMSection, label: 'Accounting', icon: DollarSign },
+  { id: 'templates' as CRMSection, label: 'Estimate Templates', icon: LayoutTemplate },
+  { id: 'reporting' as CRMSection, label: 'Reporting', icon: BarChart2 },
+  { id: 'gc' as CRMSection, label: 'General Contractors', icon: Building2 },
+  { id: 'contacts' as CRMSection, label: 'Contacts', icon: Contact },
+  { id: 'portal' as CRMSection, label: 'Customer Portal', icon: LinkIcon },
+  { id: 'crews' as CRMSection, label: 'Crews', icon: Shield },
+  { id: 'documents' as CRMSection, label: 'Documents', icon: FolderOpen },
+  { id: 'network' as CRMSection, label: 'Contractor Network', icon: Users },
+  { id: 'help' as CRMSection, label: 'Help Center', icon: HelpCircle },
 ];
 
 export function BottomNav({ activeSection, onSectionChange, hidden = false }: BottomNavProps) {
@@ -85,7 +85,7 @@ export function BottomNav({ activeSection, onSectionChange, hidden = false }: Bo
     return menuOrder.indexOf(a.id) - menuOrder.indexOf(b.id);
   });
 
-  const handleNavClick = (e: React.MouseEvent, section: Section) => {
+  const handleNavClick = (e: React.MouseEvent, section: CRMSection) => {
     e.stopPropagation();
     onSectionChange(section);
     setMenuOpen(false);
@@ -101,9 +101,9 @@ export function BottomNav({ activeSection, onSectionChange, hidden = false }: Bo
   };
 
   const handleMenuReorder = (newOrder: string[]) => {
-    setMenuOrder(newOrder as Section[]);
+    setMenuOrder(newOrder as CRMSection[]);
     // Update bottom nav to be first 4 items of menu order
-    setBottomNavOrder(newOrder.slice(0, 4) as Section[]);
+    setBottomNavOrder(newOrder.slice(0, 4) as CRMSection[]);
   };
 
   return (
