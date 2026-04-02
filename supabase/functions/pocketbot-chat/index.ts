@@ -1,50 +1,13 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'npm:@supabase/supabase-js@2.58.0';
-import { jsPDF } from "npm:jspdf@2.5.2";
-
 import { buildCorsHeaders } from '../_shared/cors.ts';
 
 const RATE_LIMIT_PER_DAY = 50;
 const FREE_USER_LIMIT = 3;
 const FREE_USER_MAX_CHARS = 500;
 
-// PDF generation tool
-const generatePDF = (content: { title: string; sections: Array<{ heading: string; content: string }> }) => {
-  const doc = new jsPDF();
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const margin = 20;
-  const maxWidth = pageWidth - 2 * margin;
-  let y = margin;
 
-  // Title
-  doc.setFontSize(18);
-  doc.setFont(undefined, 'bold');
-  doc.text(content.title, margin, y);
-  y += 15;
 
-  // Sections
-  doc.setFontSize(12);
-  content.sections.forEach((section) => {
-    // Check if we need a new page
-    if (y > doc.internal.pageSize.getHeight() - 30) {
-      doc.addPage();
-      y = margin;
-    }
-
-    // Section heading
-    doc.setFont(undefined, 'bold');
-    doc.text(section.heading, margin, y);
-    y += 8;
-
-    // Section content
-    doc.setFont(undefined, 'normal');
-    const lines = doc.splitTextToSize(section.content, maxWidth);
-    doc.text(lines, margin, y);
-    y += lines.length * 7 + 10;
-  });
-
-  return doc.output('dataurlstring');
-};
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -197,36 +160,7 @@ serve(async (req) => {
     }
 
     const tools = [
-      {
-        type: "function",
-        function: {
-          name: "generate_pdf",
-          description: "Generate a PDF document with structured content. Use this when users ask for a PDF report, guide, checklist, or any document they want to download.",
-          parameters: {
-            type: "object",
-            properties: {
-              title: {
-                type: "string",
-                description: "The main title of the PDF document"
-              },
-              sections: {
-                type: "array",
-                description: "Array of sections, each with a heading and content",
-                items: {
-                  type: "object",
-                  properties: {
-                    heading: { type: "string", description: "Section heading" },
-                    content: { type: "string", description: "Section content/body text" }
-                  },
-                  required: ["heading", "content"]
-                }
-              }
-            },
-            required: ["title", "sections"]
-          }
-        }
-      },
-      {
+      
         type: "function",
         function: {
           name: "extract_job_data",
@@ -786,24 +720,8 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
         const name = toolCall.function?.name;
         const argsStr = toolCall.function?.arguments || '{}';
         
-        if (name === "generate_pdf") {
-          const args = JSON.parse(argsStr);
-          const pdfDataUrl = generatePDF(args);
-          
-          return new Response(
-            JSON.stringify({ 
-              type: "pdf",
-              content: "I've generated your PDF document. Click below to download it.",
-              pdfData: pdfDataUrl,
-              fileName: `${args.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`
-            }),
-            {
-              headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
-            }
-          );
-        }
 
-        if (name === "extract_job_data") {
+
           try {
             const args = JSON.parse(argsStr);
             console.log("Extracted job data:", args);
