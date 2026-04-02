@@ -1,72 +1,46 @@
 
 
-# Platform Architecture Improvements — Phased Plan
+# Data Isolation Security Audit & Hardening
 
-## Overview
-Four phases of internal refactoring that preserve the current design and UI exactly as-is, while improving reliability, simplicity, and maintainability.
+## Current State (Good News)
 
----
+After a thorough audit of all RLS policies, the core business tables are **already well-protected**:
 
-## Phase 1: Shared Layout Primitives (fastest, lowest risk)
+- **leads, customers, estimates, jobs, invoices, payments, expenses, daily_logs, materials, change_orders, crews, crew_members** — all have RLS enabled with `auth.uid() = user_id` scoping
+- Admin/super_admin access is gated via `has_role()` security definer functions
+- Team access uses `is_contractor_member()` which validates shared contractor membership
+- INSERT policies all enforce `with_check` constraints tying records to the authenticated user
+- Tables with `SELECT true` are only reference/catalog data (trades, templates, courses, marketplace) — appropriate
 
-Create 3 reusable components to replace repeated patterns across all sections:
+## Identified Gaps to Fix
 
-**`PageShell`** — wraps every section with consistent padding, back navigation, and min-height. Replaces the ~15 identical `<div className="p-3 md:p-4 lg:p-6 min-h-[400px]...">` wrappers in Dashboard.tsx (lines 485-595).
+### 1. `crews` table — missing team visibility
+The `crews` table only has a single `ALL` policy for `auth.uid() = user_id`. Unlike other tables, it lacks:
+- `is_contractor_member()` SELECT policy for team members
+- Admin SELECT policy
 
-**`SectionHeader`** — standardizes title + subtitle + action buttons pattern used in every CRM section.
+**Fix:** Add team member and admin SELECT policies matching the pattern used on all other tables.
 
-**`MetricGrid`** — standardizes the stat card grids (revenue, jobs count, etc.) used across Dashboard, Reporting, Jobs, Accounting.
+### 2. `photo_reports` — overly permissive SELECT
+Has `SELECT true` which means anyone can read all photo reports. Should be scoped to the owner or accessed via a token-based mechanism.
 
-**Files created:**
-- `src/components/ui/page-shell.tsx`
-- `src/components/ui/section-header.tsx`
-- `src/components/ui/metric-grid.tsx`
+**Fix:** Review if this is intentional for public sharing (likely token-gated in practice). If not, add user scoping.
 
-**Files modified:** Dashboard.tsx section wrappers, and CRM section components that have repeated layout patterns.
+### 3. `change_order_history` — overly permissive SELECT  
+Has `SELECT true`. Should be scoped to users who own the related change order/job.
 
----
+**Fix:** Add user-scoped SELECT policy via job ownership check.
 
-## Phase 2: Decompose Dashboard.tsx (highest impact)
+### 4. Frontend verification
+Confirm that no frontend queries bypass RLS by manually filtering (which the memory says should not happen per `rls-scoping-standard`). Quick scan of data hooks for any `.eq('user_id', ...)` patterns that could mask RLS issues.
 
-Break the 1,280-line Dashboard.tsx into smaller files:
+## What This Does NOT Change
+- No visual or UI changes
+- No design or layout changes  
+- No performance impact
+- Purely database-layer security hardening
 
-1. **Extract `UnifiedHubSidebar`** → `src/components/contractor/hub/UnifiedHubSidebar.tsx` (lines 950-1028)
-2. **Extract `SidebarNav`** → `src/components/contractor/hub/SidebarNav.tsx` (lines 1030-1236)
-3. **Extract `CRMSidebarNav`** → `src/components/contractor/hub/CRMSidebarNav.tsx` (lines 1238-1280)
-4. **Extract Account section** → `src/components/contractor/hub/AccountSection.tsx` (lines 596-852, ~250 lines of inline JSX)
-5. **Extract top nav bar** → `src/components/contractor/hub/TopNavBar.tsx` (lines 302-430)
-6. **Extract floating chat/pocket agent logic** → `src/components/contractor/hub/useChatButton.ts` (lines 158-266, drag logic)
-
-Dashboard.tsx becomes a ~200-line layout shell that imports and composes these pieces.
-
----
-
-## Phase 3: Consolidate Duplicate Components
-
-Audit and merge near-duplicates:
-
-- **Nav item definitions** — CRM nav items are defined in 3 places (CT1CRM.tsx lines 86-104, Dashboard.tsx lines 959-971, lines 1246-1259). Extract to a single `src/config/navigation.ts`.
-- **Section rendering pattern** — Both CT1CRM.tsx and Dashboard.tsx use large switch/if-else blocks to render sections. Standardize with a section registry map.
-
----
-
-## Phase 4: Backend-Hardened Financial Mutations
-
-Move invoice/payment create/update operations from client-side Supabase calls to backend functions with server-side validation:
-
-- Create backend functions for: `create-invoice`, `record-payment`, `update-estimate-status`
-- Add input validation (amounts > 0, valid status transitions, tenant isolation)
-- Client code calls these functions instead of direct table inserts
-
-This aligns with the existing hardening roadmap (Phase 3 from memory).
-
----
-
-## Execution Order
-Phase 1 → Phase 2 → Phase 3 → Phase 4. Each phase is independently shippable. No visual changes at any step.
-
-## Risk Mitigation
-- Each phase preserves identical UI output
-- Components are extracted, not rewritten
-- No routing changes (sessionStorage-based navigation stays for now — URL routing is a separate future effort)
+## Files Modified
+- 1 database migration (add missing policies for `crews`, `photo_reports`, `change_order_history`)
+- Possibly minor frontend hook cleanup if manual scoping found
 
