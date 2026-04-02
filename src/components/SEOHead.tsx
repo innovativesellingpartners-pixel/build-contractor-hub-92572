@@ -15,7 +15,7 @@ export function SEOHead({
   description,
   canonical,
   keywords,
-  ogImage = 'https://myct1.com/og-blog-creative-3.png',
+  ogImage = 'https://myct1.com/og-blog-creative-3.webp',
   ogType = 'website',
   structuredData,
 }: SEOHeadProps) {
