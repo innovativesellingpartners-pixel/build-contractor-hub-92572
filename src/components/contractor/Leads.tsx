@@ -436,7 +436,7 @@ export function Leads() {
     </div>
 
       <Tabs defaultValue="vocallink" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="vocallink" className="flex items-center gap-2">
             <Briefcase className="h-4 w-4" />
             <span className="hidden sm:inline">VocalLink CRM</span>
@@ -446,6 +446,11 @@ export function Leads() {
             <TrendingUp className="h-4 w-4" />
             <span className="hidden sm:inline">Opportunity Pipeline</span>
             <span className="sm:hidden">Pipeline</span>
+          </TabsTrigger>
+          <TabsTrigger value="converted" className="flex items-center gap-2">
+            <CheckCircle2 className="h-4 w-4" />
+            <span className="hidden sm:inline">Converted</span>
+            <span className="sm:hidden">Converted</span>
           </TabsTrigger>
         </TabsList>
 
