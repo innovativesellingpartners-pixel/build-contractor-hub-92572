@@ -390,15 +390,18 @@ const navItems = navItemsConfig;
       {isMobile ? (
         <>
 
-          {/* Search bar for mobile - sections already have their own back/dash nav */}
+          {/* Search bar for mobile - collapses on scroll */}
           {isMobile && !showMobileLanding && (
-            <div className="border-b bg-card px-3 py-2 overflow-hidden max-w-full flex items-center justify-end gap-2">
+            <div className={cn(
+              "bg-card px-3 py-1.5 overflow-hidden max-w-full flex items-center justify-end gap-2 transition-all duration-300",
+              isScrollingDown ? "max-h-0 py-0 opacity-0 pointer-events-none" : "max-h-12 opacity-100"
+            )}>
               <CRMSearchBar onNavigate={handleSectionChange} />
             </div>
           )}
 
           {/* Main Content with bottom padding for nav - overflow protected */}
-          <main className={cn("flex-1 overflow-hidden w-full max-w-full bg-background transition-[padding-bottom] duration-300", isScrollingDown ? "pb-6" : "pb-28")}>
+          <main className={cn("flex-1 overflow-hidden w-full max-w-full bg-background transition-[padding-bottom] duration-300", isScrollingDown ? "pb-2" : "pb-14")}>
             <div ref={scrollContainerRef} className="h-full overflow-y-auto overflow-x-hidden max-w-full overscroll-contain" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}>
               <div className="min-h-full w-full max-w-full pb-6">
                 {renderSection()}

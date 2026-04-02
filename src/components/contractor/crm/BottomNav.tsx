@@ -117,7 +117,7 @@ export function BottomNav({ activeSection, onSectionChange, hidden = false }: Bo
       "transition-transform duration-300 ease-in-out",
       hidden ? "translate-y-full" : "translate-y-0"
     )}>
-      <div className="flex items-center justify-around h-16 max-w-screen-sm mx-auto px-2">
+      <div className="flex items-center justify-around h-12 max-w-screen-sm mx-auto px-1">
         {visibleNavItems.map((item) => {
           const isActive = activeSection === item.id;
           return (
@@ -129,16 +129,16 @@ export function BottomNav({ activeSection, onSectionChange, hidden = false }: Bo
               }}
               onPointerDown={(e) => e.stopPropagation()}
               className={cn(
-                'flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl transition-all duration-200 min-w-[64px]',
+                'flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-xl transition-all duration-200 min-w-[56px]',
                 isActive
-                  ? 'bg-primary text-white shadow-lg shadow-primary/30 scale-110'
+                  ? 'bg-primary text-white shadow-lg shadow-primary/30 scale-105'
                   : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95'
               )}
               aria-label={item.label}
               aria-current={isActive ? 'page' : undefined}
             >
-              <item.icon className={cn('h-5 w-5', isActive && 'drop-shadow-sm')} />
-              <span className={cn('text-xs font-medium')}>
+              <item.icon className={cn('h-4 w-4', isActive && 'drop-shadow-sm')} />
+              <span className="text-[10px] font-medium leading-tight">
                 {item.label === 'Dashboard' ? 'CRM' : item.label}
               </span>
             </button>
@@ -152,15 +152,15 @@ export function BottomNav({ activeSection, onSectionChange, hidden = false }: Bo
               onClick={(e) => e.stopPropagation()}
               onPointerDown={(e) => e.stopPropagation()}
               className={cn(
-                'flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl transition-all duration-200 min-w-[64px]',
+                'flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-xl transition-all duration-200 min-w-[56px]',
                 menuOpen
-                  ? 'bg-primary text-white shadow-lg shadow-primary/30 scale-110'
+                  ? 'bg-primary text-white shadow-lg shadow-primary/30 scale-105'
                   : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95'
               )}
               aria-label="Menu"
             >
-              <Menu className="h-5 w-5" />
-              <span className="text-xs font-medium">Menu</span>
+              <Menu className="h-4 w-4" />
+              <span className="text-[10px] font-medium leading-tight">Menu</span>
             </button>
           </SheetTrigger>
           <SheetContent side="left" className="w-[280px] p-0 flex flex-col h-full max-h-screen" hideDefaultClose>
