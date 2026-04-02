@@ -6,43 +6,8 @@ const RATE_LIMIT_PER_DAY = 50;
 const FREE_USER_LIMIT = 3;
 const FREE_USER_MAX_CHARS = 500;
 
-// PDF generation tool
-const generatePDF = (content: { title: string; sections: Array<{ heading: string; content: string }> }) => {
-  const doc = new jsPDF();
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const margin = 20;
-  const maxWidth = pageWidth - 2 * margin;
-  let y = margin;
 
-  // Title
-  doc.setFontSize(18);
-  doc.setFont(undefined, 'bold');
-  doc.text(content.title, margin, y);
-  y += 15;
 
-  // Sections
-  doc.setFontSize(12);
-  content.sections.forEach((section) => {
-    // Check if we need a new page
-    if (y > doc.internal.pageSize.getHeight() - 30) {
-      doc.addPage();
-      y = margin;
-    }
-
-    // Section heading
-    doc.setFont(undefined, 'bold');
-    doc.text(section.heading, margin, y);
-    y += 8;
-
-    // Section content
-    doc.setFont(undefined, 'normal');
-    const lines = doc.splitTextToSize(section.content, maxWidth);
-    doc.text(lines, margin, y);
-    y += lines.length * 7 + 10;
-  });
-
-  return doc.output('dataurlstring');
-};
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
