@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 export interface Lead {
   id: string;
@@ -30,7 +30,6 @@ export interface Lead {
   converted_at?: string;
 }
 
-// The ID of the "Other" lead source option
 export const OTHER_SOURCE_ID = 'f0ea5b7b-6354-474d-bf5b-fa28ac62b68f';
 
 export interface LeadSource {
@@ -38,199 +37,121 @@ export interface LeadSource {
   name: string;
 }
 
+const fetchLeadsQuery = async (userId: string): Promise<Lead[]> => {
+  const { data, error } = await supabase
+    .from('leads')
+    .select('*')
+    .is('archived_at', null)
+    .is('converted_to_job_id', null)
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  return (data || []) as Lead[];
+};
+
+const fetchSourcesQuery = async (): Promise<LeadSource[]> => {
+  const { data, error } = await supabase
+    .from('lead_sources')
+    .select('*')
+    .order('name');
+
+  if (error) throw error;
+  return data || [];
+};
+
 export const useLeads = () => {
-  const [leads, setLeads] = useState<Lead[]>([]);
-  const [sources, setSources] = useState<LeadSource[]>([]);
-  const [loading, setLoading] = useState(true);
   const { user } = useAuth();
-  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const fetchLeads = async () => {
-    if (!user) return;
+  const leadsQuery = useQuery({
+    queryKey: ['leads', user?.id],
+    queryFn: () => fetchLeadsQuery(user!.id),
+    enabled: !!user?.id,
+  });
 
-    try {
-      const { data, error } = await supabase
-        .from('leads')
-        .select('*')
-        .is('archived_at', null)
-        .is('converted_to_job_id', null)
-        .order('created_at', { ascending: false });
+  const sourcesQuery = useQuery({
+    queryKey: ['lead-sources'],
+    queryFn: fetchSourcesQuery,
+  });
 
-      if (error) throw error;
-      setLeads((data || []) as Lead[]);
-    } catch (error: any) {
-      toast({
-        title: 'Error fetching leads',
-        description: error.message,
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const invalidateLeads = () => queryClient.invalidateQueries({ queryKey: ['leads'] });
 
-  const archiveLead = async (id: string) => {
-    try {
-      const { error } = await supabase
-        .from('leads')
-        .update({ archived_at: new Date().toISOString() })
-        .eq('id', id);
-
-      if (error) throw error;
-
-      setLeads(leads.filter(lead => lead.id !== id));
-      toast({
-        title: 'Lead archived',
-        description: 'Lead has been archived successfully',
-      });
-    } catch (error: any) {
-      toast({
-        title: 'Error archiving lead',
-        description: error.message,
-        variant: 'destructive',
-      });
-      throw error;
-    }
-  };
-
-  const fetchSources = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('lead_sources')
-        .select('*')
-        .order('name');
-
-      if (error) throw error;
-      setSources(data || []);
-    } catch (error: any) {
-      console.error('Error fetching sources:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchLeads();
-    fetchSources();
-  }, [user]);
-
-  const addLead = async (leadData: Omit<Lead, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
-    if (!user) return;
-
-    try {
-      // Generate lead number
+  const addLeadMutation = useMutation({
+    mutationFn: async (leadData: Omit<Lead, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
+      if (!user) throw new Error('Not authenticated');
       const { data: leadNumber } = await supabase.rpc('generate_lead_number');
-      
       const { data, error } = await supabase
         .from('leads')
         .insert([{ ...leadData, user_id: user.id, lead_number: leadNumber }])
         .select()
         .single();
-
       if (error) throw error;
-
-      setLeads([data as Lead, ...leads]);
-      toast({
-        title: 'Lead added',
-        description: 'New lead has been added successfully',
-      });
       return data as Lead;
-    } catch (error: any) {
-      toast({
-        title: 'Error adding lead',
-        description: error.message,
-        variant: 'destructive',
-      });
-      throw error;
-    }
-  };
+    },
+    onSuccess: () => {
+      invalidateLeads();
+      toast.success('Lead added', { description: 'New lead has been added successfully' });
+    },
+    onError: (error: any) => {
+      toast.error('Error adding lead', { description: error.message });
+    },
+  });
 
-  const updateLead = async (id: string, updates: Partial<Lead>) => {
-    try {
+  const updateLeadMutation = useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<Lead> }) => {
       const { data, error } = await supabase
         .from('leads')
         .update(updates)
         .eq('id', id)
         .select()
         .single();
-
       if (error) throw error;
-
-      setLeads(leads.map(lead => lead.id === id ? data as Lead : lead));
-      toast({
-        title: 'Lead updated',
-        description: 'Lead has been updated successfully',
-      });
       return data as Lead;
-    } catch (error: any) {
-      toast({
-        title: 'Error updating lead',
-        description: error.message,
-        variant: 'destructive',
-      });
-      throw error;
-    }
-  };
+    },
+    onSuccess: () => {
+      invalidateLeads();
+      toast.success('Lead updated', { description: 'Lead has been updated successfully' });
+    },
+    onError: (error: any) => {
+      toast.error('Error updating lead', { description: error.message });
+    },
+  });
 
-  const deleteLead = async (id: string) => {
-    try {
+  const deleteLeadMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('leads').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      invalidateLeads();
+      toast.success('Lead deleted', { description: 'Lead has been deleted successfully' });
+    },
+    onError: (error: any) => {
+      toast.error('Error deleting lead', { description: error.message });
+    },
+  });
+
+  const archiveLeadMutation = useMutation({
+    mutationFn: async (id: string) => {
       const { error } = await supabase
         .from('leads')
-        .delete()
+        .update({ archived_at: new Date().toISOString() })
         .eq('id', id);
-
       if (error) throw error;
+    },
+    onSuccess: () => {
+      invalidateLeads();
+      toast.success('Lead archived', { description: 'Lead has been archived successfully' });
+    },
+    onError: (error: any) => {
+      toast.error('Error archiving lead', { description: error.message });
+    },
+  });
 
-      setLeads(leads.filter(lead => lead.id !== id));
-      toast({
-        title: 'Lead deleted',
-        description: 'Lead has been deleted successfully',
-      });
-    } catch (error: any) {
-      toast({
-        title: 'Error deleting lead',
-        description: error.message,
-        variant: 'destructive',
-      });
-      throw error;
-    }
-  };
-
-  const updateLeadStatus = async (id: string, status: Lead['status']) => {
-    return updateLead(id, { status, last_contact_date: new Date().toISOString() });
-  };
-
-  const convertToCustomer = async (id: string) => {
-    try {
-      const { data, error } = await supabase.functions.invoke('convert-lead-to-customer', {
-        body: { leadId: id },
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: 'Lead converted',
-        description: 'Lead has been converted to customer successfully',
-      });
-
-      fetchLeads();
-      return data.customer;
-    } catch (error: any) {
-      toast({
-        title: 'Error converting lead',
-        description: error.message,
-        variant: 'destructive',
-      });
-      throw error;
-    }
-  };
-
-  const duplicateLead = async (leadToDuplicate: Lead): Promise<Lead | undefined> => {
-    if (!user) return;
-
-    try {
-      // Generate new lead number
+  const duplicateLeadMutation = useMutation({
+    mutationFn: async (leadToDuplicate: Lead) => {
+      if (!user) throw new Error('Not authenticated');
       const { data: leadNumber } = await supabase.rpc('generate_lead_number');
-      
-      // Create duplicate with "(Copy)" suffix
       const duplicateData = {
         user_id: user.id,
         lead_number: leadNumber,
@@ -240,7 +161,7 @@ export const useLeads = () => {
         company: leadToDuplicate.company,
         project_type: leadToDuplicate.project_type,
         value: leadToDuplicate.value,
-        status: 'new' as const, // Reset status to new
+        status: 'new' as const,
         source_id: leadToDuplicate.source_id,
         source_other: leadToDuplicate.source_other,
         address: leadToDuplicate.address,
@@ -249,35 +170,66 @@ export const useLeads = () => {
         zip_code: leadToDuplicate.zip_code,
         notes: leadToDuplicate.notes,
       };
-
       const { data, error } = await supabase
         .from('leads')
         .insert([duplicateData])
         .select()
         .single();
-
       if (error) throw error;
-
-      setLeads([data as Lead, ...leads]);
-      toast({
-        title: 'Lead duplicated',
-        description: 'Lead has been duplicated successfully',
-      });
       return data as Lead;
-    } catch (error: any) {
-      toast({
-        title: 'Error duplicating lead',
-        description: error.message,
-        variant: 'destructive',
+    },
+    onSuccess: () => {
+      invalidateLeads();
+      toast.success('Lead duplicated', { description: 'Lead has been duplicated successfully' });
+    },
+    onError: (error: any) => {
+      toast.error('Error duplicating lead', { description: error.message });
+    },
+  });
+
+  const convertToCustomerMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { data, error } = await supabase.functions.invoke('convert-lead-to-customer', {
+        body: { leadId: id },
       });
-      throw error;
-    }
-  };
+      if (error) throw error;
+      return data.customer;
+    },
+    onSuccess: () => {
+      invalidateLeads();
+      toast.success('Lead converted', { description: 'Lead has been converted to customer successfully' });
+    },
+    onError: (error: any) => {
+      toast.error('Error converting lead', { description: error.message });
+    },
+  });
+
+  // Wrapper functions to preserve the existing API surface
+  const addLead = (leadData: Omit<Lead, 'id' | 'user_id' | 'created_at' | 'updated_at'>) =>
+    addLeadMutation.mutateAsync(leadData);
+
+  const updateLead = (id: string, updates: Partial<Lead>) =>
+    updateLeadMutation.mutateAsync({ id, updates });
+
+  const deleteLead = (id: string) => deleteLeadMutation.mutateAsync(id);
+
+  const archiveLead = (id: string) => archiveLeadMutation.mutateAsync(id);
+
+  const duplicateLead = (leadToDuplicate: Lead) =>
+    duplicateLeadMutation.mutateAsync(leadToDuplicate);
+
+  const convertToCustomer = (id: string) =>
+    convertToCustomerMutation.mutateAsync(id);
+
+  const updateLeadStatus = (id: string, status: Lead['status']) =>
+    updateLead(id, { status, last_contact_date: new Date().toISOString() });
+
+  const refreshLeads = () => invalidateLeads();
 
   return {
-    leads,
-    sources,
-    loading,
+    leads: leadsQuery.data ?? [],
+    sources: sourcesQuery.data ?? [],
+    loading: leadsQuery.isLoading,
     addLead,
     updateLead,
     deleteLead,
@@ -285,6 +237,6 @@ export const useLeads = () => {
     convertToCustomer,
     archiveLead,
     duplicateLead,
-    refreshLeads: fetchLeads,
+    refreshLeads,
   };
 };
