@@ -23,7 +23,7 @@ export function PageShell({
     <div
       className={cn(
         padding,
-        "min-h-[400px] md:min-h-[600px] pb-20",
+        "min-h-[400px] md:min-h-[600px] pb-14",
         className
       )}
     >
