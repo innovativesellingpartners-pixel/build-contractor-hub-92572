@@ -71,7 +71,9 @@ import { PaymentsBankingSection } from './sections/PaymentsBankingSection';
 import { TemplatesSection } from './estimate/TemplatesSection';
 import { LegalLinks } from '@/components/LegalLinks';
 
-type Section = 'dashboard' | 'leads' | 'jobs' | 'customers' | 'calls' | 'calendar' | 'emails' | 'estimates' | 'reporting' | 'financials' | 'more' | 'payments' | 'accounting' | 'invoices' | 'templates' | 'gc' | 'contacts' | 'help' | 'portal' | 'ai-report' | 'crews' | 'documents' | 'network' | 'team';
+import { crmNavItems as navItemsConfig, hubNavItemsCRM, type CRMSection } from "@/config/navigation";
+
+type Section = CRMSection;
 
 interface CT1CRMProps {
   onOpenPocketAgent?: () => void;
@@ -95,27 +97,8 @@ interface CT1CRMProps {
 
 export default function CT1CRM({ onOpenPocketAgent, onSectionChange, onHubSectionChange, tierFeatures, activeHubSection }: CT1CRMProps = {}) {
 
-const navItems = [
-  { id: 'dashboard' as Section, label: 'Dashboard', icon: LayoutDashboard },
-  { id: 'leads' as Section, label: 'Leads', icon: ClipboardList },
-  { id: 'jobs' as Section, label: 'Jobs', icon: Briefcase },
-  { id: 'estimates' as Section, label: 'Estimates', icon: FileText },
-  { id: 'emails' as Section, label: 'Emails', icon: Mail },
-  { id: 'calls' as Section, label: 'Calls', icon: Phone },
-  { id: 'calendar' as Section, label: 'Calendar', icon: Calendar },
-  { id: 'invoices' as Section, label: 'Invoices', icon: Receipt },
-  { id: 'accounting' as Section, label: 'Accounting', icon: DollarSign },
-  { id: 'templates' as Section, label: 'Estimate Templates', icon: LayoutTemplate },
-  { id: 'reporting' as Section, label: 'Reporting', icon: BarChart2 },
-  { id: 'customers' as Section, label: 'Customers', icon: Users },
-  { id: 'gc' as Section, label: 'General Contractors', icon: Building2 },
-  { id: 'contacts' as Section, label: 'Contacts', icon: Contact },
-  { id: 'portal' as Section, label: 'Customer Portal', icon: LinkIcon },
-  { id: 'crews' as Section, label: 'Crews', icon: Shield },
-  { id: 'documents' as Section, label: 'Documents', icon: FileText },
-  { id: 'network' as Section, label: 'Contractor Network', icon: Users },
-  { id: 'team' as Section, label: 'Team', icon: Users },
-];
+const navItems = navItemsConfig;
+const hubNavItems = hubNavItemsCRM;
 
 // Component moved to accept props - see above
 
