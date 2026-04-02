@@ -720,24 +720,8 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
         const name = toolCall.function?.name;
         const argsStr = toolCall.function?.arguments || '{}';
         
-        if (name === "generate_pdf") {
-          const args = JSON.parse(argsStr);
-          const pdfDataUrl = generatePDF(args);
-          
-          return new Response(
-            JSON.stringify({ 
-              type: "pdf",
-              content: "I've generated your PDF document. Click below to download it.",
-              pdfData: pdfDataUrl,
-              fileName: `${args.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`
-            }),
-            {
-              headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" },
-            }
-          );
-        }
 
-        if (name === "extract_job_data") {
+
           try {
             const args = JSON.parse(argsStr);
             console.log("Extracted job data:", args);
