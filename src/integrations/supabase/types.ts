@@ -6984,6 +6984,16 @@ export type Database = {
       get_request_token: { Args: never; Returns: string }
       get_user_contractor_id: { Args: { _user_id: string }; Returns: string }
       get_user_tier: { Args: { user_id: string }; Returns: string }
+      get_user_tier_data: {
+        Args: { p_user_id: string }
+        Returns: {
+          billing_cycle: string
+          role: string
+          subscription_status: string
+          tier_id: string
+          training_access: boolean
+        }[]
+      }
       has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
       is_contractor_admin: {
         Args: { _record_user_id: string }
