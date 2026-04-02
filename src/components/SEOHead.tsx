@@ -15,7 +15,7 @@ export function SEOHead({
   description,
   canonical,
   keywords,
-  ogImage = 'https://myct1.com/og-blog-creative-3.png',
+  ogImage = 'https://myct1.com/og-blog-creative-3.webp',
   ogType = 'website',
   structuredData,
 }: SEOHeadProps) {
@@ -158,7 +158,7 @@ export const structuredDataGenerators = {
     '@type': 'Product',
     name,
     description,
-    image: image || 'https://myct1.com/og-blog-creative-3.png',
+    image: image || 'https://myct1.com/og-blog-creative-3.webp',
     brand: {
       '@type': 'Brand',
       name: 'myCT1',
@@ -188,7 +188,7 @@ export const structuredDataGenerators = {
     headline: title,
     description,
     url: `https://myct1.com/blog/${slug}`,
-    image: 'https://myct1.com/og-blog-creative-3.png',
+    image: 'https://myct1.com/og-blog-creative-3.webp',
     datePublished: datePublished || new Date().toISOString().split('T')[0],
     dateModified: new Date().toISOString().split('T')[0],
     author: {
