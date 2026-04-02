@@ -365,7 +365,7 @@ const navItems = navItemsConfig;
               </p>
             )}
             <ul className="space-y-1 mt-1">
-              {hubNavItems
+              {hubNavItemsCRM
                 .filter(item => !item.feature || !tierFeatures || tierFeatures[item.feature])
                 .map((item) => (
                   <li key={item.id}>
