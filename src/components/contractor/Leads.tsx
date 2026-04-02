@@ -49,6 +49,89 @@ const STAGE_LABELS = {
   psfw: 'PSFW'
 };
 
+function ConvertedLeadsTab({ userId }: { userId?: string }) {
+  const [convertedLeads, setConvertedLeads] = useState<Array<{
+    id: string;
+    name: string;
+    company: string | null;
+    converted_at: string | null;
+    converted_to_job_id: string | null;
+  }>>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!userId) return;
+    const fetchConverted = async () => {
+      setLoading(true);
+      const { data } = await supabase
+        .from('leads')
+        .select('id, name, company, converted_at, converted_to_job_id')
+        .eq('user_id', userId)
+        .not('converted_to_job_id', 'is', null)
+        .order('converted_at', { ascending: false });
+      setConvertedLeads(data || []);
+      setLoading(false);
+    };
+    fetchConverted();
+  }, [userId]);
+
+  if (loading) {
+    return (
+      <div className="space-y-3">
+        {[1, 2, 3].map((i) => (
+          <Skeleton key={i} className="h-16 w-full" />
+        ))}
+      </div>
+    );
+  }
+
+  if (convertedLeads.length === 0) {
+    return (
+      <Card>
+        <CardContent className="py-12 text-center">
+          <CheckCircle2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <p className="text-muted-foreground">No converted leads yet.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-lg">Converted Leads</CardTitle>
+        <CardDescription>{convertedLeads.length} lead{convertedLeads.length !== 1 ? 's' : ''} converted to jobs</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-3">
+          {convertedLeads.map((lead) => (
+            <div key={lead.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg gap-2">
+              <div className="min-w-0">
+                <h4 className="font-semibold">{lead.name}</h4>
+                {lead.company && <p className="text-sm text-muted-foreground">{lead.company}</p>}
+              </div>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-muted-foreground">
+                {lead.converted_at && (
+                  <div className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
+                    <span>Converted {new Date(lead.converted_at).toLocaleDateString()}</span>
+                  </div>
+                )}
+                {lead.converted_to_job_id && (
+                  <Badge variant="secondary" className="w-fit">
+                    <Briefcase className="h-3 w-3 mr-1" />
+                    Job linked
+                  </Badge>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export function Leads() {
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
