@@ -98,7 +98,6 @@ interface CT1CRMProps {
 export default function CT1CRM({ onOpenPocketAgent, onSectionChange, onHubSectionChange, tierFeatures, activeHubSection }: CT1CRMProps = {}) {
 
 const navItems = navItemsConfig;
-const hubNavItems = hubNavItemsCRM;
 
 // Component moved to accept props - see above
 
