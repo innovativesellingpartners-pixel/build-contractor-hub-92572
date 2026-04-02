@@ -52,14 +52,13 @@ export function usePayments(jobId?: string, customerId?: string) {
     mutationFn: async (payment: Omit<Payment, 'id' | 'contractor_id' | 'created_at' | 'updated_at'>) => {
       if (!user?.id) throw new Error('Not authenticated');
 
-      const { data, error } = await supabase
-        .from('payments')
-        .insert([{ ...payment, contractor_id: user.id }])
-        .select()
-        .single();
+      const { data, error } = await supabase.functions.invoke('record-payment', {
+        body: payment,
+      });
 
       if (error) throw error;
-      return data;
+      if (data?.error) throw new Error(data.error);
+      return data?.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['payments'] });

@@ -56,14 +56,13 @@ export function useInvoices(jobId?: string) {
     mutationFn: async (invoice: Invoice) => {
       if (!user?.id) throw new Error('Not authenticated');
 
-      const { data, error } = await supabase
-        .from('invoices')
-        .insert([{ ...invoice, user_id: user.id, public_token: crypto.randomUUID() }])
-        .select()
-        .single();
+      const { data, error } = await supabase.functions.invoke('create-invoice', {
+        body: invoice,
+      });
 
       if (error) throw error;
-      return data;
+      if (data?.error) throw new Error(data.error);
+      return data?.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
