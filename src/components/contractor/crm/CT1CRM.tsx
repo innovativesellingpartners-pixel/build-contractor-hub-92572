@@ -306,15 +306,7 @@ const hubNavItems = hubNavItemsCRM;
     }
   };
 
-  const hubNavItems = [
-    { id: 'training', label: '5-Star Training', icon: BookOpen, feature: 'trainingHub' as const },
-    { id: 'voiceai', label: 'Voice AI', icon: Bot, feature: 'aiAssistant' as const },
-    { id: 'marketplace', label: 'Marketplace', icon: Store, feature: 'marketplace' as const },
-    { id: 'tasks', label: 'My Tasks', icon: ClipboardListHub, feature: null },
-    { id: 'insurance', label: 'Insurance', icon: Shield, feature: 'insurance' as const },
-    { id: 'account', label: 'My Account', icon: User, feature: 'myAccount' as const },
-    { id: 'help', label: 'Help Center', icon: HelpCircle, feature: null },
-  ];
+  const hubNavItemsLocal = hubNavItemsCRM;
 
   const NavButton = ({ icon: Icon, label, isActive, onClick }: { icon: any; label: string; isActive: boolean; onClick: () => void }) => {
     const button = (
