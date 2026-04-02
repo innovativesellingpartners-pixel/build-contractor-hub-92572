@@ -160,7 +160,7 @@ serve(async (req) => {
     }
 
     const tools = [
-      
+      {
         type: "function",
         function: {
           name: "extract_job_data",
