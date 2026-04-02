@@ -11,94 +11,64 @@ export interface Subscription {
 export const useUserTier = () => {
   const { user } = useAuth();
 
-  // Fetch both subscription and role data
-  const { data: subscription, isLoading: isSubscriptionLoading } = useQuery({
-    queryKey: ['userTier', user?.id],
+  const { data: tierData, isLoading } = useQuery({
+    queryKey: ['userTierData', user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
 
       // Check if user has @myct1.com domain for full access
       if (user.email?.endsWith('@myct1.com')) {
-        return { tier_id: 'full_access', billing_cycle: 'N/A', status: 'active' } as Subscription;
+        return {
+          tier_id: 'full_access',
+          billing_cycle: 'N/A',
+          subscription_status: 'active',
+          role: null as string | null,
+          training_access: true,
+        };
       }
 
       try {
-        const { data, error } = await supabase
-          .from('subscriptions' as any)
-          .select('tier_id, billing_cycle, status')
-          .eq('user_id', user.id)
-          .eq('status', 'active')
-          .maybeSingle();
+        const { data, error } = await supabase.rpc('get_user_tier_data', {
+          p_user_id: user.id,
+        });
 
         if (error) {
-          // Table might not exist yet - return null gracefully
-          console.error('Error fetching user tier:', error);
+          console.error('Error fetching user tier data:', error);
           return null;
         }
 
-        return (data as unknown as Subscription) || null;
+        const row = Array.isArray(data) ? data[0] : data;
+        return row ?? null;
       } catch (error) {
-        console.error('Error in tier query:', error);
+        console.error('Error in tier data query:', error);
         return null;
       }
     },
     enabled: !!user?.id,
-    retry: false, // Don't retry if table doesn't exist
+    retry: false,
   });
 
-  // Fetch user role
-  const { data: userRole, isLoading: isRoleLoading } = useQuery({
-    queryKey: ['userRole', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return null;
-      
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (error) {
-        console.error('Error fetching user role:', error);
-        return null;
+  // Map RPC result to the same local variables used before
+  const subscription: Subscription | null = tierData?.tier_id
+    ? {
+        tier_id: tierData.tier_id,
+        billing_cycle: tierData.billing_cycle ?? 'N/A',
+        status: tierData.subscription_status ?? 'active',
       }
+    : null;
 
-      return data?.role || null;
-    },
-    enabled: !!user?.id,
-  });
-
-  // Fetch training access from profile
-  const { data: trainingAccess } = useQuery({
-    queryKey: ['trainingAccess', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return true;
-      
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('training_access')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (error) {
-        console.error('Error fetching training access:', error);
-        return true; // Default to true
-      }
-
-      return (data as any)?.training_access ?? true;
-    },
-    enabled: !!user?.id,
-  });
+  const userRole = tierData?.role ?? null;
+  const trainingAccess = tierData?.training_access ?? true;
 
   // Check if user has full access via email domain OR super_admin role
   const hasFullAccess = user?.email?.endsWith('@myct1.com') || userRole === 'super_admin';
-  const tierFeatures = getTierFeatures(subscription?.tier_id ?? null, hasFullAccess, trainingAccess ?? true);
+  const tierFeatures = getTierFeatures(subscription?.tier_id ?? null, hasFullAccess, trainingAccess);
 
   return {
     subscription,
     tierFeatures,
     hasFullAccess,
-    isLoading: isSubscriptionLoading || isRoleLoading,
+    isLoading,
     userRole,
   };
 };
@@ -120,7 +90,6 @@ function getTierFeatures(tierId: string | null, hasFullAccess: boolean, training
     };
   }
 
-  // Bot user tier - Training, CRM, Marketplace, and Monthly Call
   if (tierId === 'bot_user') {
     return {
       trainingHub: trainingAccess,
@@ -137,7 +106,6 @@ function getTierFeatures(tierId: string | null, hasFullAccess: boolean, training
     };
   }
 
-  // Trial tier - limited access to Training, CRM, and Marketplace
   if (tierId === 'trial') {
     return {
       trainingHub: trainingAccess,
@@ -170,7 +138,6 @@ function getTierFeatures(tierId: string | null, hasFullAccess: boolean, training
     };
   }
 
-  // Free tier - full platform access (no billing, no admin)
   if (tierId === 'free') {
     return {
       trainingHub: trainingAccess,
@@ -203,7 +170,6 @@ function getTierFeatures(tierId: string | null, hasFullAccess: boolean, training
     };
   }
 
-  // No subscription - still give training and basic access
   return {
     trainingHub: trainingAccess,
     crm: false,
