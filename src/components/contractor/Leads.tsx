@@ -17,7 +17,8 @@ import {
   Upload,
   Briefcase,
   BriefcaseBusiness,
-  Plus
+  Plus,
+  CheckCircle2
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
