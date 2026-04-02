@@ -305,7 +305,7 @@ const navItems = navItemsConfig;
     }
   };
 
-  const hubNavItemsLocal = hubNavItemsCRM;
+  
 
   const NavButton = ({ icon: Icon, label, isActive, onClick }: { icon: any; label: string; isActive: boolean; onClick: () => void }) => {
     const button = (
