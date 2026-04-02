@@ -160,36 +160,7 @@ serve(async (req) => {
     }
 
     const tools = [
-      {
-        type: "function",
-        function: {
-          name: "generate_pdf",
-          description: "Generate a PDF document with structured content. Use this when users ask for a PDF report, guide, checklist, or any document they want to download.",
-          parameters: {
-            type: "object",
-            properties: {
-              title: {
-                type: "string",
-                description: "The main title of the PDF document"
-              },
-              sections: {
-                type: "array",
-                description: "Array of sections, each with a heading and content",
-                items: {
-                  type: "object",
-                  properties: {
-                    heading: { type: "string", description: "Section heading" },
-                    content: { type: "string", description: "Section content/body text" }
-                  },
-                  required: ["heading", "content"]
-                }
-              }
-            },
-            required: ["title", "sections"]
-          }
-        }
-      },
-      {
+      
         type: "function",
         function: {
           name: "extract_job_data",
