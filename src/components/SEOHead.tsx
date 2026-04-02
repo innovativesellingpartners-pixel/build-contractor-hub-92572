@@ -188,7 +188,7 @@ export const structuredDataGenerators = {
     headline: title,
     description,
     url: `https://myct1.com/blog/${slug}`,
-    image: 'https://myct1.com/og-blog-creative-3.png',
+    image: 'https://myct1.com/og-blog-creative-3.webp',
     datePublished: datePublished || new Date().toISOString().split('T')[0],
     dateModified: new Date().toISOString().split('T')[0],
     author: {

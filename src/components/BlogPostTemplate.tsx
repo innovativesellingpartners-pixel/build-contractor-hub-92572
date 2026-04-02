@@ -33,7 +33,7 @@ export function BlogPostTemplate({ post }: Props) {
     headline: title,
     description: metaDescription,
     url: `https://myct1.com/blog/${slug}`,
-    image: "https://myct1.com/og-blog-creative-3.png",
+    image: "https://myct1.com/og-blog-creative-3.webp",
     datePublished: new Date().toISOString().split("T")[0],
     dateModified: new Date().toISOString().split("T")[0],
     author: { "@type": "Organization", name: "myCT1", url: "https://myct1.com" },
