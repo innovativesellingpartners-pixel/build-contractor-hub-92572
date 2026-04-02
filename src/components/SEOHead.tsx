@@ -158,7 +158,7 @@ export const structuredDataGenerators = {
     '@type': 'Product',
     name,
     description,
-    image: image || 'https://myct1.com/og-blog-creative-3.png',
+    image: image || 'https://myct1.com/og-blog-creative-3.webp',
     brand: {
       '@type': 'Brand',
       name: 'myCT1',
