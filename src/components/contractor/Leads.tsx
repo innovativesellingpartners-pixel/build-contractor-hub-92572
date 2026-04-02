@@ -613,6 +613,10 @@ export function Leads() {
             })}
           </div>
         </TabsContent>
+
+        <TabsContent value="converted" className="mt-6">
+          <ConvertedLeadsTab userId={user?.id} />
+        </TabsContent>
       </Tabs>
     </div>
   );
