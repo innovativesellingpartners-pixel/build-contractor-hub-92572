@@ -12,6 +12,7 @@ interface ContactEmailRequest {
   companyName?: string;
   reason?: string;
   formType?: string;
+  smsConsent?: boolean;
 }
 
 // Server-side validation function
