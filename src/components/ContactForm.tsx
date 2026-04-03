@@ -210,6 +210,22 @@ export function ContactForm({
             )}
           </div>
 
+          <div className="space-y-3">
+            <div className="flex items-start space-x-3">
+              <Checkbox
+                id="smsConsent"
+                checked={form.watch("smsConsent")}
+                onCheckedChange={(checked) => form.setValue("smsConsent", checked === true)}
+              />
+              <Label htmlFor="smsConsent" className="text-sm font-normal leading-snug cursor-pointer">
+                I agree to receive SMS messages from Myct1 related to my account activity, including job updates, appointment confirmations, scheduling notifications, estimate notifications, and workflow alerts.
+              </Label>
+            </div>
+            <p className="text-xs text-muted-foreground pl-7">
+              Message frequency varies. Message and data rates may apply. Reply STOP to opt out. Consent is not a condition of purchase.
+            </p>
+          </div>
+
           <Button 
             type="submit" 
             className="w-full btn-ct1" 
