@@ -1,38 +1,141 @@
 
 
-# Mobile Layout Optimization for Maximum Contractor Viewport
+# Phase 1: Admin Demo Workspace — Routes, Access Control, Seed Data Shell
 
-## Problems Identified
+## Approach
 
-1. **Top area wastes space**: The mobile search bar header (`border-b bg-card px-3 py-2`) sits permanently at the top, eating vertical space on every section view.
-2. **Bottom nav is too tall and clunky**: The `BottomNav` is `h-16` (64px) fixed at the bottom, plus safe-area padding. Even with the scroll-to-hide behavior, the padding toggle (`pb-28` vs `pb-6`) is jarring.
-3. **Content padding is excessive**: The main content area has `pb-28` when nav is visible — that's 112px of dead space at the bottom.
+Create a **dedicated demo contractor account** (a real user record with seeded data). The Demo Workspace pages will reuse existing contractor UI components by wrapping them in a `DemoContext` provider that overrides `effectiveUserId` to the demo account's ID. This means zero changes to existing components, queries, or RLS policies.
 
-## Changes (3 files, no visual redesign)
+## What changes and what doesn't
 
-### 1. Slim down BottomNav (`src/components/contractor/crm/BottomNav.tsx`)
+**Unchanged**: All existing routes, components, hooks, RLS policies, database schema for production tables, admin pages, contractor pages, and public pages.
 
-- Reduce nav height from `h-16` to `h-12` (48px) — saves 16px
-- Reduce icon size from `h-5 w-5` to `h-4 w-4` and text from `text-xs` to `text-[10px]`
-- Reduce button padding from `px-3 py-2` to `px-2 py-1`
-- Tighten active state scale from `scale-110` to `scale-105`
-- Result: a compact nav bar that still has clear tap targets but uses ~30% less vertical space
+**New additions only**: New files, new admin sidebar entry, new routes under `/admin/demo/*`, one new DB table, one seed script.
 
-### 2. Optimize main content area (`src/components/contractor/crm/CT1CRM.tsx`)
+---
 
-- Move the search bar from a fixed header into a collapsible element that hides with scroll (same `isScrollingDown` flag)
-- Reduce bottom padding from `pb-28` (nav visible) to `pb-16`, and from `pb-6` (nav hidden) to `pb-2`
-- Remove the top search bar border-b chrome when scrolling down to reclaim ~40px at top
-- Ensure the scroll container uses the full viewport height
+## 1. Database: Feature flag + demo audit log
 
-### 3. Adjust PageShell default padding (`src/components/ui/page-shell.tsx`)
+**Migration 1** — `admin_feature_flags` table:
 
-- Reduce mobile `pb-20` to `pb-14` to match the slimmer bottom nav
+```sql
+CREATE TABLE public.admin_feature_flags (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  flag_name text UNIQUE NOT NULL,
+  enabled boolean DEFAULT false,
+  updated_by uuid REFERENCES auth.users(id),
+  updated_at timestamptz DEFAULT now()
+);
+ALTER TABLE public.admin_feature_flags ENABLE ROW LEVEL SECURITY;
 
-## Technical Details
+-- Only admins can read/write
+CREATE POLICY "Admins manage flags" ON public.admin_feature_flags
+  FOR ALL TO authenticated
+  USING (public.has_role(auth.uid(), 'super_admin') OR public.has_role(auth.uid(), 'admin'))
+  WITH CHECK (public.has_role(auth.uid(), 'super_admin') OR public.has_role(auth.uid(), 'admin'));
 
-- All changes are CSS/className only — no logic, routing, or data changes
-- The `useScrollDirection` hook already handles show/hide; we extend its usage to the search bar
-- BottomNav `hidden` prop and transition remain identical, just with smaller dimensions
-- Safe-area-inset-bottom handling stays in place for notched devices
+-- Seed the flag
+INSERT INTO public.admin_feature_flags (flag_name, enabled) VALUES ('admin_demo_workspace_enabled', true);
+```
+
+**Migration 2** — `demo_access_log` table:
+
+```sql
+CREATE TABLE public.demo_access_log (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid REFERENCES auth.users(id) NOT NULL,
+  action text NOT NULL,
+  details jsonb DEFAULT '{}',
+  created_at timestamptz DEFAULT now()
+);
+ALTER TABLE public.demo_access_log ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Admins read demo logs" ON public.demo_access_log
+  FOR ALL TO authenticated
+  USING (public.has_role(auth.uid(), 'super_admin') OR public.has_role(auth.uid(), 'admin'))
+  WITH CHECK (public.has_role(auth.uid(), 'super_admin') OR public.has_role(auth.uid(), 'admin'));
+```
+
+## 2. Demo Data Seed (Edge Function)
+
+**New edge function**: `supabase/functions/seed-demo-data/index.ts`
+
+- Accepts POST from admin users only (validates service role)
+- Creates or resets a dedicated demo contractor account with a known UUID
+- Seeds ~20 leads (all stages), ~15 customers, ~10 estimates (draft→signed), ~8 jobs (all statuses), ~12 invoices (paid/unpaid/overdue), payments, expenses
+- All data tied to the demo contractor's `user_id` so existing RLS scopes it automatically
+- Idempotent: deletes existing demo data first, then re-inserts
+
+## 3. DemoContext Provider
+
+**New file**: `src/contexts/DemoContext.tsx`
+
+- Provides `isDemoMode`, `demoUserId`, and an `effectiveUserId` override
+- When active, all hooks that use `effectiveUserId` from `AuthContext` will resolve to the demo user
+- Wraps only demo workspace routes — no impact on any other route
+
+## 4. New Admin Pages (all under `/admin/demo/*`)
+
+**New files**:
+
+| File | Purpose |
+|------|---------|
+| `src/components/admin/demo/DemoWorkspace.tsx` | Layout shell with "Demo Workspace – Internal Use Only" badge |
+| `src/components/admin/demo/DemoDashboard.tsx` | Overview: module cards linking to each demo section |
+| `src/components/admin/demo/DemoSection.tsx` | Generic wrapper that renders existing contractor components inside DemoContext |
+| `src/components/admin/demo/DemoResetPanel.tsx` | Reset button + scenario controls |
+| `src/components/admin/demo/DemoScenarios.tsx` | Pre-built scenario cards (Phase 2 interactive, Phase 1 static descriptions) |
+
+## 5. Routing Changes
+
+**File**: `src/App.tsx` — add inside the existing `<Route path="/admin">` block:
+
+```
+<Route path="demo" element={<DemoWorkspace />}>
+  <Route index element={<DemoDashboard />} />
+  <Route path="crm" element={<DemoSection module="crm" />} />
+  <Route path="estimates" element={<DemoSection module="estimates" />} />
+  <Route path="jobs" element={<DemoSection module="jobs" />} />
+  <Route path="invoices" element={<DemoSection module="invoices" />} />
+  <Route path="reports" element={<DemoSection module="reports" />} />
+  <Route path="reset" element={<DemoResetPanel />} />
+</Route>
+```
+
+These are nested inside the existing `AdminProtectedRoute`, so they inherit admin-only access. `DemoWorkspace` adds an additional super_admin check + feature flag check.
+
+## 6. Admin Sidebar Update
+
+**File**: `src/components/admin/AdminSidebar.tsx` — add one entry:
+
+```typescript
+{ to: '/admin/demo', icon: Monitor, label: 'Demo Workspace' }
+```
+
+Conditionally rendered only when `admin_demo_workspace_enabled` flag is true (queried via react-query).
+
+## 7. Access Control (layered)
+
+1. `AdminProtectedRoute` (existing) — blocks non-admins
+2. `DemoWorkspace` component — checks `isSuperAdmin` from `useAdminAuth()` + checks feature flag from DB
+3. `demo_access_log` — logs every entry to Demo Workspace with user_id and timestamp
+
+## Files created/modified summary
+
+| Action | File |
+|--------|------|
+| Create | `src/contexts/DemoContext.tsx` |
+| Create | `src/components/admin/demo/DemoWorkspace.tsx` |
+| Create | `src/components/admin/demo/DemoDashboard.tsx` |
+| Create | `src/components/admin/demo/DemoSection.tsx` |
+| Create | `src/components/admin/demo/DemoResetPanel.tsx` |
+| Create | `src/components/admin/demo/DemoScenarios.tsx` |
+| Create | `src/hooks/useFeatureFlag.ts` |
+| Create | `supabase/functions/seed-demo-data/index.ts` |
+| Modify | `src/App.tsx` (add 8 route lines) |
+| Modify | `src/components/admin/AdminSidebar.tsx` (add 1 nav item) |
+| DB Migration | `admin_feature_flags` table |
+| DB Migration | `demo_access_log` table |
+
+**Zero changes** to any existing contractor component, hook, context, RLS policy, or production data path.
 
