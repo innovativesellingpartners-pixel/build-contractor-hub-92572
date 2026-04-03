@@ -361,12 +361,12 @@ const App = () => (
                 <Route path="assignments" element={<Lazy><AssignmentAuditLog /></Lazy>} />
                 <Route path="demo" element={<Lazy><DemoWorkspace /></Lazy>}>
                   <Route index element={<Lazy><DemoDashboard /></Lazy>} />
-                  <Route path="crm" element={<Lazy><DemoCRMView /></Lazy>} />
-                  <Route path="estimates" element={<Lazy><DemoEstimatesView /></Lazy>} />
-                  <Route path="jobs" element={<Lazy><DemoJobsView /></Lazy>} />
-                  <Route path="invoices" element={<Lazy><DemoInvoicesView /></Lazy>} />
-                  <Route path="reports" element={<Lazy><DemoReportsView /></Lazy>} />
-                  <Route path="scenarios" element={<Lazy><DemoScenarios /></Lazy>} />
+                  <Route path="crm" element={<Lazy><DemoLiveSection module="crm" /></Lazy>} />
+                  <Route path="estimates" element={<Lazy><DemoLiveSection module="estimates" /></Lazy>} />
+                  <Route path="jobs" element={<Lazy><DemoLiveSection module="jobs" /></Lazy>} />
+                  <Route path="invoices" element={<Lazy><DemoLiveSection module="invoices" /></Lazy>} />
+                  <Route path="reports" element={<Lazy><DemoLiveSection module="reports" /></Lazy>} />
+                  <Route path="scenarios" element={<Lazy><DemoGuidedScenario /></Lazy>} />
                   <Route path="reset" element={<Lazy><DemoResetPanel /></Lazy>} />
                   <Route path="tools" element={<Lazy><DemoAdminTools /></Lazy>} />
                 </Route>
