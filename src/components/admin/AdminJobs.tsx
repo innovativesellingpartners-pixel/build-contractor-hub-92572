@@ -18,9 +18,10 @@ export const AdminJobs = () => {
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   const { data: jobs, isLoading, error } = useQuery({
-    queryKey: ['adminJobs'],
+    queryKey: ['adminJobs', user?.id],
     queryFn: async () => {
       console.log('AdminJobs: Fetching jobs...');
       const { data, error } = await supabase
@@ -44,6 +45,7 @@ export const AdminJobs = () => {
       console.log('AdminJobs: Fetched jobs:', data);
       return data;
     },
+    enabled: !!user?.id,
   });
 
   if (error) {

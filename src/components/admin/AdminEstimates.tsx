@@ -20,9 +20,10 @@ export const AdminEstimates = () => {
   const [detailViewOpen, setDetailViewOpen] = useState(false);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const { data: estimates, isLoading } = useQuery({
-    queryKey: ['adminEstimates'],
+    queryKey: ['adminEstimates', user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('estimates')
@@ -38,6 +39,7 @@ export const AdminEstimates = () => {
       if (error) throw error;
       return data;
     },
+    enabled: !!user?.id,
   });
 
   const filteredEstimates = estimates?.filter(estimate =>

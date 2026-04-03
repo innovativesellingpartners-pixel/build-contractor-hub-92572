@@ -12,9 +12,10 @@ import { format } from 'date-fns';
 
 export const AdminCustomers = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const { user } = useAuth();
 
   const { data: customers, isLoading, error } = useQuery({
-    queryKey: ['adminCustomers'],
+    queryKey: ['adminCustomers', user?.id],
     queryFn: async () => {
       console.log('AdminCustomers: Fetching customers...');
       const { data, error } = await supabase
@@ -39,6 +40,7 @@ export const AdminCustomers = () => {
       console.log('AdminCustomers: Fetched customers:', data);
       return data;
     },
+    enabled: !!user?.id,
   });
 
   if (error) {
