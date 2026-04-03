@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Users, FileText, Briefcase, Receipt, BarChart3, RotateCcw, Play } from 'lucide-react';
+import { Users, FileText, Briefcase, Receipt, BarChart3, RotateCcw, Play, Wrench } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 const modules = [
