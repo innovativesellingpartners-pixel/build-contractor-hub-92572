@@ -66,7 +66,12 @@ export function ContactForm({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          ...data,
+          name: `${data.firstName} ${data.lastName}`,
+          phone: data.phone,
+          email: data.email,
+          companyName: data.companyName,
+          reason: data.reason,
+          smsConsent: data.smsConsent ?? false,
           formType,
         }),
       });
