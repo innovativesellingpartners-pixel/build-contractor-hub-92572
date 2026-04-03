@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Mail, Phone, User, Building, MessageSquare } from "lucide-react";
 import ct1Logo from "@/assets/ct1-round-logo-new.png";
@@ -19,6 +20,7 @@ const contactFormSchema = z.object({
   phone: z.string().trim().min(1, "Phone number is required").max(20, "Phone number must be less than 20 characters"),
   email: z.string().trim().email("Invalid email address").max(255, "Email must be less than 255 characters"),
   reason: z.string().trim().max(1000, "Reason must be less than 1000 characters").optional(),
+  smsConsent: z.boolean().optional().default(false),
 });
 
 type ContactFormData = z.infer<typeof contactFormSchema>;
@@ -50,6 +52,7 @@ export function ContactForm({
       phone: "",
       email: "",
       reason: "",
+      smsConsent: false,
     },
   });
 
@@ -63,7 +66,12 @@ export function ContactForm({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          ...data,
+          name: `${data.firstName} ${data.lastName}`,
+          phone: data.phone,
+          email: data.email,
+          companyName: data.companyName,
+          reason: data.reason,
+          smsConsent: data.smsConsent ?? false,
           formType,
         }),
       });
@@ -200,6 +208,22 @@ export function ContactForm({
             {form.formState.errors.reason && (
               <p className="text-destructive text-sm">{form.formState.errors.reason.message}</p>
             )}
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-start space-x-3">
+              <Checkbox
+                id="smsConsent"
+                checked={form.watch("smsConsent")}
+                onCheckedChange={(checked) => form.setValue("smsConsent", checked === true)}
+              />
+              <Label htmlFor="smsConsent" className="text-sm font-normal leading-snug cursor-pointer">
+                I agree to receive SMS messages from Myct1 related to my account activity, including job updates, appointment confirmations, scheduling notifications, estimate notifications, and workflow alerts.
+              </Label>
+            </div>
+            <p className="text-xs text-muted-foreground pl-7">
+              Message frequency varies. Message and data rates may apply. Reply STOP to opt out. Consent is not a condition of purchase.
+            </p>
           </div>
 
           <Button 
