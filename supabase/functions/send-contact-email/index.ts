@@ -84,13 +84,14 @@ const handler = async (req: Request): Promise<Response> => {
     }
     
     // Sanitize and trim inputs
-    const { name, phone, email, companyName, reason, formType } = {
+    const { name, phone, email, companyName, reason, formType, smsConsent } = {
       name: requestData.name.trim().slice(0, 100),
       phone: requestData.phone.trim().slice(0, 20),
       email: requestData.email.trim().toLowerCase().slice(0, 255),
       companyName: requestData.companyName?.trim().slice(0, 200),
       reason: requestData.reason?.trim().slice(0, 2000),
-      formType: requestData.formType?.trim().slice(0, 50)
+      formType: requestData.formType?.trim().slice(0, 50),
+      smsConsent: requestData.smsConsent === true,
     };
 
     // Send notification email to sales team
