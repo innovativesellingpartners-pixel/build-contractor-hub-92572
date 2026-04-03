@@ -365,13 +365,14 @@ const App = () => (
                 <Route path="assignments" element={<Lazy><AssignmentAuditLog /></Lazy>} />
                 <Route path="demo" element={<Lazy><DemoWorkspace /></Lazy>}>
                   <Route index element={<Lazy><DemoDashboard /></Lazy>} />
-                  <Route path="crm" element={<Lazy><DemoSection module="crm" /></Lazy>} />
-                  <Route path="estimates" element={<Lazy><DemoSection module="estimates" /></Lazy>} />
-                  <Route path="jobs" element={<Lazy><DemoSection module="jobs" /></Lazy>} />
-                  <Route path="invoices" element={<Lazy><DemoSection module="invoices" /></Lazy>} />
-                  <Route path="reports" element={<Lazy><DemoSection module="reports" /></Lazy>} />
+                  <Route path="crm" element={<Lazy><DemoCRMView /></Lazy>} />
+                  <Route path="estimates" element={<Lazy><DemoEstimatesView /></Lazy>} />
+                  <Route path="jobs" element={<Lazy><DemoJobsView /></Lazy>} />
+                  <Route path="invoices" element={<Lazy><DemoInvoicesView /></Lazy>} />
+                  <Route path="reports" element={<Lazy><DemoReportsView /></Lazy>} />
                   <Route path="scenarios" element={<Lazy><DemoScenarios /></Lazy>} />
                   <Route path="reset" element={<Lazy><DemoResetPanel /></Lazy>} />
+                  <Route path="tools" element={<Lazy><DemoAdminTools /></Lazy>} />
                 </Route>
               </Route>
             </Route>
