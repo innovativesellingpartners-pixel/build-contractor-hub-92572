@@ -20,6 +20,7 @@ const contactFormSchema = z.object({
   phone: z.string().trim().min(1, "Phone number is required").max(20, "Phone number must be less than 20 characters"),
   email: z.string().trim().email("Invalid email address").max(255, "Email must be less than 255 characters"),
   reason: z.string().trim().max(1000, "Reason must be less than 1000 characters").optional(),
+  smsConsent: z.boolean().optional().default(false),
 });
 
 type ContactFormData = z.infer<typeof contactFormSchema>;
