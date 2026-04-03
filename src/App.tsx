@@ -83,9 +83,14 @@ const AdminProductForm = React.lazy(() => import("@/pages/admin/AdminProductForm
 const AssignmentAuditLog = React.lazy(() => import("@/components/admin/AssignmentAuditLog").then(m => ({ default: m.AssignmentAuditLog })));
 const DemoWorkspace = React.lazy(() => import("@/components/admin/demo/DemoWorkspace").then(m => ({ default: m.DemoWorkspace })));
 const DemoDashboard = React.lazy(() => import("@/components/admin/demo/DemoDashboard").then(m => ({ default: m.DemoDashboard })));
-const DemoSection = React.lazy(() => import("@/components/admin/demo/DemoSection").then(m => ({ default: m.DemoSection })));
+const DemoCRMView = React.lazy(() => import("@/components/admin/demo/DemoCRMView").then(m => ({ default: m.DemoCRMView })));
+const DemoEstimatesView = React.lazy(() => import("@/components/admin/demo/DemoEstimatesView").then(m => ({ default: m.DemoEstimatesView })));
+const DemoJobsView = React.lazy(() => import("@/components/admin/demo/DemoJobsView").then(m => ({ default: m.DemoJobsView })));
+const DemoInvoicesView = React.lazy(() => import("@/components/admin/demo/DemoInvoicesView").then(m => ({ default: m.DemoInvoicesView })));
+const DemoReportsView = React.lazy(() => import("@/components/admin/demo/DemoReportsView").then(m => ({ default: m.DemoReportsView })));
 const DemoResetPanel = React.lazy(() => import("@/components/admin/demo/DemoResetPanel").then(m => ({ default: m.DemoResetPanel })));
 const DemoScenarios = React.lazy(() => import("@/components/admin/demo/DemoScenarios").then(m => ({ default: m.DemoScenarios })));
+const DemoAdminTools = React.lazy(() => import("@/components/admin/demo/DemoAdminTools").then(m => ({ default: m.DemoAdminTools })));
 const AdminUserProfileEdit = React.lazy(() => import("@/pages/AdminUserProfileEdit"));
 const BusinessSuite = React.lazy(() => import("@/pages/BusinessSuite").then(m => ({ default: m.BusinessSuite })));
 const Training = React.lazy(() => import("@/pages/features/Training").then(m => ({ default: m.Training })));
