@@ -1284,7 +1284,6 @@ You are knowledgeable, professional, friendly, and provide actionable advice. Ke
           }
         }
       }
-    }
 
     // If no tool calls but we got content from the non-streamed response, return it as JSON
     if (accumulatedContent) {
