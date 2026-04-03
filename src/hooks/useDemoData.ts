@@ -5,15 +5,15 @@ import { DEMO_USER_ID } from '@/contexts/DemoContext';
 export const useDemoData = (table: 'leads' | 'customers' | 'estimates' | 'jobs' | 'invoices' | 'payments' | 'expenses') => {
   return useQuery({
     queryKey: ['demo', table],
-    queryFn: async () => {
-      const { data, error } = await supabase
+    queryFn: async (): Promise<any[]> => {
+      const { data, error } = await (supabase
         .from(table)
-        .select('*')
+        .select('*') as any)
         .eq('user_id', DEMO_USER_ID)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return (data || []) as any[];
+      return data || [];
     },
   });
 };
