@@ -9,6 +9,7 @@ const modules = [
   { to: '/admin/demo/invoices', icon: Receipt, label: 'Invoices', description: 'Billing & Payments' },
   { to: '/admin/demo/reports', icon: BarChart3, label: 'Reports', description: 'Analytics & Dashboards' },
   { to: '/admin/demo/scenarios', icon: Play, label: 'Scenarios', description: 'Pre-built demo flows' },
+  { to: '/admin/demo/tools', icon: Wrench, label: 'Admin Tools', description: 'Data generation & toggles' },
   { to: '/admin/demo/reset', icon: RotateCcw, label: 'Reset Demo', description: 'Restore seed data' },
 ];
 
