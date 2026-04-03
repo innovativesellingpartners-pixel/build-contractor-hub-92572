@@ -132,6 +132,10 @@ const handler = async (req: Request): Promise<Response> => {
                   <td style="padding: 8px 0; color: #6b7280; font-weight: 600;">Form Type:</td>
                   <td style="padding: 8px 0; color: #374151;">${formType || 'General'}</td>
                 </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #6b7280; font-weight: 600;">SMS Consent:</td>
+                  <td style="padding: 8px 0; color: #374151;">${smsConsent ? '✅ Yes — opted in' : '❌ No'}</td>
+                </tr>
               </table>
             </div>
             
