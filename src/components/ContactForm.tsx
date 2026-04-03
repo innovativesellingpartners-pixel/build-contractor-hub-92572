@@ -52,6 +52,7 @@ export function ContactForm({
       phone: "",
       email: "",
       reason: "",
+      smsConsent: false,
     },
   });
 
