@@ -81,6 +81,11 @@ const ArchiveManagement = React.lazy(() => import("@/components/admin/ArchiveMan
 const AdminCatalogImport = React.lazy(() => import("@/pages/admin/AdminCatalogImport"));
 const AdminProductForm = React.lazy(() => import("@/pages/admin/AdminProductForm"));
 const AssignmentAuditLog = React.lazy(() => import("@/components/admin/AssignmentAuditLog").then(m => ({ default: m.AssignmentAuditLog })));
+const DemoWorkspace = React.lazy(() => import("@/components/admin/demo/DemoWorkspace").then(m => ({ default: m.DemoWorkspace })));
+const DemoDashboard = React.lazy(() => import("@/components/admin/demo/DemoDashboard").then(m => ({ default: m.DemoDashboard })));
+const DemoSection = React.lazy(() => import("@/components/admin/demo/DemoSection").then(m => ({ default: m.DemoSection })));
+const DemoResetPanel = React.lazy(() => import("@/components/admin/demo/DemoResetPanel").then(m => ({ default: m.DemoResetPanel })));
+const DemoScenarios = React.lazy(() => import("@/components/admin/demo/DemoScenarios").then(m => ({ default: m.DemoScenarios })));
 const AdminUserProfileEdit = React.lazy(() => import("@/pages/AdminUserProfileEdit"));
 const BusinessSuite = React.lazy(() => import("@/pages/BusinessSuite").then(m => ({ default: m.BusinessSuite })));
 const Training = React.lazy(() => import("@/pages/features/Training").then(m => ({ default: m.Training })));
