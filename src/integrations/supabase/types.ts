@@ -41,6 +41,30 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_feature_flags: {
+        Row: {
+          enabled: boolean | null
+          flag_name: string
+          id: string
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          enabled?: boolean | null
+          flag_name: string
+          id?: string
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          enabled?: boolean | null
+          flag_name?: string
+          id?: string
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       ai_call_actions: {
         Row: {
           action_data: Json
@@ -1630,6 +1654,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      demo_access_log: {
+        Row: {
+          action: string
+          created_at: string | null
+          details: Json | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       email_connections: {
         Row: {

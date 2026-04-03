@@ -16,7 +16,8 @@ import {
   GraduationCap,
   Package,
   PackagePlus,
-  ArrowRightLeft
+  ArrowRightLeft,
+  Monitor
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ct1Logo from '@/assets/ct1-round-logo-new.png';
@@ -39,6 +40,7 @@ const navItems = [
   { to: '/admin/settings', icon: Settings, label: 'Settings' },
   { to: '/admin/catalog-import', icon: Package, label: 'Catalog Import' },
   { to: '/admin/product-form', icon: PackagePlus, label: 'Add Product' },
+  { to: '/admin/demo', icon: Monitor, label: 'Demo Workspace' },
 ];
 
 interface AdminSidebarProps {
