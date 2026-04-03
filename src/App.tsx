@@ -358,6 +358,16 @@ const App = () => (
                 <Route path="catalog-import" element={<Lazy><AdminCatalogImport /></Lazy>} />
                 <Route path="product-form" element={<Lazy><AdminProductForm /></Lazy>} />
                 <Route path="assignments" element={<Lazy><AssignmentAuditLog /></Lazy>} />
+                <Route path="demo" element={<Lazy><DemoWorkspace /></Lazy>}>
+                  <Route index element={<Lazy><DemoDashboard /></Lazy>} />
+                  <Route path="crm" element={<Lazy><DemoSection module="crm" /></Lazy>} />
+                  <Route path="estimates" element={<Lazy><DemoSection module="estimates" /></Lazy>} />
+                  <Route path="jobs" element={<Lazy><DemoSection module="jobs" /></Lazy>} />
+                  <Route path="invoices" element={<Lazy><DemoSection module="invoices" /></Lazy>} />
+                  <Route path="reports" element={<Lazy><DemoSection module="reports" /></Lazy>} />
+                  <Route path="scenarios" element={<Lazy><DemoScenarios /></Lazy>} />
+                  <Route path="reset" element={<Lazy><DemoResetPanel /></Lazy>} />
+                </Route>
               </Route>
             </Route>
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
