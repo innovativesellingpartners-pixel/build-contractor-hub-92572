@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -90,8 +91,10 @@ export const AdminLeads = () => {
     },
   });
 
+  const { user } = useAuth();
+
   const { data: leads, isLoading } = useQuery({
-    queryKey: ['adminLeads'],
+    queryKey: ['adminLeads', user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('leads')
@@ -108,6 +111,7 @@ export const AdminLeads = () => {
       if (error) throw error;
       return data;
     },
+    enabled: !!user?.id,
   });
 
   const { data: sources = [] } = useQuery({

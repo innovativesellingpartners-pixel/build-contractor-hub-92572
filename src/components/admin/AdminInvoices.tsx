@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -11,9 +12,10 @@ import { Button } from '@/components/ui/button';
 
 export const AdminInvoices = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const { user } = useAuth();
 
   const { data: invoices, isLoading } = useQuery({
-    queryKey: ['adminInvoices'],
+    queryKey: ['adminInvoices', user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('invoices')
@@ -37,6 +39,7 @@ export const AdminInvoices = () => {
       if (error) throw error;
       return data;
     },
+    enabled: !!user?.id,
   });
 
   const filteredInvoices = invoices?.filter(invoice =>

@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -11,9 +12,10 @@ import { format } from 'date-fns';
 
 export const AdminCustomers = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const { user } = useAuth();
 
   const { data: customers, isLoading, error } = useQuery({
-    queryKey: ['adminCustomers'],
+    queryKey: ['adminCustomers', user?.id],
     queryFn: async () => {
       console.log('AdminCustomers: Fetching customers...');
       const { data, error } = await supabase
@@ -38,6 +40,7 @@ export const AdminCustomers = () => {
       console.log('AdminCustomers: Fetched customers:', data);
       return data;
     },
+    enabled: !!user?.id,
   });
 
   if (error) {
