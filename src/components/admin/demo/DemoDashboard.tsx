@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Users, FileText, Briefcase, Receipt, BarChart3, RotateCcw, Play } from 'lucide-react';
+import { Users, FileText, Briefcase, Receipt, BarChart3, RotateCcw, Play, Wrench } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 const modules = [
@@ -9,6 +9,7 @@ const modules = [
   { to: '/admin/demo/invoices', icon: Receipt, label: 'Invoices', description: 'Billing & Payments' },
   { to: '/admin/demo/reports', icon: BarChart3, label: 'Reports', description: 'Analytics & Dashboards' },
   { to: '/admin/demo/scenarios', icon: Play, label: 'Scenarios', description: 'Pre-built demo flows' },
+  { to: '/admin/demo/tools', icon: Wrench, label: 'Admin Tools', description: 'Data generation & toggles' },
   { to: '/admin/demo/reset', icon: RotateCcw, label: 'Reset Demo', description: 'Restore seed data' },
 ];
 
