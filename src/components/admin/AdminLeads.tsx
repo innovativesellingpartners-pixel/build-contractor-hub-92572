@@ -90,8 +90,10 @@ export const AdminLeads = () => {
     },
   });
 
+  const { user } = useAuth();
+
   const { data: leads, isLoading } = useQuery({
-    queryKey: ['adminLeads'],
+    queryKey: ['adminLeads', user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('leads')
@@ -108,6 +110,7 @@ export const AdminLeads = () => {
       if (error) throw error;
       return data;
     },
+    enabled: !!user?.id,
   });
 
   const { data: sources = [] } = useQuery({
