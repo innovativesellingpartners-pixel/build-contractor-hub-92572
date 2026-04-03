@@ -19,7 +19,7 @@ const statusVariant = (status: string) => {
 };
 
 export const DemoJobsView = () => {
-  const { data: jobs = [], isLoading } = useDemoData<any>('jobs');
+  const { data: jobs = [], isLoading } = useDemoData('jobs');
 
   const totalContractValue = jobs.reduce((sum: number, j: any) => sum + (j.contract_value || 0), 0);
   const activeJobs = jobs.filter((j: any) => j.job_status === 'in_progress');

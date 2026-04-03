@@ -19,7 +19,7 @@ const statusBadge = (status: string) => {
 };
 
 export const DemoEstimatesView = () => {
-  const { data: estimates = [], isLoading } = useDemoData<any>('estimates');
+  const { data: estimates = [], isLoading } = useDemoData('estimates');
 
   const byStatus = estimates.reduce((acc: Record<string, any[]>, est: any) => {
     const s = est.status || 'draft';

@@ -28,7 +28,7 @@ const statusIcon = (status: string) => {
 };
 
 export const DemoInvoicesView = () => {
-  const { data: invoices = [], isLoading } = useDemoData<any>('invoices');
+  const { data: invoices = [], isLoading } = useDemoData('invoices');
 
   const totalBilled = invoices.reduce((sum: number, inv: any) => sum + (inv.total || 0), 0);
   const totalCollected = invoices.reduce((sum: number, inv: any) => sum + (inv.amount_paid || 0), 0);

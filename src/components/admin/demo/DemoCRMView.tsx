@@ -20,8 +20,8 @@ const stageBadgeVariant = (stage: string) => {
 };
 
 export const DemoCRMView = () => {
-  const { data: leads = [], isLoading: leadsLoading } = useDemoData<any>('leads');
-  const { data: customers = [], isLoading: customersLoading } = useDemoData<any>('customers');
+  const { data: leads = [], isLoading: leadsLoading } = useDemoData('leads');
+  const { data: customers = [], isLoading: customersLoading } = useDemoData('customers');
 
   const leadsByStage = leads.reduce((acc: Record<string, number>, lead: any) => {
     acc[lead.stage] = (acc[lead.stage] || 0) + 1;
